@@ -1,0 +1,32 @@
+{
+  "description": "High-efficiency condensing boiler for hospital",
+  "input": {
+    "boiler_type": "condensing",
+    "fuel_type": "natural_gas",
+    "fuel_consumption": {
+      "value": 10000,
+      "unit": "therms"
+    },
+    "efficiency": 0.95,
+    "age": "new",
+    "country": "US",
+    "year": 2024
+  },
+  "expected_output": {
+    "boiler_type": "condensing",
+    "fuel_type": "natural_gas",
+    "fuel_consumption_value": 10000,
+    "fuel_consumption_unit": "therms",
+    "thermal_output_value": 950,
+    "thermal_output_unit": "MMBtu",
+    "efficiency": 0.95,
+    "thermal_efficiency_percent": 95.0,
+    "performance_rating": "Excellent"
+  },
+  "metadata": {
+    "test_case": "condensing_gas_boiler",
+    "category": "thermal_systems",
+    "building_type": "hospital",
+    "priority": "high"
+  }
+}

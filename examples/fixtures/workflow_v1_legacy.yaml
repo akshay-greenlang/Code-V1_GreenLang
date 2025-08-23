@@ -1,0 +1,19 @@
+# Legacy workflow format (v1.0)
+# This uses old field names for backward compatibility testing
+workflow_name: building_emissions_calc
+workflow_version: 1.0
+agents:
+  - agent_name: input_validator
+    agent_type: validator
+  - agent_name: grid_calculator
+    agent_type: grid_factor
+  - agent_name: fuel_calculator
+    agent_type: fuel
+  - agent_name: carbon_aggregator
+    agent_type: carbon
+  - agent_name: intensity_calculator
+    agent_type: intensity
+  - agent_name: benchmark_evaluator
+    agent_type: benchmark
+  - agent_name: report_generator
+    agent_type: report

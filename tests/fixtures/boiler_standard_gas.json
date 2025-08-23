@@ -1,0 +1,32 @@
+{
+  "description": "Standard natural gas boiler in commercial office building",
+  "input": {
+    "boiler_type": "standard",
+    "fuel_type": "natural_gas",
+    "thermal_output": {
+      "value": 500,
+      "unit": "MMBtu"
+    },
+    "efficiency": 0.80,
+    "age": "medium",
+    "country": "US",
+    "year": 2024,
+    "operating_hours": 2000
+  },
+  "expected_output": {
+    "boiler_type": "standard",
+    "fuel_type": "natural_gas",
+    "fuel_consumption_value": 6250,
+    "fuel_consumption_unit": "therms",
+    "thermal_output_value": 500,
+    "thermal_output_unit": "MMBtu",
+    "efficiency": 0.80,
+    "thermal_efficiency_percent": 80.0,
+    "performance_rating": "Good"
+  },
+  "metadata": {
+    "test_case": "standard_gas_boiler",
+    "category": "thermal_systems",
+    "priority": "high"
+  }
+}

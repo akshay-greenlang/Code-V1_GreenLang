@@ -1,0 +1,29 @@
+{
+  "description": "Solar PV generation (negative emissions)",
+  "input": {
+    "fuel_type": "solar_pv",
+    "consumption": {
+      "value": -50000,
+      "unit": "kWh"
+    },
+    "country": "US",
+    "year": 2024
+  },
+  "expected_output": {
+    "fuel_type": "solar_pv",
+    "consumption_value": -50000,
+    "consumption_unit": "kWh",
+    "emission_factor": 0.385,
+    "emission_factor_unit": "kgCO2e/kWh",
+    "co2e_emissions_kg": -19250,
+    "source": "GreenLang Global Dataset",
+    "note": "Negative value represents avoided grid emissions"
+  },
+  "metadata": {
+    "test_case": "solar_generation_offset",
+    "category": "renewable_energy",
+    "scope": "2",
+    "technology": "rooftop_solar",
+    "priority": "high"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GreenLang Report Output Schema",
+  "type": "object",
+  "required": ["emissions", "metadata"],
+  "properties": {
+    "emissions": {
+      "$ref": "analysis.schema.json"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["generated_at", "report_type"],
+      "properties": {
+        "generated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Report generation timestamp"
+        },
+        "report_type": {
+          "type": "string",
+          "enum": ["building", "portfolio", "comparison"],
+          "description": "Type of report"
+        },
+        "report_id": {
+          "type": "string",
+          "description": "Unique report identifier"
+        },
+        "workflow_version": {
+          "type": "string",
+          "description": "Version of workflow used"
+        }
+      }
+    },
+    "building_info": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "country": {
+              "type": "string"
+            },
+            "city": {
+              "type": "string"
+            }
+          }
+        },
+        "area_sqft": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "properties": {
+        "bee_rating": {
+          "type": ["string", "integer"]
+        },
+        "eecb_compliance": {
+          "type": "boolean"
+        },
+        "compliance_gaps": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "schemes": {
+      "type": "array",
+      "description": "Applicable government schemes",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "eligibility": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

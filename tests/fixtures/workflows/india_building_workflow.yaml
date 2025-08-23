@@ -1,0 +1,79 @@
+name: india_building_workflow
+description: India-specific building emissions with BEE/EECB compliance
+version: 0.0.1
+
+inputs:
+  building_data:
+    type: object
+    required: true
+
+outputs:
+  emissions_report:
+    type: object
+
+steps:
+  - id: parse_input
+    name: Parse Building Data
+    agent: DataParserAgent
+    inputs:
+      data: $building_data
+      country_context: IN
+    outputs:
+      parsed_data: object
+
+  - id: calculate_emissions
+    name: Calculate Emissions with India Grid Factors
+    agent: EmissionCalculatorAgent
+    inputs:
+      building: $steps.parse_input.parsed_data
+      country_override: IN
+      dataset_version: latest
+    outputs:
+      emissions: object
+      provenance: object
+
+  - id: india_compliance
+    name: Check BEE/EECB Compliance
+    agent: IndiaComplianceAgent
+    inputs:
+      building: $steps.parse_input.parsed_data
+      emissions: $steps.calculate_emissions.emissions
+    outputs:
+      bee_rating: string
+      eecb_compliance: boolean
+      compliance_gaps: array
+
+  - id: benchmark
+    name: Benchmark with India Standards
+    agent: BenchmarkAgent
+    inputs:
+      emissions: $steps.calculate_emissions.emissions
+      building: $steps.parse_input.parsed_data
+      standards: IN_BEE
+    outputs:
+      rating: string
+      comparison: object
+
+  - id: india_recommendations
+    name: Generate India-Specific Recommendations
+    agent: IndiaRecommendationAgent
+    inputs:
+      emissions: $steps.calculate_emissions.emissions
+      compliance: $steps.india_compliance
+      benchmark: $steps.benchmark
+    outputs:
+      recommendations: array
+      schemes: array
+
+  - id: compile_report
+    name: Compile India Report
+    agent: ReportAgent
+    inputs:
+      emissions: $steps.calculate_emissions.emissions
+      benchmark: $steps.benchmark
+      recommendations: $steps.india_recommendations.recommendations
+      compliance: $steps.india_compliance
+      schemes: $steps.india_recommendations.schemes
+      provenance: $steps.calculate_emissions.provenance
+    outputs:
+      report: object

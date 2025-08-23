@@ -1,0 +1,67 @@
+{
+  "name": "City General Hospital",
+  "type": "healthcare_hospital",
+  "location": {
+    "country": "IN",
+    "state": "Maharashtra",
+    "city": "Pune",
+    "postal_code": "411001"
+  },
+  "building_info": {
+    "area_sqft": 100000,
+    "floors": 10,
+    "year_built": 2015,
+    "occupancy_hours": 8760,
+    "beds": 250,
+    "operating_rooms": 8,
+    "24x7_operation": true
+  },
+  "consumption": {
+    "electricity": {
+      "value": 4500000,
+      "unit": "kWh",
+      "period": "annual",
+      "source": "grid"
+    },
+    "natural_gas": {
+      "value": 120000,
+      "unit": "cubic_meters",
+      "period": "annual",
+      "source": "pipeline"
+    },
+    "diesel": {
+      "value": 50000,
+      "unit": "liters",
+      "period": "annual",
+      "source": "backup_generator"
+    },
+    "lpg": {
+      "value": 10000,
+      "unit": "kg",
+      "period": "annual",
+      "source": "cylinders"
+    },
+    "water": {
+      "value": 50000,
+      "unit": "cubic_meters",
+      "period": "annual"
+    }
+  },
+  "renewable": {
+    "solar_rooftop": {
+      "capacity_kw": 250,
+      "generation_kwh": 375000
+    }
+  },
+  "certifications": {
+    "bee_rating": 3,
+    "igbc": "Silver",
+    "nabh": true
+  },
+  "special_requirements": {
+    "critical_care": true,
+    "medical_gases": true,
+    "sterilization": true,
+    "hvac_24x7": true
+  }
+}

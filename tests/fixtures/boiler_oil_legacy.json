@@ -1,0 +1,37 @@
+{
+  "description": "Legacy oil boiler requiring replacement",
+  "input": {
+    "boiler_type": "low_efficiency",
+    "fuel_type": "oil",
+    "fuel_consumption": {
+      "value": 5000,
+      "unit": "gallons"
+    },
+    "efficiency": 0.65,
+    "age": "old",
+    "country": "US",
+    "year": 2024,
+    "operating_hours": 3000
+  },
+  "expected_output": {
+    "boiler_type": "low_efficiency",
+    "fuel_type": "oil",
+    "fuel_consumption_value": 5000,
+    "fuel_consumption_unit": "gallons",
+    "thermal_output_value": 454.55,
+    "thermal_output_unit": "MMBtu",
+    "efficiency": 0.65,
+    "thermal_efficiency_percent": 65.0,
+    "performance_rating": "Poor",
+    "recommendations_include": [
+      "Replace boiler with high-efficiency condensing model"
+    ]
+  },
+  "metadata": {
+    "test_case": "legacy_oil_boiler",
+    "category": "thermal_systems",
+    "replacement_priority": "urgent",
+    "estimated_savings": "30-40%",
+    "priority": "high"
+  }
+}

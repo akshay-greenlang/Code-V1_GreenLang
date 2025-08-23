@@ -1,0 +1,28 @@
+{
+  "description": "Natural gas consumption in therms",
+  "input": {
+    "fuel_type": "natural_gas",
+    "consumption": {
+      "value": 5000,
+      "unit": "therms"
+    },
+    "country": "US",
+    "year": 2024
+  },
+  "expected_output": {
+    "fuel_type": "natural_gas",
+    "consumption_value": 5000,
+    "consumption_unit": "therms",
+    "emission_factor": 5.3,
+    "emission_factor_unit": "kgCO2e/therms",
+    "co2e_emissions_kg": 26500,
+    "source": "GreenLang Global Dataset"
+  },
+  "metadata": {
+    "test_case": "natural_gas_therms",
+    "category": "fuel_emissions",
+    "scope": "1",
+    "building_type": "commercial",
+    "priority": "high"
+  }
+}

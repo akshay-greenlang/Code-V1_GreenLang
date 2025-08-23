@@ -1,0 +1,94 @@
+# GreenLang - Open Developer Climate Intelligence Platform
+# Production Dependencies
+
+# Core Framework
+pydantic>=2.0.0           # Data validation and settings management
+pyyaml>=6.0               # YAML workflow definitions
+click>=8.0.0              # CLI framework
+rich>=13.0.0              # Beautiful terminal output
+python-dotenv>=1.0.0      # Environment configuration
+typing-extensions>=4.9.0  # Extended type hints (TypedDict, Protocol, etc.)
+
+# Data Processing
+pandas>=2.0.0             # Data analysis and manipulation
+numpy>=1.24.0             # Numerical computations
+openpyxl>=3.1.0          # Excel file support
+jsonschema>=4.19.0        # JSON schema validation
+
+# API & Integration
+httpx>=0.24.0            # Async HTTP client
+requests>=2.31.0         # HTTP library
+aiohttp>=3.8.0           # Async HTTP server/client
+fastapi>=0.104.0         # API framework (optional)
+uvicorn>=0.24.0          # ASGI server (optional)
+
+# AI/LLM Integration (optional but recommended)
+openai>=1.0.0            # OpenAI GPT integration
+langchain>=0.1.0         # LLM framework
+langchain-openai>=0.0.5  # LangChain OpenAI adapter
+anthropic>=0.7.0         # Anthropic Claude support (optional)
+
+# Workflow Orchestration
+networkx>=3.0            # DAG management for workflows
+redis>=5.0.0             # Caching and queue (optional)
+celery>=5.3.0            # Distributed task queue (optional)
+
+# Testing Framework
+pytest>=7.4.0            # Testing framework
+pytest-cov>=4.1.0        # Coverage plugin
+pytest-asyncio>=0.21.0   # Async test support
+pytest-mock>=3.11.0      # Mocking support
+pytest-timeout>=2.1.0    # Test timeout management
+pytest-xdist>=3.3.0      # Parallel test execution
+pytest-benchmark>=4.0.0  # Performance benchmarking
+pytest-regressions>=2.5.0 # Snapshot testing for examples
+hypothesis>=6.80.0       # Property-based testing
+psutil>=5.9.0            # Memory monitoring for long-run tests
+
+# Code Quality & Development
+mypy>=1.7.0              # Static type checking (strict mode enforced)
+ruff>=0.1.0              # Fast Python linter
+black>=23.7.0            # Code formatter
+isort>=5.12.0            # Import sorting
+coverage[toml]>=7.2.0    # Code coverage
+bandit>=1.7.0            # Security linting
+
+# Documentation
+mkdocs>=1.5.0            # Documentation generator
+mkdocs-material>=9.0.0   # Material theme
+mkdocstrings>=0.23.0     # API documentation
+
+# Type Stubs (for mypy strict mode)
+types-PyYAML>=6.0.12
+types-requests>=2.31.0
+types-redis>=4.6.0
+types-click>=8.1.0
+types-jsonschema>=4.19.0
+
+# Test Utilities
+faker>=19.0.0            # Test data generation
+responses>=0.23.0        # HTTP mocking
+freezegun>=1.2.0         # Time mocking
+factory-boy>=3.3.0       # Test fixtures
+
+# Monitoring & Observability (optional)
+prometheus-client>=0.18.0  # Metrics export
+opentelemetry-api>=1.20.0  # Distributed tracing
+structlog>=23.0.0          # Structured logging
+
+# Development Tools (optional)
+ipython>=8.0.0           # Enhanced Python shell
+jupyter>=1.0.0           # Notebook interface
+pre-commit>=3.0.0        # Git hooks
+watchdog>=3.0.0          # File system monitoring
+
+# Database Support (optional)
+sqlalchemy>=2.0.0        # SQL toolkit
+alembic>=1.12.0          # Database migrations
+psycopg2-binary>=2.9.0   # PostgreSQL adapter
+pymongo>=4.5.0           # MongoDB adapter
+
+# Deployment (optional)
+gunicorn>=21.0.0         # WSGI HTTP server
+docker>=6.1.0            # Docker SDK
+kubernetes>=28.0.0       # Kubernetes client

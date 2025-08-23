@@ -1,0 +1,11 @@
+description: Main workflow
+name: main
+steps:
+- agent_id: validator
+  name: validate
+- agent_id: fuel
+  name: calculate
+- agent_id: carbon
+  name: aggregate
+- agent_id: report
+  name: report

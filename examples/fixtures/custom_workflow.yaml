@@ -1,0 +1,47 @@
+name: custom_emissions_with_xlsx_export
+version: 1.0.0
+description: Custom workflow with XLSX export capability
+output_format: xlsx
+output_path: ./reports/emissions_report.xlsx
+
+steps:
+  - name: validate_input
+    agent_id: validator
+    description: Validate and normalize input data
+    
+  - name: calculate_emissions
+    agent_id: fuel
+    description: Calculate fuel-based emissions
+    
+  - name: calculate_water_emissions
+    agent_id: water_usage
+    description: Calculate water usage emissions (custom agent)
+    
+  - name: aggregate_all
+    agent_id: carbon
+    description: Aggregate all emission sources
+    
+  - name: generate_intensity
+    agent_id: intensity
+    description: Calculate emission intensity metrics
+    
+  - name: benchmark
+    agent_id: benchmark
+    description: Compare against industry benchmarks
+    
+  - name: generate_report
+    agent_id: report
+    description: Generate final report
+    output_format: xlsx
+    
+export:
+  format: xlsx
+  sheets:
+    - name: Summary
+      data: summary
+    - name: Emissions
+      data: emissions
+    - name: Benchmark
+      data: benchmark
+    - name: Recommendations
+      data: recommendations

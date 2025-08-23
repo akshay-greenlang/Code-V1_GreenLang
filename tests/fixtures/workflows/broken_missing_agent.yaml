@@ -1,0 +1,36 @@
+name: broken_missing_agent
+description: Invalid workflow with non-existent agent (for testing)
+version: 0.0.1
+
+inputs:
+  building_data:
+    type: object
+
+outputs:
+  result:
+    type: object
+
+steps:
+  - id: parse
+    name: Parse Data
+    agent: DataParserAgent
+    inputs:
+      data: $building_data
+    outputs:
+      parsed: object
+
+  - id: broken_step
+    name: This Will Fail
+    agent: NonExistentAgent  # This agent doesn't exist
+    inputs:
+      data: $steps.parse.parsed
+    outputs:
+      result: object
+
+  - id: never_reached
+    name: Never Reached
+    agent: ReportAgent
+    inputs:
+      data: $steps.broken_step.result
+    outputs:
+      report: object

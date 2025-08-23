@@ -1,0 +1,25 @@
+{
+  "fuels": [
+    {
+      "type": "electricity",
+      "consumption": 1000,
+      "unit": "kWh"
+    },
+    {
+      "type": "natural_gas",
+      "consumption": 500,
+      "unit": "therms"
+    }
+  ],
+  "building_info": {
+    "type": "commercial_office",
+    "area": 10000,
+    "area_unit": "sqft",
+    "occupancy": 50
+  },
+  "period": {
+    "duration": 1,
+    "duration_unit": "month"
+  },
+  "report_format": "text"
+}

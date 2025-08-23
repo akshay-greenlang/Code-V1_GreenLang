@@ -1,0 +1,49 @@
+{
+  "building_name": "Corporate HQ Seattle",
+  "building_type": "office",
+  "country": "US",
+  "state": "WA",
+  "city": "Seattle",
+  "climate_zone": "temperate",
+  "total_area": {
+    "value": 100000,
+    "unit": "sqft"
+  },
+  "occupancy": 500,
+  "floor_count": 10,
+  "building_age": 5,
+  "energy_sources": [
+    {
+      "fuel_type": "electricity",
+      "consumption": {
+        "value": 2000000,
+        "unit": "kWh"
+      },
+      "period": "annual"
+    },
+    {
+      "fuel_type": "natural_gas",
+      "consumption": {
+        "value": 50000,
+        "unit": "therms"
+      },
+      "period": "annual"
+    }
+  ],
+  "renewable_energy": {
+    "solar_pv": {
+      "installed_capacity_kw": 200,
+      "annual_generation_kwh": 250000
+    },
+    "wind": {
+      "installed_capacity_kw": 50,
+      "annual_generation_kwh": 100000
+    }
+  },
+  "certifications": ["ENERGY STAR", "LEED Platinum"],
+  "metadata": {
+    "reporting_year": 2024,
+    "data_quality": "audited",
+    "submission_date": "2024-01-20"
+  }
+}

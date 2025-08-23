@@ -1,0 +1,23 @@
+{
+  "BR": {
+    "electricity": {
+      "emission_factor": 0.074,
+      "unit": "kgCO2e/kWh",
+      "source": "Brazil National Energy Balance 2023",
+      "last_updated": "2023-12-01",
+      "notes": "High hydroelectric share results in low emission factor"
+    },
+    "natural_gas": {
+      "emission_factor": 5.3,
+      "unit": "kgCO2e/therm",
+      "source": "Brazil National Energy Balance 2023",
+      "last_updated": "2023-12-01"
+    },
+    "diesel": {
+      "emission_factor": 2.68,
+      "unit": "kgCO2e/liter",
+      "source": "Brazil National Energy Balance 2023",
+      "last_updated": "2023-12-01"
+    }
+  }
+}

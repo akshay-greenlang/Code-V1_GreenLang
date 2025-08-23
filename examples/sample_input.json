@@ -1,0 +1,30 @@
+{
+  "fuels": [
+    {
+      "type": "electricity",
+      "consumption": 15000,
+      "unit": "kWh",
+      "region": "US"
+    },
+    {
+      "type": "natural_gas",
+      "consumption": 800,
+      "unit": "therms",
+      "region": "US"
+    }
+  ],
+  "building_info": {
+    "type": "commercial_office",
+    "area": 25000,
+    "area_unit": "sqft",
+    "occupancy": 120,
+    "location": "New York, NY"
+  },
+  "period": {
+    "start_date": "2024-01-01",
+    "end_date": "2024-01-31",
+    "duration": 1,
+    "duration_unit": "month"
+  },
+  "report_format": "text"
+}

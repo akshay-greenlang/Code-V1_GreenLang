@@ -1,0 +1,33 @@
+{
+  "description": "Electric heat pump system with high COP",
+  "input": {
+    "boiler_type": "heat_pump",
+    "fuel_type": "electricity",
+    "thermal_output": {
+      "value": 1000000,
+      "unit": "kWh"
+    },
+    "efficiency": 3.5,
+    "age": "new",
+    "country": "EU",
+    "year": 2024
+  },
+  "expected_output": {
+    "boiler_type": "heat_pump",
+    "fuel_type": "electricity",
+    "fuel_consumption_value": 285714.29,
+    "fuel_consumption_unit": "kWh",
+    "thermal_output_value": 3412,
+    "thermal_output_unit": "MMBtu",
+    "efficiency": 3.5,
+    "thermal_efficiency_percent": 350.0,
+    "performance_rating": "Excellent"
+  },
+  "metadata": {
+    "test_case": "heat_pump_high_cop",
+    "category": "thermal_systems",
+    "technology": "air_source_heat_pump",
+    "climate_zone": "temperate",
+    "priority": "high"
+  }
+}

@@ -1,0 +1,36 @@
+description: Calculate carbon footprint for a commercial building
+name: carbon_footprint_calculation
+output_mapping:
+  report: results.generate_report.data.report
+  total_emissions: results.aggregate_emissions.data.total_co2e_tons
+steps:
+- agent_id: validator
+  description: Validate input data
+  name: validate_input
+  on_failure: stop
+- agent_id: fuel
+  description: Calculate emissions from electricity
+  input_mapping:
+    consumption: input.fuels[0].consumption
+    fuel_type: input.fuels[0].type
+    unit: input.fuels[0].unit
+  name: calculate_electricity
+- agent_id: fuel
+  description: Calculate emissions from natural gas
+  input_mapping:
+    consumption: input.fuels[1].consumption
+    fuel_type: input.fuels[1].type
+    unit: input.fuels[1].unit
+  name: calculate_gas
+- agent_id: carbon
+  description: Aggregate all emissions
+  input_mapping:
+    emissions: results.calculate_electricity.data,results.calculate_gas.data
+  name: aggregate_emissions
+- agent_id: report
+  description: Generate final report
+  input_mapping:
+    carbon_data: results.aggregate_emissions.data
+    format: input.report_format
+  name: generate_report
+version: 0.0.1

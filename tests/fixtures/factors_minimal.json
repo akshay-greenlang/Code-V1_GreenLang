@@ -1,0 +1,62 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2024-01-01",
+  "source": "IPCC/EPA/IEA 2024",
+  "emission_factors": {
+    "electricity": {
+      "IN": {
+        "factor": 0.71,
+        "unit": "kgCO2e/kWh",
+        "source": "India Central Electricity Authority"
+      },
+      "US": {
+        "factor": 0.385,
+        "unit": "kgCO2e/kWh",
+        "source": "US EPA eGRID"
+      },
+      "EU": {
+        "factor": 0.23,
+        "unit": "kgCO2e/kWh",
+        "source": "European Environment Agency"
+      },
+      "CN": {
+        "factor": 0.555,
+        "unit": "kgCO2e/kWh",
+        "source": "China National Bureau of Statistics"
+      }
+    },
+    "natural_gas": {
+      "global": {
+        "factor": 5.3,
+        "unit": "kgCO2e/therm",
+        "source": "US EPA"
+      },
+      "per_m3": {
+        "factor": 1.88,
+        "unit": "kgCO2e/m³",
+        "source": "IPCC"
+      }
+    },
+    "diesel": {
+      "global": {
+        "factor": 2.68,
+        "unit": "kgCO2e/liter",
+        "source": "IPCC"
+      }
+    },
+    "gasoline": {
+      "global": {
+        "factor": 2.31,
+        "unit": "kgCO2e/liter",
+        "source": "IPCC"
+      }
+    },
+    "coal": {
+      "global": {
+        "factor": 2419.2,
+        "unit": "kgCO2e/ton",
+        "source": "IPCC"
+      }
+    }
+  }
+}

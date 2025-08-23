@@ -1,0 +1,64 @@
+{
+  "description": "Mixed fuel portfolio for large facility",
+  "fuels": [
+    {
+      "id": "grid_electricity",
+      "input": {
+        "fuel_type": "electricity",
+        "consumption": {"value": 2000000, "unit": "kWh"},
+        "country": "US",
+        "year": 2024
+      }
+    },
+    {
+      "id": "natural_gas_heating",
+      "input": {
+        "fuel_type": "natural_gas",
+        "consumption": {"value": 50000, "unit": "therms"},
+        "country": "US",
+        "year": 2024
+      }
+    },
+    {
+      "id": "diesel_backup",
+      "input": {
+        "fuel_type": "diesel",
+        "consumption": {"value": 500, "unit": "gallons"},
+        "country": "US",
+        "year": 2024
+      }
+    },
+    {
+      "id": "solar_generation",
+      "input": {
+        "fuel_type": "solar_pv",
+        "consumption": {"value": -250000, "unit": "kWh"},
+        "country": "US",
+        "year": 2024
+      }
+    }
+  ],
+  "aggregation": {
+    "total_emissions_kg": 1021605,
+    "total_emissions_tons": 1021.605,
+    "net_electricity_kwh": 1750000,
+    "renewable_offset_kg": 96250,
+    "by_fuel": {
+      "electricity": 770000,
+      "natural_gas": 265000,
+      "diesel": 5105,
+      "solar_pv": -96250
+    }
+  },
+  "recommendations": [
+    "Increase solar capacity to 500kW",
+    "Switch to electric heat pumps",
+    "Implement demand response program"
+  ],
+  "metadata": {
+    "test_case": "mixed_fuel_portfolio",
+    "category": "fuel_emissions",
+    "building_type": "large_commercial",
+    "priority": "high"
+  }
+}

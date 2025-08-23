@@ -1,0 +1,17 @@
+name: commercial_building_emissions_minimal
+version: 0.0.1-examples
+steps:
+  - name: validate_input
+    agent_id: validator
+  - name: calculate_grid_factor
+    agent_id: grid_factor
+  - name: calculate_fuel_emissions
+    agent_id: fuel
+  - name: aggregate_results
+    agent_id: carbon
+  - name: calculate_intensity
+    agent_id: intensity
+  - name: benchmark_performance
+    agent_id: benchmark
+  - name: generate_report
+    agent_id: report

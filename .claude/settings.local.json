@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(pip install:*)",
+      "Bash(greenlang:*)",
+      "Bash(python:*)",
+      "Bash(C:\\Users\\rshar\\AppData\\Roaming\\Python\\Python313\\Scripts\\greenlang.exe --version)",
+      "Bash(ls:*)",
+      "Bash(rm:*)",
+      "Bash(./greenlang.bat --version)",
+      "Bash(./greenlang.bat)",
+      "Bash(./greenlang.bat calc)",
+      "Bash(copy main.py main_original.py)",
+      "Bash(cp:*)",
+      "Bash(grep:*)",
+      "Bash(move:*)",
+      "Bash(mv:*)",
+      "Bash(copy:*)",
+      "Bash(dir:*)"
+    ],
+    "deny": []
+  }
+}

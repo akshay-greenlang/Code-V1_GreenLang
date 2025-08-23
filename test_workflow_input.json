@@ -1,0 +1,24 @@
+{
+  "metadata": {
+    "building_type": "commercial_office",
+    "area": 50000,
+    "area_unit": "sqft",
+    "location": {
+      "country": "US",
+      "city": "New York"
+    },
+    "occupancy": 200,
+    "floor_count": 10,
+    "building_age": 15
+  },
+  "energy_consumption": {
+    "electricity": {
+      "value": 1500000,
+      "unit": "kWh"
+    },
+    "natural_gas": {
+      "value": 30000,
+      "unit": "therms"
+    }
+  }
+}

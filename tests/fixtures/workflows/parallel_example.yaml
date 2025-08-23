@@ -1,0 +1,78 @@
+name: parallel_example
+description: Workflow with parallel execution branches
+version: 0.0.1
+
+inputs:
+  building_data:
+    type: object
+
+outputs:
+  emissions_report:
+    type: object
+
+steps:
+  - id: parse_input
+    name: Parse Building Data
+    agent: DataParserAgent
+    inputs:
+      data: $building_data
+    outputs:
+      parsed_data: object
+
+  # Parallel branches for different fuel types
+  - id: calc_electricity
+    name: Calculate Electricity Emissions
+    agent: FuelEmissionAgent
+    parallel: true
+    inputs:
+      consumption: $steps.parse_input.parsed_data.consumption.electricity
+      fuel_type: electricity
+      country: $steps.parse_input.parsed_data.location.country
+    outputs:
+      emissions_kg: number
+      factor_used: number
+
+  - id: calc_natural_gas
+    name: Calculate Natural Gas Emissions
+    agent: FuelEmissionAgent
+    parallel: true
+    inputs:
+      consumption: $steps.parse_input.parsed_data.consumption.natural_gas
+      fuel_type: natural_gas
+      country: $steps.parse_input.parsed_data.location.country
+    outputs:
+      emissions_kg: number
+      factor_used: number
+
+  - id: calc_diesel
+    name: Calculate Diesel Emissions
+    agent: FuelEmissionAgent
+    parallel: true
+    inputs:
+      consumption: $steps.parse_input.parsed_data.consumption.diesel
+      fuel_type: diesel
+      country: $steps.parse_input.parsed_data.location.country
+    outputs:
+      emissions_kg: number
+      factor_used: number
+
+  # Synchronization point
+  - id: aggregate_results
+    name: Aggregate All Emissions
+    agent: AggregationAgent
+    inputs:
+      electricity: $steps.calc_electricity.emissions_kg
+      natural_gas: $steps.calc_natural_gas.emissions_kg
+      diesel: $steps.calc_diesel.emissions_kg
+    outputs:
+      total_emissions_kg: number
+      by_fuel: object
+
+  - id: compile_report
+    name: Compile Report
+    agent: ReportAgent
+    inputs:
+      emissions: $steps.aggregate_results
+      building: $steps.parse_input.parsed_data
+    outputs:
+      report: object
