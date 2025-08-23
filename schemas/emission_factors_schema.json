@@ -1,0 +1,174 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GreenLang Global Emission Factors Schema",
+  "description": "Schema for global emission factors used in GreenLang climate calculations",
+  "type": "object",
+  "required": ["version", "last_updated", "countries"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the emission factors dataset"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date when the factors were last updated"
+    },
+    "data_sources": {
+      "type": "object",
+      "description": "References to official data sources",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": {"type": "string"},
+          "url": {"type": "string", "format": "uri"},
+          "year": {"type": "integer", "minimum": 2020, "maximum": 2030},
+          "notes": {"type": "string"}
+        },
+        "required": ["name", "year"]
+      }
+    },
+    "countries": {
+      "type": "object",
+      "description": "Emission factors by country code",
+      "patternProperties": {
+        "^[A-Z]{2}$": {
+          "$ref": "#/definitions/countryFactors"
+        }
+      },
+      "additionalProperties": false
+    },
+    "fuel_types": {
+      "type": "object",
+      "description": "Global fuel type emission factors",
+      "properties": {
+        "diesel": {"$ref": "#/definitions/fuelFactor"},
+        "gasoline": {"$ref": "#/definitions/fuelFactor"},
+        "natural_gas": {"$ref": "#/definitions/fuelFactor"},
+        "lpg_propane": {"$ref": "#/definitions/fuelFactor"},
+        "heating_oil": {"$ref": "#/definitions/fuelFactor"},
+        "coal": {"$ref": "#/definitions/fuelFactor"},
+        "biomass": {"$ref": "#/definitions/fuelFactor"},
+        "hydrogen": {"$ref": "#/definitions/fuelFactor"}
+      }
+    }
+  },
+  "definitions": {
+    "countryFactors": {
+      "type": "object",
+      "required": ["name", "electricity", "renewable_share"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Full country name"
+        },
+        "electricity": {
+          "type": "object",
+          "required": ["grid_factor", "unit", "source"],
+          "properties": {
+            "grid_factor": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2.0,
+              "description": "Grid emission factor in kgCO2e/kWh"
+            },
+            "unit": {
+              "type": "string",
+              "enum": ["kgCO2e/kWh"],
+              "description": "Unit of measurement"
+            },
+            "source": {
+              "type": "string",
+              "description": "Data source reference"
+            },
+            "year": {
+              "type": "integer",
+              "minimum": 2020,
+              "maximum": 2030,
+              "description": "Year of the data"
+            },
+            "grid_mix": {
+              "type": "object",
+              "properties": {
+                "coal": {"type": "number", "minimum": 0, "maximum": 100},
+                "natural_gas": {"type": "number", "minimum": 0, "maximum": 100},
+                "nuclear": {"type": "number", "minimum": 0, "maximum": 100},
+                "hydro": {"type": "number", "minimum": 0, "maximum": 100},
+                "wind": {"type": "number", "minimum": 0, "maximum": 100},
+                "solar": {"type": "number", "minimum": 0, "maximum": 100},
+                "other_renewable": {"type": "number", "minimum": 0, "maximum": 100}
+              },
+              "description": "Percentage breakdown of electricity generation sources"
+            }
+          }
+        },
+        "renewable_share": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Percentage of renewable energy in grid mix"
+        },
+        "natural_gas": {
+          "$ref": "#/definitions/fuelFactor"
+        },
+        "district_heating": {
+          "$ref": "#/definitions/fuelFactor"
+        },
+        "regional_variations": {
+          "type": "object",
+          "description": "Sub-national variations in emission factors",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "grid_factor": {"type": "number", "minimum": 0},
+              "renewable_share": {"type": "number", "minimum": 0, "maximum": 100}
+            }
+          }
+        }
+      }
+    },
+    "fuelFactor": {
+      "type": "object",
+      "required": ["factor", "unit"],
+      "properties": {
+        "factor": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Emission factor value"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kgCO2e/kWh",
+            "kgCO2e/liter",
+            "kgCO2e/gallon",
+            "kgCO2e/therm",
+            "kgCO2e/m3",
+            "kgCO2e/MMBtu",
+            "kgCO2e/kg",
+            "kgCO2e/ton"
+          ],
+          "description": "Unit of the emission factor"
+        },
+        "conversion_factors": {
+          "type": "object",
+          "description": "Conversion factors to other units",
+          "additionalProperties": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "source": {
+          "type": "string",
+          "description": "Data source for this factor"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Confidence level in the data"
+        }
+      }
+    }
+  }
+}

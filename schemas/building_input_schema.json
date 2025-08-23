@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GreenLang Building Input Schema",
+  "description": "Schema for building data input to GreenLang analysis",
+  "type": "object",
+  "required": ["metadata", "energy_consumption"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["building_type", "area", "location"],
+      "properties": {
+        "building_type": {
+          "type": "string",
+          "enum": [
+            "commercial_office",
+            "hospital",
+            "data_center",
+            "retail",
+            "warehouse",
+            "hotel",
+            "education"
+          ],
+          "description": "Type of commercial building"
+        },
+        "area": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Building floor area"
+        },
+        "area_unit": {
+          "type": "string",
+          "enum": ["sqft", "sqm"],
+          "default": "sqft",
+          "description": "Unit of area measurement"
+        },
+        "location": {
+          "type": "object",
+          "required": ["country"],
+          "properties": {
+            "country": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "description": "ISO 3166-1 alpha-2 country code"
+            },
+            "region": {
+              "type": "string",
+              "description": "State, province, or region"
+            },
+            "city": {
+              "type": "string",
+              "description": "City name"
+            },
+            "postal_code": {
+              "type": "string",
+              "description": "Postal or ZIP code"
+            },
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90,
+              "description": "Latitude coordinate"
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180,
+              "description": "Longitude coordinate"
+            }
+          }
+        },
+        "occupancy": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of regular occupants"
+        },
+        "floor_count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of floors in the building"
+        },
+        "building_age": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Age of the building in years"
+        },
+        "climate_zone": {
+          "type": "string",
+          "enum": [
+            "1A", "2A", "3A", "4A", "5A", "6A", "7", "8",
+            "tropical", "dry", "temperate", "continental", "polar",
+            "composite"
+          ],
+          "description": "Climate zone classification"
+        },
+        "certifications": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "LEED_Platinum", "LEED_Gold", "LEED_Silver", "LEED_Certified",
+              "ENERGY_STAR", "BREEAM_Outstanding", "BREEAM_Excellent",
+              "BREEAM_Very_Good", "BREEAM_Good", "BEE_5_Star", "BEE_4_Star",
+              "BEE_3_Star", "BEE_2_Star", "BEE_1_Star"
+            ]
+          },
+          "description": "Green building certifications"
+        },
+        "construction_type": {
+          "type": "string",
+          "enum": ["steel_frame", "concrete", "wood_frame", "masonry", "mixed"],
+          "description": "Primary construction material"
+        }
+      }
+    },
+    "energy_consumption": {
+      "type": "object",
+      "description": "Annual energy consumption by source",
+      "properties": {
+        "electricity": {
+          "$ref": "#/definitions/energySource"
+        },
+        "natural_gas": {
+          "$ref": "#/definitions/energySource"
+        },
+        "diesel": {
+          "$ref": "#/definitions/energySource"
+        },
+        "district_heating": {
+          "$ref": "#/definitions/energySource"
+        },
+        "district_cooling": {
+          "$ref": "#/definitions/energySource"
+        },
+        "solar_pv_generation": {
+          "$ref": "#/definitions/energySource"
+        },
+        "wind_generation": {
+          "$ref": "#/definitions/energySource"
+        },
+        "lpg_propane": {
+          "$ref": "#/definitions/energySource"
+        },
+        "heating_oil": {
+          "$ref": "#/definitions/energySource"
+        },
+        "coal": {
+          "$ref": "#/definitions/energySource"
+        },
+        "biomass": {
+          "$ref": "#/definitions/energySource"
+        },
+        "geothermal": {
+          "$ref": "#/definitions/energySource"
+        }
+      },
+      "additionalProperties": false
+    },
+    "operational_data": {
+      "type": "object",
+      "description": "Optional operational characteristics",
+      "properties": {
+        "operating_hours": {
+          "type": "object",
+          "properties": {
+            "weekday": {"type": "number", "minimum": 0, "maximum": 24},
+            "weekend": {"type": "number", "minimum": 0, "maximum": 24}
+          }
+        },
+        "hvac_system": {
+          "type": "string",
+          "enum": [
+            "central_air", "split_system", "vrf", "chiller",
+            "heat_pump", "boiler", "furnace", "radiant"
+          ]
+        },
+        "lighting_type": {
+          "type": "string",
+          "enum": ["led", "fluorescent", "incandescent", "mixed"]
+        },
+        "equipment_density": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "very_high"],
+          "description": "Density of electrical equipment"
+        }
+      }
+    },
+    "renewable_systems": {
+      "type": "object",
+      "description": "On-site renewable energy systems",
+      "properties": {
+        "solar_pv": {
+          "type": "object",
+          "properties": {
+            "capacity_kw": {"type": "number", "minimum": 0},
+            "annual_generation_kwh": {"type": "number", "minimum": 0},
+            "installation_year": {"type": "integer", "minimum": 1990}
+          }
+        },
+        "solar_thermal": {
+          "type": "object",
+          "properties": {
+            "collector_area_sqm": {"type": "number", "minimum": 0},
+            "annual_output_kwh": {"type": "number", "minimum": 0}
+          }
+        },
+        "wind": {
+          "type": "object",
+          "properties": {
+            "capacity_kw": {"type": "number", "minimum": 0},
+            "annual_generation_kwh": {"type": "number", "minimum": 0}
+          }
+        },
+        "battery_storage": {
+          "type": "object",
+          "properties": {
+            "capacity_kwh": {"type": "number", "minimum": 0},
+            "power_kw": {"type": "number", "minimum": 0}
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "energySource": {
+      "type": "object",
+      "required": ["value", "unit"],
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Amount of energy consumed"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "kWh", "MWh", "GWh",
+            "therms", "m3", "MMBtu",
+            "liters", "gallons",
+            "kg", "tons", "cylinders",
+            "MJ", "GJ"
+          ],
+          "description": "Unit of measurement"
+        },
+        "period": {
+          "type": "string",
+          "enum": ["annual", "monthly", "daily"],
+          "default": "annual",
+          "description": "Time period for the consumption"
+        },
+        "confidence": {
+          "type": "string",
+          "enum": ["measured", "estimated", "benchmark"],
+          "default": "measured",
+          "description": "Data quality indicator"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional notes about this energy source"
+        }
+      }
+    }
+  }
+}
