@@ -18,7 +18,9 @@
       "Bash(mv:*)",
       "Bash(copy:*)",
       "Bash(dir:*)",
-      "Bash(cmd /c \"greenlang.bat calc < test_calc_input.txt\")"
+      "Bash(cmd /c \"greenlang.bat calc < test_calc_input.txt\")",
+      "Bash(gl:*)",
+      "Bash(pip show:*)"
     ],
     "deny": []
   }
