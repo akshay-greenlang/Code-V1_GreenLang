@@ -79,6 +79,14 @@ To enable the AI Assistant, add your OpenAI API key to the `.env` file. If no ke
 
 ## 🆕 Recent Enhancements
 
+### 🌟 Climatenza AI - Solar Thermal Feasibility Platform
+- **Complete Application**: Full-featured solar thermal feasibility analysis built on GreenLang
+- **8760-Hour Simulation**: Hourly energy balance calculations for accurate annual predictions
+- **5 New Agents**: SiteInputAgent, SolarResourceAgent, LoadProfileAgent, FieldLayoutAgent, EnergyBalanceAgent
+- **Industrial Focus**: Designed for dairy, textile, food processing, and manufacturing facilities
+- **CLI Integration**: New `greenlang climatenza` command for easy access
+- **SDK Methods**: Full programmatic access through GreenLangClient
+
 ### Enhanced Agents
 - **FuelAgent v1.1.0**: Performance caching, batch processing, fuel recommendations
 - **BoilerAgent v2.0.0**: Async support, performance tracking, export capabilities
@@ -148,6 +156,9 @@ python -m greenlang.cli.main [command]
 # Interactive building calculator
 python -m greenlang.cli.main calc --building --country IN
 
+# Run Climatenza AI solar thermal feasibility analysis
+python -m greenlang.cli.main climatenza --site dairy_site.yaml --output report.html --format html
+
 # Analyze with natural language
 python -m greenlang.cli.main ask "Calculate emissions for 1.5M kWh consumption in India"
 
@@ -202,6 +213,22 @@ Top Actions:
 
 for rec in result['recommendations']['quick_wins'][:3]:
     print(f"• {rec['action']}: {rec['impact']} reduction, {rec['payback']} ROI")
+
+# Climatenza AI - Solar Thermal Feasibility
+client = GreenLangClient()
+solar_result = client.run_solar_feasibility("climatenza_app/examples/dairy_hotwater_site.yaml")
+
+if solar_result["success"]:
+    data = solar_result["data"]
+    print(f"""
+☀️ SOLAR THERMAL FEASIBILITY
+════════════════════════════
+Solar Fraction: {data['solar_fraction']:.1%}
+Annual Demand: {data['total_annual_demand_gwh']:.3f} GWh
+Solar Yield: {data['total_solar_yield_gwh']:.3f} GWh
+Collectors Required: {data['num_collectors']}
+Land Area: {data['required_land_area_m2']:,.0f} m²
+""")
 ```
 
 ### 🔒 Type-Safe SDK (v0.0.1)

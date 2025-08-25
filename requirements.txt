@@ -63,6 +63,10 @@ mkdocs>=1.5.0            # Documentation generator
 mkdocs-material>=9.0.0   # Material theme
 mkdocstrings>=0.23.0     # API documentation
 
+# Climatenza AI App Dependencies
+jinja2>=3.1.0            # Template engine for report generation
+weasyprint>=60.0         # PDF generation from HTML/CSS
+
 # Type Stubs (for mypy strict mode)
 types-PyYAML>=6.0.12
 types-requests>=2.31.0

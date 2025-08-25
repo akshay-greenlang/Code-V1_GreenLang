@@ -65,7 +65,11 @@ class Orchestrator:
                 else:
                     # Assume it's an AgentResult or has success attribute
                     success = getattr(result, "success", False)
-                    context["results"][step.name] = result
+                    # Store the data from the AgentResult, not the object itself
+                    if hasattr(result, 'data'):
+                        context["results"][step.name] = {"success": success, "data": result.data}
+                    else:
+                        context["results"][step.name] = result
                 
                 if not success:
                     error_msg = result.get("error", "Unknown error") if isinstance(result, dict) else getattr(result, "error", "Unknown error")

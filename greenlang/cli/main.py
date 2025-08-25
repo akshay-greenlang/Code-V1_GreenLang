@@ -618,6 +618,17 @@ def run(workflow_file: str, input: Optional[str], output: Optional[str], format:
     orchestrator.register_agent("intensity", IntensityAgent())
     orchestrator.register_agent("recommendation", RecommendationAgent())
     
+    # Register Climatenza agents
+    from greenlang.agents import (
+        SiteInputAgent, SolarResourceAgent, LoadProfileAgent,
+        FieldLayoutAgent, EnergyBalanceAgent
+    )
+    orchestrator.register_agent("SiteInputAgent", SiteInputAgent())
+    orchestrator.register_agent("SolarResourceAgent", SolarResourceAgent())
+    orchestrator.register_agent("LoadProfileAgent", LoadProfileAgent())
+    orchestrator.register_agent("FieldLayoutAgent", FieldLayoutAgent())
+    orchestrator.register_agent("EnergyBalanceAgent", EnergyBalanceAgent())
+    
     console.print("Loading workflow...", style="dim")
     if workflow_file.endswith(".yaml") or workflow_file.endswith(".yml"):
         workflow = Workflow.from_yaml(workflow_file)
@@ -807,6 +818,129 @@ def dev() -> None:
     """Launch the developer interface (VS Code-like terminal UI)"""
     from greenlang.cli.dev_interface import main as dev_main
     dev_main()
+
+
+@cli.command()
+@click.option("--site", type=click.Path(exists=True), help="Site configuration YAML file")
+@click.option("--output", "-o", type=click.Path(), help="Output report path")
+@click.option("--format", type=click.Choice(["json", "yaml", "html"]), default="json", help="Output format")
+def climatenza(site: Optional[str], output: Optional[str], format: str) -> None:
+    """Run Climatenza AI solar thermal feasibility analysis"""
+    
+    console.print(Panel.fit("Climatenza AI - Solar Thermal Feasibility Analysis", style="bold cyan"))
+    
+    # If no site file provided, use the default example
+    if not site:
+        site = "climatenza_app/examples/dairy_hotwater_site.yaml"
+        console.print(f"Using default site configuration: {site}", style="dim")
+    
+    # Check if the workflow exists
+    workflow_path = "climatenza_app/gl_workflows/feasibility_base.yaml"
+    if not os.path.exists(workflow_path):
+        console.print("[red]Error: Climatenza workflow not found![/red]")
+        console.print("Please ensure you are in the GreenLang project root directory.")
+        return
+    
+    # Run the workflow
+    console.print("\nExecuting feasibility analysis...", style="cyan")
+    
+    orchestrator = Orchestrator()
+    
+    # Register all required agents
+    from greenlang.agents import (
+        InputValidatorAgent, FuelAgent, CarbonAgent, ReportAgent,
+        BenchmarkAgent, BoilerAgent, GridFactorAgent, BuildingProfileAgent,
+        IntensityAgent, RecommendationAgent, SiteInputAgent, SolarResourceAgent,
+        LoadProfileAgent, FieldLayoutAgent, EnergyBalanceAgent
+    )
+    
+    # Register core agents
+    orchestrator.register_agent("validator", InputValidatorAgent())
+    orchestrator.register_agent("fuel", FuelAgent())
+    orchestrator.register_agent("carbon", CarbonAgent())
+    orchestrator.register_agent("report", ReportAgent())
+    orchestrator.register_agent("benchmark", BenchmarkAgent())
+    orchestrator.register_agent("boiler", BoilerAgent())
+    orchestrator.register_agent("grid_factor", GridFactorAgent())
+    orchestrator.register_agent("building_profile", BuildingProfileAgent())
+    orchestrator.register_agent("intensity", IntensityAgent())
+    orchestrator.register_agent("recommendation", RecommendationAgent())
+    
+    # Register Climatenza agents
+    orchestrator.register_agent("SiteInputAgent", SiteInputAgent())
+    orchestrator.register_agent("SolarResourceAgent", SolarResourceAgent())
+    orchestrator.register_agent("LoadProfileAgent", LoadProfileAgent())
+    orchestrator.register_agent("FieldLayoutAgent", FieldLayoutAgent())
+    orchestrator.register_agent("EnergyBalanceAgent", EnergyBalanceAgent())
+    
+    # Load workflow
+    workflow = Workflow.from_yaml(workflow_path)
+    orchestrator.register_workflow("climatenza", workflow)
+    
+    # Prepare input data
+    input_data = {
+        "inputs": {
+            "site_file": site
+        }
+    }
+    
+    # Execute workflow
+    result = orchestrator.execute_workflow("climatenza", input_data)
+    
+    # Display results
+    if result["success"]:
+        console.print("\n✅ [bold green]Feasibility Analysis Complete![/bold green]\n")
+        
+        if "data" in result and result["data"]:
+            table = Table(title="Solar Thermal Feasibility Results", show_header=True, header_style="bold magenta")
+            table.add_column("Metric", style="cyan", no_wrap=True)
+            table.add_column("Value", style="green")
+            table.add_column("Unit", style="yellow")
+            
+            for key, value in result["data"].items():
+                if isinstance(value, float):
+                    if "fraction" in key.lower():
+                        table.add_row(key.replace("_", " ").title(), f"{value:.1%}", "%")
+                    elif "gwh" in key.lower():
+                        table.add_row(key.replace("_", " ").title(), f"{value:.3f}", "GWh")
+                    elif "m2" in key.lower():
+                        table.add_row(key.replace("_", " ").title(), f"{value:,.0f}", "m²")
+                    else:
+                        table.add_row(key.replace("_", " ").title(), f"{value:,.0f}", "units")
+                else:
+                    table.add_row(key.replace("_", " ").title(), str(value), "-")
+            
+            console.print(table)
+            
+            # Save output if requested
+            if output:
+                if format == "json":
+                    with open(output, 'w') as f:
+                        json.dump(result["data"], f, indent=2)
+                elif format == "yaml":
+                    with open(output, 'w') as f:
+                        yaml.dump(result["data"], f, default_flow_style=False)
+                elif format == "html":
+                    # Simple HTML report
+                    html_content = f"""
+                    <html>
+                    <head><title>Climatenza AI Feasibility Report</title></head>
+                    <body>
+                    <h1>Solar Thermal Feasibility Analysis</h1>
+                    <table border="1">
+                    {''.join(f"<tr><td>{k}</td><td>{v}</td></tr>" for k, v in result["data"].items())}
+                    </table>
+                    </body>
+                    </html>
+                    """
+                    with open(output, 'w') as f:
+                        f.write(html_content)
+                
+                console.print(f"\nResults saved to: {output}", style="dim")
+    else:
+        console.print("\n❌ [bold red]Analysis Failed![/bold red]\n")
+        for error in result.get("errors", []):
+            console.print(f"  • {error['step']}: {error['error']}", style="red")
 
 
 @cli.command()

@@ -1,0 +1,64 @@
+# Dairy Plant Solar Thermal Feasibility Study Input
+# Location: Vijayawada, India
+# Process: Hot water for dairy processing
+
+site:
+  name: "Dairy Plant – Vijayawada"
+  country: "IN"
+  lat: 16.506
+  lon: 80.648
+  tz: "Asia/Kolkata"
+  elevation_m: 23
+  land_area_m2: 50000
+  roof_area_m2: 15000
+  ambient_dust_level: "high"  # High dust in industrial area
+
+process_demand:
+  medium: "hot_water"
+  temp_in_C: 60
+  temp_out_C: 85
+  flow_profile: "examples/data/dairy_hourly_load_2024.csv"
+  schedule:
+    workdays: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+    shutdown_days: ["2024-01-26", "2024-03-25", "2024-08-15", "2024-10-02", "2024-10-24", "2024-12-25"]  # Indian national holidays
+    maintenance_weeks: [13, 39]  # Quarterly maintenance
+
+boiler:
+  type: "NG"
+  rated_steam_tph: 10
+  efficiency_pct: 84
+  setpoints:
+    pressure_bar: 7
+    temperature_C: 170
+
+solar_config:
+  tech: "ASC"  # Advanced Solar Collector
+  max_land_m2: 20000
+  max_roof_m2: 10000
+  orientation: "N-S"
+  row_spacing_factor: 2.2
+  tracking: "1-axis"
+
+finance:
+  currency: "INR"
+  discount_rate_pct: 10
+  capex_breakdown: 
+    collector: 32000  # INR per m2 aperture
+    bos: 18000        # Balance of system
+    epc: 8000         # Engineering, procurement, construction
+    contingency: 3000 # Project contingency
+  opex_pct_of_capex: 2
+  tariff_fuel_per_kWh: 7.5   # Natural gas cost in INR/kWh
+  tariff_elec_per_kWh: 9.0   # Electricity cost in INR/kWh
+  escalation_fuel_pct: 4      # Annual fuel price escalation
+  escalation_elec_pct: 3      # Annual electricity price escalation
+  project_lifetime_years: 25
+  depreciation_years: 10
+
+assumptions:
+  cleaning_cycle_days: 7       # More frequent cleaning due to high dust
+  soiling_loss_pct: 5          # Higher soiling in industrial area
+  availability_pct: 96         # System uptime
+  parasitic_kWh_per_m2yr: 12  # Tracking motors and controls
+  insulation_kW_per_K_per_m: 0.002  # Piping heat loss coefficient
+  degradation_rate_pct_yr: 0.5      # Annual performance degradation

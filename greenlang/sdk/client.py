@@ -3,7 +3,13 @@ from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import Workflow
 from greenlang.agents import (
     FuelAgent, CarbonAgent, InputValidatorAgent,
-    ReportAgent, BenchmarkAgent, BaseAgent
+    ReportAgent, BenchmarkAgent, BaseAgent,
+    # Enhanced Agents
+    BoilerAgent, GridFactorAgent, BuildingProfileAgent,
+    IntensityAgent, RecommendationAgent,
+    # Climatenza AI Agents
+    SiteInputAgent, SolarResourceAgent, LoadProfileAgent,
+    FieldLayoutAgent, EnergyBalanceAgent
 )
 
 
@@ -15,11 +21,26 @@ class GreenLangClient:
         self._register_default_agents()
     
     def _register_default_agents(self):
+        # Core agents
         self.orchestrator.register_agent("validator", InputValidatorAgent())
         self.orchestrator.register_agent("fuel", FuelAgent())
         self.orchestrator.register_agent("carbon", CarbonAgent())
         self.orchestrator.register_agent("report", ReportAgent())
         self.orchestrator.register_agent("benchmark", BenchmarkAgent())
+        
+        # Enhanced agents
+        self.orchestrator.register_agent("boiler", BoilerAgent())
+        self.orchestrator.register_agent("grid_factor", GridFactorAgent())
+        self.orchestrator.register_agent("building_profile", BuildingProfileAgent())
+        self.orchestrator.register_agent("intensity", IntensityAgent())
+        self.orchestrator.register_agent("recommendation", RecommendationAgent())
+        
+        # Climatenza AI agents
+        self.orchestrator.register_agent("SiteInputAgent", SiteInputAgent())
+        self.orchestrator.register_agent("SolarResourceAgent", SolarResourceAgent())
+        self.orchestrator.register_agent("LoadProfileAgent", LoadProfileAgent())
+        self.orchestrator.register_agent("FieldLayoutAgent", FieldLayoutAgent())
+        self.orchestrator.register_agent("EnergyBalanceAgent", EnergyBalanceAgent())
     
     def register_agent(self, agent_id: str, agent: BaseAgent):
         self.orchestrator.register_agent(agent_id, agent)
@@ -90,6 +111,43 @@ class GreenLangClient:
             "period_months": period_months
         }
         return self.execute_agent("benchmark", input_data)
+    
+    # Climatenza AI Methods
+    def run_solar_feasibility(self, site_config_path: str) -> Dict[str, Any]:
+        """Run a complete solar thermal feasibility analysis"""
+        workflow_path = "climatenza_app/gl_workflows/feasibility_base.yaml"
+        workflow = Workflow.from_yaml(workflow_path)
+        self.orchestrator.register_workflow("climatenza", workflow)
+        
+        input_data = {
+            "inputs": {
+                "site_file": site_config_path
+            }
+        }
+        
+        return self.orchestrator.execute_workflow("climatenza", input_data)
+    
+    def calculate_solar_field_size(self, annual_demand_gwh: float, solar_config: Dict[str, Any]) -> Dict[str, Any]:
+        """Calculate required solar collector field size"""
+        input_data = {
+            "total_annual_demand_gwh": annual_demand_gwh,
+            "solar_config": solar_config
+        }
+        return self.execute_agent("FieldLayoutAgent", input_data)
+    
+    def simulate_energy_balance(self, solar_data: str, load_data: str, aperture_area: float) -> Dict[str, Any]:
+        """Run hourly energy balance simulation"""
+        input_data = {
+            "solar_resource_df_json": solar_data,
+            "load_profile_df_json": load_data,
+            "required_aperture_area_m2": aperture_area
+        }
+        return self.execute_agent("EnergyBalanceAgent", input_data)
+    
+    def get_solar_resource(self, lat: float, lon: float) -> Dict[str, Any]:
+        """Fetch solar resource data for a location"""
+        input_data = {"lat": lat, "lon": lon}
+        return self.execute_agent("SolarResourceAgent", input_data)
     
     def list_agents(self) -> List[str]:
         return self.orchestrator.list_agents()
