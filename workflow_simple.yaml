@@ -1,0 +1,11 @@
+name: building_emissions_simple
+description: Simple building emissions calculation workflow
+version: 0.0.1
+steps:
+  - name: calculate_emissions
+    agent_id: fuel
+    description: Calculate emissions from energy consumption
+    
+  - name: generate_report
+    agent_id: report
+    description: Generate emissions report

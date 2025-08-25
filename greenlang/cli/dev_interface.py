@@ -582,14 +582,64 @@ Percentile: Top {results['benchmark']['percentile']}%
         console.print(Panel(panel_content, title=f"Agent: {agent_id}", border_style="cyan"))
     
     def create_agent(self):
-        """Create a custom agent"""
+        """Create a custom agent with templates for different types"""
         console.print(Panel("Create Custom Agent", style="cyan"))
+        
+        # Ask for agent type
+        agent_types = [
+            "custom", "emissions", "boiler", "fuel", "validator", 
+            "benchmark", "report", "intensity", "recommendation"
+        ]
+        agent_type = Prompt.ask(
+            "Agent type", 
+            choices=agent_types,
+            default="custom"
+        )
         
         name = Prompt.ask("Agent name")
         description = Prompt.ask("Description")
         
-        # Generate agent code
-        agent_code = f'''"""
+        # Generate appropriate agent code based on type
+        agent_code = self._generate_agent_code(agent_type, name, description)
+        
+        # Show preview
+        console.print("\n[bold]Generated Agent Code:[/bold]")
+        console.print(Syntax(agent_code, "python", theme="monokai"))
+        
+        if Confirm.ask("\nSave agent to file?"):
+            filename = f"{name.lower()}_agent.py"
+            filepath = self.workspace / "agents" / filename
+            filepath.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(filepath, 'w') as f:
+                f.write(agent_code)
+            
+            console.print(f"[green]Agent saved to {filepath}[/green]")
+            console.print(f"[dim]To use: Import and register with orchestrator[/dim]")
+    
+    def _generate_agent_code(self, agent_type: str, name: str, description: str) -> str:
+        """Generate agent code based on type"""
+        
+        if agent_type == "boiler":
+            return self._generate_boiler_agent(name, description)
+        elif agent_type == "emissions" or agent_type == "fuel":
+            return self._generate_emissions_agent(name, description)
+        elif agent_type == "validator":
+            return self._generate_validator_agent(name, description)
+        elif agent_type == "benchmark":
+            return self._generate_benchmark_agent(name, description)
+        elif agent_type == "report":
+            return self._generate_report_agent(name, description)
+        elif agent_type == "intensity":
+            return self._generate_intensity_agent(name, description)
+        elif agent_type == "recommendation":
+            return self._generate_recommendation_agent(name, description)
+        else:
+            return self._generate_custom_agent(name, description)
+    
+    def _generate_custom_agent(self, name: str, description: str) -> str:
+        """Generate a basic custom agent template"""
+        return f'''"""
 Custom Agent: {name}
 {description}
 """
@@ -612,63 +662,860 @@ class {name}Agent(BaseAgent):
         super().__init__(config)
     
     def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """Validate input data"""
         # Add your validation logic here
-        return True
+        required_fields = ["data"]  # Update with your requirements
+        return all(field in input_data for field in required_fields)
     
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
-        # Add your agent logic here
+        """Execute agent logic"""
+        try:
+            # Validate input
+            if not self.validate_input(input_data):
+                return AgentResult(
+                    success=False,
+                    error="Invalid input data"
+                )
+            
+            # Process data
+            result_data = {{
+                "message": f"Processed by {name}",
+                "input": input_data,
+                # Add your results here
+            }}
+            
+            return AgentResult(
+                success=True,
+                data=result_data
+            )
+        except Exception as e:
+            return AgentResult(
+                success=False,
+                error=str(e)
+            )
+'''
+    
+    def _generate_boiler_agent(self, name: str, description: str) -> str:
+        """Generate a boiler-type agent template"""
+        return f'''"""
+Boiler Agent: {name}
+{description}
+"""
+
+from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from typing import Dict, Any, Optional
+
+
+class {name}Agent(BaseAgent):
+    """
+    {description}
+    
+    Calculates emissions from boiler/thermal systems.
+    """
+    
+    def __init__(self):
+        config = AgentConfig(
+            name="{name}",
+            description="{description}",
+            version="0.0.1"
+        )
+        super().__init__(config)
         
-        # Example:
-        result_data = {{
-            "message": f"Processed by {name}",
-            "input": input_data
+        # Emission factors for different fuel types (kgCO2e per unit)
+        self.emission_factors = {{
+            "natural_gas": {{"value": 5.3, "unit": "kgCO2e/therm"}},
+            "diesel": {{"value": 10.21, "unit": "kgCO2e/gallon"}},
+            "propane": {{"value": 5.77, "unit": "kgCO2e/gallon"}},
+            "biomass": {{"value": 0.0, "unit": "kgCO2e/kg"}},  # Carbon neutral
+            "electricity": {{"value": 0.386, "unit": "kgCO2e/kWh"}}  # For electric boilers
         }}
         
-        return AgentResult(
-            success=True,
-            data=result_data
-        )
+        # Typical efficiencies
+        self.default_efficiencies = {{
+            "condensing": 0.95,
+            "standard": 0.85,
+            "old": 0.75,
+            "electric": 0.99
+        }}
+    
+    def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """Validate boiler input data"""
+        required = ["boiler_type", "fuel_type", "thermal_output"]
+        return all(field in input_data for field in required)
+    
+    def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        """Calculate boiler emissions"""
+        try:
+            if not self.validate_input(input_data):
+                return AgentResult(
+                    success=False,
+                    error="Missing required fields: boiler_type, fuel_type, thermal_output"
+                )
+            
+            # Extract inputs
+            boiler_type = input_data["boiler_type"]
+            fuel_type = input_data["fuel_type"]
+            thermal_output = input_data["thermal_output"]
+            efficiency = input_data.get("efficiency", self.default_efficiencies.get(boiler_type, 0.85))
+            
+            # Get thermal output value
+            if isinstance(thermal_output, dict):
+                output_value = thermal_output.get("value", 0)
+                output_unit = thermal_output.get("unit", "kWh")
+            else:
+                output_value = thermal_output
+                output_unit = "kWh"
+            
+            # Calculate fuel consumption based on efficiency
+            fuel_consumption = output_value / efficiency
+            
+            # Convert to appropriate units and calculate emissions
+            if fuel_type == "natural_gas":
+                # Convert kWh to therms (1 therm = 29.3 kWh)
+                fuel_therms = fuel_consumption / 29.3
+                emissions_kg = fuel_therms * self.emission_factors["natural_gas"]["value"]
+                fuel_unit = "therms"
+                fuel_value = fuel_therms
+            elif fuel_type == "electricity":
+                emissions_kg = fuel_consumption * self.emission_factors["electricity"]["value"]
+                fuel_unit = "kWh"
+                fuel_value = fuel_consumption
+            else:
+                # Default calculation
+                emissions_kg = fuel_consumption * 0.2  # Default factor
+                fuel_unit = "units"
+                fuel_value = fuel_consumption
+            
+            result_data = {{
+                "co2e_emissions_kg": emissions_kg,
+                "boiler_type": boiler_type,
+                "fuel_type": fuel_type,
+                "fuel_consumption_value": fuel_value,
+                "fuel_consumption_unit": fuel_unit,
+                "thermal_output_value": output_value,
+                "thermal_output_unit": output_unit,
+                "efficiency": efficiency,
+                "thermal_efficiency_percent": efficiency * 100,
+                "emission_factor": self.emission_factors.get(fuel_type, {{}}).get("value", 0),
+                "emission_factor_unit": self.emission_factors.get(fuel_type, {{}}).get("unit", ""),
+                "recommendations": self._get_recommendations(boiler_type, efficiency)
+            }}
+            
+            return AgentResult(
+                success=True,
+                data=result_data
+            )
+            
+        except Exception as e:
+            return AgentResult(
+                success=False,
+                error=f"Error calculating boiler emissions: {{str(e)}}"
+            )
+    
+    def _get_recommendations(self, boiler_type: str, efficiency: float) -> list:
+        """Get improvement recommendations"""
+        recommendations = []
+        
+        if efficiency < 0.80:
+            recommendations.append({{
+                "priority": "high",
+                "action": "Upgrade to high-efficiency condensing boiler",
+                "impact": "20-30% efficiency improvement"
+            }})
+        
+        if boiler_type == "old":
+            recommendations.append({{
+                "priority": "high",
+                "action": "Replace aging boiler system",
+                "impact": "15-25% energy savings"
+            }})
+        
+        recommendations.append({{
+            "priority": "medium",
+            "action": "Install smart controls and weather compensation",
+            "impact": "10-15% fuel savings"
+        }})
+        
+        return recommendations
 '''
+    
+    def _generate_emissions_agent(self, name: str, description: str) -> str:
+        """Generate an emissions calculation agent template"""
+        return f'''"""
+Emissions Agent: {name}
+{description}
+"""
+
+from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from typing import Dict, Any, List
+
+
+class {name}Agent(BaseAgent):
+    """
+    {description}
+    
+    Calculates emissions from various fuel sources.
+    """
+    
+    def __init__(self):
+        config = AgentConfig(
+            name="{name}",
+            description="{description}",
+            version="0.0.1"
+        )
+        super().__init__(config)
         
-        # Show preview
-        console.print("\n[bold]Generated Agent Code:[/bold]")
-        console.print(Syntax(agent_code, "python", theme="monokai"))
+        # Emission factors (kgCO2e per unit)
+        self.emission_factors = {{
+            "electricity": 0.386,  # kgCO2e/kWh (US average)
+            "natural_gas": 5.3,    # kgCO2e/therm
+            "diesel": 10.21,       # kgCO2e/gallon
+            "gasoline": 8.89,      # kgCO2e/gallon
+            "propane": 5.77,       # kgCO2e/gallon
+            "coal": 2.86,          # kgCO2e/kg
+        }}
+    
+    def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """Validate emissions input data"""
+        return "fuels" in input_data and isinstance(input_data["fuels"], list)
+    
+    def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        """Calculate emissions for multiple fuel sources"""
+        try:
+            if not self.validate_input(input_data):
+                return AgentResult(
+                    success=False,
+                    error="Invalid input: expected 'fuels' list"
+                )
+            
+            total_emissions = 0
+            emissions_breakdown = []
+            
+            for fuel in input_data["fuels"]:
+                fuel_type = fuel.get("type", "")
+                amount = fuel.get("amount", 0)
+                unit = fuel.get("unit", "")
+                
+                # Calculate emissions for this fuel
+                if fuel_type in self.emission_factors:
+                    emissions = amount * self.emission_factors[fuel_type]
+                    total_emissions += emissions
+                    
+                    emissions_breakdown.append({{
+                        "fuel_type": fuel_type,
+                        "amount": amount,
+                        "unit": unit,
+                        "co2e_emissions_kg": emissions
+                    }})
+            
+            result_data = {{
+                "total_co2e_kg": total_emissions,
+                "total_co2e_tons": total_emissions / 1000,
+                "emissions_breakdown": emissions_breakdown,
+                "calculation_method": "IPCC Tier 1"
+            }}
+            
+            return AgentResult(
+                success=True,
+                data=result_data
+            )
+            
+        except Exception as e:
+            return AgentResult(
+                success=False,
+                error=f"Error calculating emissions: {{str(e)}}"
+            )
+'''
+    
+    def _generate_validator_agent(self, name: str, description: str) -> str:
+        """Generate a validator agent template"""
+        return f'''"""
+Validator Agent: {name}
+{description}
+"""
+
+from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from typing import Dict, Any, List
+
+
+class {name}Agent(BaseAgent):
+    """
+    {description}
+    
+    Validates and normalizes input data.
+    """
+    
+    def __init__(self):
+        config = AgentConfig(
+            name="{name}",
+            description="{description}",
+            version="0.0.1"
+        )
+        super().__init__(config)
         
-        if Confirm.ask("\nSave agent to file?"):
-            filename = f"{name.lower()}_agent.py"
-            filepath = self.workspace / "agents" / filename
-            filepath.parent.mkdir(parents=True, exist_ok=True)
+        # Valid values for validation
+        self.valid_fuel_types = [
+            "electricity", "natural_gas", "diesel", "gasoline",
+            "propane", "coal", "biomass", "solar", "wind"
+        ]
+        
+        self.valid_units = {{
+            "electricity": ["kWh", "MWh", "GWh"],
+            "natural_gas": ["therms", "ccf", "mcf", "mmBtu"],
+            "diesel": ["gallons", "liters"],
+            "gasoline": ["gallons", "liters"]
+        }}
+    
+    def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """Validate input structure"""
+        return isinstance(input_data, dict)
+    
+    def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        """Validate and normalize input data"""
+        try:
+            validation_errors = []
+            validation_warnings = []
+            normalized_data = {{}}
             
-            with open(filepath, 'w') as f:
-                f.write(agent_code)
+            # Validate fuels data
+            if "fuels" in input_data:
+                normalized_fuels = []
+                for fuel in input_data["fuels"]:
+                    # Check fuel type
+                    fuel_type = fuel.get("type", "").lower()
+                    if fuel_type not in self.valid_fuel_types:
+                        validation_errors.append(f"Invalid fuel type: {{fuel_type}}")
+                        continue
+                    
+                    # Check amount
+                    amount = fuel.get("amount")
+                    if amount is None or amount < 0:
+                        validation_errors.append(f"Invalid amount for {{fuel_type}}")
+                        continue
+                    
+                    # Check unit
+                    unit = fuel.get("unit", "")
+                    valid_units = self.valid_units.get(fuel_type, [])
+                    if unit not in valid_units:
+                        validation_warnings.append(f"Unusual unit '{{unit}}' for {{fuel_type}}")
+                    
+                    normalized_fuels.append({{
+                        "type": fuel_type,
+                        "amount": float(amount),
+                        "unit": unit
+                    }})
+                
+                normalized_data["fuels"] = normalized_fuels
             
-            console.print(f"[green]Agent saved to {filepath}[/green]")
+            # Check for validation issues
+            if validation_errors:
+                return AgentResult(
+                    success=False,
+                    error="Validation failed",
+                    data={{
+                        "errors": validation_errors,
+                        "warnings": validation_warnings
+                    }}
+                )
+            
+            result_data = {{
+                "validated": True,
+                "normalized_data": normalized_data,
+                "warnings": validation_warnings,
+                "statistics": {{
+                    "fuel_count": len(normalized_data.get("fuels", [])),
+                    "total_records": len(input_data)
+                }}
+            }}
+            
+            return AgentResult(
+                success=True,
+                data=result_data
+            )
+            
+        except Exception as e:
+            return AgentResult(
+                success=False,
+                error=f"Validation error: {{str(e)}}"
+            )
+'''
+    
+    def _generate_benchmark_agent(self, name: str, description: str) -> str:
+        """Generate a benchmark agent template"""
+        return f'''"""
+Benchmark Agent: {name}
+{description}
+"""
+
+from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from typing import Dict, Any
+
+
+class {name}Agent(BaseAgent):
+    """
+    {description}
+    
+    Compares emissions against industry benchmarks.
+    """
+    
+    def __init__(self):
+        config = AgentConfig(
+            name="{name}",
+            description="{description}",
+            version="0.0.1"
+        )
+        super().__init__(config)
+        
+        # Industry benchmarks (kgCO2e/sqft/year)
+        self.benchmarks = {{
+            "commercial_office": {{
+                "excellent": 1.5,
+                "good": 3.0,
+                "average": 5.0,
+                "poor": 7.0
+            }},
+            "hospital": {{
+                "excellent": 3.0,
+                "good": 5.0,
+                "average": 8.0,
+                "poor": 12.0
+            }},
+            "data_center": {{
+                "excellent": 10.0,
+                "good": 20.0,
+                "average": 35.0,
+                "poor": 50.0
+            }}
+        }}
+    
+    def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """Validate benchmark input"""
+        required = ["total_emissions_kg", "building_area", "building_type"]
+        return all(field in input_data for field in required)
+    
+    def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        """Benchmark emissions performance"""
+        try:
+            if not self.validate_input(input_data):
+                return AgentResult(
+                    success=False,
+                    error="Missing required fields"
+                )
+            
+            emissions_kg = input_data["total_emissions_kg"]
+            area_sqft = input_data["building_area"]
+            building_type = input_data["building_type"]
+            period_months = input_data.get("period_months", 12)
+            
+            # Calculate intensity
+            annual_emissions = (emissions_kg / period_months) * 12
+            intensity = annual_emissions / area_sqft
+            
+            # Get benchmark
+            benchmarks = self.benchmarks.get(building_type, self.benchmarks["commercial_office"])
+            
+            # Determine rating
+            if intensity <= benchmarks["excellent"]:
+                rating = "Excellent"
+                percentile = 90
+            elif intensity <= benchmarks["good"]:
+                rating = "Good"
+                percentile = 70
+            elif intensity <= benchmarks["average"]:
+                rating = "Average"
+                percentile = 50
+            else:
+                rating = "Below Average"
+                percentile = 30
+            
+            result_data = {{
+                "carbon_intensity": intensity,
+                "unit": "kgCO2e/sqft/year",
+                "rating": rating,
+                "percentile": percentile,
+                "benchmarks": benchmarks,
+                "recommendations": self._get_recommendations(rating)
+            }}
+            
+            return AgentResult(
+                success=True,
+                data=result_data
+            )
+            
+        except Exception as e:
+            return AgentResult(
+                success=False,
+                error=f"Benchmark error: {{str(e)}}"
+            )
+    
+    def _get_recommendations(self, rating: str) -> list:
+        """Get improvement recommendations based on rating"""
+        if rating == "Excellent":
+            return [{{"action": "Maintain current practices", "priority": "low"}}]
+        elif rating == "Good":
+            return [{{"action": "Consider renewable energy", "priority": "medium"}}]
+        else:
+            return [
+                {{"action": "Conduct energy audit", "priority": "high"}},
+                {{"action": "Upgrade HVAC systems", "priority": "high"}}
+            ]
+'''
+    
+    def _generate_report_agent(self, name: str, description: str) -> str:
+        """Generate a report agent template"""
+        return f'''"""
+Report Agent: {name}
+{description}
+"""
+
+from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from typing import Dict, Any
+from datetime import datetime
+
+
+class {name}Agent(BaseAgent):
+    """
+    {description}
+    
+    Generates formatted reports from emissions data.
+    """
+    
+    def __init__(self):
+        config = AgentConfig(
+            name="{name}",
+            description="{description}",
+            version="0.0.1"
+        )
+        super().__init__(config)
+    
+    def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """Validate report input"""
+        return "carbon_data" in input_data
+    
+    def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        """Generate emissions report"""
+        try:
+            if not self.validate_input(input_data):
+                return AgentResult(
+                    success=False,
+                    error="Missing carbon_data"
+                )
+            
+            carbon_data = input_data["carbon_data"]
+            format_type = input_data.get("format", "text")
+            
+            if format_type == "json":
+                report = carbon_data
+            else:
+                # Generate text report
+                report = self._generate_text_report(carbon_data)
+            
+            result_data = {{
+                "report": report,
+                "format": format_type,
+                "generated_at": datetime.now().isoformat(),
+                "summary": {{
+                    "total_emissions_kg": carbon_data.get("total_emissions_kg", 0),
+                    "total_emissions_tons": carbon_data.get("total_emissions_kg", 0) / 1000
+                }}
+            }}
+            
+            return AgentResult(
+                success=True,
+                data=result_data
+            )
+            
+        except Exception as e:
+            return AgentResult(
+                success=False,
+                error=f"Report generation error: {{str(e)}}"
+            )
+    
+    def _generate_text_report(self, data: Dict) -> str:
+        """Generate formatted text report"""
+        report = []
+        report.append("=" * 60)
+        report.append("CARBON FOOTPRINT REPORT")
+        report.append("=" * 60)
+        report.append("")
+        
+        total = data.get("total_emissions_kg", 0)
+        report.append(f"Total Emissions: {{total:,.2f}} kg CO2e")
+        report.append(f"                 {{total/1000:,.2f}} tons CO2e")
+        report.append("")
+        
+        if "emissions_by_source" in data:
+            report.append("Emissions by Source:")
+            report.append("-" * 40)
+            for source, amount in data["emissions_by_source"].items():
+                percentage = (amount / total * 100) if total > 0 else 0
+                report.append(f"  {{source:<20}} {{amount:>10,.2f}} kg ({{percentage:>5.1f}}%)")
+        
+        report.append("")
+        report.append("=" * 60)
+        
+        return "\\n".join(report)
+'''
+    
+    def _generate_intensity_agent(self, name: str, description: str) -> str:
+        """Generate an intensity calculation agent template"""
+        return f'''"""
+Intensity Agent: {name}
+{description}
+"""
+
+from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from typing import Dict, Any
+
+
+class {name}Agent(BaseAgent):
+    """
+    {description}
+    
+    Calculates emission intensity metrics.
+    """
+    
+    def __init__(self):
+        config = AgentConfig(
+            name="{name}",
+            description="{description}",
+            version="0.0.1"
+        )
+        super().__init__(config)
+    
+    def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """Validate intensity input"""
+        required = ["total_emissions_kg", "building_area"]
+        return all(field in input_data for field in required)
+    
+    def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        """Calculate emission intensities"""
+        try:
+            if not self.validate_input(input_data):
+                return AgentResult(
+                    success=False,
+                    error="Missing required fields"
+                )
+            
+            emissions_kg = input_data["total_emissions_kg"]
+            area = input_data["building_area"]
+            area_unit = input_data.get("area_unit", "sqft")
+            occupancy = input_data.get("occupancy", 1)
+            period_months = input_data.get("period_months", 12)
+            
+            # Calculate various intensities
+            annual_factor = 12 / period_months
+            
+            intensities = {{
+                "per_area_year": (emissions_kg * annual_factor) / area,
+                "per_area_month": emissions_kg / (area * period_months),
+                "per_person_year": (emissions_kg * annual_factor) / occupancy if occupancy > 0 else 0,
+                "per_person_month": emissions_kg / (occupancy * period_months) if occupancy > 0 else 0
+            }}
+            
+            result_data = {{
+                "intensities": intensities,
+                "units": {{
+                    "per_area": f"kgCO2e/{{area_unit}}/period",
+                    "per_person": "kgCO2e/person/period"
+                }},
+                "period_months": period_months,
+                "metrics": {{
+                    "total_emissions_kg": emissions_kg,
+                    "area": area,
+                    "area_unit": area_unit,
+                    "occupancy": occupancy
+                }}
+            }}
+            
+            return AgentResult(
+                success=True,
+                data=result_data
+            )
+            
+        except Exception as e:
+            return AgentResult(
+                success=False,
+                error=f"Intensity calculation error: {{str(e)}}"
+            )
+'''
+    
+    def _generate_recommendation_agent(self, name: str, description: str) -> str:
+        """Generate a recommendation agent template"""
+        return f'''"""
+Recommendation Agent: {name}
+{description}
+"""
+
+from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from typing import Dict, Any, List
+
+
+class {name}Agent(BaseAgent):
+    """
+    {description}
+    
+    Provides emissions reduction recommendations.
+    """
+    
+    def __init__(self):
+        config = AgentConfig(
+            name="{name}",
+            description="{description}",
+            version="0.0.1"
+        )
+        super().__init__(config)
+    
+    def validate_input(self, input_data: Dict[str, Any]) -> bool:
+        """Validate recommendation input"""
+        return "emissions_data" in input_data
+    
+    def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        """Generate recommendations"""
+        try:
+            if not self.validate_input(input_data):
+                return AgentResult(
+                    success=False,
+                    error="Missing emissions_data"
+                )
+            
+            emissions_data = input_data["emissions_data"]
+            building_info = input_data.get("building_info", {{}})
+            
+            recommendations = self._generate_recommendations(emissions_data, building_info)
+            
+            result_data = {{
+                "recommendations": recommendations,
+                "potential_savings": self._calculate_savings(emissions_data, recommendations),
+                "implementation_timeline": self._create_timeline(recommendations)
+            }}
+            
+            return AgentResult(
+                success=True,
+                data=result_data
+            )
+            
+        except Exception as e:
+            return AgentResult(
+                success=False,
+                error=f"Recommendation error: {{str(e)}}"
+            )
+    
+    def _generate_recommendations(self, emissions: Dict, building: Dict) -> List[Dict]:
+        """Generate specific recommendations"""
+        recommendations = []
+        
+        # Analyze emission sources
+        sources = emissions.get("emissions_by_source", {{}})
+        total = emissions.get("total_emissions_kg", 0)
+        
+        # High electricity usage
+        if sources.get("electricity", 0) > total * 0.5:
+            recommendations.append({{
+                "category": "Renewable Energy",
+                "action": "Install solar panels or purchase renewable energy",
+                "impact": "30-50% reduction in electricity emissions",
+                "cost": "High",
+                "payback": "5-7 years",
+                "priority": "High"
+            }})
+            
+            recommendations.append({{
+                "category": "Energy Efficiency",
+                "action": "Upgrade to LED lighting throughout facility",
+                "impact": "10-15% reduction in electricity use",
+                "cost": "Medium",
+                "payback": "2-3 years",
+                "priority": "High"
+            }})
+        
+        # Natural gas usage
+        if sources.get("natural_gas", 0) > 0:
+            recommendations.append({{
+                "category": "Heating Efficiency",
+                "action": "Upgrade to high-efficiency heating system",
+                "impact": "20-30% reduction in gas consumption",
+                "cost": "High",
+                "payback": "5-10 years",
+                "priority": "Medium"
+            }})
+        
+        # General recommendations
+        recommendations.append({{
+            "category": "Monitoring",
+            "action": "Implement energy management system",
+            "impact": "5-10% reduction through optimization",
+            "cost": "Low",
+            "payback": "1-2 years",
+            "priority": "High"
+        }})
+        
+        return recommendations
+    
+    def _calculate_savings(self, emissions: Dict, recommendations: List) -> Dict:
+        """Calculate potential savings"""
+        total = emissions.get("total_emissions_kg", 0)
+        
+        # Estimate based on recommendations
+        potential_reduction_percent = min(50, len(recommendations) * 10)
+        potential_reduction_kg = total * (potential_reduction_percent / 100)
+        
+        return {{
+            "potential_reduction_percent": potential_reduction_percent,
+            "potential_reduction_kg": potential_reduction_kg,
+            "potential_reduction_tons": potential_reduction_kg / 1000
+        }}
+    
+    def _create_timeline(self, recommendations: List) -> List[Dict]:
+        """Create implementation timeline"""
+        timeline = []
+        
+        # Sort by priority
+        high_priority = [r for r in recommendations if r.get("priority") == "High"]
+        medium_priority = [r for r in recommendations if r.get("priority") == "Medium"]
+        low_priority = [r for r in recommendations if r.get("priority") == "Low"]
+        
+        # Phase 1: Quick wins
+        if high_priority:
+            timeline.append({{
+                "phase": 1,
+                "timeframe": "0-6 months",
+                "actions": [r["action"] for r in high_priority[:2]]
+            }})
+        
+        # Phase 2: Medium-term
+        if medium_priority:
+            timeline.append({{
+                "phase": 2,
+                "timeframe": "6-12 months",
+                "actions": [r["action"] for r in medium_priority[:2]]
+            }})
+        
+        # Phase 3: Long-term
+        if low_priority:
+            timeline.append({{
+                "phase": 3,
+                "timeframe": "12-24 months",
+                "actions": [r["action"] for r in low_priority]
+            }})
+        
+        return timeline
+'''
     
     def test_agent(self, agent_id: str):
         """Test an agent with sample data"""
         console.print(f"Testing agent: {agent_id}")
         
-        # Get test data
-        test_data = {}
-        if agent_id == "fuel":
-            test_data = {
-                "fuel_type": "electricity",
-                "consumption": 1000,
-                "unit": "kWh"
-            }
-        elif agent_id == "carbon":
-            test_data = {
-                "emissions": [
-                    {"co2e_emissions_kg": 100},
-                    {"co2e_emissions_kg": 200}
-                ]
-            }
-        elif agent_id == "validator":
-            test_data = {
-                "fuels": [
-                    {"type": "electricity", "consumption": 100, "unit": "kWh"}
-                ]
-            }
+        # Get comprehensive test data for each agent
+        test_data = self._get_agent_test_data(agent_id)
+        
+        if not test_data:
+            console.print(f"[yellow]No test data configured for agent: {agent_id}[/yellow]")
+            console.print("[dim]Would you like to provide custom test data?[/dim]")
+            if Confirm.ask("Provide custom data?"):
+                test_data = self._get_custom_test_data(agent_id)
+            else:
+                return
         
         # Run test
         with console.status("Running agent..."):
@@ -681,6 +1528,108 @@ class {name}Agent(BaseAgent):
             console.print(Syntax(json.dumps(result["data"], indent=2), "json", theme="monokai"))
         else:
             console.print(f"[red]✗ Agent failed: {result.get('error', 'Unknown error')}[/red]")
+    
+    def _get_agent_test_data(self, agent_id: str) -> Dict[str, Any]:
+        """Get appropriate test data for each agent"""
+        test_data_map = {
+            "validator": {
+                "fuels": [
+                    {"type": "electricity", "amount": 1000, "unit": "kWh"},
+                    {"type": "natural_gas", "amount": 100, "unit": "therms"}
+                ]
+            },
+            "fuel": {
+                # FuelAgent expects a list of fuels
+                "fuels": [
+                    {"type": "electricity", "amount": 1000, "unit": "kWh"},
+                    {"type": "natural_gas", "amount": 100, "unit": "therms"}
+                ]
+            },
+            "boiler": {
+                # BoilerAgent expects specific structure
+                "boiler_type": "standard",
+                "fuel_type": "natural_gas", 
+                "thermal_output": {
+                    "value": 1000,
+                    "unit": "kWh"
+                },
+                "efficiency": 0.85,
+                "country": "US"
+            },
+            "carbon": {
+                "emissions": [
+                    {"co2e_emissions_kg": 500, "source": "electricity"},
+                    {"co2e_emissions_kg": 250, "source": "natural_gas"}
+                ]
+            },
+            "report": {
+                "carbon_data": {
+                    "total_emissions_kg": 750,
+                    "emissions_by_source": {
+                        "electricity": 500,
+                        "natural_gas": 250
+                    }
+                },
+                "format": "text"
+            },
+            "benchmark": {
+                "total_emissions_kg": 10000,
+                "building_area": 5000,
+                "building_type": "commercial_office",
+                "period_months": 12
+            },
+            "grid_factor": {
+                # GridFactorAgent expects country, fuel_type, and unit
+                "country": "US",
+                "fuel_type": "electricity",
+                "unit": "kWh"
+            },
+            "building_profile": {
+                "building_type": "commercial_office",
+                "area": 5000,
+                "area_unit": "sqft",
+                "occupancy": 50,
+                "floor_count": 3,
+                "building_age": 10,
+                "country": "US"
+            },
+            "intensity": {
+                "total_emissions_kg": 10000,
+                "building_area": 5000,
+                "area_unit": "sqft",
+                "occupancy": 50,
+                "period_months": 12
+            },
+            "recommendation": {
+                "emissions_data": {
+                    "total_emissions_kg": 10000,
+                    "emissions_by_source": {
+                        "electricity": 7000,
+                        "natural_gas": 3000
+                    }
+                },
+                "building_info": {
+                    "type": "commercial_office",
+                    "area": 5000,
+                    "occupancy": 50,
+                    "area_unit": "sqft"
+                }
+            }
+        }
+        
+        return test_data_map.get(agent_id, {})
+    
+    def _get_custom_test_data(self, agent_id: str) -> Dict[str, Any]:
+        """Get custom test data from user input"""
+        console.print("[bold]Enter custom test data (JSON format):[/bold]")
+        console.print("[dim]Example: {\"key\": \"value\", \"number\": 123}[/dim]")
+        
+        json_input = Prompt.ask("Test data")
+        try:
+            return json.loads(json_input)
+        except json.JSONDecodeError as e:
+            console.print(f"[red]Invalid JSON: {e}[/red]")
+            return {}
     
     def cmd_workflow(self, args):
         """Workflow designer"""

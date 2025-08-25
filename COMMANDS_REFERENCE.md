@@ -68,15 +68,20 @@ greenlang recommend
 
 ### 6. Agent Management
 ```bash
-# List all available agents
+# List all available agents (10 total)
 greenlang agents
 
 # Show details about specific agent
-greenlang agent fuel
-greenlang agent grid_factor
-greenlang agent building_profile
-greenlang agent intensity
-greenlang agent recommendation
+greenlang agent validator      # Input validation agent
+greenlang agent fuel          # Fuel emissions calculator
+greenlang agent carbon        # Carbon aggregation agent
+greenlang agent report        # Report generation agent
+greenlang agent benchmark     # Benchmarking agent
+greenlang agent grid_factor   # Grid emission factors
+greenlang agent building_profile  # Building profiling
+greenlang agent intensity     # Intensity metrics calculator
+greenlang agent recommendation  # Recommendations engine
+greenlang agent boiler        # Boiler emissions calculator
 ```
 
 ### 7. AI Assistant

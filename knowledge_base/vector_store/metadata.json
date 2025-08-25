@@ -1,0 +1,9 @@
+{
+  "total_documents": 4,
+  "total_chunks": 4,
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "chunk_size": 1000,
+  "chunk_overlap": 200,
+  "vector_store_type": "FAISS",
+  "created_at": "2025-08-25T13:44:02.443622"
+}

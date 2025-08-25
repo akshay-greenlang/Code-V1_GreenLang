@@ -1,0 +1,19 @@
+
+                Renewable Energy Sources
+                
+                Renewable energy sources are crucial for decarbonization:
+                
+                Solar Energy:
+                - Zero operational emissions
+                - Lifecycle emissions: 40-50 g CO2/kWh
+                - Capacity factors: 15-25%
+                
+                Wind Energy:
+                - Zero operational emissions
+                - Lifecycle emissions: 10-15 g CO2/kWh
+                - Capacity factors: 25-45%
+                
+                Comparison with fossil fuels:
+                - Coal: 820-1000 g CO2/kWh
+                - Natural Gas: 490 g CO2/kWh
+                

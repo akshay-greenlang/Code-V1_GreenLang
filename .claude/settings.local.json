@@ -17,7 +17,8 @@
       "Bash(move:*)",
       "Bash(mv:*)",
       "Bash(copy:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(cmd /c \"greenlang.bat calc < test_calc_input.txt\")"
     ],
     "deny": []
   }

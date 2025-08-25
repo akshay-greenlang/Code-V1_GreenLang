@@ -8,7 +8,7 @@ from greenlang.agents import (
     FuelAgent, CarbonAgent, InputValidatorAgent,
     ReportAgent, BenchmarkAgent, BaseAgent,
     GridFactorAgent, BuildingProfileAgent,
-    IntensityAgent, RecommendationAgent
+    IntensityAgent, RecommendationAgent, BoilerAgent
 )
 from greenlang.data.models import (
     BuildingInput, BuildingMetadata, EnergyConsumption,
@@ -45,6 +45,7 @@ class GreenLangClient:
         self.orchestrator.register_agent("building_profile", BuildingProfileAgent())
         self.orchestrator.register_agent("intensity", IntensityAgent())
         self.orchestrator.register_agent("recommendation", RecommendationAgent())
+        self.orchestrator.register_agent("boiler", BoilerAgent())
     
     def _load_config(self):
         """Load configuration from environment or config file"""
@@ -85,10 +86,10 @@ class GreenLangClient:
             "unit": unit
         })
         
-        if not factor_result.success:
-            return {"success": False, "error": factor_result.error}
+        if not factor_result["success"]:
+            return {"success": False, "error": factor_result.get("error", "Failed to get emission factor")}
         
-        emission_factor = factor_result.data["emission_factor"]
+        emission_factor = factor_result["data"]["emission_factor"]
         co2e_emissions_kg = consumption * emission_factor
         
         return {
@@ -102,6 +103,46 @@ class GreenLangClient:
                 "co2e_emissions_tons": co2e_emissions_kg / 1000,
                 "region": region or self.region
             }
+        }
+    
+    def calculate_boiler_emissions(self,
+                                   fuel_type: str,
+                                   thermal_output: float,
+                                   output_unit: str = "kWh",
+                                   efficiency: float = 0.85,
+                                   boiler_type: str = "standard",
+                                   region: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Calculate emissions from boiler operations
+        
+        Args:
+            fuel_type: Type of fuel used (natural_gas, diesel, biomass, etc.)
+            thermal_output: Thermal energy output
+            output_unit: Unit of thermal output (kWh, MJ, BTU, etc.)
+            efficiency: Boiler efficiency (0.0 to 1.0)
+            boiler_type: Type of boiler (condensing, standard, old)
+            region: Override default region
+        
+        Returns:
+            Dict containing boiler emissions data
+        """
+        boiler_result = self.orchestrator.execute_single_agent("boiler", {
+            "fuel_type": fuel_type,
+            "thermal_output": {
+                "value": thermal_output,
+                "unit": output_unit
+            },
+            "efficiency": efficiency,
+            "boiler_type": boiler_type,
+            "country": region or self.region
+        })
+        
+        if not boiler_result["success"]:
+            return {"success": False, "error": boiler_result.get("error", "Failed to calculate boiler emissions")}
+        
+        return {
+            "success": True,
+            "data": boiler_result["data"]
         }
     
     def analyze_building(self, building_data: Union[Dict, BuildingInput]) -> Dict[str, Any]:
@@ -135,8 +176,8 @@ class GreenLangClient:
             "country": building_data["metadata"]["location"]["country"]
         })
         
-        if profile_result.success:
-            results["data"]["profile"] = profile_result.data
+        if profile_result["success"]:
+            results["data"]["profile"] = profile_result["data"]
         
         # 2. Calculate Emissions
         emissions_list = []
@@ -174,8 +215,8 @@ class GreenLangClient:
             "emissions": emissions_list
         })
         
-        if carbon_result.success:
-            results["data"]["emissions"] = carbon_result.data
+        if carbon_result["success"]:
+            results["data"]["emissions"] = carbon_result["data"]
         
         # 4. Calculate Intensity
         total_emissions_kg = sum(emissions_by_source.values())
@@ -191,8 +232,8 @@ class GreenLangClient:
             "total_energy_kwh": total_energy_kwh
         })
         
-        if intensity_result.success:
-            results["data"]["intensity"] = intensity_result.data
+        if intensity_result["success"]:
+            results["data"]["intensity"] = intensity_result["data"]
         
         # 5. Benchmark
         benchmark_result = self.benchmark_emissions(
@@ -216,8 +257,8 @@ class GreenLangClient:
             "country": building_data["metadata"]["location"]["country"]
         })
         
-        if rec_result.success:
-            results["data"]["recommendations"] = rec_result.data
+        if rec_result["success"]:
+            results["data"]["recommendations"] = rec_result["data"]
         
         return results
     
@@ -245,7 +286,7 @@ class GreenLangClient:
             "period_months": period_months
         }
         result = self.orchestrator.execute_single_agent("benchmark", input_data)
-        return {"success": result.success, "data": result.data if result.success else {}, "error": result.error}
+        return {"success": result["success"], "data": result["data"] if result["success"] else {}, "error": result.get("error")}
     
     def get_recommendations(self,
                            building_type: str,
@@ -271,7 +312,7 @@ class GreenLangClient:
             "building_age": building_age
         })
         
-        return {"success": result.success, "data": result.data if result.success else {}, "error": result.error}
+        return {"success": result["success"], "data": result["data"] if result["success"] else {}, "error": result.get("error")}
     
     def get_emission_factor(self,
                            fuel_type: str,
@@ -294,7 +335,7 @@ class GreenLangClient:
             "unit": unit
         })
         
-        return {"success": result.success, "data": result.data if result.success else {}, "error": result.error}
+        return {"success": result["success"], "data": result["data"] if result["success"] else {}, "error": result.get("error")}
     
     def calculate_intensity(self,
                            total_emissions_kg: float,
@@ -322,12 +363,12 @@ class GreenLangClient:
             "period_months": 12
         })
         
-        return {"success": result.success, "data": result.data if result.success else {}, "error": result.error}
+        return {"success": result["success"], "data": result["data"] if result["success"] else {}, "error": result.get("error")}
     
     def aggregate_emissions(self, emissions_list: List[Dict]) -> Dict[str, Any]:
         """Aggregate multiple emission sources"""
         result = self.orchestrator.execute_single_agent("carbon", {"emissions": emissions_list})
-        return {"success": result.success, "data": result.data if result.success else {}, "error": result.error}
+        return {"success": result["success"], "data": result["data"] if result["success"] else {}, "error": result.get("error")}
     
     def generate_report(self,
                        analysis_results: Dict,
@@ -351,7 +392,7 @@ class GreenLangClient:
             "recommendations": analysis_results.get("data", {}).get("recommendations", {})
         })
         
-        return {"success": result.success, "data": result.data if result.success else {}, "error": result.error}
+        return {"success": result["success"], "data": result["data"] if result["success"] else {}, "error": result.get("error")}
     
     # Workflow Methods
     def create_workflow(self, name: str, description: str) -> WorkflowBuilder:
@@ -390,6 +431,50 @@ class GreenLangClient:
         """List all registered workflows"""
         return self.orchestrator.list_workflows()
     
+    def execute_agent(self, agent_id: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Execute a single agent with input data"""
+        result = self.orchestrator.execute_single_agent(agent_id, input_data)
+        return result
+    
+    def get_agent_info(self, agent_id: str) -> Optional[Dict[str, Any]]:
+        """Get information about a registered agent"""
+        if agent_id not in self.orchestrator.agents:
+            return None
+        
+        agent = self.orchestrator.agents[agent_id]
+        
+        # Try to get config first, if not available use defaults
+        if hasattr(agent, 'config'):
+            return {
+                "id": agent_id,
+                "name": agent.config.name,
+                "description": agent.config.description,
+                "version": agent.config.version,
+                "enabled": agent.config.enabled
+            }
+        else:
+            # Fallback for agents without config
+            descriptions = {
+                "validator": "Validates input data for emissions calculations",
+                "fuel": "Calculates emissions based on fuel consumption",
+                "boiler": "Calculates emissions from boilers and thermal systems",
+                "carbon": "Aggregates emissions and provides carbon footprint",
+                "report": "Generates carbon footprint reports",
+                "benchmark": "Compares emissions against industry benchmarks",
+                "grid_factor": "Retrieves country-specific emission factors",
+                "building_profile": "Categorizes buildings and expected performance",
+                "intensity": "Calculates emission intensity metrics",
+                "recommendation": "Provides optimization recommendations"
+            }
+            
+            return {
+                "id": agent_id,
+                "name": agent.__class__.__name__,
+                "description": descriptions.get(agent_id, 'Agent for climate calculations'),
+                "version": getattr(agent, 'version', '0.0.1'),
+                "enabled": True
+            }
+    
     def get_supported_countries(self) -> List[str]:
         """Get list of supported countries"""
         grid_agent = GridFactorAgent()
@@ -400,10 +485,15 @@ class GreenLangClient:
         grid_agent = GridFactorAgent()
         return grid_agent.get_available_fuel_types(country or self.region)
     
+    def validate_input(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate input data"""
+        result = self.orchestrator.execute_single_agent("validator", data)
+        return result
+    
     def validate_building_data(self, building_data: Dict) -> Dict[str, Any]:
         """Validate building data structure"""
         result = self.orchestrator.execute_single_agent("validator", building_data)
-        return {"success": result.success, "data": result.data if result.success else {}, "error": result.error}
+        return {"success": result["success"], "data": result["data"] if result["success"] else {}, "error": result.get("error")}
     
     # Batch Processing
     def analyze_portfolio(self, buildings: List[Dict]) -> Dict[str, Any]:

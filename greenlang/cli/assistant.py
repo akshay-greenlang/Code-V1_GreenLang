@@ -7,8 +7,17 @@ from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import WorkflowBuilder
 from greenlang.agents import (
     FuelAgent, CarbonAgent, InputValidatorAgent,
-    ReportAgent, BenchmarkAgent
+    ReportAgent, BenchmarkAgent, BoilerAgent,
+    GridFactorAgent, BuildingProfileAgent,
+    IntensityAgent, RecommendationAgent
 )
+
+# Try importing RAG-enhanced assistant
+try:
+    from greenlang.cli.assistant_rag import RAGAssistant
+    RAG_AVAILABLE = True
+except ImportError:
+    RAG_AVAILABLE = False
 
 # Load environment variables
 env_path = Path(__file__).parent.parent.parent / '.env'
@@ -26,7 +35,18 @@ except ImportError:
 class AIAssistant:
     """Natural language interface for GreenLang using LLMs"""
     
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, use_rag: bool = True):
+        # Try to use RAG-enhanced assistant if available
+        if RAG_AVAILABLE and use_rag:
+            try:
+                self._rag_assistant = RAGAssistant(api_key=api_key)
+                self._use_rag = True
+            except Exception as e:
+                print(f"Warning: Could not initialize RAG assistant: {e}")
+                self._use_rag = False
+        else:
+            self._use_rag = False
+        
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
         self.orchestrator = self._setup_orchestrator()
         
@@ -48,14 +68,24 @@ class AIAssistant:
         orchestrator = Orchestrator()
         orchestrator.register_agent("validator", InputValidatorAgent())
         orchestrator.register_agent("fuel", FuelAgent())
+        orchestrator.register_agent("boiler", BoilerAgent())
         orchestrator.register_agent("carbon", CarbonAgent())
         orchestrator.register_agent("report", ReportAgent())
         orchestrator.register_agent("benchmark", BenchmarkAgent())
+        orchestrator.register_agent("grid_factor", GridFactorAgent())
+        orchestrator.register_agent("building_profile", BuildingProfileAgent())
+        orchestrator.register_agent("intensity", IntensityAgent())
+        orchestrator.register_agent("recommendation", RecommendationAgent())
         return orchestrator
     
     def process_query(self, query: str, verbose: bool = False) -> Dict[str, Any]:
         """Process user query - either general question or calculation request"""
         
+        # If RAG assistant is available, delegate to it
+        if self._use_rag:
+            return self._rag_assistant.process_query(query, verbose=verbose, use_rag=True)
+        
+        # Otherwise use standard processing
         # Check if this is a calculation request
         if self._is_calculation_request(query):
             if self.llm_available:
@@ -259,26 +289,60 @@ Provide accurate, helpful information. If asked about specific calculations, sug
             }
     
     def _process_with_rules(self, query: str, verbose: bool) -> Dict[str, Any]:
-        extracted_data = self._extract_data_from_query(query)
-        
-        if not extracted_data.get("fuels"):
+        try:
+            extracted_data = self._extract_data_from_query(query)
+            
+            if not extracted_data.get("fuels"):
+                return {
+                    "success": False,
+                    "error": "Could not extract fuel consumption data from query",
+                    "response": "Please provide fuel consumption data. Example: 'Calculate emissions for 1000 kWh electricity in India'\n\nFor general questions about emission factors, please enable OpenAI API by setting OPENAI_API_KEY in the .env file."
+                }
+            
+            result = self._execute_workflow(extracted_data, verbose)
+            return result
+        except Exception as e:
             return {
                 "success": False,
-                "error": "Could not extract fuel consumption data from query",
-                "response": "Please provide fuel consumption data. Example: 'What is the carbon footprint of 1000 kWh electricity and 500 therms natural gas?'\n\nFor general questions about emission factors, please enable OpenAI API by setting OPENAI_API_KEY in the .env file."
+                "error": str(e),
+                "response": f"Error processing request: {str(e)}"
             }
-        
-        return self._execute_workflow(extracted_data, verbose)
     
     def _extract_data_from_query(self, query: str) -> Dict[str, Any]:
         query_lower = query.lower()
-        data = {"fuels": [], "building_info": {}}
+        data = {"fuels": [], "building_info": {}, "country": None}
+        
+        # Extract country/region - check longer patterns first
+        countries = [
+            ("united states", "US"), ("united kingdom", "UK"), ("south korea", "KR"),
+            ("india", "IN"), ("usa", "US"), ("america", "US"),
+            ("china", "CN"), ("europe", "EU"), ("european", "EU"),
+            ("japan", "JP"), ("brazil", "BR"), ("korea", "KR"),
+            ("britain", "UK"), ("germany", "DE"), ("canada", "CA"),
+            ("australia", "AU"),
+            # Short codes at the end with word boundaries
+            (" us ", "US"), (" in ", "IN"), (" cn ", "CN"), (" eu ", "EU"),
+            (" jp ", "JP"), (" br ", "BR"), (" kr ", "KR"), (" uk ", "UK"),
+            (" de ", "DE"), (" ca ", "CA"), (" au ", "AU"),
+            (" us$", "US"), (" in$", "IN")  # At end of string
+        ]
+        
+        # Add spaces for boundary checking
+        query_check = " " + query_lower + " "
+        
+        for country_name, country_code in countries:
+            if country_name in query_check:
+                data["country"] = country_code
+                break
         
         electricity_pattern = r'(\d+(?:\.\d+)?)\s*(kwh|mwh|gwh)'
         electricity_match = re.search(electricity_pattern, query_lower)
         if electricity_match:
             value = float(electricity_match.group(1))
             unit = electricity_match.group(2)
+            # Convert to proper case
+            unit_map = {'kwh': 'kWh', 'mwh': 'MWh', 'gwh': 'GWh'}
+            unit = unit_map.get(unit, unit)
             data["fuels"].append({
                 "fuel_type": "electricity",
                 "consumption": value,
@@ -340,7 +404,10 @@ Provide accurate, helpful information. If asked about specific calculations, sug
         try:
             # Simple direct calculation without complex workflow
             from greenlang.sdk import GreenLangClient
-            client = GreenLangClient()
+            
+            # Use country if specified
+            country = data.get("country", "US")
+            client = GreenLangClient(region=country)
             
             emissions_list = []
             for fuel in data.get("fuels", []):
@@ -367,8 +434,10 @@ Provide accurate, helpful information. If asked about specific calculations, sug
                 carbon_data = agg_result["data"]
                 total_emissions = carbon_data.get("total_co2e_tons", 0)
                 
-                response_parts.append(f"Carbon Footprint Analysis\n")
-                response_parts.append(f"{'=' * 40}\n")
+                response_parts.append(f"Carbon Footprint Analysis")
+                if country != "US":
+                    response_parts.append(f"Country/Region: {country}")
+                response_parts.append(f"{'=' * 40}")
                 response_parts.append(f"Total Emissions: {total_emissions:.3f} metric tons CO2e")
                 response_parts.append(f"Total Emissions: {carbon_data.get('total_co2e_kg', 0):.2f} kg CO2e")
                 

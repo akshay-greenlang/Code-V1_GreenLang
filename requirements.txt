@@ -26,7 +26,12 @@ uvicorn>=0.24.0          # ASGI server (optional)
 openai>=1.0.0            # OpenAI GPT integration
 langchain>=0.1.0         # LLM framework
 langchain-openai>=0.0.5  # LangChain OpenAI adapter
+langchain-community>=0.0.10  # LangChain community integrations
 anthropic>=0.7.0         # Anthropic Claude support (optional)
+faiss-cpu>=1.7.4         # Facebook AI Similarity Search for vector store
+sentence-transformers>=2.2.0  # Text embedding models
+pypdf>=3.17.0            # PDF document processing
+chromadb>=0.4.0          # Alternative vector database (optional)
 
 # Workflow Orchestration
 networkx>=3.0            # DAG management for workflows

@@ -1,0 +1,14 @@
+
+                Carbon Emissions and Climate Change
+                
+                Carbon dioxide (CO2) is the primary greenhouse gas emitted through human activities.
+                In 2019, CO2 accounted for about 80% of all U.S. greenhouse gas emissions from 
+                human activities. The main human activity that emits CO2 is the combustion of 
+                fossil fuels (coal, natural gas, and oil) for energy and transportation.
+                
+                Key emission factors:
+                - Electricity: 0.4-0.7 kg CO2/kWh (varies by grid)
+                - Natural Gas: 0.185 kg CO2/kWh
+                - Coal: 0.34 kg CO2/kWh
+                - Gasoline: 2.31 kg CO2/liter
+                

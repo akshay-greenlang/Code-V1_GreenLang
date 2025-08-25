@@ -21,15 +21,25 @@ try:
     from greenlang.agents import (
         FuelAgent, CarbonAgent, InputValidatorAgent, 
         ReportAgent, BenchmarkAgent, GridFactorAgent,
-        BuildingProfileAgent, IntensityAgent, RecommendationAgent
+        BuildingProfileAgent, IntensityAgent, RecommendationAgent,
+        BoilerAgent
     )
     ENHANCED_MODE = True
 except ImportError:
-    from greenlang.agents import (
-        FuelAgent, CarbonAgent, InputValidatorAgent, 
-        ReportAgent, BenchmarkAgent
-    )
-    ENHANCED_MODE = False
+    try:
+        from greenlang.agents import (
+            FuelAgent, CarbonAgent, InputValidatorAgent, 
+            ReportAgent, BenchmarkAgent, GridFactorAgent,
+            BuildingProfileAgent, IntensityAgent, RecommendationAgent
+        )
+        from greenlang.agents.boiler_agent import BoilerAgent
+        ENHANCED_MODE = True
+    except ImportError:
+        from greenlang.agents import (
+            FuelAgent, CarbonAgent, InputValidatorAgent, 
+            ReportAgent, BenchmarkAgent
+        )
+        ENHANCED_MODE = False
 
 
 @click.group(invoke_without_command=True)
@@ -90,7 +100,7 @@ def _interactive_building_calculator(country: Optional[str], output_path: Option
     console.print(Panel("Commercial Building Emissions Calculator", style="cyan"))
     
     try:
-        from greenlang.sdk.enhanced_client import GreenLangClient
+        from greenlang.sdk import GreenLangClient
         from greenlang.agents import GridFactorAgent
     except ImportError:
         console.print("[yellow]Enhanced features not available. Using simple calculator.[/yellow]")
@@ -182,41 +192,54 @@ def _process_building_data(data: Dict[str, Any], country: Optional[str], output_
     """Process building data through all enhanced agents"""
     
     try:
-        from greenlang.sdk.enhanced_client import GreenLangClient
+        from greenlang.sdk import GreenLangClient
         
         # Override country if specified
         if country:
+            if "metadata" not in data:
+                data["metadata"] = {}
+            if "location" not in data["metadata"]:
+                data["metadata"]["location"] = {}
             data["metadata"]["location"]["country"] = country
         
-        client = GreenLangClient(region=data["metadata"]["location"]["country"])
+        # Ensure country is set
+        if "metadata" in data and "location" in data["metadata"]:
+            region = data["metadata"]["location"].get("country", "US")
+        else:
+            region = "US"
         
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
-        ) as progress:
-            
-            task = progress.add_task("[cyan]Analyzing building...", total=None)
-            
+        client = GreenLangClient(region=region)
+        
+        console.print(f"[cyan]Analyzing building in {region}...[/cyan]")
+        
+        try:
             # Use enhanced client's analyze_building method
             results = client.analyze_building(data)
             
-            progress.update(task, description="[cyan]Generating report...")
+            if results["success"]:
+                _display_enhanced_results(results["data"], data["metadata"])
+                
+                # Save if requested
+                if output_path:
+                    with open(output_path, 'w') as f:
+                        json.dump(results, f, indent=2, default=str)
+                    console.print(f"\n[green]Results saved to {output_path}[/green]")
+            else:
+                console.print(f"[red]Error: {results.get('error', 'Unknown error')}[/red]")
         
-        if results["success"]:
-            _display_enhanced_results(results["data"], data["metadata"])
+        except Exception as e:
+            console.print(f"[red]Error during analysis: {str(e)}[/red]")
+            import traceback
+            console.print(f"[dim]{traceback.format_exc()}[/dim]")
             
-            # Save if requested
-            if output_path:
-                with open(output_path, 'w') as f:
-                    json.dump(results, f, indent=2, default=str)
-                console.print(f"\n[green]Results saved to {output_path}[/green]")
-        else:
-            console.print(f"[red]Error: {results.get('error', 'Unknown error')}[/red]")
-            
-    except ImportError:
-        console.print("[yellow]Enhanced features not available. Using simple calculation.[/yellow]")
+    except ImportError as e:
+        console.print(f"[yellow]Enhanced features not available: {e}[/yellow]")
+        console.print("[yellow]Using simple calculation instead.[/yellow]")
         _simple_calculator(country, output_path)
+    except Exception as e:
+        console.print(f"[red]Unexpected error: {str(e)}[/red]")
+        import traceback
+        console.print(f"[dim]{traceback.format_exc()}[/dim]")
 
 
 def _display_enhanced_results(results: Dict[str, Any], metadata: Dict[str, Any]) -> None:
@@ -290,21 +313,15 @@ def _simple_calculator(country: Optional[str], output_path: Optional[str]) -> No
     console.print(Panel("Simple Emissions Calculator", style="cyan"))
     
     # Try to use enhanced client if available
-    try:
-        from greenlang.sdk.enhanced_client import GreenLangClient
-        if not country:
-            country = Prompt.ask("Country/Region (optional)", 
-                               choices=["US", "IN", "EU", "CN", "JP", "BR", "KR", "skip"],
-                               default="skip")
-            if country == "skip":
-                country = "US"
-        client = GreenLangClient(region=country)
-        use_enhanced = True
-    except ImportError:
-        from greenlang.sdk import GreenLangClient
-        client = GreenLangClient()
-        use_enhanced = False
-        country = "US"
+    from greenlang.sdk import GreenLangClient
+    if not country:
+        country = Prompt.ask("Country/Region (optional)", 
+                           choices=["US", "IN", "EU", "CN", "JP", "BR", "KR", "skip"],
+                           default="skip")
+        if country == "skip":
+            country = "US"
+    client = GreenLangClient(region=country)
+    use_enhanced = True
     
     # Collect inputs
     fuels: List[Dict[str, Any]] = []
@@ -594,12 +611,12 @@ def run(workflow_file: str, input: Optional[str], output: Optional[str], format:
     orchestrator.register_agent("report", ReportAgent())
     orchestrator.register_agent("benchmark", BenchmarkAgent())
     
-    # Register enhanced agents if available
-    if ENHANCED_MODE:
-        orchestrator.register_agent("grid_factor", GridFactorAgent())
-        orchestrator.register_agent("building_profile", BuildingProfileAgent())
-        orchestrator.register_agent("intensity", IntensityAgent())
-        orchestrator.register_agent("recommendation", RecommendationAgent())
+    # Register all enhanced agents
+    orchestrator.register_agent("boiler", BoilerAgent())
+    orchestrator.register_agent("grid_factor", GridFactorAgent())
+    orchestrator.register_agent("building_profile", BuildingProfileAgent())
+    orchestrator.register_agent("intensity", IntensityAgent())
+    orchestrator.register_agent("recommendation", RecommendationAgent())
     
     console.print("Loading workflow...", style="dim")
     if workflow_file.endswith(".yaml") or workflow_file.endswith(".yml"):
@@ -659,6 +676,7 @@ def agents() -> None:
             ("building_profile", "BuildingProfileAgent", "Categorizes buildings and expected performance"),
             ("intensity", "IntensityAgent", "Calculates emission intensity metrics"),
             ("recommendation", "RecommendationAgent", "Provides optimization recommendations"),
+            ("boiler", "BoilerAgent", "Calculates emissions from boiler and thermal systems"),
         ])
     
     table = Table(title="Available Agents", show_header=True, header_style="bold magenta")
@@ -691,6 +709,7 @@ def agent(agent_id: str) -> None:
             "building_profile": BuildingProfileAgent(),
             "intensity": IntensityAgent(),
             "recommendation": RecommendationAgent(),
+            "boiler": BoilerAgent(),
         })
     
     if agent_id not in agents_map:
@@ -701,9 +720,49 @@ def agent(agent_id: str) -> None:
     
     console.print(Panel.fit(f"Agent: {agent_id}", style="cyan bold"))
     console.print(f"Class: {agent_instance.__class__.__name__}")
-    console.print(f"Description: {agent_instance.config.description}")
-    console.print(f"Version: {agent_instance.config.version}")
-    console.print(f"Enabled: {agent_instance.config.enabled}")
+    console.print(f"Name: {getattr(agent_instance, 'name', 'N/A')}")
+    console.print(f"Version: {getattr(agent_instance, 'version', 'N/A')}")
+    console.print(f"Agent ID: {getattr(agent_instance, 'agent_id', agent_id)}")
+    
+    # Show description based on agent type
+    descriptions = {
+        "validator": "Validates and normalizes input data for emissions calculations",
+        "fuel": "Calculates emissions from fuel consumption using emission factors",
+        "carbon": "Aggregates emissions from multiple sources and calculates totals",
+        "report": "Generates formatted reports (JSON, Markdown, etc.)",
+        "benchmark": "Compares emissions against industry benchmarks",
+        "grid_factor": "Provides country-specific grid emission factors",
+        "building_profile": "Analyzes building characteristics and performance expectations",
+        "intensity": "Calculates emission intensity metrics (per sqft, per person)",
+        "recommendation": "Provides optimization recommendations based on emissions",
+        "boiler": "Calculates emissions from boilers and thermal systems"
+    }
+    console.print(f"Description: {descriptions.get(agent_id, 'N/A')}")
+    
+    # Show example usage
+    console.print("\n[bold]Example Usage:[/bold]")
+    if agent_id == "fuel":
+        console.print("Input: {'fuel_type': 'electricity', 'consumption': 1000, 'unit': 'kWh'}")
+    elif agent_id == "carbon":
+        console.print("Input: {'emissions': [{'fuel_type': 'electricity', 'co2e_emissions_kg': 385}]}")
+    elif agent_id == "grid_factor":
+        console.print("Input: {'country': 'US', 'fuel_type': 'electricity', 'unit': 'kWh'}")
+    elif agent_id == "boiler":
+        console.print("Input: {'fuel_type': 'natural_gas', 'thermal_output': 1000, 'output_unit': 'kWh', 'efficiency': 0.85}")
+    elif agent_id == "building_profile":
+        console.print("Input: {'building_type': 'hospital', 'area': 100000, 'country': 'IN'}")
+    elif agent_id == "intensity":
+        console.print("Input: {'total_emissions_kg': 50000, 'area': 10000, 'occupancy': 100}")
+    elif agent_id == "benchmark":
+        console.print("Input: {'emissions_kg': 50000, 'area': 10000, 'building_type': 'office'}")
+    elif agent_id == "recommendation":
+        console.print("Input: {'building_type': 'office', 'emissions_by_source': {...}, 'country': 'US'}")
+    elif agent_id == "report":
+        console.print("Input: {'carbon_data': {...}, 'format': 'markdown'}")
+    elif agent_id == "validator":
+        console.print("Input: {'fuels': [...], 'building_info': {...}}")
+    else:
+        console.print("See documentation for input format")
 
 
 @cli.command()
@@ -755,122 +814,47 @@ def dev() -> None:
 def init(output: str) -> None:
     """Create a sample workflow configuration"""
     
-    # Create enhanced workflow if in enhanced mode
-    if ENHANCED_MODE:
-        sample_workflow = {
-            "name": "commercial_building_analysis",
-            "description": "Comprehensive building emissions analysis",
-            "version": "0.0.1",
-            "steps": [
-                {
-                    "name": "validate_input",
-                    "agent_id": "validator",
-                    "description": "Validate input data"
-                },
-                {
-                    "name": "profile_building",
-                    "agent_id": "building_profile",
-                    "description": "Analyze building characteristics"
-                },
-                {
-                    "name": "calculate_emissions",
-                    "agent_id": "grid_factor",
-                    "description": "Calculate emissions with regional factors"
-                },
-                {
-                    "name": "calculate_intensity",
-                    "agent_id": "intensity",
-                    "description": "Calculate intensity metrics"
-                },
-                {
-                    "name": "benchmark",
-                    "agent_id": "benchmark",
-                    "description": "Compare to standards"
-                },
-                {
-                    "name": "recommendations",
-                    "agent_id": "recommendation",
-                    "description": "Generate recommendations"
-                },
-                {
-                    "name": "report",
-                    "agent_id": "report",
-                    "description": "Generate final report"
-                }
-            ]
-        }
-    else:
-        # Basic workflow
-        sample_workflow = {
-            "name": "carbon_footprint_calculation",
-            "description": "Calculate carbon footprint for a commercial building",
-            "version": "0.0.1",
-            "steps": [
-                {
-                    "name": "validate_input",
-                    "agent_id": "validator",
-                    "description": "Validate input data"
-                },
-                {
-                    "name": "calculate_emissions",
-                    "agent_id": "fuel",
-                    "description": "Calculate emissions"
-                },
-                {
-                    "name": "aggregate",
-                    "agent_id": "carbon",
-                    "description": "Aggregate emissions"
-                },
-                {
-                    "name": "benchmark",
-                    "agent_id": "benchmark",
-                    "description": "Benchmark performance"
-                },
-                {
-                    "name": "report",
-                    "agent_id": "report",
-                    "description": "Generate report"
-                }
-            ]
-        }
+    # Create a simpler, working workflow
+    sample_workflow = {
+        "name": "emissions_calculation",
+        "description": "Calculate emissions from fuel consumption",
+        "version": "0.0.1",
+        "steps": [
+            {
+                "name": "calculate_fuel_emissions",
+                "agent_id": "fuel",
+                "description": "Calculate emissions from fuel consumption"
+            },
+            {
+                "name": "aggregate_emissions",
+                "agent_id": "carbon",
+                "description": "Aggregate total emissions"
+            },
+            {
+                "name": "generate_report",
+                "agent_id": "report",
+                "description": "Generate emissions report"
+            }
+        ]
+    }
     
     with open(output, 'w') as f:
         yaml.dump(sample_workflow, f, default_flow_style=False)
     
     console.print(f"[OK] Sample workflow created: {output}", style="green")
     
-    # Create sample input
-    if ENHANCED_MODE:
-        sample_input = {
-            "metadata": {
-                "building_type": "commercial_office",
-                "area": 50000,
-                "area_unit": "sqft",
-                "location": {
-                    "country": "US",
-                    "city": "New York"
-                },
-                "occupancy": 200,
-                "floor_count": 10,
-                "building_age": 15
-            },
-            "energy_consumption": {
-                "electricity": {"value": 1500000, "unit": "kWh"},
-                "natural_gas": {"value": 30000, "unit": "therms"}
-            }
+    # Create sample input that works with the fuel agent
+    sample_input = {
+        "fuels": [
+            {"type": "electricity", "amount": 1500000, "unit": "kWh"},
+            {"type": "natural_gas", "amount": 30000, "unit": "therms"}
+        ],
+        "metadata": {
+            "building_type": "commercial_office",
+            "area": 50000,
+            "location": {"country": "US"}
         }
-    else:
-        sample_input = {
-            "fuels": [
-                {"type": "electricity", "consumption": 1000, "unit": "kWh"},
-                {"type": "natural_gas", "consumption": 500, "unit": "therms"}
-            ],
-            "building_info": {
-                "type": "commercial_office",
-                "area": 10000,
-                "area_unit": "sqft"
-            }
-        }
+    }
     
     input_file = output.replace(".yaml", "_input.json").replace(".yml", "_input.json")
     with open(input_file, 'w') as f:

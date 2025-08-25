@@ -1,0 +1,17 @@
+
+                Building Energy Efficiency
+                
+                Buildings account for approximately 40% of global energy consumption and 36% of 
+                CO2 emissions. Key strategies for reducing building emissions include:
+                
+                1. Energy-efficient HVAC systems
+                2. Improved insulation
+                3. LED lighting
+                4. Smart building controls
+                5. Renewable energy integration
+                
+                Energy intensity benchmarks:
+                - Office buildings: 100-300 kWh/m²/year
+                - Retail: 150-400 kWh/m²/year
+                - Industrial: 200-500 kWh/m²/year
+                

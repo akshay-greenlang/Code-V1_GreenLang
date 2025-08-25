@@ -1,0 +1,20 @@
+
+                Carbon Footprint Calculation Methods
+                
+                The GHG Protocol Corporate Standard classifies emissions into three scopes:
+                
+                Scope 1: Direct emissions from owned or controlled sources
+                - On-site fuel combustion
+                - Company vehicles
+                - Fugitive emissions
+                
+                Scope 2: Indirect emissions from purchased electricity, steam, heating & cooling
+                - Location-based method: Uses average emission factors for the grid
+                - Market-based method: Uses emission factors from contractual instruments
+                
+                Scope 3: All other indirect emissions in the value chain
+                - Purchased goods and services
+                - Business travel
+                - Employee commuting
+                - Waste disposal
+                

@@ -1,0 +1,86 @@
+name: commercial_building_analysis
+description: Comprehensive building emissions analysis with proper data flow
+version: 0.0.1
+steps:
+  - name: validate_input
+    agent_id: validator
+    description: Validate input data
+    input_mapping:
+      fuels:
+        - type: electricity
+          amount: input.energy_consumption.electricity.value
+          unit: input.energy_consumption.electricity.unit
+        - type: natural_gas
+          amount: input.energy_consumption.natural_gas.value
+          unit: input.energy_consumption.natural_gas.unit
+
+  - name: profile_building  
+    agent_id: building_profile
+    description: Analyze building characteristics
+    input_mapping:
+      building_type: input.metadata.building_type
+      area: input.metadata.area
+      area_unit: input.metadata.area_unit
+      occupancy: input.metadata.occupancy
+      floor_count: input.metadata.floor_count
+      building_age: input.metadata.building_age
+      country: input.metadata.location.country
+
+  - name: calculate_fuel_emissions
+    agent_id: fuel
+    description: Calculate emissions from fuel consumption
+    input_mapping:
+      fuels:
+        - type: electricity
+          amount: input.energy_consumption.electricity.value
+          unit: input.energy_consumption.electricity.unit
+        - type: natural_gas
+          amount: input.energy_consumption.natural_gas.value
+          unit: input.energy_consumption.natural_gas.unit
+
+  - name: aggregate_emissions
+    agent_id: carbon
+    description: Aggregate total emissions
+    input_mapping:
+      emissions: results.calculate_fuel_emissions.data.emissions_breakdown
+
+  - name: calculate_intensity
+    agent_id: intensity
+    description: Calculate intensity metrics
+    input_mapping:
+      total_emissions_kg: results.aggregate_emissions.data.total_co2e_kg
+      building_area: input.metadata.area
+      area_unit: input.metadata.area_unit
+      occupancy: input.metadata.occupancy
+      period_months: 12
+
+  - name: benchmark
+    agent_id: benchmark
+    description: Compare to industry standards
+    input_mapping:
+      total_emissions_kg: results.aggregate_emissions.data.total_co2e_kg
+      building_area: input.metadata.area
+      building_type: input.metadata.building_type
+      period_months: 12
+
+  - name: recommendations
+    agent_id: recommendation
+    description: Generate recommendations
+    input_mapping:
+      emissions_data:
+        total_emissions_kg: results.aggregate_emissions.data.total_co2e_kg
+        emissions_by_source: results.aggregate_emissions.data.emissions_by_source
+      building_info:
+        type: input.metadata.building_type
+        area: input.metadata.area
+        occupancy: input.metadata.occupancy
+        area_unit: input.metadata.area_unit
+
+  - name: report
+    agent_id: report
+    description: Generate final report
+    input_mapping:
+      carbon_data:
+        total_emissions_kg: results.aggregate_emissions.data.total_co2e_kg
+        emissions_by_source: results.aggregate_emissions.data.emissions_by_source
+      format: text

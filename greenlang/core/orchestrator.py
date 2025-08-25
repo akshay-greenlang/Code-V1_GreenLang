@@ -57,12 +57,21 @@ class Orchestrator:
                 
                 result = agent.run(step_input)
                 
-                context["results"][step.name] = result
+                # Handle both dict and AgentResult returns
+                if isinstance(result, dict):
+                    # Convert dict to AgentResult-like structure
+                    success = result.get("success", False)
+                    context["results"][step.name] = result
+                else:
+                    # Assume it's an AgentResult or has success attribute
+                    success = getattr(result, "success", False)
+                    context["results"][step.name] = result
                 
-                if not result.success:
+                if not success:
+                    error_msg = result.get("error", "Unknown error") if isinstance(result, dict) else getattr(result, "error", "Unknown error")
                     context["errors"].append({
                         "step": step.name,
-                        "error": result.error
+                        "error": error_msg
                     })
                     
                     if step.on_failure == "stop":
@@ -114,7 +123,9 @@ class Orchestrator:
                     mapped_input[key] = value
             return mapped_input
         else:
-            return context["input"]
+            # Pass the entire context input for now
+            # Agents should be able to extract what they need
+            return context.get("input", {})
     
     def _get_value_from_path(self, data: Dict, path: str) -> Any:
         parts = path.split(".")
@@ -147,12 +158,29 @@ class Orchestrator:
         
         return output
     
-    def execute_single_agent(self, agent_id: str, input_data: Dict[str, Any]) -> AgentResult:
+    def execute_single_agent(self, agent_id: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
         agent = self.agents.get(agent_id)
         if not agent:
             raise ValueError(f"Agent '{agent_id}' not found")
         
-        return agent.run(input_data)
+        result = agent.run(input_data)
+        
+        # Handle both dict and AgentResult types
+        if isinstance(result, dict):
+            return result
+        elif hasattr(result, 'model_dump'):
+            # Pydantic model
+            return result.model_dump()
+        elif hasattr(result, '__dict__'):
+            # Object with attributes
+            return {
+                "success": getattr(result, 'success', False),
+                "data": getattr(result, 'data', {}),
+                "error": getattr(result, 'error', None),
+                "metadata": getattr(result, 'metadata', {})
+            }
+        else:
+            return result
     
     def get_execution_history(self) -> List[Dict]:
         return self.execution_history

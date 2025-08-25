@@ -99,15 +99,22 @@ class GridFactorAgent(Agent[GridFactorInput, GridFactorOutput]):
             
             fuel_data = country_factors[fuel_type]
             
-            # Get emission factor
-            factor = fuel_data.get("emission_factor", 0.0)
+            # Get emission factor based on unit
+            # Check if fuel_data has the unit as a key (new structure)
+            if isinstance(fuel_data, dict) and unit in fuel_data:
+                factor = fuel_data[unit]
+            # Fallback to old structure with emission_factor key
+            elif isinstance(fuel_data, dict) and "emission_factor" in fuel_data:
+                factor = fuel_data["emission_factor"]
+            else:
+                factor = 0.0
             
             if factor == 0.0:
                 error_info: ErrorInfo = {
                     "type": "DataError",
-                    "message": f"No emission factor found for {fuel_type} in {mapped_country}",
+                    "message": f"No emission factor found for {fuel_type} with unit {unit} in {mapped_country}",
                     "agent_id": self.agent_id,
-                    "context": {"fuel_type": fuel_type, "country": mapped_country, "unit": unit}
+                    "context": {"fuel_type": fuel_type, "country": mapped_country, "unit": unit, "available_units": list(fuel_data.keys()) if isinstance(fuel_data, dict) else []}
                 }
                 return {"success": False, "error": error_info}
             
@@ -115,9 +122,9 @@ class GridFactorAgent(Agent[GridFactorInput, GridFactorOutput]):
             output: GridFactorOutput = {
                 "emission_factor": factor,
                 "unit": f"kgCO2e/{unit}",
-                "source": fuel_data.get("source", "GreenLang Global Dataset"),
-                "version": fuel_data.get("version", "1.0.0"),
-                "last_updated": fuel_data.get("last_updated", "2025-08-14"),
+                "source": fuel_data.get("source", fuel_data.get("description", "GreenLang Global Dataset")) if isinstance(fuel_data, dict) else "GreenLang Global Dataset",
+                "version": fuel_data.get("version", "1.0.0") if isinstance(fuel_data, dict) else "1.0.0",
+                "last_updated": fuel_data.get("last_updated", "2025-08-14") if isinstance(fuel_data, dict) else "2025-08-14",
                 "country": mapped_country,
                 "fuel_type": fuel_type
             }

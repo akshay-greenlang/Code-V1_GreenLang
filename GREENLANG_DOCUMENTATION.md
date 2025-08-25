@@ -310,18 +310,31 @@ greenlang ask -v "Calculate emissions for 50000 sqft office with 1.5M kWh"
 greenlang agents
 ```
 
-Shows all 9 agents including new ones:
-- GridFactorAgent
-- BuildingProfileAgent
-- IntensityAgent
-- RecommendationAgent
+Shows all 10 agents:
+- **validator** - InputValidatorAgent (Validates input data)
+- **fuel** - FuelAgent (Calculates fuel-based emissions)
+- **carbon** - CarbonAgent (Aggregates total emissions)
+- **report** - ReportAgent (Generates reports)
+- **benchmark** - BenchmarkAgent (Compares to standards)
+- **grid_factor** - GridFactorAgent (Country-specific factors)
+- **building_profile** - BuildingProfileAgent (Building analysis)
+- **intensity** - IntensityAgent (Intensity metrics)
+- **recommendation** - RecommendationAgent (Optimization tips)
+- **boiler** - BoilerAgent (Boiler/thermal emissions)
 
 ### agent - Show Agent Details
 ```bash
+# Show details for any agent
+greenlang agent validator
+greenlang agent fuel
+greenlang agent carbon
+greenlang agent report
+greenlang agent benchmark
 greenlang agent grid_factor
 greenlang agent building_profile
 greenlang agent intensity
 greenlang agent recommendation
+greenlang agent boiler
 ```
 
 ### run - Execute Workflows
