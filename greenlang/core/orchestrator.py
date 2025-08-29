@@ -3,6 +3,7 @@ from greenlang.agents.base import BaseAgent, AgentResult
 from greenlang.core.workflow import Workflow
 import logging
 import json
+import ast
 
 logger = logging.getLogger(__name__)
 
@@ -111,12 +112,75 @@ class Orchestrator:
     def _should_execute_step(self, step, context: Dict) -> bool:
         if not step.condition:
             return True
-        
+
         try:
-            return eval(step.condition, {"context": context})
+            return self._evaluate_condition(step.condition, context)
         except Exception as e:
             self.logger.error(f"Error evaluating condition: {e}")
-            return True
+            return False
+
+    def _evaluate_condition(self, expression: str, context: Dict) -> bool:
+        """Safely evaluate a boolean expression against the given context."""
+        allowed_names = {
+            "context": context,
+            "input": context.get("input", {}),
+            "results": context.get("results", {}),
+        }
+
+        def eval_node(node):
+            if isinstance(node, ast.BoolOp):
+                if isinstance(node.op, ast.And):
+                    return all(eval_node(v) for v in node.values)
+                if isinstance(node.op, ast.Or):
+                    return any(eval_node(v) for v in node.values)
+                raise ValueError("Unsupported boolean operator")
+            if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+                return not eval_node(node.operand)
+            if isinstance(node, ast.Compare):
+                left = eval_node(node.left)
+                for op, comp in zip(node.ops, node.comparators):
+                    right = eval_node(comp)
+                    if isinstance(op, ast.Eq):
+                        ok = left == right
+                    elif isinstance(op, ast.NotEq):
+                        ok = left != right
+                    elif isinstance(op, ast.Gt):
+                        ok = left > right
+                    elif isinstance(op, ast.GtE):
+                        ok = left >= right
+                    elif isinstance(op, ast.Lt):
+                        ok = left < right
+                    elif isinstance(op, ast.LtE):
+                        ok = left <= right
+                    elif isinstance(op, ast.In):
+                        ok = left in right
+                    elif isinstance(op, ast.NotIn):
+                        ok = left not in right
+                    else:
+                        raise ValueError("Unsupported comparison operator")
+                    if not ok:
+                        return False
+                    left = right
+                return True
+            if isinstance(node, ast.Name):
+                if node.id in allowed_names:
+                    return allowed_names[node.id]
+                raise ValueError(f"Name '{node.id}' is not allowed")
+            if isinstance(node, ast.Constant):
+                return node.value
+            if isinstance(node, ast.Subscript):
+                value = eval_node(node.value)
+                index = eval_node(node.slice)
+                return value[index]
+            if isinstance(node, ast.Attribute):
+                value = eval_node(node.value)
+                if isinstance(value, dict):
+                    return value.get(node.attr)
+                return getattr(value, node.attr)
+            raise ValueError(f"Unsupported expression: {ast.dump(node)}")
+
+        tree = ast.parse(expression, mode="eval")
+        return bool(eval_node(tree.body))
     
     def _prepare_step_input(self, step, context: Dict) -> Dict[str, Any]:
         if step.input_mapping:

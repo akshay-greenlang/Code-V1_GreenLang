@@ -90,8 +90,36 @@ class TestOrchestrator(unittest.TestCase):
         }
         
         result = self.orchestrator.execute_workflow("conditional", input_data)
-        
+
         self.assertTrue(result["success"])
+
+    def test_malicious_condition_rejected(self):
+        workflow = Workflow(
+            name="malicious_workflow",
+            description="Workflow with malicious condition",
+            steps=[
+                WorkflowStep(name="step1", agent_id="fuel"),
+                WorkflowStep(
+                    name="step2",
+                    agent_id="carbon",
+                    condition="__import__('os').system('echo hacked')"
+                )
+            ]
+        )
+
+        self.orchestrator.register_workflow("malicious", workflow)
+
+        input_data = {
+            "fuel_type": "electricity",
+            "consumption": 1000,
+            "unit": "kWh",
+            "emissions": []
+        }
+
+        result = self.orchestrator.execute_workflow("malicious", input_data)
+
+        self.assertTrue(result["success"])
+        self.assertNotIn("step2", result["results"])
     
     def test_workflow_error_handling(self):
         workflow = Workflow(
