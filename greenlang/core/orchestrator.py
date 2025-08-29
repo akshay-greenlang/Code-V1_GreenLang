@@ -3,6 +3,8 @@ from greenlang.agents.base import BaseAgent, AgentResult
 from greenlang.core.workflow import Workflow
 import logging
 import json
+import ast
+import operator
 
 logger = logging.getLogger(__name__)
 
@@ -48,52 +50,81 @@ class Orchestrator:
             
             self.logger.info(f"Executing step: {step.name}")
             
-            try:
-                step_input = self._prepare_step_input(step, context)
-                agent = self.agents.get(step.agent_id)
-                
-                if not agent:
-                    raise ValueError(f"Agent '{step.agent_id}' not found")
-                
-                result = agent.run(step_input)
-                
-                # Handle both dict and AgentResult returns
-                if isinstance(result, dict):
-                    # Convert dict to AgentResult-like structure
-                    success = result.get("success", False)
-                    context["results"][step.name] = result
-                else:
-                    # Assume it's an AgentResult or has success attribute
-                    success = getattr(result, "success", False)
-                    # Store the data from the AgentResult, not the object itself
-                    if hasattr(result, 'data'):
-                        context["results"][step.name] = {"success": success, "data": result.data}
-                    else:
+            # Implement retry logic
+            max_retries = step.retry_count if step.retry_count > 0 else 0
+            attempt = 0
+            step_succeeded = False
+            last_error = None
+            
+            while attempt <= max_retries:
+                try:
+                    if attempt > 0:
+                        self.logger.info(f"Retrying step {step.name} (attempt {attempt}/{max_retries})")
+                    
+                    step_input = self._prepare_step_input(step, context)
+                    agent = self.agents.get(step.agent_id)
+                    
+                    if not agent:
+                        raise ValueError(f"Agent '{step.agent_id}' not found")
+                    
+                    result = agent.run(step_input)
+                    
+                    # Handle both dict and AgentResult returns
+                    if isinstance(result, dict):
+                        # Convert dict to AgentResult-like structure
+                        success = result.get("success", False)
                         context["results"][step.name] = result
-                
-                if not success:
-                    error_msg = result.get("error", "Unknown error") if isinstance(result, dict) else getattr(result, "error", "Unknown error")
+                    else:
+                        # Assume it's an AgentResult or has success attribute
+                        success = getattr(result, "success", False)
+                        # Store the data from the AgentResult, not the object itself
+                        if hasattr(result, 'data'):
+                            context["results"][step.name] = {"success": success, "data": result.data}
+                        else:
+                            context["results"][step.name] = result
+                    
+                    if success:
+                        step_succeeded = True
+                        break  # Success, exit retry loop
+                    else:
+                        # Step failed but returned normally
+                        last_error = result.get("error", "Unknown error") if isinstance(result, dict) else getattr(result, "error", "Unknown error")
+                        
+                        if attempt < max_retries:
+                            self.logger.warning(f"Step {step.name} failed, will retry. Error: {last_error}")
+                            attempt += 1
+                            continue
+                        else:
+                            # No more retries
+                            break
+                    
+                except Exception as e:
+                    last_error = str(e)
+                    self.logger.error(f"Error in step {step.name}: {last_error}")
+                    
+                    if attempt < max_retries:
+                        self.logger.warning(f"Will retry step {step.name}")
+                        attempt += 1
+                        continue
+                    else:
+                        # No more retries, handle as final failure
+                        break
+            
+            # Handle final failure after all retries
+            if not step_succeeded:
+                if last_error:
                     context["errors"].append({
                         "step": step.name,
-                        "error": error_msg
+                        "error": last_error,
+                        "attempts": attempt + 1
                     })
-                    
-                    if step.on_failure == "stop":
-                        self.logger.error(f"Step failed, stopping workflow: {step.name}")
-                        break
-                    elif step.on_failure == "skip":
-                        self.logger.warning(f"Step failed, continuing: {step.name}")
-                        continue
-                
-            except Exception as e:
-                self.logger.error(f"Error in step {step.name}: {str(e)}")
-                context["errors"].append({
-                    "step": step.name,
-                    "error": str(e)
-                })
                 
                 if step.on_failure == "stop":
+                    self.logger.error(f"Step failed after {attempt + 1} attempts, stopping workflow: {step.name}")
                     break
+                elif step.on_failure == "skip":
+                    self.logger.warning(f"Step failed after {attempt + 1} attempts, continuing: {step.name}")
+                    continue
         
         execution_record = {
             "execution_id": execution_id,
@@ -113,10 +144,87 @@ class Orchestrator:
             return True
         
         try:
-            return eval(step.condition, {"context": context})
+            # Safe expression evaluation using AST
+            return self._safe_eval_condition(step.condition, context)
         except Exception as e:
             self.logger.error(f"Error evaluating condition: {e}")
             return True
+    
+    def _safe_eval_condition(self, condition: str, context: Dict) -> bool:
+        """
+        Safely evaluate a condition string without using eval().
+        Supports basic comparisons and logical operations.
+        """
+        # Define allowed operators
+        ops = {
+            ast.Eq: operator.eq,
+            ast.NotEq: operator.ne,
+            ast.Lt: operator.lt,
+            ast.LtE: operator.le,
+            ast.Gt: operator.gt,
+            ast.GtE: operator.ge,
+            ast.And: operator.and_,
+            ast.Or: operator.or_,
+            ast.Not: operator.not_,
+            ast.In: lambda x, y: x in y,
+            ast.NotIn: lambda x, y: x not in y,
+            ast.Is: operator.is_,
+            ast.IsNot: operator.is_not,
+        }
+        
+        def _eval(node):
+            if isinstance(node, ast.Constant):
+                return node.value
+            elif isinstance(node, ast.Name):
+                # Only allow access to 'context' variable
+                if node.id == 'context':
+                    return context
+                raise ValueError(f"Unauthorized variable access: {node.id}")
+            elif isinstance(node, ast.Subscript):
+                # Handle dictionary/list access like context['results']
+                value = _eval(node.value)
+                if isinstance(node.slice, ast.Constant):
+                    return value[node.slice.value]
+                elif isinstance(node.slice, ast.Name):
+                    return value[_eval(node.slice)]
+                else:
+                    raise ValueError("Complex subscript not supported")
+            elif isinstance(node, ast.Attribute):
+                # Handle attribute access like context.results
+                value = _eval(node.value)
+                return getattr(value, node.attr, None)
+            elif isinstance(node, ast.Compare):
+                # Handle comparison operations
+                left = _eval(node.left)
+                for op, comparator in zip(node.ops, node.comparators):
+                    if type(op) not in ops:
+                        raise ValueError(f"Unsupported operator: {type(op).__name__}")
+                    right = _eval(comparator)
+                    if not ops[type(op)](left, right):
+                        return False
+                    left = right
+                return True
+            elif isinstance(node, ast.BoolOp):
+                # Handle and/or operations
+                if isinstance(node.op, ast.And):
+                    return all(_eval(value) for value in node.values)
+                elif isinstance(node.op, ast.Or):
+                    return any(_eval(value) for value in node.values)
+            elif isinstance(node, ast.UnaryOp):
+                # Handle not operation
+                if type(node.op) in ops:
+                    return ops[type(node.op)](_eval(node.operand))
+            elif isinstance(node, ast.Call):
+                # Block function calls for security
+                raise ValueError("Function calls are not allowed in conditions")
+            else:
+                raise ValueError(f"Unsupported expression type: {type(node).__name__}")
+        
+        try:
+            tree = ast.parse(condition, mode='eval')
+            return _eval(tree.body)
+        except (SyntaxError, ValueError) as e:
+            raise ValueError(f"Invalid condition expression: {e}")
     
     def _prepare_step_input(self, step, context: Dict) -> Dict[str, Any]:
         if step.input_mapping:

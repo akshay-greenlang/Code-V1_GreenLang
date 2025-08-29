@@ -69,3 +69,4 @@ class BaseAgent(ABC):
     
     def __repr__(self):
         return f"{self.config.name}(version={self.config.version})"
+

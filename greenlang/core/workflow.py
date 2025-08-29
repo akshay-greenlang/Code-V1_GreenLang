@@ -92,3 +92,4 @@ class WorkflowBuilder:
         if errors:
             raise ValueError(f"Workflow validation failed: {', '.join(errors)}")
         return self.workflow
+

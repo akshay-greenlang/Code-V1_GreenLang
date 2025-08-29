@@ -53,7 +53,8 @@ class GreenLangClient:
     
     def execute_agent(self, agent_id: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
         result = self.orchestrator.execute_single_agent(agent_id, input_data)
-        return result.model_dump()
+        # execute_single_agent already returns a dict, no need to call model_dump()
+        return result
     
     def calculate_carbon_footprint(self, fuels: List[Dict], building_info: Optional[Dict] = None) -> Dict[str, Any]:
         workflow = self._create_carbon_workflow()
@@ -166,3 +167,4 @@ class GreenLangClient:
     
     def clear_history(self):
         self.orchestrator.clear_history()
+
