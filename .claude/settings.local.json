@@ -21,7 +21,13 @@
       "Bash(cmd /c \"greenlang.bat calc < test_calc_input.txt\")",
       "Bash(gl:*)",
       "Bash(pip show:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang\\greenlang\\core/**)",
+      "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang\\greenlang\\core/**)",
+      "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)",
+      "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)",
+      "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)",
+      "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)"
     ],
     "deny": []
   }
