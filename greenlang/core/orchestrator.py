@@ -4,7 +4,6 @@ from greenlang.core.workflow import Workflow
 import logging
 import json
 import ast
-import operator
 
 logger = logging.getLogger(__name__)
 
@@ -142,89 +141,76 @@ class Orchestrator:
     def _should_execute_step(self, step, context: Dict) -> bool:
         if not step.condition:
             return True
-        
+
         try:
             # Safe expression evaluation using AST
-            return self._safe_eval_condition(step.condition, context)
+            return self._evaluate_condition(step.condition, context)
         except Exception as e:
             self.logger.error(f"Error evaluating condition: {e}")
-            return True
-    
-    def _safe_eval_condition(self, condition: str, context: Dict) -> bool:
-        """
-        Safely evaluate a condition string without using eval().
-        Supports basic comparisons and logical operations.
-        """
-        # Define allowed operators
-        ops = {
-            ast.Eq: operator.eq,
-            ast.NotEq: operator.ne,
-            ast.Lt: operator.lt,
-            ast.LtE: operator.le,
-            ast.Gt: operator.gt,
-            ast.GtE: operator.ge,
-            ast.And: operator.and_,
-            ast.Or: operator.or_,
-            ast.Not: operator.not_,
-            ast.In: lambda x, y: x in y,
-            ast.NotIn: lambda x, y: x not in y,
-            ast.Is: operator.is_,
-            ast.IsNot: operator.is_not,
+            return False
+
+    def _evaluate_condition(self, expression: str, context: Dict) -> bool:
+        """Safely evaluate a boolean expression against the given context."""
+        allowed_names = {
+            "context": context,
+            "input": context.get("input", {}),
+            "results": context.get("results", {}),
         }
-        
-        def _eval(node):
-            if isinstance(node, ast.Constant):
-                return node.value
-            elif isinstance(node, ast.Name):
-                # Only allow access to 'context' variable
-                if node.id == 'context':
-                    return context
-                raise ValueError(f"Unauthorized variable access: {node.id}")
-            elif isinstance(node, ast.Subscript):
-                # Handle dictionary/list access like context['results']
-                value = _eval(node.value)
-                if isinstance(node.slice, ast.Constant):
-                    return value[node.slice.value]
-                elif isinstance(node.slice, ast.Name):
-                    return value[_eval(node.slice)]
-                else:
-                    raise ValueError("Complex subscript not supported")
-            elif isinstance(node, ast.Attribute):
-                # Handle attribute access like context.results
-                value = _eval(node.value)
-                return getattr(value, node.attr, None)
-            elif isinstance(node, ast.Compare):
-                # Handle comparison operations
-                left = _eval(node.left)
-                for op, comparator in zip(node.ops, node.comparators):
-                    if type(op) not in ops:
-                        raise ValueError(f"Unsupported operator: {type(op).__name__}")
-                    right = _eval(comparator)
-                    if not ops[type(op)](left, right):
+
+        def eval_node(node):
+            if isinstance(node, ast.BoolOp):
+                if isinstance(node.op, ast.And):
+                    return all(eval_node(v) for v in node.values)
+                if isinstance(node.op, ast.Or):
+                    return any(eval_node(v) for v in node.values)
+                raise ValueError("Unsupported boolean operator")
+            if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+                return not eval_node(node.operand)
+            if isinstance(node, ast.Compare):
+                left = eval_node(node.left)
+                for op, comp in zip(node.ops, node.comparators):
+                    right = eval_node(comp)
+                    if isinstance(op, ast.Eq):
+                        ok = left == right
+                    elif isinstance(op, ast.NotEq):
+                        ok = left != right
+                    elif isinstance(op, ast.Gt):
+                        ok = left > right
+                    elif isinstance(op, ast.GtE):
+                        ok = left >= right
+                    elif isinstance(op, ast.Lt):
+                        ok = left < right
+                    elif isinstance(op, ast.LtE):
+                        ok = left <= right
+                    elif isinstance(op, ast.In):
+                        ok = left in right
+                    elif isinstance(op, ast.NotIn):
+                        ok = left not in right
+                    else:
+                        raise ValueError("Unsupported comparison operator")
+                    if not ok:
                         return False
                     left = right
                 return True
-            elif isinstance(node, ast.BoolOp):
-                # Handle and/or operations
-                if isinstance(node.op, ast.And):
-                    return all(_eval(value) for value in node.values)
-                elif isinstance(node.op, ast.Or):
-                    return any(_eval(value) for value in node.values)
-            elif isinstance(node, ast.UnaryOp):
-                # Handle not operation
-                if type(node.op) in ops:
-                    return ops[type(node.op)](_eval(node.operand))
-            elif isinstance(node, ast.Call):
-                # Block function calls for security
-                raise ValueError("Function calls are not allowed in conditions")
-            else:
-                raise ValueError(f"Unsupported expression type: {type(node).__name__}")
-        
-        try:
-            tree = ast.parse(condition, mode='eval')
-            return _eval(tree.body)
-        except (SyntaxError, ValueError) as e:
-            raise ValueError(f"Invalid condition expression: {e}")
+            if isinstance(node, ast.Name):
+                if node.id in allowed_names:
+                    return allowed_names[node.id]
+                raise ValueError(f"Name '{node.id}' is not allowed")
+            if isinstance(node, ast.Constant):
+                return node.value
+            if isinstance(node, ast.Subscript):
+                value = eval_node(node.value)
+                index = eval_node(node.slice)
+                return value[index]
+            if isinstance(node, ast.Attribute):
+                value = eval_node(node.value)
+                if isinstance(value, dict):
+                    return value.get(node.attr)
+                return getattr(value, node.attr)
+            raise ValueError(f"Unsupported expression: {ast.dump(node)}")
+
+        tree = ast.parse(expression, mode="eval")
+        return bool(eval_node(tree.body))
     
     def _prepare_step_input(self, step, context: Dict) -> Dict[str, Any]:
         if step.input_mapping:
