@@ -1,0 +1,41 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include VERSION.md
+include requirements.txt
+
+# Include configuration files
+recursive-include greenlang/configs *.json *.yaml
+recursive-include greenlang/data *.json
+recursive-include greenlang/schemas *.json
+
+# Include agent templates
+recursive-include agents *.py *.md *.yaml
+
+# Include datasets
+recursive-include datasets *.json *.csv *.md
+recursive-exclude datasets/knowledge_base/vector_store *
+
+# Include example files
+recursive-include examples *.py *.yaml *.json *.md
+recursive-exclude examples __pycache__
+
+# Include workflow templates
+recursive-include workflows *.yaml
+
+# Include test fixtures
+recursive-include tests/fixtures *.json *.yaml
+
+# Exclude unnecessary files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.swp
+global-exclude .DS_Store
+global-exclude __pycache__
+recursive-exclude * __pycache__
+recursive-exclude * *.egg-info
+recursive-exclude .github *
+exclude .gitignore
+exclude tox.ini
+exclude mypy.ini
+exclude pytest.ini

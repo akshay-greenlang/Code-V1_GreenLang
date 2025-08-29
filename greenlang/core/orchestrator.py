@@ -1,8 +1,7 @@
-from typing import Dict, Any, List, Optional
-from greenlang.agents.base import BaseAgent, AgentResult
+from typing import Dict, Any, List
+from greenlang.agents.base import BaseAgent
 from greenlang.core.workflow import Workflow
 import logging
-import json
 import ast
 
 logger = logging.getLogger(__name__)
@@ -141,14 +140,14 @@ class Orchestrator:
     def _should_execute_step(self, step, context: Dict) -> bool:
         if not step.condition:
             return True
-
+        
         try:
             # Safe expression evaluation using AST
             return self._evaluate_condition(step.condition, context)
         except Exception as e:
             self.logger.error(f"Error evaluating condition: {e}")
             return False
-
+    
     def _evaluate_condition(self, expression: str, context: Dict) -> bool:
         """Safely evaluate a boolean expression against the given context."""
         allowed_names = {
@@ -156,7 +155,7 @@ class Orchestrator:
             "input": context.get("input", {}),
             "results": context.get("results", {}),
         }
-
+        
         def eval_node(node):
             if isinstance(node, ast.BoolOp):
                 if isinstance(node.op, ast.And):
@@ -208,7 +207,7 @@ class Orchestrator:
                     return value.get(node.attr)
                 return getattr(value, node.attr)
             raise ValueError(f"Unsupported expression: {ast.dump(node)}")
-
+        
         tree = ast.parse(expression, mode="eval")
         return bool(eval_node(tree.body))
     
