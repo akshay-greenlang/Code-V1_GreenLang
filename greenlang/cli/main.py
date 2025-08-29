@@ -13,6 +13,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import Workflow
 from greenlang.cli.assistant import AIAssistant
+import greenlang
 
 console = Console()
 
@@ -43,13 +44,13 @@ except ImportError:
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(version="0.0.1", prog_name="GreenLang")
+@click.version_option(version=greenlang.__version__, prog_name="GreenLang")
 @click.pass_context
 def cli(ctx: click.Context) -> None:
     """GreenLang - Global Climate Intelligence Framework for Commercial Buildings"""
     if ctx.invoked_subcommand is None:
         # Show welcome message when no subcommand is provided
-        version_text = "v0.0.1 - Global Commercial Building Edition" if ENHANCED_MODE else "v0.0.1"
+        version_text = "v0.9.0 - Global Commercial Building Edition" if ENHANCED_MODE else "v0.0.1"
         console.print(Panel.fit(
             f"[bold green]GreenLang Climate Intelligence Framework {version_text}[/bold green]\n\n"
             "Use 'greenlang --help' for available commands\n"

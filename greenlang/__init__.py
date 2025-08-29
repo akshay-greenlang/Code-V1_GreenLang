@@ -2,7 +2,10 @@
 GreenLang: An open Climate Intelligence Framework
 """
 
-__version__ = "0.0.1"
+__version__ = "0.9.0"
+__author__ = "GreenLang Team"
+__email__ = "team@greenlang.io"
+__license__ = "MIT"
 
 from greenlang.agents import (
     FuelAgent,
