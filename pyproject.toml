@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greenlang"
-version = "0.9.0"
-description = "GreenLang - The Climate Intelligence Framework for the Entire Climate Industry"
+version = "0.1.0"
+description = "GreenLang - Infrastructure for Climate Intelligence (Domain logic lives in packs)"
 authors = [{name = "GreenLang Team", email = "team@greenlang.io"}]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 license = {text = "MIT"}
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -23,16 +23,27 @@ classifiers = [
 ]
 
 dependencies = [
-    "click>=8.0.0",
+    # Core v0.1 Infrastructure
+    "typer>=0.9.0",        # New CLI framework
     "pydantic>=2.0.0",
     "PyYAML>=6.0",
     "rich>=13.0.0",
+    
+    # Pack System
+    "importlib-metadata>=4.0",
+    "packaging>=21.0",
+    "toml>=0.10.0",
+    
+    # Legacy support
+    "click>=8.0.0",
     "httpx>=0.24.0",
     "pandas>=2.0.0",
     "openpyxl>=3.1.0",
     "psutil>=5.9.0",
     "jsonschema>=4.0.0",
     "aiofiles>=23.0.0",
+    
+    # Optional AI features (for compatibility)
     "langchain>=0.1.0",
     "langchain-community>=0.0.10",
     "faiss-cpu>=1.7.4",
@@ -56,8 +67,8 @@ dev = [
 ]
 
 [project.scripts]
-greenlang = "greenlang.cli.main:cli"
-gl = "greenlang.cli.complete_cli:cli"
+greenlang = "greenlang.cli.main:cli"  # Legacy v0.0.1 CLI
+gl = "core.greenlang.cli.main:app"    # New v0.1 unified CLI
 
 [tool.mypy]
 python_version = "3.10"

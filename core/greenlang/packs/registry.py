@@ -1,0 +1,330 @@
+"""
+Pack Registry
+=============
+
+Manages installed packs and provides discovery mechanisms.
+"""
+
+import json
+import logging
+from pathlib import Path
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass, asdict
+from datetime import datetime
+import hashlib
+import importlib.metadata
+
+from .manifest import PackManifest
+
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class InstalledPack:
+    """Metadata for an installed pack"""
+    name: str
+    version: str
+    location: str  # Path or entry point
+    manifest: Dict[str, Any]
+    installed_at: str
+    hash: str  # SHA256 of pack contents
+    verified: bool = False
+    signature: Optional[str] = None
+
+
+class PackRegistry:
+    """
+    Central registry for installed packs
+    
+    Tracks:
+    - Locally installed packs (from filesystem)
+    - Packs installed via pip (entry points)
+    - Remote packs from Hub
+    """
+    
+    def __init__(self, registry_dir: Optional[Path] = None):
+        """
+        Initialize registry
+        
+        Args:
+            registry_dir: Directory for registry data (default: ~/.greenlang/registry)
+        """
+        self.registry_dir = registry_dir or Path.home() / ".greenlang" / "registry"
+        self.registry_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.registry_file = self.registry_dir / "packs.json"
+        self.packs: Dict[str, InstalledPack] = {}
+        
+        # Load existing registry
+        self._load_registry()
+        
+        # Discover packs
+        self._discover_entry_points()
+        self._discover_local_packs()
+    
+    def _load_registry(self):
+        """Load registry from disk"""
+        if self.registry_file.exists():
+            try:
+                with open(self.registry_file, 'r') as f:
+                    data = json.load(f)
+                    for pack_data in data.get("packs", []):
+                        pack = InstalledPack(**pack_data)
+                        self.packs[pack.name] = pack
+                logger.info(f"Loaded {len(self.packs)} packs from registry")
+            except Exception as e:
+                logger.error(f"Failed to load registry: {e}")
+    
+    def _save_registry(self):
+        """Save registry to disk"""
+        try:
+            data = {
+                "version": "0.1.0",
+                "updated_at": datetime.now().isoformat(),
+                "packs": [asdict(pack) for pack in self.packs.values()]
+            }
+            with open(self.registry_file, 'w') as f:
+                json.dump(data, f, indent=2)
+            logger.info(f"Saved {len(self.packs)} packs to registry")
+        except Exception as e:
+            logger.error(f"Failed to save registry: {e}")
+    
+    def _discover_entry_points(self):
+        """Discover packs installed as Python packages"""
+        try:
+            # Look for greenlang.packs entry points
+            eps = importlib.metadata.entry_points()
+            if hasattr(eps, 'select'):  # Python 3.10+
+                pack_eps = eps.select(group='greenlang.packs')
+            else:  # Python 3.8-3.9
+                pack_eps = eps.get('greenlang.packs', [])
+            
+            for ep in pack_eps:
+                try:
+                    # Load the entry point
+                    pack_module = ep.load()
+                    
+                    # Get manifest
+                    if hasattr(pack_module, 'MANIFEST'):
+                        manifest = pack_module.MANIFEST
+                    elif hasattr(pack_module, 'get_manifest'):
+                        manifest = pack_module.get_manifest()
+                    else:
+                        # Try to load pack.yaml from module location
+                        module_path = Path(pack_module.__file__).parent
+                        manifest_path = module_path / "pack.yaml"
+                        if manifest_path.exists():
+                            manifest = PackManifest.from_yaml(manifest_path)
+                        else:
+                            logger.warning(f"No manifest found for entry point: {ep.name}")
+                            continue
+                    
+                    # Register the pack
+                    installed_pack = InstalledPack(
+                        name=ep.name,
+                        version=getattr(manifest, 'version', '0.0.0'),
+                        location=f"entry_point:{ep.name}",
+                        manifest=manifest.model_dump() if hasattr(manifest, 'model_dump') else manifest,
+                        installed_at=datetime.now().isoformat(),
+                        hash=self._calculate_hash(str(ep.value)),
+                        verified=True  # Entry points are pip-installed, assume verified
+                    )
+                    
+                    self.packs[ep.name] = installed_pack
+                    logger.info(f"Discovered pack from entry point: {ep.name}")
+                    
+                except Exception as e:
+                    logger.error(f"Failed to load entry point {ep.name}: {e}")
+                    
+        except Exception as e:
+            logger.debug(f"No entry points found: {e}")
+    
+    def _discover_local_packs(self):
+        """Discover packs in local directories"""
+        # Check standard pack directories
+        pack_dirs = [
+            Path.cwd() / "packs",  # Current directory
+            Path.home() / ".greenlang" / "packs",  # User directory
+            Path("/opt/greenlang/packs"),  # System directory (Linux/Mac)
+        ]
+        
+        for pack_dir in pack_dirs:
+            if not pack_dir.exists():
+                continue
+            
+            # Look for subdirectories with pack.yaml
+            for subdir in pack_dir.iterdir():
+                if not subdir.is_dir():
+                    continue
+                
+                manifest_path = subdir / "pack.yaml"
+                if manifest_path.exists():
+                    try:
+                        manifest = PackManifest.from_yaml(manifest_path)
+                        
+                        # Calculate hash of pack contents
+                        pack_hash = self._calculate_directory_hash(subdir)
+                        
+                        installed_pack = InstalledPack(
+                            name=manifest.name,
+                            version=manifest.version,
+                            location=str(subdir),
+                            manifest=manifest.model_dump(),
+                            installed_at=datetime.now().isoformat(),
+                            hash=pack_hash,
+                            verified=False  # Local packs need verification
+                        )
+                        
+                        self.packs[manifest.name] = installed_pack
+                        logger.info(f"Discovered local pack: {manifest.name} at {subdir}")
+                        
+                    except Exception as e:
+                        logger.error(f"Failed to load pack from {subdir}: {e}")
+    
+    def _calculate_hash(self, content: str) -> str:
+        """Calculate SHA256 hash of content"""
+        return hashlib.sha256(content.encode()).hexdigest()
+    
+    def _calculate_directory_hash(self, directory: Path) -> str:
+        """Calculate hash of directory contents"""
+        hasher = hashlib.sha256()
+        
+        # Sort files for deterministic hash
+        for file_path in sorted(directory.rglob("*")):
+            if file_path.is_file() and not file_path.name.startswith('.'):
+                hasher.update(file_path.name.encode())
+                with open(file_path, 'rb') as f:
+                    hasher.update(f.read())
+        
+        return hasher.hexdigest()
+    
+    def register(self, pack_path: Path, verify: bool = True) -> InstalledPack:
+        """
+        Register a new pack
+        
+        Args:
+            pack_path: Path to pack directory
+            verify: Whether to verify pack integrity
+        
+        Returns:
+            InstalledPack metadata
+        """
+        manifest_path = pack_path / "pack.yaml"
+        if not manifest_path.exists():
+            raise ValueError(f"No pack.yaml found at {pack_path}")
+        
+        manifest = PackManifest.from_yaml(manifest_path)
+        
+        # Validate structure
+        errors = manifest.validate_structure(pack_path)
+        if errors:
+            raise ValueError(f"Pack validation failed: {', '.join(errors)}")
+        
+        # Calculate hash
+        pack_hash = self._calculate_directory_hash(pack_path)
+        
+        # Create installed pack record
+        installed_pack = InstalledPack(
+            name=manifest.name,
+            version=manifest.version,
+            location=str(pack_path),
+            manifest=manifest.model_dump(),
+            installed_at=datetime.now().isoformat(),
+            hash=pack_hash,
+            verified=verify
+        )
+        
+        # Register
+        self.packs[manifest.name] = installed_pack
+        self._save_registry()
+        
+        logger.info(f"Registered pack: {manifest.name} v{manifest.version}")
+        return installed_pack
+    
+    def unregister(self, pack_name: str):
+        """Remove a pack from registry"""
+        if pack_name in self.packs:
+            del self.packs[pack_name]
+            self._save_registry()
+            logger.info(f"Unregistered pack: {pack_name}")
+        else:
+            raise ValueError(f"Pack not found: {pack_name}")
+    
+    def get(self, pack_name: str) -> Optional[InstalledPack]:
+        """Get installed pack by name"""
+        return self.packs.get(pack_name)
+    
+    def list(self, pack_type: Optional[str] = None) -> List[InstalledPack]:
+        """
+        List all installed packs
+        
+        Args:
+            pack_type: Filter by pack type (domain, connector, etc)
+        
+        Returns:
+            List of installed packs
+        """
+        packs = list(self.packs.values())
+        
+        if pack_type:
+            packs = [
+                p for p in packs 
+                if p.manifest.get("type") == pack_type
+            ]
+        
+        return packs
+    
+    def search(self, query: str) -> List[InstalledPack]:
+        """Search for packs by name or description"""
+        results = []
+        query_lower = query.lower()
+        
+        for pack in self.packs.values():
+            if (query_lower in pack.name.lower() or
+                query_lower in pack.manifest.get("description", "").lower()):
+                results.append(pack)
+        
+        return results
+    
+    def verify(self, pack_name: str) -> bool:
+        """
+        Verify pack integrity
+        
+        Args:
+            pack_name: Name of pack to verify
+        
+        Returns:
+            True if pack is verified
+        """
+        pack = self.get(pack_name)
+        if not pack:
+            raise ValueError(f"Pack not found: {pack_name}")
+        
+        if pack.location.startswith("entry_point:"):
+            # Entry points are pre-verified
+            return True
+        
+        # Recalculate hash and compare
+        pack_dir = Path(pack.location)
+        current_hash = self._calculate_directory_hash(pack_dir)
+        
+        if current_hash == pack.hash:
+            pack.verified = True
+            self._save_registry()
+            return True
+        else:
+            logger.warning(f"Pack verification failed: {pack_name}")
+            return False
+    
+    def get_dependencies(self, pack_name: str) -> List[str]:
+        """Get dependencies for a pack"""
+        pack = self.get(pack_name)
+        if not pack:
+            return []
+        
+        deps = []
+        for dep in pack.manifest.get("dependencies", []):
+            deps.append(f"{dep['name']}{dep.get('version', '')}")
+        
+        return deps
