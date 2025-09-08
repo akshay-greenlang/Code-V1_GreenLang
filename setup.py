@@ -143,10 +143,10 @@ extras_require["all"] = list(set(all_extras))
 
 setup(
     name="greenlang",
-    version="0.0.1",
+    version="0.1.0",
     author="GreenLang Team",
-    author_email="support@greenlang.ai",
-    description="The Climate Intelligence Framework - Build climate apps fast with modular agents, YAML pipelines, and Python SDK",
+    author_email="team@greenlang.io",
+    description="Infrastructure for Climate Intelligence - Domain logic lives in packs",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/greenlang/greenlang",
@@ -183,7 +183,8 @@ setup(
     
     entry_points={
         "console_scripts": [
-            "greenlang=greenlang.cli.main:cli",
+            "greenlang=greenlang.cli.main:cli",  # Legacy CLI
+            "gl=core.greenlang.cli.main:app",    # New v0.1 CLI
         ],
         "greenlang.agents": [
             "fuel=greenlang.agents.fuel_agent:FuelAgent",
@@ -195,6 +196,10 @@ setup(
             "recommendation=greenlang.agents.recommendation_agent:RecommendationAgent",
             "report=greenlang.agents.report_agent:ReportAgent",
             "validator=greenlang.agents.input_validator_agent:InputValidatorAgent",
+        ],
+        "greenlang.packs": [
+            # Packs register themselves here when installed
+            # Example: "emissions-core=packs.emissions_core:MANIFEST"
         ],
     },
     

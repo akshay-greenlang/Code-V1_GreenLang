@@ -1,0 +1,72 @@
+# GreenLang v0.1 Requirements
+# ============================
+# Infrastructure for Climate Intelligence
+
+# Core Dependencies
+pydantic>=2.0.0          # Data validation and schemas
+typer>=0.9.0            # CLI framework  
+rich>=13.0.0            # Terminal formatting
+pyyaml>=6.0             # YAML parsing
+
+# Pack System
+importlib-metadata>=4.0  # Entry point discovery
+packaging>=21.0         # Version parsing
+toml>=0.10.0           # Config files
+
+# SDK Base
+numpy>=1.20.0           # Numerical operations
+pandas>=1.3.0           # Data manipulation
+jsonschema>=4.0         # JSON schema validation
+
+# Runtime & Execution
+asyncio>=3.4           # Async support
+concurrent-futures>=3.1 # Parallel execution
+psutil>=5.9.0          # System monitoring
+
+# Policy Enforcement (optional - for full OPA)
+# opa-python>=0.3.0     # OPA integration (when available)
+
+# Provenance & Security
+cryptography>=41.0      # Signing and verification
+# sigstore>=1.0        # Keyless signing (future)
+
+# Testing & Quality
+pytest>=7.0            # Testing framework
+pytest-cov>=4.0        # Coverage reporting
+pytest-asyncio>=0.21   # Async test support
+mypy>=1.5             # Type checking
+black>=23.0           # Code formatting
+ruff>=0.1.0           # Linting
+
+# Observability
+structlog>=23.0        # Structured logging
+opentelemetry-api>=1.20 # Tracing (optional)
+
+# Development Tools
+ipython>=8.0           # Interactive shell
+jupyterlab>=4.0        # Notebook support
+pre-commit>=3.0        # Git hooks
+
+# Cloud/K8s Support (optional)
+# kubernetes>=28.0     # K8s client
+# boto3>=1.28         # AWS SDK
+# azure-mgmt>=4.0     # Azure SDK  
+# google-cloud>=0.34  # GCP SDK
+
+# Documentation
+mkdocs>=1.5           # Documentation site
+mkdocs-material>=9.0  # Material theme
+mkdocstrings>=0.23    # API docs from docstrings
+
+# Backwards Compatibility (remove in v0.2)
+# These support legacy v0.0.1 agents
+requests>=2.31.0       # HTTP client
+matplotlib>=3.5.0      # Plotting
+seaborn>=0.12.0       # Statistical plots
+plotly>=5.0           # Interactive plots
+
+# Optional AI/ML Support
+# openai>=1.0          # OpenAI API (optional)
+# langchain>=0.1       # LLM chains (optional)
+# scikit-learn>=1.3    # ML algorithms (optional)
+# torch>=2.0           # Deep learning (optional)
