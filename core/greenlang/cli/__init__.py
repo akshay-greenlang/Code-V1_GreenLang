@@ -69,7 +69,7 @@ def main():
 def deprecated_main():
     """Deprecated greenlang entry point - forwards to gl with warning"""
     import sys
-    print("⚠️  'greenlang' is deprecated. Use 'gl' instead. Forwarding...", file=sys.stderr)
+    print("WARNING: 'greenlang' is deprecated. Use 'gl' instead. Forwarding...", file=sys.stderr)
     app()
 
 

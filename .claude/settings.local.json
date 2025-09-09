@@ -27,7 +27,10 @@
       "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)",
       "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)",
       "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)",
-      "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)"
+      "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)",
+      "Bash(./gl.bat --help)",
+      "Bash(../../gl.bat verify sbom.spdx.json --verbose)",
+      "Bash(make:*)"
     ],
     "deny": []
   }

@@ -10,17 +10,31 @@ from rich.panel import Panel
 import yaml
 import json
 
+from ..cards.generator import (
+    generate_pack_card,
+    generate_dataset_card,
+    generate_model_card
+)
+
 app = typer.Typer()
 console = Console()
 
 
-@app.callback(invoke_without_command=True)
-def init(
-    ctx: typer.Context,
-    template: str = typer.Argument("pack-basic", help="Template to use"),
-    name: Optional[str] = typer.Option(None, "--name", "-n", help="Project/pack name"),
+@app.command()
+def pack_basic(
+    name: str = typer.Argument(..., help="Pack name"),
     path: Path = typer.Option(Path.cwd(), "--path", "-p", help="Target directory"),
     force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing files")
+):
+    """
+    Initialize a basic pack structure
+    """
+    create_pack("pack-basic", name, path, force)
+
+
+@app.callback(invoke_without_command=False)
+def init(
+    ctx: typer.Context,
 ):
     """
     Initialize a new GreenLang project/pack/dataset
@@ -31,8 +45,15 @@ def init(
         - example-hvac: HVAC optimization example
         - example-boiler-solar: Boiler + solar example
     """
-    if ctx.invoked_subcommand is not None:
-        return
+    pass
+
+
+def create_pack(
+    template: str,
+    name: str,
+    path: Path,
+    force: bool
+):
     
     # Determine name from template if not provided
     if not name:
@@ -65,7 +86,7 @@ def init(
     
     # Success message
     console.print(Panel.fit(
-        f"[green]✓[/green] Created {template} project: [cyan]{name}[/cyan]\n\n"
+        f"[green][OK][/green] Created {template} project: [cyan]{name}[/cyan]\n\n"
         f"Location: {target_dir}\n\n"
         f"Next steps:\n"
         f"  1. cd {name}\n"
@@ -128,31 +149,33 @@ def create_basic_pack(path: Path, name: str):
     with open(path / "gl.yaml", "w") as f:
         yaml.dump(pipeline, f, default_flow_style=False, sort_keys=False)
     
-    # Create CARD.md
-    card = f"""# {name} Model Card
+    # Create CARD.md using generator
+    card = generate_pack_card(
+        name=name,
+        version="0.1.0",
+        description=f"A GreenLang pack for {name}",
+        purpose=f"This pack provides climate intelligence functionality for {name}",
+        author="Your Name",
+        license="MIT",
+        tags=["climate", "greenlang", "sustainability"],
+        minimal=False,  # Use full template
+        
+        # Additional details
+        assumptions="- Input data is properly formatted\n- Environment variables are configured",
+        limitations="- Maximum input size: 10MB\n- Requires Python 3.8+",
+        carbon_footprint="Estimated: 0.1 kg CO2 per 1000 runs",
+        
+        # Examples
+        quick_start=f"""from {name.replace('-', '_')} import main
 
-## Overview
-This pack provides...
-
-## Intended Use
-- Primary use cases
-- Target users
-- Out of scope uses
-
-## Data
-- Input requirements
-- Output format
-- Data sources
-
-## Performance
-- Metrics
-- Benchmarks
-- Limitations
-
-## Ethics & Risks
-- Known issues
-- Mitigation strategies
-"""
+# Run the main pipeline
+result = main.run({{"input": "data"}})
+print(result)""",
+        
+        dependencies="- greenlang>=0.1.0\n- numpy>=1.19.0",
+        
+        ethical_considerations="This pack is designed with environmental sustainability in mind. All algorithms are optimized for energy efficiency."
+    )
     
     with open(path / "CARD.md", "w") as f:
         f.write(card)
@@ -279,6 +302,42 @@ def create_basic_dataset(path: Path, name: str):
     
     with open(path / "schemas" / "schema.json", "w") as f:
         json.dump(schema, f, indent=2)
+    
+    # Create CARD.md using generator
+    card = generate_dataset_card(
+        name=name,
+        format="csv",
+        size="TBD",
+        samples=0,
+        features=["timestamp", "value", "metadata"],
+        license="CC-BY-4.0",
+        summary=f"A climate dataset for {name}",
+        minimal=False,
+        
+        # Additional details
+        purpose="This dataset supports climate intelligence research and analysis",
+        supported_tasks="- Time series analysis\n- Anomaly detection\n- Predictive modeling",
+        
+        data_collection="Data collected from environmental sensors and public databases",
+        annotation_process="Automated validation with manual quality checks",
+        
+        social_impact="Enables better understanding of climate patterns and impacts",
+        carbon_emissions="Minimal - efficient data collection and storage",
+        
+        quality_checks="- Schema validation\n- Range checks\n- Temporal consistency",
+        
+        load_example=f"""from greenlang.datasets import load_dataset
+
+# Load the dataset
+dataset = load_dataset("{name}")
+
+# Access data
+for sample in dataset:
+    print(sample)"""
+    )
+    
+    with open(path / "CARD.md", "w") as f:
+        f.write(card)
     
     # Create README
     readme = f"""# {name} Dataset

@@ -1,0 +1,95 @@
+name: hvac-optimization
+version: 1.0.0
+description: HVAC system optimization pipeline
+
+steps:
+  - name: load_data
+    agent: thermal_comfort
+    action: load_building_data
+    inputs:
+      building_type: "${BUILDING_TYPE:office}"
+      floor_area: "${FLOOR_AREA:10000}"
+      zone_count: "${ZONE_COUNT:5}"
+    outputs:
+      - building_model
+
+  - name: analyze_thermal
+    agent: thermal_comfort
+    action: analyze_comfort
+    inputs:
+      building_model: "$steps.load_data.outputs.building_model"
+      target_pmv: "${TARGET_PMV:0.0}"
+      target_ppd: "${TARGET_PPD:10}"
+    outputs:
+      - comfort_analysis
+      - setpoint_recommendations
+
+  - name: calculate_energy
+    agent: energy_calculator
+    action: calculate_usage
+    inputs:
+      building_model: "$steps.load_data.outputs.building_model"
+      setpoints: "$steps.analyze_thermal.outputs.setpoint_recommendations"
+      weather_file: "${WEATHER_FILE:datasets/weather_data.csv}"
+      occupancy_schedule: "${OCCUPANCY_SCHEDULE:standard}"
+    outputs:
+      - energy_consumption
+      - peak_demand
+      - cost_estimate
+
+  - name: optimize_ventilation
+    agent: ventilation_optimizer
+    action: optimize
+    inputs:
+      building_model: "$steps.load_data.outputs.building_model"
+      energy_data: "$steps.calculate_energy.outputs.energy_consumption"
+      iaq_requirements: "${IAQ_STANDARD:ASHRAE62.1}"
+      covid_measures: "${COVID_MEASURES:enhanced}"
+    outputs:
+      - ventilation_schedule
+      - air_changes_per_hour
+      - filter_recommendations
+
+  - name: generate_report
+    agent: energy_calculator
+    action: create_report
+    inputs:
+      comfort_analysis: "$steps.analyze_thermal.outputs.comfort_analysis"
+      energy_consumption: "$steps.calculate_energy.outputs.energy_consumption"
+      ventilation_plan: "$steps.optimize_ventilation.outputs.ventilation_schedule"
+      report_format: "${REPORT_FORMAT:pdf}"
+    outputs:
+      - optimization_report
+      - executive_summary
+      - implementation_plan
+
+runtime:
+  backend: "${RUNTIME_BACKEND:local}"
+  timeout: 300
+  memory_limit: "2GB"
+  cpu_limit: "2"
+  deterministic: true
+
+monitoring:
+  metrics:
+    - energy_savings_kwh
+    - cost_savings_usd
+    - comfort_improvement_ppd
+    - co2_reduction_tons
+  alerts:
+    - type: threshold
+      metric: energy_consumption
+      operator: ">"
+      value: 1000000
+      message: "High energy consumption detected"
+
+outputs:
+  - name: report
+    path: "out/hvac_optimization_report.pdf"
+    type: file
+  - name: metrics
+    path: "out/metrics.json"
+    type: json
+  - name: recommendations
+    path: "out/recommendations.md"
+    type: markdown

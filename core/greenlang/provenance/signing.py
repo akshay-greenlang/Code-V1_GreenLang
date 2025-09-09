@@ -62,7 +62,7 @@ def sign_artifact(artifact_path: Path, key_path: Optional[Path] = None) -> Dict[
     return signature
 
 
-def verify_artifact(artifact_path: Path, signature_path: Optional[Path] = None) -> bool:
+def verify_artifact(artifact_path: Path, signature_path: Optional[Path] = None) -> tuple[bool, Optional[Dict[str, Any]]]:
     """
     Verify an artifact signature
     
@@ -71,7 +71,7 @@ def verify_artifact(artifact_path: Path, signature_path: Optional[Path] = None) 
         signature_path: Path to signature file (optional)
     
     Returns:
-        True if signature is valid
+        Tuple of (is_valid, signer_info)
     """
     if not artifact_path.exists():
         raise ValueError(f"Artifact not found: {artifact_path}")
@@ -81,7 +81,7 @@ def verify_artifact(artifact_path: Path, signature_path: Optional[Path] = None) 
         signature_path = artifact_path.with_suffix(artifact_path.suffix + ".sig")
     
     if not signature_path.exists():
-        return False
+        return False, None
     
     # Load signature
     with open(signature_path) as f:
@@ -92,13 +92,24 @@ def verify_artifact(artifact_path: Path, signature_path: Optional[Path] = None) 
     actual_hash = _calculate_file_hash(artifact_path)
     
     if expected_hash != actual_hash:
-        return False
+        return False, None
     
     # Verify signature (mock for now)
     sig_value = signature["spec"]["signature"]["value"]
     expected_sig = _mock_sign(actual_hash, None)
     
-    return sig_value == expected_sig
+    is_valid = sig_value == expected_sig
+    
+    # Extract signer info
+    signer_info = None
+    if is_valid:
+        signer_info = {
+            "subject": signature.get("metadata", {}).get("artifact", "Unknown"),
+            "issuer": "greenlang-mock",
+            "timestamp": signature.get("metadata", {}).get("timestamp", "Unknown")
+        }
+    
+    return is_valid, signer_info
 
 
 def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any]:

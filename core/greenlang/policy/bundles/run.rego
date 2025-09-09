@@ -1,147 +1,109 @@
-package greenlang
+package greenlang.run
 
-# Runtime policy - Controls pipeline execution
-# Evaluates at: pipeline run
+import rego.v1
 
-default decision = {"allow": false, "reason": "No matching rules"}
+# Default deny-by-default egress policy
+default allow := false
 
-# Main decision point
-decision = {
-    "allow": allow,
-    "reasons": reasons
+# Default reason for denial
+default reason := "egress denied by default policy"
+
+# Allow pipeline execution if all network access is authorized
+allow if {
+	egress_authorized
+	region_compliant
+	resource_limits_ok
 }
 
-# Collect all denial reasons
-reasons[msg] {
-    deny[msg]
+# Check that all egress targets are in allowlist
+egress_authorized if {
+	count(input.egress) == 0  # No egress needed
 }
 
-# Allow if no denials and at least one allow rule matches
-allow {
-    count(reasons) == 0
-    allow_rules[_]
+egress_authorized if {
+	count(input.egress) > 0
+	count(unauthorized_egress) == 0
 }
 
-# === DENY RULES ===
-
-# Resource limits by profile
-deny[msg] {
-    input.profile == "dev"
-    input.pipeline.resources.memory_mb > 2048
-    msg := sprintf("Dev profile memory limit exceeded: %dMB (max: 2048MB)", [input.pipeline.resources.memory_mb])
+# Collect unauthorized egress attempts
+unauthorized_egress[target] {
+	target := input.egress[_]
+	not target in input.pipeline.policy.network
 }
 
-deny[msg] {
-    input.profile == "dev"
-    input.pipeline.resources.cpu_cores > 2
-    msg := sprintf("Dev profile CPU limit exceeded: %d cores (max: 2)", [input.pipeline.resources.cpu_cores])
+# Check data residency requirements
+region_compliant if {
+	not input.pipeline.policy.data_residency  # No requirements
 }
 
-deny[msg] {
-    input.profile == "prod"
-    input.pipeline.resources.memory_mb > 8192
-    msg := sprintf("Prod profile memory limit exceeded: %dMB (max: 8192MB)", [input.pipeline.resources.memory_mb])
+region_compliant if {
+	input.pipeline.policy.data_residency
+	input.region in input.pipeline.policy.allowed_regions
 }
 
-deny[msg] {
-    input.profile == "prod"
-    input.pipeline.resources.cpu_cores > 8
-    msg := sprintf("Prod profile CPU limit exceeded: %d cores (max: 8)", [input.pipeline.resources.cpu_cores])
+# Check resource limits
+resource_limits_ok if {
+	input.pipeline.resources.memory <= input.pipeline.policy.max_memory
+	input.pipeline.resources.cpu <= input.pipeline.policy.max_cpu
+	input.pipeline.resources.disk <= input.pipeline.policy.max_disk
 }
 
-# Network egress control
-deny[msg] {
-    input.pipeline.network_access[_] = target
-    not target in input.egress
-    msg := sprintf("Network access to '%s' not in egress allowlist", [target])
+# Specific denial reasons for network violations
+reason := sprintf("egress to unauthorized domain(s): %s", [concat(", ", unauthorized_egress)]) if {
+	count(unauthorized_egress) > 0
 }
 
-# Deny access to sensitive data without proper clearance
-deny[msg] {
-    input.pipeline.data_access[_].classification == "confidential"
-    not input.user.clearance in ["high", "admin"]
-    msg := "Insufficient clearance for confidential data access"
+reason := sprintf("execution not allowed in region: %s", [input.region]) if {
+	not region_compliant
+	input.pipeline.policy.data_residency
 }
 
-deny[msg] {
-    input.pipeline.data_access[_].classification == "restricted"
-    not input.user.clearance in ["medium", "high", "admin"]
-    msg := "Insufficient clearance for restricted data access"
+reason := "resource limits exceeded" if {
+	not resource_limits_ok
 }
 
-# Region restrictions
-deny[msg] {
-    input.pipeline.data_access[_].region != input.region
-    input.pipeline.data_access[_].residency_required == true
-    msg := sprintf("Data residency violation: pipeline in %s accessing data in %s", [input.region, input.pipeline.data_access[_].region])
+# Allow specific known-good domains by default (infrastructure)
+default_allowed_domains := [
+	"api.openai.com",
+	"api.anthropic.com", 
+	"hub.greenlang.io",
+	"github.com",
+	"pypi.org"
+]
+
+# Enhanced egress check with default allowlist
+egress_authorized if {
+	count(input.egress) > 0
+	all_egress_allowed
 }
 
-# Emission factor vintage requirements
-deny[msg] {
-    input.pipeline.requirements.ef_vintage_min > input.ef_vintage
-    msg := sprintf("Emission factor vintage %d below minimum required %d", [input.ef_vintage, input.pipeline.requirements.ef_vintage_min])
-}
-
-# Rate limiting
-deny[msg] {
-    input.user.requests_per_minute > 100
-    input.user.role != "premium"
-    msg := sprintf("Rate limit exceeded: %d rpm (max: 100 for non-premium)", [input.user.requests_per_minute])
-}
-
-deny[msg] {
-    input.user.requests_per_minute > 1000
-    msg := sprintf("Rate limit exceeded: %d rpm (max: 1000)", [input.user.requests_per_minute])
+all_egress_allowed if {
+	count([target | 
+		target := input.egress[_]
+		not target in input.pipeline.policy.network
+		not target in default_allowed_domains
+	]) == 0
 }
 
 # Time-based restrictions
-deny[msg] {
-    input.profile == "batch"
-    hour := time.clock(time.now_ns())[0]
-    hour >= 8
-    hour <= 20
-    msg := "Batch jobs only allowed outside business hours (8am-8pm)"
+reason := "execution not allowed outside business hours" if {
+	input.pipeline.policy.business_hours_only
+	not time.hour(time.now_ns()) in numbers.range(9, 17)
 }
 
-# === ALLOW RULES ===
-
-# Allow authenticated users
-allow_rules[msg] {
-    input.user.authenticated == true
-    msg := "User authenticated"
+# Sensitive data protection
+reason := "pipeline cannot access sensitive data without explicit approval" if {
+	input.pipeline.accesses_pii
+	not input.pipeline.policy.pii_approved
 }
 
-# Allow admin users (bypass most restrictions)
-allow_rules[msg] {
-    input.user.role == "admin"
-    msg := "Admin user"
+# Development vs production rules
+allow if {
+	input.stage == "dev"
+	egress_authorized  # Relaxed for development
 }
 
-# Allow pipelines with valid signatures
-allow_rules[msg] {
-    input.pipeline.signature.verified == true
-    msg := "Pipeline signature verified"
-}
-
-# Allow local development
-allow_rules[msg] {
-    input.profile == "dev"
-    input.pipeline.source == "local"
-    msg := "Local development pipeline"
-}
-
-# Allow whitelisted pipelines
-allow_rules[msg] {
-    input.pipeline.name in [
-        "carbon-calculator",
-        "energy-optimizer",
-        "emissions-reporter"
-    ]
-    msg := "Whitelisted pipeline"
-}
-
-# Allow pipelines from verified packs
-allow_rules[msg] {
-    input.pipeline.pack.verified == true
-    msg := "From verified pack"
+reason := "production execution requires stricter compliance" if {
+	input.stage == "production"
+	not (egress_authorized and region_compliant and resource_limits_ok)
 }

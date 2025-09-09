@@ -1,0 +1,60 @@
+{
+  "validate": {
+    "success": true,
+    "data": {
+      "validated": true,
+      "input_hash": "a1b2c3d4",
+      "building_size_sqft": 50000,
+      "location": "IN-North",
+      "boiler_age_years": 10,
+      "solar_panel_area_sqm": 100,
+      "annual_operating_hours": 2000
+    }
+  },
+  "boiler": {
+    "success": true,
+    "data": {
+      "efficiency_percent": 76.5,
+      "annual_fuel_consumption_kwh": 50000,
+      "annual_emissions_co2_tons": 125.5
+    }
+  },
+  "solar": {
+    "success": true,
+    "data": {
+      "annual_generation_kwh": 25130.2,
+      "co2_offset_tons": 20.6,
+      "capacity_factor": 0.18
+    }
+  },
+  "carbon": {
+    "success": true,
+    "data": {
+      "net_emissions_tons": 104.9,
+      "reduction_percent": 16.4
+    }
+  },
+  "report": {
+    "success": true,
+    "data": {
+      "summary": {
+        "boiler_efficiency": 0.85,
+        "solar_generation_kwh": 50000,
+        "net_emissions_tons": 101.0,
+        "annual_savings_usd": 15000
+      },
+      "recommendations": [
+        "Consider upgrading boiler for 5% efficiency gain",
+        "Expand solar capacity by 20% for optimal ROI",
+        "Implement smart controls for 10% additional savings"
+      ],
+      "roi_years": 5.2,
+      "carbon_reduction_percent": 19.6
+    }
+  },
+  "outputs": {
+    "annual_co2e_tons": 125.5,
+    "co2_reduction_tons": 24.5,
+    "cost_savings_usd": 15000
+  }
+}

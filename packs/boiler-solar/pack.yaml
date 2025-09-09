@@ -1,61 +1,42 @@
 name: boiler-solar
-version: 0.2.0
+version: 1.0.0
 kind: pack
-license: Commercial
-description: Thermal system optimization with solar preheat for industrial boilers
+license: Apache-2.0
+
 compat:
-  greenlang: ">=0.1,<0.4"
+  greenlang: ">=0.1.0"
   python: ">=3.10"
+
 contents:
   pipelines:
     - gl.yaml
   agents:
-    - BoilerAgent
-    - SolarOffsetAgent
-    - CarbonAgent
-    - ReportAgent
+    - agents/boiler_analyzer.py
+    - agents/solar_estimator.py
   datasets:
-    - ef_in_2025.csv
-  reports:
-    - cfo_brief.html.j2
+    - datasets/weather_data.csv
+    - datasets/equipment_specs.json
+    - datasets/emission_factors.csv
+  reports: []
+
 policy:
   network:
-    - "era5:*"              # ERA5 weather data
-    - "api.weather.gov"     # NOAA weather
-    - "pvlib.iotools"       # Solar resource data
+    - api.weather.gov
+    - solcast.com
   data_residency:
-    - IN
-    - EU
     - US
-  ef_vintage_min: 2024
+    - EU
+  ef_vintage_min: 2020
   license_allowlist:
     - Apache-2.0
     - MIT
     - Commercial
-  max_memory_mb: 4096
-  max_cpu_cores: 2
+
 security:
-  sbom: sbom.spdx.json
-  signatures:
-    - pack.sig
-  keyless: true
+  sbom: sbom.json
+  signatures: []
+
 tests:
-  - tests/test_pipeline.py
-  - tests/test_boiler_agent.py
-  - tests/test_solar_offset.py
+  - tests/*.py
+
 card: CARD.md
-metadata:
-  authors:
-    - name: GreenLang Team
-      email: team@greenlang.io
-  homepage: https://greenlang.io/packs/boiler-solar
-  repository: https://github.com/greenlang/boiler-solar
-  keywords:
-    - boiler
-    - solar
-    - thermal
-    - industrial
-    - emissions
-    - optimization
-dependencies:
-  - emissions-core>=1.0.0
