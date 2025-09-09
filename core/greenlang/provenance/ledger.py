@@ -1,13 +1,17 @@
 """
-Run ledger for deterministic execution tracking
+Run ledger for deterministic execution tracking and audit trail
 """
 
 import json
 import hashlib
 import time
+import uuid
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def stable_hash(obj: Any) -> str:
@@ -259,3 +263,315 @@ def compare_runs(ledger1_path: Path, ledger2_path: Path) -> Dict[str, Any]:
         })
     
     return comparison
+
+
+class RunLedger:
+    """
+    Append-only ledger for tracking all pipeline executions
+    
+    Provides audit trail, compliance tracking, and execution history
+    """
+    
+    def __init__(self, ledger_path: Optional[Path] = None):
+        """
+        Initialize run ledger
+        
+        Args:
+            ledger_path: Path to ledger file (defaults to ~/.greenlang/ledger.jsonl)
+        """
+        if ledger_path is None:
+            gl_home = Path.home() / ".greenlang"
+            gl_home.mkdir(parents=True, exist_ok=True)
+            self.ledger_path = gl_home / "ledger.jsonl"
+        else:
+            self.ledger_path = Path(ledger_path)
+            self.ledger_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Initialize ledger file if it doesn't exist
+        if not self.ledger_path.exists():
+            self.ledger_path.touch()
+            logger.info(f"Created new ledger: {self.ledger_path}")
+    
+    def record_run(self, 
+                   pipeline: str, 
+                   inputs: Dict[str, Any], 
+                   outputs: Dict[str, Any], 
+                   metadata: Optional[Dict[str, Any]] = None) -> str:
+        """
+        Record a pipeline execution in the ledger
+        
+        Args:
+            pipeline: Pipeline name or reference
+            inputs: Input data for the pipeline
+            outputs: Output data from the pipeline
+            metadata: Additional metadata (duration, backend, etc.)
+        
+        Returns:
+            Run ID (UUID)
+        """
+        # Generate unique run ID
+        run_id = str(uuid.uuid4())
+        
+        # Create ledger entry
+        entry = {
+            "id": run_id,
+            "timestamp": datetime.utcnow().isoformat(),
+            "pipeline": pipeline,
+            "input_hash": hashlib.sha256(
+                json.dumps(inputs, sort_keys=True).encode()
+            ).hexdigest(),
+            "output_hash": hashlib.sha256(
+                json.dumps(outputs, sort_keys=True).encode()
+            ).hexdigest(),
+            "metadata": metadata or {}
+        }
+        
+        # Add system metadata
+        entry["metadata"].update({
+            "recorded_at": datetime.utcnow().isoformat(),
+            "ledger_version": "1.0.0"
+        })
+        
+        # Append to ledger (JSONL format - one JSON object per line)
+        with open(self.ledger_path, 'a') as f:
+            f.write(json.dumps(entry) + '\n')
+        
+        logger.info(f"Recorded run {run_id} for pipeline {pipeline}")
+        return run_id
+    
+    def get_run(self, run_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve a specific run by ID
+        
+        Args:
+            run_id: Run UUID
+        
+        Returns:
+            Run entry or None if not found
+        """
+        with open(self.ledger_path, 'r') as f:
+            for line in f:
+                if line.strip():
+                    entry = json.loads(line)
+                    if entry.get("id") == run_id:
+                        return entry
+        return None
+    
+    def list_runs(self, 
+                  pipeline: Optional[str] = None,
+                  limit: int = 100,
+                  since: Optional[datetime] = None) -> List[Dict[str, Any]]:
+        """
+        List runs from the ledger
+        
+        Args:
+            pipeline: Filter by pipeline name (optional)
+            limit: Maximum number of entries to return
+            since: Only return runs since this timestamp
+        
+        Returns:
+            List of run entries
+        """
+        runs = []
+        
+        with open(self.ledger_path, 'r') as f:
+            for line in f:
+                if line.strip():
+                    entry = json.loads(line)
+                    
+                    # Apply filters
+                    if pipeline and entry.get("pipeline") != pipeline:
+                        continue
+                    
+                    if since:
+                        entry_time = datetime.fromisoformat(entry["timestamp"])
+                        if entry_time < since:
+                            continue
+                    
+                    runs.append(entry)
+                    
+                    if len(runs) >= limit:
+                        break
+        
+        # Return in reverse chronological order
+        runs.sort(key=lambda x: x["timestamp"], reverse=True)
+        return runs[:limit]
+    
+    def find_duplicate_runs(self, 
+                           input_hash: str, 
+                           pipeline: Optional[str] = None) -> List[Dict[str, Any]]:
+        """
+        Find runs with the same input hash (for deduplication)
+        
+        Args:
+            input_hash: SHA-256 hash of inputs
+            pipeline: Filter by pipeline name (optional)
+        
+        Returns:
+            List of matching run entries
+        """
+        matches = []
+        
+        with open(self.ledger_path, 'r') as f:
+            for line in f:
+                if line.strip():
+                    entry = json.loads(line)
+                    
+                    if entry.get("input_hash") == input_hash:
+                        if not pipeline or entry.get("pipeline") == pipeline:
+                            matches.append(entry)
+        
+        return matches
+    
+    def get_statistics(self, 
+                       pipeline: Optional[str] = None,
+                       days: int = 30) -> Dict[str, Any]:
+        """
+        Get execution statistics from the ledger
+        
+        Args:
+            pipeline: Filter by pipeline name (optional)
+            days: Number of days to look back
+        
+        Returns:
+            Statistics dictionary
+        """
+        since = datetime.utcnow() - timedelta(days=days)
+        runs = self.list_runs(pipeline=pipeline, limit=10000, since=since)
+        
+        if not runs:
+            return {
+                "total_runs": 0,
+                "unique_inputs": 0,
+                "unique_outputs": 0,
+                "average_per_day": 0,
+                "pipelines": []
+            }
+        
+        # Collect statistics
+        input_hashes = set()
+        output_hashes = set()
+        pipelines = set()
+        
+        for run in runs:
+            input_hashes.add(run["input_hash"])
+            output_hashes.add(run["output_hash"])
+            pipelines.add(run["pipeline"])
+        
+        return {
+            "total_runs": len(runs),
+            "unique_inputs": len(input_hashes),
+            "unique_outputs": len(output_hashes),
+            "average_per_day": len(runs) / days,
+            "pipelines": list(pipelines),
+            "period_days": days,
+            "since": since.isoformat(),
+            "latest_run": runs[0]["timestamp"] if runs else None
+        }
+    
+    def verify_reproducibility(self, 
+                              input_hash: str, 
+                              output_hash: str,
+                              pipeline: str) -> bool:
+        """
+        Verify if outputs are reproducible for given inputs
+        
+        Args:
+            input_hash: Expected input hash
+            output_hash: Expected output hash
+            pipeline: Pipeline name
+        
+        Returns:
+            True if all runs with same inputs produce same outputs
+        """
+        runs = self.find_duplicate_runs(input_hash, pipeline)
+        
+        if not runs:
+            return False
+        
+        # Check if all runs with same input produce same output
+        for run in runs:
+            if run["output_hash"] != output_hash:
+                logger.warning(
+                    f"Reproducibility issue: Run {run['id']} produced "
+                    f"different output for same input"
+                )
+                return False
+        
+        return True
+    
+    def export_to_json(self, 
+                       output_path: Path,
+                       pipeline: Optional[str] = None,
+                       days: int = 30) -> Path:
+        """
+        Export ledger entries to JSON file
+        
+        Args:
+            output_path: Path to output JSON file
+            pipeline: Filter by pipeline name (optional)
+            days: Number of days to export
+        
+        Returns:
+            Path to exported file
+        """
+        since = datetime.utcnow() - timedelta(days=days)
+        runs = self.list_runs(pipeline=pipeline, limit=10000, since=since)
+        
+        export_data = {
+            "version": "1.0.0",
+            "exported_at": datetime.utcnow().isoformat(),
+            "ledger_path": str(self.ledger_path),
+            "filters": {
+                "pipeline": pipeline,
+                "days": days,
+                "since": since.isoformat()
+            },
+            "runs": runs,
+            "statistics": self.get_statistics(pipeline, days)
+        }
+        
+        with open(output_path, 'w') as f:
+            json.dump(export_data, f, indent=2)
+        
+        logger.info(f"Exported {len(runs)} runs to {output_path}")
+        return output_path
+    
+    def clean_old_entries(self, days_to_keep: int = 90) -> int:
+        """
+        Clean old entries from the ledger (compliance/storage management)
+        
+        Args:
+            days_to_keep: Number of days of history to keep
+        
+        Returns:
+            Number of entries removed
+        """
+        cutoff = datetime.utcnow() - timedelta(days=days_to_keep)
+        
+        # Read all entries
+        kept_entries = []
+        removed_count = 0
+        
+        with open(self.ledger_path, 'r') as f:
+            for line in f:
+                if line.strip():
+                    entry = json.loads(line)
+                    entry_time = datetime.fromisoformat(entry["timestamp"])
+                    
+                    if entry_time >= cutoff:
+                        kept_entries.append(entry)
+                    else:
+                        removed_count += 1
+        
+        # Rewrite ledger with kept entries
+        with open(self.ledger_path, 'w') as f:
+            for entry in kept_entries:
+                f.write(json.dumps(entry) + '\n')
+        
+        logger.info(f"Cleaned {removed_count} old entries from ledger")
+        return removed_count
+
+
+# Import timedelta for the statistics method
+from datetime import timedelta

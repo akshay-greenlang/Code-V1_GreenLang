@@ -1,20 +1,24 @@
 name: test-pipeline
 version: 1.0.0
-description: Simple test pipeline
+description: Test pipeline for executor
 
 steps:
-  - name: hello
-    action: echo
+  - name: step1-analysis
+    agent: packs/boiler-solar/agents/boiler_analyzer.py
+    action: run
     inputs:
-      message: "Hello from GreenLang!"
-    
-  - name: calculate
-    action: math
+      capacity: 1000
+      annual_demand: 5000000
+      building_type: "commercial"
+      operating_hours: 6000
+      
+  - name: step2-solar
+    agent: packs/boiler-solar/agents/solar_estimator.py
+    action: run
     inputs:
-      operation: add
-      a: 10
-      b: 20
-
-outputs:
-  greeting: "$steps.hello.output"
-  result: "$steps.calculate.output"
+      capacity: 500
+      location: "New York"
+      tilt: 35
+      azimuth: 180
+      
+stop_on_error: false

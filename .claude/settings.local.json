@@ -30,7 +30,11 @@
       "Read(c:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang/**)",
       "Bash(./gl.bat --help)",
       "Bash(../../gl.bat verify sbom.spdx.json --verbose)",
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "Bash(find:*)",
+      "Bash(PYTHONPATH=. python tests/test_greenlang.py)",
+      "Bash(./gl.bat verify:*)",
+      "Bash(./gl.bat run:*)"
     ],
     "deny": []
   }

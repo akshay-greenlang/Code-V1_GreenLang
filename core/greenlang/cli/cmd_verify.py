@@ -31,13 +31,81 @@ def verify(
     if ctx.invoked_subcommand is not None:
         return
     
-    from ..provenance.sign import verify_artifact
+    from ..provenance.signing import verify_artifact, verify_pack_signature
+    from ..provenance.sbom import verify_sbom
     
     # Determine if artifact is a file or pack reference
     artifact_path = Path(artifact)
     
     if artifact_path.exists():
-        # Verify local artifact
+        # Check if this is an SBOM file specifically
+        if artifact_path.suffix == ".json" and "sbom" in artifact_path.name.lower():
+            # Verify SBOM directly
+            console.print(f"[cyan]Verifying SBOM: {artifact}[/cyan]\n")
+            
+            # Load SBOM
+            try:
+                with open(artifact_path) as f:
+                    sbom_data = json.load(f)
+                
+                # Check SBOM type
+                if "spdxVersion" in sbom_data:
+                    console.print(f"[green][OK][/green] Valid SPDX SBOM")
+                    console.print(f"  Version: {sbom_data['spdxVersion']}")
+                    console.print(f"  Document: {sbom_data.get('name', 'Unknown')}")
+                    console.print(f"  Packages: {len(sbom_data.get('packages', []))}")
+                    console.print(f"  Relationships: {len(sbom_data.get('relationships', []))}")
+                elif "bomFormat" in sbom_data:
+                    console.print(f"[green][OK][/green] Valid CycloneDX SBOM")
+                    console.print(f"  Format: {sbom_data['bomFormat']}")
+                    console.print(f"  Version: {sbom_data.get('specVersion', 'Unknown')}")
+                    console.print(f"  Components: {len(sbom_data.get('components', []))}")
+                else:
+                    console.print("[red][FAIL][/red] Unknown SBOM format")
+                    raise typer.Exit(1)
+                
+                # Verify SBOM integrity if it's for a pack
+                pack_path = artifact_path.parent
+                if (pack_path / "pack.yaml").exists():
+                    console.print("\n[cyan]Verifying SBOM against pack contents...[/cyan]")
+                    try:
+                        is_valid = verify_sbom(artifact_path, pack_path)
+                        if is_valid:
+                            console.print("[green][OK][/green] SBOM matches pack contents")
+                        else:
+                            console.print("[red][FAIL][/red] SBOM does not match pack contents")
+                            raise typer.Exit(1)
+                    except Exception as e:
+                        console.print(f"[yellow]Warning: Could not verify SBOM integrity: {e}[/yellow]")
+                
+                # Show detailed info if verbose
+                if verbose:
+                    console.print("\n[bold]SBOM Details:[/bold]")
+                    if "spdxVersion" in sbom_data:
+                        # SPDX details
+                        creation = sbom_data.get("creationInfo", {})
+                        console.print(f"  Created: {creation.get('created', 'Unknown')}")
+                        console.print(f"  Creators: {', '.join(creation.get('creators', []))}")
+                        console.print(f"  License: {sbom_data.get('dataLicense', 'Unknown')}")
+                        
+                        # Show main package
+                        for pkg in sbom_data.get("packages", [])[:1]:
+                            console.print(f"\n  Main Package:")
+                            console.print(f"    Name: {pkg.get('name', 'Unknown')}")
+                            console.print(f"    Version: {pkg.get('versionInfo', 'Unknown')}")
+                            console.print(f"    License: {pkg.get('licenseConcluded', 'Unknown')}")
+                            console.print(f"    Files: {len(pkg.get('files', []))}")
+                
+                return  # Exit after SBOM verification
+                
+            except json.JSONDecodeError as e:
+                console.print(f"[red]Invalid JSON in SBOM: {e}[/red]")
+                raise typer.Exit(1)
+            except Exception as e:
+                console.print(f"[red]SBOM verification failed: {e}[/red]")
+                raise typer.Exit(1)
+        
+        # Regular artifact verification
         console.print(f"[cyan]Verifying artifact: {artifact}[/cyan]\n")
         
         # Check signature if provided
@@ -46,13 +114,13 @@ def verify(
             try:
                 is_valid, signer_info = verify_artifact(artifact_path, signature)
                 if is_valid:
-                    console.print(f"[green]✓[/green] Signature valid")
+                    console.print(f"[green][OK][/green] Signature valid")
                     if verbose and signer_info:
                         console.print(f"  Signer: {signer_info.get('subject', 'Unknown')}")
                         console.print(f"  Issuer: {signer_info.get('issuer', 'Unknown')}")
                         console.print(f"  Timestamp: {signer_info.get('timestamp', 'Unknown')}")
                 else:
-                    console.print(f"[red]✗[/red] Signature invalid")
+                    console.print(f"[red][FAIL][/red] Signature invalid")
                     raise typer.Exit(1)
             except Exception as e:
                 console.print(f"[red]Signature verification failed: {e}[/red]")
@@ -70,7 +138,7 @@ def verify(
                     with open(sbom_path) as f:
                         sbom_data = json.load(f)
                     
-                    console.print(f"[green]✓[/green] SBOM found")
+                    console.print(f"[green][OK][/green] SBOM found")
                     
                     if verbose:
                         # Display SBOM summary
@@ -84,7 +152,7 @@ def verify(
                         if packages and verbose:
                             console.print("\n[bold]Top Components:[/bold]")
                             for pkg in packages[:5]:
-                                console.print(f"  • {pkg.get('name', 'Unknown')} {pkg.get('versionInfo', '')}")
+                                console.print(f"  - {pkg.get('name', 'Unknown')} {pkg.get('versionInfo', '')}")
                 except Exception as e:
                     console.print(f"[yellow]Warning: Could not parse SBOM: {e}[/yellow]")
             else:
@@ -98,7 +166,7 @@ def verify(
                 with open(provenance_path) as f:
                     prov_data = json.load(f)
                 
-                console.print(f"[green]✓[/green] Provenance found")
+                console.print(f"[green][OK][/green] Provenance found")
                 
                 if verbose:
                     console.print("\n[bold]Provenance:[/bold]")
@@ -108,7 +176,7 @@ def verify(
             except Exception as e:
                 console.print(f"[yellow]Warning: Could not parse provenance: {e}[/yellow]")
         
-        console.print(f"\n[green]✓[/green] Artifact verified: {artifact_path.name}")
+        console.print(f"\n[green][OK][/green] Artifact verified: {artifact_path.name}")
         
     else:
         # Verify pack from registry
@@ -133,7 +201,7 @@ def verify(
         
         # Check pack verification status
         if pack.verified:
-            console.print(f"[green]✓[/green] Pack verified")
+            console.print(f"[green][OK][/green] Pack verified")
             
             if verbose:
                 # Show verification details
@@ -154,7 +222,7 @@ def verify(
                         sbom_data = json.load(f)
                     console.print(f"  SBOM: {len(sbom_data.get('packages', []))} components")
         else:
-            console.print(f"[red]✗[/red] Pack not verified")
+            console.print(f"[red][FAIL][/red] Pack not verified")
             console.print("\nRun verification with: [cyan]gl pack verify {name}[/cyan]")
             raise typer.Exit(1)
 
@@ -265,7 +333,7 @@ def show_provenance(
     if materials:
         console.print("\n[bold]Materials (Inputs):[/bold]")
         for material in materials:
-            console.print(f"  • {material.get('uri', 'Unknown')}")
+            console.print(f"  - {material.get('uri', 'Unknown')}")
             if material.get('digest'):
                 for alg, value in material['digest'].items():
                     console.print(f"    {alg}: {value[:16]}...")
@@ -275,7 +343,7 @@ def show_provenance(
     if subjects:
         console.print("\n[bold]Subjects (Outputs):[/bold]")
         for subject in subjects:
-            console.print(f"  • {subject.get('name', 'Unknown')}")
+            console.print(f"  - {subject.get('name', 'Unknown')}")
             if subject.get('digest'):
                 for alg, value in subject['digest'].items():
                     console.print(f"    {alg}: {value[:16]}...")

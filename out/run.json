@@ -1,6 +1,6 @@
 {
   "error": {
-    "message": null,
+    "message": "Agent file not found: mock",
     "traceback": null,
     "type": "ExecutionError"
   },
@@ -11,52 +11,22 @@
   },
   "kind": "greenlang-run-ledger",
   "metadata": {
-    "duration": 19800.000605344772,
-    "finished_at": "2025-09-09T06:49:48.577837",
-    "started_at": "2025-09-09T06:49:48.577230",
+    "duration": -4.76837158203125e-07,
+    "finished_at": "2025-09-09T13:29:13.226928",
+    "started_at": "2025-09-09T13:29:13.226921",
     "status": "failed"
   },
   "metrics": {},
-  "outputs": {
-    "count": 42,
-    "result": "success"
-  },
+  "outputs": {},
   "spec": {
-    "artifacts": {
-      "output1": "\\tmp\\output1.json",
-      "output2": "\\tmp\\output2.csv"
-    },
-    "artifacts_list": [
-      {
-        "hash": null,
-        "metadata": {},
-        "name": "unknown",
-        "path": "",
-        "type": "file"
-      },
-      {
-        "hash": null,
-        "metadata": {},
-        "name": "unknown",
-        "path": "",
-        "type": "file"
-      }
-    ],
+    "artifacts": {},
+    "artifacts_list": [],
     "config_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-    "inputs_hash": "083022094ebeae33582f33e27401035a4387190ce5527a0aaffa96b86c0fbe85",
-    "ledger_hash": "979b53b9ebe8a317ceac9324afc20b9e2908d4dc261942e34e9f6017524fffe8",
+    "inputs_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "ledger_hash": "6ad7c353a8c1396a02f5c4a138a7b74165a7fb1dde9ca49c95f39c0a5ab4198b",
     "pipeline_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-    "sbom_ref": "\\tmp\\sbom.json",
-    "signatures": [
-      {
-        "metadata": {
-          "algorithm": "SHA-256"
-        },
-        "timestamp": "2025-09-09T06:49:48.577296",
-        "type": "sha256",
-        "value": "abc123def456"
-      }
-    ],
+    "sbom_ref": null,
+    "signatures": [],
     "versions": {}
   },
   "version": "1.0.0"

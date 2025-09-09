@@ -4,7 +4,7 @@ description: Deterministic boiler and solar analysis pipeline
 
 steps:
   - name: validate
-    agent: agents/boiler_analyzer.py
+    agent: packs/boiler-solar/agents/boiler_analyzer.py
     action: validate_inputs
     inputs:
       building_size_sqft: 50000
@@ -14,14 +14,14 @@ steps:
       annual_operating_hours: 2000
 
   - name: boiler
-    agent: agents/boiler_analyzer.py
+    agent: packs/boiler-solar/agents/boiler_analyzer.py
     action: analyze_efficiency
     inputs:
       validated_data: "$steps.validate.outputs"
       boiler_age_years: 10
 
   - name: solar
-    agent: agents/solar_estimator.py  
+    agent: packs/boiler-solar/agents/solar_estimator.py  
     action: calculate_generation
     inputs:
       location: "IN-North"
@@ -29,7 +29,7 @@ steps:
       annual_hours: 2000
 
   - name: carbon
-    agent: agents/boiler_analyzer.py
+    agent: packs/boiler-solar/agents/boiler_analyzer.py
     action: calculate_emissions
     inputs:
       boiler_output: "$steps.boiler.outputs"
@@ -37,7 +37,7 @@ steps:
       grid_intensity: 0.82
 
   - name: report
-    agent: agents/solar_estimator.py
+    agent: packs/boiler-solar/agents/solar_estimator.py
     action: generate_report
     inputs:
       all_data: "$steps"

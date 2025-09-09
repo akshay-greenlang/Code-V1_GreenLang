@@ -1,0 +1,10 @@
+{
+  "building_size_sqft": 50000,
+  "location": "New York",
+  "boiler_age_years": 10,
+  "solar_panel_area_sqm": 500,
+  "annual_operating_hours": 6000,
+  "capacity": 1000,
+  "annual_demand": 5000000,
+  "building_type": "commercial"
+}

@@ -21,7 +21,9 @@ from uuid import uuid4
 from contextlib import contextmanager
 
 from ..sdk.base import Result, Status
+from ..sdk.context import Context
 from ..packs.loader import PackLoader
+import yaml
 
 try:
     import numpy as np
@@ -181,7 +183,143 @@ class Executor:
         else:
             raise ValueError(f"Unknown backend: {self.backend}")
     
-    def run(self, pipeline_ref: str, input_data: Dict[str, Any]) -> Result:
+    def _load_pipeline(self, pipeline_path: str) -> Dict[str, Any]:
+        """
+        Load pipeline from file or reference
+        
+        Args:
+            pipeline_path: Path to pipeline YAML file or pack reference
+            
+        Returns:
+            Pipeline dictionary
+        """
+        path = Path(pipeline_path)
+        
+        # If it's a file path
+        if path.exists():
+            with open(path, 'r') as f:
+                pipeline = yaml.safe_load(f)
+            return pipeline
+        
+        # Try loading from pack
+        if "/" in pipeline_path or ":" in pipeline_path:
+            # Format: pack_name/pipeline or pack_name:pipeline
+            if "/" in pipeline_path:
+                pack_name, pipeline_name = pipeline_path.split("/", 1)
+            else:
+                pack_name, pipeline_name = pipeline_path.split(":", 1)
+            
+            # Load pack and get pipeline
+            try:
+                loaded_pack = self.loader.load(pack_name)
+                pipeline = loaded_pack.get_pipeline(pipeline_name)
+                if pipeline:
+                    return pipeline
+            except Exception as e:
+                logger.warning(f"Failed to load pipeline from pack: {e}")
+        
+        # Try as direct pipeline name in discovered packs
+        for pack in self.loader.loaded_packs.values():
+            pipeline = pack.get_pipeline(pipeline_path)
+            if pipeline:
+                return pipeline
+        
+        raise ValueError(f"Pipeline not found: {pipeline_path}")
+    
+    def run(self, pipeline_path: str, inputs: Dict = None, artifacts_dir: Path = None) -> Result:
+        """
+        Execute pipeline with proper agent loading
+        
+        Args:
+            pipeline_path: Path to pipeline file or reference
+            inputs: Input data for pipeline
+            artifacts_dir: Optional artifacts directory
+            
+        Returns:
+            Execution result
+        """
+        # Load pipeline
+        pipeline = self._load_pipeline(pipeline_path)
+        
+        # Create context with proper artifact management
+        context = Context(
+            inputs=inputs,
+            artifacts_dir=artifacts_dir or Path("out"),
+            backend=self.backend,
+            metadata={
+                "pipeline": pipeline.get("name", "unknown"),
+                "version": pipeline.get("version", "1.0.0")
+            }
+        )
+        
+        # Get steps from pipeline
+        steps = pipeline.get("steps", pipeline.get("stages", []))
+        
+        for step in steps:
+            step_name = step.get("name", step.get("id", f"step_{len(context.steps)}"))
+            agent_ref = step.get("agent")
+            
+            if not agent_ref:
+                logger.warning(f"No agent specified for step {step_name}")
+                continue
+            
+            try:
+                # Load agent class
+                agent_class = self.loader.get_agent(agent_ref)
+                agent = agent_class()
+                
+                # Determine action to execute
+                action = step.get("action", "process")
+                
+                # Prepare inputs for step
+                step_inputs = step.get("inputs", step.get("with_", {}))
+                if not step_inputs:
+                    step_inputs = context.data
+                
+                # Execute action
+                if hasattr(agent, action):
+                    method = getattr(agent, action)
+                    result = method(step_inputs)
+                else:
+                    # Default to process or run method
+                    if hasattr(agent, "process"):
+                        result = agent.process(step_inputs)
+                    elif hasattr(agent, "run"):
+                        result = agent.run(step_inputs)
+                    else:
+                        raise AttributeError(f"Agent {agent_ref} has no method '{action}', 'process', or 'run'")
+                
+                # Add result to context
+                context.add_step_result(step_name, result)
+                
+                # Save step artifacts if configured
+                if step.get("save_artifacts", False):
+                    context.save_artifact(
+                        f"{step_name}_output",
+                        result.data,
+                        type="json",
+                        step=step_name,
+                        success=result.success
+                    )
+                
+                logger.info(f"Step {step_name} completed: {result.success}")
+                
+            except Exception as e:
+                logger.error(f"Step {step_name} failed: {e}")
+                # Create error result
+                error_result = Result(
+                    success=False,
+                    data={},
+                    metadata={"error": str(e)}
+                )
+                context.add_step_result(step_name, error_result)
+                # Continue or break based on pipeline settings
+                if pipeline.get("stop_on_error", True):
+                    break
+        
+        return context.to_result()
+    
+    def run_legacy(self, pipeline_ref: str, input_data: Dict[str, Any]) -> Result:
         """
         Execute a pipeline
         

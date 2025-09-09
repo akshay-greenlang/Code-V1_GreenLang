@@ -12,18 +12,19 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 from rich.panel import Panel
 
-app = typer.Typer(invoke_without_command=True)
+app = typer.Typer()
 console = Console()
 
 
-@app.callback()
+@app.callback(invoke_without_command=True)
 def run(
     ctx: typer.Context,
-    pipeline: str = typer.Argument(..., help="Pipeline file or pack reference"),
+    pipeline: Optional[str] = typer.Argument(None, help="Pipeline file or pack reference"),
     inputs: Optional[str] = typer.Option(None, "--inputs", "-i", help="Input data file (JSON/YAML)"),
     artifacts: str = typer.Option("out", "--artifacts", "-a", help="Artifacts directory"),
     backend: str = typer.Option("local", "--backend", "-b", help="Execution backend (local|k8s)"),
-    profile: str = typer.Option("dev", "--profile", "-p", help="Configuration profile")
+    profile: str = typer.Option("dev", "--profile", "-p", help="Configuration profile"),
+    audit: bool = typer.Option(False, "--audit", help="Record execution in audit ledger")
 ):
     """
     Execute pipelines deterministically
@@ -35,9 +36,21 @@ def run(
     
     Produces stable run.json and artifacts in output directory.
     """
-    # Don't run if a subcommand was invoked
+    # Check if this is a subcommand call
     if ctx.invoked_subcommand is not None:
         return
+    
+    # Check if pipeline is actually a subcommand name
+    if pipeline in ['list', 'info']:
+        # This should have been handled as a subcommand
+        return
+    
+    # If no pipeline specified, show help
+    if pipeline is None:
+        console.print("[yellow]No pipeline specified[/yellow]")
+        console.print("\nUsage: gl run <pipeline> [OPTIONS]")
+        console.print("\nUse 'gl run list' to see available pipelines")
+        raise typer.Exit(0)
     
     from pathlib import Path
     from ..runtime.executor import Executor
@@ -87,12 +100,76 @@ def run(
             "profile": profile
         }
         
-        # Execute (simplified - no policy check in PR2)
+        # Check policy before execution
+        from ..policy.enforcer import check_run
+        from ..sdk.context import Context
+        
+        # Create context for policy check
+        context = Context(
+            inputs=input_data,
+            artifacts_dir=artifacts_path,
+            profile=profile,
+            backend=backend
+        )
+        
+        # Create a simple pipeline object for policy check
+        class SimplePipeline:
+            def __init__(self, data):
+                self.data = data
+                self.name = data.get('name', 'unknown')
+                self.version = data.get('version', '1.0.0')
+            
+            def to_policy_doc(self):
+                return self.data
+        
+        pipeline_obj = SimplePipeline(pipeline_data)
+        
+        # Check policy
+        console.print("[cyan]Checking policy...[/cyan]")
+        try:
+            check_run(pipeline_obj, context)
+            console.print("[green][OK][/green] Policy check passed")
+        except RuntimeError as e:
+            console.print(f"[red]Policy check failed: {e}[/red]")
+            raise typer.Exit(1)
+        except Exception as e:
+            console.print(f"[yellow]Warning: Policy check error: {e}[/yellow]")
+        
+        # Execute pipeline
         console.print(f"[cyan]Executing {pipeline_path.name}...[/cyan]")
         res = exec.execute(pipeline_data, inputs=input_data)
         
         # Write run ledger
         write_run_ledger(res, ctx)
+        
+        # Record in audit ledger if requested
+        if audit:
+            from ..provenance.ledger import RunLedger
+            
+            console.print("[cyan]Recording in audit ledger...[/cyan]")
+            ledger = RunLedger()
+            
+            # Extract outputs from result
+            outputs = {}
+            if hasattr(res, 'data'):
+                outputs = res.data
+            elif hasattr(res, 'outputs'):
+                outputs = res.outputs
+            
+            # Record the run
+            run_id = ledger.record_run(
+                pipeline=str(pipeline_path.name),
+                inputs=input_data,
+                outputs=outputs,
+                metadata={
+                    "backend": backend,
+                    "profile": profile,
+                    "artifacts_dir": str(artifacts_path),
+                    "success": getattr(res, 'success', True)
+                }
+            )
+            
+            console.print(f"[green][OK][/green] Recorded in audit ledger: {run_id}")
         
         console.print(f"[green]Artifacts -> {artifacts}[/green]")
         
@@ -104,7 +181,7 @@ def run(
 @app.command("list")
 def list_pipelines():
     """List available pipelines"""
-    from greenlang.packs.registry import PackRegistry
+    from ..packs.registry import PackRegistry
     
     registry = PackRegistry()
     pipelines = registry.list_pipelines()
@@ -119,7 +196,7 @@ def list_pipelines():
     for pack_name, pack_pipelines in pipelines.items():
         console.print(f"[cyan]{pack_name}:[/cyan]")
         for pipeline in pack_pipelines:
-            console.print(f"  • {pipeline['name']}: {pipeline.get('description', 'No description')}")
+            console.print(f"  - {pipeline['name']}: {pipeline.get('description', 'No description')}")
     
     console.print(f"\n[dim]Run with: gl run <pack>/<pipeline>[/dim]")
 
@@ -163,13 +240,13 @@ def pipeline_info(
     if pipe_info.get('inputs'):
         console.print("\n[bold]Inputs:[/bold]")
         for name, spec in pipe_info['inputs'].items():
-            console.print(f"  • {name}: {spec.get('type', 'any')} ({spec.get('unit', 'none')})")
+            console.print(f"  - {name}: {spec.get('type', 'any')} ({spec.get('unit', 'none')})")
     
     # Show outputs
     if pipe_info.get('outputs'):
         console.print("\n[bold]Outputs:[/bold]")
         for name, spec in pipe_info['outputs'].items():
-            console.print(f"  • {name}: {spec.get('type', 'any')} ({spec.get('unit', 'none')})")
+            console.print(f"  - {name}: {spec.get('type', 'any')} ({spec.get('unit', 'none')})")
     
     # Show steps
     if pipe_info.get('steps'):

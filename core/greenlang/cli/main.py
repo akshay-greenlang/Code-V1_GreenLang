@@ -6,6 +6,20 @@ Unified CLI for GreenLang infrastructure platform.
 All domain logic lives in packs - the CLI just orchestrates.
 """
 
+import sys
+import locale
+
+# Fix encoding issues on Windows
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+        sys.stderr.reconfigure(encoding='utf-8')
+    except AttributeError:
+        # Python < 3.7 fallback
+        import codecs
+        sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+        sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
 import typer
 import json
 import yaml
@@ -137,7 +151,7 @@ build/
     with open(pack_dir / ".gitignore", "w") as f:
         f.write(gitignore)
     
-    console.print(f"[green]✓[/green] Created pack: {name}")
+    console.print(f"[green][OK][/green] Created pack: {name}")
     console.print(f"  Location: {pack_dir}")
     console.print(f"  Type: {type}")
     console.print("\nNext steps:")
@@ -174,7 +188,7 @@ def pack_list(
     table.add_column("Verified", style="blue")
     
     for pack in packs:
-        verified = "✓" if pack.verified else "✗"
+        verified = "[OK]" if pack.verified else "[FAIL]"
         table.add_row(
             pack.name,
             pack.version,
@@ -203,7 +217,7 @@ def pack_info(name: str):
         f"{manifest.get('description', 'No description')}\n\n"
         f"Type: {manifest.get('type', 'unknown')}\n"
         f"Location: {pack.location}\n"
-        f"Verified: {'✓' if pack.verified else '✗'}\n"
+        f"Verified: {'[OK]' if pack.verified else '[FAIL]'}\n"
         f"Hash: {pack.hash[:16]}...",
         title="Pack Information"
     ))
@@ -245,7 +259,7 @@ def pack_add(
             try:
                 installed = registry.register(pack_path, verify=verify)
                 progress.update(task, completed=True)
-                console.print(f"[green]✓[/green] Installed local pack: {installed.name}")
+                console.print(f"[green][OK][/green] Installed local pack: {installed.name}")
             except Exception as e:
                 console.print(f"[red]Failed to install pack: {e}[/red]")
                 raise typer.Exit(1)
@@ -262,7 +276,7 @@ def pack_remove(name: str):
     
     try:
         registry.unregister(name)
-        console.print(f"[green]✓[/green] Removed pack: {name}")
+        console.print(f"[green][OK][/green] Removed pack: {name}")
     except ValueError as e:
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(1)
@@ -284,7 +298,7 @@ def pack_validate(
     is_valid, errors = validate_pack(path)
     
     if is_valid:
-        console.print(f"[green]✓[/green] Pack validation passed: {path.name}")
+        console.print(f"[green][OK][/green] Pack validation passed: {path.name}")
         
         if verbose:
             # Load and display manifest info
@@ -306,10 +320,10 @@ def pack_validate(
             except Exception as e:
                 console.print(f"[yellow]Warning: Could not load manifest details: {e}[/yellow]")
     else:
-        console.print(f"[red]✗[/red] Pack validation failed: {path.name}")
+        console.print(f"[red][FAIL][/red] Pack validation failed: {path.name}")
         console.print("\n[red]Errors:[/red]")
         for error in errors:
-            console.print(f"  • {error}")
+            console.print(f"  - {error}")
         raise typer.Exit(1)
 
 
@@ -319,9 +333,9 @@ def pack_verify(name: str):
     registry = PackRegistry()
     
     if registry.verify(name):
-        console.print(f"[green]✓[/green] Pack verified: {name}")
+        console.print(f"[green][OK][/green] Pack verified: {name}")
     else:
-        console.print(f"[red]✗[/red] Pack verification failed: {name}")
+        console.print(f"[red][FAIL][/red] Pack verification failed: {name}")
         raise typer.Exit(1)
 
 
@@ -348,10 +362,10 @@ def pack_publish(
     if not is_valid:
         console.print("[red]Pack validation failed:[/red]")
         for error in errors:
-            console.print(f"  • {error}")
+            console.print(f"  - {error}")
         raise typer.Exit(1)
     
-    console.print(f"[green]✓[/green] Pack validation passed")
+    console.print(f"[green][OK][/green] Pack validation passed")
     
     # Load manifest
     manifest = load_manifest(path)
@@ -375,7 +389,7 @@ def pack_publish(
                         if result.stdout:
                             console.print(result.stdout)
                         raise typer.Exit(1)
-                    console.print(f"[green]✓[/green] Tests passed: {test_file}")
+                    console.print(f"[green][OK][/green] Tests passed: {test_file}")
                 except Exception as e:
                     console.print(f"[yellow]Could not run tests: {e}[/yellow]")
     
@@ -384,14 +398,14 @@ def pack_publish(
         sbom_path = path / manifest.security.sbom
         console.print("[cyan]Generating SBOM...[/cyan]")
         sbom = generate_sbom(path, sbom_path)
-        console.print(f"[green]✓[/green] Generated SBOM: {manifest.security.sbom}")
+        console.print(f"[green][OK][/green] Generated SBOM: {manifest.security.sbom}")
     
     # Sign pack if requested
     if sign:
         console.print("[cyan]Signing pack...[/cyan]")
         try:
             signature = sign_pack(path)
-            console.print(f"[green]✓[/green] Pack signed (hash: {signature['spec']['hash']['value'][:16]}...)")
+            console.print(f"[green][OK][/green] Pack signed (hash: {signature['spec']['hash']['value'][:16]}...)")
         except Exception as e:
             console.print(f"[yellow]Warning: Could not sign pack: {e}[/yellow]")
     
@@ -406,14 +420,14 @@ def pack_publish(
         with tarfile.open(archive_path, "w:gz") as tar:
             tar.add(path, arcname=manifest.name)
         
-        console.print(f"[green]✓[/green] Built archive: {archive_path} ({archive_path.stat().st_size // 1024}KB)")
+        console.print(f"[green][OK][/green] Built archive: {archive_path} ({archive_path.stat().st_size // 1024}KB)")
     
     # Upload to registry (or simulate)
     if dry_run:
         console.print("\n[yellow]DRY RUN - Would perform:[/yellow]")
-        console.print(f"  • Upload {archive_name} to {registry_url}")
-        console.print(f"  • Register {manifest.name} v{manifest.version}")
-        console.print(f"  • Publish metadata and signatures")
+        console.print(f"  - Upload {archive_name} to {registry_url}")
+        console.print(f"  - Register {manifest.name} v{manifest.version}")
+        console.print(f"  - Publish metadata and signatures")
     else:
         # TODO: Implement actual upload
         console.print(f"\n[yellow]Upload to {registry_url} not yet implemented[/yellow]")
@@ -421,7 +435,7 @@ def pack_publish(
         console.print("\nTo install locally:")
         console.print(f"  gl pack add {archive_path}")
     
-    console.print(f"\n[green]✓[/green] Pack ready for publishing: {manifest.name} v{manifest.version}")
+    console.print(f"\n[green][OK][/green] Pack ready for publishing: {manifest.name} v{manifest.version}")
 
 
 # === Runtime Commands ===
@@ -478,7 +492,7 @@ def run(
             progress.update(task, completed=True)
             
             if result.success:
-                console.print(f"[green]✓[/green] Pipeline completed successfully")
+                console.print(f"[green][OK][/green] Pipeline completed successfully")
                 
                 # Save output if requested
                 if output_file:
@@ -521,9 +535,9 @@ def policy(
         
         result = enforcer.check(policy_file, {"target": target})
         if result:
-            console.print(f"[green]✓[/green] Policy check passed")
+            console.print(f"[green][OK][/green] Policy check passed")
         else:
-            console.print(f"[red]✗[/red] Policy check failed")
+            console.print(f"[red][FAIL][/red] Policy check failed")
             raise typer.Exit(1)
     
     elif action == "list":
@@ -540,7 +554,7 @@ def policy(
             raise typer.Exit(1)
         
         enforcer.add_policy(policy_file)
-        console.print(f"[green]✓[/green] Added policy: {policy_file.name}")
+        console.print(f"[green][OK][/green] Added policy: {policy_file.name}")
 
 
 # === Provenance Commands ===
@@ -558,9 +572,9 @@ def verify(
     # Check signature if provided
     if signature:
         if verify_artifact(artifact, signature):
-            console.print(f"[green]✓[/green] Signature valid")
+            console.print(f"[green][OK][/green] Signature valid")
         else:
-            console.print(f"[red]✗[/red] Signature invalid")
+            console.print(f"[red][FAIL][/red] Signature invalid")
             raise typer.Exit(1)
     
     # Check SBOM if exists
@@ -568,9 +582,9 @@ def verify(
     if sbom_path.exists():
         with open(sbom_path) as f:
             sbom = json.load(f)
-        console.print(f"[green]✓[/green] SBOM found: {len(sbom.get('components', []))} components")
+        console.print(f"[green][OK][/green] SBOM found: {len(sbom.get('components', []))} components")
     
-    console.print(f"[green]✓[/green] Artifact verified: {artifact.name}")
+    console.print(f"[green][OK][/green] Artifact verified: {artifact.name}")
 
 
 # === Utility Commands ===
@@ -604,7 +618,7 @@ def doctor():
     
     # Display results
     for name, value, status in checks:
-        icon = "[green]✓[/green]" if status else "[red]✗[/red]"
+        icon = "[green][OK][/green]" if status else "[red][FAIL][/red]"
         console.print(f"{icon} {name}: {value}")
     
     # Overall status

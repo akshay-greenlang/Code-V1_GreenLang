@@ -11,6 +11,7 @@ Loads and initializes packs from various sources:
 import importlib
 import importlib.util
 import importlib.metadata as md
+import inspect
 import logging
 import sys
 import tarfile
@@ -21,6 +22,7 @@ import yaml
 
 from .manifest import PackManifest, load_manifest
 from .registry import InstalledPack
+from ..sdk.base import Agent
 
 logger = logging.getLogger(__name__)
 
@@ -202,6 +204,78 @@ class PackLoader:
     def get_manifest(self, pack_name: str) -> Optional[PackManifest]:
         """Get manifest for a pack without loading it"""
         return self.discovered_packs.get(pack_name)
+    
+    def get_agent(self, agent_path: str):
+        """
+        Load agent from pack or file path
+        
+        Args:
+            agent_path: Path to agent file or "pack:agent_name" or "path/to/file.py:ClassName"
+            
+        Returns:
+            Agent class
+            
+        Raises:
+            ValueError: If no agent found
+        """
+        # Handle pack:agent format
+        if ":" in agent_path and not "/" in agent_path and not "\\" in agent_path:
+            # This might be pack:agent format
+            parts = agent_path.split(":", 1)
+            if len(parts) == 2:
+                pack_name, agent_name = parts
+                # Try to load from pack
+                if pack_name in self.loaded_packs:
+                    loaded_pack = self.loaded_packs[pack_name]
+                    agent = loaded_pack.get_agent(agent_name)
+                    if agent:
+                        return agent
+                elif pack_name in self.discovered_packs:
+                    # Load the pack first
+                    loaded_pack = self.load(pack_name)
+                    agent = loaded_pack.get_agent(agent_name)
+                    if agent:
+                        return agent
+        
+        # Handle file path with optional class name
+        if ":" in agent_path:
+            module_path, class_name = agent_path.rsplit(":", 1)
+        else:
+            module_path = agent_path
+            class_name = None
+        
+        # Convert to Path
+        agent_file = Path(module_path)
+        
+        # Check if file exists
+        if not agent_file.exists():
+            # Try adding .py extension
+            agent_file = Path(module_path + ".py")
+            if not agent_file.exists():
+                raise ValueError(f"Agent file not found: {module_path}")
+        
+        # Import agent module
+        module_name = f"agent_{agent_file.stem}"
+        spec = importlib.util.spec_from_file_location(module_name, agent_file)
+        if not spec or not spec.loader:
+            raise ValueError(f"Cannot load module from {agent_file}")
+            
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        
+        # Get agent class
+        if class_name:
+            if hasattr(module, class_name):
+                return getattr(module, class_name)
+            else:
+                raise ValueError(f"Class {class_name} not found in {agent_file}")
+        else:
+            # Find first Agent subclass
+            for name, obj in inspect.getmembers(module):
+                if inspect.isclass(obj) and issubclass(obj, Agent) and obj != Agent:
+                    return obj
+            
+            raise ValueError(f"No Agent subclass found in {agent_path}")
 
 
 class LoadedPack:
@@ -258,33 +332,61 @@ class LoadedPack:
     
     def _load_agents(self):
         """Load agent classes"""
-        for agent_name in self.manifest.contents.agents:
+        if not self.manifest.contents:
+            return
+            
+        for agent_entry in self.manifest.contents.agents:
             try:
-                # Try to import from agents module
-                agent_module_path = self.path / "agents"
-                
-                if agent_module_path.exists():
-                    # Import the module
-                    module_name = f"{self.manifest.name}.agents"
-                    spec = importlib.util.spec_from_file_location(
-                        module_name,
-                        agent_module_path / "__init__.py"
-                    )
-                    
-                    if spec and spec.loader:
-                        module = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(module)
+                # Handle both file paths and agent names
+                if "/" in agent_entry or "\\" in agent_entry:
+                    # This is a file path
+                    agent_path = self.path / agent_entry
+                    if agent_path.exists():
+                        # Load the module
+                        module_name = f"{self.manifest.name}_agent_{agent_path.stem}"
+                        spec = importlib.util.spec_from_file_location(module_name, agent_path)
                         
-                        # Try to get the agent class
-                        if hasattr(module, agent_name):
-                            self.agents[agent_name] = getattr(module, agent_name)
-                            logger.info(f"Loaded agent: {agent_name}")
+                        if spec and spec.loader:
+                            module = importlib.util.module_from_spec(spec)
+                            spec.loader.exec_module(module)
+                            
+                            # Find Agent classes in the module
+                            for name, obj in inspect.getmembers(module):
+                                if (inspect.isclass(obj) and 
+                                    issubclass(obj, Agent) and 
+                                    obj != Agent):
+                                    # Store by class name
+                                    self.agents[name] = obj
+                                    logger.info(f"Loaded agent: {name} from {agent_entry}")
+                else:
+                    # This is just an agent name, try to import from agents module
+                    agent_module_path = self.path / "agents"
+                    
+                    if agent_module_path.exists():
+                        # Import the module
+                        module_name = f"{self.manifest.name}.agents"
+                        spec = importlib.util.spec_from_file_location(
+                            module_name,
+                            agent_module_path / "__init__.py"
+                        )
+                        
+                        if spec and spec.loader:
+                            module = importlib.util.module_from_spec(spec)
+                            spec.loader.exec_module(module)
+                            
+                            # Try to get the agent class
+                            if hasattr(module, agent_entry):
+                                self.agents[agent_entry] = getattr(module, agent_entry)
+                                logger.info(f"Loaded agent: {agent_entry}")
                 
             except Exception as e:
-                logger.error(f"Failed to load agent {agent_name}: {e}")
+                logger.error(f"Failed to load agent {agent_entry}: {e}")
     
     def _load_pipelines(self):
         """Load pipeline definitions"""
+        if not self.manifest.contents:
+            return
+            
         for pipeline_file in self.manifest.contents.pipelines:
             try:
                 pipeline_path = self.path / pipeline_file
@@ -303,9 +405,16 @@ class LoadedPack:
     
     def _load_datasets(self):
         """Load dataset metadata"""
+        if not self.manifest.contents:
+            return
+            
         for dataset_name in self.manifest.contents.datasets:
             try:
-                dataset_path = self.path / "datasets" / dataset_name
+                # Handle datasets that may already include 'datasets/' prefix
+                if dataset_name.startswith("datasets/"):
+                    dataset_path = self.path / dataset_name
+                else:
+                    dataset_path = self.path / "datasets" / dataset_name
                 
                 if dataset_path.exists():
                     # Load dataset metadata
@@ -332,6 +441,9 @@ class LoadedPack:
     
     def _load_reports(self):
         """Load report templates"""
+        if not self.manifest.contents:
+            return
+            
         for report_name in self.manifest.contents.reports:
             try:
                 report_path = self.path / "reports" / report_name
