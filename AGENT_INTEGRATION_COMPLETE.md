@@ -27,8 +27,8 @@ All 11 agents have been successfully integrated across the entire GreenLang code
 ## Verification Complete
 - All agents can be imported successfully
 - All agents can be registered in the orchestrator
-- `greenlang agents` command shows all 10 functional agents
-- `greenlang agent boiler` command works correctly
+- `gl agents` command shows all 10 functional agents
+- `gl agent boiler` command works correctly
 - Test script confirms all agents are properly configured
 
 ## Test Results
@@ -46,7 +46,7 @@ Testing all GreenLang agents...
 ## CLI Commands Available
 ```bash
 # List all agents
-greenlang agents
+gl agents
 
 # Show details for any agent
 greenlang agent validator

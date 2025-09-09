@@ -6,12 +6,12 @@
 
 ```bash
 # Analyze building from JSON file
-greenlang analyze building_data.json
+gl analyze building_data.json
 
 # Analyze with country override
-greenlang analyze building_data.json --country IN
-greenlang analyze building_data.json --country EU
-greenlang analyze building_data.json --country CN
+gl analyze building_data.json --country IN
+gl analyze building_data.json --country EU
+gl analyze building_data.json --country CN
 ```
 
 ## Sample Building Data Files

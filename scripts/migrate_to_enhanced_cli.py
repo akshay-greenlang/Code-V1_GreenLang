@@ -29,7 +29,7 @@ def migrate_cli():
     # Update entry point if needed
     print("\nTo use the enhanced CLI, ensure pyproject.toml has:")
     print('[project.scripts]')
-    print('greenlang = "greenlang.cli.main:cli"')
+    print('gl = "greenlang.cli.main:cli"')
     print('gl = "greenlang.cli.main:cli"  # Short alias')
     
     print("\n✓ Migration complete!")

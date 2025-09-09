@@ -89,7 +89,7 @@ def cli(ctx: click.Context, verbose: bool, dry_run: bool) -> None:
         console.print(Panel.fit(
             f"[bold green]GreenLang CLI v{greenlang.__version__}[/bold green]\n\n"
             "Climate Intelligence Framework\n\n"
-            "Use 'greenlang --help' for available commands",
+            "Use 'gl --help' for available commands",
             style="green"
         ))
 
@@ -343,7 +343,7 @@ def ask(ctx: CLIContext, question: tuple) -> None:
             "  - ANTHROPIC_API_KEY (for Claude)\n\n"
             "Example:\n"
             "  export OPENAI_API_KEY='your-key-here'\n"
-            "  greenlang ask 'How to calculate emissions?'",
+            "  gl ask 'How to calculate emissions?'",
             title="API Key Required",
             style="yellow"
         ))
@@ -463,7 +463,7 @@ def init(ctx: CLIContext) -> None:
     console.print("  - greenlang.yaml : Project configuration")
     console.print("\nNext steps:")
     console.print("  1. Edit workflows/sample.yaml")
-    console.print("  2. Run: greenlang run workflows/sample.yaml")
+    console.print("  2. Run: gl run workflows/sample.yaml")
 
 if __name__ == "__main__":
     cli()

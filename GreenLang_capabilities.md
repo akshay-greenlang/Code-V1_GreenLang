@@ -16,20 +16,20 @@ GreenLang is a Global Climate Intelligence Framework for Commercial Buildings th
 
 | Command | Purpose | Inputs | Outputs | Status |
 |---------|---------|--------|---------|--------|
-| `greenlang --version` | Display version | None | Version string | ✅ Working |
-| `greenlang --help` | Show all commands | None | Command list | ✅ Working |
-| `greenlang calc` | Interactive emissions calculator | User prompts | Emissions results | ✅ Working |
-| `greenlang calc --building` | Commercial building mode | Building data | Comprehensive analysis | ✅ Working |
-| `greenlang calc --input FILE` | Calculate from file | JSON file | Emissions results | ✅ Working |
-| `greenlang analyze FILE` | Analyze building from JSON | JSON file | Full analysis report | ✅ Working |
-| `greenlang benchmark` | Show benchmark data | Building type, country | Benchmark thresholds | ✅ Working |
-| `greenlang recommend` | Generate recommendations | Building metadata | Optimization suggestions | ✅ Working |
-| `greenlang agents` | List available agents | None | Agent table | ✅ Working |
-| `greenlang agent ID` | Show agent details | Agent ID | Agent configuration | ✅ Working |
-| `greenlang run WORKFLOW` | Execute workflow | Workflow file, input data | Workflow results | ✅ Working |
-| `greenlang ask` | AI assistant interface | Natural language query | Analysis results | ✅ Working |
-| `greenlang dev` | Developer interface | None | Interactive UI | ✅ Working |
-| `greenlang init` | Create sample workflow | Output path | Sample files | ✅ Working |
+| `gl --version` | Display version | None | Version string | ✅ Working |
+| `gl --help` | Show all commands | None | Command list | ✅ Working |
+| `gl calc` | Interactive emissions calculator | User prompts | Emissions results | ✅ Working |
+| `gl calc --building` | Commercial building mode | Building data | Comprehensive analysis | ✅ Working |
+| `gl calc --input FILE` | Calculate from file | JSON file | Emissions results | ✅ Working |
+| `gl analyze FILE` | Analyze building from JSON | JSON file | Full analysis report | ✅ Working |
+| `gl benchmark` | Show benchmark data | Building type, country | Benchmark thresholds | ✅ Working |
+| `gl recommend` | Generate recommendations | Building metadata | Optimization suggestions | ✅ Working |
+| `gl agents` | List available agents | None | Agent table | ✅ Working |
+| `gl agent ID` | Show agent details | Agent ID | Agent configuration | ✅ Working |
+| `gl run WORKFLOW` | Execute workflow | Workflow file, input data | Workflow results | ✅ Working |
+| `gl ask` | AI assistant interface | Natural language query | Analysis results | ✅ Working |
+| `gl dev` | Developer interface | None | Interactive UI | ✅ Working |
+| `gl init` | Create sample workflow | Output path | Sample files | ✅ Working |
 
 ### 2. Intelligent Agents
 
@@ -192,19 +192,19 @@ GreenLang is a Global Climate Intelligence Framework for Commercial Buildings th
 
 ### 1. Simple Calculation
 ```bash
-greenlang calc
+gl calc
 # Follow prompts for electricity, gas, diesel
 ```
 
 ### 2. Building Analysis
 ```bash
-greenlang calc --building --country US
+gl calc --building --country US
 # Enter building details and energy consumption
 ```
 
 ### 3. File-based Analysis
 ```bash
-greenlang analyze building_data.json --country IN
+gl analyze building_data.json --country IN
 ```
 
 ### 4. SDK Usage
@@ -222,8 +222,8 @@ result = client.calculate_emissions(
 
 ### 5. Workflow Execution
 ```bash
-greenlang init
-greenlang run workflow.yaml --input workflow_input.json
+gl init
+gl run workflow.yaml --input workflow_input.json
 ```
 
 ## Configuration Files

@@ -104,48 +104,48 @@ python -m greenlang.cli.main --version
 All commands must be prefixed with `greenlang`. You cannot run subcommands directly.
 
 ❌ **WRONG**: `calc`, `agents`, `benchmark`  
-✅ **CORRECT**: `greenlang calc`, `greenlang agents`, `greenlang benchmark`
+✅ **CORRECT**: `gl calc`, `gl agents`, `gl benchmark`
 
 ### 1. Simple Emissions Calculator
 ```bash
 # Basic calculator
-greenlang calc
+gl calc
 
 # With country specification
-greenlang calc --country IN
+gl calc --country IN
 ```
 
 ### 2. Commercial Building Analysis (NEW)
 ```bash
 # Interactive building mode
-greenlang calc --building
+gl calc --building
 
 # With country pre-selected
-greenlang calc --building --country US
+gl calc --building --country US
 
 # Load from file
-greenlang calc --building --input building_data.json --output results.json
+gl calc --building --input building_data.json --output results.json
 ```
 
 ### 3. Analyze Existing Building
 ```bash
 # Analyze from JSON file
-greenlang analyze building_data.json --country IN
+gl analyze building_data.json --country IN
 ```
 
 ### 4. View Benchmarks
 ```bash
 # Show benchmarks for building type and country
-greenlang benchmark --type hospital --country EU
+gl benchmark --type hospital --country EU
 
 # List all available benchmarks
-greenlang benchmark --list
+gl benchmark --list
 ```
 
 ### 5. Get Recommendations
 ```bash
 # Interactive recommendation generator
-greenlang recommend
+gl recommend
 ```
 
 ---
@@ -159,7 +159,7 @@ The enhanced commercial building calculator provides comprehensive emissions ana
 
 #### Interactive Mode
 ```bash
-greenlang calc --building
+gl calc --building
 ```
 
 You'll be prompted for:
@@ -210,7 +210,7 @@ Create a JSON file with building data:
 
 Then run:
 ```bash
-greenlang calc --building --input building_data.json --output results.json
+gl calc --building --input building_data.json --output results.json
 ```
 
 ### Calculator Output
@@ -231,14 +231,14 @@ The calculator provides:
 ### calc - Emissions Calculator
 ```bash
 # Simple mode
-greenlang calc
-greenlang calc --country US
-greenlang calc --output results.json
+gl calc
+gl calc --country US
+gl calc --output results.json
 
 # Building mode (enhanced)
-greenlang calc --building
-greenlang calc --building --country IN
-greenlang calc --building --input data.json --output results.json
+gl calc --building
+gl calc --building --country IN
+gl calc --building --input data.json --output results.json
 ```
 
 **Options:**
@@ -249,8 +249,8 @@ greenlang calc --building --input data.json --output results.json
 
 ### analyze - Analyze Building from File
 ```bash
-greenlang analyze building_data.json
-greenlang analyze building_data.json --country US
+gl analyze building_data.json
+gl analyze building_data.json --country US
 ```
 
 **Purpose**: Analyze an existing building using comprehensive data from a JSON file.
@@ -258,14 +258,14 @@ greenlang analyze building_data.json --country US
 ### benchmark - View Benchmark Standards
 ```bash
 # View specific benchmark
-greenlang benchmark --type commercial_office --country US
+gl benchmark --type commercial_office --country US
 
 # List all benchmarks
-greenlang benchmark --list
+gl benchmark --list
 
 # Examples for different countries
-greenlang benchmark --type hospital --country IN
-greenlang benchmark --type data_center --country EU
+gl benchmark --type hospital --country IN
+gl benchmark --type data_center --country EU
 ```
 
 **Options:**
@@ -275,7 +275,7 @@ greenlang benchmark --type data_center --country EU
 
 ### recommend - Get Optimization Recommendations
 ```bash
-greenlang recommend
+gl recommend
 ```
 
 Interactive prompts for:
@@ -293,21 +293,21 @@ Interactive prompts for:
 ### ask - AI Assistant
 ```bash
 # Building-specific queries
-greenlang ask "What is the carbon footprint of a 100,000 sqft hospital in Mumbai?"
+gl ask "What is the carbon footprint of a 100,000 sqft hospital in Mumbai?"
 
 # Comparison queries
-greenlang ask "Compare emissions for offices in US vs India"
+gl ask "Compare emissions for offices in US vs India"
 
 # Recommendation queries
-greenlang ask "How to reduce emissions for a data center in Singapore?"
+gl ask "How to reduce emissions for a data center in Singapore?"
 
 # With verbose output
-greenlang ask -v "Calculate emissions for 50000 sqft office with 1.5M kWh"
+gl ask -v "Calculate emissions for 50000 sqft office with 1.5M kWh"
 ```
 
 ### agents - List Available Agents
 ```bash
-greenlang agents
+gl agents
 ```
 
 Shows all 10 agents:
@@ -340,23 +340,23 @@ greenlang agent boiler
 ### run - Execute Workflows
 ```bash
 # Run commercial building workflow
-greenlang run workflows/commercial_building_emissions.yaml --input data.json
+gl run workflows/commercial_building_emissions.yaml --input data.json
 
 # Run with output formatting
-greenlang run workflow.yaml -i input.json -o output.json --format json
+gl run workflow.yaml -i input.json -o output.json --format json
 ```
 
 ### init - Initialize Project
 ```bash
-greenlang init
-greenlang init --output my_workflow.yaml
+gl init
+gl init --output my_workflow.yaml
 ```
 
 Creates sample workflow and input files adapted to v0.0.1 features.
 
 ### dev - Developer Interface
 ```bash
-greenlang dev
+gl dev
 ```
 
 Launches interactive developer interface with enhanced features.
@@ -724,7 +724,7 @@ steps:
 
 Run with:
 ```bash
-greenlang run workflows/commercial_building_emissions.yaml --input building_data.json
+gl run workflows/commercial_building_emissions.yaml --input building_data.json
 ```
 
 ### India-Specific Workflow
@@ -1262,7 +1262,7 @@ If you discover a security vulnerability:
 ### Example 1: US Office Building
 ```bash
 # Interactive mode
-greenlang calc --building --country US
+gl calc --building --country US
 
 # Enter when prompted:
 # Building type: commercial_office
@@ -1321,7 +1321,7 @@ print(f"Annual Emissions: {result['data']['emissions']['total_co2e_tons']:.2f} t
 }
 
 # Analyze
-greenlang analyze eu_datacenter.json --country EU
+gl analyze eu_datacenter.json --country EU
 ```
 
 ### Example 4: Global Comparison
@@ -1356,7 +1356,7 @@ for country, emissions in sorted(results.items(), key=lambda x: x[1]):
 
 ### Example 5: Get Recommendations for Indian Office
 ```bash
-greenlang recommend
+gl recommend
 
 # Enter when prompted:
 # Building type: commercial_office
@@ -1374,22 +1374,22 @@ greenlang recommend
 ### Example 6: Using All Commands Together
 ```bash
 # Step 1: Check version
-greenlang --version
+gl --version
 
 # Step 2: List available agents
-greenlang agents
+gl agents
 
 # Step 3: Run building calculator
-greenlang calc --building --country IN
+gl calc --building --country IN
 
 # Step 4: Check benchmarks
-greenlang benchmark --type hospital --country IN
+gl benchmark --type hospital --country IN
 
 # Step 5: Get recommendations
-greenlang recommend
+gl recommend
 
 # Step 6: Ask AI for insights
-greenlang ask "What are the best ways to reduce emissions in Indian hospitals?"
+gl ask "What are the best ways to reduce emissions in Indian hospitals?"
 ```
 
 ### Example 7: Complete Building Analysis Workflow
@@ -1462,7 +1462,7 @@ client.export_analysis(result, "delhi_hospital_analysis.xlsx", format="excel")
 }
 
 # Analyze portfolio
-greenlang analyze portfolio.json --country IN
+gl analyze portfolio.json --country IN
 ```
 
 ---
@@ -1656,14 +1656,14 @@ building_result = client.analyze_building(building_data)
 
 ```bash
 # Old commands (still work)
-greenlang calc
-greenlang run workflow.yaml
+gl calc
+gl run workflow.yaml
 
 # New enhanced commands
-greenlang calc --building --country IN
-greenlang analyze building.json
-greenlang benchmark --type hospital --country EU
-greenlang recommend
+gl calc --building --country IN
+gl analyze building.json
+gl benchmark --type hospital --country EU
+gl recommend
 ```
 
 ---
@@ -1802,7 +1802,7 @@ from greenlang.sdk.enhanced_client import GreenLangClient
 python -c "from greenlang.core.workflow import Workflow; Workflow.from_yaml('workflow.yaml')"
 
 # Check agent availability
-greenlang agents
+gl agents
 ```
 
 #### 5. Missing Dependencies
@@ -1815,7 +1815,7 @@ pip install pydantic>=2.0 pyyaml>=6.0 click>=8.0 rich>=13.0 pandas>=2.0 numpy>=1
 ```bash
 # Error: 'calc' is not recognized as a command
 # Solution: Use full command
-greenlang calc  # NOT just 'calc'
+gl calc  # NOT just 'calc'
 
 # Error: 'agent' is not recognized
 # Solution: Use full command with greenlang prefix
@@ -1843,7 +1843,7 @@ pip install -e .
 #### 9. Country Not Supported
 ```bash
 # Check supported countries
-greenlang ask "What countries are supported?"
+gl ask "What countries are supported?"
 
 # Supported: US, IN, EU, CN, JP, BR, KR, UK, DE, CA, AU
 ```
@@ -1854,7 +1854,7 @@ greenlang ask "What countries are supported?"
 python -c "import yaml; yaml.safe_load(open('workflow.yaml'))"
 
 # Check if all required agents are available
-greenlang agents
+gl agents
 ```
 
 ---
@@ -1891,42 +1891,42 @@ greenlang agents
 ### Essential Commands
 ```bash
 # Version and Help
-greenlang --version                      # Show version (0.0.1)
-greenlang --help                         # Show all commands
+gl --version                      # Show version (0.0.1)
+gl --help                         # Show all commands
 
 # Calculator Modes
-greenlang calc                           # Simple emissions calculator
-greenlang calc --building                # Commercial building mode
-greenlang calc --building --country IN   # Building mode for India
-greenlang calc --building --input data.json --output results.json
+gl calc                           # Simple emissions calculator
+gl calc --building                # Commercial building mode
+gl calc --building --country IN   # Building mode for India
+gl calc --building --input data.json --output results.json
 
 # Building Analysis
-greenlang analyze building.json          # Analyze from file
-greenlang analyze building.json --country US
+gl analyze building.json          # Analyze from file
+gl analyze building.json --country US
 
 # Benchmarking
-greenlang benchmark --type hospital --country IN
-greenlang benchmark --type office --country US
-greenlang benchmark --list               # List all benchmarks
+gl benchmark --type hospital --country IN
+gl benchmark --type office --country US
+gl benchmark --list               # List all benchmarks
 
 # Recommendations
-greenlang recommend                      # Interactive recommendations
+gl recommend                      # Interactive recommendations
 
 # Agent Management
-greenlang agents                         # List all 9 agents
+gl agents                         # List all 9 agents
 greenlang agent fuel                     # Show fuel agent details
 greenlang agent grid_factor              # Show grid factor agent
 
 # AI Assistant
-greenlang ask "Calculate emissions for 100000 sqft hospital in Mumbai"
-greenlang ask -v "What are emission factors for India?"
+gl ask "Calculate emissions for 100000 sqft hospital in Mumbai"
+gl ask -v "What are emission factors for India?"
 
 # Workflow Execution
-greenlang run workflow.yaml --input data.json
-greenlang init --output my_workflow.yaml
+gl run workflow.yaml --input data.json
+gl init --output my_workflow.yaml
 
 # Developer Interface
-greenlang dev                            # Launch developer UI
+gl dev                            # Launch developer UI
 ```
 
 ### Python SDK Quick Start

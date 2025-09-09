@@ -67,8 +67,8 @@ dev = [
 ]
 
 [project.scripts]
-greenlang = "greenlang.cli.main:cli"  # Legacy v0.0.1 CLI
-gl = "core.greenlang.cli.main:app"    # New v0.1 unified CLI
+gl = "core.greenlang.cli:main"                    # New v0.1 unified CLI
+greenlang = "core.greenlang.cli:deprecated_main"  # Deprecated alias (prints warning)
 
 [tool.mypy]
 python_version = "3.10"

@@ -22,16 +22,16 @@
 
 ### ✅ Simple Calculator
 ```bash
-greenlang calc
+gl calc
 # OR
 python -m greenlang.cli.main calc
 ```
 
 ### ✅ Building Calculator
 ```bash
-greenlang calc --building
-greenlang calc --building --country IN
-greenlang calc --building --country US
+gl calc --building
+gl calc --building --country IN
+gl calc --building --country US
 ```
 
 ### ✅ Python SDK Usage

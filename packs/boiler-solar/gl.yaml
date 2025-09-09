@@ -1,0 +1,156 @@
+version: 0.1
+pipeline:
+  name: "Boiler → Solar Preheat Analysis"
+  description: "Analyze solar thermal preheat potential for industrial boilers"
+  
+inputs:
+  datasets:
+    ef:
+      path: "datasets/ef_in_2025.csv"
+      format: "csv"
+      description: "Emission factors for India 2025"
+  
+  params:
+    site:
+      name: "Example Dairy Plant"
+      location: "22.3,70.7"  # Gujarat, India
+      altitude_m: 100
+      timezone: "Asia/Kolkata"
+    
+    boiler:
+      type: "fire-tube"
+      fuel: "natural_gas"
+      pressure_bar: 7
+      temperature_c: 165
+      efficiency: 0.82
+      capacity_tph: 10  # tons per hour steam
+      operating_hours: 7200  # annual
+      load_factor: 0.75
+    
+    solar:
+      collector_type: "evacuated_tube"
+      aperture_m2: 1200
+      efficiency_optical: 0.75
+      efficiency_thermal: 0.65
+      tilt_angle: 22  # latitude tilt
+      azimuth: 180    # south facing
+      dni_source: "era5"
+      storage_hours: 4
+
+steps:
+  - id: validate
+    agent: InputValidatorAgent
+    with_:
+      required:
+        - ef
+        - boiler
+        - solar
+      validators:
+        - boiler.pressure_bar > 0
+        - boiler.pressure_bar < 20
+        - solar.aperture_m2 > 0
+        - solar.aperture_m2 < 10000
+    on_failure: stop
+    
+  - id: baseline
+    agent: BoilerAgent
+    with_:
+      boiler: ${input:params.boiler}
+      operating_hours: ${input:params.boiler.operating_hours}
+      load_factor: ${input:params.boiler.load_factor}
+    outputs:
+      - fuel_consumption_annual
+      - steam_production_annual
+      - emissions_baseline
+    
+  - id: solar_resource
+    agent: SolarResourceAgent
+    with_:
+      location: ${input:params.site.location}
+      dni_source: ${input:params.solar.dni_source}
+      year: 2024
+    outputs:
+      - dni_annual_kwh_m2
+      - dni_hourly
+      - solar_fraction_potential
+    
+  - id: offset
+    agent: SolarOffsetAgent
+    with_:
+      baseline: ${ref:baseline.data}
+      solar_config: ${input:params.solar}
+      solar_resource: ${ref:solar_resource.data}
+      boiler_config: ${input:params.boiler}
+    outputs:
+      - solar_heat_annual_mwh
+      - fuel_saved_annual
+      - solar_fraction_actual
+      - hourly_profile
+    
+  - id: carbon
+    agent: CarbonAgent
+    with_:
+      ef_dataset: ${input:datasets.ef}
+      baseline_emissions: ${ref:baseline.emissions_baseline}
+      fuel_saved: ${ref:offset.fuel_saved_annual}
+      fuel_type: ${input:params.boiler.fuel}
+      location: ${input:params.site.location}
+    outputs:
+      - co2e_avoided_tons
+      - emissions_intensity_reduction
+      - carbon_price_value
+    
+  - id: economics
+    agent: EconomicsAgent
+    with_:
+      solar_capex_per_m2: 250  # USD/m2
+      fuel_price_per_mmbtu: 8   # USD/MMBtu
+      carbon_price_per_ton: 50  # USD/tCO2e
+      discount_rate: 0.10
+      project_lifetime_years: 20
+      solar_area: ${input:params.solar.aperture_m2}
+      fuel_saved: ${ref:offset.fuel_saved_annual}
+      co2e_avoided: ${ref:carbon.co2e_avoided_tons}
+    outputs:
+      - capex_total
+      - opex_annual
+      - savings_annual
+      - payback_years
+      - irr
+      - npv
+    
+  - id: report
+    agent: ReportAgent
+    with_:
+      template: "reports/cfo_brief.html.j2"
+      site: ${input:params.site}
+      baseline: ${ref:baseline.data}
+      solar: ${ref:offset.data}
+      carbon: ${ref:carbon.data}
+      economics: ${ref:economics.data}
+      metadata:
+        generated_at: ${timestamp}
+        pipeline_version: ${pipeline:version}
+        pack_version: "0.2.0"
+    outputs:
+      - report_pdf
+      - report_html
+      - executive_summary
+
+outputs:
+  artifacts:
+    report_pdf: ${ref:report.artifacts.report_pdf}
+    report_html: ${ref:report.artifacts.report_html}
+    hourly_profile: ${ref:offset.hourly_profile}
+  
+  metrics:
+    solar_fraction: ${ref:offset.solar_fraction_actual}
+    co2e_avoided_tons: ${ref:carbon.co2e_avoided_tons}
+    fuel_saved_mmbtu: ${ref:offset.fuel_saved_annual}
+    payback_years: ${ref:economics.payback_years}
+    npv_usd: ${ref:economics.npv}
+  
+  run_metadata:
+    pipeline_hash: ${pipeline:hash}
+    execution_time_s: ${runtime:duration}
+    timestamp: ${timestamp}

@@ -30,7 +30,7 @@ Climatenza AI has been fully integrated into the GreenLang Climate Intelligence 
   - Available in public API
 
 - [x] **CLI Integration** (`greenlang/cli/main.py`)
-  - New `greenlang climatenza` command
+  - New `gl climatenza` command
   - Options for site config, output format (JSON/YAML/HTML)
   - Interactive feasibility analysis
 
@@ -114,7 +114,7 @@ print(f"Collectors: {result['data']['num_collectors']}")
 
 ### Direct Workflow Execution
 ```bash
-greenlang run climatenza_app/gl_workflows/feasibility_base.yaml
+gl run climatenza_app/gl_workflows/feasibility_base.yaml
 ```
 
 ## 📊 Key Metrics

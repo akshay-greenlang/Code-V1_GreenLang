@@ -1,0 +1,36 @@
+{
+  "site": {
+    "name": "Gujarat Dairy Cooperative",
+    "location": "22.3,70.7",
+    "altitude_m": 100,
+    "timezone": "Asia/Kolkata"
+  },
+  "boiler": {
+    "type": "fire-tube",
+    "fuel": "natural_gas",
+    "pressure_bar": 7,
+    "temperature_c": 165,
+    "efficiency": 0.82,
+    "capacity_tph": 10,
+    "operating_hours": 7200,
+    "load_factor": 0.75,
+    "fuel_cost_per_mmbtu": 8
+  },
+  "solar": {
+    "collector_type": "evacuated_tube",
+    "aperture_m2": 1200,
+    "efficiency_optical": 0.75,
+    "efficiency_thermal": 0.65,
+    "tilt_angle": 22,
+    "azimuth": 180,
+    "dni_source": "era5",
+    "storage_hours": 4,
+    "capex_per_m2": 250
+  },
+  "economics": {
+    "discount_rate": 0.10,
+    "project_lifetime_years": 20,
+    "carbon_price_per_ton": 50,
+    "escalation_rate": 0.03
+  }
+}

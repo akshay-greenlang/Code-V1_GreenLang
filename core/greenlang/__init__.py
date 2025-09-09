@@ -14,12 +14,12 @@ __email__ = "team@greenlang.io"
 __license__ = "MIT"
 
 # Core infrastructure exports only
-from greenlang.sdk.base import Agent, Pipeline, Connector, Dataset, Report
-from greenlang.sdk.context import Context, Artifact
-from greenlang.packs.registry import PackRegistry
-from greenlang.packs.loader import PackLoader
-from greenlang.runtime.executor import Executor
-from greenlang.policy.enforcer import PolicyEnforcer
+from .sdk.base import Agent, Pipeline, Connector, Dataset, Report
+from .sdk.context import Context, Artifact
+from .packs.registry import PackRegistry
+from .packs.loader import PackLoader
+from .runtime.executor import Executor
+from .policy.enforcer import PolicyEnforcer
 
 __all__ = [
     # Core SDK abstractions

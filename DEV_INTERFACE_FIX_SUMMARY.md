@@ -1,7 +1,7 @@
 # Dev Interface Fix Summary
 
 ## Issue
-The `greenlang dev` command was broken. When using the "agents" command and clicking test/list, it resulted in:
+The `gl dev` command was broken. When using the "agents" command and clicking test/list, it resulted in:
 ```
 Error executing agents: 'GreenLangClient' object has no attribute 'execute_agent'
 ```
@@ -51,7 +51,7 @@ def validate_input(self, data: Dict[str, Any]) -> Dict[str, Any]:
 
 ### Test 1: All Agents Available
 ```bash
-greenlang agents
+gl agents
 ```
 ✅ Shows all 10 agents including BoilerAgent
 
@@ -80,17 +80,17 @@ python test_dev_agents.py
 
 ## Commands Now Working
 
-### In `greenlang dev`:
+### In `gl dev`:
 - `agents` → `list` - Shows all 10 agents in a table
 - `agents` → `info` - Shows detailed agent information
 - `agents` → `test` - Tests agent execution
 - `agents` → `create` - Creates custom agents
 
 ### Other CLI Commands:
-- `greenlang agents` - Lists all available agents
-- `greenlang agent <id>` - Shows specific agent details
-- `greenlang calc --building` - Uses all agents including BoilerAgent
-- `greenlang run` - Workflow execution with all agents
+- `gl agents` - Lists all available agents
+- `gl agent <id>` - Shows specific agent details
+- `gl calc --building` - Uses all agents including BoilerAgent
+- `gl run` - Workflow execution with all agents
 
 ## Files Modified
 1. `greenlang/sdk/enhanced_client.py` - Added missing methods

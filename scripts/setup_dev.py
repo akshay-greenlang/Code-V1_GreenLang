@@ -84,7 +84,7 @@ def setup_development_environment():
     
     # Verify CLI
     print("\n🔧 Verifying CLI installation...")
-    if run_command("greenlang --version"):
+    if run_command("gl --version"):
         print("✅ CLI is working")
     else:
         print("⚠️  CLI not available in PATH yet")
@@ -101,7 +101,7 @@ def setup_development_environment():
     print("=" * 60)
     print("\nNext steps:")
     print("1. Run 'tox' to test across Python versions")
-    print("2. Run 'greenlang --help' to see available commands")
+    print("2. Run 'gl --help' to see available commands")
     print("3. Check docs/ for documentation")
     print("4. Run 'pytest' to run all tests")
     print("5. Create a feature branch and start developing!")

@@ -215,9 +215,9 @@ print_status "SECTION" "8. CLI Command Testing"
 
 # Test basic CLI commands
 CLI_COMMANDS=(
-    "greenlang --version"
-    "greenlang --help"
-    "greenlang agents"
+    "gl --version"
+    "gl --help"
+    "gl agents"
 )
 
 for cmd in "${CLI_COMMANDS[@]}"; do

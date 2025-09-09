@@ -6,32 +6,32 @@ echo.
 
 echo 1. Testing version command:
 echo --------------------------
-call greenlang --version
+call gl --version
 echo.
 
 echo 2. Testing help command:
 echo ------------------------
-call greenlang --help
+call gl --help
 echo.
 
 echo 3. Testing agents list:
 echo -----------------------
-call greenlang agents
+call gl agents
 echo.
 
 echo 4. Testing agent details:
 echo -------------------------
-call greenlang agent fuel
+call gl agent fuel
 echo.
 
 echo 5. Testing benchmark:
 echo ---------------------
-call greenlang benchmark --type commercial_office --country US
+call gl benchmark --type commercial_office --country US
 echo.
 
 echo 6. Testing init:
 echo ----------------
-call greenlang init --output test_workflow.yaml
+call gl init --output test_workflow.yaml
 echo.
 
 echo ========================================
@@ -40,16 +40,16 @@ echo ========================================
 echo.
 echo CORRECT USAGE:
 echo --------------
-echo greenlang --version                     (Show version)
-echo greenlang --help                        (Show help)
-echo greenlang calc                          (Simple calculator)
-echo greenlang calc --building               (Building calculator)
-echo greenlang agents                        (List all agents)
-echo greenlang agent [agent_id]              (Show agent details)
-echo greenlang analyze [file]                (Analyze building file)
-echo greenlang benchmark --type [type] --country [country]
-echo greenlang recommend                     (Get recommendations)
-echo greenlang ask "question"                (Ask AI assistant)
-echo greenlang run [workflow_file]           (Run workflow)
-echo greenlang init                          (Initialize project)
-echo greenlang dev                          (Developer interface)
+echo gl --version                     (Show version)
+echo gl --help                        (Show help)
+echo gl calc                          (Simple calculator)
+echo gl calc --building               (Building calculator)
+echo gl agents                        (List all agents)
+echo gl agent [agent_id]              (Show agent details)
+echo gl analyze [file]                (Analyze building file)
+echo gl benchmark --type [type] --country [country]
+echo gl recommend                     (Get recommendations)
+echo gl ask "question"                (Ask AI assistant)
+echo gl run [workflow_file]           (Run workflow)
+echo gl init                          (Initialize project)
+echo gl dev                          (Developer interface)

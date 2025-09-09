@@ -31,7 +31,7 @@ Major improvements and fixes to the GreenLang Climate Intelligence Framework, fo
 ## 2. Dev Interface Fixes
 
 ### A. Test Functionality Fixed
-**Issue**: `greenlang dev` → `agents` → `test` failed with missing data errors
+**Issue**: `gl dev` → `agents` → `test` failed with missing data errors
 
 **Solution**: Added comprehensive test data for all agents in `dev_interface.py`
 - Each agent now has properly formatted test data
@@ -39,7 +39,7 @@ Major improvements and fixes to the GreenLang Climate Intelligence Framework, fo
 - Added custom data input option for flexibility
 
 ### B. Create Functionality Enhanced
-**Issue**: `greenlang dev` → `agents` → `create` only generated basic templates
+**Issue**: `gl dev` → `agents` → `create` only generated basic templates
 
 **Solution**: Complete rewrite of `create_agent()` function
 - Added 9 specialized agent templates
@@ -74,7 +74,7 @@ Added to `greenlang/sdk/enhanced_client.py`:
 ## 4. Workflow Execution Fixes
 
 ### Issue
-`greenlang init` and `greenlang run` commands failing with validation errors
+`gl init` and `gl run` commands failing with validation errors
 
 ### Solution
 - Simplified workflow generation in `init` command
@@ -135,26 +135,26 @@ steps:
 ### Verify All Fixes
 ```bash
 # List all agents
-greenlang agents
+gl agents
 
 # Test specific agent
 greenlang agent boiler
 
 # Test dev interface
-greenlang dev
+gl dev
 > agents
 > test
 > Select: boiler
 
 # Create new agent
-greenlang dev
+gl dev
 > agents
 > create
 > Agent type: boiler
 
 # Initialize and run workflow
-greenlang init
-greenlang run workflow.yaml --input workflow_input.json
+gl init
+gl run workflow.yaml --input workflow_input.json
 ```
 
 ## 8. Impact Summary

@@ -43,30 +43,30 @@ This enhanced checklist incorporates engineering best practices and automated te
 ### Core Commands (All 12 Countries)
 Countries to test: US, IN, EU, CN, JP, BR, KR, UK, DE, CA, AU, SG
 
-- [ ] `greenlang --version` returns correct version
-- [ ] `greenlang --help` displays all commands
-- [ ] `greenlang calc` works in simple mode
-- [ ] `greenlang calc --building` launches building mode
-- [ ] `greenlang calc --building --country [COUNTRY]` for all 12 countries
+- [ ] `gl --version` returns correct version
+- [ ] `gl --help` displays all commands
+- [ ] `gl calc` works in simple mode
+- [ ] `gl calc --building` launches building mode
+- [ ] `gl calc --building --country [COUNTRY]` for all 12 countries
 
 ### Input Validation Testing
-- [ ] `greenlang analyze valid_building.json` processes correctly
-- [ ] `greenlang analyze malformed.json` returns user-friendly error
-- [ ] `greenlang analyze empty.json` handles gracefully
-- [ ] `greenlang analyze nonexistent.json` provides helpful message
-- [ ] `greenlang analyze ../../../etc/passwd` prevents path traversal
+- [ ] `gl analyze valid_building.json` processes correctly
+- [ ] `gl analyze malformed.json` returns user-friendly error
+- [ ] `gl analyze empty.json` handles gracefully
+- [ ] `gl analyze nonexistent.json` provides helpful message
+- [ ] `gl analyze ../../../etc/passwd` prevents path traversal
 
 ### Advanced Commands
-- [ ] `greenlang benchmark --type [all 7 types] --country [all 12 countries]`
-- [ ] `greenlang recommend` with all performance ratings
-- [ ] `greenlang agents` lists exactly 9 agents
-- [ ] `greenlang agent [each_agent]` shows correct details
-- [ ] `greenlang ask "[query]"` handles various question types
-- [ ] `greenlang run [workflow.yaml]` with valid/invalid workflows
-- [ ] `greenlang init` creates correct template files
+- [ ] `gl benchmark --type [all 7 types] --country [all 12 countries]`
+- [ ] `gl recommend` with all performance ratings
+- [ ] `gl agents` lists exactly 9 agents
+- [ ] `gl agent [each_agent]` shows correct details
+- [ ] `gl ask "[query]"` handles various question types
+- [ ] `gl run [workflow.yaml]` with valid/invalid workflows
+- [ ] `gl init` creates correct template files
 
 ### Developer Interface Testing
-- [ ] `greenlang dev` launches successfully
+- [ ] `gl dev` launches successfully
 - [ ] Web interface responsive (if applicable - test with Playwright)
 - [ ] API endpoints accessible
 - [ ] Interactive features work correctly
@@ -233,10 +233,10 @@ Order: CLI args > Environment vars > Config file > Defaults
 ```bash
 # Test various configuration scenarios
 export GREENLANG_REGION=INVALID
-greenlang calc  # Should error gracefully
+gl calc  # Should error gracefully
 
 export GREENLANG_REGION=IN
-greenlang calc  # Should use India factors
+gl calc  # Should use India factors
 ```
 
 ---

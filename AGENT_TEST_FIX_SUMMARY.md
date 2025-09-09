@@ -1,7 +1,7 @@
 # Agent Test Functionality Fix Summary
 
 ## Issue
-In `greenlang dev`, when testing agents (especially BoilerAgent), the test functionality failed with errors like:
+In `gl dev`, when testing agents (especially BoilerAgent), the test functionality failed with errors like:
 - "Missing boiler_type in payload"
 - "Invalid input payload for boiler calculations"
 
@@ -157,7 +157,7 @@ If test data is not configured or user wants custom data:
 
 ## Testing the Fix
 
-### In `greenlang dev`:
+### In `gl dev`:
 1. Type `agents`
 2. Select `test`
 3. Enter agent ID (e.g., `boiler`)

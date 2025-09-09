@@ -132,7 +132,7 @@ Known emission factors (these are examples, provide region-specific when asked):
 - Gasoline: 8.887 kg CO2e/gallon
 - Propane: 5.76 kg CO2e/gallon
 
-Provide accurate, helpful information. If asked about specific calculations, suggest using the 'greenlang calc' command for interactive calculations."""
+Provide accurate, helpful information. If asked about specific calculations, suggest using the 'gl calc' command for interactive calculations."""
 
             response = self.client.chat.completions.create(
                 model="gpt-4",
@@ -251,7 +251,7 @@ Provide accurate, helpful information. If asked about specific calculations, sug
             response_parts.append("  - Carbon footprint calculations")
             response_parts.append("  - Industry benchmarks")
             response_parts.append("  - Tips for reducing emissions")
-            response_parts.append("\nTry asking about specific emission factors or use 'greenlang calc' for calculations.")
+            response_parts.append("\nTry asking about specific emission factors or use 'gl calc' for calculations.")
         
         return {
             "success": True,
