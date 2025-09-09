@@ -15,44 +15,41 @@ logger = logging.getLogger(__name__)
 
 
 # Standalone functions for direct import
-def check_install(pack_manifest: Any, path: str, 
-                   stage: Literal["publish", "add"]) -> None:
+def check_install(pm, path: str, stage: str = "publish") -> None:
     """
     Check if pack can be installed or published (raises on failure)
     
     Args:
-        pack_manifest: PackManifest object
+        pm: PackManifest object
         path: Path to pack directory  
         stage: Either "publish" or "add"
     
     Raises:
         RuntimeError: If policy denies the operation
     """
-    enforcer = PolicyEnforcer()
-    allowed, reasons = enforcer.check_install(pack_manifest, path, stage)
-    
-    if not allowed:
-        reason_str = "; ".join(reasons) if reasons else "Policy denied"
-        raise RuntimeError(f"Policy denied: {reason_str}")
+    dec = opa_eval("bundles/install.rego", {"pack": pm.model_dump() if hasattr(pm, 'model_dump') else pm.dict(), "stage": stage})
+    if not dec["allow"]: 
+        raise RuntimeError(dec.get("reason", "policy denied"))
 
 
-def check_run(pipeline: Any, context: Any) -> None:
+def check_run(pipeline, ctx) -> None:
     """
     Check if pipeline can be executed (raises on failure)
     
     Args:
         pipeline: Pipeline object
-        context: Execution context
+        ctx: Execution context
     
     Raises:
         RuntimeError: If policy denies the operation
     """
-    enforcer = PolicyEnforcer()
-    allowed, reasons = enforcer.check_run(pipeline, context)
-    
-    if not allowed:
-        reason_str = "; ".join(reasons) if reasons else "Policy denied"
-        raise RuntimeError(f"Policy denied: {reason_str}")
+    dec = opa_eval("bundles/run.rego", {
+        "pipeline": pipeline.to_policy_doc() if hasattr(pipeline, 'to_policy_doc') else pipeline.__dict__,
+        "egress": getattr(ctx, 'egress_targets', []),
+        "region": getattr(ctx, 'region', 'unknown')
+    })
+    if not dec["allow"]: 
+        raise RuntimeError(dec.get("reason", "policy denied"))
 
 
 class PolicyEnforcer:

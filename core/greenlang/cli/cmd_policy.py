@@ -18,185 +18,172 @@ console = Console()
 
 @app.command("check")
 def check(
-    target: Path = typer.Argument(..., help="Target file or directory to check"),
-    policy: Optional[Path] = typer.Option(None, "--policy", "-p", help="Policy file or bundle"),
+    pack_path: Optional[Path] = typer.Argument(None, help="Pack path to validate (defaults to current directory)"),
     explain: bool = typer.Option(False, "--explain", help="Show detailed explanations"),
     json_output: bool = typer.Option(False, "--json", help="Output as JSON")
 ):
-    """Evaluate OPA bundle against target"""
-    from ..policy.enforcer import check_install, check_run
+    """Validate pack against install policy"""
+    from ..policy.enforcer import check_install
+    from ..packs.manifest import load_manifest
+    
+    # Default to current directory if no pack path provided
+    target = pack_path or Path.cwd()
     
     if not target.exists():
-        console.print(f"[red]Target not found: {target}[/red]")
+        console.print(f"[red]Pack path not found: {target}[/red]")
         raise typer.Exit(1)
     
-    console.print(f"[cyan]Checking policy for: {target}[/cyan]")
+    # Look for pack.yaml
+    pack_file = target / "pack.yaml" if target.is_dir() else target
+    if target.is_dir() and not pack_file.exists():
+        console.print(f"[red]No pack.yaml found in: {target}[/red]")
+        raise typer.Exit(1)
     
-    # Determine check type based on target
-    context = {}
-    check_func = None
+    console.print(f"[cyan]Validating pack install policy: {target}[/cyan]")
     
-    if (target / "pack.yaml").exists():
-        # Pack installation check
-        from ..packs.manifest import load_manifest
-        manifest = load_manifest(target)
-        context = {
-            "manifest": manifest.dict() if hasattr(manifest, 'dict') else manifest,
-            "path": str(target),
-            "stage": "install"
-        }
-        check_func = check_install
-        check_type = "pack installation"
-    elif (target / "gl.yaml").exists() or target.suffix in [".yaml", ".yml"]:
-        # Pipeline run check
-        if target.is_file():
-            with open(target) as f:
-                pipeline = yaml.safe_load(f)
+    try:
+        # Load manifest
+        if target.is_dir():
+            manifest = load_manifest(target)
         else:
-            with open(target / "gl.yaml") as f:
-                pipeline = yaml.safe_load(f)
+            # Single pack.yaml file
+            manifest = load_manifest(target.parent)
         
-        context = {
-            "pipeline": pipeline,
-            "inputs": {},
-            "backend": "local"
-        }
-        check_func = check_run
-        check_type = "pipeline execution"
-    else:
-        console.print(f"[red]Cannot determine policy check type for: {target}[/red]")
-        raise typer.Exit(1)
-    
-    # Load policy if provided, otherwise use default
-    if policy:
-        policy_path = policy
-    else:
-        # Try to find default policy bundle
-        policy_path = Path.home() / ".greenlang" / "policies" / "default.rego"
-        if not policy_path.exists():
-            policy_path = Path("/etc/greenlang/policies/default.rego")
-    
-    if not policy_path.exists():
-        console.print(f"[yellow]Warning: No policy found at {policy_path}[/yellow]")
-        console.print("Proceeding without policy enforcement")
-        allowed = True
-        reasons = []
-    else:
-        # Evaluate policy
+        # Use PR4 check_install function directly
         try:
-            allowed, reasons = check_func(policy_path, context)
-        except Exception as e:
-            console.print(f"[red]Policy evaluation failed: {e}[/red]")
-            raise typer.Exit(1)
-    
-    # Format output
-    if json_output:
-        output = {
-            "target": str(target),
-            "type": check_type,
-            "allowed": allowed,
-            "reasons": reasons
-        }
-        console.print(json.dumps(output, indent=2))
-    else:
-        if allowed:
-            console.print(f"[green]✓ Policy check passed[/green]")
-            if reasons and explain:
-                console.print("\n[bold]Allowed because:[/bold]")
-                for reason in reasons:
-                    console.print(f"  • {reason}")
+            check_install(manifest, str(target), "publish")
+            allowed = True
+            reason = "Policy check passed"
+        except RuntimeError as e:
+            allowed = False
+            reason = str(e)
+        
+        # Format output
+        if json_output:
+            output = {
+                "target": str(target),
+                "type": "pack installation",
+                "allowed": allowed,
+                "reason": reason
+            }
+            console.print(json.dumps(output, indent=2))
         else:
-            console.print(f"[red]✗ Policy check failed[/red]")
-            if reasons:
-                console.print("\n[bold]Denied because:[/bold]")
-                for reason in reasons:
-                    console.print(f"  • {reason}")
+            if allowed:
+                console.print(f"[green]OK Policy check passed[/green]")
+                if explain:
+                    console.print(f"  License: {getattr(manifest, 'license', 'unknown')}")
+                    policy_attr = getattr(manifest, 'policy', {})
+                    if hasattr(policy_attr, 'network'):
+                        console.print(f"  Network allowlist: {len(policy_attr.network)} domains")
+                    if hasattr(policy_attr, 'ef_vintage_min'):
+                        console.print(f"  EF vintage: {policy_attr.ef_vintage_min}")
+            else:
+                console.print(f"[red]ERROR Policy check failed[/red]")
+                console.print(f"  {reason}")
                 
                 if explain:
-                    console.print("\n[yellow]To fix:[/yellow]")
-                    console.print("  1. Review the policy requirements")
-                    console.print("  2. Update your configuration")
-                    console.print("  3. Request policy exception if needed")
-            raise typer.Exit(1)
+                    console.print("\n[yellow]Common fixes:[/yellow]")
+                    if "license" in reason.lower():
+                        console.print("  - Update license to: Apache-2.0, MIT, BSD-3-Clause, or Commercial")
+                    if "network" in reason.lower():
+                        console.print("  - Add network allowlist to pack.yaml:")
+                        console.print("    policy:")
+                        console.print("      network:")
+                        console.print("        - domain1.com")
+                        console.print("        - domain2.com")
+                    if "vintage" in reason.lower():
+                        console.print("  - Update ef_vintage_min to 2024 or later in pack.yaml:")
+                        console.print("    policy:")
+                        console.print("      ef_vintage_min: 2025")
+                raise typer.Exit(1)
+    
+    except Exception as e:
+        console.print(f"[red]Validation failed: {e}[/red]")
+        raise typer.Exit(1)
 
 
 @app.command("run")
 def run_policy(
-    pipeline: str = typer.Argument(..., help="Pipeline to check"),
-    inputs: Optional[Path] = typer.Option(None, "--inputs", "-i", help="Input file"),
-    policy: Optional[Path] = typer.Option(None, "--policy", "-p", help="Policy file"),
-    explain: bool = typer.Option(False, "--explain", help="Show rule explanations")
+    gl_yaml: Path = typer.Argument(..., help="gl.yaml pipeline file to check"),
+    explain: bool = typer.Option(False, "--explain", help="Show detailed explanation")
 ):
-    """Dry-run pipeline against policy"""
-    from greenlang.policy.enforcer import check_run
+    """Dry-run pipeline against runtime policy (no execution)"""
+    from ..policy.enforcer import check_run
     
-    # Load pipeline
-    if Path(pipeline).exists():
-        with open(pipeline) as f:
-            pipe_data = yaml.safe_load(f)
-    else:
-        console.print(f"[red]Pipeline not found: {pipeline}[/red]")
+    if not gl_yaml.exists():
+        console.print(f"[red]Pipeline file not found: {gl_yaml}[/red]")
         raise typer.Exit(1)
     
-    # Load inputs if provided
-    input_data = {}
-    if inputs:
-        if inputs.suffix == ".json":
-            with open(inputs) as f:
-                input_data = json.load(f)
-        elif inputs.suffix in [".yaml", ".yml"]:
-            with open(inputs) as f:
-                input_data = yaml.safe_load(f)
+    console.print(f"[cyan]Dry-run policy check for: {gl_yaml}[/cyan]")
     
-    context = {
-        "pipeline": pipe_data,
-        "inputs": input_data,
-        "backend": "local",
-        "profile": "dev"
-    }
-    
-    console.print(f"[cyan]Policy dry-run for: {pipeline}[/cyan]")
-    
-    # Load policy
-    if policy:
-        policy_path = policy
-    else:
-        policy_path = Path.home() / ".greenlang" / "policies" / "default.rego"
-    
-    if not policy_path.exists():
-        console.print(f"[yellow]No policy found, skipping checks[/yellow]")
-        return
-    
-    # Evaluate policy
     try:
-        allowed, reasons = check_run(policy_path, context)
-    except Exception as e:
-        console.print(f"[red]Policy evaluation failed: {e}[/red]")
-        raise typer.Exit(1)
+        # Load pipeline
+        with open(gl_yaml) as f:
+            pipeline_data = yaml.safe_load(f)
+        
+        # Create a simple pipeline context
+        class PipelineContext:
+            def __init__(self, data):
+                self.data = data
+                self.egress_targets = []
+                self.region = "us-west-2"
+            
+            def to_policy_doc(self):
+                return {
+                    "name": self.data.get("name", "unknown"),
+                    "policy": self.data.get("policy", {}),
+                    "resources": self.data.get("resources", {"memory": 1024, "cpu": 1, "disk": 1024}),
+                    "steps": self.data.get("steps", [])
+                }
+        
+        pipeline = PipelineContext(pipeline_data)
+        
+        class ExecutionContext:
+            def __init__(self):
+                self.egress_targets = []
+                self.region = "us-west-2"
+        
+        ctx = ExecutionContext()
+        
+        # Use PR4 check_run function directly
+        try:
+            check_run(pipeline, ctx)
+            allowed = True
+            reason = "Runtime policy check passed"
+        except RuntimeError as e:
+            allowed = False
+            reason = str(e)
+        
+        if allowed:
+            console.print(f"[green]OK Pipeline would be allowed to run[/green]")
+            if explain:
+                console.print("\n[bold]Policy requirements satisfied:[/bold]")
+                console.print("  - No unauthorized egress detected")
+                console.print("  - Resource limits within bounds")
+                console.print("  - Data residency compliance")
+        else:
+            console.print(f"[red]ERROR Pipeline would be denied[/red]")
+            console.print(f"  {reason}")
+            
+            if explain:
+                console.print("\n[yellow]Suggested fixes:[/yellow]")
+                if "egress" in reason.lower():
+                    console.print("  - Add required domains to gl.yaml:")
+                    console.print("    policy:")
+                    console.print("      network:")
+                    console.print("        - required-domain.com")
+                elif "region" in reason.lower():
+                    console.print("  - Check data residency requirements")
+                elif "resource" in reason.lower():
+                    console.print("  - Reduce resource requirements in pipeline")
+                else:
+                    console.print("  - Review pipeline configuration")
+                    console.print("  - Check network access requirements")
+            
+            raise typer.Exit(1)
     
-    if allowed:
-        console.print(f"[green]✓ Pipeline would be allowed to run[/green]")
-        if explain and reasons:
-            console.print("\n[bold]Policy rules satisfied:[/bold]")
-            for reason in reasons:
-                console.print(f"  • {reason}")
-    else:
-        console.print(f"[red]✗ Pipeline would be denied[/red]")
-        if reasons:
-            console.print("\n[bold]Policy violations:[/bold]")
-            for reason in reasons:
-                console.print(f"  • {reason}")
-        
-        if explain:
-            console.print("\n[yellow]Suggested fixes:[/yellow]")
-            # Provide specific suggestions based on violations
-            if "resource limits" in str(reasons).lower():
-                console.print("  • Reduce resource requests in pipeline")
-            if "untrusted" in str(reasons).lower():
-                console.print("  • Use verified packs only")
-            if "sensitive" in str(reasons).lower():
-                console.print("  • Remove sensitive data from inputs")
-        
+    except Exception as e:
+        console.print(f"[red]Policy dry-run failed: {e}[/red]")
         raise typer.Exit(1)
 
 

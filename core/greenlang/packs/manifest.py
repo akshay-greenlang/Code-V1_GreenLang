@@ -161,14 +161,22 @@ class PackManifest(BaseModel):
     @classmethod
     def semver_ok(cls, v: str) -> str:
         """Validate semantic versioning"""
-        try:
-            # Use packaging.version for proper semver validation
-            parsed = version.parse(v)
-            # Ensure it's not a legacy version
-            if isinstance(parsed, version.LegacyVersion):
-                raise ValueError(f"Invalid semantic version: {v}")
-        except Exception as e:
-            raise ValueError(f"Invalid semantic version: {v}") from e
+        # Simple validation for semantic versioning
+        if not v or "." not in v:
+            raise ValueError(f"Version must be in semantic versioning format (e.g., 1.0.0)")
+        
+        parts = v.split(".")
+        if len(parts) < 2:
+            raise ValueError(f"Version must have at least major.minor: {v}")
+        
+        # Check that main parts are numeric
+        for i, part in enumerate(parts[:3]):  # Check major, minor, patch
+            if i < len(parts):
+                # Allow pre-release and build metadata after patch
+                base_part = part.split("-")[0].split("+")[0]
+                if not base_part.isdigit():
+                    raise ValueError(f"Invalid version component '{part}' in: {v}")
+        
         return v
     
     @field_validator("license")

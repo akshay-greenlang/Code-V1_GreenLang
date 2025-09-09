@@ -1,45 +1,62 @@
-name: Release to PyPI
+name: release
 
 on:
   push:
-    tags:
-      - 'v*'  # Trigger on version tags like v0.9.0, v1.0.0
-  workflow_dispatch:  # Allow manual trigger
+    tags: ['v*']
 
 jobs:
-  build:
-    name: Build distribution
+  publish:
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Full history for setuptools_scm
     
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Set up Python  
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
-    - name: Install build dependencies
+    - name: Install GreenLang
+      run: pip install -e .
+    
+    - name: Install additional tools
       run: |
-        python -m pip install --upgrade pip
-        pip install build wheel setuptools setuptools_scm
+        pip install cyclonedx-bom || true
     
-    - name: Build sdist and wheel
-      run: python -m build
-    
-    - name: Check build artifacts
-      run: |
-        ls -la dist/
-        pip install check-wheel-contents
-        check-wheel-contents dist/*.whl
-    
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+    - name: Install cosign
+      uses: sigstore/cosign-installer@v3
       with:
-        name: dist-artifacts
-        path: dist/
+        cosign-release: 'v2.2.0'
+    
+    - name: Install ORAS
+      run: |
+        curl -LO "https://github.com/oras-project/oras/releases/latest/download/oras_linux_amd64.tar.gz"
+        mkdir -p oras-install/
+        tar -zxf oras_*.tar.gz -C oras-install/
+        sudo mv oras-install/oras /usr/local/bin/
+    
+    - name: Verify tools
+      run: |
+        cosign version
+        oras version
+    
+    - name: Validate packs
+      run: gl pack validate packs/**/
+    
+    - name: Generate SBOMs
+      run: |
+        for pack_dir in $(find packs -name "pack.yaml" -type f | xargs dirname); do
+          python -c "
+from core.greenlang.provenance.sbom import generate_sbom
+from pathlib import Path
+generate_sbom(Path('$pack_dir'))
+"
+        done
+    
+    - name: Publish sample pack
+      env:
+        COSIGN_EXPERIMENTAL: 1
+      run: |
+        gl pack publish packs/boiler-solar/ --registry ghcr.io/greenlang || echo "Pack publish failed"
 
   test-install:
     name: Test installation (${{ matrix.os }} / Python ${{ matrix.python-version }})

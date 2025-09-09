@@ -1,0 +1,6 @@
+version: '1.0'
+name: test-scaffold-pack-pipeline
+description: Main pipeline for test-scaffold-pack
+inputs: {}
+steps: []
+outputs: {}

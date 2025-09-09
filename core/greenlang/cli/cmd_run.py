@@ -12,168 +12,93 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 from rich.panel import Panel
 
-app = typer.Typer()
+app = typer.Typer(invoke_without_command=True)
 console = Console()
 
 
-@app.callback(invoke_without_command=True)
+@app.callback()
 def run(
     ctx: typer.Context,
-    pipeline: str = typer.Argument(..., help="Pipeline or pack to run"),
-    inputs: Optional[Path] = typer.Option(None, "--inputs", "-i", help="Input data file (JSON/YAML)"),
-    artifacts: Path = typer.Option(Path("out"), "--artifacts", "-a", help="Artifacts directory"),
+    pipeline: str = typer.Argument(..., help="Pipeline file or pack reference"),
+    inputs: Optional[str] = typer.Option(None, "--inputs", "-i", help="Input data file (JSON/YAML)"),
+    artifacts: str = typer.Option("out", "--artifacts", "-a", help="Artifacts directory"),
     backend: str = typer.Option("local", "--backend", "-b", help="Execution backend (local|k8s)"),
-    profile: str = typer.Option("dev", "--profile", "-p", help="Configuration profile"),
-    policy: Optional[Path] = typer.Option(None, "--policy", help="Policy file to enforce"),
-    explain: bool = typer.Option(False, "--explain", help="Explain execution steps"),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Simulate execution without running")
+    profile: str = typer.Option("dev", "--profile", "-p", help="Configuration profile")
 ):
     """
     Execute pipelines deterministically
     
     Examples:
-        gl run my-pipeline
-        gl run my-pack/pipeline --inputs data.json
+        gl run gl.yaml
+        gl run pipeline.yaml --inputs data.json
         gl run calc --backend k8s --profile prod
     
     Produces stable run.json and artifacts in output directory.
     """
+    # Don't run if a subcommand was invoked
     if ctx.invoked_subcommand is not None:
         return
     
-    # Parse pipeline reference
-    if "/" in pipeline:
-        pack_name, pipeline_name = pipeline.split("/", 1)
-    else:
-        pack_name = None
-        pipeline_name = pipeline
+    from pathlib import Path
+    from ..runtime.executor import Executor
+    from ..provenance.ledger import write_run_ledger
+    
+    # Simplified implementation for PR2
+    pipeline_path = Path(pipeline)
+    if not pipeline_path.exists() and not pipeline.endswith('.yaml'):
+        pipeline_path = Path(f"{pipeline}.yaml")
+    
+    if not pipeline_path.exists():
+        console.print(f"[red]Pipeline not found: {pipeline}[/red]")
+        raise typer.Exit(1)
     
     # Load input data
     input_data = {}
     if inputs:
-        if inputs.suffix == ".json":
-            with open(inputs) as f:
+        inputs_path = Path(inputs)
+        if inputs_path.suffix == ".json":
+            with open(inputs_path) as f:
                 input_data = json.load(f)
-        elif inputs.suffix in [".yaml", ".yml"]:
-            with open(inputs) as f:
+        elif inputs_path.suffix in [".yaml", ".yml"]:
+            with open(inputs_path) as f:
                 input_data = yaml.safe_load(f)
         else:
-            console.print(f"[red]Unsupported input format: {inputs.suffix}[/red]")
+            console.print(f"[red]Unsupported input format: {inputs_path.suffix}[/red]")
             raise typer.Exit(1)
     
-    # Apply policy check if provided
-    if policy:
-        console.print(f"[cyan]Checking policy: {policy}...[/cyan]")
-        from ..policy.enforcer import check_run
+    # Create artifacts directory
+    artifacts_path = Path(artifacts)
+    artifacts_path.mkdir(parents=True, exist_ok=True)
+    
+    # Execute pipeline - simplified for PR2
+    try:
+        # Load pipeline YAML
+        with open(pipeline_path) as f:
+            pipeline_data = yaml.safe_load(f)
         
-        policy_context = {
-            "pipeline": pipeline,
-            "inputs": input_data,
+        # Create executor
+        exec = Executor(backend=backend)
+        
+        # Create context
+        ctx = {
+            "artifacts": str(artifacts_path),
+            "pipeline": pipeline_path.name,
             "backend": backend,
             "profile": profile
         }
         
-        allowed, reasons = check_run(policy, policy_context)
+        # Execute (simplified - no policy check in PR2)
+        console.print(f"[cyan]Executing {pipeline_path.name}...[/cyan]")
+        res = exec.execute(pipeline_data, inputs=input_data)
         
-        if not allowed:
-            console.print("[red]✗ Policy check failed[/red]")
-            if explain:
-                console.print("\n[yellow]Policy violations:[/yellow]")
-                for reason in reasons:
-                    console.print(f"  • {reason}")
-            raise typer.Exit(1)
+        # Write run ledger
+        write_run_ledger(res, ctx)
         
-        console.print("[green]✓ Policy check passed[/green]")
-    
-    # Create artifacts directory
-    artifacts.mkdir(parents=True, exist_ok=True)
-    
-    if dry_run:
-        console.print("\n[yellow]DRY RUN - Would execute:[/yellow]")
-        console.print(f"  Pipeline: {pipeline}")
-        console.print(f"  Backend: {backend}")
-        console.print(f"  Profile: {profile}")
-        console.print(f"  Artifacts: {artifacts}")
-        if input_data:
-            console.print(f"  Inputs: {len(input_data)} parameters")
-        return
-    
-    # Execute pipeline
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
-    ) as progress:
-        task = progress.add_task(f"Running {pipeline}...", total=None)
+        console.print(f"[green]Artifacts -> {artifacts}[/green]")
         
-        try:
-            from ..runtime.executor import Executor
-            from ..sdk.pipeline import Pipeline
-            from ..provenance.ledger import write_run_ledger
-            
-            # Load pipeline
-            if pack_name:
-                from ..packs.loader import PackLoader
-                loader = PackLoader()
-                pack = loader.load(pack_name)
-                pipe = pack.get_pipeline(pipeline_name)
-            else:
-                # Load from file or registry
-                if Path(f"{pipeline}.yaml").exists():
-                    pipe = Pipeline.from_yaml(f"{pipeline}.yaml")
-                elif Path("gl.yaml").exists():
-                    pipe = Pipeline.from_yaml("gl.yaml")
-                else:
-                    # Try to load from registered packs
-                    from ..packs.registry import PackRegistry
-                    registry = PackRegistry()
-                    pipe = registry.get_pipeline(pipeline)
-            
-            # Create executor with context
-            executor = Executor(backend=backend, profile=profile)
-            ctx = executor.create_context(artifacts)
-            
-            # Execute pipeline
-            progress.update(task, description=f"Executing {pipeline}...")
-            result = executor.execute(pipe, input_data, context=ctx)
-            
-            # Write deterministic run ledger
-            write_run_ledger(result, ctx, artifacts / "run.json")
-            
-            progress.update(task, completed=True)
-            
-            if result.success:
-                console.print(f"\n[green]✓[/green] Pipeline completed successfully")
-                console.print(f"Artifacts → {artifacts}")
-                
-                # Display results
-                if result.outputs:
-                    console.print("\n[bold]Outputs:[/bold]")
-                    syntax = Syntax(
-                        json.dumps(result.outputs, indent=2),
-                        "json",
-                        theme="monokai"
-                    )
-                    console.print(syntax)
-                
-                # Show metrics if available
-                if result.metrics:
-                    console.print("\n[bold]Metrics:[/bold]")
-                    for key, value in result.metrics.items():
-                        console.print(f"  {key}: {value}")
-            else:
-                console.print(f"\n[red]✗ Pipeline failed[/red]")
-                console.print(f"Error: {result.error}")
-                if explain and result.trace:
-                    console.print("\n[yellow]Execution trace:[/yellow]")
-                    for step in result.trace:
-                        console.print(f"  {step}")
-                raise typer.Exit(1)
-                
-        except Exception as e:
-            progress.update(task, completed=True)
-            console.print(f"[red]Error: {e}[/red]")
-            raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(1)
 
 
 @app.command("list")

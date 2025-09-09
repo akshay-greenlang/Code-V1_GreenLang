@@ -1,0 +1,20 @@
+name: test-pipeline
+version: 1.0.0
+description: Simple test pipeline
+
+steps:
+  - name: hello
+    action: echo
+    inputs:
+      message: "Hello from GreenLang!"
+    
+  - name: calculate
+    action: math
+    inputs:
+      operation: add
+      a: 10
+      b: 20
+
+outputs:
+  greeting: "$steps.hello.output"
+  result: "$steps.calculate.output"

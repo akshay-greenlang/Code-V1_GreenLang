@@ -1,0 +1,429 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "serialNumber": "urn:uuid:8d1224c0-21d4-4e98-95a6-ddb6995504f1",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-09-09T14:47:52.219268",
+    "tools": [
+      {
+        "vendor": "GreenLang",
+        "name": "greenlang-sbom",
+        "version": "0.1.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "boiler-solar",
+      "name": "boiler-solar",
+      "version": "1.0.0",
+      "description": "",
+      "licenses": [
+        {
+          "license": {
+            "id": "Apache-2.0"
+          }
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "file",
+      "bom-ref": "CARD.md",
+      "name": "CARD.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6644228ed047243a2fe4ce54cbabe64897a720a75b15035c1c968113a7aea26b"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "gl.yaml",
+      "name": "gl.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2bbcba1469535252550d60b0d7ae9056aa4fdb5a501b8e979dcce51f9e5593af"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "pack.yaml",
+      "name": "pack.yaml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "acbcc3685ee0e447115d63659f168ab813565533f06e86c74df019398b519f16"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "pyproject.toml",
+      "name": "pyproject.toml",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e6292c2198cbe021ed4e2ad297dfd3c7f2447192967938a6337e43a09b1e71ce"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "sbom.json",
+      "name": "sbom.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2113ba15b57ba1c32a8d5b0763330722720f816ccd84f1015704ce907815c430"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": ".pytest_cache\\CACHEDIR.TAG",
+      "name": "CACHEDIR.TAG",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": ".pytest_cache\\README.md",
+      "name": "README.md",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "420e808d79a6c25d3cda0af33bc4782314a14949866682c68ce8149e89b66b70"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "agents\\boiler_analyzer.py",
+      "name": "boiler_analyzer.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "2e5cd14a039f0ccb0a765985c28ba000aa06dfc959adc8f5d18b3c2fd4f0e0de"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "agents\\solar_estimator.py",
+      "name": "solar_estimator.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "38e6cb87490a44909b990b7fa33deeb8ee32301b06b7deb9119b79602d031d5e"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "agents\\__init__.py",
+      "name": "__init__.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "5eda5673899c92e2525e4c8eb83c4d5845426a499bb6f7bc45e083336744989a"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "boiler_solar\\manifest.py",
+      "name": "manifest.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d512dce38d6d5560ba06f679911ab0058c5255926785bdde7e2ce296e40be8e5"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "boiler_solar\\__init__.py",
+      "name": "__init__.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "78819c694e79ca90f04902aa34ab5b6f8e1a7a73de186f853ae3f80763fb1fe0"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "datasets\\ef_in_2025.csv",
+      "name": "ef_in_2025.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "ad6e9c08f7aa75ad42cb51287ea0c3ffaae577d55777237e3b9b45ba3c4cf399"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "datasets\\emission_factors.csv",
+      "name": "emission_factors.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "d1232bf2d9eb6a161cc38f97a124f2def83437df6e81c4c7ab49cd83a3fa1868"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "datasets\\equipment_specs.json",
+      "name": "equipment_specs.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "95c5b13b14a2030c656b2c8a37c0bc999625c25a9dc20ac5c80a6a15ea4efbfc"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "datasets\\sample_building.json",
+      "name": "sample_building.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "dad3ae454da9c322b0a8d31a79be61ecb36a0ef7bc0b3621a58b40a19728d1a1"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "datasets\\weather_data.csv",
+      "name": "weather_data.csv",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c4f39d6ccfb1158bbc471beb1d95be18e37850300528df1d01e3d345bc5fe722"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\class_index.html",
+      "name": "class_index.html",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bfc3a06d72466167364725769a21a9330f135973ec197dce0191d3e02e163b14"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\coverage_html_cb_497bf287.js",
+      "name": "coverage_html_cb_497bf287.js",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "3ea0d302555d21a07d8088c47fa2471f2b0c9bf0fb1f245ee01cd015fa5fdce3"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\favicon_32_cb_58284776.png",
+      "name": "favicon_32_cb_58284776.png",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "bc8100fa8743c11bd243eb3259f4b012758651612fd9bf93bf8b734d17f02561"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\function_index.html",
+      "name": "function_index.html",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6c531f03d6dddc293974946af89b70ca00f592f48601b85b998a146f2a21c860"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\index.html",
+      "name": "index.html",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "8f2e6fef49b022a19c785b108fa1b7175ba13e36c693da9109f6ad312cf6a764"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\keybd_closed_cb_ce680311.png",
+      "name": "keybd_closed_cb_ce680311.png",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7d9bf8ae66370e4349b4f423ac5279501384e4374da1fde675e099582ed33a8a"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\status.json",
+      "name": "status.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f4bf5b562d080a747c944daf213a4b1c5b84fea5ed0dc664e4f7d9a58884398a"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\style_cb_dca529e9.css",
+      "name": "style_cb_dca529e9.css",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "0e8136b1b0c6077b3966b13d4026e02a2bdfc3e1dca5346fb4c7976c99fb1230"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "htmlcov\\z_59907216282ad76a_manifest_py.html",
+      "name": "z_59907216282ad76a_manifest_py.html",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "7295fd69c07f84b697b5546d87ea9be9827cfc469bd31c7c00d8274356f60462"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "reports\\cfo_brief.html.j2",
+      "name": "cfo_brief.html.j2",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "f9e732f11f9517cf64d75e384543d5fbb6942c8dbec331b38454df6af3e8666a"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "tests\\test_determinism.py",
+      "name": "test_determinism.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "353efa035e08fe1a01be173d50a3c8b4daac26c0af79c0352e5553d83d241646"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "tests\\test_pack.py",
+      "name": "test_pack.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "62a2359495e0af4147208c871c4ce0e78d6d0c8c6e89d87cc83939ee76d17470"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "tests\\test_pipeline.py",
+      "name": "test_pipeline.py",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "6a20a5eecd7f2c76bb2d46b74456f137863d53f48af18baad5dfba6b40fefce2"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "tests\\golden\\expected.run.json",
+      "name": "expected.run.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "701d60d1667e49b315bfc809da6536646c769aef2db2f3874bcd2dbe76b423c3"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "tests\\golden\\expected_output.json",
+      "name": "expected_output.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9c4db4d46c0eb19881b01d39225be5ea57d53929f83abd4cc69ac63418e4ec4e"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "tests\\golden\\inputs.json",
+      "name": "inputs.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "71934533d978700d19df70b4904b918c55b9ed077e750cc9dd248b38d402a36d"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": "tests\\golden\\inputs.sample.json",
+      "name": "inputs.sample.json",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": ".pytest_cache\\v\\cache\\lastfailed",
+      "name": "lastfailed",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+        }
+      ]
+    },
+    {
+      "type": "file",
+      "bom-ref": ".pytest_cache\\v\\cache\\nodeids",
+      "name": "nodeids",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "9a1ec90519bd35374e6f87ec4b161874187a224a300f4b0c7d5f931155f83d19"
+        }
+      ]
+    }
+  ],
+  "vulnerabilities": []
+}

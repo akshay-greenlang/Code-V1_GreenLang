@@ -1,0 +1,4 @@
+fuel_type,co2_kg_per_kwh
+natural_gas,0.185
+electricity_grid,0.527
+solar,0.0

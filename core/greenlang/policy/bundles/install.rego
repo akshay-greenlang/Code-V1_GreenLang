@@ -1,117 +1,64 @@
-package greenlang
+package greenlang.install
 
-# Install policy - Controls pack installation and publishing
-# Evaluates at: pack add, pack publish
+import rego.v1
 
-default decision = {"allow": false, "reason": "No matching rules"}
+# Default deny-by-default policy
+default allow := false
 
-# Main decision point
-decision = {
-    "allow": allow,
-    "reasons": reasons
+# Default reason for denial
+default reason := "policy denied"
+
+# Allow installation if all conditions are met
+allow if {
+	license_allowed
+	network_policy_present
+	vintage_requirement_met
 }
 
-# Collect all denial reasons
-reasons[msg] {
-    deny[msg]
+# License allowlist - deny GPL and restrictive licenses
+license_allowed if {
+	input.pack.license in ["Apache-2.0", "MIT", "BSD-3-Clause", "Commercial"]
 }
 
-# Allow if no denials and at least one allow rule matches
-allow {
-    count(reasons) == 0
-    allow_rules[_]
+# Network policy must be explicitly defined
+network_policy_present if {
+	count(input.pack.policy.network) > 0
 }
 
-# === DENY RULES ===
-
-# Deny unsigned packs in production
-deny[msg] {
-    input.stage == "add"
-    not input.pack.security.signatures
-    msg := "Pack must be signed for installation"
+# Emission factor vintage must be recent (2024+)
+vintage_requirement_met if {
+	input.pack.policy.ef_vintage_min >= 2024
 }
 
-# Deny packs without SBOM
-deny[msg] {
-    not input.pack.security.sbom
-    msg := "Pack must include SBOM (Software Bill of Materials)"
+# Specific denial reasons for better error messages
+reason := "GPL or restrictive license not allowed" if {
+	not license_allowed
+	input.pack.license in ["GPL-2.0", "GPL-3.0", "AGPL-3.0", "LGPL-2.1", "LGPL-3.0"]
 }
 
-# Deny non-approved licenses
-deny[msg] {
-    input.licenses[_] = license
-    not license in ["MIT", "Apache-2.0", "BSD", "ISC", "CC0-1.0"]
-    msg := sprintf("License '%s' not in approved list", [license])
+reason := "missing network allowlist - must specify allowed domains" if {
+	not network_policy_present
 }
 
-# Deny packs with known vulnerabilities
-deny[msg] {
-    input.pack.security.vulnerabilities[_].severity in ["critical", "high"]
-    msg := "Pack contains critical or high severity vulnerabilities"
+reason := "emission factor vintage too old - must be 2024 or newer" if {
+	license_allowed
+	network_policy_present
+	not vintage_requirement_met
 }
 
-# Deny packs that are too large
-deny[msg] {
-    input.pack.size > 104857600  # 100MB
-    msg := sprintf("Pack size %d exceeds 100MB limit", [input.pack.size])
+reason := sprintf("unsupported license: %s", [input.pack.license]) if {
+	not license_allowed
+	not input.pack.license in ["GPL-2.0", "GPL-3.0", "AGPL-3.0", "LGPL-2.1", "LGPL-3.0"]
 }
 
-# Deny packs with suspicious files
-deny[msg] {
-    input.files[_] = file
-    contains(file, "..")
-    msg := sprintf("Suspicious file path: %s", [file])
+# Stage-specific rules (publish has stricter requirements)
+allow if {
+	input.stage == "dev"
+	input.pack.license in ["Apache-2.0", "MIT", "BSD-3-Clause"]
+	# More lenient for development
 }
 
-deny[msg] {
-    input.files[_] = file
-    endswith(file, ".exe")
-    msg := sprintf("Executable files not allowed: %s", [file])
-}
-
-deny[msg] {
-    input.files[_] = file
-    startswith(file, "/")
-    msg := sprintf("Absolute paths not allowed: %s", [file])
-}
-
-# Deny old emission factor vintages
-deny[msg] {
-    input.pack.metadata.ef_vintage < 2023
-    msg := sprintf("Emission factor vintage %d is too old (minimum: 2023)", [input.pack.metadata.ef_vintage])
-}
-
-# === ALLOW RULES ===
-
-# Allow verified publishers
-allow_rules[msg] {
-    input.pack.publisher in ["greenlang", "greenlang-verified"]
-    msg := "Verified publisher"
-}
-
-# Allow packs from official registry
-allow_rules[msg] {
-    input.pack.source == "hub.greenlang.io"
-    msg := "From official registry"
-}
-
-# Allow signed and verified packs
-allow_rules[msg] {
-    input.pack.security.signatures
-    input.pack.security.verified == true
-    msg := "Signed and verified"
-}
-
-# Allow packs with clean security scan
-allow_rules[msg] {
-    input.pack.security.scan_status == "clean"
-    count(input.pack.security.vulnerabilities) == 0
-    msg := "Clean security scan"
-}
-
-# Allow local development packs (publish stage only)
-allow_rules[msg] {
-    input.stage == "publish"
-    input.pack.version contains "-dev"
-    msg := "Development version for publishing"
+reason := "publish stage requires commercial license and full compliance" if {
+	input.stage == "publish"
+	not (license_allowed and network_policy_present and vintage_requirement_met)
 }

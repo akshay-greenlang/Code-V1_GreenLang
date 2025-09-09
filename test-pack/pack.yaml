@@ -1,0 +1,20 @@
+name: test-pack
+version: 0.1.0
+kind: pack
+description: A GreenLang pack for test-pack
+license: MIT
+authors:
+- name: Your Name
+  email: you@example.com
+contents:
+  pipelines: []
+  agents: []
+  datasets: []
+dependencies:
+- name: greenlang-sdk
+  version: '>=0.1.0'
+security:
+  sbom: sbom.spdx.json
+  signatures: signatures/
+tests:
+- tests/test_*.py

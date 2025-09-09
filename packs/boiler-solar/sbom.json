@@ -1,0 +1,36 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.4",
+  "serialNumber": "urn:uuid:boiler-solar-1.0.0",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-01-15T12:00:00Z",
+    "tools": [
+      {
+        "vendor": "GreenLang",
+        "name": "gl",
+        "version": "0.1.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "boiler-solar",
+      "name": "boiler-solar",
+      "version": "1.0.0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "numpy",
+      "name": "numpy",
+      "version": "1.24.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pandas",
+      "name": "pandas",
+      "version": "2.0.0"
+    }
+  ]
+}

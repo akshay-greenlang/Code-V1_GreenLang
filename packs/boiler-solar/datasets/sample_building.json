@@ -1,0 +1,53 @@
+{
+  "building_info": {
+    "name": "Commercial Office Building",
+    "location": "Denver, CO",
+    "type": "commercial",
+    "area_sqft": 50000,
+    "floors": 5,
+    "year_built": 2010,
+    "occupancy": 250
+  },
+  "energy_systems": {
+    "boiler": {
+      "type": "natural_gas",
+      "capacity_kw": 500,
+      "age_years": 10,
+      "efficiency_rating": 0.85,
+      "operating_hours": 6000
+    },
+    "solar_potential": {
+      "roof_area_sqft": 10000,
+      "usable_area_sqft": 7500,
+      "shading_factor": 0.95,
+      "structural_capacity": "adequate"
+    }
+  },
+  "energy_demand": {
+    "annual_heating_kwh": 1500000,
+    "peak_demand_kw": 450,
+    "monthly_profile": [
+      180000, 160000, 140000, 110000,
+      80000, 60000, 60000, 70000,
+      90000, 120000, 150000, 180000
+    ],
+    "daily_profile_winter": [
+      30, 28, 26, 25, 27, 35, 45, 50,
+      52, 50, 48, 46, 45, 44, 46, 48,
+      50, 48, 45, 42, 38, 35, 32, 30
+    ]
+  },
+  "economic_parameters": {
+    "gas_price_per_mcf": 8.50,
+    "electricity_price_per_kwh": 0.12,
+    "carbon_price_per_ton": 50,
+    "discount_rate": 0.07,
+    "project_lifetime_years": 20
+  },
+  "constraints": {
+    "max_capital_investment": 500000,
+    "min_roi_years": 7,
+    "max_emissions_tons": 500,
+    "min_renewable_fraction": 0.2
+  }
+}
