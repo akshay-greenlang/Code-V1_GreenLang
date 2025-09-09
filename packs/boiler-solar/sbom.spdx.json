@@ -1,429 +1,687 @@
 {
-  "bomFormat": "CycloneDX",
-  "specVersion": "1.4",
-  "serialNumber": "urn:uuid:8d1224c0-21d4-4e98-95a6-ddb6995504f1",
-  "version": 1,
-  "metadata": {
-    "timestamp": "2025-09-09T14:47:52.219268",
-    "tools": [
-      {
-        "vendor": "GreenLang",
-        "name": "greenlang-sbom",
-        "version": "0.1.0"
-      }
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "boiler-solar-1.0.0",
+  "documentNamespace": "https://greenlang.io/sbom/greenlang/boiler-solar-1.0.0-45a70f6c",
+  "creationInfo": {
+    "created": "2025-09-09T18:01:21.130063",
+    "creators": [
+      "Tool: GreenLang-SBOM-Generator-0.1.0",
+      "Organization: greenlang"
     ],
-    "component": {
-      "type": "application",
-      "bom-ref": "boiler-solar",
-      "name": "boiler-solar",
-      "version": "1.0.0",
-      "description": "",
-      "licenses": [
-        {
-          "license": {
-            "id": "Apache-2.0"
-          }
-        }
-      ]
-    }
+    "licenseListVersion": "3.19"
   },
-  "components": [
+  "packages": [
     {
-      "type": "file",
-      "bom-ref": "CARD.md",
-      "name": "CARD.md",
-      "hashes": [
+      "SPDXID": "SPDXRef-Package-boiler-solar",
+      "name": "boiler-solar",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": true,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "Copyright (c) 2025 greenlang",
+      "versionInfo": "1.0.0",
+      "description": null,
+      "externalRefs": [],
+      "files": [
         {
-          "alg": "SHA-256",
-          "content": "6644228ed047243a2fe4ce54cbabe64897a720a75b15035c1c968113a7aea26b"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "gl.yaml",
-      "name": "gl.yaml",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-6644228e",
+          "fileName": "./CARD.md",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "6644228ed047243a2fe4ce54cbabe64897a720a75b15035c1c968113a7aea26b"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "2bbcba1469535252550d60b0d7ae9056aa4fdb5a501b8e979dcce51f9e5593af"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "pack.yaml",
-      "name": "pack.yaml",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-ef45cf93",
+          "fileName": "./gl.yaml",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "ef45cf938c25ddb94b8fddb2812c82e0a75091bb52fd1ab925fe900a46a8ea1a"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "acbcc3685ee0e447115d63659f168ab813565533f06e86c74df019398b519f16"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "pyproject.toml",
-      "name": "pyproject.toml",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-0efaa595",
+          "fileName": "./pack.yaml",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "0efaa595e72a303e09f9f78410cd5309b038a5c79e01106b2d214ce3806cb5fa"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "e6292c2198cbe021ed4e2ad297dfd3c7f2447192967938a6337e43a09b1e71ce"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "sbom.json",
-      "name": "sbom.json",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-e6292c21",
+          "fileName": "./pyproject.toml",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "e6292c2198cbe021ed4e2ad297dfd3c7f2447192967938a6337e43a09b1e71ce"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "2113ba15b57ba1c32a8d5b0763330722720f816ccd84f1015704ce907815c430"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": ".pytest_cache\\CACHEDIR.TAG",
-      "name": "CACHEDIR.TAG",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-2113ba15",
+          "fileName": "./sbom.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "2113ba15b57ba1c32a8d5b0763330722720f816ccd84f1015704ce907815c430"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": ".pytest_cache\\README.md",
-      "name": "README.md",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-a02cde8e",
+          "fileName": "./sbom.spdx.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "a02cde8efab1c1b85b4a9976e1401f0d20ba17e33ad60f9cb591801f037191d7"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "420e808d79a6c25d3cda0af33bc4782314a14949866682c68ce8149e89b66b70"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "agents\\boiler_analyzer.py",
-      "name": "boiler_analyzer.py",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-744eda47",
+          "fileName": "./sbom.spdx.json.pem",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "744eda473412df7b273f82b66fbeceff1481d171c087e8f2042840f6cdaf52da"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "2e5cd14a039f0ccb0a765985c28ba000aa06dfc959adc8f5d18b3c2fd4f0e0de"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "agents\\solar_estimator.py",
-      "name": "solar_estimator.py",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-37dc88ef",
+          "fileName": "./.pytest_cache\\CACHEDIR.TAG",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "37dc88ef9a0abeddbe81053a6dd8fdfb13afb613045ea1eb4a5c815a74a3bde4"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "38e6cb87490a44909b990b7fa33deeb8ee32301b06b7deb9119b79602d031d5e"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "agents\\__init__.py",
-      "name": "__init__.py",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-420e808d",
+          "fileName": "./.pytest_cache\\README.md",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "420e808d79a6c25d3cda0af33bc4782314a14949866682c68ce8149e89b66b70"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "5eda5673899c92e2525e4c8eb83c4d5845426a499bb6f7bc45e083336744989a"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "boiler_solar\\manifest.py",
-      "name": "manifest.py",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-2e5cd14a",
+          "fileName": "./agents\\boiler_analyzer.py",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "2e5cd14a039f0ccb0a765985c28ba000aa06dfc959adc8f5d18b3c2fd4f0e0de"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "d512dce38d6d5560ba06f679911ab0058c5255926785bdde7e2ce296e40be8e5"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "boiler_solar\\__init__.py",
-      "name": "__init__.py",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-38e6cb87",
+          "fileName": "./agents\\solar_estimator.py",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "38e6cb87490a44909b990b7fa33deeb8ee32301b06b7deb9119b79602d031d5e"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "78819c694e79ca90f04902aa34ab5b6f8e1a7a73de186f853ae3f80763fb1fe0"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "datasets\\ef_in_2025.csv",
-      "name": "ef_in_2025.csv",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-5eda5673",
+          "fileName": "./agents\\__init__.py",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "5eda5673899c92e2525e4c8eb83c4d5845426a499bb6f7bc45e083336744989a"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "ad6e9c08f7aa75ad42cb51287ea0c3ffaae577d55777237e3b9b45ba3c4cf399"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "datasets\\emission_factors.csv",
-      "name": "emission_factors.csv",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-d512dce3",
+          "fileName": "./boiler_solar\\manifest.py",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "d512dce38d6d5560ba06f679911ab0058c5255926785bdde7e2ce296e40be8e5"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "d1232bf2d9eb6a161cc38f97a124f2def83437df6e81c4c7ab49cd83a3fa1868"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "datasets\\equipment_specs.json",
-      "name": "equipment_specs.json",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-78819c69",
+          "fileName": "./boiler_solar\\__init__.py",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "78819c694e79ca90f04902aa34ab5b6f8e1a7a73de186f853ae3f80763fb1fe0"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "95c5b13b14a2030c656b2c8a37c0bc999625c25a9dc20ac5c80a6a15ea4efbfc"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "datasets\\sample_building.json",
-      "name": "sample_building.json",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-ad6e9c08",
+          "fileName": "./datasets\\ef_in_2025.csv",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "ad6e9c08f7aa75ad42cb51287ea0c3ffaae577d55777237e3b9b45ba3c4cf399"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "dad3ae454da9c322b0a8d31a79be61ecb36a0ef7bc0b3621a58b40a19728d1a1"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "datasets\\weather_data.csv",
-      "name": "weather_data.csv",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-d1232bf2",
+          "fileName": "./datasets\\emission_factors.csv",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "d1232bf2d9eb6a161cc38f97a124f2def83437df6e81c4c7ab49cd83a3fa1868"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "c4f39d6ccfb1158bbc471beb1d95be18e37850300528df1d01e3d345bc5fe722"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\class_index.html",
-      "name": "class_index.html",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-95c5b13b",
+          "fileName": "./datasets\\equipment_specs.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "95c5b13b14a2030c656b2c8a37c0bc999625c25a9dc20ac5c80a6a15ea4efbfc"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "bfc3a06d72466167364725769a21a9330f135973ec197dce0191d3e02e163b14"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\coverage_html_cb_497bf287.js",
-      "name": "coverage_html_cb_497bf287.js",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-dad3ae45",
+          "fileName": "./datasets\\sample_building.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "dad3ae454da9c322b0a8d31a79be61ecb36a0ef7bc0b3621a58b40a19728d1a1"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "3ea0d302555d21a07d8088c47fa2471f2b0c9bf0fb1f245ee01cd015fa5fdce3"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\favicon_32_cb_58284776.png",
-      "name": "favicon_32_cb_58284776.png",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-c4f39d6c",
+          "fileName": "./datasets\\weather_data.csv",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "c4f39d6ccfb1158bbc471beb1d95be18e37850300528df1d01e3d345bc5fe722"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "bc8100fa8743c11bd243eb3259f4b012758651612fd9bf93bf8b734d17f02561"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\function_index.html",
-      "name": "function_index.html",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-bfc3a06d",
+          "fileName": "./htmlcov\\class_index.html",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "bfc3a06d72466167364725769a21a9330f135973ec197dce0191d3e02e163b14"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "6c531f03d6dddc293974946af89b70ca00f592f48601b85b998a146f2a21c860"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\index.html",
-      "name": "index.html",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-3ea0d302",
+          "fileName": "./htmlcov\\coverage_html_cb_497bf287.js",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "3ea0d302555d21a07d8088c47fa2471f2b0c9bf0fb1f245ee01cd015fa5fdce3"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "8f2e6fef49b022a19c785b108fa1b7175ba13e36c693da9109f6ad312cf6a764"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\keybd_closed_cb_ce680311.png",
-      "name": "keybd_closed_cb_ce680311.png",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-bc8100fa",
+          "fileName": "./htmlcov\\favicon_32_cb_58284776.png",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "bc8100fa8743c11bd243eb3259f4b012758651612fd9bf93bf8b734d17f02561"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "7d9bf8ae66370e4349b4f423ac5279501384e4374da1fde675e099582ed33a8a"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\status.json",
-      "name": "status.json",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-6c531f03",
+          "fileName": "./htmlcov\\function_index.html",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "6c531f03d6dddc293974946af89b70ca00f592f48601b85b998a146f2a21c860"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "f4bf5b562d080a747c944daf213a4b1c5b84fea5ed0dc664e4f7d9a58884398a"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\style_cb_dca529e9.css",
-      "name": "style_cb_dca529e9.css",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-8f2e6fef",
+          "fileName": "./htmlcov\\index.html",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "8f2e6fef49b022a19c785b108fa1b7175ba13e36c693da9109f6ad312cf6a764"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "0e8136b1b0c6077b3966b13d4026e02a2bdfc3e1dca5346fb4c7976c99fb1230"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "htmlcov\\z_59907216282ad76a_manifest_py.html",
-      "name": "z_59907216282ad76a_manifest_py.html",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-7d9bf8ae",
+          "fileName": "./htmlcov\\keybd_closed_cb_ce680311.png",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "7d9bf8ae66370e4349b4f423ac5279501384e4374da1fde675e099582ed33a8a"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "7295fd69c07f84b697b5546d87ea9be9827cfc469bd31c7c00d8274356f60462"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "reports\\cfo_brief.html.j2",
-      "name": "cfo_brief.html.j2",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-f4bf5b56",
+          "fileName": "./htmlcov\\status.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "f4bf5b562d080a747c944daf213a4b1c5b84fea5ed0dc664e4f7d9a58884398a"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "f9e732f11f9517cf64d75e384543d5fbb6942c8dbec331b38454df6af3e8666a"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "tests\\test_determinism.py",
-      "name": "test_determinism.py",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-0e8136b1",
+          "fileName": "./htmlcov\\style_cb_dca529e9.css",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "0e8136b1b0c6077b3966b13d4026e02a2bdfc3e1dca5346fb4c7976c99fb1230"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "353efa035e08fe1a01be173d50a3c8b4daac26c0af79c0352e5553d83d241646"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "tests\\test_pack.py",
-      "name": "test_pack.py",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-7295fd69",
+          "fileName": "./htmlcov\\z_59907216282ad76a_manifest_py.html",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "7295fd69c07f84b697b5546d87ea9be9827cfc469bd31c7c00d8274356f60462"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "62a2359495e0af4147208c871c4ce0e78d6d0c8c6e89d87cc83939ee76d17470"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "tests\\test_pipeline.py",
-      "name": "test_pipeline.py",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-f9e732f1",
+          "fileName": "./reports\\cfo_brief.html.j2",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "f9e732f11f9517cf64d75e384543d5fbb6942c8dbec331b38454df6af3e8666a"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "6a20a5eecd7f2c76bb2d46b74456f137863d53f48af18baad5dfba6b40fefce2"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "tests\\golden\\expected.run.json",
-      "name": "expected.run.json",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-353efa03",
+          "fileName": "./tests\\test_determinism.py",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "353efa035e08fe1a01be173d50a3c8b4daac26c0af79c0352e5553d83d241646"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "701d60d1667e49b315bfc809da6536646c769aef2db2f3874bcd2dbe76b423c3"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "tests\\golden\\expected_output.json",
-      "name": "expected_output.json",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-62a23594",
+          "fileName": "./tests\\test_pack.py",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "62a2359495e0af4147208c871c4ce0e78d6d0c8c6e89d87cc83939ee76d17470"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "9c4db4d46c0eb19881b01d39225be5ea57d53929f83abd4cc69ac63418e4ec4e"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "tests\\golden\\inputs.json",
-      "name": "inputs.json",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-6a20a5ee",
+          "fileName": "./tests\\test_pipeline.py",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "6a20a5eecd7f2c76bb2d46b74456f137863d53f48af18baad5dfba6b40fefce2"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "71934533d978700d19df70b4904b918c55b9ed077e750cc9dd248b38d402a36d"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": "tests\\golden\\inputs.sample.json",
-      "name": "inputs.sample.json",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-701d60d1",
+          "fileName": "./tests\\golden\\expected.run.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "701d60d1667e49b315bfc809da6536646c769aef2db2f3874bcd2dbe76b423c3"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": ".pytest_cache\\v\\cache\\lastfailed",
-      "name": "lastfailed",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-9c4db4d4",
+          "fileName": "./tests\\golden\\expected_output.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "9c4db4d46c0eb19881b01d39225be5ea57d53929f83abd4cc69ac63418e4ec4e"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
-        }
-      ]
-    },
-    {
-      "type": "file",
-      "bom-ref": ".pytest_cache\\v\\cache\\nodeids",
-      "name": "nodeids",
-      "hashes": [
+          "SPDXID": "SPDXRef-File-71934533",
+          "fileName": "./tests\\golden\\inputs.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "71934533d978700d19df70b4904b918c55b9ed077e750cc9dd248b38d402a36d"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
         {
-          "alg": "SHA-256",
-          "content": "9a1ec90519bd35374e6f87ec4b161874187a224a300f4b0c7d5f931155f83d19"
+          "SPDXID": "SPDXRef-File-e3b0c442",
+          "fileName": "./tests\\golden\\inputs.sample.json",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
+        {
+          "SPDXID": "SPDXRef-File-44136fa3",
+          "fileName": "./.pytest_cache\\v\\cache\\lastfailed",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
+        {
+          "SPDXID": "SPDXRef-File-9a1ec905",
+          "fileName": "./.pytest_cache\\v\\cache\\nodeids",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "9a1ec90519bd35374e6f87ec4b161874187a224a300f4b0c7d5f931155f83d19"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
         }
-      ]
+      ],
+      "packageVerificationCode": {
+        "packageVerificationCodeValue": "92620079c1fdae178926574cbf6b7b360749f1a32ec6ac3ef9a9284dd92c2e6d"
+      }
     }
   ],
-  "vulnerabilities": []
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relatedSpdxElement": "SPDXRef-Package-boiler-solar",
+      "relationshipType": "DESCRIBES"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-6644228e",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-ef45cf93",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-0efaa595",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-e6292c21",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-2113ba15",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-a02cde8e",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-744eda47",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-37dc88ef",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-420e808d",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-2e5cd14a",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-38e6cb87",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-5eda5673",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-d512dce3",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-78819c69",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-ad6e9c08",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-d1232bf2",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-95c5b13b",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-dad3ae45",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-c4f39d6c",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-bfc3a06d",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-3ea0d302",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-bc8100fa",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-6c531f03",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-8f2e6fef",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-7d9bf8ae",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-f4bf5b56",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-0e8136b1",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-7295fd69",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-f9e732f1",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-353efa03",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-62a23594",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-6a20a5ee",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-701d60d1",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-9c4db4d4",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-71934533",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-e3b0c442",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-44136fa3",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-9a1ec905",
+      "relationshipType": "CONTAINS"
+    }
+  ]
 }

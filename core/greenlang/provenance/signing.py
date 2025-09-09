@@ -2,15 +2,31 @@
 Artifact Signing and Verification
 ==================================
 
-Signs and verifies artifacts using cosign-style signatures.
+Signs and verifies artifacts using cryptographic signatures.
+Supports RSA, ECDSA, and keyless (identity-based) signing.
 """
 
 import json
 import hashlib
 import base64
+import os
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Tuple
+import logging
+
+logger = logging.getLogger(__name__)
+
+# Try to import cryptography for real signing
+try:
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import padding, rsa, ec, utils
+    from cryptography.hazmat.backends import default_backend
+    from cryptography.exceptions import InvalidSignature
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
+    logger.warning("cryptography library not available, using mock signing")
 
 
 def sign_artifact(artifact_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any]:
@@ -114,17 +130,20 @@ def verify_artifact(artifact_path: Path, signature_path: Optional[Path] = None) 
 
 def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any]:
     """
-    Sign an entire pack
+    Sign an entire pack with cryptographic signature
     
     Args:
         pack_path: Path to pack directory
-        key_path: Path to signing key
+        key_path: Path to signing key (will generate if not provided)
     
     Returns:
-        Pack signature
+        Pack signature dictionary
     """
-    # Calculate hash of all pack files
-    pack_hash = _calculate_directory_hash(pack_path)
+    if not pack_path.exists():
+        raise ValueError(f"Pack not found: {pack_path}")
+    
+    # Calculate hash of all pack files (excluding existing signatures)
+    pack_hash = _calculate_directory_hash(pack_path, exclude=["pack.sig", "*.pem", "*.key"])
     
     # Load manifest
     manifest_path = pack_path / "pack.yaml"
@@ -135,6 +154,20 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
     else:
         manifest = {}
     
+    # Sign the hash
+    if CRYPTO_AVAILABLE:
+        # Use real cryptographic signing
+        if key_path is None:
+            # Generate or use default key
+            key_path = _get_or_create_key_pair(pack_path)
+        
+        signature_value, algorithm, public_key_pem = _cryptographic_sign(pack_hash, key_path)
+    else:
+        # Fallback to mock signing
+        signature_value = _mock_sign(pack_hash, key_path)
+        algorithm = "mock"
+        public_key_pem = None
+    
     # Create pack signature
     signature = {
         "version": "1.0.0",
@@ -142,7 +175,8 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
         "metadata": {
             "timestamp": datetime.now().isoformat(),
             "pack": manifest.get("name", "unknown"),
-            "version": manifest.get("version", "0.0.0")
+            "version": manifest.get("version", "0.0.0"),
+            "signer": os.environ.get("USER", "unknown")
         },
         "spec": {
             "hash": {
@@ -150,18 +184,26 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
                 "value": pack_hash
             },
             "signature": {
-                "algorithm": "mock",
-                "value": _mock_sign(pack_hash, key_path)
-            },
-            "manifest": manifest
+                "algorithm": algorithm,
+                "value": signature_value
+            }
         }
     }
+    
+    # Include public key if available
+    if public_key_pem:
+        signature["spec"]["publicKey"] = public_key_pem
+    
+    # Include manifest hash for integrity
+    manifest_hash = hashlib.sha256(json.dumps(manifest, sort_keys=True).encode()).hexdigest()
+    signature["spec"]["manifestHash"] = manifest_hash
     
     # Save signature
     sig_path = pack_path / "pack.sig"
     with open(sig_path, "w") as f:
         json.dump(signature, f, indent=2)
     
+    logger.info(f"Pack signed successfully: {pack_path}")
     return signature
 
 
@@ -252,6 +294,227 @@ def _mock_sign(data: str, key_path: Optional[Path]) -> str:
         signer.update(b"mock-key")
     
     return base64.b64encode(signer.digest()).decode()
+
+
+def _get_or_create_key_pair(pack_path: Path) -> Path:
+    """
+    Get or create RSA key pair for signing
+    
+    Args:
+        pack_path: Pack directory
+    
+    Returns:
+        Path to private key
+    """
+    # Check for existing keys in pack
+    private_key_path = pack_path / "private.key"
+    public_key_path = pack_path / "public.pem"
+    
+    if private_key_path.exists():
+        return private_key_path
+    
+    # Check for global keys
+    gl_home = Path.home() / ".greenlang"
+    gl_home.mkdir(exist_ok=True)
+    
+    global_private = gl_home / "signing.key"
+    global_public = gl_home / "signing.pub"
+    
+    if global_private.exists():
+        return global_private
+    
+    # Generate new key pair
+    if CRYPTO_AVAILABLE:
+        logger.info("Generating new RSA key pair for signing")
+        
+        # Generate private key
+        private_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=2048,
+            backend=default_backend()
+        )
+        
+        # Save private key
+        private_pem = private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption()
+        )
+        
+        with open(global_private, 'wb') as f:
+            f.write(private_pem)
+        
+        # Save public key
+        public_key = private_key.public_key()
+        public_pem = public_key.public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo
+        )
+        
+        with open(global_public, 'wb') as f:
+            f.write(public_pem)
+        
+        logger.info(f"Keys saved to {gl_home}")
+        return global_private
+    else:
+        # Create mock key
+        with open(global_private, 'w') as f:
+            f.write("MOCK_PRIVATE_KEY")
+        return global_private
+
+
+def _cryptographic_sign(data: str, key_path: Path) -> Tuple[str, str, str]:
+    """
+    Sign data with RSA private key
+    
+    Args:
+        data: Data to sign (hash)
+        key_path: Path to private key
+    
+    Returns:
+        Tuple of (signature, algorithm, public_key_pem)
+    """
+    if not CRYPTO_AVAILABLE:
+        raise RuntimeError("cryptography library not available")
+    
+    # Load private key
+    with open(key_path, 'rb') as f:
+        private_key = serialization.load_pem_private_key(
+            f.read(),
+            password=None,
+            backend=default_backend()
+        )
+    
+    # Sign the data
+    if isinstance(private_key, rsa.RSAPrivateKey):
+        # RSA signing
+        signature = private_key.sign(
+            data.encode(),
+            padding.PSS(
+                mgf=padding.MGF1(hashes.SHA256()),
+                salt_length=padding.PSS.MAX_LENGTH
+            ),
+            hashes.SHA256()
+        )
+        algorithm = "rsa-pss-sha256"
+    elif isinstance(private_key, ec.EllipticCurvePrivateKey):
+        # ECDSA signing
+        signature = private_key.sign(
+            data.encode(),
+            ec.ECDSA(hashes.SHA256())
+        )
+        algorithm = "ecdsa-sha256"
+    else:
+        raise ValueError(f"Unsupported key type: {type(private_key)}")
+    
+    # Get public key
+    public_key = private_key.public_key()
+    public_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    ).decode()
+    
+    # Base64 encode signature
+    signature_b64 = base64.b64encode(signature).decode()
+    
+    return signature_b64, algorithm, public_pem
+
+
+def verify_pack_signature(pack_path: Path, signature_path: Optional[Path] = None) -> Tuple[bool, Dict[str, Any]]:
+    """
+    Verify pack signature with cryptographic verification
+    
+    Args:
+        pack_path: Path to pack directory
+        signature_path: Path to signature file (optional)
+    
+    Returns:
+        Tuple of (is_valid, signature_info)
+    """
+    if signature_path is None:
+        signature_path = pack_path / "pack.sig"
+    
+    if not signature_path.exists():
+        return False, {"error": "No signature found"}
+    
+    # Load signature
+    with open(signature_path) as f:
+        signature = json.load(f)
+    
+    # Calculate current hash
+    current_hash = _calculate_directory_hash(pack_path, exclude=["pack.sig", "*.pem", "*.key"])
+    expected_hash = signature["spec"]["hash"]["value"]
+    
+    if current_hash != expected_hash:
+        return False, {"error": "Hash mismatch", "expected": expected_hash, "actual": current_hash}
+    
+    # Verify signature
+    sig_algorithm = signature["spec"]["signature"]["algorithm"]
+    sig_value = signature["spec"]["signature"]["value"]
+    
+    if sig_algorithm == "mock":
+        # Mock verification
+        expected_sig = _mock_sign(current_hash, None)
+        is_valid = sig_value == expected_sig
+    elif CRYPTO_AVAILABLE and sig_algorithm in ["rsa-pss-sha256", "ecdsa-sha256"]:
+        # Cryptographic verification
+        public_key_pem = signature["spec"].get("publicKey")
+        if not public_key_pem:
+            return False, {"error": "No public key in signature"}
+        
+        try:
+            # Load public key
+            public_key = serialization.load_pem_public_key(
+                public_key_pem.encode(),
+                backend=default_backend()
+            )
+            
+            # Decode signature
+            signature_bytes = base64.b64decode(sig_value)
+            
+            # Verify based on algorithm
+            if sig_algorithm == "rsa-pss-sha256" and isinstance(public_key, rsa.RSAPublicKey):
+                public_key.verify(
+                    signature_bytes,
+                    current_hash.encode(),
+                    padding.PSS(
+                        mgf=padding.MGF1(hashes.SHA256()),
+                        salt_length=padding.PSS.MAX_LENGTH
+                    ),
+                    hashes.SHA256()
+                )
+                is_valid = True
+            elif sig_algorithm == "ecdsa-sha256" and isinstance(public_key, ec.EllipticCurvePublicKey):
+                public_key.verify(
+                    signature_bytes,
+                    current_hash.encode(),
+                    ec.ECDSA(hashes.SHA256())
+                )
+                is_valid = True
+            else:
+                is_valid = False
+                
+        except InvalidSignature:
+            is_valid = False
+        except Exception as e:
+            return False, {"error": f"Verification failed: {e}"}
+    else:
+        return False, {"error": f"Unsupported algorithm: {sig_algorithm}"}
+    
+    # Return result with signature info
+    if is_valid:
+        info = {
+            "valid": True,
+            "pack": signature["metadata"]["pack"],
+            "version": signature["metadata"]["version"],
+            "signed_at": signature["metadata"]["timestamp"],
+            "signer": signature["metadata"].get("signer", "unknown"),
+            "algorithm": sig_algorithm
+        }
+    else:
+        info = {"valid": False, "error": "Signature verification failed"}
+    
+    return is_valid, info
 
 
 def create_keyless_signature(artifact_path: Path, identity: str) -> Dict[str, Any]:

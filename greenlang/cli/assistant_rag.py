@@ -7,7 +7,7 @@ import re
 import os
 import json
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, TYPE_CHECKING
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
@@ -38,6 +38,12 @@ try:
     RAG_AVAILABLE = True
 except ImportError:
     RAG_AVAILABLE = False
+    # Create a dummy Document class for type hints when langchain is not available
+    if TYPE_CHECKING:
+        from langchain.schema import Document
+    else:
+        class Document:
+            pass
     print("Warning: RAG components not available. Install with: pip install langchain langchain-community faiss-cpu sentence-transformers")
 
 # Try importing OpenAI

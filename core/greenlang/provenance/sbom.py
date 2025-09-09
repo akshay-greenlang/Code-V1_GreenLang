@@ -21,31 +21,38 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def generate_sbom(path: str, output_path: Optional[str] = None) -> str:
+def generate_sbom(path: str, output_path: Optional[str] = None, format: str = "spdx") -> str:
     """
-    Generate SBOM for a pack using CycloneDX or fallback
+    Generate SBOM for a pack in SPDX or CycloneDX format
     
     Args:
         path: Path to pack directory or requirements file
         output_path: Where to save SBOM (defaults to path/sbom.spdx.json)
+        format: SBOM format - "spdx" or "cyclonedx"
     
     Returns:
         Path to generated SBOM file
     """
     pack_path = Path(path)
     if output_path is None:
-        output_path = pack_path / "sbom.spdx.json"
+        ext = "spdx.json" if format == "spdx" else "cdx.json"
+        output_path = pack_path / f"sbom.{ext}"
     else:
         output_path = Path(output_path)
     
-    # Try to use CycloneDX if available
-    if _has_cyclonedx():
-        logger.info("Using CycloneDX to generate SBOM")
-        return _generate_with_cyclonedx(pack_path, output_path)
-    
-    # Fallback to manual generation
-    logger.info("Using fallback SBOM generation")
-    return _generate_manual_sbom(pack_path, output_path)
+    if format == "spdx":
+        logger.info("Generating SPDX format SBOM")
+        return _generate_spdx_sbom(pack_path, output_path)
+    elif format == "cyclonedx":
+        # Try to use CycloneDX if available
+        if _has_cyclonedx():
+            logger.info("Using CycloneDX to generate SBOM")
+            return _generate_with_cyclonedx(pack_path, output_path)
+        else:
+            logger.info("Using fallback CycloneDX generation")
+            return _generate_manual_sbom(pack_path, output_path)
+    else:
+        raise ValueError(f"Unknown SBOM format: {format}. Use 'spdx' or 'cyclonedx'")
     
     # Create SBOM in CycloneDX format
     sbom = {
@@ -139,6 +146,184 @@ def generate_sbom(path: str, output_path: Optional[str] = None) -> str:
         json.dump(sbom, f, indent=2)
     
     return str(output_path)
+
+
+def _generate_spdx_sbom(pack_path: Path, output_path: Path) -> str:
+    """
+    Generate SBOM in SPDX format
+    
+    Args:
+        pack_path: Path to pack directory
+        output_path: Where to save SBOM
+    
+    Returns:
+        Path to generated SBOM file
+    """
+    from ..packs.manifest import load_manifest
+    import yaml
+    
+    # Load pack manifest
+    try:
+        manifest = load_manifest(pack_path)
+        # Convert to dict if it's a Pydantic model
+        if hasattr(manifest, 'model_dump'):
+            manifest_dict = manifest.model_dump()
+        elif hasattr(manifest, 'dict'):
+            manifest_dict = manifest.dict()
+        else:
+            manifest_dict = manifest.__dict__
+    except:
+        # Fallback to basic manifest
+        manifest_path = pack_path / "pack.yaml"
+        if manifest_path.exists():
+            with open(manifest_path) as f:
+                manifest_dict = yaml.safe_load(f)
+        else:
+            manifest_dict = {}
+    
+    # Extract manifest fields
+    pack_name = manifest_dict.get("name", "unknown")
+    pack_version = manifest_dict.get("version", "0.0.0")
+    pack_license = manifest_dict.get("license", "NOASSERTION")
+    pack_description = manifest_dict.get("description", "")
+    pack_org = manifest_dict.get("org", "greenlang")
+    
+    # Create SPDX SBOM
+    sbom = {
+        "spdxVersion": "SPDX-2.3",
+        "dataLicense": "CC0-1.0",
+        "SPDXID": "SPDXRef-DOCUMENT",
+        "name": f"{pack_name}-{pack_version}",
+        "documentNamespace": f"https://greenlang.io/sbom/{pack_org}/{pack_name}-{pack_version}-{_generate_uuid()[:8]}",
+        "creationInfo": {
+            "created": datetime.now().isoformat(),
+            "creators": [
+                "Tool: GreenLang-SBOM-Generator-0.1.0",
+                f"Organization: {pack_org}"
+            ],
+            "licenseListVersion": "3.19"
+        },
+        "packages": []
+    }
+    
+    # Add main package
+    main_package = {
+        "SPDXID": f"SPDXRef-Package-{pack_name}",
+        "name": pack_name,
+        "downloadLocation": "NOASSERTION",
+        "filesAnalyzed": True,
+        "licenseConcluded": pack_license,
+        "licenseDeclared": pack_license,
+        "copyrightText": f"Copyright (c) {datetime.now().year} {pack_org}",
+        "versionInfo": pack_version,
+        "description": pack_description,
+        "externalRefs": []
+    }
+    
+    # Add dependencies
+    dependencies = manifest_dict.get("dependencies", [])
+    dep_packages = []
+    relationships = []
+    
+    for dep in dependencies:
+        if isinstance(dep, str):
+            dep_name = dep
+            dep_version = "*"
+        elif isinstance(dep, dict):
+            dep_name = dep.get("name", "unknown")
+            dep_version = dep.get("version", "*")
+        else:
+            continue
+        
+        dep_package = {
+            "SPDXID": f"SPDXRef-Package-{dep_name}",
+            "name": dep_name,
+            "downloadLocation": f"https://pypi.org/project/{dep_name}/",
+            "filesAnalyzed": False,
+            "licenseConcluded": "NOASSERTION",
+            "versionInfo": dep_version
+        }
+        dep_packages.append(dep_package)
+        
+        # Add relationship
+        relationships.append({
+            "spdxElementId": f"SPDXRef-Package-{pack_name}",
+            "relatedSpdxElement": f"SPDXRef-Package-{dep_name}",
+            "relationshipType": "DEPENDS_ON"
+        })
+    
+    # Add file information
+    files = []
+    file_hashes = _calculate_hashes(pack_path)
+    
+    for file_path, file_hash in file_hashes.items():
+        file_info = {
+            "SPDXID": f"SPDXRef-File-{file_hash[:8]}",
+            "fileName": f"./{file_path}",
+            "checksums": [
+                {
+                    "algorithm": "SHA256",
+                    "checksumValue": file_hash
+                }
+            ],
+            "licenseConcluded": "NOASSERTION",
+            "copyrightText": "NOASSERTION"
+        }
+        files.append(file_info)
+        
+        # Add file relationship
+        relationships.append({
+            "spdxElementId": f"SPDXRef-Package-{pack_name}",
+            "relatedSpdxElement": f"SPDXRef-File-{file_hash[:8]}",
+            "relationshipType": "CONTAINS"
+        })
+    
+    # Add files to main package
+    main_package["files"] = files
+    main_package["packageVerificationCode"] = {
+        "packageVerificationCodeValue": _calculate_package_verification_code(file_hashes)
+    }
+    
+    # Add all packages
+    sbom["packages"] = [main_package] + dep_packages
+    
+    # Add relationships
+    sbom["relationships"] = [
+        {
+            "spdxElementId": "SPDXRef-DOCUMENT",
+            "relatedSpdxElement": f"SPDXRef-Package-{pack_name}",
+            "relationshipType": "DESCRIBES"
+        }
+    ] + relationships
+    
+    # Add extracted licenses if custom
+    if pack_license not in ["MIT", "Apache-2.0", "BSD-3-Clause", "GPL-3.0", "LGPL-3.0"]:
+        sbom["hasExtractedLicensingInfos"] = [
+            {
+                "licenseId": f"LicenseRef-{pack_license}",
+                "extractedText": f"Custom license: {pack_license}",
+                "name": pack_license
+            }
+        ]
+    
+    # Save SBOM
+    with open(output_path, "w") as f:
+        json.dump(sbom, f, indent=2)
+    
+    logger.info(f"Generated SPDX SBOM: {output_path}")
+    return str(output_path)
+
+
+def _calculate_package_verification_code(file_hashes: Dict[Path, str]) -> str:
+    """Calculate package verification code per SPDX spec"""
+    # Sort hashes and concatenate
+    sorted_hashes = sorted(file_hashes.values())
+    combined = "".join(sorted_hashes)
+    
+    # Calculate SHA256 of combined hashes
+    hasher = hashlib.sha256()
+    hasher.update(combined.encode())
+    return hasher.hexdigest()
 
 
 def _has_cyclonedx() -> bool:

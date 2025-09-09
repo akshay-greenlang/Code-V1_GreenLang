@@ -256,19 +256,19 @@ def doctor(
                 console.print("\n[bold]Suggested Fixes:[/bold]")
                 
                 if not cosign_ok:
-                    console.print("  • Install cosign: https://docs.sigstore.dev/cosign/installation/")
+                    console.print("  - Install cosign: https://docs.sigstore.dev/cosign/installation/")
                 
                 if not oras_ok:
-                    console.print("  • Install oras: https://oras.land/docs/installation")
+                    console.print("  - Install oras: https://oras.land/docs/installation")
                 
                 if not docker_ok:
-                    console.print("  • Install Docker: https://docs.docker.com/get-docker/")
+                    console.print("  - Install Docker: https://docs.docker.com/get-docker/")
                 
                 if not hub_ok:
-                    console.print("  • Configure Hub auth: gl auth login")
+                    console.print("  - Configure Hub auth: gl auth login")
                 
                 if not policy_ok:
-                    console.print("  • Add policies: gl policy add <policy.rego>")
+                    console.print("  - Add policies: gl policy add <policy.rego>")
         
         # Environment variables
         if verbose:
@@ -354,7 +354,7 @@ default allow = true
     if fixed:
         console.print("[green]OK Fixed issues:[/green]")
         for fix in fixed:
-            console.print(f"  • {fix}")
+            console.print(f"  - {fix}")
     else:
         console.print("[yellow]No issues to fix[/yellow]")
     

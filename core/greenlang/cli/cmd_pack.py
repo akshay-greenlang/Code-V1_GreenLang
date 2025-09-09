@@ -252,7 +252,7 @@ def test_deterministic(tmp_path):
 }
 """)
     
-    console.print(f"[green]✓[/green] Created pack: {slug}")
+    console.print(f"[green][OK][/green] Created pack: {slug}")
     console.print(f"  Location: {pack_dir}")
     console.print("\nNext steps:")
     console.print(f"  1. cd {pack_dir}")
@@ -278,7 +278,7 @@ def validate(
     is_valid, errors = validate_pack(path)
     
     if is_valid:
-        console.print(f"[green]✓[/green] Pack validation passed")
+        console.print(f"[green][OK][/green] Pack validation passed")
         
         if verbose:
             try:
@@ -297,9 +297,9 @@ def validate(
             except Exception as e:
                 console.print(f"[yellow]Warning: {e}[/yellow]")
     else:
-        console.print(f"[red]✗ Pack validation failed[/red]")
+        console.print(f"[red][FAIL] Pack validation failed[/red]")
         for error in errors:
-            console.print(f"  • {error}")
+            console.print(f"  - {error}")
         raise typer.Exit(1)
 
 
@@ -312,7 +312,7 @@ def publish(
     dry_run: bool = typer.Option(False, "--dry-run", help="Simulate publishing"),
     update_index: bool = typer.Option(True, "--update-index/--no-update-index", help="Update hub index")
 ):
-    """Test → policy → SBOM → sign → push"""
+    """Test -> policy -> SBOM -> sign -> push"""
     from ..packs.manifest import load_manifest, validate_pack
     from ..provenance.sbom import generate_sbom
     from ..provenance.sign import cosign_sign
@@ -325,11 +325,11 @@ def publish(
     if not is_valid:
         console.print("[red]Validation failed:[/red]")
         for error in errors:
-            console.print(f"  • {error}")
+            console.print(f"  - {error}")
         raise typer.Exit(1)
     
     manifest = load_manifest(path)
-    console.print(f"[green]✓[/green] Validated {manifest.name} v{manifest.version}")
+    console.print(f"[green][OK][/green] Validated {manifest.name} v{manifest.version}")
     
     # Run tests if requested
     if test and manifest.tests:
@@ -345,7 +345,7 @@ def publish(
                 if result.returncode != 0:
                     console.print(f"[red]Tests failed[/red]")
                     raise typer.Exit(1)
-                console.print(f"[green]✓[/green] Tests passed")
+                console.print(f"[green][OK][/green] Tests passed")
             except Exception as e:
                 console.print(f"[yellow]Could not run tests: {e}[/yellow]")
     
@@ -353,23 +353,25 @@ def publish(
     console.print("[cyan]Generating SBOM...[/cyan]")
     sbom_path = path / "sbom.spdx.json"
     generate_sbom(path, sbom_path)
-    console.print(f"[green]✓[/green] Generated SBOM")
+    console.print(f"[green][OK][/green] Generated SBOM")
     
     # Check policy
     console.print("[cyan]Checking policy...[/cyan]")
     try:
-        check_install(manifest, path, stage="publish")
-        console.print(f"[green]✓[/green] Policy check passed")
-    except Exception as e:
+        check_install(manifest, str(path), stage="publish")
+        console.print(f"[green][OK][/green] Policy check passed")
+    except RuntimeError as e:
         console.print(f"[red]Policy check failed: {e}[/red]")
         raise typer.Exit(1)
+    except Exception as e:
+        console.print(f"[yellow]Warning: Policy check error: {e}[/yellow]")
     
     # Sign pack if requested
     if sign:
         console.print("[cyan]Signing pack...[/cyan]")
         try:
             cosign_sign(path)
-            console.print(f"[green]✓[/green] Pack signed")
+            console.print(f"[green][OK][/green] Pack signed")
         except Exception as e:
             console.print(f"[yellow]Warning: Could not sign: {e}[/yellow]")
     
@@ -379,10 +381,10 @@ def publish(
     
     if dry_run:
         console.print("\n[yellow]DRY RUN - Would perform:[/yellow]")
-        console.print(f"  • Build pack archive")
-        console.print(f"  • Push to {ref}")
-        console.print(f"  • Upload signatures and SBOM")
-        console.print(f"  • Update hub index")
+        console.print(f"  - Build pack archive")
+        console.print(f"  - Push to {ref}")
+        console.print(f"  - Upload signatures and SBOM")
+        console.print(f"  - Update hub index")
     else:
         console.print(f"[cyan]Publishing to {ref}...[/cyan]")
         
@@ -403,14 +405,14 @@ def publish(
                 "--annotation", f"org.greenlang.version={manifest.version}",
                 "--annotation", f"org.greenlang.name={manifest.name}"
             ])
-            console.print(f"[green]✓[/green] Published {org}/{manifest.name}@{manifest.version}")
+            console.print(f"[green][OK][/green] Published {org}/{manifest.name}@{manifest.version}")
             
             # Update hub index if requested
             if update_index:
                 console.print("[cyan]Updating hub index...[/cyan]")
                 try:
                     _update_hub_index(path, manifest, org)
-                    console.print(f"[green]✓[/green] Updated hub index")
+                    console.print(f"[green][OK][/green] Updated hub index")
                 except Exception as e:
                     console.print(f"[yellow]Warning: Could not update index: {e}[/yellow]")
                     
@@ -437,10 +439,25 @@ def add(
     # Check if local path
     if Path(ref).exists():
         # Install from local directory
+        from ..packs.manifest import load_manifest
+        from ..policy.enforcer import check_install
+        from ..packs.installer import PackInstaller
+        
+        # Check policy first
+        try:
+            manifest = load_manifest(Path(ref))
+            check_install(manifest, str(ref), stage="add")
+            console.print("[green][OK][/green] Policy check passed")
+        except RuntimeError as e:
+            console.print(f"[red]Policy check failed: {e}[/red]")
+            raise typer.Exit(1)
+        except Exception as e:
+            console.print(f"[yellow]Warning: Policy check error: {e}[/yellow]")
+        
         installer = PackInstaller()
         try:
             installed = installer._install_from_local(Path(ref), verify=verify)
-            console.print(f"[green]✓[/green] Installed local pack: {installed.name}")
+            console.print(f"[green][OK][/green] Installed local pack: {installed.name}")
         except Exception as e:
             console.print(f"[red]Failed to install: {e}[/red]")
             raise typer.Exit(1)
@@ -460,7 +477,7 @@ def add(
             console.print("Available packs:")
             entries = hub.search("")[:5]  # Show first 5 packs
             for e in entries:
-                console.print(f"  • {e.org}/{e.slug} v{e.latest_version}")
+                console.print(f"  - {e.org}/{e.slug} v{e.latest_version}")
             raise typer.Exit(1)
         
         # Use latest version if requested
@@ -516,7 +533,7 @@ def add(
                                     if not is_valid:
                                         console.print(f"[red]Signature verification failed for {artifact_file.name}[/red]")
                                         raise typer.Exit(1)
-                            console.print("[green]✓[/green] Signatures verified")
+                            console.print("[green][OK][/green] Signatures verified")
                         else:
                             console.print("[yellow]Warning: No signatures found[/yellow]")
                     except Exception as e:
@@ -524,13 +541,29 @@ def add(
                             console.print(f"[red]Verification failed: {e}[/red]")
                             raise typer.Exit(1)
                 
+                progress.update(task, description="Checking policy...")
+                
+                # Check policy before installing
+                from ..packs.manifest import load_manifest
+                from ..policy.enforcer import check_install
+                
+                try:
+                    manifest = load_manifest(pack_dir)
+                    check_install(manifest, str(pack_dir), stage="add")
+                    console.print("[green][OK][/green] Policy check passed")
+                except RuntimeError as e:
+                    console.print(f"[red]Policy check failed: {e}[/red]")
+                    raise typer.Exit(1)
+                except Exception as e:
+                    console.print(f"[yellow]Warning: Policy check error: {e}[/yellow]")
+                
                 progress.update(task, description="Installing...")
                 
                 # Register pack
                 registry.register(pack_dir, verify=False)
                 
                 progress.update(task, completed=True)
-                console.print(f"[green]✓[/green] Installed {pack_ref}@{version} → {cache}")
+                console.print(f"[green][OK][/green] Installed {pack_ref}@{version} -> {cache}")
                 
             except subprocess.CalledProcessError as e:
                 progress.update(task, completed=True)
@@ -566,37 +599,64 @@ def info(
         raise typer.Exit(1)
     
     # Display pack info
+    manifest = pack.manifest if hasattr(pack.manifest, 'name') else pack.manifest
+    if isinstance(manifest, dict):
+        name = manifest.get('name', 'Unknown')
+        version = manifest.get('version', '1.0.0')
+        description = manifest.get('description', 'No description')
+        kind = manifest.get('kind', 'pack')
+        license = manifest.get('license', 'Unknown')
+    else:
+        name = manifest.name
+        version = manifest.version
+        description = manifest.description or 'No description'
+        kind = manifest.kind
+        license = manifest.license
+    
     console.print(Panel.fit(
-        f"[bold]{pack.manifest.name}[/bold] v{pack.manifest.version}\n"
-        f"{pack.manifest.description}\n\n"
-        f"Kind: {pack.manifest.kind}\n"
-        f"License: {pack.manifest.license}\n"
+        f"[bold]{name}[/bold] v{version}\n"
+        f"{description}\n\n"
+        f"Kind: {kind}\n"
+        f"License: {license}\n"
         f"Location: {pack.location}\n"
-        f"Verified: {'✓' if pack.verified else '✗'}",
+        f"Verified: {'[OK]' if pack.verified else '[FAIL]'}",
         title="Pack Information"
     ))
     
     # Show contents
-    if pack.manifest.contents:
+    contents = manifest.get('contents', {}) if isinstance(manifest, dict) else manifest.contents
+    if contents:
         console.print("\n[bold]Contents:[/bold]")
-        if pack.manifest.contents.pipelines:
-            console.print(f"  Pipelines: {', '.join(pack.manifest.contents.pipelines)}")
-        if pack.manifest.contents.agents:
-            console.print(f"  Agents: {', '.join(pack.manifest.contents.agents)}")
-        if pack.manifest.contents.datasets:
-            console.print(f"  Datasets: {', '.join(pack.manifest.contents.datasets)}")
+        pipelines = contents.get('pipelines', []) if isinstance(contents, dict) else contents.pipelines
+        agents = contents.get('agents', []) if isinstance(contents, dict) else contents.agents
+        datasets = contents.get('datasets', []) if isinstance(contents, dict) else contents.datasets
+        
+        if pipelines:
+            console.print(f"  Pipelines: {', '.join(pipelines)}")
+        if agents:
+            console.print(f"  Agents: {', '.join(agents)}")
+        if datasets:
+            console.print(f"  Datasets: {', '.join(datasets)}")
     
     # Show dependencies
-    if pack.manifest.dependencies:
+    dependencies = manifest.get('dependencies', []) if isinstance(manifest, dict) else pack.manifest.dependencies
+    if dependencies:
         console.print("\n[bold]Dependencies:[/bold]")
-        for dep in pack.manifest.dependencies:
-            console.print(f"  • {dep['name']} {dep.get('version', '')}")
+        for dep in dependencies:
+            if isinstance(dep, dict):
+                console.print(f"  - {dep.get('name', dep)} {dep.get('version', '')}")
+            else:
+                console.print(f"  - {dep}")
     
     # Show authors
-    if pack.manifest.authors:
+    authors = manifest.get('authors', []) if isinstance(manifest, dict) else getattr(pack.manifest, 'authors', [])
+    if authors:
         console.print("\n[bold]Authors:[/bold]")
-        for author in pack.manifest.authors:
-            console.print(f"  • {author['name']} <{author.get('email', '')}>")
+        for author in authors:
+            if isinstance(author, dict):
+                console.print(f"  - {author.get('name', 'Unknown')} <{author.get('email', '')}>")
+            else:
+                console.print(f"  - {author}")
 
 
 @app.command("list")
@@ -643,11 +703,11 @@ def list_packs(
             
             for pack in packs:
                 table.add_row(
-                    pack.manifest.name,
-                    pack.manifest.version,
-                    pack.manifest.kind,
+                    pack.manifest.get("name", pack.name),
+                    pack.manifest.get("version", pack.version),
+                    pack.manifest.get("kind", "pack"),
                     str(pack.location)[:40] + "..." if len(str(pack.location)) > 40 else str(pack.location),
-                    "✓" if pack.verified else "✗"
+                    "[OK]" if pack.verified else "[FAIL]"
                 )
             
             console.print(table)
@@ -861,12 +921,12 @@ def index_commands(
             
         console.print(f"[cyan]Creating index from {input_dir}...[/cyan]")
         hub.create_local_index(output_file, input_dir)
-        console.print(f"[green]✓[/green] Index created: {output_file}")
+        console.print(f"[green][OK][/green] Index created: {output_file}")
         
     elif action == "update":
         console.print("[cyan]Updating index from remote...[/cyan]")
         hub.load(force_refresh=True)
-        console.print("[green]✓[/green] Index updated")
+        console.print("[green][OK][/green] Index updated")
         
     elif action == "show":
         console.print("[cyan]Current index contents:[/cyan]")
@@ -881,7 +941,7 @@ def index_commands(
         if packs:
             console.print("\nSample packs:")
             for key, data in packs:
-                console.print(f"  • {key} v{data.get('latest_version', '0.0.0')}")
+                console.print(f"  - {key} v{data.get('latest_version', '0.0.0')}")
         
     else:
         console.print(f"[red]Unknown action: {action}[/red]")

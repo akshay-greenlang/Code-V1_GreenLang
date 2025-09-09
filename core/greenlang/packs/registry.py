@@ -216,8 +216,8 @@ class PackRegistry:
         
         manifest = PackManifest.from_yaml(manifest_path)
         
-        # Validate structure
-        errors = manifest.validate_structure(pack_path)
+        # Validate files exist
+        errors = manifest.validate_files(pack_path)
         if errors:
             raise ValueError(f"Pack validation failed: {', '.join(errors)}")
         
@@ -251,26 +251,40 @@ class PackRegistry:
         else:
             raise ValueError(f"Pack not found: {pack_name}")
     
-    def get(self, pack_name: str) -> Optional[InstalledPack]:
-        """Get installed pack by name"""
-        return self.packs.get(pack_name)
+    def get(self, pack_name: str, version: Optional[str] = None) -> Optional[InstalledPack]:
+        """
+        Get installed pack by name and optionally version
+        
+        Args:
+            pack_name: Name of the pack
+            version: Optional version to match
+            
+        Returns:
+            InstalledPack if found, None otherwise
+        """
+        pack = self.packs.get(pack_name)
+        if pack and version:
+            # Check if version matches
+            if pack.version != version:
+                return None
+        return pack
     
-    def list(self, pack_type: Optional[str] = None) -> List[InstalledPack]:
+    def list(self, kind: Optional[str] = None) -> List[InstalledPack]:
         """
         List all installed packs
         
         Args:
-            pack_type: Filter by pack type (domain, connector, etc)
+            kind: Filter by pack kind (pack, dataset, connector)
         
         Returns:
             List of installed packs
         """
         packs = list(self.packs.values())
         
-        if pack_type:
+        if kind:
             packs = [
                 p for p in packs 
-                if p.manifest.get("type") == pack_type
+                if p.manifest.get("kind") == kind
             ]
         
         return packs
@@ -317,6 +331,32 @@ class PackRegistry:
             logger.warning(f"Pack verification failed: {pack_name}")
             return False
     
+    def list_pipelines(self) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        List all pipelines from installed packs
+        
+        Returns:
+            Dictionary mapping pack names to their pipelines
+        """
+        pipelines = {}
+        
+        for pack in self.packs.values():
+            pack_pipelines = []
+            
+            # Get pipelines from contents
+            if pack.manifest.get("contents"):
+                for pipeline_file in pack.manifest["contents"].get("pipelines", []):
+                    pack_pipelines.append({
+                        "name": pipeline_file.replace(".yaml", "").replace(".yml", ""),
+                        "file": pipeline_file,
+                        "description": f"Pipeline from {pack.name}"
+                    })
+            
+            if pack_pipelines:
+                pipelines[pack.name] = pack_pipelines
+        
+        return pipelines
+    
     def get_dependencies(self, pack_name: str) -> List[str]:
         """Get dependencies for a pack"""
         pack = self.get(pack_name)
@@ -325,6 +365,10 @@ class PackRegistry:
         
         deps = []
         for dep in pack.manifest.get("dependencies", []):
-            deps.append(f"{dep['name']}{dep.get('version', '')}")
+            # Handle both string and dict format
+            if isinstance(dep, str):
+                deps.append(dep)
+            elif isinstance(dep, dict):
+                deps.append(f"{dep['name']}{dep.get('version', '')}")
         
         return deps
