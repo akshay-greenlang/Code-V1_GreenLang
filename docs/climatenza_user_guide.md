@@ -58,7 +58,7 @@ print(f"Required Area: {result['data']['required_aperture_area_m2']:,.0f} m²")
 
 ## CLI Commands
 
-### `greenlang climatenza`
+### `gl climatenza`
 Run a complete solar thermal feasibility analysis.
 
 **Options:**

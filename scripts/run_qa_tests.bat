@@ -232,13 +232,13 @@ if %errorlevel% equ 0 (
 )
 set /a TOTAL_TESTS+=1
 
-echo [INFO] Testing: greenlang agents
+echo [INFO] Testing: gl agents
 python -m greenlang.cli.main agents >nul 2>&1
 if %errorlevel% equ 0 (
-    echo [PASS] Command: greenlang agents
+    echo [PASS] Command: gl agents
     set /a PASSED_TESTS+=1
 ) else (
-    echo [FAIL] Command failed: greenlang agents
+    echo [FAIL] Command failed: gl agents
     set /a FAILED_TESTS+=1
 )
 set /a TOTAL_TESTS+=1

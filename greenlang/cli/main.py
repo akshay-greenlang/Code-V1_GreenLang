@@ -53,24 +53,24 @@ def cli(ctx: click.Context) -> None:
         version_text = "v0.9.0 - Global Commercial Building Edition" if ENHANCED_MODE else "v0.0.1"
         console.print(Panel.fit(
             f"[bold green]GreenLang Climate Intelligence Framework {version_text}[/bold green]\n\n"
-            "Use 'greenlang --help' for available commands\n"
-            "Use 'greenlang dev' for interactive developer interface\n"
-            "Use 'greenlang calc' for quick emissions calculation\n"
-            "Use 'greenlang calc --building' for commercial building analysis", 
+            "Use 'gl --help' for available commands\n"
+            "Use 'gl dev' for interactive developer interface\n"
+            "Use 'gl calc' for quick emissions calculation\n"
+            "Use 'gl calc --building' for commercial building analysis", 
             style="green"
         ))
         console.print("\n[dim]Quick Start Commands:[/dim]")
-        console.print("  greenlang calc     - Interactive calculator")
+        console.print("  gl calc     - Interactive calculator")
         if ENHANCED_MODE:
-            console.print("  greenlang calc --building - Commercial building mode")
-            console.print("  greenlang analyze  - Analyze building from file")
-            console.print("  greenlang benchmark - View regional benchmarks")
-            console.print("  greenlang recommend - Get recommendations")
-        console.print("  greenlang dev      - Developer interface")
-        console.print("  greenlang ask      - AI assistant")
-        console.print("  greenlang init     - Initialize project")
-        console.print("  greenlang --help   - Show all commands")
-        console.print("  greenlang --version - Show version")
+            console.print("  gl calc --building - Commercial building mode")
+            console.print("  gl analyze  - Analyze building from file")
+            console.print("  gl benchmark - View regional benchmarks")
+            console.print("  gl recommend - Get recommendations")
+        console.print("  gl dev      - Developer interface")
+        console.print("  gl ask      - AI assistant")
+        console.print("  gl init     - Initialize project")
+        console.print("  gl --help   - Show all commands")
+        console.print("  gl --version - Show version")
 
 
 @cli.command()
@@ -997,7 +997,7 @@ def init(output: str) -> None:
     
     console.print(f"[OK] Sample input created: {input_file}", style="green")
     console.print(f"\nTo run the workflow, use:", style="dim")
-    console.print(f"  greenlang run {output} --input {input_file}", style="cyan")
+    console.print(f"  gl run {output} --input {input_file}", style="cyan")
 
 
 if __name__ == "__main__":

@@ -77,7 +77,7 @@ The RAG system is automatically integrated with the GreenLang CLI:
 
 ```bash
 # Ask general questions - uses RAG for context
-greenlang ask "What are the emission factors for renewable energy?"
+gl ask "What are the emission factors for renewable energy?"
 
 # The assistant will search the knowledge base and provide:
 # - Evidence-based answer
@@ -129,9 +129,9 @@ The system gracefully handles missing components:
 python scripts/test_rag.py
 
 # Test with GreenLang CLI
-greenlang ask "What are Scope 1, 2, and 3 emissions?"
-greenlang ask "Compare emission factors for coal vs natural gas"
-greenlang ask "How do I reduce building carbon emissions?"
+gl ask "What are Scope 1, 2, and 3 emissions?"
+gl ask "Compare emission factors for coal vs natural gas"
+gl ask "How do I reduce building carbon emissions?"
 ```
 
 ### Verify Components

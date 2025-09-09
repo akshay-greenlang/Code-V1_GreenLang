@@ -1,0 +1,16 @@
+region,fuel_type,co2_kg_per_unit,ch4_g_per_unit,n2o_g_per_unit,unit,source,vintage,notes
+IN,electricity,0.82,0.021,0.008,kWh,CEA India,2025,Grid average
+IN,natural_gas,2.75,0.05,0.001,m3,IPCC 2006,2025,Pipeline quality
+IN,diesel,2.68,0.03,0.006,liter,IPCC 2006,2025,Industrial grade
+IN,coal_domestic,2340,1.4,1.6,ton,CEA India,2025,Sub-bituminous
+IN,lpg,1.51,0.024,0.0001,liter,IPCC 2006,2025,Commercial
+IN,furnace_oil,3.17,0.12,0.006,liter,IPCC 2006,2025,High sulfur
+IN,biomass_wood,0,30,4,kg,IPCC 2006,2025,Carbon neutral assumption
+IN,biomass_agri,0,25,3.5,kg,IPCC 2006,2025,Rice husk/bagasse
+IN-GJ,electricity,0.76,0.019,0.007,kWh,Gujarat SERC,2025,State grid
+IN-MH,electricity,0.89,0.023,0.009,kWh,Maharashtra SERC,2025,State grid
+IN-TN,electricity,0.71,0.018,0.006,kWh,Tamil Nadu SERC,2025,State grid
+IN-KA,electricity,0.68,0.017,0.006,kWh,Karnataka SERC,2025,High hydro share
+IN-RJ,electricity,0.91,0.024,0.010,kWh,Rajasthan SERC,2025,High coal share
+IN-UP,electricity,0.94,0.025,0.011,kWh,UP SERC,2025,High coal share
+IN-WB,electricity,0.96,0.026,0.012,kWh,West Bengal SERC,2025,Highest coal share

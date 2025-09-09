@@ -32,7 +32,7 @@ Climatenza AI is a comprehensive solar thermal feasibility analysis application 
 
 ### Using GreenLang CLI
 ```bash
-greenlang run climatenza_app/gl_workflows/feasibility_base.yaml
+gl run climatenza_app/gl_workflows/feasibility_base.yaml
 ```
 
 ### Using Test Script

@@ -1,4 +1,4 @@
-# How to Use the `greenlang agent` Command
+# How to Use the `gl agent` Command
 
 ## Syntax
 ```
@@ -9,7 +9,7 @@ greenlang agent [AGENT_ID]
 
 First, list all agents to see available IDs:
 ```bash
-greenlang agents
+gl agents
 ```
 
 This will show you these agent IDs:
@@ -131,11 +131,11 @@ For each agent, the command displays:
 ## Common Mistakes
 
 ❌ **Wrong**: `agent fuel` (missing greenlang prefix)
-❌ **Wrong**: `greenlang agent [fuel]` (don't use brackets)
-❌ **Wrong**: `greenlang agent-fuel` (use space, not hyphen)
-❌ **Wrong**: `greenlang agent "fuel"` (don't use quotes)
+❌ **Wrong**: `gl agent [fuel]` (don't use brackets)
+❌ **Wrong**: `gl agent-fuel` (use space, not hyphen)
+❌ **Wrong**: `gl agent "fuel"` (don't use quotes)
 
-✅ **Correct**: `greenlang agent fuel`
+✅ **Correct**: `gl agent fuel`
 
 ## Get Help
 
@@ -149,7 +149,7 @@ greenlang agent --help
 Run these commands to test:
 ```bash
 # List all agents
-greenlang agents
+gl agents
 
 # View specific agent
 greenlang agent fuel

@@ -55,14 +55,14 @@ docker run -it greenlang/greenlang
 cp .env.example .env
 
 # Edit .env to add your configuration (all optional)
-# - OPENAI_API_KEY: Only needed for AI Assistant feature ('greenlang ask' command)
+# - OPENAI_API_KEY: Only needed for AI Assistant feature ('gl ask' command)
 # - GREENLANG_REGION: Default region for emission factors (US, EU, UK, etc.)
 # - GREENLANG_REPORT_FORMAT: Default report format (text, json, markdown)
 ```
 
 #### AI Assistant Feature (Optional)
 
-The AI Assistant feature enables natural language queries through the `greenlang ask` command. This feature is **completely optional** - all core GreenLang functionality works without it.
+The AI Assistant feature enables natural language queries through the `gl ask` command. This feature is **completely optional** - all core GreenLang functionality works without it.
 
 **Without OpenAI API Key:**
 - ✅ All emissions calculations work normally
@@ -84,7 +84,7 @@ To enable the AI Assistant, add your OpenAI API key to the `.env` file. If no ke
 - **8760-Hour Simulation**: Hourly energy balance calculations for accurate annual predictions
 - **5 New Agents**: SiteInputAgent, SolarResourceAgent, LoadProfileAgent, FieldLayoutAgent, EnergyBalanceAgent
 - **Industrial Focus**: Designed for dairy, textile, food processing, and manufacturing facilities
-- **CLI Integration**: New `greenlang climatenza` command for easy access
+- **CLI Integration**: New `gl climatenza` command for easy access
 - **SDK Methods**: Full programmatic access through GreenLangClient
 
 ### Enhanced Agents

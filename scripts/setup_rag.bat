@@ -71,7 +71,7 @@ echo 3. Rebuild vector store:
 echo    python scripts\build_vector_store.py
 echo.
 echo 4. Test with GreenLang CLI:
-echo    greenlang ask "What are carbon emissions?"
+echo    gl ask "What are carbon emissions?"
 echo.
 
 pause

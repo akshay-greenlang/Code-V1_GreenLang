@@ -226,7 +226,7 @@ A GreenLang climate intelligence project.
 ## Quick Start
 
 ```bash
-greenlang run workflows/main.yaml
+gl run workflows/main.yaml
 ```
 
 ## Project Structure
@@ -239,8 +239,8 @@ greenlang run workflows/main.yaml
 ## Usage
 
 1. Define your workflows in YAML
-2. Run with: `greenlang run <workflow>`
-3. Test with: `greenlang test`
+2. Run with: `gl run <workflow>`
+3. Test with: `gl test`
 """
         
         with open(project_path / "README.md", 'w') as f:
@@ -1965,10 +1965,10 @@ steps:
 
 ## CLI Commands
 
-- `greenlang calc` - Interactive calculator
-- `greenlang test` - Run tests
-- `greenlang workflow` - Manage workflows
-- `greenlang agents` - Manage agents
+- `gl calc` - Interactive calculator
+- `gl test` - Run tests
+- `gl workflow` - Manage workflows
+- `gl agents` - Manage agents
         """
         
         console.print(Syntax(docs, "markdown", theme="monokai"))

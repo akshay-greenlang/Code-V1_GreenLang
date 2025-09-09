@@ -6,7 +6,7 @@ from greenlang.cli.dev_interface import GreenLangDevInterface
 def test_agents_command():
     """Test the agents command functionality"""
     
-    print("Testing 'greenlang dev' agents command...")
+    print("Testing 'gl dev' agents command...")
     print("=" * 50)
     
     # Create dev interface instance
@@ -61,7 +61,7 @@ def test_agents_command():
         return False
     
     print("\n" + "=" * 50)
-    print("[SUCCESS] All 'greenlang dev' agents commands are working!")
+    print("[SUCCESS] All 'gl dev' agents commands are working!")
     return True
 
 if __name__ == "__main__":

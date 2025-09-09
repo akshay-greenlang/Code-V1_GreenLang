@@ -11,7 +11,7 @@
 ### Version Verification
 To verify your installation:
 ```bash
-greenlang --version
+gl --version
 python -c "import greenlang; print(greenlang.__version__)"
 ```
 

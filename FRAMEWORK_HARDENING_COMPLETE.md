@@ -44,7 +44,7 @@ apps/               # Applications directory (NEW)
   
 - CLI version integration:
   - Dynamic version from package
-  - `greenlang --version` works
+  - `gl --version` works
 
 ### 3. GitHub Actions CI/CD ✅
 **Status**: COMPLETE

@@ -1,7 +1,7 @@
 # Dev Interface Create Command Fix Summary
 
 ## Issue
-The "create" command in `greenlang dev` was not working properly for creating specialized agents like BoilerAgent. It only generated basic custom agent templates.
+The "create" command in `gl dev` was not working properly for creating specialized agents like BoilerAgent. It only generated basic custom agent templates.
 
 ## Solution Implemented
 
@@ -35,7 +35,7 @@ Each generated template includes:
 
 ## How to Use
 
-### In `greenlang dev`:
+### In `gl dev`:
 1. Type `agents`
 2. Select `create`
 3. Choose agent type (e.g., `boiler`)

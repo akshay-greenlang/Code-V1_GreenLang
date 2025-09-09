@@ -4,7 +4,7 @@
 
 ### 1. ✅ **Agent Listing Now Shows All 10 Agents**
 ```bash
-greenlang agents
+gl agents
 ```
 Now displays:
 - validator - InputValidatorAgent
@@ -18,7 +18,7 @@ Now displays:
 - recommendation - RecommendationAgent
 - **boiler - BoilerAgent** (NEW - was missing)
 
-### 2. ✅ **Fixed "greenlang agent <name>" Command**
+### 2. ✅ **Fixed "gl agent <name>" Command**
 **Problem**: AttributeError - agents don't have `config` attribute
 **Solution**: Updated to use actual agent attributes (name, version, agent_id)
 
@@ -32,7 +32,7 @@ Now displays:
 
 ### List All Agents
 ```bash
-greenlang agents
+gl agents
 ```
 
 ### Get Agent Details (All 10 Working)

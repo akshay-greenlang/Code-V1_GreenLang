@@ -17,14 +17,14 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.syntax import Syntax
 
-from greenlang import __version__
-from greenlang.packs.registry import PackRegistry
-from greenlang.packs.loader import PackLoader
-from greenlang.packs.manifest import PackManifest
-from greenlang.runtime.executor import Executor
-from greenlang.policy.enforcer import PolicyEnforcer
-from greenlang.provenance.sbom import generate_sbom
-from greenlang.provenance.signing import sign_artifact, verify_artifact
+from .. import __version__
+from ..packs.registry import PackRegistry
+from ..packs.loader import PackLoader
+from ..packs.manifest import PackManifest
+from ..runtime.executor import Executor
+from ..policy.enforcer import PolicyEnforcer
+from ..provenance.sbom import generate_sbom
+from ..provenance.signing import sign_artifact, verify_artifact
 
 app = typer.Typer(
     name="gl",
@@ -268,6 +268,51 @@ def pack_remove(name: str):
         raise typer.Exit(1)
 
 
+@pack_group.command("validate")
+def pack_validate(
+    path: Path = typer.Argument(..., help="Path to pack directory"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output")
+):
+    """Validate pack structure and manifest"""
+    from greenlang.packs.manifest import validate_pack, load_manifest
+    
+    if not path.exists():
+        console.print(f"[red]Path not found: {path}[/red]")
+        raise typer.Exit(1)
+    
+    # Run validation
+    is_valid, errors = validate_pack(path)
+    
+    if is_valid:
+        console.print(f"[green]✓[/green] Pack validation passed: {path.name}")
+        
+        if verbose:
+            # Load and display manifest info
+            try:
+                manifest = load_manifest(path)
+                console.print(f"\n[bold]Pack Details:[/bold]")
+                console.print(f"  Name: {manifest.name}")
+                console.print(f"  Version: {manifest.version}")
+                console.print(f"  Kind: {manifest.kind}")
+                console.print(f"  License: {manifest.license}")
+                
+                if manifest.contents.pipelines:
+                    console.print(f"  Pipelines: {', '.join(manifest.contents.pipelines)}")
+                if manifest.contents.agents:
+                    console.print(f"  Agents: {', '.join(manifest.contents.agents)}")
+                if manifest.contents.datasets:
+                    console.print(f"  Datasets: {', '.join(manifest.contents.datasets)}")
+                    
+            except Exception as e:
+                console.print(f"[yellow]Warning: Could not load manifest details: {e}[/yellow]")
+    else:
+        console.print(f"[red]✗[/red] Pack validation failed: {path.name}")
+        console.print("\n[red]Errors:[/red]")
+        for error in errors:
+            console.print(f"  • {error}")
+        raise typer.Exit(1)
+
+
 @pack_group.command("verify")
 def pack_verify(name: str):
     """Verify pack integrity"""
@@ -280,43 +325,103 @@ def pack_verify(name: str):
         raise typer.Exit(1)
 
 
-@pack_group.command("publish")
+@pack_group.command("publish") 
 def pack_publish(
-    path: Path,
+    path: Path = typer.Argument(..., help="Path to pack directory"),
     registry_url: str = typer.Option("hub.greenlang.io", "--registry", "-r"),
-    sign: bool = typer.Option(True, "--sign/--no-sign")
+    sign: bool = typer.Option(True, "--sign/--no-sign"),
+    test: bool = typer.Option(True, "--test/--no-test", help="Run tests before publishing"),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Simulate publishing without uploading")
 ):
     """Publish a pack to registry"""
-    manifest_path = path / "pack.yaml"
+    from greenlang.packs.manifest import load_manifest, validate_pack
+    from greenlang.provenance.sbom import generate_sbom
+    from greenlang.provenance.signing import sign_pack
+    import subprocess
+    import tarfile
+    import tempfile
     
-    if not manifest_path.exists():
-        console.print(f"[red]No pack.yaml found at {path}[/red]")
-        raise typer.Exit(1)
+    # Validate pack first
+    console.print(f"[cyan]Validating pack at {path}...[/cyan]")
+    is_valid, errors = validate_pack(path)
     
-    manifest = PackManifest.from_yaml(manifest_path)
-    
-    # Validate structure
-    errors = manifest.validate_structure(path)
-    if errors:
+    if not is_valid:
         console.print("[red]Pack validation failed:[/red]")
         for error in errors:
-            console.print(f"  - {error}")
+            console.print(f"  • {error}")
         raise typer.Exit(1)
     
+    console.print(f"[green]✓[/green] Pack validation passed")
+    
+    # Load manifest
+    manifest = load_manifest(path)
+    console.print(f"[cyan]Publishing {manifest.name} v{manifest.version}...[/cyan]")
+    
+    # Run tests if requested
+    if test and manifest.tests:
+        console.print("[cyan]Running tests...[/cyan]")
+        for test_file in manifest.tests:
+            test_path = path / test_file
+            if test_path.exists():
+                try:
+                    result = subprocess.run(
+                        ["python", "-m", "pytest", str(test_path), "-v"],
+                        capture_output=True,
+                        text=True,
+                        cwd=path
+                    )
+                    if result.returncode != 0:
+                        console.print(f"[red]Tests failed: {test_file}[/red]")
+                        if result.stdout:
+                            console.print(result.stdout)
+                        raise typer.Exit(1)
+                    console.print(f"[green]✓[/green] Tests passed: {test_file}")
+                except Exception as e:
+                    console.print(f"[yellow]Could not run tests: {e}[/yellow]")
+    
     # Generate SBOM
-    if manifest.provenance.get("sbom", True):
-        sbom_path = path / "sbom.json"
-        generate_sbom(path, sbom_path)
-        console.print(f"[green]✓[/green] Generated SBOM: {sbom_path}")
+    if manifest.security.sbom:
+        sbom_path = path / manifest.security.sbom
+        console.print("[cyan]Generating SBOM...[/cyan]")
+        sbom = generate_sbom(path, sbom_path)
+        console.print(f"[green]✓[/green] Generated SBOM: {manifest.security.sbom}")
     
-    # Sign if requested
+    # Sign pack if requested
     if sign:
-        # TODO: Implement signing
-        console.print("[yellow]Signing not yet implemented[/yellow]")
+        console.print("[cyan]Signing pack...[/cyan]")
+        try:
+            signature = sign_pack(path)
+            console.print(f"[green]✓[/green] Pack signed (hash: {signature['spec']['hash']['value'][:16]}...)")
+        except Exception as e:
+            console.print(f"[yellow]Warning: Could not sign pack: {e}[/yellow]")
     
-    # TODO: Upload to registry
-    console.print(f"[yellow]Publishing to {registry_url} not yet implemented[/yellow]")
-    console.print(f"Would publish: {manifest.name} v{manifest.version}")
+    # Build pack archive
+    archive_name = f"{manifest.name}-{manifest.version}.glpack"
+    archive_path = path.parent / "dist" / archive_name
+    archive_path.parent.mkdir(exist_ok=True)
+    
+    if not dry_run:
+        console.print(f"[cyan]Building archive: {archive_name}...[/cyan]")
+        
+        with tarfile.open(archive_path, "w:gz") as tar:
+            tar.add(path, arcname=manifest.name)
+        
+        console.print(f"[green]✓[/green] Built archive: {archive_path} ({archive_path.stat().st_size // 1024}KB)")
+    
+    # Upload to registry (or simulate)
+    if dry_run:
+        console.print("\n[yellow]DRY RUN - Would perform:[/yellow]")
+        console.print(f"  • Upload {archive_name} to {registry_url}")
+        console.print(f"  • Register {manifest.name} v{manifest.version}")
+        console.print(f"  • Publish metadata and signatures")
+    else:
+        # TODO: Implement actual upload
+        console.print(f"\n[yellow]Upload to {registry_url} not yet implemented[/yellow]")
+        console.print(f"Archive ready at: {archive_path}")
+        console.print("\nTo install locally:")
+        console.print(f"  gl pack add {archive_path}")
+    
+    console.print(f"\n[green]✓[/green] Pack ready for publishing: {manifest.name} v{manifest.version}")
 
 
 # === Runtime Commands ===

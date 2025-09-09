@@ -94,45 +94,45 @@ class PackRegistry:
         """Discover packs installed as Python packages"""
         try:
             # Look for greenlang.packs entry points
-            eps = importlib.metadata.entry_points()
-            if hasattr(eps, 'select'):  # Python 3.10+
-                pack_eps = eps.select(group='greenlang.packs')
-            else:  # Python 3.8-3.9
-                pack_eps = eps.get('greenlang.packs', [])
+            import sys
+            if sys.version_info >= (3, 10):
+                eps = importlib.metadata.entry_points(group='greenlang.packs')
+            else:
+                eps = importlib.metadata.entry_points().get('greenlang.packs', [])
             
-            for ep in pack_eps:
+            for ep in eps:
                 try:
-                    # Load the entry point
-                    pack_module = ep.load()
+                    # Load the entry point - should return path to pack.yaml
+                    manifest_path_func = ep.load()
                     
-                    # Get manifest
-                    if hasattr(pack_module, 'MANIFEST'):
-                        manifest = pack_module.MANIFEST
-                    elif hasattr(pack_module, 'get_manifest'):
-                        manifest = pack_module.get_manifest()
+                    # Get manifest path
+                    if callable(manifest_path_func):
+                        manifest_path = Path(manifest_path_func())
                     else:
-                        # Try to load pack.yaml from module location
-                        module_path = Path(pack_module.__file__).parent
-                        manifest_path = module_path / "pack.yaml"
-                        if manifest_path.exists():
-                            manifest = PackManifest.from_yaml(manifest_path)
-                        else:
-                            logger.warning(f"No manifest found for entry point: {ep.name}")
-                            continue
+                        manifest_path = Path(manifest_path_func)
+                    
+                    if not manifest_path.exists():
+                        logger.warning(f"Manifest path does not exist for {ep.name}: {manifest_path}")
+                        continue
+                    
+                    # Load manifest from the path
+                    pack_dir = manifest_path.parent
+                    manifest = PackManifest.from_yaml(pack_dir)
                     
                     # Register the pack
                     installed_pack = InstalledPack(
-                        name=ep.name,
-                        version=getattr(manifest, 'version', '0.0.0'),
-                        location=f"entry_point:{ep.name}",
-                        manifest=manifest.model_dump() if hasattr(manifest, 'model_dump') else manifest,
+                        name=manifest.name,
+                        version=manifest.version,
+                        location=str(pack_dir),
+                        manifest=manifest.model_dump(),
                         installed_at=datetime.now().isoformat(),
-                        hash=self._calculate_hash(str(ep.value)),
+                        hash=self._calculate_directory_hash(pack_dir),
                         verified=True  # Entry points are pip-installed, assume verified
                     )
                     
-                    self.packs[ep.name] = installed_pack
-                    logger.info(f"Discovered pack from entry point: {ep.name}")
+                    # Use manifest name as key (not entry point name)
+                    self.packs[manifest.name] = installed_pack
+                    logger.info(f"Discovered pack from entry point: {manifest.name} v{manifest.version}")
                     
                 except Exception as e:
                     logger.error(f"Failed to load entry point {ep.name}: {e}")

@@ -3,20 +3,79 @@ Runtime Executor
 ================
 
 Executes pipelines with different runtime profiles (local, k8s, cloud).
+Supports deterministic execution for reproducible runs.
 """
 
+import os
+import sys
 import json
+import random
+import hashlib
+import subprocess
+import tempfile
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+from contextlib import contextmanager
 
-from greenlang.sdk.base import Result, Status
-from greenlang.packs.loader import PackLoader
+from ..sdk.base import Result, Status
+from ..packs.loader import PackLoader
 
+try:
+    import numpy as np
+    HAS_NUMPY = True
+except ImportError:
+    HAS_NUMPY = False
+    np = None
 
 logger = logging.getLogger(__name__)
+
+
+class DeterministicConfig:
+    """Configuration for deterministic execution"""
+    
+    def __init__(self, 
+                 seed: int = 42,
+                 freeze_env: bool = True,
+                 normalize_floats: bool = True,
+                 float_precision: int = 6,
+                 quantization_bits: Optional[int] = None):
+        self.seed = seed
+        self.freeze_env = freeze_env
+        self.normalize_floats = normalize_floats
+        self.float_precision = float_precision
+        self.quantization_bits = quantization_bits
+        
+    def apply(self):
+        """Apply deterministic settings"""
+        # Set random seeds
+        random.seed(self.seed)
+        if HAS_NUMPY:
+            np.random.seed(self.seed)
+        
+        # Set Python hash seed
+        os.environ['PYTHONHASHSEED'] = str(self.seed)
+        
+        # Disable Python optimizations that can affect determinism
+        os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
+        
+        # Set TensorFlow/PyTorch determinism if available
+        try:
+            import tensorflow as tf
+            tf.random.set_seed(self.seed)
+            os.environ['TF_DETERMINISTIC_OPS'] = '1'
+        except ImportError:
+            pass
+            
+        try:
+            import torch
+            torch.manual_seed(self.seed)
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+        except ImportError:
+            pass
 
 
 class Executor:
@@ -27,20 +86,100 @@ class Executor:
     - local: Run on local machine
     - k8s: Run on Kubernetes
     - cloud: Run on cloud functions
+    
+    Supports deterministic execution for reproducible runs.
     """
     
-    def __init__(self, profile: str = "local"):
+    def __init__(self, 
+                 backend: str = "local",
+                 deterministic: bool = False,
+                 det_config: Optional[DeterministicConfig] = None):
         """
         Initialize executor
         
         Args:
-            profile: Runtime profile (local, k8s, cloud)
+            backend: Execution backend (local, k8s, cloud)
+            deterministic: Enable deterministic execution
+            det_config: Deterministic configuration
         """
-        self.profile = profile
+        self.backend = backend
+        self.profile = backend  # Maintain backward compatibility
+        self.deterministic = deterministic
+        self.det_config = det_config or DeterministicConfig()
         self.loader = PackLoader()
         self.run_ledger = []
         self.artifacts_dir = Path.home() / ".greenlang" / "artifacts"
         self.artifacts_dir.mkdir(parents=True, exist_ok=True)
+        self._validate_backend()
+    
+    def _validate_backend(self):
+        """Validate backend availability"""
+        if self.backend not in ["local", "k8s", "kubernetes", "cloud"]:
+            raise ValueError(f"Unknown backend: {self.backend}")
+            
+        if self.backend in ["k8s", "kubernetes"]:
+            # Check kubectl availability
+            try:
+                subprocess.run(["kubectl", "version", "--client"], 
+                             capture_output=True, check=True, timeout=5)
+            except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                logger.warning("kubectl not found or not configured, falling back to local")
+                self.backend = "local"
+    
+    @contextmanager
+    def context(self, artifacts_dir: Path):
+        """
+        Create execution context
+        
+        Args:
+            artifacts_dir: Directory for artifacts
+            
+        Yields:
+            ExecutionContext instance
+        """
+        from ..provenance.utils import ProvenanceContext
+        
+        ctx = ProvenanceContext(str(artifacts_dir))
+        ctx.backend = self.backend
+        
+        # Apply deterministic settings
+        if self.deterministic:
+            self.det_config.apply()
+            
+            # Freeze environment
+            if self.det_config.freeze_env:
+                ctx.environment = dict(os.environ)
+        
+        # Record versions
+        ctx.versions = {
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+            "backend": self.backend,
+            "deterministic": str(self.deterministic)
+        }
+        
+        try:
+            yield ctx
+        finally:
+            # Cleanup if needed
+            pass
+    
+    def execute(self, pipeline: Any, inputs: Dict[str, Any]) -> Result:
+        """
+        Execute pipeline with specified backend
+        
+        Args:
+            pipeline: Pipeline specification
+            inputs: Input parameters
+            
+        Returns:
+            Execution result
+        """
+        if self.backend == "local":
+            return self._exec_local(pipeline, inputs)
+        elif self.backend in ["k8s", "kubernetes"]:
+            return self._exec_k8s(pipeline, inputs)
+        else:
+            raise ValueError(f"Unknown backend: {self.backend}")
     
     def run(self, pipeline_ref: str, input_data: Dict[str, Any]) -> Result:
         """
@@ -117,68 +256,177 @@ class Executor:
                 error=str(e)
             )
     
-    def _run_local(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
-        """Execute pipeline locally"""
-        steps = pipeline.get("steps", [])
+    def _exec_local(self, pipeline: Dict[str, Any], inputs: Dict[str, Any]) -> Result:
+        """
+        Execute pipeline locally with deterministic support
+        """
+        logger.info(f"Executing pipeline locally: {pipeline.get('name', 'unnamed')}")
         
-        for step in steps:
-            agent_ref = step.get("agent")
-            if not agent_ref:
-                continue
-            
-            # Load agent
-            agent_class = self.loader.get_agent(agent_ref)
-            if not agent_class:
-                return Result(
-                    success=False,
-                    error=f"Agent not found: {agent_ref}"
-                )
-            
-            # Instantiate agent
-            agent = agent_class()
-            
-            # Prepare input
-            step_input = self._prepare_step_input(step, context)
-            
-            # Run agent
-            result = agent.run(step_input)
-            
-            # Store result
-            step_name = step.get("name", agent_ref)
-            context["results"][step_name] = result.data if result.success else result.error
-            
-            # Handle failure
-            if not result.success:
-                on_failure = step.get("on_failure", "stop")
-                if on_failure == "stop":
-                    return Result(
-                        success=False,
-                        error=f"Step {step_name} failed: {result.error}"
-                    )
-                elif on_failure == "skip":
-                    continue
-                # continue on failure
+        start_time = datetime.utcnow()
         
-        # Collect final output
-        output = self._collect_output(pipeline, context)
-        
-        return Result(
-            success=True,
-            data=output,
-            metadata={
-                "run_id": context["run_id"],
-                "pipeline": context["pipeline"]
+        try:
+            # Apply deterministic settings
+            if self.deterministic:
+                self.det_config.apply()
+            
+            # Process pipeline stages
+            outputs = {}
+            context = {
+                "input": inputs,
+                "results": {},
+                "artifacts": []
             }
-        )
+            
+            steps = pipeline.get("steps", pipeline.get("stages", []))
+            
+            for step in steps:
+                step_name = step.get("name", f"step_{len(outputs)}")
+                logger.info(f"Executing step: {step_name}")
+                
+                # Execute step based on type
+                step_type = step.get("type", "agent")
+                
+                if step_type == "agent":
+                    agent_ref = step.get("agent")
+                    if agent_ref:
+                        # Load and run agent
+                        agent_class = self.loader.get_agent(agent_ref)
+                        if agent_class:
+                            agent = agent_class()
+                            step_input = self._prepare_step_input(step, context)
+                            result = agent.run(step_input)
+                            outputs[step_name] = result.data if result.success else None
+                            context["results"][step_name] = outputs[step_name]
+                        else:
+                            logger.warning(f"Agent not found: {agent_ref}")
+                
+                elif step_type == "python":
+                    outputs[step_name] = self._exec_python_stage(step, context)
+                    context["results"][step_name] = outputs[step_name]
+                    
+                elif step_type == "shell":
+                    outputs[step_name] = self._exec_shell_stage(step, context)
+                    context["results"][step_name] = outputs[step_name]
+                
+                # Update inputs for next stage if configured
+                if step.get("pass_outputs", False):
+                    inputs.update(outputs[step_name] if isinstance(outputs[step_name], dict) else {})
+            
+            # Apply output normalization if deterministic
+            if self.deterministic and self.det_config.normalize_floats:
+                outputs = self._normalize_outputs(outputs)
+            
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            
+            return Result(
+                success=True,
+                data=outputs,
+                metadata={
+                    "duration": duration,
+                    "stages_executed": len(steps),
+                    "backend": self.backend,
+                    "deterministic": self.deterministic
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Pipeline execution failed: {e}")
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            
+            return Result(
+                success=False,
+                error=str(e),
+                metadata={
+                    "duration": duration,
+                    "backend": self.backend
+                }
+            )
+    
+    def _run_local(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
+        """Execute pipeline locally (legacy method for compatibility)"""
+        return self._exec_local(pipeline, context.get("input", {}))
+    
+    def _exec_k8s(self, pipeline: Dict[str, Any], inputs: Dict[str, Any]) -> Result:
+        """
+        Execute pipeline on Kubernetes
+        """
+        logger.info(f"Executing pipeline on Kubernetes: {pipeline.get('name', 'unnamed')}")
+        
+        start_time = datetime.utcnow()
+        
+        try:
+            # Generate Kubernetes Job manifest
+            job_manifest = self._create_k8s_job(pipeline, inputs)
+            job_name = job_manifest['metadata']['name']
+            
+            # Create temporary file for manifest
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+                import yaml
+                yaml.dump(job_manifest, f)
+                manifest_path = f.name
+            
+            try:
+                # Apply manifest
+                subprocess.run(
+                    ["kubectl", "apply", "-f", manifest_path],
+                    check=True,
+                    capture_output=True
+                )
+                
+                # Wait for job completion
+                logger.info(f"Waiting for job {job_name} to complete...")
+                self._wait_for_k8s_job(job_name)
+                
+                # Get job logs
+                logs = self._get_k8s_job_logs(job_name)
+                
+                # Parse outputs from logs (simplified)
+                outputs = self._parse_k8s_outputs(logs)
+                
+                # Apply output normalization if deterministic
+                if self.deterministic and self.det_config.normalize_floats:
+                    outputs = self._normalize_outputs(outputs)
+                
+                duration = (datetime.utcnow() - start_time).total_seconds()
+                
+                return Result(
+                    success=True,
+                    data=outputs,
+                    metadata={
+                        "duration": duration,
+                        "backend": self.backend,
+                        "job_name": job_name,
+                        "deterministic": self.deterministic
+                    }
+                )
+                
+            finally:
+                # Cleanup
+                Path(manifest_path).unlink(missing_ok=True)
+                
+                # Delete job if configured
+                if pipeline.get('cleanup', True):
+                    subprocess.run(
+                        ["kubectl", "delete", "job", job_name],
+                        capture_output=True
+                    )
+            
+        except Exception as e:
+            logger.error(f"Kubernetes execution failed: {e}")
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            
+            return Result(
+                success=False,
+                error=str(e),
+                metadata={
+                    "duration": duration,
+                    "backend": self.backend
+                }
+            )
     
     def _run_k8s(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
-        """Execute pipeline on Kubernetes"""
-        # TODO: Implement K8s execution
-        # This would create Jobs/Pods for each step
-        return Result(
-            success=False,
-            error="Kubernetes execution not yet implemented"
-        )
+        """Execute pipeline on Kubernetes (legacy method for compatibility)"""
+        return self._exec_k8s(pipeline, context.get("input", {}))
     
     def _run_cloud(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
         """Execute pipeline on cloud functions"""
@@ -282,3 +530,180 @@ class Executor:
                 return json.load(f)
         
         return None
+    
+    def _exec_python_stage(self, stage: Dict, context: Dict) -> Dict:
+        """Execute a Python code stage"""
+        code = stage.get('code', '')
+        
+        # Create execution namespace
+        namespace = {
+            'inputs': context.get('input', {}),
+            'outputs': {},
+            'context': context
+        }
+        
+        # Add deterministic utilities if enabled
+        if self.deterministic:
+            namespace['__seed__'] = self.det_config.seed
+            if HAS_NUMPY:
+                namespace['np'] = np
+            namespace['random'] = random
+        
+        # Execute code
+        exec(code, namespace)
+        
+        return namespace.get('outputs', {})
+    
+    def _exec_shell_stage(self, stage: Dict, context: Dict) -> Dict:
+        """Execute a shell command stage"""
+        command = stage.get('command', '')
+        
+        # Substitute variables
+        for key, value in context.get('input', {}).items():
+            command = command.replace(f"${{{key}}}", str(value))
+        
+        # Execute command
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        
+        return {
+            'stdout': result.stdout,
+            'stderr': result.stderr,
+            'returncode': result.returncode
+        }
+    
+    def _create_k8s_job(self, pipeline: Dict, inputs: Dict) -> Dict:
+        """Create Kubernetes Job manifest"""
+        import uuid
+        
+        job_name = f"greenlang-{pipeline.get('name', 'job')}-{uuid.uuid4().hex[:8]}"
+        
+        # Basic Job manifest
+        manifest = {
+            'apiVersion': 'batch/v1',
+            'kind': 'Job',
+            'metadata': {
+                'name': job_name,
+                'labels': {
+                    'app': 'greenlang',
+                    'pipeline': pipeline.get('name', 'unnamed')
+                }
+            },
+            'spec': {
+                'template': {
+                    'spec': {
+                        'containers': [{
+                            'name': 'pipeline',
+                            'image': pipeline.get('image', 'python:3.9-slim'),
+                            'command': ['/bin/sh', '-c'],
+                            'args': [pipeline.get('command', 'echo "No command specified"')],
+                            'env': [
+                                {'name': 'INPUTS', 'value': json.dumps(inputs)}
+                            ]
+                        }],
+                        'restartPolicy': 'Never'
+                    }
+                },
+                'backoffLimit': pipeline.get('retries', 1)
+            }
+        }
+        
+        # Add deterministic settings
+        if self.deterministic:
+            manifest['spec']['template']['spec']['containers'][0]['env'].extend([
+                {'name': 'PYTHONHASHSEED', 'value': str(self.det_config.seed)},
+                {'name': 'RANDOM_SEED', 'value': str(self.det_config.seed)}
+            ])
+        
+        return manifest
+    
+    def _wait_for_k8s_job(self, job_name: str, timeout: int = 300):
+        """Wait for Kubernetes job to complete"""
+        import time
+        
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            # Check job status
+            result = subprocess.run(
+                ["kubectl", "get", "job", job_name, "-o", "json"],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 0:
+                job_status = json.loads(result.stdout)
+                
+                # Check if completed
+                if job_status.get('status', {}).get('succeeded', 0) > 0:
+                    return True
+                elif job_status.get('status', {}).get('failed', 0) > 0:
+                    raise RuntimeError(f"Job {job_name} failed")
+            
+            time.sleep(5)
+        
+        raise TimeoutError(f"Job {job_name} timed out after {timeout} seconds")
+    
+    def _get_k8s_job_logs(self, job_name: str) -> str:
+        """Get logs from Kubernetes job"""
+        result = subprocess.run(
+            ["kubectl", "logs", f"job/{job_name}"],
+            capture_output=True,
+            text=True
+        )
+        
+        return result.stdout
+    
+    def _parse_k8s_outputs(self, logs: str) -> Dict:
+        """Parse outputs from Kubernetes job logs"""
+        outputs = {}
+        
+        # Look for JSON output markers
+        for line in logs.split('\n'):
+            if line.startswith('OUTPUT:'):
+                try:
+                    output_data = json.loads(line[7:])
+                    outputs.update(output_data)
+                except json.JSONDecodeError:
+                    pass
+        
+        return outputs
+    
+    def _normalize_outputs(self, outputs: Any) -> Any:
+        """
+        Normalize outputs for determinism
+        
+        Args:
+            outputs: Raw outputs
+            
+        Returns:
+            Normalized outputs
+        """
+        if isinstance(outputs, dict):
+            return {k: self._normalize_outputs(v) for k, v in outputs.items()}
+        elif isinstance(outputs, list):
+            return [self._normalize_outputs(v) for v in outputs]
+        elif isinstance(outputs, float):
+            # Round to specified precision
+            if self.det_config.quantization_bits:
+                # Quantize to specified bits
+                scale = 2 ** self.det_config.quantization_bits
+                return round(outputs * scale) / scale
+            else:
+                # Round to decimal places
+                return round(outputs, self.det_config.float_precision)
+        elif HAS_NUMPY and isinstance(outputs, np.ndarray):
+            # Normalize numpy arrays
+            if outputs.dtype in [np.float32, np.float64]:
+                if self.det_config.quantization_bits:
+                    scale = 2 ** self.det_config.quantization_bits
+                    return np.round(outputs * scale) / scale
+                else:
+                    return np.round(outputs, self.det_config.float_precision)
+            return outputs
+        else:
+            return outputs

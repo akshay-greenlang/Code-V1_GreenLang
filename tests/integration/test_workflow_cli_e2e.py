@@ -23,7 +23,7 @@ class TestCLIEndToEnd:
         return CliRunner()
     
     def test_cli_run_workflow(self, cli_runner, tmp_outdir):
-        """Test 'greenlang run' command with workflow."""
+        """Test 'gl run' command with workflow."""
         from greenlang.cli import cli  # Import the actual CLI
         
         # Prepare paths
@@ -65,7 +65,7 @@ class TestCLIEndToEnd:
             assert abs(fuel_sum - total) < 1.0  # Within 1 kg tolerance
     
     def test_cli_calc_building(self, cli_runner, tmp_outdir):
-        """Test 'greenlang calc --building' command."""
+        """Test 'gl calc --building' command."""
         from greenlang.cli import cli
         
         input_path = 'tests/fixtures/data/building_india_office.json'

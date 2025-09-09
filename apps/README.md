@@ -41,7 +41,7 @@ python -m climatenza_app.main --site config.yaml
 
 # Building emissions
 cd apps/Building_101
-greenlang run building_emissions.yaml
+gl run building_emissions.yaml
 ```
 
 ## Development
