@@ -598,10 +598,68 @@ def recommend() -> None:
 @click.option("--input", "-i", type=click.Path(exists=True), help="Input data file (JSON)")
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
 @click.option("--format", "-f", type=click.Choice(["json", "text", "markdown"]), default="text", help="Output format")
-def run(workflow_file: str, input: Optional[str], output: Optional[str], format: str) -> None:
-    """Run a workflow with the specified input data"""
+@click.option("--backend", "-b", type=click.Choice(["local", "docker", "k8s", "kubernetes"]), default="local", help="Execution backend")
+@click.option("--namespace", help="Kubernetes namespace (for k8s backend)")
+@click.option("--deterministic", is_flag=True, help="Enforce deterministic execution")
+def run(workflow_file: str, input: Optional[str], output: Optional[str], format: str, 
+        backend: str, namespace: Optional[str], deterministic: bool) -> None:
+    """Run a workflow or pipeline with the specified input data"""
     
     console.print(Panel.fit("GreenLang Climate Intelligence", style="green bold"))
+    
+    # Handle different backends
+    if backend in ["k8s", "kubernetes"]:
+        # Use Kubernetes backend for pipeline execution
+        try:
+            from greenlang.runtime.backends import BackendFactory, Pipeline, PipelineStep, ExecutionContext
+            from greenlang.runtime.backends.executor import PipelineExecutor
+            
+            # Check if file is a pipeline
+            if workflow_file.endswith('.yaml') or workflow_file.endswith('.yml'):
+                with open(workflow_file, 'r') as f:
+                    pipeline_config = yaml.load(f, Loader=yaml.SafeLoader)
+                
+                # Check if it's a pipeline definition
+                if 'pipeline' in pipeline_config or 'steps' in pipeline_config:
+                    console.print(f"Executing pipeline on Kubernetes backend...", style="cyan")
+                    
+                    # Create executor with K8s backend
+                    k8s_config = {}
+                    if namespace:
+                        k8s_config['namespace'] = namespace
+                    
+                    executor = PipelineExecutor(backend_type="kubernetes", backend_config=k8s_config)
+                    
+                    # Load pipeline
+                    pipeline = executor.load_pipeline(workflow_file)
+                    
+                    # Create execution context
+                    context = ExecutionContext(
+                        parameters=json.load(open(input, 'r')) if input else {},
+                        deterministic=deterministic
+                    )
+                    
+                    # Execute pipeline
+                    result = executor.execute(pipeline, context)
+                    
+                    # Format output
+                    if result.status.value == "SUCCEEDED":
+                        console.print(f"[OK] Pipeline completed successfully!", style="bold green")
+                    else:
+                        console.print(f"[!] Pipeline failed: {result.status.value}", style="bold red")
+                    
+                    # Save results
+                    if output:
+                        output_data = result.to_dict() if hasattr(result, 'to_dict') else {"status": result.status.value}
+                        with open(output, 'w') as f:
+                            json.dump(output_data, f, indent=2)
+                        console.print(f"Results saved to {output}", style="green")
+                    
+                    return
+                    
+        except ImportError:
+            console.print("[Warning] Kubernetes backend not available, falling back to local", style="yellow")
+            backend = "local"
     
     orchestrator = Orchestrator()
     
@@ -999,6 +1057,69 @@ def init(output: str) -> None:
     console.print(f"\nTo run the workflow, use:", style="dim")
     console.print(f"  gl run {output} --input {input_file}", style="cyan")
 
+
+# Register additional command groups
+from greenlang.cli.pack import register_pack_commands
+from greenlang.hub.cli import register_hub_commands
+
+# Register enterprise command groups
+try:
+    from greenlang.cli.tenant import tenant
+    from greenlang.cli.telemetry import telemetry
+    cli.add_command(tenant)
+    cli.add_command(telemetry)
+    
+    # Add admin group for tenant management
+    @cli.group()
+    def admin():
+        """Administrative commands for enterprise features"""
+        pass
+    
+    # Add tenants subcommand under admin
+    @admin.group()
+    def tenants():
+        """Manage tenants (multi-tenancy)"""
+        pass
+    
+    @tenants.command('list')
+    @click.option('--output', '-o', type=click.Choice(['json', 'yaml', 'table']), default='table')
+    def list_tenants(output):
+        """List all tenants"""
+        from greenlang.auth import TenantManager
+        manager = TenantManager()
+        tenants_list = manager.list_tenants()
+        
+        if output == 'json':
+            import json
+            data = [t.to_dict() for t in tenants_list]
+            click.echo(json.dumps(data, indent=2, default=str))
+        elif output == 'yaml':
+            import yaml
+            data = [t.to_dict() for t in tenants_list]
+            click.echo(yaml.dump(data))
+        else:
+            table = Table(title="Tenants")
+            table.add_column("ID", style="cyan")
+            table.add_column("Name", style="white")
+            table.add_column("Status", style="green")
+            table.add_column("Created", style="yellow")
+            
+            for t in tenants_list:
+                table.add_row(
+                    t.tenant_id[:8] + "...",
+                    t.name,
+                    t.status,
+                    t.created_at.strftime("%Y-%m-%d")
+                )
+            console.print(table)
+    
+except ImportError:
+    # Enterprise features not available
+    pass
+
+# Register pack and hub commands
+register_pack_commands(cli)
+register_hub_commands(cli)
 
 if __name__ == "__main__":
     cli()

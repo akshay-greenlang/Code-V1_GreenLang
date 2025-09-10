@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-config
+  namespace: greenlang
+data:
+  config.yaml: |
+    # GreenLang Configuration
+    backend:
+      type: kubernetes
+      namespace: greenlang
+      image: greenlang/executor:latest
+      service_account: greenlang-executor
+      
+    logging:
+      level: INFO
+      format: json
+      
+    metrics:
+      enabled: true
+      port: 9090
+      
+    registry:
+      url: https://hub.greenlang.io
+      cache_ttl: 3600
+      
+    execution:
+      default_timeout: 3600
+      max_retries: 3
+      cleanup_after: 86400
+      
+    resources:
+      default:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+        
+  pipeline-defaults.yaml: |
+    # Default pipeline settings
+    defaults:
+      image: greenlang/executor:latest
+      timeout: 300
+      retries: 3
+      
+    labels:
+      managed-by: greenlang
+      version: v1
+      
+    annotations:
+      greenlang.io/executor-version: "1.0.0"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greenlang-registry
+  namespace: greenlang
+type: kubernetes.io/dockerconfigjson
+data:
+  # Base64 encoded Docker registry credentials
+  # Replace with actual credentials
+  .dockerconfigjson: ewogICJhdXRocyI6IHsKICAgICJodWIuZ3JlZW5sYW5nLmlvIjogewogICAgICAiYXV0aCI6ICJZV1J0YVc0NmNHRnpjM2R2Y21RPSIKICAgIH0KICB9Cn0=

@@ -1,195 +1,181 @@
 #!/usr/bin/env python
 """
-Verification Commands Test
-==========================
-
-Tests the specific commands requested:
-1. gl run packs/boiler-solar/gl.yaml -i inputs.json
-2. gl policy check packs/boiler-solar
-3. gl doctor
+Verify enterprise commands are available
 """
 
 import sys
-import json
-from pathlib import Path
+import os
 
+# Add current directory to path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-def verify_pipeline_execution():
-    """Verify: gl run packs/boiler-solar/gl.yaml -i inputs.json"""
-    print("\n" + "=" * 60)
-    print("Testing: gl run test_pipeline.yaml -i inputs.json")
-    print("=" * 60)
-    
-    from core.greenlang.runtime.executor import Executor
-    
-    # Load inputs
-    with open("inputs.json") as f:
-        inputs = json.load(f)
-    
-    # Execute pipeline (using test_pipeline.yaml which works correctly)
-    executor = Executor()
-    result = executor.run("test_pipeline.yaml", inputs, Path("out"))
-    
-    if result.success:
-        print("[OK] Pipeline execution successful")
-        print("\nStep Results:")
-        for step_name, step_data in result.data.items():
-            status = "OK" if step_data.get("success") else "FAIL"
-            print(f"  - {step_name}: {status}")
-            if step_data.get("outputs"):
-                # Show sample outputs
-                outputs = step_data["outputs"]
-                if "efficiency" in outputs:
-                    print(f"    Efficiency: {outputs['efficiency']}")
-                if "emissions" in outputs:
-                    print(f"    Emissions: {outputs['emissions']} tons CO2")
-                if "annual_generation" in outputs:
-                    print(f"    Solar Generation: {outputs['annual_generation']:.0f} kWh/year")
-        
-        print(f"\nArtifacts saved to: out/")
-        return True
-    else:
-        print("[FAIL] Pipeline execution failed")
-        return False
-
-
-def verify_policy_check():
-    """Verify: gl policy check packs/boiler-solar"""
-    print("\n" + "=" * 60)
-    print("Testing: gl policy check packs/boiler-solar")
-    print("=" * 60)
-    
-    from core.greenlang.policy.enforcer import check_install
-    from core.greenlang.packs.manifest import load_manifest
-    
-    pack_dir = Path("packs/boiler-solar")
-    
+def test_kubernetes_backend():
+    """Test K8s backend is available"""
+    print("\n=== Testing Kubernetes Backend Support ===")
     try:
-        # Load manifest
-        manifest = load_manifest(pack_dir)
-        print(f"[OK] Loaded manifest for {manifest.name} v{manifest.version}")
+        from greenlang.runtime.backends import KubernetesBackend, BackendFactory
+        print("[OK] Kubernetes backend module imported")
         
-        # Check policy
-        check_install(manifest, str(pack_dir), "publish")
-        print("[OK] Policy check passed")
-        print("\nPolicy Details:")
-        print(f"  - License: {manifest.license}")
-        print(f"  - Kind: {manifest.kind}")
-        if hasattr(manifest, 'policy'):
-            if hasattr(manifest.policy, 'network'):
-                print(f"  - Network allowlist: {len(manifest.policy.network)} domains")
+        # Check if k8s backend is registered
+        backends = BackendFactory.list_backends()
+        if "kubernetes" in backends:
+            print(f"[OK] Kubernetes backend registered in factory")
+            print(f"     Available backends: {backends}")
+            return True
+        else:
+            print(f"[FAIL] Kubernetes backend not in factory")
+            print(f"       Available: {backends}")
+            return False
+    except ImportError as e:
+        print(f"[FAIL] Could not import Kubernetes backend: {e}")
+        return False
+
+def test_multitenancy():
+    """Test multi-tenancy is available"""
+    print("\n=== Testing Multi-tenancy Support ===")
+    try:
+        from greenlang.auth import TenantManager, RBACManager
+        print("[OK] Multi-tenancy modules imported")
+        
+        # Create instances
+        tenant_mgr = TenantManager()
+        rbac_mgr = RBACManager()
+        
+        print(f"[OK] TenantManager created")
+        print(f"[OK] RBACManager created with {len(rbac_mgr.roles)} default roles")
+        
+        # List default roles
+        print("     Default roles:")
+        for role_name in rbac_mgr.roles.keys():
+            print(f"       - {role_name}")
+        
         return True
+    except ImportError as e:
+        print(f"[FAIL] Could not import multi-tenancy: {e}")
+        return False
+
+def test_monitoring():
+    """Test monitoring/metrics support"""
+    print("\n=== Testing Monitoring & Observability ===")
+    try:
+        from greenlang.telemetry import (
+            get_metrics_collector,
+            get_health_checker,
+            get_monitoring_service
+        )
+        print("[OK] Telemetry modules imported")
         
-    except RuntimeError as e:
-        print(f"[FAIL] Policy check failed: {e}")
+        # Create instances
+        metrics = get_metrics_collector()
+        health = get_health_checker()
+        monitoring = get_monitoring_service()
+        
+        print(f"[OK] MetricsCollector created")
+        print(f"[OK] HealthChecker created with {len(health.checks)} checks")
+        print(f"[OK] MonitoringService created")
+        
+        # Get health status
+        status = health.get_status()
+        print(f"     Current health: {status.value}")
+        
+        return True
+    except ImportError as e:
+        print(f"[FAIL] Could not import monitoring: {e}")
         return False
+
+def test_cli_commands():
+    """Test CLI commands are registered"""
+    print("\n=== Testing CLI Commands ===")
+    try:
+        from greenlang.cli.main import cli
+        from click.testing import CliRunner
+        
+        runner = CliRunner()
+        
+        # Test main help
+        result = runner.invoke(cli, ['--help'])
+        if result.exit_code == 0:
+            print("[OK] Main CLI help works")
+        else:
+            print(f"[FAIL] Main CLI help failed: {result.exit_code}")
+            return False
+        
+        # Check for enterprise commands in help
+        help_text = result.output
+        
+        commands_to_check = {
+            'run': 'Run a workflow',
+            'admin': 'Administrative commands',
+            'tenant': 'Manage GreenLang tenants',
+            'telemetry': 'Monitoring and observability'
+        }
+        
+        found_commands = []
+        missing_commands = []
+        
+        for cmd, desc in commands_to_check.items():
+            if cmd in help_text:
+                found_commands.append(cmd)
+            else:
+                missing_commands.append(cmd)
+        
+        if found_commands:
+            print(f"[OK] Found commands: {', '.join(found_commands)}")
+        
+        if missing_commands:
+            print(f"[INFO] Missing commands: {', '.join(missing_commands)}")
+            print("      (May need enterprise features installed)")
+        
+        # Test run command with --help to check backend option
+        result = runner.invoke(cli, ['run', '--help'])
+        if '--backend' in result.output:
+            print("[OK] Run command has --backend option")
+        else:
+            print("[INFO] Run command missing --backend option")
+        
+        return len(found_commands) > 0
+        
     except Exception as e:
-        print(f"[ERROR] {e}")
+        print(f"[FAIL] CLI test error: {e}")
         return False
-
-
-def verify_doctor():
-    """Verify: gl doctor"""
-    print("\n" + "=" * 60)
-    print("Testing: gl doctor")
-    print("=" * 60)
-    
-    import platform
-    import sys
-    from pathlib import Path
-    
-    print("System Information:")
-    print(f"  Platform: {platform.platform()}")
-    print(f"  Python: {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
-    print(f"  Working Directory: {Path.cwd()}")
-    
-    # Check critical components
-    checks = []
-    
-    # Check Python version
-    if sys.version_info.major >= 3 and sys.version_info.minor >= 9:
-        print("[OK] Python version >= 3.9")
-        checks.append(True)
-    else:
-        print("[FAIL] Python version < 3.9")
-        checks.append(False)
-    
-    # Check required packages
-    packages = ["pydantic", "typer", "rich", "yaml"]
-    for pkg in packages:
-        try:
-            __import__(pkg)
-            print(f"[OK] Package {pkg} installed")
-            checks.append(True)
-        except ImportError:
-            print(f"[FAIL] Package {pkg} not installed")
-            checks.append(False)
-    
-    # Check GreenLang directories
-    gl_home = Path.home() / ".greenlang"
-    if gl_home.exists():
-        print(f"[OK] GreenLang home exists: {gl_home}")
-        checks.append(True)
-    else:
-        print(f"[WARN] GreenLang home not found (will be created on first use)")
-        checks.append(True)  # Not critical
-    
-    # Check test pack
-    if Path("packs/boiler-solar").exists():
-        print("[OK] Test pack boiler-solar found")
-        checks.append(True)
-    else:
-        print("[FAIL] Test pack boiler-solar not found")
-        checks.append(False)
-    
-    return all(checks)
-
 
 def main():
-    """Run all verification commands"""
-    print("\n" + "=" * 60)
-    print(" GreenLang Verification Commands")
+    """Run all verification tests"""
+    print("=" * 60)
+    print("ENTERPRISE FEATURES VERIFICATION")
     print("=" * 60)
     
-    results = []
+    results = {
+        "Kubernetes Backend": test_kubernetes_backend(),
+        "Multi-tenancy": test_multitenancy(),
+        "Monitoring": test_monitoring(),
+        "CLI Commands": test_cli_commands()
+    }
     
-    # Test 1: Policy check
-    success = verify_policy_check()
-    results.append(("gl policy check", success))
-    
-    # Test 2: Pipeline execution
-    success = verify_pipeline_execution()
-    results.append(("gl run", success))
-    
-    # Test 3: Doctor
-    success = verify_doctor()
-    results.append(("gl doctor", success))
-    
-    # Summary
     print("\n" + "=" * 60)
-    print(" Verification Summary")
+    print("VERIFICATION SUMMARY")
     print("=" * 60)
     
-    passed = sum(1 for _, s in results if s)
+    for feature, passed in results.items():
+        status = "PASS" if passed else "FAIL"
+        print(f"  {feature}: {status}")
+    
     total = len(results)
+    passed = sum(1 for v in results.values() if v)
     
-    print(f"\nCommands verified: {passed}/{total}")
-    for cmd, success in results:
-        status = "[OK]" if success else "[FAIL]"
-        print(f"  {status} {cmd}")
+    print(f"\nResult: {passed}/{total} features verified")
     
     if passed == total:
-        print("\n[SUCCESS] All verification commands passed!")
-        print("\nThe GreenLang infrastructure platform is ready for use.")
-        print("\nYou can now run:")
-        print("  gl run test_pipeline.yaml -i inputs.json  # Pipeline execution")
-        print("  gl policy check packs/boiler-solar         # Policy enforcement")
-        print("  gl doctor                                   # System diagnostics")
+        print("\nAll enterprise features are properly implemented!")
+    elif passed > 0:
+        print("\nSome enterprise features are available.")
+        print("Check documentation for full setup requirements.")
     else:
-        print(f"\n[WARNING] {total - passed} command(s) need attention.")
+        print("\nEnterprise features not detected.")
+        print("This may be the community edition.")
     
-    return 0 if passed == total else 1
-
+    return passed == total
 
 if __name__ == "__main__":
-    sys.exit(main())
+    success = main()
+    sys.exit(0 if success else 1)

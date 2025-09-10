@@ -33,7 +33,8 @@ def test_long_run_no_memory_leak():
     for i in range(100):
         result = agent.run({
             "fuel_type": "electricity",
-            "consumption": {"value": 1000 + i, "unit": "kWh"},
+            "amount": 1000 + i,
+            "unit": "kWh",
             "country": "US"
         })
         
@@ -69,7 +70,8 @@ def test_rapid_fire_calculations():
     for _ in range(50):
         result = agent.run({
             "fuel_type": "electricity",
-            "consumption": {"value": 1000, "unit": "kWh"},
+            "amount": 1000,
+            "unit": "kWh",
             "country": "IN"
         })
         assert result["success"] is True
