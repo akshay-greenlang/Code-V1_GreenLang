@@ -1,0 +1,33 @@
+name: test-python-pipeline
+version: 1.0.0
+description: Test pipeline using only Python steps
+
+steps:
+  - name: process_inputs
+    type: python
+    code: |
+      # Process the inputs from inputs.json
+      outputs['processed_inputs'] = inputs
+      outputs['capacity_doubled'] = inputs.get('capacity', 0) * 2
+      outputs['building_area'] = inputs.get('building_size_sqft', 0)
+      outputs['analysis_result'] = {
+          'location': inputs.get('location', 'unknown'),
+          'building_type': inputs.get('building_type', 'unknown'),
+          'total_demand': inputs.get('annual_demand', 0),
+          'efficiency_score': 85.5  # Fixed value for determinism
+      }
+      
+  - name: calculate_metrics
+    type: python
+    code: |
+      import math
+      # Get results from previous step
+      prev_results = context['results'].get('process_inputs', {})
+      
+      area = prev_results.get('building_area', 0)
+      demand = prev_results.get('analysis_result', {}).get('total_demand', 0)
+      
+      outputs['energy_per_sqft'] = demand / area if area > 0 else 0
+      outputs['energy_intensity'] = 'high' if (demand / area if area > 0 else 0) > 100 else 'moderate'
+      outputs['sustainability_index'] = min(100, max(0, 90 - (demand / area / 10) if area > 0 else 90))
+      outputs['carbon_estimate'] = demand * 0.000233  # Fixed conversion factor

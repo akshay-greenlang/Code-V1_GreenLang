@@ -97,6 +97,10 @@ alembic>=1.12.0          # Database migrations
 psycopg2-binary>=2.9.0   # PostgreSQL adapter
 pymongo>=4.5.0           # MongoDB adapter
 
+# Security & Cryptography
+cryptography>=41.0.0     # Required for pack signing and verification
+cosign>=2.2.0            # Container/artifact signing (optional)
+
 # Deployment (optional)
 gunicorn>=21.0.0         # WSGI HTTP server
 docker>=6.1.0            # Docker SDK

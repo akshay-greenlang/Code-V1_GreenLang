@@ -1,0 +1,18 @@
+name: gpl-test-pipeline
+description: A simple test pipeline for GPL pack
+version: 1.0.0
+kind: pipeline
+
+inputs:
+  - name: test_input
+    type: string
+    required: true
+
+outputs:
+  - name: test_output
+    type: string
+
+steps:
+  - name: echo_step
+    type: shell
+    command: echo "Processing: {{ inputs.test_input }}"

@@ -1,0 +1,11 @@
+description: A test pack with GPL license
+kind: pack
+license: GPL-3.0
+name: gpl-test-detailed
+policy:
+  ef_vintage_min: 2024
+  network:
+  - github.com
+security:
+  sbom: test-sbom.json
+version: 1.0.0

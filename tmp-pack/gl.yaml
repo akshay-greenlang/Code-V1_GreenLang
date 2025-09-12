@@ -1,0 +1,6 @@
+version: '1.0'
+name: tmp-pack-pipeline
+description: Main pipeline for tmp-pack
+inputs: {}
+steps: []
+outputs: {}
