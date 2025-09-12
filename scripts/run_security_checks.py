@@ -224,22 +224,22 @@ class SecurityChecker:
         print("-" * 40)
         pip_audit = self.results.get("pip_audit", {})
         if pip_audit.get("status") == "pass":
-            print("✅ No critical or high vulnerabilities found")
+            print("[OK] No critical or high vulnerabilities found")
         elif pip_audit.get("status") == "fail":
-            print(f"⚠️  Critical: {pip_audit.get('critical', 0)}")
-            print(f"⚠️  High: {pip_audit.get('high', 0)}")
-            print(f"⚠️  Medium: {pip_audit.get('medium', 0)}")
+            print(f"[WARN] Critical: {pip_audit.get('critical', 0)}")
+            print(f"[WARN] High: {pip_audit.get('high', 0)}")
+            print(f"[WARN] Medium: {pip_audit.get('medium', 0)}")
             print(f"ℹ️  Low: {pip_audit.get('low', 0)}")
         
         # Code Security
-        print("\n🔒 CODE SECURITY ANALYSIS")
+        print("\n[SECURITY] CODE SECURITY ANALYSIS")
         print("-" * 40)
         bandit = self.results.get("bandit", {})
         if bandit.get("status") == "pass":
-            print("✅ No high-severity code issues found")
+            print("[OK] No high-severity code issues found")
         else:
-            print(f"⚠️  High: {bandit.get('high', 0)}")
-            print(f"⚠️  Medium: {bandit.get('medium', 0)}")
+            print(f"[WARN] High: {bandit.get('high', 0)}")
+            print(f"[WARN] Medium: {bandit.get('medium', 0)}")
             print(f"ℹ️  Low: {bandit.get('low', 0)}")
         
         # Path Traversal
@@ -247,21 +247,21 @@ class SecurityChecker:
         print("-" * 40)
         path_traversal = self.results.get("path_traversal", {})
         if path_traversal.get("status") == "pass":
-            print(f"✅ All {path_traversal.get('total_tests', 0)} path traversal tests passed")
+            print(f"[OK] All {path_traversal.get('total_tests', 0)} path traversal tests passed")
         else:
-            print(f"⚠️  {path_traversal.get('failed', 0)} tests failed")
+            print(f"[WARN] {path_traversal.get('failed', 0)} tests failed")
         
         # Summary
         print("\n📊 SUMMARY")
         print("-" * 40)
         if self.has_critical:
-            print("❌ CRITICAL issues found - must fix before release")
+            print("[CRITICAL] Issues found - must fix before release")
             sys.exit(1)
         elif self.has_high:
-            print("⚠️  HIGH severity issues found - should fix before release")
+            print("[HIGH] Severity issues found - should fix before release")
             sys.exit(1)
         else:
-            print("✅ No critical or high severity issues found")
+            print("[OK] No critical or high severity issues found")
             print("Ready for production deployment")
     
     def run_all_checks(self) -> None:
@@ -306,7 +306,7 @@ def main():
             missing_tools.append(tool)
     
     if missing_tools:
-        print(f"❌ Missing required tools: {', '.join(missing_tools)}")
+        print(f"[X] Missing required tools: {', '.join(missing_tools)}")
         print("\nInstall with:")
         print("pip install pip-audit safety bandit")
         sys.exit(1)

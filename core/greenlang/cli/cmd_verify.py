@@ -4,14 +4,43 @@ gl verify - Verify artifact signatures and SBOM
 
 import typer
 import json
+import os
+import sys
 from pathlib import Path
 from typing import Optional
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+# Set up Windows encoding support
+if sys.platform == "win32":
+    # Set environment variables for UTF-8 support
+    os.environ["PYTHONIOENCODING"] = "utf-8"
+    os.environ["PYTHONUTF8"] = "1"
+    
+    # Configure console for Windows
+    try:
+        # Try to enable ANSI support on Windows
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        kernel32.SetConsoleMode(kernel32.GetStdHandle(-11), 7)
+    except:
+        pass
+
 app = typer.Typer()
-console = Console()
+# Create console with explicit encoding for Windows compatibility
+console = Console(
+    force_terminal=True,
+    legacy_windows=False,
+    force_interactive=False
+)
+
+
+def safe_string(text: str) -> str:
+    """Convert string to ASCII-safe format for Windows console output"""
+    if sys.platform == "win32":
+        return str(text).encode('ascii', 'replace').decode('ascii')
+    return str(text)
 
 
 @app.callback(invoke_without_command=True)
@@ -45,7 +74,7 @@ def verify(
             
             # Load SBOM
             try:
-                with open(artifact_path) as f:
+                with open(artifact_path, 'r', encoding='utf-8', errors='replace') as f:
                     sbom_data = json.load(f)
                 
                 # Check SBOM type
@@ -99,10 +128,10 @@ def verify(
                 return  # Exit after SBOM verification
                 
             except json.JSONDecodeError as e:
-                console.print(f"[red]Invalid JSON in SBOM: {e}[/red]")
+                console.print(f"[red]Invalid JSON in SBOM: {safe_string(e)}[/red]")
                 raise typer.Exit(1)
             except Exception as e:
-                console.print(f"[red]SBOM verification failed: {e}[/red]")
+                console.print(f"[red]SBOM verification failed: {safe_string(e)}[/red]")
                 raise typer.Exit(1)
         
         # Regular artifact verification
@@ -123,7 +152,7 @@ def verify(
                     console.print(f"[red][FAIL][/red] Signature invalid")
                     raise typer.Exit(1)
             except Exception as e:
-                console.print(f"[red]Signature verification failed: {e}[/red]")
+                console.print(f"[red]Signature verification failed: {safe_string(e)}[/red]")
                 raise typer.Exit(1)
         
         # Check SBOM if requested
@@ -135,7 +164,7 @@ def verify(
             if sbom_path.exists():
                 console.print("[cyan]Checking SBOM...[/cyan]")
                 try:
-                    with open(sbom_path) as f:
+                    with open(sbom_path, 'r', encoding='utf-8', errors='replace') as f:
                         sbom_data = json.load(f)
                     
                     console.print(f"[green][OK][/green] SBOM found")
@@ -154,7 +183,7 @@ def verify(
                             for pkg in packages[:5]:
                                 console.print(f"  - {pkg.get('name', 'Unknown')} {pkg.get('versionInfo', '')}")
                 except Exception as e:
-                    console.print(f"[yellow]Warning: Could not parse SBOM: {e}[/yellow]")
+                    console.print(f"[yellow]Warning: Could not parse SBOM: {safe_string(e)}[/yellow]")
             else:
                 console.print("[yellow]No SBOM found[/yellow]")
         
@@ -163,7 +192,7 @@ def verify(
         if provenance_path.exists():
             console.print("[cyan]Checking provenance...[/cyan]")
             try:
-                with open(provenance_path) as f:
+                with open(provenance_path, 'r', encoding='utf-8', errors='replace') as f:
                     prov_data = json.load(f)
                 
                 console.print(f"[green][OK][/green] Provenance found")
@@ -174,7 +203,7 @@ def verify(
                     console.print(f"  Build Type: {prov_data.get('buildType', 'Unknown')}")
                     console.print(f"  Timestamp: {prov_data.get('metadata', {}).get('buildFinishedOn', 'Unknown')}")
             except Exception as e:
-                console.print(f"[yellow]Warning: Could not parse provenance: {e}[/yellow]")
+                console.print(f"[yellow]Warning: Could not parse provenance: {safe_string(e)}[/yellow]")
         
         console.print(f"\n[green][OK][/green] Artifact verified: {artifact_path.name}")
         
@@ -218,7 +247,7 @@ def verify(
                 # Check for SBOM
                 sbom_path = pack.location / "sbom.spdx.json"
                 if sbom_path.exists():
-                    with open(sbom_path) as f:
+                    with open(sbom_path, 'r', encoding='utf-8', errors='replace') as f:
                         sbom_data = json.load(f)
                     console.print(f"  SBOM: {len(sbom_data.get('packages', []))} components")
         else:
@@ -255,7 +284,7 @@ def show_sbom(
         console.print(f"[red]No SBOM found for: {artifact}[/red]")
         raise typer.Exit(1)
     
-    with open(sbom_path) as f:
+    with open(sbom_path, 'r', encoding='utf-8', errors='replace') as f:
         sbom_data = json.load(f)
     
     if format == "json":
@@ -315,7 +344,7 @@ def show_provenance(
         console.print(f"[red]No provenance found for: {artifact}[/red]")
         raise typer.Exit(1)
     
-    with open(prov_path) as f:
+    with open(prov_path, 'r', encoding='utf-8', errors='replace') as f:
         prov_data = json.load(f)
     
     console.print(Panel.fit(

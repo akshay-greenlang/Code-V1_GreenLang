@@ -4,6 +4,21 @@ from greenlang.core.workflow import Workflow
 import logging
 import ast
 
+# Import policy enforcement if available
+try:
+    import sys
+    import os
+    # Add the core module to Python path
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    core_path = os.path.join(os.path.dirname(os.path.dirname(current_dir)), 'core')
+    if core_path not in sys.path:
+        sys.path.insert(0, core_path)
+    
+    from greenlang.policy.enforcer import check_run
+    POLICY_AVAILABLE = True
+except ImportError:
+    POLICY_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -32,6 +47,32 @@ class Orchestrator:
         execution_id = f"{workflow_id}_{len(self.execution_history)}"
         
         self.logger.info(f"Starting workflow execution: {execution_id}")
+        
+        # Policy enforcement check before execution
+        if POLICY_AVAILABLE:
+            try:
+                # Create execution context for policy check
+                class ExecutionContext:
+                    def __init__(self, input_data):
+                        self.egress_targets = []
+                        self.region = input_data.get("metadata", {}).get("location", {}).get("country", "US")
+                        self.metadata = input_data.get("metadata", {})
+                
+                policy_context = ExecutionContext(input_data)
+                check_run(workflow, policy_context)
+                self.logger.info("Runtime policy check passed")
+            except RuntimeError as e:
+                error_msg = f"Runtime policy check failed: {e}"
+                self.logger.error(error_msg)
+                return {
+                    "workflow_id": workflow_id,
+                    "execution_id": execution_id,
+                    "success": False,
+                    "errors": [{"step": "policy_check", "error": error_msg}],
+                    "results": {}
+                }
+            except Exception as e:
+                self.logger.warning(f"Policy check error: {e}")
         
         context = {
             "input": input_data,

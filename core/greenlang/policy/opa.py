@@ -49,9 +49,13 @@ def evaluate(policy_path: str, input_doc: Dict[str, Any],
                 json.dump(data, f)
                 data_file = Path(f.name)
         
-        # Build OPA command
+        # Build OPA command - use local opa.exe if available
+        cwd = Path.cwd()
+        opa_exe = cwd / "opa.exe"
+        opa_cmd = str(opa_exe) if opa_exe.exists() else "opa"
+        
         cmd = [
-            "opa", "eval",
+            opa_cmd, "eval",
             "-d", str(policy_file),
             "-i", str(input_file),
             "--format", "json",
@@ -139,6 +143,21 @@ def evaluate_inline(policy_content: str, input_doc: Dict[str, Any]) -> Dict[str,
 
 def _check_opa_installed() -> bool:
     """Check if OPA is installed and available"""
+    # Try local opa.exe first (Windows)
+    cwd = Path.cwd()
+    opa_exe = cwd / "opa.exe"
+    if opa_exe.exists():
+        try:
+            result = subprocess.run(
+                [str(opa_exe), "version"],
+                capture_output=True,
+                timeout=5
+            )
+            return result.returncode == 0
+        except (subprocess.TimeoutExpired):
+            pass
+    
+    # Try system OPA
     try:
         result = subprocess.run(
             ["opa", "version"],
@@ -198,9 +217,14 @@ def validate_policy(policy_path: str) -> tuple[bool, list[str]]:
     if not _check_opa_installed():
         return True, []  # Can't validate without OPA
     
+    # Use local OPA if available
+    cwd = Path.cwd()
+    opa_exe = cwd / "opa.exe"
+    opa_cmd = str(opa_exe) if opa_exe.exists() else "opa"
+    
     try:
         result = subprocess.run(
-            ["opa", "test", str(policy_file), "--explain", "fails"],
+            [opa_cmd, "test", str(policy_file), "--explain", "fails"],
             capture_output=True,
             text=True,
             timeout=10

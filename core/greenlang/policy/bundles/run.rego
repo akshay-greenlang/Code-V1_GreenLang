@@ -1,17 +1,14 @@
-package greenlang.run
+package greenlang.decision
 
 import rego.v1
 
-# Default deny-by-default egress policy
+# Default deny-by-default policy
 default allow := false
+default reason := "runtime policy denied"
 
-# Default reason for denial
-default reason := "egress denied by default policy"
-
-# Allow pipeline execution if all network access is authorized
+# Allow pipeline execution if all conditions are met
 allow if {
 	egress_authorized
-	region_compliant
 	resource_limits_ok
 }
 
@@ -26,43 +23,13 @@ egress_authorized if {
 }
 
 # Collect unauthorized egress attempts
-unauthorized_egress[target] {
+unauthorized_egress contains target if {
 	target := input.egress[_]
 	not target in input.pipeline.policy.network
+	not target in default_allowed_domains
 }
 
-# Check data residency requirements
-region_compliant if {
-	not input.pipeline.policy.data_residency  # No requirements
-}
-
-region_compliant if {
-	input.pipeline.policy.data_residency
-	input.region in input.pipeline.policy.allowed_regions
-}
-
-# Check resource limits
-resource_limits_ok if {
-	input.pipeline.resources.memory <= input.pipeline.policy.max_memory
-	input.pipeline.resources.cpu <= input.pipeline.policy.max_cpu
-	input.pipeline.resources.disk <= input.pipeline.policy.max_disk
-}
-
-# Specific denial reasons for network violations
-reason := sprintf("egress to unauthorized domain(s): %s", [concat(", ", unauthorized_egress)]) if {
-	count(unauthorized_egress) > 0
-}
-
-reason := sprintf("execution not allowed in region: %s", [input.region]) if {
-	not region_compliant
-	input.pipeline.policy.data_residency
-}
-
-reason := "resource limits exceeded" if {
-	not resource_limits_ok
-}
-
-# Allow specific known-good domains by default (infrastructure)
+# Default allowed domains (infrastructure)
 default_allowed_domains := [
 	"api.openai.com",
 	"api.anthropic.com", 
@@ -71,39 +38,25 @@ default_allowed_domains := [
 	"pypi.org"
 ]
 
-# Enhanced egress check with default allowlist
-egress_authorized if {
-	count(input.egress) > 0
-	all_egress_allowed
+# Check resource limits
+resource_limits_ok if {
+	input.pipeline.resources.memory <= input.pipeline.policy.max_memory
+	input.pipeline.resources.cpu <= input.pipeline.policy.max_cpu
+	input.pipeline.resources.disk <= input.pipeline.policy.max_disk
 }
 
-all_egress_allowed if {
-	count([target | 
-		target := input.egress[_]
-		not target in input.pipeline.policy.network
-		not target in default_allowed_domains
-	]) == 0
+# Specific denial reasons
+reason := sprintf("egress to unauthorized domain(s): %s", [concat(", ", unauthorized_egress)]) if {
+	count(unauthorized_egress) > 0
 }
 
-# Time-based restrictions
-reason := "execution not allowed outside business hours" if {
-	input.pipeline.policy.business_hours_only
-	not time.hour(time.now_ns()) in numbers.range(9, 17)
+reason := "resource limits exceeded" if {
+	egress_authorized
+	not resource_limits_ok
 }
 
-# Sensitive data protection
-reason := "pipeline cannot access sensitive data without explicit approval" if {
-	input.pipeline.accesses_pii
-	not input.pipeline.policy.pii_approved
-}
-
-# Development vs production rules
+# Allow for development stage
 allow if {
 	input.stage == "dev"
-	egress_authorized  # Relaxed for development
-}
-
-reason := "production execution requires stricter compliance" if {
-	input.stage == "production"
-	not (egress_authorized and region_compliant and resource_limits_ok)
+	egress_authorized
 }

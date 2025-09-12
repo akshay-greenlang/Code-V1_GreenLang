@@ -1,0 +1,427 @@
+---
+# Prometheus Alert Rules for GreenLang Production Monitoring
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-alerts
+  namespace: greenlang
+data:
+  alerts.yml: |
+    groups:
+      # System Health Alerts
+      - name: system_health
+        interval: 30s
+        rules:
+          - alert: HighCPUUsage
+            expr: |
+              (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+            for: 5m
+            labels:
+              severity: warning
+              component: system
+            annotations:
+              summary: "High CPU usage detected on {{ $labels.instance }}"
+              description: "CPU usage is above 80% (current value: {{ $value }}%)"
+              
+          - alert: CriticalCPUUsage
+            expr: |
+              (100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 95
+            for: 2m
+            labels:
+              severity: critical
+              component: system
+            annotations:
+              summary: "Critical CPU usage on {{ $labels.instance }}"
+              description: "CPU usage is above 95% (current value: {{ $value }}%)"
+              
+          - alert: HighMemoryUsage
+            expr: |
+              (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+            for: 5m
+            labels:
+              severity: warning
+              component: system
+            annotations:
+              summary: "High memory usage on {{ $labels.instance }}"
+              description: "Memory usage is above 90% (current value: {{ $value }}%)"
+              
+          - alert: DiskSpaceLow
+            expr: |
+              (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+            for: 10m
+            labels:
+              severity: warning
+              component: system
+            annotations:
+              summary: "Low disk space on {{ $labels.instance }}"
+              description: "Disk space is below 15% (current value: {{ $value }}%)"
+              
+          - alert: DiskSpaceCritical
+            expr: |
+              (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 5
+            for: 5m
+            labels:
+              severity: critical
+              component: system
+            annotations:
+              summary: "Critical disk space on {{ $labels.instance }}"
+              description: "Disk space is below 5% (current value: {{ $value }}%)"
+      
+      # Application Performance Alerts
+      - name: application_performance
+        interval: 30s
+        rules:
+          - alert: HighResponseTime
+            expr: |
+              histogram_quantile(0.95, rate(gl_api_latency_seconds_bucket[5m])) > 2
+            for: 5m
+            labels:
+              severity: warning
+              component: api
+            annotations:
+              summary: "High API response time"
+              description: "95th percentile response time is above 2s (current: {{ $value }}s)"
+              
+          - alert: HighErrorRate
+            expr: |
+              (sum(rate(gl_api_requests_total{status=~"5.."}[5m])) / sum(rate(gl_api_requests_total[5m]))) * 100 > 5
+            for: 5m
+            labels:
+              severity: warning
+              component: api
+            annotations:
+              summary: "High error rate detected"
+              description: "Error rate is above 5% (current: {{ $value }}%)"
+              
+          - alert: CriticalErrorRate
+            expr: |
+              (sum(rate(gl_api_requests_total{status=~"5.."}[5m])) / sum(rate(gl_api_requests_total[5m]))) * 100 > 10
+            for: 2m
+            labels:
+              severity: critical
+              component: api
+            annotations:
+              summary: "Critical error rate"
+              description: "Error rate is above 10% (current: {{ $value }}%)"
+              
+          - alert: LowThroughput
+            expr: |
+              sum(rate(gl_api_requests_total[5m])) < 1
+            for: 10m
+            labels:
+              severity: info
+              component: api
+            annotations:
+              summary: "Low API throughput"
+              description: "API requests per second is below 1 (current: {{ $value }})"
+      
+      # Pipeline Execution Alerts
+      - name: pipeline_execution
+        interval: 30s
+        rules:
+          - alert: PipelineExecutionFailures
+            expr: |
+              rate(gl_pipeline_runs_total{status="failed"}[5m]) > 0.1
+            for: 5m
+            labels:
+              severity: warning
+              component: pipeline
+            annotations:
+              summary: "High pipeline failure rate"
+              description: "Pipeline failures per second: {{ $value }}"
+              
+          - alert: PipelineExecutionSlow
+            expr: |
+              histogram_quantile(0.95, rate(gl_pipeline_duration_seconds_bucket[5m])) > 60
+            for: 10m
+            labels:
+              severity: warning
+              component: pipeline
+            annotations:
+              summary: "Slow pipeline execution"
+              description: "95th percentile pipeline duration is above 60s (current: {{ $value }}s)"
+              
+          - alert: TooManyActivePipelines
+            expr: |
+              gl_active_executions > 100
+            for: 5m
+            labels:
+              severity: warning
+              component: pipeline
+            annotations:
+              summary: "Too many active pipeline executions"
+              description: "Active pipelines: {{ $value }}"
+      
+      # Database Alerts
+      - name: database
+        interval: 30s
+        rules:
+          - alert: DatabaseConnectionPoolExhausted
+            expr: |
+              gl_db_connections{state="active"} / gl_db_connections{state="max"} > 0.9
+            for: 5m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "Database connection pool nearly exhausted"
+              description: "Connection pool usage: {{ $value }}%"
+              
+          - alert: DatabaseSlowQueries
+            expr: |
+              histogram_quantile(0.95, rate(gl_db_query_duration_seconds_bucket[5m])) > 1
+            for: 5m
+            labels:
+              severity: warning
+              component: database
+            annotations:
+              summary: "Slow database queries detected"
+              description: "95th percentile query time: {{ $value }}s"
+              
+          - alert: DatabaseDown
+            expr: |
+              up{job="postgres"} == 0
+            for: 1m
+            labels:
+              severity: critical
+              component: database
+            annotations:
+              summary: "Database is down"
+              description: "PostgreSQL database is not responding"
+      
+      # Kubernetes Alerts
+      - name: kubernetes
+        interval: 30s
+        rules:
+          - alert: PodCrashLooping
+            expr: |
+              rate(kube_pod_container_status_restarts_total{namespace="greenlang"}[15m]) > 0
+            for: 5m
+            labels:
+              severity: warning
+              component: kubernetes
+            annotations:
+              summary: "Pod {{ $labels.pod }} is crash looping"
+              description: "Pod has restarted {{ $value }} times in the last 15 minutes"
+              
+          - alert: PodNotReady
+            expr: |
+              kube_pod_status_ready{namespace="greenlang", condition="false"} == 1
+            for: 5m
+            labels:
+              severity: warning
+              component: kubernetes
+            annotations:
+              summary: "Pod {{ $labels.pod }} is not ready"
+              description: "Pod has been not ready for 5 minutes"
+              
+          - alert: DeploymentReplicasDown
+            expr: |
+              kube_deployment_status_replicas_available{namespace="greenlang"} < kube_deployment_spec_replicas{namespace="greenlang"}
+            for: 5m
+            labels:
+              severity: warning
+              component: kubernetes
+            annotations:
+              summary: "Deployment {{ $labels.deployment }} has insufficient replicas"
+              description: "Available: {{ $value }}, Desired: {{ $labels.spec_replicas }}"
+              
+          - alert: HorizontalPodAutoscalerMaxedOut
+            expr: |
+              kube_hpa_status_current_replicas{namespace="greenlang"} == kube_hpa_spec_max_replicas{namespace="greenlang"}
+            for: 10m
+            labels:
+              severity: warning
+              component: kubernetes
+            annotations:
+              summary: "HPA {{ $labels.hpa }} is at maximum replicas"
+              description: "HPA has been at maximum replicas for 10 minutes"
+      
+      # Security Alerts
+      - name: security
+        interval: 30s
+        rules:
+          - alert: HighAuthenticationFailures
+            expr: |
+              rate(gl_auth_failures_total[5m]) > 10
+            for: 5m
+            labels:
+              severity: warning
+              component: security
+            annotations:
+              summary: "High authentication failure rate"
+              description: "Authentication failures per second: {{ $value }}"
+              
+          - alert: SuspiciousActivity
+            expr: |
+              rate(gl_security_events_total{type="suspicious"}[5m]) > 1
+            for: 2m
+            labels:
+              severity: critical
+              component: security
+            annotations:
+              summary: "Suspicious activity detected"
+              description: "Suspicious events per second: {{ $value }}"
+              
+          - alert: RateLimitExceeded
+            expr: |
+              rate(gl_rate_limit_exceeded_total[5m]) > 100
+            for: 5m
+            labels:
+              severity: warning
+              component: security
+            annotations:
+              summary: "High rate limit violations"
+              description: "Rate limit violations per second: {{ $value }}"
+      
+      # Business Metrics Alerts
+      - name: business_metrics
+        interval: 60s
+        rules:
+          - alert: LowUserActivity
+            expr: |
+              sum(rate(gl_api_requests_total[1h])) < 10
+            for: 30m
+            labels:
+              severity: info
+              component: business
+            annotations:
+              summary: "Low user activity"
+              description: "API requests in last hour: {{ $value }}"
+              
+          - alert: PackOperationFailures
+            expr: |
+              rate(gl_pack_operations_total{status="failed"}[5m]) > 0.05
+            for: 10m
+            labels:
+              severity: warning
+              component: business
+            annotations:
+              summary: "Pack operation failures"
+              description: "Pack operation failures per second: {{ $value }}"
+              
+          - alert: TenantQuotaExceeded
+            expr: |
+              gl_tenant_quota_usage_percent > 90
+            for: 10m
+            labels:
+              severity: warning
+              component: business
+            annotations:
+              summary: "Tenant {{ $labels.tenant }} approaching quota limit"
+              description: "Quota usage: {{ $value }}%"
+
+---
+# AlertManager Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: greenlang
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+      smtp_from: 'alerts@greenlang.io'
+      smtp_smarthost: 'smtp.example.com:587'
+      smtp_auth_username: 'alerts@greenlang.io'
+      smtp_auth_password: 'password'
+      
+    route:
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+      receiver: 'default'
+      
+      routes:
+        - match:
+            severity: critical
+          receiver: 'critical'
+          continue: true
+          
+        - match:
+            severity: warning
+          receiver: 'warning'
+          continue: true
+          
+        - match:
+            component: security
+          receiver: 'security'
+          continue: true
+          
+        - match:
+            component: business
+          receiver: 'business'
+          
+    receivers:
+      - name: 'default'
+        email_configs:
+          - to: 'ops@greenlang.io'
+            headers:
+              Subject: 'GreenLang Alert: {{ .GroupLabels.alertname }}'
+      
+      - name: 'critical'
+        email_configs:
+          - to: 'oncall@greenlang.io'
+            headers:
+              Subject: 'CRITICAL: {{ .GroupLabels.alertname }}'
+        slack_configs:
+          - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+            channel: '#alerts-critical'
+            title: 'Critical Alert'
+            text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        pagerduty_configs:
+          - service_key: 'YOUR_PAGERDUTY_SERVICE_KEY'
+            description: '{{ .GroupLabels.alertname }}'
+      
+      - name: 'warning'
+        email_configs:
+          - to: 'ops@greenlang.io'
+        slack_configs:
+          - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+            channel: '#alerts-warning'
+            title: 'Warning Alert'
+      
+      - name: 'security'
+        email_configs:
+          - to: 'security@greenlang.io'
+        slack_configs:
+          - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+            channel: '#security-alerts'
+      
+      - name: 'business'
+        email_configs:
+          - to: 'business-ops@greenlang.io'
+    
+    inhibit_rules:
+      - source_match:
+          severity: 'critical'
+        target_match:
+          severity: 'warning'
+        equal: ['alertname', 'cluster', 'service']
+
+---
+# PrometheusRule CRD for Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: greenlang-alerts
+  namespace: greenlang
+  labels:
+    app: greenlang
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: greenlang_alerts
+      interval: 30s
+      rules:
+        - alert: GreenLangAPIDown
+          expr: up{job="greenlang-api"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: api
+          annotations:
+            summary: "GreenLang API is down"
+            description: "GreenLang API has been down for more than 1 minute"

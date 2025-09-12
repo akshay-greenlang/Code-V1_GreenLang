@@ -2,6 +2,7 @@ import click
 import json
 import yaml
 import os
+import sys
 from typing import Optional, Dict, Any, List, Tuple
 from pathlib import Path
 from rich.console import Console
@@ -16,6 +17,21 @@ from greenlang.cli.assistant import AIAssistant
 import greenlang
 
 console = Console()
+
+# Import policy enforcement from core module
+try:
+    import sys
+    import os
+    # Add the core module to Python path
+    core_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'core')
+    if core_path not in sys.path:
+        sys.path.insert(0, core_path)
+    
+    from greenlang.policy.enforcer import PolicyEnforcer, check_run
+    from greenlang.cli.cmd_policy import app as policy_app
+    POLICY_AVAILABLE = True
+except ImportError as e:
+    POLICY_AVAILABLE = False
 
 # Try to import new agents, fallback to basic if not available
 try:
@@ -702,6 +718,28 @@ def run(workflow_file: str, input: Optional[str], output: Optional[str], format:
         with open(input, 'r') as f:
             input_data = json.load(f)
     
+    # Policy enforcement check before execution
+    if POLICY_AVAILABLE:
+        console.print("Checking runtime policies...", style="dim")
+        try:
+            # Create execution context for policy check
+            class ExecutionContext:
+                def __init__(self):
+                    self.egress_targets = []
+                    self.region = input_data.get("metadata", {}).get("location", {}).get("country", "US")
+                    self.metadata = input_data.get("metadata", {})
+            
+            context = ExecutionContext()
+            check_run(workflow, context)
+            console.print("  ✓ Runtime policy check passed", style="green")
+        except RuntimeError as e:
+            console.print(f"  ✗ Runtime policy check failed: {e}", style="red")
+            console.print("[red]Execution blocked by policy. Use 'gl policy check' to validate pipeline.[/red]")
+            sys.exit(1)
+        except Exception as e:
+            console.print(f"  ! Policy check error: {e}", style="yellow")
+            console.print("[yellow]Warning: Could not verify runtime policy compliance[/yellow]")
+    
     console.print("Executing workflow...\n", style="bold cyan")
     
     result = orchestrator.execute_workflow("main", input_data)
@@ -1120,6 +1158,37 @@ except ImportError:
 # Register pack and hub commands
 register_pack_commands(cli)
 register_hub_commands(cli)
+
+# Register policy commands if available
+if POLICY_AVAILABLE:
+    try:
+        # Add policy command group from core module
+        cli.add_command(policy_app, name="policy")
+    except Exception as e:
+        # Fall back to basic policy command if full app registration fails
+        @cli.command()
+        @click.argument("action", type=click.Choice(["check", "list"]))
+        @click.option("--file", "-f", type=click.Path(exists=True), help="Policy file or pipeline to check")
+        def policy(action: str, file: Optional[str]):
+            """Policy commands (core module available but app registration failed)"""
+            if action == "check":
+                console.print("[yellow]Policy app registration failed, but core module is available.[/yellow]")
+                console.print(f"Error: {e}")
+            elif action == "list":
+                console.print(f"[yellow]Policy app registration failed: {e}[/yellow]")
+else:
+    # Add basic policy command if core module not available
+    @cli.command()
+    @click.argument("action", type=click.Choice(["check", "list"]))
+    @click.option("--file", "-f", type=click.Path(exists=True), help="Policy file or pipeline to check")
+    def policy(action: str, file: Optional[str]):
+        """Basic policy commands (requires core module for full functionality)"""
+        if action == "check":
+            console.print("[yellow]Policy enforcement requires the core module.[/yellow]")
+            console.print("Install with: [cyan]pip install greenlang-core[/cyan]")
+        elif action == "list":
+            console.print("[yellow]No policies available - core module not installed.[/yellow]")
+            console.print("Install with: [cyan]pip install greenlang-core[/cyan]")
 
 if __name__ == "__main__":
     cli()
