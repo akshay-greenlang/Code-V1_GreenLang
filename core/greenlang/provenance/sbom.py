@@ -9,6 +9,7 @@ import json
 import hashlib
 import subprocess
 import sys
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional
@@ -17,6 +18,11 @@ try:
 except ImportError:
     pkg_resources = None
 import logging
+
+# Set up Windows encoding support for this module
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    os.environ.setdefault("PYTHONUTF8", "1")
 
 logger = logging.getLogger(__name__)
 
@@ -142,8 +148,8 @@ def generate_sbom(path: str, output_path: Optional[str] = None, format: str = "s
     sbom["vulnerabilities"] = []
     
     # Save SBOM
-    with open(output_path, "w") as f:
-        json.dump(sbom, f, indent=2)
+    with open(output_path, "w", encoding='utf-8') as f:
+        json.dump(sbom, f, indent=2, ensure_ascii=False)
     
     return str(output_path)
 
@@ -176,7 +182,7 @@ def _generate_spdx_sbom(pack_path: Path, output_path: Path) -> str:
         # Fallback to basic manifest
         manifest_path = pack_path / "pack.yaml"
         if manifest_path.exists():
-            with open(manifest_path) as f:
+            with open(manifest_path, 'r', encoding='utf-8', errors='replace') as f:
                 manifest_dict = yaml.safe_load(f)
         else:
             manifest_dict = {}
@@ -307,8 +313,8 @@ def _generate_spdx_sbom(pack_path: Path, output_path: Path) -> str:
         ]
     
     # Save SBOM
-    with open(output_path, "w") as f:
-        json.dump(sbom, f, indent=2)
+    with open(output_path, "w", encoding='utf-8') as f:
+        json.dump(sbom, f, indent=2, ensure_ascii=False)
     
     logger.info(f"Generated SPDX SBOM: {output_path}")
     return str(output_path)
@@ -332,7 +338,9 @@ def _has_cyclonedx() -> bool:
         result = subprocess.run(
             ["cyclonedx-py", "--version"],
             capture_output=True,
-            timeout=5
+            timeout=5,
+            encoding='utf-8',
+            errors='replace'
         )
         return result.returncode == 0
     except (FileNotFoundError, subprocess.TimeoutExpired):
@@ -358,11 +366,14 @@ def _generate_with_cyclonedx(pack_path: Path, output_path: Path) -> str:
     if not req_file:
         # Create temporary requirements from current environment
         req_file = pack_path / ".temp_requirements.txt"
-        subprocess.run(
-            [sys.executable, "-m", "pip", "freeze"],
-            stdout=open(req_file, 'w'),
-            cwd=pack_path
-        )
+        with open(req_file, 'w', encoding='utf-8') as stdout_file:
+            subprocess.run(
+                [sys.executable, "-m", "pip", "freeze"],
+                stdout=stdout_file,
+                cwd=pack_path,
+                encoding='utf-8',
+                errors='replace'
+            )
     
     try:
         # Generate SBOM with CycloneDX
@@ -379,7 +390,13 @@ def _generate_with_cyclonedx(pack_path: Path, output_path: Path) -> str:
         elif req_file.name == "Pipfile":
             cmd.extend(["--pipfile", str(req_file)])
         
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            encoding='utf-8',
+            errors='replace'
+        )
         
         if result.returncode != 0:
             logger.error(f"CycloneDX failed: {result.stderr}")
@@ -405,7 +422,7 @@ def _generate_manual_sbom(pack_path: Path, output_path: Path) -> str:
     
     if manifest_path.exists():
         import yaml
-        with open(manifest_path) as f:
+        with open(manifest_path, 'r', encoding='utf-8', errors='replace') as f:
             manifest = yaml.safe_load(f)
     else:
         manifest = {}
@@ -498,15 +515,15 @@ def _generate_manual_sbom(pack_path: Path, output_path: Path) -> str:
     sbom["vulnerabilities"] = []
     
     # Save SBOM
-    with open(output_path, "w") as f:
-        json.dump(sbom, f, indent=2)
+    with open(output_path, "w", encoding='utf-8') as f:
+        json.dump(sbom, f, indent=2, ensure_ascii=False)
     
     return str(output_path)
 
 
 def _enhance_sbom(sbom_path: Path, pack_path: Path):
     """Enhance SBOM with additional metadata"""
-    with open(sbom_path) as f:
+    with open(sbom_path, 'r', encoding='utf-8', errors='replace') as f:
         sbom = json.load(f)
     
     # Add file hashes
@@ -535,7 +552,7 @@ def _enhance_sbom(sbom_path: Path, pack_path: Path):
     ])
     
     # Save enhanced SBOM
-    with open(sbom_path, "w") as f:
+    with open(sbom_path, "w", encoding='utf-8') as f:
         json.dump(sbom, f, indent=2)
 
 
@@ -550,7 +567,7 @@ def verify_sbom(sbom_path: Path, pack_path: Path) -> bool:
     Returns:
         True if SBOM matches pack contents
     """
-    with open(sbom_path) as f:
+    with open(sbom_path, 'r', encoding='utf-8', errors='replace') as f:
         sbom = json.load(f)
     
     # Verify file hashes

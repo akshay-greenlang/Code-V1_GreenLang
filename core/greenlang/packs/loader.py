@@ -614,16 +614,56 @@ def version_matches(actual: str, constraint: str) -> bool:
     Returns:
         True if version matches
     """
-    # Simple implementation - in production use packaging.version
     if not constraint:
         return True
     
-    if constraint.startswith(">="):
-        required = constraint[2:]
-        return actual >= required
-    elif constraint.startswith("=="):
-        required = constraint[2:]
-        return actual == required
-    
-    # Default: accept
-    return True
+    try:
+        # Use packaging library for proper semantic version comparison
+        from packaging import version, specifiers
+        
+        # Parse the actual version
+        actual_version = version.parse(actual)
+        
+        # Create a specifier set from the constraint
+        spec_set = specifiers.SpecifierSet(constraint)
+        
+        # Check if the actual version satisfies the constraint
+        return actual_version in spec_set
+    except ImportError:
+        # Fallback to simple comparison if packaging is not available
+        logger.warning("packaging library not available, using simple version comparison")
+        
+        if constraint.startswith(">="):
+            required = constraint[2:].strip()
+            return actual >= required
+        elif constraint.startswith("<="):
+            required = constraint[2:].strip()
+            return actual <= required
+        elif constraint.startswith("=="):
+            required = constraint[2:].strip()
+            return actual == required
+        elif constraint.startswith("!="):
+            required = constraint[2:].strip()
+            return actual != required
+        elif constraint.startswith(">"):
+            required = constraint[1:].strip()
+            return actual > required
+        elif constraint.startswith("<"):
+            required = constraint[1:].strip()
+            return actual < required
+        elif constraint.startswith("~="):
+            # Compatible release: ~=1.4.2 means >=1.4.2, <1.5.0
+            base = constraint[2:].strip()
+            parts = base.split('.')
+            if len(parts) >= 2:
+                parts[-2] = str(int(parts[-2]) + 1)
+                parts[-1] = '0'
+                upper = '.'.join(parts)
+                return actual >= base and actual < upper
+            return actual >= base
+        
+        # Default: accept
+        return True
+    except Exception as e:
+        logger.warning(f"Error parsing version constraint '{constraint}': {e}")
+        return True

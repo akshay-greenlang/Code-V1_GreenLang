@@ -1,4 +1,4 @@
-package greenlang.install
+package greenlang.decision
 
 import rego.v1
 
@@ -31,24 +31,22 @@ vintage_requirement_met if {
 }
 
 # Specific denial reasons for better error messages
+# Select most specific denial reason
 reason := "GPL or restrictive license not allowed" if {
 	not license_allowed
 	input.pack.license in ["GPL-2.0", "GPL-3.0", "AGPL-3.0", "LGPL-2.1", "LGPL-3.0"]
-}
-
-reason := "missing network allowlist - must specify allowed domains" if {
+} else := "missing network allowlist - must specify allowed domains" if {
 	not network_policy_present
-}
-
-reason := "emission factor vintage too old - must be 2024 or newer" if {
+	license_allowed
+} else := "emission factor vintage too old - must be 2024 or newer" if {
 	license_allowed
 	network_policy_present
 	not vintage_requirement_met
-}
-
-reason := sprintf("unsupported license: %s", [input.pack.license]) if {
+} else := sprintf("unsupported license: %s", [input.pack.license]) if {
 	not license_allowed
 	not input.pack.license in ["GPL-2.0", "GPL-3.0", "AGPL-3.0", "LGPL-2.1", "LGPL-3.0"]
+} else := "policy check passed" if {
+	allow
 }
 
 # Stage-specific rules (publish has stricter requirements)
@@ -56,9 +54,4 @@ allow if {
 	input.stage == "dev"
 	input.pack.license in ["Apache-2.0", "MIT", "BSD-3-Clause"]
 	# More lenient for development
-}
-
-reason := "publish stage requires commercial license and full compliance" if {
-	input.stage == "publish"
-	not (license_allowed and network_policy_present and vintage_requirement_met)
 }

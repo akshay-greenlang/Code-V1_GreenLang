@@ -3,9 +3,9 @@
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
   "name": "boiler-solar-1.0.0",
-  "documentNamespace": "https://greenlang.io/sbom/greenlang/boiler-solar-1.0.0-45a70f6c",
+  "documentNamespace": "https://greenlang.io/sbom/greenlang/boiler-solar-1.0.0-ebc1666c",
   "creationInfo": {
-    "created": "2025-09-09T18:01:21.130063",
+    "created": "2025-09-12T18:07:16.393398",
     "creators": [
       "Tool: GreenLang-SBOM-Generator-0.1.0",
       "Organization: greenlang"
@@ -50,6 +50,18 @@
           "copyrightText": "NOASSERTION"
         },
         {
+          "SPDXID": "SPDXRef-File-7205aa79",
+          "fileName": "./pack.sig",
+          "checksums": [
+            {
+              "algorithm": "SHA256",
+              "checksumValue": "7205aa799e91e0589b12b132f876e58339e67c243fb694f0fbab2190a72a06fb"
+            }
+          ],
+          "licenseConcluded": "NOASSERTION",
+          "copyrightText": "NOASSERTION"
+        },
+        {
           "SPDXID": "SPDXRef-File-0efaa595",
           "fileName": "./pack.yaml",
           "checksums": [
@@ -86,12 +98,12 @@
           "copyrightText": "NOASSERTION"
         },
         {
-          "SPDXID": "SPDXRef-File-a02cde8e",
+          "SPDXID": "SPDXRef-File-f1c00001",
           "fileName": "./sbom.spdx.json",
           "checksums": [
             {
               "algorithm": "SHA256",
-              "checksumValue": "a02cde8efab1c1b85b4a9976e1401f0d20ba17e33ad60f9cb591801f037191d7"
+              "checksumValue": "f1c000013faa3a21a986f028d7acfac9de0517a2d2cafd4b5910adc0ebe72867"
             }
           ],
           "licenseConcluded": "NOASSERTION",
@@ -483,7 +495,7 @@
         }
       ],
       "packageVerificationCode": {
-        "packageVerificationCodeValue": "92620079c1fdae178926574cbf6b7b360749f1a32ec6ac3ef9a9284dd92c2e6d"
+        "packageVerificationCodeValue": "69988a984002ac5bc93366dab767770e03f81a84893ecf30301d19c5b98c7172"
       }
     }
   ],
@@ -505,6 +517,11 @@
     },
     {
       "spdxElementId": "SPDXRef-Package-boiler-solar",
+      "relatedSpdxElement": "SPDXRef-File-7205aa79",
+      "relationshipType": "CONTAINS"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-boiler-solar",
       "relatedSpdxElement": "SPDXRef-File-0efaa595",
       "relationshipType": "CONTAINS"
     },
@@ -520,7 +537,7 @@
     },
     {
       "spdxElementId": "SPDXRef-Package-boiler-solar",
-      "relatedSpdxElement": "SPDXRef-File-a02cde8e",
+      "relatedSpdxElement": "SPDXRef-File-f1c00001",
       "relationshipType": "CONTAINS"
     },
     {

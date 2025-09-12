@@ -1,0 +1,21 @@
+name: tmp-pack
+version: 0.1.0
+kind: pack
+description: A GreenLang pack for tmp-pack
+license: MIT
+authors:
+- name: Your Name
+  email: you@example.com
+contents:
+  pipelines: 
+    - pipelines/example.yaml
+  agents: []
+  datasets: []
+dependencies:
+- name: greenlang-sdk
+  version: '>=0.1.0'
+security:
+  sbom: sbom.spdx.json
+  signatures: []
+tests:
+- tests/test_*.py

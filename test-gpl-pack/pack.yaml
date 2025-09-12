@@ -1,0 +1,25 @@
+name: test-gpl-pack
+version: 1.0.0
+kind: pack
+description: A test pack with GPL license
+license: GPL-3.0
+authors:
+- name: Test User
+  email: test@example.com
+contents:
+  pipelines:
+    - pipelines/simple.yaml
+  agents: []
+  datasets: []
+dependencies:
+- name: greenlang-sdk
+  version: '>=0.1.0'
+security:
+  sbom: sbom.spdx.json
+  signatures: []
+policy:
+  ef_vintage_min: 2024
+  network:
+  - github.com
+tests:
+- tests/test_*.py

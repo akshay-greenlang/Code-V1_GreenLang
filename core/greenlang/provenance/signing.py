@@ -10,10 +10,16 @@ import json
 import hashlib
 import base64
 import os
+import sys
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional, Tuple
 import logging
+
+# Set up Windows encoding support for this module
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+    os.environ.setdefault("PYTHONUTF8", "1")
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +78,8 @@ def sign_artifact(artifact_path: Path, key_path: Optional[Path] = None) -> Dict[
     
     # Save signature next to artifact
     sig_path = artifact_path.with_suffix(artifact_path.suffix + ".sig")
-    with open(sig_path, "w") as f:
-        json.dump(signature, f, indent=2)
+    with open(sig_path, "w", encoding='utf-8') as f:
+        json.dump(signature, f, indent=2, ensure_ascii=False)
     
     return signature
 
@@ -100,7 +106,7 @@ def verify_artifact(artifact_path: Path, signature_path: Optional[Path] = None) 
         return False, None
     
     # Load signature
-    with open(signature_path) as f:
+    with open(signature_path, 'r', encoding='utf-8', errors='replace') as f:
         signature = json.load(f)
     
     # Verify hash
@@ -149,7 +155,7 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
     manifest_path = pack_path / "pack.yaml"
     if manifest_path.exists():
         import yaml
-        with open(manifest_path) as f:
+        with open(manifest_path, 'r', encoding='utf-8', errors='replace') as f:
             manifest = yaml.safe_load(f)
     else:
         manifest = {}
@@ -200,8 +206,8 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
     
     # Save signature
     sig_path = pack_path / "pack.sig"
-    with open(sig_path, "w") as f:
-        json.dump(signature, f, indent=2)
+    with open(sig_path, "w", encoding='utf-8') as f:
+        json.dump(signature, f, indent=2, ensure_ascii=False)
     
     logger.info(f"Pack signed successfully: {pack_path}")
     return signature
@@ -223,7 +229,7 @@ def verify_pack(pack_path: Path) -> bool:
         return False
     
     # Load signature
-    with open(sig_path) as f:
+    with open(sig_path, 'r', encoding='utf-8', errors='replace') as f:
         signature = json.load(f)
     
     # Calculate current hash
@@ -358,7 +364,7 @@ def _get_or_create_key_pair(pack_path: Path) -> Path:
         return global_private
     else:
         # Create mock key
-        with open(global_private, 'w') as f:
+        with open(global_private, 'w', encoding='utf-8') as f:
             f.write("MOCK_PRIVATE_KEY")
         return global_private
 
@@ -438,7 +444,7 @@ def verify_pack_signature(pack_path: Path, signature_path: Optional[Path] = None
         return False, {"error": "No signature found"}
     
     # Load signature
-    with open(signature_path) as f:
+    with open(signature_path, 'r', encoding='utf-8', errors='replace') as f:
         signature = json.load(f)
     
     # Calculate current hash
