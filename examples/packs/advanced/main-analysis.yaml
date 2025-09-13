@@ -1,0 +1,253 @@
+name: enterprise-carbon-analysis
+version: 2
+description: Comprehensive multi-scope carbon analysis with renewable energy integration and compliance reporting
+
+vars:
+  reporting_year: 2024
+  base_year: 2019
+  currency: "USD"
+  grid_region: "IN-North"
+  compliance_standard: "GHG-Protocol"
+  audit_level: "detailed"
+
+inputs:
+  facility_data:
+    type: object
+    required: true
+    properties:
+      name:
+        type: string
+        description: "Facility name"
+      location:
+        type: string
+        enum: ["IN-North", "IN-South", "IN-West", "IN-East", "US-West", "EU-Central"]
+        default: "IN-North"
+      building_area_sqft:
+        type: number
+        minimum: 1000
+        maximum: 10000000
+        description: "Total building area in square feet"
+      employee_count:
+        type: integer
+        minimum: 1
+        description: "Number of employees"
+  energy_consumption:
+    type: object
+    required: true
+    properties:
+      electricity_kwh:
+        type: number
+        minimum: 0
+        description: "Annual electricity consumption in kWh"
+      natural_gas_mmbtu:
+        type: number
+        minimum: 0
+        description: "Annual natural gas consumption in MMBtu"
+      renewable_kwh:
+        type: number
+        minimum: 0
+        default: 0
+        description: "Renewable energy generated on-site in kWh"
+
+artifacts_dir: "out/analysis/"
+
+steps:
+  # Step 1: Data Validation and Preprocessing
+  - name: validate-inputs
+    agent: ValidationAgent
+    action: validate_facility_data
+    inputs:
+      facility: "${inputs.facility_data}"
+      energy: "${inputs.energy_consumption}"
+      compliance_standard: "${vars.compliance_standard}"
+    error_handling:
+      on_failure: stop
+      retry_count: 3
+      retry_delay: 5
+
+  # Step 2: Load Emission Factors
+  - name: load-emission-factors
+    agent: CarbonAgent
+    action: load_factors
+    inputs:
+      region: "${inputs.facility_data.location}"
+      vintage_year: "${vars.reporting_year}"
+      standard: "${vars.compliance_standard}"
+    depends_on: [validate-inputs]
+    cache_duration: "24h"
+
+  # Step 3: Calculate Scope 1 Emissions (Direct)
+  - name: calculate-scope1
+    agent: CarbonAgent
+    action: calculate_direct_emissions
+    inputs:
+      natural_gas_mmbtu: "${inputs.energy_consumption.natural_gas_mmbtu}"
+      emission_factors: "${steps.load-emission-factors.outputs.scope1_factors}"
+      facility_location: "${inputs.facility_data.location}"
+    depends_on: [load-emission-factors]
+
+  # Step 4: Calculate Scope 2 Emissions (Indirect - Electricity)
+  - name: calculate-scope2-market
+    agent: CarbonAgent
+    action: calculate_market_based_emissions
+    inputs:
+      electricity_kwh: "${inputs.energy_consumption.electricity_kwh}"
+      renewable_kwh: "${inputs.energy_consumption.renewable_kwh}"
+      grid_factors: "${steps.load-emission-factors.outputs.grid_factors}"
+      renewable_certificates: "${steps.load-emission-factors.outputs.rec_data}"
+    depends_on: [load-emission-factors]
+    parallel: true
+
+  - name: calculate-scope2-location
+    agent: CarbonAgent
+    action: calculate_location_based_emissions
+    inputs:
+      electricity_kwh: "${inputs.energy_consumption.electricity_kwh}"
+      grid_factors: "${steps.load-emission-factors.outputs.grid_factors}"
+    depends_on: [load-emission-factors]
+    parallel: true
+
+  # Step 5: Calculate Renewable Energy Impact
+  - name: renewable-analysis
+    agent: SolarOffsetAgent
+    action: analyze_renewable_impact
+    inputs:
+      renewable_kwh: "${inputs.energy_consumption.renewable_kwh}"
+      grid_displaced: "${inputs.energy_consumption.electricity_kwh}"
+      location: "${inputs.facility_data.location}"
+      building_area: "${inputs.facility_data.building_area_sqft}"
+    depends_on: [calculate-scope2-market]
+    conditional:
+      condition: "${inputs.energy_consumption.renewable_kwh} > 0"
+      on_skip:
+        renewable_offset_tons: 0
+        renewable_percentage: 0
+
+  # Step 6: Aggregate Total Emissions
+  - name: aggregate-emissions
+    agent: CarbonAgent
+    action: aggregate_total_emissions
+    inputs:
+      scope1_emissions: "${steps.calculate-scope1.outputs.total_co2e_tons}"
+      scope2_market_emissions: "${steps.calculate-scope2-market.outputs.total_co2e_tons}"
+      scope2_location_emissions: "${steps.calculate-scope2-location.outputs.total_co2e_tons}"
+      renewable_offset: "${steps.renewable-analysis.outputs.renewable_offset_tons}"
+      facility_data: "${inputs.facility_data}"
+    depends_on: [calculate-scope1, calculate-scope2-market, calculate-scope2-location, renewable-analysis]
+
+  # Step 7: Calculate Intensity Metrics
+  - name: calculate-intensities
+    agent: CarbonAgent
+    action: calculate_intensity_metrics
+    inputs:
+      total_emissions: "${steps.aggregate-emissions.outputs.net_emissions_tons}"
+      building_area: "${inputs.facility_data.building_area_sqft}"
+      employee_count: "${inputs.facility_data.employee_count}"
+      revenue: "${inputs.facility_data.annual_revenue_usd}"
+    depends_on: [aggregate-emissions]
+    optional_inputs: [revenue]
+
+  # Step 8: Benchmark Analysis
+  - name: benchmark-performance
+    agent: CarbonAgent
+    action: benchmark_against_industry
+    inputs:
+      emissions_data: "${steps.aggregate-emissions.outputs}"
+      intensity_metrics: "${steps.calculate-intensities.outputs}"
+      facility_type: "${inputs.facility_data.industry_type}"
+      location: "${inputs.facility_data.location}"
+    depends_on: [calculate-intensities]
+    error_handling:
+      on_failure: continue
+      default_outputs:
+        benchmark_percentile: null
+        industry_average: null
+
+  # Step 9: Compliance Check
+  - name: compliance-validation
+    agent: ComplianceAgent
+    action: validate_compliance
+    inputs:
+      emissions_data: "${steps.aggregate-emissions.outputs}"
+      compliance_standard: "${vars.compliance_standard}"
+      audit_level: "${vars.audit_level}"
+      facility_data: "${inputs.facility_data}"
+    depends_on: [aggregate-emissions]
+
+  # Step 10: Generate Executive Report
+  - name: generate-executive-report
+    agent: ReportAgent
+    action: generate_executive_summary
+    inputs:
+      emissions_summary: "${steps.aggregate-emissions.outputs}"
+      intensity_metrics: "${steps.calculate-intensities.outputs}"
+      renewable_analysis: "${steps.renewable-analysis.outputs}"
+      benchmark_data: "${steps.benchmark-performance.outputs}"
+      compliance_status: "${steps.compliance-validation.outputs}"
+      facility_info: "${inputs.facility_data}"
+      reporting_period: "${vars.reporting_year}"
+    depends_on: [aggregate-emissions, calculate-intensities, renewable-analysis, benchmark-performance, compliance-validation]
+    outputs:
+      report_path: "${artifacts_dir}/executive_summary_${vars.reporting_year}.html"
+
+  # Step 11: Generate Detailed Audit Report
+  - name: generate-audit-report
+    agent: ReportAgent
+    action: generate_detailed_audit
+    inputs:
+      all_calculations:
+        scope1: "${steps.calculate-scope1.outputs}"
+        scope2_market: "${steps.calculate-scope2-market.outputs}"
+        scope2_location: "${steps.calculate-scope2-location.outputs}"
+        renewable: "${steps.renewable-analysis.outputs}"
+        totals: "${steps.aggregate-emissions.outputs}"
+      emission_factors: "${steps.load-emission-factors.outputs}"
+      compliance_details: "${steps.compliance-validation.outputs}"
+      audit_trail: "${system.execution_log}"
+    depends_on: [compliance-validation]
+    outputs:
+      audit_path: "${artifacts_dir}/detailed_audit_${vars.reporting_year}.pdf"
+    security:
+      classification: "restricted"
+      encryption_required: true
+
+outputs:
+  # Primary Results
+  total_emissions_scope1: "${steps.calculate-scope1.outputs.total_co2e_tons}"
+  total_emissions_scope2_market: "${steps.calculate-scope2-market.outputs.total_co2e_tons}"
+  total_emissions_scope2_location: "${steps.calculate-scope2-location.outputs.total_co2e_tons}"
+  net_emissions_total: "${steps.aggregate-emissions.outputs.net_emissions_tons}"
+  renewable_offset: "${steps.renewable-analysis.outputs.renewable_offset_tons}"
+
+  # Intensity Metrics
+  emissions_per_sqft: "${steps.calculate-intensities.outputs.co2e_per_sqft}"
+  emissions_per_employee: "${steps.calculate-intensities.outputs.co2e_per_employee}"
+  emissions_per_revenue: "${steps.calculate-intensities.outputs.co2e_per_revenue_usd}"
+
+  # Benchmarking
+  industry_benchmark_percentile: "${steps.benchmark-performance.outputs.benchmark_percentile}"
+  industry_average_intensity: "${steps.benchmark-performance.outputs.industry_average}"
+
+  # Compliance
+  compliance_status: "${steps.compliance-validation.outputs.status}"
+  compliance_gaps: "${steps.compliance-validation.outputs.gaps}"
+
+  # Reports
+  executive_report_path: "${steps.generate-executive-report.outputs.report_path}"
+  audit_report_path: "${steps.generate-audit-report.outputs.audit_path}"
+
+  # Metadata
+  calculation_timestamp: "${system.timestamp}"
+  pipeline_version: "${version}"
+  data_vintage: "${vars.reporting_year}"
+  compliance_framework: "${vars.compliance_standard}"
+
+# Pipeline-level settings
+execution:
+  timeout: "30m"
+  max_parallel_steps: 4
+  retry_policy:
+    max_attempts: 3
+    backoff_strategy: "exponential"
+  audit_logging: true
+  data_lineage: true

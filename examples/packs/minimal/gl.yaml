@@ -1,0 +1,25 @@
+name: example-pipeline
+version: 1
+description: A minimal pipeline that performs basic calculations
+
+steps:
+  - name: calculate-sum
+    agent: calc
+    action: add
+    inputs:
+      a: 10
+      b: 20
+
+  - name: multiply-result
+    agent: calc
+    action: multiply
+    inputs:
+      a: ${steps.calculate-sum.outputs.result}
+      b: 2
+
+  - name: final-output
+    agent: calc
+    action: subtract
+    inputs:
+      a: ${steps.multiply-result.outputs.result}
+      b: 5

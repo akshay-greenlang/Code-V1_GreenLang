@@ -6,22 +6,22 @@ version: "1.0.0"
 # Pipeline steps
 steps:
   - name: "load-data"
-    type: "data-loader"
-    config:
+    agent: "data-loader"
+    inputs:
       source: "input/data.csv"
       format: "csv"
-    
+
   - name: "process-data"
-    type: "processor"
-    config:
+    agent: "processor"
+    inputs:
       operation: "transform"
       params:
         method: "normalize"
     depends_on: ["load-data"]
-    
+
   - name: "save-results"
-    type: "data-writer"
-    config:
+    agent: "data-writer"
+    inputs:
       destination: "output/results.json"
       format: "json"
     depends_on: ["process-data"]

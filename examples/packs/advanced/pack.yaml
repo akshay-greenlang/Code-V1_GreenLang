@@ -1,0 +1,99 @@
+name: enterprise-carbon-suite
+version: 2.1.0
+kind: pack
+license: Apache-2.0
+description: Advanced enterprise-grade carbon accounting pack with multi-scope emissions tracking, renewable energy analysis, and comprehensive reporting
+
+compat:
+  greenlang: ">=0.3,<0.5"
+  python: ">=3.10"
+
+contents:
+  pipelines:
+    - main-analysis.yaml
+    - backup-pipeline.yaml
+    - validation-pipeline.yaml
+  agents:
+    - BoilerAgent
+    - SolarOffsetAgent
+    - CarbonAgent
+    - ReportAgent
+    - ValidationAgent
+    - ComplianceAgent
+  datasets:
+    - datasets/emission_factors_2024.csv
+    - datasets/renewable_certificates.csv
+    - datasets/grid_intensity_regions.csv
+    - datasets/compliance_standards.json
+  reports:
+    - reports/executive_summary.html.j2
+    - reports/detailed_audit.pdf.j2
+    - reports/compliance_report.xlsx.j2
+
+dependencies:
+  - pandas>=2.1.0
+  - numpy>=1.24.0
+  - { name: ephem, version: ">=4.1.0" }
+  - { name: requests, version: ">=2.31.0" }
+  - { name: cryptography, version: ">=41.0.0" }
+  - openpyxl>=3.1.0
+  - jinja2>=3.1.0
+
+card: CARD.md
+
+policy:
+  network:
+    - "era5:*"
+    - "ghg-protocol.org:*"
+    - "iea.org:api/*"
+  data_residency: ["IN", "EU", "US"]
+  ef_vintage_min: 2023
+  compliance_frameworks:
+    - "GHG-Protocol"
+    - "ISO-14064"
+    - "CDP"
+  audit_retention_years: 7
+
+security:
+  sbom: security/sbom.spdx.json
+  signatures:
+    - security/pack.sig
+    - security/release.sig
+  encryption:
+    data_at_rest: true
+    transit_required: true
+  access_control:
+    min_clearance_level: "restricted"
+    required_certifications:
+      - "ISO-27001"
+      - "SOC2-Type2"
+
+metadata:
+  author: GreenLang Enterprise Team
+  maintainer: enterprise@greenlang.io
+  homepage: https://enterprise.greenlang.io/packs/carbon-suite
+  repository: https://github.com/greenlang/enterprise-carbon-suite
+  documentation: https://docs.greenlang.io/packs/enterprise-carbon-suite
+  support: enterprise-support@greenlang.io
+  tags:
+    - enterprise
+    - carbon-accounting
+    - multi-scope
+    - renewable-energy
+    - compliance
+    - audit
+    - reporting
+  categories:
+    - sustainability
+    - emissions
+    - renewable
+  maturity: production
+  industry_focus:
+    - manufacturing
+    - commercial-real-estate
+    - data-centers
+    - logistics
+  certification:
+    ghg_protocol: true
+    iso_14064: true
+    cdp_compatible: true

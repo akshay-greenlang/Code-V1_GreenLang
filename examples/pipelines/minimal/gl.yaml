@@ -1,0 +1,11 @@
+name: minimal-pipeline
+version: 1
+description: The simplest possible GreenLang pipeline
+
+steps:
+  - name: simple-calculation
+    agent: calc
+    action: add
+    inputs:
+      a: 1
+      b: 2

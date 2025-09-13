@@ -1,0 +1,220 @@
+name: error-recovery-demonstration
+version: 1
+description: |
+  Pipeline demonstrating various error handling and recovery strategies in GreenLang.
+  This example shows different patterns for dealing with failures, retries,
+  fallbacks, and graceful degradation.
+
+vars:
+  max_retry_attempts: 3
+  retry_base_delay: 5  # seconds
+  fallback_data_source: "conservative_estimates"
+
+inputs:
+  unreliable_data_source:
+    type: string
+    required: true
+    description: "URL or path to potentially unreliable data source"
+  enable_fallbacks:
+    type: boolean
+    default: true
+    description: "Enable fallback mechanisms when primary sources fail"
+
+artifacts_dir: "out/error-demo/"
+
+steps:
+  # Step 1: Immediate Failure with Stop
+  - name: critical-validation
+    agent: ValidationAgent
+    action: validate_critical_requirements
+    inputs:
+      requirements: ["network_access", "disk_space", "permissions"]
+      data_source: "${inputs.unreliable_data_source}"
+    error_handling:
+      on_failure: stop  # Stop entire pipeline
+      message: "Critical system requirements not met"
+    timeout: "30s"
+
+  # Step 2: Retry with Exponential Backoff
+  - name: load-external-data
+    agent: DataAgent
+    action: fetch_remote_data
+    inputs:
+      source_url: "${inputs.unreliable_data_source}"
+      timeout: 10
+    depends_on: [critical-validation]
+    error_handling:
+      on_failure: retry
+      retry_count: "${vars.max_retry_attempts}"
+      retry_delay: "${vars.retry_base_delay}"
+      backoff_strategy: "exponential"
+      backoff_multiplier: 2
+      max_delay: 60
+      retry_conditions: ["timeout", "network_error", "rate_limit"]
+
+  # Step 3: Fallback to Alternative Data Source
+  - name: load-data-with-fallback
+    agent: DataAgent
+    action: load_data_with_fallback
+    inputs:
+      primary_source: "${steps.load-external-data.outputs.data_path}"
+      fallback_source: "${vars.fallback_data_source}"
+    depends_on: [load-external-data]
+    error_handling:
+      on_failure: use_fallback
+      fallback_action: load_default_dataset
+      fallback_inputs:
+        dataset_name: "emission_factors_conservative"
+        vintage: 2023
+
+  # Step 4: Continue on Failure with Default Outputs
+  - name: optional-enrichment
+    agent: EnrichmentAgent
+    action: enrich_with_metadata
+    inputs:
+      base_data: "${steps.load-data-with-fallback.outputs.dataset}"
+      metadata_sources: ["industry_benchmarks", "regional_factors"]
+    depends_on: [load-data-with-fallback]
+    error_handling:
+      on_failure: continue  # Continue pipeline execution
+      default_outputs:
+        enriched_data: "${steps.load-data-with-fallback.outputs.dataset}"
+        enrichment_quality: "base_only"
+        metadata_available: false
+      log_level: "warning"
+
+  # Step 5: Circuit Breaker Pattern
+  - name: external-api-call
+    agent: APIAgent
+    action: call_external_service
+    inputs:
+      api_endpoint: "https://api.example.com/carbon-factors"
+      data: "${steps.load-data-with-fallback.outputs.dataset}"
+      circuit_breaker:
+        failure_threshold: 5      # Open circuit after 5 failures
+        recovery_timeout: 300     # Try to close circuit after 5 minutes
+        half_open_max_calls: 3    # Max calls when half-open
+    depends_on: [load-data-with-fallback]
+    error_handling:
+      on_failure: continue
+      circuit_breaker_fallback:
+        use_cached_response: true
+        cache_max_age: "24h"
+
+  # Step 6: Partial Success Handling
+  - name: process-multiple-facilities
+    agent: CarbonAgent
+    action: batch_calculate_emissions
+    inputs:
+      facilities: ["facility_1", "facility_2", "facility_3", "facility_4"]
+      emission_factors: "${steps.load-data-with-fallback.outputs.dataset}"
+      batch_size: 2
+    depends_on: [load-data-with-fallback]
+    error_handling:
+      on_failure: continue
+      partial_success: true      # Accept results from successful items
+      minimum_success_rate: 0.5  # Require at least 50% success
+      failure_aggregation: "collect_errors"
+
+  # Step 7: Conditional Error Handling
+  - name: validate-results
+    agent: ValidationAgent
+    action: validate_calculation_results
+    inputs:
+      results: "${steps.process-multiple-facilities.outputs.successful_results}"
+      validation_rules: ["positive_emissions", "reasonable_ranges", "data_consistency"]
+    depends_on: [process-multiple-facilities]
+    error_handling:
+      on_failure: conditional
+      conditions:
+        - condition: "error_type == 'data_quality'"
+          action: retry
+          retry_count: 2
+        - condition: "error_type == 'validation_rules'"
+          action: continue
+          default_outputs:
+            validation_status: "failed"
+            issues: "${error.details}"
+        - condition: "error_type == 'system_error'"
+          action: stop
+          message: "System error during validation"
+
+  # Step 8: Error Recovery with Alternative Method
+  - name: calculate-with-recovery
+    agent: CarbonAgent
+    action: advanced_emissions_calculation
+    inputs:
+      data: "${steps.validate-results.outputs.valid_data}"
+      method: "detailed"
+    depends_on: [validate-results]
+    error_handling:
+      on_failure: recover
+      recovery_steps:
+        - name: "try-simplified-method"
+          action: basic_emissions_calculation
+          inputs:
+            data: "${steps.validate-results.outputs.valid_data}"
+            method: "simplified"
+        - name: "use-estimation"
+          action: estimate_emissions
+          inputs:
+            facility_type: "${inputs.facility_type}"
+            approximate_size: "${inputs.building_area}"
+
+  # Step 9: Aggregate with Error Reporting
+  - name: final-aggregation
+    agent: ReportAgent
+    action: aggregate_results_with_errors
+    inputs:
+      successful_calculations: "${steps.calculate-with-recovery.outputs.results}"
+      failed_facilities: "${steps.process-multiple-facilities.outputs.failed_items}"
+      error_summary: "${system.error_log}"
+      validation_issues: "${steps.validate-results.outputs.issues}"
+    depends_on: [calculate-with-recovery]
+    error_handling:
+      on_failure: stop
+      final_attempt: true  # This is the last chance for the pipeline
+
+  # Step 10: Error Report Generation
+  - name: generate-error-report
+    agent: ReportAgent
+    action: generate_error_analysis_report
+    inputs:
+      execution_log: "${system.execution_log}"
+      error_statistics: "${system.error_statistics}"
+      recovery_actions: "${system.recovery_log}"
+      final_results: "${steps.final-aggregation.outputs}"
+    depends_on: [final-aggregation]
+    outputs:
+      error_report_path: "${artifacts_dir}/error_analysis_report.html"
+      recovery_summary: "${artifacts_dir}/recovery_summary.json"
+    # No error handling - if this fails, just log it
+    error_handling:
+      on_failure: log
+      log_level: "error"
+
+outputs:
+  # Results (may be partial due to errors)
+  final_emissions_total: "${steps.final-aggregation.outputs.total_emissions}"
+  successful_facility_count: "${steps.final-aggregation.outputs.success_count}"
+  failed_facility_count: "${steps.final-aggregation.outputs.failure_count}"
+
+  # Error Analysis
+  error_report_path: "${steps.generate-error-report.outputs.error_report_path}"
+  recovery_summary: "${steps.generate-error-report.outputs.recovery_summary}"
+
+  # Execution Quality Metrics
+  pipeline_success_rate: "${system.success_rate}"
+  total_retry_attempts: "${system.total_retries}"
+  fallbacks_triggered: "${system.fallback_count}"
+
+  # Data Quality Assessment
+  data_quality_score: "${steps.validate-results.outputs.quality_score}"
+  validation_issues: "${steps.validate-results.outputs.issues}"
+
+execution:
+  timeout: "20m"
+  fail_fast: false           # Continue processing despite errors
+  collect_errors: true       # Collect all errors for analysis
+  error_budget: 0.3         # Allow up to 30% of steps to fail
+  recovery_enabled: true    # Enable automatic recovery mechanisms

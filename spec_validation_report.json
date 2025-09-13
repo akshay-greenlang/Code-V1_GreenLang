@@ -1,0 +1,105 @@
+{
+  "status": "FAIL",
+  "errors": [
+    "pack.schema.v1.json - Line 25: Version pattern allows semantic versioning but implementation in manifest.py uses more permissive regex that allows pre-release/build metadata",
+    "gl_pipeline.schema.v1.json - Line 37-40: Schema requires 'id' field but many existing pipelines use 'name' field instead",
+    "gl_pipeline.schema.v1.json - Missing 'refs' field support mentioned in GL_PIPELINE_SPEC_V1.md but not in schema",
+    "pack.yaml files - 10 out of 15 pack.yaml files fail validation against v1.0 schema",
+    "gl.yaml files - 11 out of 13 gl.yaml files fail validation against v1.0 schema",
+    "Pipeline spec model (pipeline_spec.py) uses 'name' field but schema requires 'id' field - breaking inconsistency",
+    "Pack manifest validation: contents.agents expects agent class names but examples provide file paths"
+  ],
+  "warnings": [
+    "Schema documentation exists but examples in codebase do not follow specification",
+    "Pipeline 'when' field documented but implementation uses 'condition' field",
+    "Pack schema allows 'dataset' and 'connector' kinds but no implementation found",
+    "Security.signatures field expects array but some examples use string 'signatures/'",
+    "Template files use {{PACK_NAME}} placeholder which fails DNS-safe validation"
+  ],
+  "autofix_suggestions": [
+    {
+      "file": "schemas/gl_pipeline.schema.v1.json",
+      "field": "steps.items.properties",
+      "current": "required: ['id', 'agent']",
+      "suggested": "required: ['agent'] with oneOf: [{'required': ['id']}, {'required': ['name']}]",
+      "reason": "Allow both 'id' and 'name' fields for backward compatibility"
+    },
+    {
+      "file": "schemas/pack.schema.v1.json",
+      "field": "properties.contents.properties.agents.items",
+      "current": "pattern: '^[A-Z][a-zA-Z0-9]*Agent$'",
+      "suggested": "oneOf: [{pattern: '^[A-Z][a-zA-Z0-9]*Agent$'}, {pattern: '.*\\.py$'}]",
+      "reason": "Support both agent class names and file paths as seen in examples"
+    },
+    {
+      "file": "greenlang/sdk/pipeline_spec.py",
+      "field": "StepSpec.name",
+      "current": "name: str = Field(...)",
+      "suggested": "id: str = Field(..., alias='name')",
+      "reason": "Align with schema requirement for 'id' field while maintaining backward compatibility"
+    },
+    {
+      "file": "schemas/gl_pipeline.schema.v1.json",
+      "field": "steps.items.properties",
+      "current": "no 'refs' field",
+      "suggested": "add 'refs': {'type': 'object', 'description': 'Reference mappings'}",
+      "reason": "Add missing 'refs' field documented in specification"
+    }
+  ],
+  "spec_version_detected": "1.0.0",
+  "breaking_changes": [
+    {
+      "file": "schemas/gl_pipeline.schema.v1.json",
+      "change": "Required field 'id' in steps vs existing 'name' field usage",
+      "impact": "All existing pipeline files using 'name' field will fail validation",
+      "required_action": "Either update schema to accept both fields or migrate all pipelines to use 'id'"
+    },
+    {
+      "file": "schemas/pack.schema.v1.json",
+      "change": "Agent names must match pattern vs existing file path usage",
+      "impact": "Pack files listing agent file paths will fail validation",
+      "required_action": "Update schema pattern or change pack files to use agent class names"
+    },
+    {
+      "file": "implementation",
+      "change": "Inconsistent field naming between schema and implementation models",
+      "impact": "Runtime validation will fail for correctly formatted files",
+      "required_action": "Align Pydantic models with JSON Schema field requirements"
+    }
+  ],
+  "migration_notes": [
+    "1. Update gl_pipeline.schema.v1.json to accept both 'id' and 'name' fields in steps for backward compatibility",
+    "2. Modify pack.schema.v1.json to accept both agent class names and file paths in contents.agents",
+    "3. Update all existing gl.yaml files to use 'id' field instead of 'name' in steps OR update schema",
+    "4. Fix pipeline_spec.py StepSpec model to use 'id' field with alias support for 'name'",
+    "5. Add 'refs' field support to gl_pipeline.schema.v1.json as documented",
+    "6. Update all pack.yaml files with empty pipelines array to include at least one pipeline",
+    "7. Fix template files to use valid placeholder syntax that passes DNS-safe validation",
+    "8. Implement validation CLI commands that use the JSON schemas directly"
+  ],
+  "validation_summary": {
+    "pack_manifests": {
+      "total": 15,
+      "valid": 5,
+      "invalid": 10,
+      "pass_rate": "33%"
+    },
+    "pipeline_files": {
+      "total": 13,
+      "valid": 2,
+      "invalid": 11,
+      "pass_rate": "15%"
+    },
+    "documentation": {
+      "pack_spec": "EXISTS (6,934 bytes)",
+      "pipeline_spec": "EXISTS (15,234 bytes)",
+      "status": "COMPLETE"
+    },
+    "implementation": {
+      "pack_manifest_model": "EXISTS",
+      "pipeline_spec_model": "EXISTS",
+      "validation_tests": "EXISTS",
+      "status": "INCOMPLETE - Field mismatches between schema and models"
+    }
+  }
+}
