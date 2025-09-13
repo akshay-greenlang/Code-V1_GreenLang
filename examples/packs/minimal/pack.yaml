@@ -1,0 +1,16 @@
+name: minimal-pack
+version: 1.0.0
+kind: pack
+license: MIT
+description: A minimal example GreenLang pack
+
+contents:
+  pipelines:
+    - gl.yaml
+
+metadata:
+  author: GreenLang Team
+  tags:
+    - example
+    - minimal
+    - demo

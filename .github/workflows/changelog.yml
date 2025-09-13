@@ -1,0 +1,217 @@
+name: Auto-generate Changelog
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to generate changelog for'
+        required: true
+        type: string
+      from_tag:
+        description: 'Generate changelog from this tag (optional)'
+        required: false
+        type: string
+
+jobs:
+  generate-changelog:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install gitpython toml
+
+    - name: Extract version from tag
+      id: extract_version
+      run: |
+        if [ "${{ github.event_name }}" == "push" ]; then
+          VERSION=${GITHUB_REF#refs/tags/v}
+        else
+          VERSION="${{ github.event.inputs.version }}"
+        fi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Version: $VERSION"
+
+    - name: Determine previous tag
+      id: prev_tag
+      run: |
+        if [ -n "${{ github.event.inputs.from_tag }}" ]; then
+          PREV_TAG="${{ github.event.inputs.from_tag }}"
+        else
+          # Get the second most recent tag
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "v${{ steps.extract_version.outputs.version }}" | head -n1)
+        fi
+        echo "prev_tag=$PREV_TAG" >> $GITHUB_OUTPUT
+        echo "Previous tag: $PREV_TAG"
+
+    - name: Generate changelog content
+      id: changelog
+      run: |
+        python -c "
+import git
+import sys
+import os
+from datetime import datetime
+
+repo = git.Repo('.')
+version = '${{ steps.extract_version.outputs.version }}'
+prev_tag = '${{ steps.prev_tag.outputs.prev_tag }}'
+
+print(f'Generating changelog for version {version}')
+print(f'From tag: {prev_tag or \"beginning\"}')
+
+# Generate changelog header
+changelog_lines = [
+    f'## [{version}] - {datetime.now().strftime(\"%Y-%m-%d\")}',
+    '',
+]
+
+# Get commits
+if prev_tag:
+    try:
+        commits = list(repo.iter_commits(f'{prev_tag}..HEAD'))
+    except git.exc.GitCommandError:
+        print(f'Error: Could not find tag {prev_tag}')
+        commits = list(repo.iter_commits())
+else:
+    commits = list(repo.iter_commits())
+
+# Categorize commits
+categories = {
+    'Features': [],
+    'Bug Fixes': [],
+    'Documentation': [],
+    'Refactoring': [],
+    'Testing': [],
+    'Chores': [],
+    'Other Changes': []
+}
+
+for commit in reversed(commits):
+    # Skip merge commits
+    if len(commit.parents) > 1:
+        continue
+
+    message = commit.message.strip().split('\n')[0]
+    short_sha = str(commit)[:7]
+    commit_line = f'- {message} ({short_sha})'
+
+    # Categorize based on conventional commits
+    if message.startswith('feat:') or message.startswith('feature:'):
+        categories['Features'].append(f'- {message[5:].strip()} ({short_sha})')
+    elif message.startswith('fix:'):
+        categories['Bug Fixes'].append(f'- {message[4:].strip()} ({short_sha})')
+    elif message.startswith('docs:'):
+        categories['Documentation'].append(f'- {message[5:].strip()} ({short_sha})')
+    elif message.startswith('refactor:'):
+        categories['Refactoring'].append(f'- {message[9:].strip()} ({short_sha})')
+    elif message.startswith('test:'):
+        categories['Testing'].append(f'- {message[5:].strip()} ({short_sha})')
+    elif message.startswith('chore:'):
+        categories['Chores'].append(f'- {message[6:].strip()} ({short_sha})')
+    else:
+        categories['Other Changes'].append(commit_line)
+
+# Add non-empty categories to changelog
+for category, items in categories.items():
+    if items:
+        changelog_lines.append(f'### {category}')
+        changelog_lines.append('')
+        changelog_lines.extend(items)
+        changelog_lines.append('')
+
+# Add comparison link if we have a previous tag
+if prev_tag:
+    repo_url = 'https://github.com/${{ github.repository }}'
+    changelog_lines.append(f'**Full Changelog**: {repo_url}/compare/{prev_tag}...v{version}')
+    changelog_lines.append('')
+
+# Output the changelog
+changelog_content = '\n'.join(changelog_lines)
+print('Generated changelog:')
+print('=' * 50)
+print(changelog_content)
+print('=' * 50)
+
+# Save to file for next step
+with open('CHANGELOG_NEW.md', 'w') as f:
+    f.write(changelog_content)
+"
+
+    - name: Update CHANGELOG.md
+      run: |
+        if [ -f "CHANGELOG.md" ]; then
+          # Create backup
+          cp CHANGELOG.md CHANGELOG_BACKUP.md
+
+          # Check if this is the first entry after the main title
+          if grep -q "^## \[" CHANGELOG.md; then
+            # Insert new content after the main title
+            sed -i '1r CHANGELOG_NEW.md' CHANGELOG.md
+          else
+            # This might be the first release entry
+            echo "" >> CHANGELOG_NEW.md
+            cat CHANGELOG.md >> CHANGELOG_NEW.md
+            mv CHANGELOG_NEW.md CHANGELOG.md
+          fi
+        else
+          # Create new changelog file
+          echo "# Changelog" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          cat CHANGELOG_NEW.md >> CHANGELOG.md
+        fi
+
+    - name: Check for changes
+      id: check_changes
+      run: |
+        if git diff --quiet CHANGELOG.md; then
+          echo "changes=false" >> $GITHUB_OUTPUT
+          echo "No changes to CHANGELOG.md"
+        else
+          echo "changes=true" >> $GITHUB_OUTPUT
+          echo "CHANGELOG.md has been updated"
+        fi
+
+    - name: Commit and push changelog
+      if: steps.check_changes.outputs.changes == 'true'
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+
+        git add CHANGELOG.md
+        git commit -m "docs: update CHANGELOG.md for v${{ steps.extract_version.outputs.version }}"
+        git push
+
+    - name: Create changelog summary
+      if: steps.check_changes.outputs.changes == 'true'
+      run: |
+        echo "## Changelog Updated" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "The CHANGELOG.md file has been updated for version ${{ steps.extract_version.outputs.version }}." >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### New Content:" >> $GITHUB_STEP_SUMMARY
+        echo '```markdown' >> $GITHUB_STEP_SUMMARY
+        cat CHANGELOG_NEW.md >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+
+    - name: No changes summary
+      if: steps.check_changes.outputs.changes == 'false'
+      run: |
+        echo "## No Changelog Changes" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "The CHANGELOG.md file is already up to date for version ${{ steps.extract_version.outputs.version }}." >> $GITHUB_STEP_SUMMARY

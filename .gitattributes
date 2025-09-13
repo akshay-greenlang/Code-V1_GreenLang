@@ -1,0 +1,97 @@
+# Git attributes for consistent line endings and file handling
+# https://git-scm.com/docs/gitattributes
+
+# Default behavior - automatically normalize line endings
+* text=auto
+
+# Source code
+*.py text
+*.pyi text
+*.pyx text
+*.pxd text
+
+# Config files
+*.yaml text
+*.yml text
+*.json text
+*.toml text
+*.ini text
+*.cfg text
+
+# Documentation
+*.md text
+*.rst text
+*.txt text
+
+# Shell scripts
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Windows scripts
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Web files
+*.html text
+*.css text
+*.js text
+*.svg text
+
+# Data files
+*.csv text
+*.tsv text
+*.xml text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+*.7z binary
+*.whl binary
+*.exe binary
+*.dll binary
+*.so binary
+*.dylib binary
+*.pyc binary
+*.pyo binary
+*.pyd binary
+*.db binary
+*.sqlite binary
+
+# Jupyter notebooks
+*.ipynb text eol=lf
+
+# Git files
+.gitignore text
+.gitattributes text
+
+# Special files
+LICENSE text
+README.md text
+CHANGELOG.md text
+Makefile text
+
+# Linguist overrides - properly classify files
+*.md linguist-documentation
+*.yaml linguist-language=YAML
+*.yml linguist-language=YAML
+docs/* linguist-documentation
+tests/* linguist-language=Python
+
+# Export ignore - files not included in archives
+.github export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
+.editorconfig export-ignore
+.pre-commit-config.yaml export-ignore
+tests/ export-ignore
+docs/ export-ignore
+examples/ export-ignore

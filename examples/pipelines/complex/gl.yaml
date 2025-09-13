@@ -1,0 +1,387 @@
+name: complex-multi-facility-analysis
+version: 3
+description: |
+  Complex multi-facility carbon analysis pipeline demonstrating advanced GreenLang features:
+  - Multi-step workflows with conditionals
+  - Error handling and recovery strategies
+  - Parallel execution patterns
+  - Reference usage and data flow
+  - Dynamic configuration and branching logic
+
+vars:
+  # Global configuration
+  analysis_year: 2024
+  currency: "USD"
+  reporting_standard: "GHG-Protocol"
+
+  # Calculation defaults
+  default_grid_intensity: 0.75  # kgCO2e/kWh
+  carbon_price_per_ton: 85      # USD per tonne CO2e
+
+  # Processing thresholds
+  large_facility_threshold: 100000  # sqft
+  high_energy_threshold: 1000000    # kWh/year
+
+  # Quality control
+  data_quality_threshold: 0.85
+  outlier_detection_sensitivity: 2.0
+
+inputs:
+  # Multi-facility configuration
+  facilities:
+    type: array
+    required: true
+    description: "List of facilities to analyze"
+    items:
+      type: object
+      properties:
+        id:
+          type: string
+          required: true
+        name:
+          type: string
+          required: true
+        location:
+          type: string
+          enum: ["IN-North", "IN-South", "IN-West", "IN-East", "US-West", "US-East", "EU-Central"]
+          required: true
+        building_area_sqft:
+          type: number
+          minimum: 1000
+          required: true
+        facility_type:
+          type: string
+          enum: ["office", "manufacturing", "warehouse", "retail", "data-center"]
+          required: true
+        energy_data:
+          type: object
+          required: true
+          properties:
+            electricity_kwh:
+              type: number
+              minimum: 0
+            natural_gas_mmbtu:
+              type: number
+              minimum: 0
+              default: 0
+            renewable_kwh:
+              type: number
+              minimum: 0
+              default: 0
+
+  # Analysis configuration
+  analysis_config:
+    type: object
+    required: false
+    properties:
+      include_scope3:
+        type: boolean
+        default: false
+      carbon_pricing:
+        type: boolean
+        default: true
+      benchmark_analysis:
+        type: boolean
+        default: true
+      sensitivity_analysis:
+        type: boolean
+        default: false
+      custom_factors:
+        type: object
+        required: false
+
+artifacts_dir: "out/complex-analysis/"
+
+steps:
+  # Step 1: Input Preprocessing and Validation
+  - name: preprocess-facilities
+    agent: ValidationAgent
+    action: preprocess_facility_list
+    inputs:
+      facilities: "${inputs.facilities}"
+      required_fields: ["id", "name", "location", "building_area_sqft", "energy_data"]
+      data_quality_threshold: "${vars.data_quality_threshold}"
+    outputs:
+      valid_facilities: "${artifacts_dir}/valid_facilities.json"
+      validation_report: "${artifacts_dir}/validation_summary.json"
+    error_handling:
+      on_failure: stop
+      message: "Critical: Facility data validation failed"
+
+  # Step 2: Dynamic Region-Based Factor Loading
+  - name: load-regional-factors
+    agent: CarbonAgent
+    action: load_regional_emission_factors
+    inputs:
+      regions: "${steps.preprocess-facilities.outputs.unique_regions}"
+      vintage_year: "${vars.analysis_year}"
+      standard: "${vars.reporting_standard}"
+      custom_factors: "${inputs.analysis_config.custom_factors}"
+    depends_on: [preprocess-facilities]
+    cache_duration: "12h"
+    error_handling:
+      on_failure: retry
+      retry_count: 3
+      retry_delay: 10
+      fallback_action: use_default_factors
+
+  # Step 3: Parallel Facility Processing - Large Facilities
+  - name: process-large-facilities
+    agent: CarbonAgent
+    action: calculate_detailed_emissions
+    inputs:
+      facilities: "${steps.preprocess-facilities.outputs.large_facilities}"
+      emission_factors: "${steps.load-regional-factors.outputs.factors}"
+      calculation_method: "detailed"
+      include_uncertainty: true
+    depends_on: [preprocess-facilities, load-regional-factors]
+    parallel: true
+    conditional:
+      condition: "len(${steps.preprocess-facilities.outputs.large_facilities}) > 0"
+      on_skip:
+        emissions_data: []
+        facility_count: 0
+    error_handling:
+      on_failure: continue
+      log_errors: true
+
+  # Step 4: Parallel Facility Processing - Standard Facilities
+  - name: process-standard-facilities
+    agent: CarbonAgent
+    action: calculate_standard_emissions
+    inputs:
+      facilities: "${steps.preprocess-facilities.outputs.standard_facilities}"
+      emission_factors: "${steps.load-regional-factors.outputs.factors}"
+      calculation_method: "standard"
+    depends_on: [preprocess-facilities, load-regional-factors]
+    parallel: true
+    conditional:
+      condition: "len(${steps.preprocess-facilities.outputs.standard_facilities}) > 0"
+    error_handling:
+      on_failure: continue
+
+  # Step 5: Renewable Energy Analysis (Conditional)
+  - name: analyze-renewable-energy
+    agent: SolarOffsetAgent
+    action: analyze_portfolio_renewables
+    inputs:
+      facilities_with_renewables: "${steps.preprocess-facilities.outputs.renewable_facilities}"
+      regional_factors: "${steps.load-regional-factors.outputs.grid_factors}"
+      analysis_year: "${vars.analysis_year}"
+    depends_on: [preprocess-facilities, load-regional-factors]
+    conditional:
+      condition: "${steps.preprocess-facilities.outputs.renewable_facility_count} > 0"
+      on_skip:
+        renewable_offset_tons: 0
+        renewable_percentage: 0
+        rec_value_usd: 0
+    timeout: "10m"
+
+  # Step 6: Scope 3 Analysis (Optional Feature)
+  - name: calculate-scope3-emissions
+    agent: CarbonAgent
+    action: estimate_scope3_emissions
+    inputs:
+      facilities: "${steps.preprocess-facilities.outputs.valid_facilities}"
+      scope3_categories: ["business_travel", "employee_commuting", "waste", "water"]
+      estimation_method: "spend_based"
+    depends_on: [preprocess-facilities]
+    conditional:
+      condition: "${inputs.analysis_config.include_scope3} == true"
+      on_skip:
+        scope3_emissions_tons: 0
+        scope3_categories: []
+    error_handling:
+      on_failure: continue
+      default_outputs:
+        scope3_emissions_tons: 0
+        estimation_quality: "failed"
+
+  # Step 7: Aggregate Results with Error Recovery
+  - name: aggregate-portfolio-results
+    agent: CarbonAgent
+    action: aggregate_multi_facility_results
+    inputs:
+      large_facility_results: "${steps.process-large-facilities.outputs.emissions_data}"
+      standard_facility_results: "${steps.process-standard-facilities.outputs.emissions_data}"
+      renewable_analysis: "${steps.analyze-renewable-energy.outputs}"
+      scope3_results: "${steps.calculate-scope3-emissions.outputs}"
+      aggregation_method: "facility_weighted"
+    depends_on: [process-large-facilities, process-standard-facilities, analyze-renewable-energy, calculate-scope3-emissions]
+    error_handling:
+      on_failure: stop
+      message: "Critical: Portfolio aggregation failed"
+
+  # Step 8: Intensity and Benchmarking Analysis
+  - name: calculate-portfolio-metrics
+    agent: CarbonAgent
+    action: calculate_portfolio_intensity_metrics
+    inputs:
+      aggregated_results: "${steps.aggregate-portfolio-results.outputs}"
+      facility_metadata: "${steps.preprocess-facilities.outputs.facility_summary}"
+      benchmark_data: "${steps.load-regional-factors.outputs.benchmark_data}"
+    depends_on: [aggregate-portfolio-results]
+    error_handling:
+      on_failure: continue
+      default_outputs:
+        intensity_metrics: {}
+        benchmark_percentile: null
+
+  # Step 9: Carbon Pricing Analysis (Conditional)
+  - name: calculate-carbon-costs
+    agent: CarbonAgent
+    action: calculate_carbon_pricing_impact
+    inputs:
+      total_emissions: "${steps.aggregate-portfolio-results.outputs.total_emissions_tons}"
+      carbon_price_per_ton: "${vars.carbon_price_per_ton}"
+      price_scenarios: [50, 85, 120, 200]  # USD per tonne scenarios
+      currency: "${vars.currency}"
+    depends_on: [aggregate-portfolio-results]
+    conditional:
+      condition: "${inputs.analysis_config.carbon_pricing} == true"
+      on_skip:
+        carbon_cost_current: 0
+        carbon_cost_scenarios: []
+
+  # Step 10: Sensitivity Analysis (Advanced Feature)
+  - name: perform-sensitivity-analysis
+    agent: CarbonAgent
+    action: sensitivity_analysis
+    inputs:
+      base_results: "${steps.aggregate-portfolio-results.outputs}"
+      sensitivity_parameters:
+        - name: "grid_intensity"
+          variation_range: [-20, 20]  # ±20%
+        - name: "emission_factors"
+          variation_range: [-10, 10]  # ±10%
+        - name: "activity_data"
+          variation_range: [-5, 5]    # ±5%
+      monte_carlo_iterations: 1000
+    depends_on: [aggregate-portfolio-results]
+    conditional:
+      condition: "${inputs.analysis_config.sensitivity_analysis} == true"
+      on_skip:
+        sensitivity_results: {}
+    timeout: "15m"
+    error_handling:
+      on_failure: continue
+
+  # Step 11: Outlier Detection and Quality Assessment
+  - name: detect-facility-outliers
+    agent: ValidationAgent
+    action: detect_facility_outliers
+    inputs:
+      facility_results: "${steps.aggregate-portfolio-results.outputs.facility_breakdown}"
+      metrics: ["emissions_per_sqft", "energy_intensity", "carbon_intensity"]
+      detection_method: "isolation_forest"
+      sensitivity: "${vars.outlier_detection_sensitivity}"
+    depends_on: [aggregate-portfolio-results]
+    error_handling:
+      on_failure: continue
+
+  # Step 12: Generate Executive Dashboard
+  - name: generate-executive-dashboard
+    agent: ReportAgent
+    action: generate_portfolio_dashboard
+    inputs:
+      portfolio_summary: "${steps.aggregate-portfolio-results.outputs}"
+      intensity_metrics: "${steps.calculate-portfolio-metrics.outputs}"
+      carbon_costs: "${steps.calculate-carbon-costs.outputs}"
+      renewable_summary: "${steps.analyze-renewable-energy.outputs}"
+      outlier_analysis: "${steps.detect-facility-outliers.outputs}"
+      analysis_config: "${inputs.analysis_config}"
+    depends_on: [aggregate-portfolio-results, calculate-portfolio-metrics, calculate-carbon-costs, analyze-renewable-energy, detect-facility-outliers]
+    outputs:
+      dashboard_path: "${artifacts_dir}/executive_dashboard.html"
+      summary_metrics: "${artifacts_dir}/portfolio_summary.json"
+
+  # Step 13: Generate Detailed Facility Reports (Parallel)
+  - name: generate-facility-reports
+    agent: ReportAgent
+    action: generate_detailed_facility_reports
+    inputs:
+      facility_results: "${steps.aggregate-portfolio-results.outputs.facility_breakdown}"
+      templates: ["detailed_report", "compliance_summary"]
+      output_format: ["pdf", "html"]
+    depends_on: [aggregate-portfolio-results]
+    parallel: true
+    outputs:
+      report_directory: "${artifacts_dir}/facility_reports/"
+    error_handling:
+      on_failure: continue
+      partial_success: true
+
+  # Step 14: Final Quality Check and Audit Trail
+  - name: quality-assurance-check
+    agent: ValidationAgent
+    action: perform_final_qa_check
+    inputs:
+      all_results:
+        portfolio: "${steps.aggregate-portfolio-results.outputs}"
+        metrics: "${steps.calculate-portfolio-metrics.outputs}"
+        validation: "${steps.preprocess-facilities.outputs.validation_report}"
+        outliers: "${steps.detect-facility-outliers.outputs}"
+      quality_criteria:
+        data_completeness_min: 0.95
+        calculation_accuracy_threshold: 0.99
+        outlier_count_max: 3
+    depends_on: [aggregate-portfolio-results, calculate-portfolio-metrics, detect-facility-outliers]
+    error_handling:
+      on_failure: stop
+      message: "Quality assurance check failed - results may be unreliable"
+
+outputs:
+  # Primary Results
+  total_portfolio_emissions: "${steps.aggregate-portfolio-results.outputs.total_emissions_tons}"
+  scope1_emissions: "${steps.aggregate-portfolio-results.outputs.scope1_total}"
+  scope2_emissions: "${steps.aggregate-portfolio-results.outputs.scope2_total}"
+  scope3_emissions: "${steps.calculate-scope3-emissions.outputs.scope3_emissions_tons}"
+
+  # Portfolio Metrics
+  facility_count: "${steps.preprocess-facilities.outputs.facility_count}"
+  total_floor_area: "${steps.preprocess-facilities.outputs.total_floor_area}"
+  emissions_per_sqft: "${steps.calculate-portfolio-metrics.outputs.portfolio_intensity_sqft}"
+
+  # Renewable Energy
+  renewable_generation_kwh: "${steps.analyze-renewable-energy.outputs.total_renewable_kwh}"
+  renewable_offset_tons: "${steps.analyze-renewable-energy.outputs.renewable_offset_tons}"
+  renewable_percentage: "${steps.analyze-renewable-energy.outputs.renewable_percentage}"
+
+  # Financial Impact
+  carbon_cost_current_usd: "${steps.calculate-carbon-costs.outputs.carbon_cost_current}"
+  carbon_cost_scenarios: "${steps.calculate-carbon-costs.outputs.carbon_cost_scenarios}"
+
+  # Quality and Validation
+  data_quality_score: "${steps.preprocess-facilities.outputs.overall_quality_score}"
+  outlier_facilities: "${steps.detect-facility-outliers.outputs.outlier_facilities}"
+  qa_check_passed: "${steps.quality-assurance-check.outputs.qa_passed}"
+
+  # Reports and Artifacts
+  executive_dashboard_path: "${steps.generate-executive-dashboard.outputs.dashboard_path}"
+  facility_reports_directory: "${steps.generate-facility-reports.outputs.report_directory}"
+  detailed_results_json: "${steps.aggregate-portfolio-results.outputs.detailed_results_path}"
+
+  # Analysis Metadata
+  analysis_timestamp: "${system.timestamp}"
+  pipeline_version: "${version}"
+  analysis_year: "${vars.analysis_year}"
+  facilities_processed: "${steps.preprocess-facilities.outputs.facility_count}"
+  features_enabled:
+    scope3_analysis: "${inputs.analysis_config.include_scope3}"
+    carbon_pricing: "${inputs.analysis_config.carbon_pricing}"
+    sensitivity_analysis: "${inputs.analysis_config.sensitivity_analysis}"
+
+# Pipeline execution configuration
+execution:
+  timeout: "45m"
+  max_parallel_steps: 6
+  retry_policy:
+    max_attempts: 3
+    backoff_strategy: "exponential"
+    backoff_multiplier: 2
+  resource_limits:
+    memory_mb: 4096
+    cpu_cores: 4
+  audit_logging: true
+  data_lineage: true
+  checkpoint_interval: "5m"  # Save intermediate results every 5 minutes

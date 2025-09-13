@@ -1,0 +1,192 @@
+name: data-validation-pipeline
+version: 1
+description: Comprehensive data validation and quality assurance pipeline for carbon accounting data
+
+vars:
+  validation_rules_version: "2024.1"
+  quality_threshold: 0.95
+  data_completeness_min: 0.90
+
+inputs:
+  raw_data:
+    type: object
+    required: true
+    description: "Raw facility and energy data to validate"
+  validation_config:
+    type: object
+    required: false
+    description: "Custom validation configuration"
+
+artifacts_dir: "out/validation/"
+
+steps:
+  # Step 1: Data Completeness Check
+  - name: check-completeness
+    agent: ValidationAgent
+    action: assess_data_completeness
+    inputs:
+      data: "${inputs.raw_data}"
+      required_fields:
+        - facility_data.name
+        - facility_data.location
+        - facility_data.building_area_sqft
+        - energy_consumption.electricity_kwh
+        - energy_consumption.natural_gas_mmbtu
+      min_completeness: "${vars.data_completeness_min}"
+
+  # Step 2: Data Type Validation
+  - name: validate-types
+    agent: ValidationAgent
+    action: validate_data_types
+    inputs:
+      data: "${inputs.raw_data}"
+      schema:
+        facility_data.building_area_sqft: "number"
+        facility_data.employee_count: "integer"
+        energy_consumption.electricity_kwh: "number"
+        energy_consumption.natural_gas_mmbtu: "number"
+    depends_on: [check-completeness]
+
+  # Step 3: Range Validation
+  - name: validate-ranges
+    agent: ValidationAgent
+    action: validate_value_ranges
+    inputs:
+      data: "${inputs.raw_data}"
+      ranges:
+        facility_data.building_area_sqft:
+          min: 100
+          max: 50000000  # 50M sqft max for largest facilities
+        energy_consumption.electricity_kwh:
+          min: 0
+          max: 100000000  # 100M kWh max
+        energy_consumption.natural_gas_mmbtu:
+          min: 0
+          max: 1000000    # 1M MMBtu max
+    depends_on: [validate-types]
+
+  # Step 4: Consistency Checks
+  - name: check-consistency
+    agent: ValidationAgent
+    action: validate_data_consistency
+    inputs:
+      data: "${inputs.raw_data}"
+      consistency_rules:
+        - name: "energy_intensity_check"
+          description: "Check if energy use per sqft is reasonable"
+          rule: "(energy_consumption.electricity_kwh / facility_data.building_area_sqft) < 100"
+        - name: "employee_density_check"
+          description: "Check if employee density is reasonable"
+          rule: "(facility_data.building_area_sqft / facility_data.employee_count) >= 50"
+          optional: true
+        - name: "renewable_vs_total_check"
+          description: "Renewable energy shouldn't exceed total consumption"
+          rule: "energy_consumption.renewable_kwh <= energy_consumption.electricity_kwh"
+          optional: true
+    depends_on: [validate-ranges]
+
+  # Step 5: Outlier Detection
+  - name: detect-outliers
+    agent: ValidationAgent
+    action: detect_statistical_outliers
+    inputs:
+      data: "${inputs.raw_data}"
+      fields_to_analyze:
+        - energy_consumption.electricity_kwh
+        - energy_consumption.natural_gas_mmbtu
+        - facility_data.building_area_sqft
+      detection_method: "iqr"  # Interquartile range method
+      outlier_threshold: 2.5
+    depends_on: [check-consistency]
+    error_handling:
+      on_failure: continue
+      default_outputs:
+        outliers_detected: []
+
+  # Step 6: Historical Comparison (if available)
+  - name: historical-comparison
+    agent: ValidationAgent
+    action: compare_with_historical
+    inputs:
+      current_data: "${inputs.raw_data}"
+      comparison_fields:
+        - energy_consumption.electricity_kwh
+        - energy_consumption.natural_gas_mmbtu
+      variance_threshold: 0.30  # 30% variance flag
+    depends_on: [detect-outliers]
+    conditional:
+      condition: "${inputs.validation_config.enable_historical_comparison} == true"
+    error_handling:
+      on_failure: continue
+
+  # Step 7: Quality Score Calculation
+  - name: calculate-quality-score
+    agent: ValidationAgent
+    action: calculate_data_quality_score
+    inputs:
+      completeness_result: "${steps.check-completeness.outputs}"
+      type_validation_result: "${steps.validate-types.outputs}"
+      range_validation_result: "${steps.validate-ranges.outputs}"
+      consistency_result: "${steps.check-consistency.outputs}"
+      outlier_result: "${steps.detect-outliers.outputs}"
+      historical_result: "${steps.historical-comparison.outputs}"
+    depends_on: [check-completeness, validate-types, validate-ranges, check-consistency, detect-outliers, historical-comparison]
+
+  # Step 8: Generate Validation Report
+  - name: generate-validation-report
+    agent: ReportAgent
+    action: generate_validation_report
+    inputs:
+      validation_results:
+        completeness: "${steps.check-completeness.outputs}"
+        types: "${steps.validate-types.outputs}"
+        ranges: "${steps.validate-ranges.outputs}"
+        consistency: "${steps.check-consistency.outputs}"
+        outliers: "${steps.detect-outliers.outputs}"
+        historical: "${steps.historical-comparison.outputs}"
+        quality_score: "${steps.calculate-quality-score.outputs}"
+      input_data_summary: "${inputs.raw_data}"
+    depends_on: [calculate-quality-score]
+    outputs:
+      validation_report_path: "${artifacts_dir}/validation_report.json"
+      validation_summary_path: "${artifacts_dir}/validation_summary.html"
+
+  # Step 9: Data Quality Gate
+  - name: quality-gate
+    agent: ValidationAgent
+    action: evaluate_quality_gate
+    inputs:
+      quality_score: "${steps.calculate-quality-score.outputs.overall_score}"
+      threshold: "${vars.quality_threshold}"
+      critical_issues: "${steps.calculate-quality-score.outputs.critical_issues}"
+    depends_on: [calculate-quality-score]
+
+outputs:
+  # Validation Results
+  data_quality_score: "${steps.calculate-quality-score.outputs.overall_score}"
+  quality_gate_passed: "${steps.quality-gate.outputs.passed}"
+
+  # Individual Check Results
+  completeness_score: "${steps.check-completeness.outputs.completeness_percentage}"
+  type_validation_passed: "${steps.validate-types.outputs.all_types_valid}"
+  range_validation_passed: "${steps.validate-ranges.outputs.all_ranges_valid}"
+  consistency_checks_passed: "${steps.check-consistency.outputs.all_checks_passed}"
+
+  # Issues and Warnings
+  critical_issues: "${steps.calculate-quality-score.outputs.critical_issues}"
+  warnings: "${steps.calculate-quality-score.outputs.warnings}"
+  outliers_detected: "${steps.detect-outliers.outputs.outliers_detected}"
+
+  # Reports
+  validation_report_path: "${steps.generate-validation-report.outputs.validation_report_path}"
+  validation_summary_path: "${steps.generate-validation-report.outputs.validation_summary_path}"
+
+  # Metadata
+  validation_timestamp: "${system.timestamp}"
+  validation_rules_version: "${vars.validation_rules_version}"
+  validator_version: "${system.version}"
+
+execution:
+  timeout: "15m"
+  max_parallel_steps: 3
+  fail_fast: false  # Continue validation even if some checks fail
