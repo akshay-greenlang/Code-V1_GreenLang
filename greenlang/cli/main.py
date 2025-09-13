@@ -1190,5 +1190,160 @@ else:
             console.print("[yellow]No policies available - core module not installed.[/yellow]")
             console.print("Install with: [cyan]pip install greenlang-core[/cyan]")
 
+
+@cli.command()
+@click.argument("file_path", type=click.Path(exists=True))
+@click.option("--json", "output_json", is_flag=True, help="Output results in JSON format")
+@click.option("--strict", is_flag=True, help="Fail on warnings (treat warnings as errors)")
+def validate(file_path: str, output_json: bool, strict: bool) -> None:
+    """Validate pipeline or pack configuration files"""
+
+    file_path_obj = Path(file_path)
+
+    # Detect file type based on name and content
+    is_pipeline = False
+    is_pack = False
+
+    if file_path_obj.name in ["gl.yaml", "gl.yml"] or "gl." in file_path_obj.name:
+        is_pipeline = True
+    elif file_path_obj.name in ["pack.yaml", "pack.yml"] or "pack." in file_path_obj.name:
+        is_pack = True
+    else:
+        # Try to detect from content
+        try:
+            with open(file_path, 'r') as f:
+                content = yaml.safe_load(f)
+            if isinstance(content, dict):
+                if "steps" in content and "name" in content:
+                    is_pipeline = True
+                elif "contents" in content and "kind" in content:
+                    is_pack = True
+        except Exception:
+            pass
+
+    if not is_pipeline and not is_pack:
+        if output_json:
+            result = {
+                "ok": False,
+                "errors": ["Unable to detect file type. Expected pipeline (gl.yaml) or pack (pack.yaml) file."],
+                "warnings": [],
+                "summary": {}
+            }
+            console.print(json.dumps(result, indent=2))
+        else:
+            console.print("[red]Error: Unable to detect file type. Expected pipeline (gl.yaml) or pack (pack.yaml) file.[/red]")
+        sys.exit(1)
+        return
+
+    errors = []
+    warnings = []
+    summary = {}
+    spec_version = "1.0"
+    file_type = "pipeline" if is_pipeline else "pack"
+    file_name = ""
+
+    try:
+        if is_pipeline:
+            # Validate pipeline
+            schema_path = Path(__file__).parent.parent.parent / "schemas" / "gl_pipeline.schema.v1.json"
+
+            if not schema_path.exists():
+                errors.append(f"Pipeline schema not found: {schema_path}")
+            else:
+                try:
+                    from greenlang.sdk.pipeline import Pipeline, load_pipeline_schema
+
+                    # Load schema
+                    schema = load_pipeline_schema(schema_path)
+
+                    # Validate pipeline
+                    pipeline = Pipeline.from_yaml(file_path, schema=schema)
+                    file_name = pipeline.spec.name
+
+                    # Get validation errors/warnings
+                    validation_errors = pipeline.validate(strict=strict)
+
+                    # Separate errors from warnings (basic heuristic)
+                    for msg in validation_errors:
+                        if any(keyword in msg.lower() for keyword in ["error", "failed", "invalid", "missing required"]):
+                            errors.append(msg)
+                        else:
+                            warnings.append(msg)
+
+                    summary = {
+                        "steps": len(pipeline.spec.steps)
+                    }
+
+                except Exception as e:
+                    errors.append(f"Pipeline validation failed: {str(e)}")
+
+        elif is_pack:
+            # Validate pack
+            try:
+                from greenlang.packs.manifest import PackManifest
+
+                pack_manifest = PackManifest.from_file(file_path_obj)
+                file_name = pack_manifest.name
+
+                # Check if referenced files exist
+                missing_files = pack_manifest.validate_files_exist(file_path_obj.parent)
+                errors.extend(missing_files)
+
+                # Get warnings
+                warnings.extend(pack_manifest.get_warnings())
+
+                summary = {
+                    "pipelines": len(pack_manifest.contents.pipelines),
+                    "agents": len(pack_manifest.contents.agents),
+                    "datasets": len(pack_manifest.contents.datasets)
+                }
+
+            except Exception as e:
+                errors.append(f"Pack validation failed: {str(e)}")
+
+    except Exception as e:
+        errors.append(f"Unexpected validation error: {str(e)}")
+
+    # Determine success
+    success = len(errors) == 0 and (not strict or len(warnings) == 0)
+
+    if output_json:
+        result = {
+            "ok": success,
+            "spec_version": spec_version,
+            "type": file_type,
+            "name": file_name,
+            "errors": errors,
+            "warnings": warnings,
+            "summary": summary
+        }
+        console.print(json.dumps(result, indent=2))
+    else:
+        # Human-readable output
+        if success:
+            console.print(f"[green]✓ Validation passed[/green] - {file_type}: {file_name}")
+        else:
+            console.print(f"[red]✗ Validation failed[/red] - {file_type}: {file_name}")
+
+        if errors:
+            console.print(f"\n[bold red]Errors ({len(errors)}):[/bold red]")
+            for error in errors:
+                console.print(f"  • {error}")
+
+        if warnings:
+            console.print(f"\n[bold yellow]Warnings ({len(warnings)}):[/bold yellow]")
+            for warning in warnings:
+                console.print(f"  • {warning}")
+
+        if summary:
+            console.print(f"\n[bold]Summary:[/bold]")
+            for key, value in summary.items():
+                console.print(f"  {key.replace('_', ' ').title()}: {value}")
+
+    # Exit with appropriate code
+    if not success:
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     cli()

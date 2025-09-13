@@ -5,6 +5,7 @@
 [![Version](https://img.shields.io/badge/version-0.0.1-green.svg)](https://github.com/greenlang/greenlang)
 [![Python](https://img.shields.io/badge/python-3.8--3.12-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Pipeline Spec v1.0](https://github.com/akshay-greenlang/Code-V1_GreenLang/actions/workflows/pipeline-validation.yml/badge.svg)](https://github.com/akshay-greenlang/Code-V1_GreenLang/actions/workflows/pipeline-validation.yml)
 [![Tests](https://img.shields.io/badge/tests-300%2B%20passing-brightgreen.svg)](tests/)
 [![Coverage](https://img.shields.io/badge/coverage-85%25%2B-brightgreen.svg)](tests/)
 [![Type Coverage](https://img.shields.io/badge/type%20coverage-100%25-brightgreen.svg)](greenlang/)

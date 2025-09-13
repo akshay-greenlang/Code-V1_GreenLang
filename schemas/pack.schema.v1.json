@@ -1,0 +1,256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://greenlang.io/schema/pack.v1.json",
+  "title": "GreenLang Pack Manifest Schema v1.0",
+  "description": "Schema for validating pack.yaml manifest files in GreenLang packs",
+  "type": "object",
+  "required": ["name", "version", "kind", "license", "contents"],
+  "additionalProperties": true,
+  "properties": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$",
+      "minLength": 3,
+      "maxLength": 64,
+      "description": "DNS-safe pack name using lowercase letters, numbers, and hyphens"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version in MAJOR.MINOR.PATCH format"
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["pack", "dataset", "connector"],
+      "description": "Type of GreenLang package"
+    },
+    "license": {
+      "type": "string",
+      "minLength": 3,
+      "description": "SPDX license identifier"
+    },
+    "compat": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "greenlang": {
+          "type": "string",
+          "description": "GreenLang version compatibility range"
+        },
+        "python": {
+          "type": "string",
+          "description": "Python version compatibility range"
+        }
+      },
+      "description": "Compatibility constraints for runtime environments"
+    },
+    "contents": {
+      "type": "object",
+      "required": ["pipelines"],
+      "additionalProperties": true,
+      "properties": {
+        "pipelines": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[^/\\\\].*\\.ya?ml$",
+            "description": "Path to pipeline YAML file"
+          },
+          "description": "List of pipeline configuration files"
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[A-Z][a-zA-Z0-9]*Agent$",
+            "description": "Agent class name"
+          },
+          "description": "List of agent names provided by this pack"
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Path to dataset file"
+          },
+          "description": "List of dataset files included in the pack"
+        },
+        "reports": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": ".*\\.(html\\.j2|md\\.j2|txt\\.j2)$",
+            "description": "Path to report template"
+          },
+          "description": "List of report templates"
+        }
+      },
+      "description": "Contents and artifacts provided by this pack"
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "description": "Dependency as package string with optional version"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Package name"
+              },
+              "version": {
+                "type": "string",
+                "description": "Version constraint"
+              },
+              "source": {
+                "type": "string",
+                "description": "Optional source repository"
+              }
+            },
+            "required": ["name"],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "description": "External dependencies required by this pack"
+    },
+    "card": {
+      "type": "string",
+      "pattern": "^[^/\\\\].*\\.(md|MD)$",
+      "description": "Path to Model Card or Pack Card documentation"
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Allowed network endpoint pattern"
+          },
+          "description": "Allowed network endpoints for external connections"
+        },
+        "data_residency": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "description": "ISO 3166-1 alpha-2 country code"
+          },
+          "description": "Data residency regions"
+        },
+        "ef_vintage_min": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2100,
+          "description": "Minimum EF vintage year required"
+        },
+        "max_runtime_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum allowed runtime in seconds"
+        },
+        "max_memory_mb": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum memory usage in megabytes"
+        }
+      },
+      "additionalProperties": true,
+      "description": "Policy constraints and requirements"
+    },
+    "security": {
+      "type": "object",
+      "properties": {
+        "sbom": {
+          "type": "string",
+          "pattern": "^[^/\\\\].*\\.(json|spdx|spdx\\.json)$",
+          "description": "Path to Software Bill of Materials file"
+        },
+        "signatures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[^/\\\\].*\\.(sig|asc|pem)$",
+            "description": "Path to signature file"
+          },
+          "description": "Digital signature files"
+        },
+        "vulnerabilities": {
+          "type": "object",
+          "properties": {
+            "allow_critical": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow critical vulnerabilities"
+            },
+            "allow_high": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow high severity vulnerabilities"
+            },
+            "max_medium": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 5,
+              "description": "Maximum number of medium severity vulnerabilities"
+            }
+          },
+          "description": "Vulnerability tolerance settings"
+        }
+      },
+      "additionalProperties": true,
+      "description": "Security metadata and constraints"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Brief description of the pack"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Author name or email"
+          },
+          "description": "Pack authors"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Tag for categorization"
+          },
+          "description": "Tags for pack discovery"
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "Project homepage URL"
+        },
+        "repository": {
+          "type": "string",
+          "format": "uri",
+          "description": "Source repository URL"
+        }
+      },
+      "additionalProperties": true,
+      "description": "Additional metadata for pack discovery and documentation"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+version: '1.0'
+name: packs/demo-acceptance-test-pipeline
+description: Main pipeline for packs/demo-acceptance-test
+inputs: {}
+steps: []
+outputs: {}

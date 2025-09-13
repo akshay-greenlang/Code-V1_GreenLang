@@ -1,0 +1,7 @@
+name: "invalid-both-inputs"
+steps:
+  - name: "step1"
+    agent: "test.Agent"
+    inputs:
+      key: "value"
+    inputsRef: ${steps.previous.output}
