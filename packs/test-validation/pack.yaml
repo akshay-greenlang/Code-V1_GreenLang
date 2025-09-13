@@ -1,0 +1,6 @@
+name: test-validation
+version: 1.0.0
+kind: pack
+license: MIT
+contents:
+  pipelines: ["gl.yaml"]

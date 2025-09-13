@@ -1,0 +1,273 @@
+name: "Pipeline Spec v1.0 Validation"
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    paths:
+      - '**/*.yaml'
+      - '**/gl.yaml'
+      - 'tests/pipelines/**'
+      - 'greenlang/sdk/**'
+      - 'scripts/validate_all_pipelines.py'
+      - '.github/workflows/pipeline-validation.yml'
+  pull_request:
+    branches: [ main, master, develop ]
+    paths:
+      - '**/*.yaml'
+      - '**/gl.yaml'
+      - 'tests/pipelines/**'
+      - 'greenlang/sdk/**'
+      - 'scripts/validate_all_pipelines.py'
+      - '.github/workflows/pipeline-validation.yml'
+  workflow_dispatch:
+
+jobs:
+  validate-pipelines:
+    name: "Validate Pipeline Specifications"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.10", "3.12"]
+
+    steps:
+    - name: "📥 Checkout Repository"
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: "🐍 Set up Python ${{ matrix.python-version }}"
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: |
+          setup.py
+          requirements*.txt
+
+    - name: "📦 Install Dependencies"
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install -e ".[test]"
+
+    - name: "🔍 Discover Pipeline Files"
+      id: discover
+      run: |
+        echo "=== Discovering Pipeline Files ==="
+        find . -name "gl.yaml" -type f | head -20
+        echo ""
+        find . -name "*.yaml" -path "*/pipelines/*" | head -10
+        echo ""
+        echo "pipeline_count=$(find . -name "gl.yaml" -type f | wc -l)" >> $GITHUB_OUTPUT
+        echo "yaml_count=$(find . -name "*.yaml" -type f | wc -l)" >> $GITHUB_OUTPUT
+
+    - name: "✅ Validate All Pipeline Specifications"
+      run: |
+        echo "=== Running Pipeline Validation ==="
+        echo "Found ${{ steps.discover.outputs.pipeline_count }} gl.yaml files"
+        echo "Found ${{ steps.discover.outputs.yaml_count }} total YAML files"
+        python scripts/validate_all_pipelines.py --verbose --strict
+      env:
+        PYTHONPATH: ${{ github.workspace }}
+
+    - name: "🧪 Run Pipeline Schema Tests"
+      run: |
+        echo "=== Running Pipeline Schema Tests ==="
+        pytest tests/pipelines/ -v --tb=short --maxfail=5
+
+    - name: "🔨 Test Pipeline Scaffolding"
+      run: |
+        echo "=== Testing Pipeline Scaffolding ==="
+        # Test that scaffolding creates valid pipelines
+        python -m pytest tests/ -k "scaffold" -v --tb=short
+
+        # Create a test pipeline and validate it
+        mkdir -p tmp-test-scaffold
+        cd tmp-test-scaffold
+        echo "name: test_scaffold_pipeline
+version: '1.0'
+description: Test pipeline created by scaffolding
+steps:
+  - name: validate_input
+    agent: ValidatorAgent
+    inputs:
+      data: \$inputs.test_data
+  - name: process_data
+    agent: FuelAgent
+    inputs:
+      fuel_type: 'electricity'
+      consumption_value: 1000
+      consumption_unit: 'kWh'
+      country: 'US'" > gl.yaml
+
+        # Validate the scaffolded pipeline
+        python ../scripts/validate_all_pipelines.py --file gl.yaml
+        cd ..
+        rm -rf tmp-test-scaffold
+
+    - name: "🚀 Test Performance Benchmarks"
+      run: |
+        echo "=== Running Performance Tests ==="
+        # Test validation performance on multiple files
+        time python scripts/validate_all_pipelines.py --quiet
+
+        # Run benchmark tests if they exist
+        if [ -f "tests/performance/test_pipeline_validation.py" ]; then
+          pytest tests/performance/test_pipeline_validation.py -v
+        fi
+
+    - name: "📊 Generate Validation Report"
+      if: always()
+      run: |
+        echo "=== Generating Validation Report ==="
+        python scripts/validate_all_pipelines.py --report-format json --output validation-report.json || true
+        python scripts/validate_all_pipelines.py --report-format markdown --output validation-report.md || true
+
+    - name: "📤 Upload Test Results"
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pipeline-validation-results-py${{ matrix.python-version }}
+        path: |
+          validation-report.json
+          validation-report.md
+          pytest-results.xml
+        retention-days: 30
+
+    - name: "📈 Generate Test Summary"
+      if: always()
+      run: |
+        echo "## 🔍 Pipeline Validation Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Python Version**: ${{ matrix.python-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **GL Pipeline Files**: ${{ steps.discover.outputs.pipeline_count }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Total YAML Files**: ${{ steps.discover.outputs.yaml_count }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [ -f "validation-report.md" ]; then
+          echo "### Validation Results" >> $GITHUB_STEP_SUMMARY
+          cat validation-report.md >> $GITHUB_STEP_SUMMARY
+        fi
+
+  integration-test:
+    name: "Integration Test - Full Workflow"
+    runs-on: ubuntu-latest
+    needs: validate-pipelines
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: "📥 Checkout Repository"
+      uses: actions/checkout@v4
+
+    - name: "🐍 Set up Python 3.11"
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+
+    - name: "📦 Install Dependencies"
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install -e ".[test]"
+
+    - name: "🔄 End-to-End Pipeline Execution Test"
+      run: |
+        echo "=== Testing End-to-End Pipeline Execution ==="
+        # Find a simple pipeline to test
+        if [ -f "test_pipelines/minimal.yaml" ]; then
+          echo "Testing minimal pipeline execution..."
+          python -m greenlang.cli.main run test_pipelines/minimal.yaml --dry-run
+        fi
+
+        # Test pipeline creation and validation workflow
+        if [ -f "greenlang/cli/templates/pack_basic/gl.yaml" ]; then
+          echo "Testing template pipeline validation..."
+          python scripts/validate_all_pipelines.py --file greenlang/cli/templates/pack_basic/gl.yaml
+        fi
+
+  parallel-validation:
+    name: "Parallel Validation - Large Scale"
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+    - name: "📥 Checkout Repository"
+      uses: actions/checkout@v4
+
+    - name: "🐍 Set up Python 3.11"
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+
+    - name: "📦 Install Dependencies"
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install -e ".[test]"
+
+    - name: "⚡ Parallel Validation Test"
+      run: |
+        echo "=== Running Parallel Validation ==="
+        # Test concurrent validation of multiple files
+        python scripts/validate_all_pipelines.py --parallel --max-workers 4 --verbose
+
+    - name: "🧪 Stress Test Validation"
+      run: |
+        echo "=== Stress Testing Pipeline Validation ==="
+        # Create multiple test pipelines for stress testing
+        mkdir -p stress-test
+        for i in {1..10}; do
+          cat > stress-test/pipeline_${i}.yaml << EOF
+        name: stress_test_pipeline_${i}
+        version: '1.0'
+        description: Stress test pipeline ${i}
+        steps:
+          - name: step_1
+            agent: ValidatorAgent
+            inputs:
+              test_value: ${i}
+          - name: step_2
+            agent: FuelAgent
+            inputs:
+              fuel_type: electricity
+              consumption_value: $((i * 100))
+              consumption_unit: kWh
+              country: US
+        EOF
+        done
+
+        # Validate all stress test pipelines
+        python scripts/validate_all_pipelines.py --directory stress-test --parallel
+        rm -rf stress-test
+
+  summary:
+    name: "📋 Validation Summary"
+    runs-on: ubuntu-latest
+    needs: [validate-pipelines, integration-test, parallel-validation]
+    if: always()
+
+    steps:
+    - name: "📊 Workflow Summary"
+      run: |
+        echo "## 🎯 Pipeline Validation Workflow Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Job Status:" >> $GITHUB_STEP_SUMMARY
+        echo "- **Pipeline Validation**: ${{ needs.validate-pipelines.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Integration Test**: ${{ needs.integration-test.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Parallel Validation**: ${{ needs.parallel-validation.result }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        if [[ "${{ needs.validate-pipelines.result }}" == "success" ]]; then
+          echo "✅ **All pipeline specifications are valid!**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ **Pipeline validation failed - check logs above**" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+        echo "- Review any failed validations in the job logs" >> $GITHUB_STEP_SUMMARY
+        echo "- Check uploaded artifacts for detailed reports" >> $GITHUB_STEP_SUMMARY
+        echo "- Ensure all `gl.yaml` files follow the Pipeline Spec v1.0" >> $GITHUB_STEP_SUMMARY

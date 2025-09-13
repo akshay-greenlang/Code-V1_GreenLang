@@ -1,0 +1,8 @@
+name: "test-retry"
+steps:
+  - name: "step-with-retry"
+    agent: "test.Agent"
+    retry:
+      max: 3
+      backoff_seconds: 2.0
+    on_error: "fail"

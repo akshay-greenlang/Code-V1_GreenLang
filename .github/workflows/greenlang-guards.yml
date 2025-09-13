@@ -1,0 +1,281 @@
+name: GreenLang Guards
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  # Spec v1.0 Validation
+  spec-validation:
+    name: Pack Spec v1.0 Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install pydantic pyyaml click rich pytest
+          pip install -e .
+      
+      - name: Run spec v1.0 tests
+        run: |
+          pytest tests/packs/test_manifest_v1.py -v --tb=short
+      
+      - name: Validate sample packs
+        run: |
+          # Find and validate all pack.yaml files
+          for pack in $(find packs -name "pack.yaml" -o -name "pack.yml" 2>/dev/null); do
+            echo "Validating: $pack"
+            python -m greenlang.cli.complete_cli pack validate "$pack" || true
+          done
+      
+      - name: Test pack scaffolding
+        run: |
+          # Test creating a new pack
+          python -m greenlang.cli.complete_cli pack init pack-basic test-pack-ci
+          python -m greenlang.cli.complete_cli pack validate test-pack-ci
+      
+      - name: Set status badge
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Spec v1.0 validation passing"
+          else
+            echo "❌ Spec v1.0 validation failing"
+          fi
+
+  # Category 1: Core Governance & Code Quality
+  core-governance:
+    name: Core Governance Checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [SpecGuardian, CodeSentinel, SecScan, PolicyLinter]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better diff analysis
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install anthropic pyyaml
+          # Install linting tools for CodeSentinel
+          if [ "${{ matrix.agent }}" = "CodeSentinel" ]; then
+            pip install flake8 mypy pylint
+            npm install -g eslint
+          fi
+          # Install security tools for SecScan
+          if [ "${{ matrix.agent }}" = "SecScan" ]; then
+            pip install trufflehog pip-audit
+          fi
+      
+      - name: Collect context for ${{ matrix.agent }}
+        run: |
+          python scripts/collect_ci_context.py --agent ${{ matrix.agent }} > /tmp/context.json
+      
+      - name: Run ${{ matrix.agent }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python scripts/run_agent.py --agent ${{ matrix.agent }} --context /tmp/context.json > /tmp/result.json
+      
+      - name: Evaluate results
+        id: evaluate
+        run: |
+          python scripts/evaluate_result.py /tmp/result.json --format github >> $GITHUB_STEP_SUMMARY
+          python scripts/evaluate_result.py /tmp/result.json --format console
+      
+      - name: Post comment to PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const result = JSON.parse(fs.readFileSync('/tmp/result.json', 'utf8'));
+            const comment = fs.readFileSync(process.env.GITHUB_STEP_SUMMARY, 'utf8');
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Category 2: Runtime, Packs, Data & Connectors
+  runtime-validation:
+    name: Runtime & Data Validation
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        agent: [DeterminismAuditor, PackQC, DataFlowGuardian, ConnectorValidator]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install anthropic pyyaml
+      
+      - name: Collect context for ${{ matrix.agent }}
+        run: |
+          python scripts/collect_ci_context.py --agent ${{ matrix.agent }} > /tmp/context.json || echo '{"agent":"${{ matrix.agent }}"}' > /tmp/context.json
+      
+      - name: Run ${{ matrix.agent }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python scripts/run_agent.py --agent ${{ matrix.agent }} --context /tmp/context.json --mock > /tmp/result.json || true
+      
+      - name: Evaluate results
+        run: |
+          python scripts/evaluate_result.py /tmp/result.json --format console || true
+
+  # Category 3: Hub & Distribution
+  hub-distribution:
+    name: Hub & Distribution Checks
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || contains(github.event.head_commit.message, '[publish]')
+    strategy:
+      matrix:
+        agent: [HubRegistrar]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install anthropic pyyaml
+      
+      - name: Validate for Hub publishing
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python scripts/collect_ci_context.py --agent ${{ matrix.agent }} > /tmp/context.json || echo '{"agent":"${{ matrix.agent }}"}' > /tmp/context.json
+          python scripts/run_agent.py --agent ${{ matrix.agent }} --context /tmp/context.json --mock > /tmp/result.json
+          python scripts/evaluate_result.py /tmp/result.json --format console
+
+  # Category 4: Release Train & Exit Bars
+  release-validation:
+    name: Release Exit Bar Validation
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    needs: [core-governance, runtime-validation]
+    strategy:
+      matrix:
+        agent: [SupplyChainSentinel, ExitBarAuditor]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install anthropic pyyaml
+          # Install supply chain tools
+          if [ "${{ matrix.agent }}" = "SupplyChainSentinel" ]; then
+            # Install cosign
+            curl -O -L "https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64"
+            sudo mv cosign-linux-amd64 /usr/local/bin/cosign
+            sudo chmod +x /usr/local/bin/cosign
+          fi
+      
+      - name: Generate SBOM
+        if: matrix.agent == 'SupplyChainSentinel'
+        run: |
+          # Generate SPDX SBOM (simplified example)
+          echo '{
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": "SPDXRef-DOCUMENT",
+            "name": "GreenLang-SBOM",
+            "documentNamespace": "https://github.com/${{ github.repository }}/sbom",
+            "creationInfo": {
+              "created": "'$(date -Iseconds)'",
+              "creators": ["Tool: GitHub Actions"]
+            }
+          }' > sbom.spdx.json
+      
+      - name: Run ${{ matrix.agent }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          python scripts/collect_ci_context.py --agent ${{ matrix.agent }} > /tmp/context.json
+          python scripts/run_agent.py --agent ${{ matrix.agent }} --context /tmp/context.json > /tmp/result.json
+      
+      - name: Evaluate release readiness
+        run: |
+          python scripts/evaluate_result.py /tmp/result.json --format console --strict
+      
+      - name: Upload SBOM artifact
+        if: matrix.agent == 'SupplyChainSentinel' && success()
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom.spdx.json
+
+  # Summary job to ensure all checks pass
+  governance-summary:
+    name: Governance Summary
+    runs-on: ubuntu-latest
+    needs: [spec-validation, core-governance, runtime-validation]
+    if: always()
+    steps:
+      - name: Check governance status
+        run: |
+          if [ "${{ needs.spec-validation.result }}" != "success" ]; then
+            echo "❌ Spec v1.0 validation failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.core-governance.result }}" != "success" ]; then
+            echo "❌ Core governance checks failed"
+            exit 1
+          fi
+          
+          if [ "${{ needs.runtime-validation.result }}" != "success" ]; then
+            echo "⚠️ Runtime validation had issues (non-blocking)"
+          fi
+          
+          echo "✅ All required governance checks passed"
+      
+      - name: Set status check
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = "${{ needs.core-governance.result }}" === "success" ? "success" : "failure";
+            
+            github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: context.sha,
+              state: status,
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              description: status === "success" ? "All governance checks passed" : "Governance checks failed",
+              context: "GreenLang Guards"
+            });

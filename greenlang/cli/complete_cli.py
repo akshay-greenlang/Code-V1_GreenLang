@@ -26,6 +26,7 @@ from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import Workflow, WorkflowStep
 from greenlang.cli.jsonl_logger import JSONLLogger
 from greenlang.cli.agent_registry import AgentRegistry
+from greenlang.cli.cmd_pack import pack
 
 # Setup console
 console = Console()
@@ -263,76 +264,158 @@ def agents_template(ctx: CLIContext, name: str, output: Optional[str]):
 
 # ============= VALIDATE COMMAND =============
 @cli.command()
-@click.argument("pipeline_file", type=click.Path(exists=True))
+@click.argument("file_path", type=click.Path(exists=True))
+@click.option("--json", "output_json", is_flag=True, help="Output validation results as JSON")
+@click.option("--strict", is_flag=True, help="Fail on warnings")
 @pass_context
-def validate(ctx: CLIContext, pipeline_file: str):
-    """Validate pipeline YAML with schema and sanity checks"""
-    
-    console.print(f"Validating pipeline: {pipeline_file}")
-    
+def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
+    """Validate pipeline (gl.yaml) or pack manifest (pack.yaml)"""
+
+    file_path_obj = Path(file_path)
+
+    # Detect file type based on name and content
+    is_pipeline = False
+    is_pack = False
+
+    if file_path_obj.name in ["gl.yaml", "gl.yml"] or "gl." in file_path_obj.name:
+        is_pipeline = True
+    elif file_path_obj.name in ["pack.yaml", "pack.yml"] or "pack." in file_path_obj.name:
+        is_pack = True
+    else:
+        # Try to detect from content
+        try:
+            with open(file_path, 'r') as f:
+                content = yaml.safe_load(f)
+            if isinstance(content, dict):
+                if "steps" in content and "name" in content:
+                    is_pipeline = True
+                elif "contents" in content and "kind" in content:
+                    is_pack = True
+        except Exception:
+            pass
+
+    if not is_pipeline and not is_pack:
+        if output_json:
+            result = {
+                "ok": False,
+                "errors": ["Unable to detect file type. Expected pipeline (gl.yaml) or pack (pack.yaml) file."],
+                "warnings": [],
+                "summary": {}
+            }
+            console.print(json.dumps(result, indent=2))
+        else:
+            console.print("[red]Error: Unable to detect file type. Expected pipeline (gl.yaml) or pack (pack.yaml) file.[/red]")
+        sys.exit(1)
+        return
+
     errors = []
     warnings = []
-    
+    summary = {}
+    spec_version = "1.0"
+    file_type = "pipeline" if is_pipeline else "pack"
+    file_name = ""
+
     try:
-        # Load and parse
-        workflow = Workflow.from_yaml(pipeline_file)
-        
-        # Schema validation
-        if not workflow.name:
-            errors.append("Pipeline must have a name")
-        
-        if not workflow.steps:
-            errors.append("Pipeline must have at least one step")
-        
-        # Check agent availability
-        for step in workflow.steps:
-            agent_info = ctx.agent_registry.get_agent_info(step.agent_id)
-            if not agent_info:
-                errors.append(f"Step '{step.name}': Unknown agent '{step.agent_id}'")
-            
-            # Check for cycles in conditions
-            if step.condition and "results." in step.condition:
-                # Simple cycle detection
-                referenced_steps = [s for s in workflow.steps 
-                                  if s.name in step.condition]
-                for ref in referenced_steps:
-                    if workflow.steps.index(ref) >= workflow.steps.index(step):
-                        warnings.append(f"Step '{step.name}': May reference future step")
-        
-        # DAG validation
-        if workflow.output_mapping:
-            for key, path in workflow.output_mapping.items():
-                if not any(step.name in path for step in workflow.steps):
-                    warnings.append(f"Output mapping '{key}': References unknown step")
-        
+        if is_pipeline:
+            # Validate pipeline
+            schema_path = Path(__file__).parent.parent.parent / "schemas" / "gl_pipeline.schema.v1.json"
+
+            if not schema_path.exists():
+                errors.append(f"Pipeline schema not found: {schema_path}")
+            else:
+                try:
+                    from greenlang.sdk.pipeline import Pipeline, load_pipeline_schema
+
+                    # Load schema
+                    schema = load_pipeline_schema(schema_path)
+
+                    # Validate pipeline
+                    pipeline = Pipeline.from_yaml(file_path, schema=schema)
+                    file_name = pipeline.spec.name
+
+                    # Get validation errors/warnings
+                    validation_errors = pipeline.validate(strict=strict)
+
+                    # Separate errors from warnings (basic heuristic)
+                    for msg in validation_errors:
+                        if any(keyword in msg.lower() for keyword in ["error", "failed", "invalid", "missing required"]):
+                            errors.append(msg)
+                        else:
+                            warnings.append(msg)
+
+                    summary = {
+                        "steps": len(pipeline.spec.steps)
+                    }
+
+                except Exception as e:
+                    errors.append(f"Pipeline validation failed: {str(e)}")
+
+        elif is_pack:
+            # Validate pack
+            try:
+                from greenlang.packs.manifest import PackManifest
+
+                pack_manifest = PackManifest.from_file(file_path_obj)
+                file_name = pack_manifest.name
+
+                # Check if referenced files exist
+                missing_files = pack_manifest.validate_files_exist(file_path_obj.parent)
+                errors.extend(missing_files)
+
+                # Get warnings
+                warnings.extend(pack_manifest.get_warnings())
+
+                summary = {
+                    "pipelines": len(pack_manifest.contents.pipelines),
+                    "agents": len(pack_manifest.contents.agents),
+                    "datasets": len(pack_manifest.contents.datasets)
+                }
+
+            except Exception as e:
+                errors.append(f"Pack validation failed: {str(e)}")
+
     except Exception as e:
-        errors.append(f"Failed to parse pipeline: {str(e)}")
-    
-    # Display results
-    if errors:
-        console.print("\n[red]❌ Validation Failed[/red]")
-        for error in errors:
-            console.print(f"  [red]• {error}[/red]")
-        
-        if warnings:
-            console.print("\n[yellow]⚠ Warnings:[/yellow]")
-            for warning in warnings:
-                console.print(f"  [yellow]• {warning}[/yellow]")
-        
-        sys.exit(1)  # Non-zero exit on invalid DAG
+        errors.append(f"Unexpected validation error: {str(e)}")
+
+    # Determine success
+    success = len(errors) == 0 and (not strict or len(warnings) == 0)
+
+    if output_json:
+        result = {
+            "ok": success,
+            "spec_version": spec_version,
+            "type": file_type,
+            "name": file_name,
+            "errors": errors,
+            "warnings": warnings,
+            "summary": summary
+        }
+        console.print(json.dumps(result, indent=2))
     else:
-        console.print("\n[green]✓ Pipeline is valid![/green]")
-        
+        # Human-readable output
+        if success:
+            console.print(f"[green]✓ Validation passed[/green] - {file_type}: {file_name}")
+        else:
+            console.print(f"[red]✗ Validation failed[/red] - {file_type}: {file_name}")
+
+        if errors:
+            console.print(f"\n[bold red]Errors ({len(errors)}):[/bold red]")
+            for error in errors:
+                console.print(f"  • {error}")
+
         if warnings:
-            console.print("\n[yellow]⚠ Warnings:[/yellow]")
+            console.print(f"\n[bold yellow]Warnings ({len(warnings)}):[/bold yellow]")
             for warning in warnings:
-                console.print(f"  [yellow]• {warning}[/yellow]")
-        
-        # Show pipeline summary
-        console.print(f"\n[cyan]Pipeline: {workflow.name}[/cyan]")
-        console.print(f"Steps: {len(workflow.steps)}")
-        for i, step in enumerate(workflow.steps, 1):
-            console.print(f"  {i}. {step.name} ({step.agent_id})")
+                console.print(f"  • {warning}")
+
+        if summary:
+            console.print(f"\n[bold]Summary:[/bold]")
+            for key, value in summary.items():
+                console.print(f"  {key.replace('_', ' ').title()}: {value}")
+
+    # Exit with appropriate code
+    if not success:
+        sys.exit(1)
 
 
 # ============= RUN COMMAND WITH CACHING & PROGRESS =============
@@ -572,6 +655,9 @@ def ask(ctx: CLIContext, question: tuple):
                 break
             console.print("[dim]Processing...[/dim]")
 
+
+# Add pack command group
+cli.add_command(pack)
 
 if __name__ == "__main__":
     cli()

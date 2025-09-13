@@ -1,0 +1,6 @@
+version: '1.0'
+name: packs/demo-test-pipeline
+description: Main pipeline for packs/demo-test
+inputs: {}
+steps: []
+outputs: {}
