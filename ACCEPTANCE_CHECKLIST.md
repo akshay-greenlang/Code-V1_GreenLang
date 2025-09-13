@@ -14,7 +14,45 @@ All acceptance tests must pass before merge. Run `python acceptance_test.py` to 
 
 ## Acceptance Checklist
 
-### 1. Pack Scaffolding ⏱️ < 60s
+### 0. SPEC-001: Pack Manifest v1.0 ✅ COMPLETED
+- [x] `docs/PACK_SCHEMA_V1.md` specification document created
+- [x] `schemas/pack.schema.v1.json` JSON Schema for validation
+- [x] `greenlang/packs/manifest.py` Pydantic model v1.0 compliant
+- [x] `gl pack validate` command implemented and working
+- [x] `gl pack init` creates v1.0 compliant packs
+- [x] Scaffold templates updated to v1.0 specification
+- [x] Comprehensive tests in `tests/packs/test_manifest_v1.py`
+- [x] Migration script `scripts/migrate_pack_yaml_v1.py` functional
+- [x] CI workflow includes spec validation job
+
+**Validation Test:**
+```bash
+# Test pack creation and validation
+gl pack init pack-basic demo-pack
+gl pack validate demo-pack
+# Test migration of old format
+python scripts/migrate_pack_yaml_v1.py old_pack.yaml --check
+```
+
+### 1. SPEC-002: GL Pipeline v1.0 ✅ COMPLETED
+- [x] `docs/GL_PIPELINE_SPEC_V1.md` specification document created
+- [x] `schemas/gl_pipeline.schema.v1.json` JSON Schema for validation
+- [x] `greenlang/sdk/pipeline_spec.py` Pydantic models v1.0 compliant
+- [x] `greenlang/sdk/pipeline.py` Pipeline loader and validator
+- [x] `greenlang/runtime/executor.py` Executor skeleton with retry/error handling
+- [x] `gl validate` command supports pipeline validation
+- [x] Pack template updated with v1.0 pipeline format
+- [x] Comprehensive tests in `tests/pipelines/`
+- [x] Sample pipelines validate successfully against v1.0 spec
+
+**Validation Test:**
+```bash
+# Test pipeline validation
+python test_pipeline_validation.py
+# Result: 2/2 pipelines PASS
+```
+
+### 3. Pack Scaffolding ⏱️ < 60s
 - [ ] `gl init pack-basic test-pack` completes in under 60 seconds
 - [ ] Generated pack contains all required files:
   - [ ] `pack.yaml` with valid manifest
@@ -31,7 +69,7 @@ time gl init pack-basic test-scaffold-pack
 cd test-scaffold-pack && gl pack validate
 ```
 
-### 2. Publish → Add Workflow 📦
+### 4. Publish → Add Workflow 📦
 - [ ] `gl pack publish` executes in correct order:
   - [ ] Runs tests (`pytest`)
   - [ ] Validates policy (`check_install`)
@@ -52,7 +90,7 @@ gl pack add test/pack@0.1.0
 gl pack list  # Should show installed pack
 ```
 
-### 3. Deterministic Runs 🔄
+### 5. Deterministic Runs 🔄
 - [ ] `gl run gl.yaml` produces `out/run.json`
 - [ ] Consecutive runs with same inputs produce byte-identical `run.json`
 - [ ] Hash values in ledger are stable
@@ -68,7 +106,7 @@ cp out/run.json run2.json
 diff run1.json run2.json  # Should be identical
 ```
 
-### 4. Policy Enforcement 🛡️
+### 6. Policy Enforcement 🛡️
 - [ ] **License Check**: Pack with GPL license is blocked
   - [ ] Error message clearly states license issue
   - [ ] `--explain` provides remediation steps
@@ -90,7 +128,7 @@ gl run pipeline-with-unknown-api.yaml  # Should fail with network error
 gl policy check --explain  # Shows how to fix
 ```
 
-### 5. Verify Command 🔍
+### 7. Verify Command 🔍
 - [ ] `gl verify <artifact>` displays:
   - [ ] Signer identity (keyless or key-based)
   - [ ] SBOM summary:
@@ -113,7 +151,7 @@ gl verify packs/boiler-solar.tar.gz
 # ✓ Provenance: commit abc123, built 2024-01-01
 ```
 
-### 6. Reference Packs Performance 🎯
+### 8. Reference Packs Performance 🎯
 - [ ] All 3 reference packs run successfully:
   - [ ] `boiler-solar`: ✓ Local ✓ K8s/stub
   - [ ] `hvac-measures`: ✓ Local ✓ K8s/stub

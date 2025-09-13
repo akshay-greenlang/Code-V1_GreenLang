@@ -1,0 +1,33 @@
+# GreenLang Pipeline Configuration
+name: "demo-pipeline"
+description: "Main pipeline for demo pack"
+version: "1.0.0"
+
+# Pipeline steps
+steps:
+  - name: "load-data"
+    type: "data-loader"
+    config:
+      source: "input/data.csv"
+      format: "csv"
+    
+  - name: "process-data"
+    type: "processor"
+    config:
+      operation: "transform"
+      params:
+        method: "normalize"
+    depends_on: ["load-data"]
+    
+  - name: "save-results"
+    type: "data-writer"
+    config:
+      destination: "output/results.json"
+      format: "json"
+    depends_on: ["process-data"]
+
+# Pipeline configuration
+config:
+  max_retries: 3
+  timeout_seconds: 300
+  log_level: "INFO"

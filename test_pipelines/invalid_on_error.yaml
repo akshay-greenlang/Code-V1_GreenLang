@@ -1,0 +1,5 @@
+name: "invalid-on-error"
+steps:
+  - name: "step1"
+    agent: "test.Agent"
+    on_error: "halt"  # Invalid value

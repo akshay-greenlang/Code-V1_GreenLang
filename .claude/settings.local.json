@@ -77,7 +77,12 @@
       "Bash(../gl pack install .)",
       "Bash(then echo \"✓ PASS\")",
       "Bash(else echo \"✗ FAIL\")",
-      "Bash(fi)"
+      "Bash(fi)",
+      "Read(//c/**)",
+      "Bash(/dev/null)",
+      "Bash(sed:*)",
+      "Bash(xargs cat:*)",
+      "Bash(chmod:*)"
     ],
     "deny": []
   }

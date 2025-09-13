@@ -1,0 +1,334 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://greenlang.io/schema/gl_pipeline.v1.json",
+  "title": "GreenLang Pipeline Schema v1.0",
+  "description": "JSON Schema for validating gl.yaml pipeline configuration files in GreenLang",
+  "type": "object",
+  "required": ["name", "steps"],
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+      "description": "Unique pipeline name using alphanumeric characters, underscores, and hyphens"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+      "description": "Semantic version in MAJOR.MINOR or MAJOR.MINOR.PATCH format"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Brief description of the pipeline's purpose"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "agent"],
+        "additionalProperties": false,
+        "not": {
+          "allOf": [
+            { "required": ["in"] },
+            { "required": ["inputsRef"] }
+          ]
+        },
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50,
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+            "description": "Unique step identifier starting with a letter"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Human-readable step name"
+          },
+          "agent": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Agent identifier or path to execute"
+          },
+          "action": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Specific action to execute on the agent"
+          },
+          "in": {
+            "type": "object",
+            "description": "Input data for the step (mutually exclusive with inputsRef)"
+          },
+          "inputsRef": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Reference to external input data (mutually exclusive with in)"
+          },
+          "inputs": {
+            "type": "object",
+            "description": "Legacy input field for backward compatibility"
+          },
+          "outputs": {
+            "type": "object",
+            "description": "Expected output schema or configuration for this step"
+          },
+          "when": {
+            "oneOf": [
+              {
+                "type": "boolean",
+                "description": "Simple boolean condition for step execution"
+              },
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Conditional expression for step execution"
+              }
+            ],
+            "description": "Condition determining whether to execute this step"
+          },
+          "on_error": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": ["stop", "skip", "continue", "retry"],
+                "description": "Simple error handling policy"
+              },
+              {
+                "type": "object",
+                "required": ["policy"],
+                "additionalProperties": false,
+                "properties": {
+                  "policy": {
+                    "type": "string",
+                    "enum": ["stop", "skip", "continue", "retry"],
+                    "description": "Error handling policy"
+                  },
+                  "retry": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "max": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10,
+                        "description": "Maximum number of retry attempts"
+                      },
+                      "backoff_seconds": {
+                        "type": "number",
+                        "minimum": 0.1,
+                        "maximum": 300,
+                        "description": "Backoff delay between retries in seconds"
+                      }
+                    },
+                    "description": "Retry configuration when policy is 'retry'"
+                  }
+                },
+                "description": "Detailed error handling configuration"
+              }
+            ],
+            "description": "Error handling strategy for this step"
+          },
+          "timeout": {
+            "type": "number",
+            "minimum": 0.1,
+            "description": "Timeout for step execution in seconds"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "List of step IDs that must complete before this step"
+          }
+        },
+        "description": "Individual pipeline step configuration"
+      },
+      "description": "Ordered list of pipeline execution steps"
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "backend": {
+          "type": "string",
+          "enum": ["local", "k8s", "docker", "cloud"],
+          "description": "Execution backend for the pipeline"
+        },
+        "timeout": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Overall pipeline timeout in seconds"
+        },
+        "memory_limit": {
+          "type": "string",
+          "pattern": "^\\d+(\\.\\d+)?[KMGT]?B$",
+          "description": "Memory limit (e.g., '512MB', '2GB')"
+        },
+        "cpu_limit": {
+          "type": "string",
+          "description": "CPU limit specification"
+        },
+        "deterministic": {
+          "type": "boolean",
+          "description": "Whether pipeline execution should be deterministic"
+        }
+      },
+      "description": "Runtime configuration for pipeline execution"
+    },
+    "monitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "List of metrics to collect during execution"
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["type", "metric"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["threshold", "rate", "anomaly"],
+                "description": "Type of alert condition"
+              },
+              "metric": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Metric name to monitor"
+              },
+              "operator": {
+                "type": "string",
+                "enum": [">", "<", ">=", "<=", "==", "!="],
+                "description": "Comparison operator for threshold alerts"
+              },
+              "value": {
+                "type": "number",
+                "description": "Threshold value for comparison"
+              },
+              "message": {
+                "type": "string",
+                "description": "Alert message to display"
+              }
+            }
+          },
+          "description": "Alert configurations for monitoring"
+        }
+      },
+      "description": "Monitoring and alerting configuration"
+    },
+    "outputs": {
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "Output mapping as key-value pairs"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Output name"
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Output file path"
+              },
+              "type": {
+                "type": "string",
+                "enum": ["file", "json", "yaml", "csv", "markdown", "html"],
+                "description": "Output format type"
+              }
+            }
+          },
+          "description": "Structured output definitions"
+        }
+      ],
+      "description": "Pipeline output configuration"
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Default maximum retry attempts for steps"
+        },
+        "timeout_seconds": {
+          "type": "number",
+          "minimum": 1,
+          "description": "Default timeout for steps in seconds"
+        },
+        "log_level": {
+          "type": "string",
+          "enum": ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+          "description": "Logging level for pipeline execution"
+        },
+        "stop_on_error": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to stop pipeline execution on step errors"
+        }
+      },
+      "description": "General pipeline configuration settings"
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Policy hint tag"
+          },
+          "description": "Tags providing policy hints for pipeline execution"
+        },
+        "network": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Allowed network endpoint pattern"
+          },
+          "description": "Network access restrictions"
+        },
+        "data_residency": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "description": "ISO 3166-1 alpha-2 country code"
+          },
+          "description": "Data residency requirements"
+        },
+        "max_runtime_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum allowed runtime for the entire pipeline"
+        }
+      },
+      "description": "Policy constraints and governance rules"
+    }
+  }
+}
