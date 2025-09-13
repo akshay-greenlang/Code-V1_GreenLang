@@ -24,12 +24,16 @@
       "maxLength": 500,
       "description": "Brief description of the pipeline's purpose"
     },
+    "inputs": {
+      "type": "object",
+      "description": "Pipeline input schema or default values"
+    },
     "steps": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["id", "agent"],
+        "required": ["name", "agent"],
         "additionalProperties": false,
         "not": {
           "allOf": [
@@ -38,18 +42,19 @@
           ]
         },
         "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
+            "description": "Unique step identifier starting with a letter"
+          },
           "id": {
             "type": "string",
             "minLength": 1,
             "maxLength": 50,
             "pattern": "^[a-zA-Z][a-zA-Z0-9_-]*$",
-            "description": "Unique step identifier starting with a letter"
-          },
-          "name": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 100,
-            "description": "Human-readable step name"
+            "description": "Optional legacy step identifier (deprecated, use name instead)"
           },
           "agent": {
             "type": "string",

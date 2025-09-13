@@ -1,0 +1,90 @@
+{
+  "status": "FAIL",
+  "errors": [
+    "Critical: Pack.yaml specification is incomplete - 10 out of 15 example pack.yaml files fail validation",
+    "Critical: GL.yaml specification is incomplete - 9 out of 9 example gl.yaml files fail validation",
+    "Critical: Field mismatch between JSON schemas and Pydantic models - 'id' field required in schema but using 'name' in examples",
+    "Critical: Template pack.yaml uses placeholder '{{PACK_NAME}}' which fails validation",
+    "Critical: Most example pipelines use different field names than specified (e.g., using 'name' instead of 'id' for steps)",
+    "Critical: JSON schema for gl.yaml forbids 'inputs' field but documentation claims it's optional",
+    "Critical: Pack manifest schema requires agent names to match pattern '^[A-Z][a-zA-Z0-9]*Agent$' but examples use file paths",
+    "Critical: Report templates restricted to .html.j2, .md.j2, .txt.j2 but examples use .pdf.j2 and .xlsx.j2"
+  ],
+  "warnings": [
+    "Test suite has 1 failing test for pack.yaml validation (error message assertion)",
+    "Pydantic models generate deprecation warnings about 'schema_extra' vs 'json_schema_extra'",
+    "Coverage failure in test runs (7.83% vs required 85%)",
+    "Many pack.yaml files missing 'kind' field despite being required",
+    "Security.signatures field expects array but examples use string 'signatures/'"
+  ],
+  "autofix_suggestions": [
+    {
+      "file": "schemas/gl_pipeline.schema.v1.json",
+      "field": "properties.inputs",
+      "current": "not allowed (additionalProperties: false)",
+      "suggested": "add 'inputs' to allowed properties as optional field",
+      "reason": "Documentation claims 'inputs' is optional but schema forbids it"
+    },
+    {
+      "file": "all gl.yaml examples",
+      "field": "steps[].name",
+      "current": "name",
+      "suggested": "id",
+      "reason": "Schema requires 'id' field but all examples use 'name'"
+    },
+    {
+      "file": "schemas/pack.schema.v1.json",
+      "field": "properties.contents.properties.agents.items.pattern",
+      "current": "^[A-Z][a-zA-Z0-9]*Agent$",
+      "suggested": "^([A-Z][a-zA-Z0-9]*Agent|[^/\\\\]+\\.py)$",
+      "reason": "Allow both class names and file paths as used in examples"
+    },
+    {
+      "file": "greenlang/cli/templates/pack_basic/pack.yaml",
+      "field": "name",
+      "current": "{{PACK_NAME}}",
+      "suggested": "example-pack",
+      "reason": "Template placeholder fails validation - use valid example with comments"
+    },
+    {
+      "file": "schemas/pack.schema.v1.json",
+      "field": "properties.contents.properties.reports.items.pattern",
+      "current": ".*\\.(html\\.j2|md\\.j2|txt\\.j2)$",
+      "suggested": ".*\\.j2$",
+      "reason": "Examples use .pdf.j2 and .xlsx.j2 templates"
+    }
+  ],
+  "spec_version_detected": "1.0.0",
+  "breaking_changes": [
+    {
+      "file": "gl.yaml",
+      "change": "Step field renamed from 'name' to 'id'",
+      "impact": "All existing pipelines using 'name' will fail validation",
+      "required_action": "Update all gl.yaml files to use 'id' instead of 'name' for step identifiers"
+    },
+    {
+      "file": "pack.yaml",
+      "change": "Agent names must match strict pattern",
+      "impact": "Packs using file paths for agents will fail validation",
+      "required_action": "Either relax pattern or update all packs to use class names only"
+    },
+    {
+      "file": "gl.yaml",
+      "change": "inputs field not allowed at pipeline level",
+      "impact": "Pipelines with input schemas will fail validation",
+      "required_action": "Either allow inputs field or move input definitions elsewhere"
+    }
+  ],
+  "migration_notes": [
+    "1. Update all gl.yaml files: rename 'name' field to 'id' in all step definitions",
+    "2. Fix schema inconsistency: either allow 'inputs' field in gl.yaml schema or remove from documentation",
+    "3. Update pack.yaml agent patterns: either relax validation to allow file paths or update all examples to use class names",
+    "4. Fix template pack.yaml: replace {{PACK_NAME}} with a valid example name",
+    "5. Update report template patterns: allow all .j2 extensions or restrict examples to supported formats",
+    "6. Add missing 'kind' field to all pack.yaml files that lack it",
+    "7. Fix security.signatures field: ensure it's an array in all examples, not a string path",
+    "8. Update Pydantic models to use 'json_schema_extra' instead of deprecated 'schema_extra'",
+    "9. Ensure all pack.yaml files have at least one pipeline in contents.pipelines",
+    "10. Update test assertions to match actual error messages from Pydantic v2"
+  ]
+}

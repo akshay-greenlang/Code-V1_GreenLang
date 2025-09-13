@@ -1,0 +1,390 @@
+name: parallel-execution-showcase
+version: 1
+description: |
+  Advanced parallel execution patterns in GreenLang pipelines.
+  Demonstrates various parallelization strategies, dependency management,
+  and coordination between concurrent steps.
+
+vars:
+  # Configuration for parallel processing
+  max_parallel_workers: 8
+  batch_size: 50
+  processing_timeout: "10m"
+
+  # Data partitioning settings
+  partition_strategy: "by_region"
+  target_partition_size: 100
+
+inputs:
+  facilities:
+    type: array
+    required: true
+    description: "Large list of facilities to process in parallel"
+    minItems: 10
+
+  regions:
+    type: array
+    required: true
+    description: "Regions to process simultaneously"
+
+  processing_mode:
+    type: string
+    enum: ["fast", "thorough", "balanced"]
+    default: "balanced"
+
+artifacts_dir: "out/parallel-demo/"
+
+steps:
+  # Step 1: Data Partitioning for Parallel Processing
+  - name: partition-facilities
+    agent: DataAgent
+    action: partition_facilities_for_parallel_processing
+    inputs:
+      facilities: "${inputs.facilities}"
+      partition_strategy: "${vars.partition_strategy}"
+      target_partition_size: "${vars.target_partition_size}"
+      partition_criteria: ["region", "facility_type", "size_category"]
+    outputs:
+      partitions: "${artifacts_dir}/partitions/"
+      partition_metadata: "${artifacts_dir}/partition_info.json"
+
+  # Step 2: Independent Parallel Processing - Regional Emission Factors
+  - name: load-regional-factors-north
+    agent: CarbonAgent
+    action: load_regional_emission_factors
+    inputs:
+      region: "North"
+      year: 2024
+    parallel: true
+    parallel_group: "regional_factors"
+
+  - name: load-regional-factors-south
+    agent: CarbonAgent
+    action: load_regional_emission_factors
+    inputs:
+      region: "South"
+      year: 2024
+    parallel: true
+    parallel_group: "regional_factors"
+
+  - name: load-regional-factors-east
+    agent: CarbonAgent
+    action: load_regional_emission_factors
+    inputs:
+      region: "East"
+      year: 2024
+    parallel: true
+    parallel_group: "regional_factors"
+
+  - name: load-regional-factors-west
+    agent: CarbonAgent
+    action: load_regional_emission_factors
+    inputs:
+      region: "West"
+      year: 2024
+    parallel: true
+    parallel_group: "regional_factors"
+
+  # Step 3: Parallel Batch Processing with Dynamic Scaling
+  - name: process-partition-1
+    agent: CarbonAgent
+    action: batch_process_facilities
+    inputs:
+      facilities: "${steps.partition-facilities.outputs.partition_1}"
+      emission_factors: "${steps.load-regional-factors-north.outputs.factors}"
+      batch_size: "${vars.batch_size}"
+    depends_on: [partition-facilities, load-regional-factors-north]
+    parallel: true
+    parallel_group: "facility_processing"
+    resource_allocation:
+      cpu_weight: 2
+      memory_mb: 1024
+
+  - name: process-partition-2
+    agent: CarbonAgent
+    action: batch_process_facilities
+    inputs:
+      facilities: "${steps.partition-facilities.outputs.partition_2}"
+      emission_factors: "${steps.load-regional-factors-south.outputs.factors}"
+      batch_size: "${vars.batch_size}"
+    depends_on: [partition-facilities, load-regional-factors-south]
+    parallel: true
+    parallel_group: "facility_processing"
+    resource_allocation:
+      cpu_weight: 2
+      memory_mb: 1024
+
+  - name: process-partition-3
+    agent: CarbonAgent
+    action: batch_process_facilities
+    inputs:
+      facilities: "${steps.partition-facilities.outputs.partition_3}"
+      emission_factors: "${steps.load-regional-factors-east.outputs.factors}"
+      batch_size: "${vars.batch_size}"
+    depends_on: [partition-facilities, load-regional-factors-east]
+    parallel: true
+    parallel_group: "facility_processing"
+    resource_allocation:
+      cpu_weight: 2
+      memory_mb: 1024
+
+  - name: process-partition-4
+    agent: CarbonAgent
+    action: batch_process_facilities
+    inputs:
+      facilities: "${steps.partition-facilities.outputs.partition_4}"
+      emission_factors: "${steps.load-regional-factors-west.outputs.factors}"
+      batch_size: "${vars.batch_size}"
+    depends_on: [partition-facilities, load-regional-factors-west]
+    parallel: true
+    parallel_group: "facility_processing"
+    resource_allocation:
+      cpu_weight: 2
+      memory_mb: 1024
+
+  # Step 4: Parallel Analysis Tasks
+  - name: calculate-scope1-emissions
+    agent: CarbonAgent
+    action: aggregate_scope1_emissions
+    inputs:
+      partition_results:
+        - "${steps.process-partition-1.outputs.scope1_data}"
+        - "${steps.process-partition-2.outputs.scope1_data}"
+        - "${steps.process-partition-3.outputs.scope1_data}"
+        - "${steps.process-partition-4.outputs.scope1_data}"
+    depends_on: [process-partition-1, process-partition-2, process-partition-3, process-partition-4]
+    parallel: true
+    parallel_group: "scope_calculations"
+
+  - name: calculate-scope2-emissions
+    agent: CarbonAgent
+    action: aggregate_scope2_emissions
+    inputs:
+      partition_results:
+        - "${steps.process-partition-1.outputs.scope2_data}"
+        - "${steps.process-partition-2.outputs.scope2_data}"
+        - "${steps.process-partition-3.outputs.scope2_data}"
+        - "${steps.process-partition-4.outputs.scope2_data}"
+      grid_factors:
+        - "${steps.load-regional-factors-north.outputs.grid_factors}"
+        - "${steps.load-regional-factors-south.outputs.grid_factors}"
+        - "${steps.load-regional-factors-east.outputs.grid_factors}"
+        - "${steps.load-regional-factors-west.outputs.grid_factors}"
+    depends_on: [process-partition-1, process-partition-2, process-partition-3, process-partition-4]
+    parallel: true
+    parallel_group: "scope_calculations"
+
+  # Step 5: Concurrent Report Generation
+  - name: generate-regional-report-north
+    agent: ReportAgent
+    action: generate_regional_summary
+    inputs:
+      regional_data: "${steps.process-partition-1.outputs}"
+      region: "North"
+      template: "regional_summary"
+    depends_on: [process-partition-1]
+    parallel: true
+    parallel_group: "report_generation"
+    outputs:
+      report_path: "${artifacts_dir}/reports/north_summary.html"
+
+  - name: generate-regional-report-south
+    agent: ReportAgent
+    action: generate_regional_summary
+    inputs:
+      regional_data: "${steps.process-partition-2.outputs}"
+      region: "South"
+      template: "regional_summary"
+    depends_on: [process-partition-2]
+    parallel: true
+    parallel_group: "report_generation"
+    outputs:
+      report_path: "${artifacts_dir}/reports/south_summary.html"
+
+  - name: generate-regional-report-east
+    agent: ReportAgent
+    action: generate_regional_summary
+    inputs:
+      regional_data: "${steps.process-partition-3.outputs}"
+      region: "East"
+      template: "regional_summary"
+    depends_on: [process-partition-3]
+    parallel: true
+    parallel_group: "report_generation"
+    outputs:
+      report_path: "${artifacts_dir}/reports/east_summary.html"
+
+  - name: generate-regional-report-west
+    agent: ReportAgent
+    action: generate_regional_summary
+    inputs:
+      regional_data: "${steps.process-partition-4.outputs}"
+      region: "West"
+      template: "regional_summary"
+    depends_on: [process-partition-4]
+    parallel: true
+    parallel_group: "report_generation"
+    outputs:
+      report_path: "${artifacts_dir}/reports/west_summary.html"
+
+  # Step 6: Parallel Quality Assurance Checks
+  - name: validate-scope1-results
+    agent: ValidationAgent
+    action: validate_emissions_calculations
+    inputs:
+      emissions_data: "${steps.calculate-scope1-emissions.outputs}"
+      validation_type: "scope1"
+      quality_thresholds:
+        completeness: 0.95
+        accuracy: 0.98
+    depends_on: [calculate-scope1-emissions]
+    parallel: true
+    parallel_group: "quality_assurance"
+
+  - name: validate-scope2-results
+    agent: ValidationAgent
+    action: validate_emissions_calculations
+    inputs:
+      emissions_data: "${steps.calculate-scope2-emissions.outputs}"
+      validation_type: "scope2"
+      quality_thresholds:
+        completeness: 0.95
+        accuracy: 0.98
+    depends_on: [calculate-scope2-emissions]
+    parallel: true
+    parallel_group: "quality_assurance"
+
+  # Step 7: Fan-in Synchronization Point
+  - name: synchronize-and-merge
+    agent: DataAgent
+    action: merge_parallel_results
+    inputs:
+      scope1_results: "${steps.calculate-scope1-emissions.outputs}"
+      scope2_results: "${steps.calculate-scope2-emissions.outputs}"
+      scope1_validation: "${steps.validate-scope1-results.outputs}"
+      scope2_validation: "${steps.validate-scope2-results.outputs}"
+      regional_reports:
+        - "${steps.generate-regional-report-north.outputs.report_path}"
+        - "${steps.generate-regional-report-south.outputs.report_path}"
+        - "${steps.generate-regional-report-east.outputs.report_path}"
+        - "${steps.generate-regional-report-west.outputs.report_path}"
+    depends_on:
+      - calculate-scope1-emissions
+      - calculate-scope2-emissions
+      - validate-scope1-results
+      - validate-scope2-results
+      - generate-regional-report-north
+      - generate-regional-report-south
+      - generate-regional-report-east
+      - generate-regional-report-west
+
+  # Step 8: Parallel Post-Processing Tasks
+  - name: calculate-intensity-metrics
+    agent: CarbonAgent
+    action: calculate_portfolio_intensities
+    inputs:
+      merged_results: "${steps.synchronize-and-merge.outputs.consolidated_data}"
+      calculation_basis: ["per_sqft", "per_employee", "per_revenue"]
+    depends_on: [synchronize-and-merge]
+    parallel: true
+    parallel_group: "post_processing"
+
+  - name: perform-benchmarking
+    agent: CarbonAgent
+    action: benchmark_against_industry
+    inputs:
+      portfolio_data: "${steps.synchronize-and-merge.outputs.consolidated_data}"
+      benchmark_datasets: ["industry_averages", "peer_comparison", "historical_trends"]
+    depends_on: [synchronize-and-merge]
+    parallel: true
+    parallel_group: "post_processing"
+
+  - name: generate-summary-statistics
+    agent: ReportAgent
+    action: calculate_summary_statistics
+    inputs:
+      portfolio_data: "${steps.synchronize-and-merge.outputs.consolidated_data}"
+      statistics: ["mean", "median", "percentiles", "distribution_analysis"]
+    depends_on: [synchronize-and-merge]
+    parallel: true
+    parallel_group: "post_processing"
+
+  # Step 9: Final Aggregation and Master Report
+  - name: create-master-portfolio-report
+    agent: ReportAgent
+    action: generate_comprehensive_portfolio_report
+    inputs:
+      consolidated_results: "${steps.synchronize-and-merge.outputs.consolidated_data}"
+      intensity_metrics: "${steps.calculate-intensity-metrics.outputs}"
+      benchmark_analysis: "${steps.perform-benchmarking.outputs}"
+      summary_statistics: "${steps.generate-summary-statistics.outputs}"
+      regional_reports:
+        north: "${steps.generate-regional-report-north.outputs.report_path}"
+        south: "${steps.generate-regional-report-south.outputs.report_path}"
+        east: "${steps.generate-regional-report-east.outputs.report_path}"
+        west: "${steps.generate-regional-report-west.outputs.report_path}"
+    depends_on: [synchronize-and-merge, calculate-intensity-metrics, perform-benchmarking, generate-summary-statistics]
+    outputs:
+      master_report_path: "${artifacts_dir}/master_portfolio_report.html"
+      executive_summary_path: "${artifacts_dir}/executive_summary.pdf"
+
+outputs:
+  # Final Results
+  total_portfolio_emissions: "${steps.synchronize-and-merge.outputs.total_emissions}"
+  total_facilities_processed: "${steps.synchronize-and-merge.outputs.facility_count}"
+
+  # Emissions Breakdown
+  scope1_total: "${steps.calculate-scope1-emissions.outputs.total}"
+  scope2_total: "${steps.calculate-scope2-emissions.outputs.total}"
+
+  # Performance Metrics
+  processing_time_seconds: "${system.execution_time}"
+  parallel_efficiency: "${system.parallel_efficiency}"
+  resource_utilization: "${system.resource_stats}"
+
+  # Regional Breakdown
+  regional_summaries:
+    north: "${steps.generate-regional-report-north.outputs.report_path}"
+    south: "${steps.generate-regional-report-south.outputs.report_path}"
+    east: "${steps.generate-regional-report-east.outputs.report_path}"
+    west: "${steps.generate-regional-report-west.outputs.report_path}"
+
+  # Quality Metrics
+  data_quality_score: "${steps.validate-scope1-results.outputs.overall_quality}"
+  validation_passed: "${steps.validate-scope2-results.outputs.validation_status}"
+
+  # Final Reports
+  master_report_path: "${steps.create-master-portfolio-report.outputs.master_report_path}"
+  executive_summary_path: "${steps.create-master-portfolio-report.outputs.executive_summary_path}"
+
+  # Parallel Processing Stats
+  parallel_groups_executed: 4
+  max_concurrent_steps: "${vars.max_parallel_workers}"
+  total_partition_count: "${steps.partition-facilities.outputs.partition_count}"
+
+# Pipeline execution configuration optimized for parallel processing
+execution:
+  timeout: "${vars.processing_timeout}"
+  max_parallel_steps: "${vars.max_parallel_workers}"
+  parallel_execution_strategy: "optimal_resource_allocation"
+
+  # Resource management for parallel execution
+  resource_management:
+    cpu_allocation: "dynamic"
+    memory_allocation: "shared_pool"
+    disk_io_throttling: true
+    network_bandwidth_sharing: true
+
+  # Parallel execution policies
+  parallel_policies:
+    max_parallel_groups: 6
+    group_scheduling: "priority_based"
+    load_balancing: "least_loaded"
+    failure_isolation: true
+
+  # Performance monitoring
+  performance_monitoring:
+    track_parallel_efficiency: true
+    resource_utilization_logging: true
+    bottleneck_detection: true
+    auto_scaling: false

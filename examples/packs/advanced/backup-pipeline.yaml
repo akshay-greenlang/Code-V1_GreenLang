@@ -1,0 +1,79 @@
+name: backup-carbon-calculation
+version: 1
+description: Simplified backup pipeline for carbon calculations when primary analysis fails
+
+vars:
+  fallback_grid_intensity: 0.82  # kgCO2e/kWh - Conservative global average
+  fallback_ng_factor: 53.06      # kgCO2e/MMBtu - Natural gas emission factor
+
+inputs:
+  facility_data:
+    type: object
+    required: true
+  energy_consumption:
+    type: object
+    required: true
+
+artifacts_dir: "out/backup/"
+
+steps:
+  # Step 1: Basic Input Validation
+  - name: basic-validation
+    agent: ValidationAgent
+    action: basic_data_check
+    inputs:
+      facility: "${inputs.facility_data}"
+      energy: "${inputs.energy_consumption}"
+    error_handling:
+      on_failure: stop
+
+  # Step 2: Fallback Scope 1 Calculation
+  - name: fallback-scope1
+    agent: CarbonAgent
+    action: basic_direct_emissions
+    inputs:
+      natural_gas_mmbtu: "${inputs.energy_consumption.natural_gas_mmbtu}"
+      emission_factor: "${vars.fallback_ng_factor}"
+    depends_on: [basic-validation]
+
+  # Step 3: Fallback Scope 2 Calculation
+  - name: fallback-scope2
+    agent: CarbonAgent
+    action: basic_indirect_emissions
+    inputs:
+      electricity_kwh: "${inputs.energy_consumption.electricity_kwh}"
+      grid_intensity: "${vars.fallback_grid_intensity}"
+    depends_on: [basic-validation]
+
+  # Step 4: Simple Aggregation
+  - name: simple-total
+    agent: CarbonAgent
+    action: sum_emissions
+    inputs:
+      scope1: "${steps.fallback-scope1.outputs.co2e_tons}"
+      scope2: "${steps.fallback-scope2.outputs.co2e_tons}"
+    depends_on: [fallback-scope1, fallback-scope2]
+
+  # Step 5: Basic Report
+  - name: backup-report
+    agent: ReportAgent
+    action: generate_basic_report
+    inputs:
+      emissions_data: "${steps.simple-total.outputs}"
+      facility_info: "${inputs.facility_data}"
+      calculation_method: "fallback"
+    depends_on: [simple-total]
+    outputs:
+      report_path: "${artifacts_dir}/backup_report.txt"
+
+outputs:
+  total_emissions_tons: "${steps.simple-total.outputs.total_co2e}"
+  scope1_emissions: "${steps.fallback-scope1.outputs.co2e_tons}"
+  scope2_emissions: "${steps.fallback-scope2.outputs.co2e_tons}"
+  calculation_method: "fallback-conservative"
+  report_path: "${steps.backup-report.outputs.report_path}"
+  warning: "This calculation uses conservative fallback emission factors"
+
+execution:
+  timeout: "5m"
+  max_parallel_steps: 2

@@ -82,7 +82,8 @@
       "Bash(/dev/null)",
       "Bash(sed:*)",
       "Bash(xargs cat:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(del validate_schemas.py)"
     ],
     "deny": []
   }
