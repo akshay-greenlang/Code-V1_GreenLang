@@ -911,6 +911,41 @@ def ask(question: Tuple[str, ...], verbose: bool) -> None:
 
 
 @cli.command()
+def demo() -> None:
+    """Run a demo emissions calculation pipeline"""
+    import time
+
+    console.print(Panel.fit("GreenLang Demo Pipeline", style="green bold"))
+    console.print("\n[cyan]Running demo emissions calculation...[/cyan]")
+
+    start = time.time()
+
+    # Demo calculation
+    load_kwh = 125.0
+    grid_emission_factor = 0.7  # kgCO2/kWh
+    emissions = load_kwh * grid_emission_factor
+
+    elapsed = time.time() - start
+
+    result = {
+        "ok": True,
+        "elapsed_sec": round(elapsed, 2),
+        "result": {
+            "input": {
+                "load_kwh": load_kwh,
+                "grid_emission_factor": grid_emission_factor
+            },
+            "output": {
+                "emissions_kgco2": round(emissions, 3)
+            }
+        }
+    }
+
+    console.print("\n[green]Demo pipeline completed successfully![/green]")
+    console.print(json.dumps(result, indent=2))
+
+
+@cli.command()
 def dev() -> None:
     """Launch the developer interface (VS Code-like terminal UI)"""
     from greenlang.cli.dev_interface import main as dev_main
@@ -1321,9 +1356,9 @@ def validate(file_path: str, output_json: bool, strict: bool) -> None:
     else:
         # Human-readable output
         if success:
-            console.print(f"[green]✓ Validation passed[/green] - {file_type}: {file_name}")
+            console.print(f"[green]Validation passed[/green] - {file_type}: {file_name}")
         else:
-            console.print(f"[red]✗ Validation failed[/red] - {file_type}: {file_name}")
+            console.print(f"[red]Validation failed[/red] - {file_type}: {file_name}")
 
         if errors:
             console.print(f"\n[bold red]Errors ({len(errors)}):[/bold red]")

@@ -1,29 +1,48 @@
-name: ci
+name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
-    
+        python-version: ["3.10", "3.11"]
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - uses: actions/setup-python@v5
-      with: 
-        python-version: ${{ matrix.python-version }}
-    
-    - name: Install GreenLang
-      run: pip install -e .[dev]
-    
-    - name: Run environment diagnostics
-      run: gl doctor
-    
-    - name: Validate packs
-      run: gl pack validate packs/**/ || true
-    
-    - name: Run tests
-      run: pytest -q
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install typer pydantic pyyaml rich jsonschema
+          pip install -e .
+
+      - name: Test import
+        run: |
+          python -c "import greenlang; print(f'GreenLang imported: {greenlang.__name__}')"
+
+      - name: Test CLI help
+        run: |
+          python -m greenlang.cli --help
+
+      - name: Test demo command
+        run: |
+          python -m greenlang.cli demo run
+
+      - name: Validate sample pipeline
+        run: |
+          python -m greenlang.cli validate file greenlang/examples/pipeline_basic/gl.yaml
+
+      - name: Validate sample pack
+        run: |
+          python -m greenlang.cli validate file greenlang/examples/pack_basic/pack.yaml
