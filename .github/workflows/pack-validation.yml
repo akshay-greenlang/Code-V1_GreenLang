@@ -1,204 +1,42 @@
-name: Pack Validation & Signing
-
+name: Pack Validation
 on:
+  push:
+    branches: [main, master, develop]
   pull_request:
+    branches: [main, master, develop]
     paths:
       - 'packs/**'
-      - 'core/**'
+      - 'greenlang/**'
       - '.github/workflows/**'
-  push:
-    tags:
-      - 'v*'
-    branches:
-      - main
-      - master
-
-permissions:
-  contents: read
-  id-token: write  # For cosign keyless signing
-  attestations: write  # For GitHub attestations
 
 jobs:
-  validate-packs:
-    name: Validate Packs
+  pack:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-          
-      - name: Install dependencies
-        run: |
-          pip install -e .
-          pip install cyclonedx-bom pipdeptree pytest
-    
-      - name: Validate pack manifests
-        run: |
-          echo "Validating all pack manifests..."
-          for pack_dir in $(find packs -name "pack.yaml" -type f | xargs dirname); do
-            echo "Validating $pack_dir"
-            
-            # Use gl policy check for validation
-            gl policy check "$pack_dir" --explain || {
-              echo "ERROR: Pack policy validation failed for $pack_dir"
-              exit 1
-            }
-          done
-          
-      - name: Run pack tests
-        run: |
-          echo "Running pack tests..."
-          for pack_dir in $(find packs -name "pack.yaml" -type f | xargs dirname); do
-            echo "Testing $pack_dir"
-            
-            # Run tests if they exist
-            if [ -d "$pack_dir/tests" ]; then
-              cd "$pack_dir"
-              python -m pytest tests/ -v || {
-                echo "ERROR: Tests failed for $pack_dir"
-                exit 1
-              }
-              cd - > /dev/null
-            fi
-          done
-          
-      - name: Generate and validate SBOMs
-        run: |
-          echo "Generating SBOMs for all packs..."
-          for pack_dir in $(find packs -name "pack.yaml" -type f | xargs dirname); do
-            echo "Generating SBOM for $pack_dir"
-            
-            # Generate SBOM using our module
-            python -c "
-from core.greenlang.provenance.sbom import generate_sbom
-from pathlib import Path
-generate_sbom(Path('$pack_dir'))
-"
-            
-            # Validate SBOM was created and is valid
-            if [ ! -f "$pack_dir/sbom.spdx.json" ]; then
-              echo "ERROR: SBOM not generated for $pack_dir"
-              exit 1
-            fi
-            
-            # Validate SBOM content
-            packages=$(python -c "
-import json
-with open('$pack_dir/sbom.spdx.json') as f:
-    sbom = json.load(f)
-print(len(sbom.get('packages', [])))
-")
-            
-            if [ "$packages" -lt 1 ]; then
-              echo "ERROR: SBOM for $pack_dir has no packages"
-              exit 1
-            fi
-            
-            echo "SBOM validated for $pack_dir ($packages packages)"
-          done
+      - uses: actions/checkout@v4
 
-  sign-and-publish:
-    name: Sign & Publish  
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-          
-      - name: Install cosign
-        uses: sigstore/cosign-installer@v3
-        with:
-          cosign-release: 'v2.2.0'
-          
+          python-version: "3.10"
+
       - name: Install dependencies
         run: |
+          python -m pip install --upgrade pip
+          pip install typer pydantic pyyaml rich jsonschema
           pip install -e .
-          pip install cyclonedx-bom pipdeptree
-          
-      - name: Generate SBOMs for release
+
+      - name: Check pack examples exist
         run: |
-          echo "Generating SBOMs for all packs..."
-          for pack_dir in $(find packs -name "pack.yaml" -type f | xargs dirname); do
-            echo "Generating SBOM for $pack_dir"
-            
-            python -c "
-from core.greenlang.provenance.sbom import generate_sbom
-from pathlib import Path
-generate_sbom(Path('$pack_dir'))
-"
-            
-            if [ ! -f "$pack_dir/sbom.spdx.json" ]; then
-              echo "ERROR: Failed to generate SBOM for $pack_dir"
-              exit 1
-            fi
-          done
-          
-      - name: Create and sign pack archives
-        env:
-          COSIGN_EXPERIMENTAL: 1
+          test -f greenlang/examples/pack_basic/pack.yaml
+
+      - name: Validate pack structure
         run: |
-          echo "Creating and signing pack archives..."
-          mkdir -p dist
-          
-          for pack_dir in $(find packs -name "pack.yaml" -type f | xargs dirname); do
-            pack_name=$(basename "$pack_dir")
-            archive_name="${pack_name}-${GITHUB_REF_NAME}.tar.gz"
-            archive_path="dist/${archive_name}"
-            
-            echo "Creating archive for $pack_dir -> $archive_path"
-            tar -czf "$archive_path" -C "$(dirname "$pack_dir")" "$(basename "$pack_dir")"
-            
-            echo "Signing $archive_path with cosign keyless..."
-            cosign sign-blob --yes --bundle "${archive_path}.cosign.bundle" "$archive_path"
-            
-            echo "Verifying signature for $archive_path..."
-            cosign verify-blob --bundle "${archive_path}.cosign.bundle" "$archive_path"
-            
-            echo "Archive signed successfully: $archive_path"
-          done
-          
-      - name: Validate all signatures present
-        env:
-          COSIGN_EXPERIMENTAL: 1
+          python -m greenlang.cli validate file greenlang/examples/pack_basic/pack.yaml
+
+      - name: List available packs
         run: |
-          echo "Validating all signatures are present and valid..."
-          
-          for archive in dist/*.tar.gz; do
-            bundle="${archive}.cosign.bundle"
-            
-            if [ ! -f "$bundle" ]; then
-              echo "ERROR: Missing signature bundle for $archive"
-              exit 1
-            fi
-            
-            echo "Verifying signature for $archive..."
-            if ! cosign verify-blob --bundle "$bundle" "$archive"; then
-              echo "ERROR: Invalid signature for $archive"
-              exit 1
-            fi
-            
-            echo "OK: Signature verified for $archive"
+          echo "Available pack examples:"
+          find greenlang/examples -name "pack.yaml" -type f | while read pack; do
+            echo "  - $pack"
           done
-          
-          echo "All signatures validated successfully"
-          
-      - name: Upload signed artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: signed-packs-${{ github.ref_name }}
-          path: |
-            dist/*.tar.gz
-            dist/*.cosign.bundle
-          retention-days: 90

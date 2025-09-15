@@ -83,7 +83,12 @@
       "Bash(sed:*)",
       "Bash(xargs cat:*)",
       "Bash(chmod:*)",
-      "Bash(del validate_schemas.py)"
+      "Bash(del validate_schemas.py)",
+      "WebSearch",
+      "WebFetch(domain:api.github.com)",
+      "Bash(time:*)",
+      "Bash(git rm:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

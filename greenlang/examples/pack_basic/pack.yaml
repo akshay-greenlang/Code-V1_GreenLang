@@ -1,0 +1,19 @@
+name: demo-pack
+version: 0.1.0
+description: "Demo pack with basic emissions calculation agent"
+
+agents:
+  - name: DemoAgent
+    entry: greenlang.agents.demo_agent:DemoAgent
+    description: "Calculate emissions from energy load"
+
+pipelines:
+  - name: simple-emissions
+    file: pipelines/emissions.yaml
+
+license: MIT
+author: GreenLang Team
+tags:
+  - demo
+  - emissions
+  - calculator
