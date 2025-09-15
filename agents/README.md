@@ -1,6 +1,6 @@
 # GreenLang Agent Templates
 
-This directory contains reusable agent templates for the GreenLang framework.
+**Note:** The actual agent implementations are located in `greenlang/agents/`. This directory contains documentation and templates for creating new agents.
 
 ## Structure
 

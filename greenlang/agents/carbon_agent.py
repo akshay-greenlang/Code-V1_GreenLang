@@ -92,5 +92,5 @@ class CarbonAgent(BaseAgent):
         if "occupancy" in input_data:
             occupancy = input_data["occupancy"]
             intensity["per_person"] = total_co2e / occupancy if occupancy > 0 else 0
-        
+
         return intensity
