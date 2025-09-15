@@ -136,3 +136,8 @@ grafana_data/
 # Temporary files
 .ruff_cache/
 .benchmarks/
+
+# Binary files
+opa.exe
+opa
+.tools/

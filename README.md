@@ -28,10 +28,10 @@ GreenLang is the open-source climate intelligence framework for the entire clima
 
 ## 🚀 Quick Start
 
-### Install from PyPI
+### Install from PyPI (Coming Soon)
 
 ```bash
-pip install greenlang
+pip install greenlang  # Will be available after v0.1.0 release
 ```
 
 ### Install from Source
@@ -42,11 +42,23 @@ cd greenlang
 pip install -e .
 ```
 
+### One-Command Demo
+
+```bash
+# Run a demo emissions calculation
+gl demo
+# or if gl is not in PATH:
+python -m greenlang.cli demo
+
+# Validate a pipeline configuration
+gl validate greenlang/examples/pipeline_basic/gl.yaml
+```
+
 ### Docker Installation
 
 ```bash
 docker pull greenlang/greenlang:latest
-docker run -it greenlang/greenlang
+docker run -it greenlang/greenlang gl demo
 ```
 
 ### Configuration Setup
