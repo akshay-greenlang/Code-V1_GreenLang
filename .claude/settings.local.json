@@ -94,7 +94,9 @@
       "Bash(cd:*)",
       "Bash(scriptscheck_version_consistency.bat)",
       "Bash(cmd /c:*)",
-      "Bash(.venvScriptsgl --version)"
+      "Bash(.venvScriptsgl --version)",
+      "Bash(test:*)",
+      "Bash(git grep:*)"
     ],
     "deny": []
   }
