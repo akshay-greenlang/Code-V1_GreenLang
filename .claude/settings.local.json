@@ -97,7 +97,11 @@
       "Bash(.venvScriptsgl --version)",
       "Bash(test:*)",
       "Bash(git grep:*)",
-      "Bash(pytest:*)"
+      "Bash(pytest:*)",
+      "Bash(gh:*)",
+      "Bash(git checkout:*)",
+      "Bash(.venv\\Scripts\\python.exe -m pip install:*)",
+      "Bash(del nul)"
     ],
     "deny": []
   }
