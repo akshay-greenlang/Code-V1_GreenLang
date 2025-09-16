@@ -30,7 +30,8 @@ def pack():
 @click.option('--tag', '-t', multiple=True, help='Pack tags')
 @click.option('--description', '-d', help='Pack description')
 @click.option('--registry', default='https://hub.greenlang.io', help='Registry URL')
-def publish(pack_path: str, tag: tuple, description: str, registry: str):
+@click.option('--skip-policy', is_flag=True, help='Skip policy checks (not recommended)')
+def publish(pack_path: str, tag: tuple, description: str, registry: str, skip_policy: bool):
     """Publish a pack to the registry
     
     Example:
@@ -39,6 +40,11 @@ def publish(pack_path: str, tag: tuple, description: str, registry: str):
     """
     try:
         console.print(f"[cyan]Publishing pack from {pack_path}...[/cyan]")
+
+        if skip_policy:
+            console.print("[bold yellow]⚠️  WARNING: Skipping policy checks for publishing![/bold yellow]")
+            import os
+            os.environ["GL_SKIP_PUBLISH_POLICY"] = "1"
         
         # Check authentication
         auth = HubAuth()
@@ -80,7 +86,10 @@ def publish(pack_path: str, tag: tuple, description: str, registry: str):
 @click.option('--output', '-o', type=click.Path(), help='Output directory')
 @click.option('--registry', default='https://hub.greenlang.io', help='Registry URL')
 @click.option('--no-verify', is_flag=True, help='Skip signature verification')
-def add(pack_ref: str, output: str, registry: str, no_verify: bool):
+@click.option('--allow-unsigned', is_flag=True, help='Allow unsigned packs (dev only)')
+@click.option('--policy-permissive', is_flag=True, help='Enable permissive policy mode (DANGEROUS!)')
+def add(pack_ref: str, output: str, registry: str, no_verify: bool,
+        allow_unsigned: bool, policy_permissive: bool):
     """Add (install) a pack from the registry
     
     Example:
@@ -90,7 +99,21 @@ def add(pack_ref: str, output: str, registry: str, no_verify: bool):
     """
     try:
         console.print(f"[cyan]Installing pack: {pack_ref}...[/cyan]")
-        
+
+        # Warn about dangerous flags
+        if allow_unsigned:
+            console.print("[bold yellow]⚠️  WARNING: --allow-unsigned flag used. Security checks relaxed![/bold yellow]")
+        if policy_permissive:
+            console.print("[bold red]⚠️  DANGER: --policy-permissive flag used. Policies not enforced![/bold red]")
+            console.print("[bold red]    This mode is for development only. DO NOT use in production![/bold red]")
+
+        # Setup policy environment
+        import os
+        if policy_permissive:
+            os.environ["GL_POLICY_PERMISSIVE"] = "1"
+        if allow_unsigned:
+            os.environ["GL_ALLOW_UNSIGNED"] = "1"
+
         # Optional authentication for private packs
         auth = HubAuth()
         
