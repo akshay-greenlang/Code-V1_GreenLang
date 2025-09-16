@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=68", "wheel", "setuptools-scm[toml]>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -40,8 +40,9 @@ dev = [
     "pre-commit>=3.0",
 ]
 
-[tool.setuptools.dynamic]
-version = {file = "VERSION"}
+[tool.setuptools_scm]
+version_scheme = "post-release"
+local_scheme = "node-and-date"
 
 
 [tool.setuptools.packages.find]
