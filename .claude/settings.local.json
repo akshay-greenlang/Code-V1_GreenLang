@@ -96,7 +96,8 @@
       "Bash(cmd /c:*)",
       "Bash(.venvScriptsgl --version)",
       "Bash(test:*)",
-      "Bash(git grep:*)"
+      "Bash(git grep:*)",
+      "Bash(pytest:*)"
     ],
     "deny": []
   }
