@@ -1,0 +1,55 @@
+name: Version Guard
+on: [push, pull_request]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install package
+        run: pip install -e .
+
+      - name: Assert SSOT - VERSION matches package
+        run: |
+          V=$(cat VERSION | tr -d '\n\r')
+          PV=$(python -c 'import greenlang,sys; print(getattr(greenlang,"__version__",""))')
+          echo "VERSION file: $V"
+          echo "Python package: $PV"
+          if [ "$V" != "$PV" ]; then
+            echo "❌ Version mismatch!"
+            exit 1
+          fi
+          echo "✅ Versions match"
+
+      - name: Assert CLI version matches
+        run: |
+          V=$(cat VERSION | tr -d '\n\r')
+          CLI_V=$(python -m greenlang.cli.main --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          echo "VERSION file: $V"
+          echo "CLI version: $CLI_V"
+          if [ "$V" != "$CLI_V" ]; then
+            echo "❌ CLI version mismatch!"
+            exit 1
+          fi
+          echo "✅ CLI version matches"
+
+      - name: No hardcoded versions in critical files
+        run: |
+          # Check for hardcoded versions in setup.py and pyproject.toml
+          # (excluding dynamic version configuration)
+          if git grep -E 'version\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"' setup.py pyproject.toml | grep -v 'file = "VERSION"'; then
+            echo "❌ Found hardcoded versions in setup.py or pyproject.toml"
+            exit 1
+          fi
+          echo "✅ No hardcoded versions in critical build files"
+
+      - name: Report version status
+        run: |
+          echo "=== Version Guard Complete ==="
+          echo "Current version: $(cat VERSION)"
+          echo "All version checks passed!"
