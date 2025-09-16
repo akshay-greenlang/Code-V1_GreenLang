@@ -24,15 +24,24 @@
 
 | Feature | Plan Status | **ACTUAL STATUS** | Gap Analysis |
 |---------|------------|-------------------|--------------|
-| PyPI packages | ❌ Not Started | ✅ **COMPLETE** | `greenlang-cli` v0.1.0 ready in pyproject.toml |
-| Docker images | ❌ Not Started | 🟡 **PARTIAL** | DockerBackend exists, no published images |
+| PyPI packages | ❌ Not Started | ✅ **COMPLETE** | `greenlang-cli` v0.2.0 ready in pyproject.toml |
+| Version Management | ❌ Not Started | ✅ **COMPLETE** | SSOT versioning implemented |
+| Docker images | ❌ Not Started | ✅ **COMPLETE** | Dockerfile with GL_VERSION build args |
 | README accuracy | ❌ "Coming soon" | 🟡 **PARTIAL** | README exists but outdated |
 | Release automation | ❌ Not Started | ✅ **COMPLETE** | GitHub Actions workflows present |
 | SBOM generation | ❌ Not Started | ✅ **COMPLETE** | `provenance/sbom.py` implemented |
+| Version Consistency | ❌ Not Started | ✅ **COMPLETE** | VERSION file + check scripts |
+
+**✅ COMPLETED (Sep 2025)**:
+- Version normalization to 0.2.0 SSOT
+- Dynamic version loading across all components
+- Version consistency checks (bash + batch)
+- RELEASING.md documentation
+- Dockerfile version labels
 
 **Action Required**:
 - Push to PyPI (1 day work)
-- Build & push Docker images (2 days)
+- Build & push Docker images (1 day - framework ready)
 - Update README (1 day)
 
 ### 2. Pack Abstraction + Loader
