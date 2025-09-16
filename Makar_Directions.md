@@ -32,17 +32,25 @@
 
 ```
 Current Architecture Reality:
-├── greenlang/              # v0.0.1 - THE REAL SYSTEM (Domain Framework)
+├── greenlang/              # v0.2.0 - THE REAL SYSTEM (Domain Framework)
 │   ├── agents/            # 15+ hardcoded climate agents
 │   ├── data/              # Embedded emission factors
 │   ├── cli/               # Domain-specific commands
+│   ├── _version.py        # ✅ SSOT versioning implemented
 │   └── core/              # Tightly coupled orchestration
 │
-└── core/greenlang/         # v0.1.0 - THE ASPIRATION (Infrastructure)
+└── core/greenlang/         # v0.2.0 - THE ASPIRATION (Infrastructure)
     ├── sdk/               # Abstract base classes (unused)
     ├── packs/             # Pack system (demo quality)
     ├── runtime/           # Execution abstraction (theoretical)
+    ├── _version.py        # ✅ SSOT versioning implemented
     └── cli/               # Infrastructure commands (incomplete)
+
+VERSION file               # ✅ Single Source of Truth (0.2.0)
+├── pyproject.toml        # ✅ Dynamic version loading
+├── setup.py              # ✅ Reads from VERSION
+├── Dockerfile            # ✅ GL_VERSION build args
+└── scripts/              # ✅ Version consistency checks
 ```
 
 ### The Fundamental Problem
@@ -1438,9 +1446,12 @@ After deploying 5 specialized engineering sub-agents to analyze 97K+ lines of Gr
 ### Week 0 (NOW → 5 Days): Pre-flight REVISED
 
 **MUST FIX FIRST (Blockers):**
-1. **Version Alignment** (Day 1)
-   - Fix VERSION.md → 0.1.0
-   - Align Python requirements → >=3.10
+1. **Version Alignment** (Day 1) ✅ **COMPLETED**
+   - ✅ Fixed VERSION.md → 0.2.0
+   - ✅ Implemented SSOT versioning system
+   - ✅ Created VERSION file as single source
+   - ✅ Updated pyproject.toml, setup.py for dynamic versioning
+   - ✅ Added version consistency checks
    - Owner: DevOps
 
 2. **Security Critical** (Days 2-3)

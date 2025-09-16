@@ -30,6 +30,18 @@ These specifications form the backbone of GreenLang's package management and wor
 |------|--------|------------|---------------|---------------|
 | Pack.yaml v1.0 Specification | ✅ Complete | 100% | 100% (all examples validate) | Complete |
 | GL.yaml v1.0 Pipeline Specification | ✅ Complete | 100% | 100% (all examples validate) | Complete |
+| Version Management System | ✅ Complete | 100% | 100% | Complete |
+
+### Critical Fixes Applied (Sept 15, 2025) - v0.2.0 Release
+- ✅ **Version Management**: Implemented Single Source of Truth (SSOT) system
+  - Created VERSION file as central version source
+  - Updated pyproject.toml for dynamic version loading
+  - Modified setup.py to read from VERSION file
+  - Created _version.py modules for both greenlang/ and core/greenlang/
+  - Updated Dockerfile with GL_VERSION build arguments
+  - Added version consistency check scripts (bash + batch)
+  - Created comprehensive RELEASING.md documentation
+  - Updated VERSION.md with v0.2.0 release notes
 
 ### Critical Fixes Applied (Sept 13, 2025)
 - ✅ Fixed GL schema: Changed step 'id' → 'name' to match all examples
