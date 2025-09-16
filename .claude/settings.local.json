@@ -90,7 +90,11 @@
       "Bash(git rm:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "WebFetch(domain:pypi.org)"
+      "WebFetch(domain:pypi.org)",
+      "Bash(cd:*)",
+      "Bash(scriptscheck_version_consistency.bat)",
+      "Bash(cmd /c:*)",
+      "Bash(.venvScriptsgl --version)"
     ],
     "deny": []
   }

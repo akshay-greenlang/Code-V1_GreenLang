@@ -60,7 +60,7 @@ except ImportError:
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(version=greenlang.__version__, prog_name="GreenLang")
+@click.version_option(version=greenlang.__version__, prog_name="gl")
 @click.pass_context
 def cli(ctx: click.Context) -> None:
     """GreenLang - Global Climate Intelligence Framework for Commercial Buildings"""
