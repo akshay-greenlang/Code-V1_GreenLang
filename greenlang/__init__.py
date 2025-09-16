@@ -8,7 +8,8 @@ Platform = SDK/CLI/Runtime + Hub + Policy/Provenance
 Transitional compatibility layer for v0.0.1 code.
 """
 
-__version__ = "0.1.0"
+from ._version import __version__
+
 __author__ = "GreenLang Team"
 __email__ = "team@greenlang.io"
 __license__ = "MIT"

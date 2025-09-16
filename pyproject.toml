@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greenlang-cli"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Developer-first Climate Intelligence Framework (core rails)"
 readme = "README.md"
 authors = [{ name = "GreenLang Maintainers" }]
@@ -32,6 +32,9 @@ dev = [
     "mypy>=1.0",
     "pre-commit>=3.0",
 ]
+
+[tool.setuptools.dynamic]
+version = {file = "VERSION"}
 
 [tool.setuptools.packages.find]
 where = ["."]

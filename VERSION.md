@@ -1,11 +1,11 @@
 # GreenLang Version Information
 
-## Current Version: 0.0.1
+## Current Version: 0.2.0
 
 ### Version Summary
-- **Release Date**: January 2025
-- **Status**: Production Ready (Safe for Public Release)
-- **Python Compatibility**: 3.8+
+- **Release Date**: September 27, 2025
+- **Status**: Infrastructure Seed Release
+- **Python Compatibility**: 3.10+
 - **License**: MIT
 
 ### Version Verification
@@ -15,14 +15,26 @@ gl --version
 python -c "import greenlang; print(greenlang.__version__)"
 ```
 
-### Major Features in v0.0.1
-- ✅ Complete agent framework (11 agents)
-- ✅ CLI with multiple commands
-- ✅ Workflow orchestration
-- ✅ Global emission factors database
-- ✅ Comprehensive testing suite
-- ✅ Type hints throughout
-- ✅ Documentation and examples
+## Version 0.2.0 - Infrastructure Seed (2025-09-27)
+
+### Major Changes
+- 🏗️ **Single Source of Truth for Versioning**: Implemented VERSION file as SSOT
+- 📦 **PyPI & Docker Ready**: First public release with signed artifacts
+- 🔒 **Default-Deny Policies**: Security-first approach with policy enforcement
+- 🎯 **Pack Architecture**: Transition from agents to packs for domain logic
+- 🚀 **Production Ready**: Exit bar criteria met for v0.2.0 release
+
+### Infrastructure Improvements
+- Dynamic version loading from VERSION file
+- Consistent version across CLI, packages, and Docker images
+- Version parity enforcement in CI/CD
+- Automated version consistency checks
+
+### Security Enhancements
+- Default-deny policy enforcement
+- Signed artifact support
+- SBOM generation capability
+- Sandbox capability gating
 
 ### Recent Additions
 - Enhanced FuelAgent with caching and recommendations
@@ -33,6 +45,8 @@ python -c "import greenlang; print(greenlang.__version__)"
 - AI Assistant feature documentation (optional OpenAI integration)
 
 ### Version History
+- **v0.2.0** (2025-09-27) - Infrastructure Seed Release
+- **v0.1.0** (2025-09) - Internal infrastructure refactor
 - **v0.0.1** (2025-01) - Initial release with enhanced agents
 
 ### Upgrade Instructions

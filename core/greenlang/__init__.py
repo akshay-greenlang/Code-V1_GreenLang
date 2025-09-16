@@ -8,7 +8,8 @@ Platform = SDK/CLI/Runtime + Hub + Policy/Provenance
 Success = Developer Love + Trust + Distribution
 """
 
-__version__ = "0.1.0"
+from ._version import __version__
+
 __author__ = "GreenLang Team"
 __email__ = "team@greenlang.io"
 __license__ = "MIT"
