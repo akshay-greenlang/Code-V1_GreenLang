@@ -5,6 +5,34 @@ All notable changes to the GreenLang project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0-rc.0] - 2025-09-23
+
+### 🚀 Release Candidate 0 - Version Alignment
+
+This release candidate establishes version alignment across all components and introduces git-tag-driven versioning.
+
+### Added
+- **Git-Tag-Driven Versioning**: Implemented setuptools-scm for automatic version management from git tags
+- **Full CI/CD Matrix**: Complete testing matrix across Ubuntu, macOS, and Windows with Python 3.10, 3.11, and 3.12
+- **Build Validation**: Automated sdist/wheel building and validation in CI pipeline
+- **Package Installation Tests**: Clean environment validation for package installation
+
+### Changed
+- **Dynamic Versioning**: Migrated from static VERSION file to git-tag-based versioning with setuptools-scm
+- **Import Metadata**: Updated all version references to use importlib.metadata
+- **CI Pipeline**: Enhanced CI workflow to support tag-based releases and build validation
+- **Python Support**: Explicitly defined Python 3.10+ requirement with proper Trove classifiers
+
+### Fixed
+- **Branch Protection Script**: Fixed type hints and return type annotations in setup_branch_protection.py
+- **Version Consistency**: Aligned version references across CLI, package metadata, and documentation
+
+### Technical Details
+- Version scheme: post-release with node-and-date local scheme
+- Build system: setuptools>=68 with setuptools-scm[toml]>=8
+- Package validation: twine check integrated into CI
+- Cross-platform testing: Full matrix coverage with artifact uploads
+
 ## [0.0.1] - 2024-12-28
 
 ### 🎉 Production-Ready Release

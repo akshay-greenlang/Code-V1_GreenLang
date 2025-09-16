@@ -16,7 +16,7 @@ import os
 import sys
 import json
 import requests
-from typing import Dict, Any
+from typing import Optional
 
 # Configuration
 REPO_OWNER = "your-username"  # TODO: Replace with your GitHub username
@@ -112,7 +112,7 @@ def setup_branch_protection(token: str) -> None:
         print(f"❌ Error setting up protection: {e}")
         sys.exit(1)
 
-def check_current_protection(token: str) -> None:
+def check_current_protection(token: str) -> bool:
     """Check current protection status."""
     headers = {
         "Authorization": f"token {token}",
