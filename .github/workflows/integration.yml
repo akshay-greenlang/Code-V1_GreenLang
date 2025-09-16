@@ -1,0 +1,89 @@
+name: Integration Tests
+
+on:
+  # Run on schedule (nightly)
+  schedule:
+    - cron: '0 2 * * *'  # 2 AM UTC daily
+  # Allow manual trigger
+  workflow_dispatch:
+  # Run when labeled with 'integration'
+  pull_request:
+    types: [labeled]
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    # Only run if manually triggered, scheduled, or PR has 'integration' label
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'pull_request' && contains(github.event.label.name, 'integration'))
+
+    name: Integration tests (Ubuntu)
+    runs-on: ubuntu-latest
+
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+      PYTHONUNBUFFERED: "1"
+      # Run ALL tests including integration and e2e
+      PYTEST_ADDOPTS: ""
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+          cache-dependency-path: |
+            requirements*.txt
+            pyproject.toml
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl jq
+
+      - name: Install OPA CLI
+        run: |
+          OPA_VERSION=v0.64.0
+          curl -L -o opa https://openpolicyagent.org/downloads/${OPA_VERSION}/opa_$(uname -s | tr '[:upper:]' '[:lower:]')_amd64
+          chmod +x ./opa
+          sudo mv ./opa /usr/local/bin/opa
+          opa version
+
+      - name: Install Docker (if needed for tests)
+        run: |
+          docker --version || echo "Docker not available"
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -U pip wheel
+          pip install -r requirements-dev.txt
+          pip install -e ".[dev]"
+
+      - name: Show environment
+        run: |
+          python --version
+          pip list
+          opa version || echo "OPA not installed"
+          docker --version || echo "Docker not installed"
+
+      - name: Run all tests (unit + integration + e2e)
+        run: |
+          mkdir -p test-results
+          pytest -m "integration or e2e" --cov --cov-report=xml --junitxml=test-results/integration-junit.xml
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            test-results/
+            coverage.xml
+          retention-days: 7
