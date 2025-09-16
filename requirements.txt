@@ -1,5 +1,6 @@
 # GreenLang - Open Developer Climate Intelligence Platform
 # Production Dependencies
+# REQUIRES: Python >=3.10
 
 # Core Framework
 pydantic>=2.0.0           # Data validation and settings management

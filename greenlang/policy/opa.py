@@ -241,7 +241,7 @@ def validate_policy(policy_path: str) -> tuple[bool, list[str]]:
         return False, [f"Policy file not found: {policy_path}"]
     
     if not _check_opa_installed():
-        return True, []  # Can't validate without OPA
+        return False, ["OPA not installed - cannot validate policy"]
     
     # Use local OPA if available
     cwd = Path.cwd()
