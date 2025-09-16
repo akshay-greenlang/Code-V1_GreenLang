@@ -6,6 +6,9 @@ Build climate apps fast with modular agents, YAML pipelines, and Python SDK
 from setuptools import setup, find_packages
 from pathlib import Path
 
+# Read version from VERSION file
+version = Path("VERSION").read_text().strip()
+
 # Read README for long description
 this_directory = Path(__file__).parent
 long_description_path = this_directory / "README.md"
@@ -143,7 +146,7 @@ extras_require["all"] = list(set(all_extras))
 
 setup(
     name="greenlang",
-    version="0.1.0",
+    version=version,
     author="GreenLang Team",
     author_email="team@greenlang.io",
     description="Infrastructure for Climate Intelligence - Domain logic lives in packs",
