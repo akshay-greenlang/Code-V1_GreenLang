@@ -10,6 +10,11 @@ authors:
 license: MIT
 homepage: https://greenlang.io/packs/emissions-core
 repository: https://github.com/greenlang/emissions-core
+publisher: greenlang-official
+
+# Declare required capabilities
+capabilities:
+  - fs  # File system access for reading data files
 
 dependencies:
   - name: greenlang-sdk
@@ -76,6 +81,12 @@ exports:
 policy:
   install: policies/install.rego
   runtime: policies/runtime.rego
+  # Network allowlist (empty - no network access needed)
+  network: []
+  # Data residency requirements
+  data_residency: ["US", "EU", "APAC"]
+  # Minimum emission factor vintage
+  ef_vintage_min: 2024
 
 provenance:
   sbom: true

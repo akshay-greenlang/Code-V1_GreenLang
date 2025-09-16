@@ -14,6 +14,16 @@ from .archive import create_pack_archive, extract_pack_archive
 from .manifest import load_manifest, save_manifest, validate_manifest
 from .auth import HubAuth
 
+# Import policy enforcer for security checks
+try:
+    from greenlang.policy.enforcer import check_install, PolicyEnforcer
+    POLICY_ENABLED = True
+except ImportError:
+    logger.warning("Policy enforcer not available - running without policy checks")
+    POLICY_ENABLED = False
+    def check_install(*args, **kwargs):
+        pass
+
 logger = logging.getLogger(__name__)
 
 
@@ -85,7 +95,26 @@ class HubClient:
         # Load and validate manifest
         manifest = load_manifest(pack_path)
         validate_manifest(manifest)
-        
+
+        # Policy check BEFORE pushing
+        if POLICY_ENABLED:
+            # Add metadata for policy check
+            manifest_dict = manifest.dict() if hasattr(manifest, 'dict') else manifest
+            manifest_dict["signature_verified"] = signature is not None
+            manifest_dict["publisher"] = manifest_dict.get("publisher", "unknown")
+
+            try:
+                check_install(
+                    manifest_dict,
+                    str(pack_path),
+                    stage="publish",
+                    permissive=False  # Strict for publishing
+                )
+                logger.info("✓ Pack passed policy checks for publishing")
+            except RuntimeError as e:
+                logger.error(f"Policy check failed: {e}")
+                raise ValueError(f"Publishing blocked by policy: {e}")
+
         # Create archive if directory
         if pack_path.is_dir():
             logger.info(f"Creating archive for {pack_path}")
@@ -191,10 +220,32 @@ class HubClient:
                     raise ValueError("No pack content or download URL provided")
             
             # Verify signature if required
+            signature_verified = False
             if verify_signature and signature:
-                if not self._verify_signature(pack_content, signature):
+                signature_verified = self._verify_signature(pack_content, signature)
+                if not signature_verified:
                     raise ValueError("Signature verification failed")
-            
+            elif not verify_signature:
+                logger.warning("⚠️  Skipping signature verification (--no-verify flag used)")
+
+            # Policy check BEFORE extraction
+            if POLICY_ENABLED and manifest:
+                # Add metadata for policy check
+                manifest["signature_verified"] = signature_verified
+                manifest["publisher"] = manifest.get("publisher", pack_data.get("publisher", "unknown"))
+
+                try:
+                    check_install(
+                        manifest,
+                        str(output_dir),
+                        stage="add",
+                        permissive=not verify_signature  # Permissive if --no-verify
+                    )
+                    logger.info("✓ Pack passed policy checks")
+                except RuntimeError as e:
+                    logger.error(f"Policy check failed: {e}")
+                    raise ValueError(f"Installation blocked by policy: {e}")
+
             # Extract pack
             pack_name = manifest.get("name", pack_ref.replace("@", "_"))
             pack_dir = output_dir / pack_name

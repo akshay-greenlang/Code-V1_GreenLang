@@ -2,6 +2,12 @@ name: boiler-solar
 version: 1.0.0
 kind: pack
 license: Apache-2.0
+publisher: greenlang-official
+
+# Declare required capabilities
+capabilities:
+  - fs   # File system access for datasets
+  - net  # Network access for weather APIs
 
 compat:
   greenlang: ">=0.1.0"
