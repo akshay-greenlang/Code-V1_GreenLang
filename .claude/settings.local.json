@@ -101,7 +101,9 @@
       "Bash(gh:*)",
       "Bash(git checkout:*)",
       "Bash(.venv\\Scripts\\python.exe -m pip install:*)",
-      "Bash(del nul)"
+      "Bash(del nul)",
+      "Bash(git tag:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }
