@@ -27,14 +27,14 @@ def evaluate(policy_path: str, input_doc: Dict[str, Any],
     """
     # Check if OPA is available
     if not _check_opa_installed():
-        logger.warning("OPA not installed, using permissive fallback")
-        return {"allow": True, "reason": "OPA not available (permissive mode)"}
+        logger.error("OPA not installed, denying by default")
+        return {"allow": False, "reason": "POLICY.DENIED: OPA not available"}
     
     # Resolve policy path
     policy_file = _resolve_policy_path(policy_path)
     if not policy_file.exists():
-        logger.warning(f"Policy not found: {policy_path}, using permissive fallback")
-        return {"allow": True, "reason": f"Policy not found: {policy_path}"}
+        logger.error(f"Policy not found: {policy_path}, denying by default")
+        return {"allow": False, "reason": f"POLICY.DENIED: Policy not found: {policy_path}"}
     
     try:
         # Create temporary input file
@@ -215,7 +215,7 @@ def validate_policy(policy_path: str) -> tuple[bool, list[str]]:
         return False, [f"Policy file not found: {policy_path}"]
     
     if not _check_opa_installed():
-        return True, []  # Can't validate without OPA
+        return False, ["OPA not installed - cannot validate policy"]
     
     # Use local OPA if available
     cwd = Path.cwd()
