@@ -17,7 +17,11 @@ if sys.version_info < (3, 10):
         f"Detected: {sys.version.split()[0]}"
     )
 
-from ._version import __version__
+from importlib.metadata import PackageNotFoundError, version
+try:
+    __version__ = version("greenlang")
+except PackageNotFoundError:
+    __version__ = "0.0.0.dev0"
 
 __author__ = "GreenLang Team"
 __email__ = "team@greenlang.io"

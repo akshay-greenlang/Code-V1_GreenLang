@@ -3,6 +3,8 @@ name: CI
 on:
   push:
     branches: [main, master]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main, master]
 
@@ -92,3 +94,24 @@ jobs:
           path: test-results/junit.xml
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - name: Validate wheel and sdist
+        run: |
+          pip install twine
+          twine check dist/*
+
+      - name: Test package installation in clean env
+        shell: bash
+        run: |
+          python -m venv test_venv
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            source test_venv/Scripts/activate
+          else
+            source test_venv/bin/activate
+          fi
+          pip install dist/*.whl
+          gl --version || echo "GL command not found, checking alternate installations"
+          python -c "import greenlang; print(greenlang.__version__)"

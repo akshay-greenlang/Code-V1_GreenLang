@@ -1,10 +1,10 @@
 # GreenLang Version Information
 
-## Current Version: 0.2.0
+## Current Version: 0.2.0-rc.0
 
 ### Version Summary
-- **Release Date**: September 27, 2025
-- **Status**: Infrastructure Seed Release
+- **Release Date**: September 23, 2025
+- **Status**: Release Candidate - Version Alignment
 - **Python Compatibility**: 3.10+
 - **License**: MIT
 
