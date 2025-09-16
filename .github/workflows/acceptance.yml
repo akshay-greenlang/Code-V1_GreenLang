@@ -217,18 +217,23 @@ jobs:
               
               # Compare with expected output
               if [ -f "tests/golden/expected.run.json" ]; then
-                python -c "
+                python - <<'EOF'
 import json
-with open('out/run.json') as f1, open('tests/golden/expected.run.json') as f2:
-    actual = json.load(f1)
-    expected = json.load(f2)
-    # Remove timestamps
-    for d in [actual, expected]:
-        d.pop('timestamp', None)
-        d.pop('started_at', None)
-    assert actual == expected, 'Golden test failed'
-print('Golden test passed')
-                "
+import sys
+try:
+    with open('out/run.json') as f1, open('tests/golden/expected.run.json') as f2:
+        actual = json.load(f1)
+        expected = json.load(f2)
+        # Remove timestamps
+        for d in [actual, expected]:
+            d.pop('timestamp', None)
+            d.pop('started_at', None)
+        assert actual == expected, 'Golden test failed'
+    print('Golden test passed')
+except Exception as e:
+    print(f'Golden test failed: {e}', file=sys.stderr)
+    sys.exit(1)
+EOF
               fi
               cd -
             fi
