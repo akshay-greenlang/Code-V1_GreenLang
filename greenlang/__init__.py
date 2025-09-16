@@ -8,6 +8,15 @@ Platform = SDK/CLI/Runtime + Hub + Policy/Provenance
 Transitional compatibility layer for v0.0.1 code.
 """
 
+import sys
+
+# Runtime guard for Python version
+if sys.version_info < (3, 10):
+    raise RuntimeError(
+        "GreenLang requires Python 3.10 or higher. "
+        f"Detected: {sys.version.split()[0]}"
+    )
+
 from ._version import __version__
 
 __author__ = "GreenLang Team"
