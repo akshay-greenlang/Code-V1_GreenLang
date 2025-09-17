@@ -16,6 +16,7 @@ import logging
 import os
 import random
 import re
+import sys
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from contextlib import contextmanager
@@ -318,6 +319,8 @@ class PipelineExecutor:
         """
         Execute a single pipeline step with retry logic and error handling.
 
+        If capabilities are defined, the step will be executed in a guarded worker process.
+
         Args:
             step: Step specification
             context: Execution context
@@ -341,6 +344,9 @@ class PipelineExecutor:
             "attempts": []
         }
 
+        # Check if we need to use guarded worker
+        use_guarded_worker = self._should_use_guarded_worker(step, context)
+
         # Resolve inputs
         try:
             resolved_inputs = self._resolve_step_inputs(step, context)
@@ -362,15 +368,21 @@ class PipelineExecutor:
             }
 
             try:
-                # Create isolated execution environment
-                with self._create_step_environment(step, context) as step_env:
-                    # Execute the actual step
-                    outputs = self._execute_step_action(
-                        step,
-                        resolved_inputs,
-                        step_env,
-                        timeout=step.timeout or self.default_timeout
-                    )
+                # Check if we should use guarded worker
+                if use_guarded_worker:
+                    # Execute in guarded worker process
+                    result = self._execute_in_guarded_worker(step, resolved_inputs, context)
+                    outputs = result.get("output", {})
+                else:
+                    # Create isolated execution environment
+                    with self._create_step_environment(step, context) as step_env:
+                        # Execute the actual step
+                        outputs = self._execute_step_action(
+                            step,
+                            resolved_inputs,
+                            step_env,
+                            timeout=step.timeout or self.default_timeout
+                        )
 
                     # Store results
                     context.step_results[step.name] = outputs
@@ -803,6 +815,250 @@ class PipelineExecutor:
                 logger.warning(f"Failed to remove temp directory {temp_dir}: {e}")
 
         logger.debug(f"Cleaned up execution context for run {context.run_id}")
+
+    def _should_use_guarded_worker(self, step: StepSpec, context: ExecutionContext) -> bool:
+        """
+        Check if step should be executed in a guarded worker process.
+
+        Args:
+            step: Step specification
+            context: Execution context
+
+        Returns:
+            True if guarded worker should be used
+        """
+        # Check if capabilities are defined in context
+        if hasattr(context, 'capabilities') and context.capabilities:
+            return True
+
+        # Check if step has capability requirements
+        if hasattr(step, 'capabilities') and step.capabilities:
+            return True
+
+        # Check for pack manifest capabilities
+        if hasattr(context, 'pack_manifest'):
+            manifest = context.pack_manifest
+            if manifest and manifest.get('capabilities'):
+                return True
+
+        # Check environment variable override
+        if os.environ.get('GL_USE_GUARD') == '1':
+            return True
+
+        return False
+
+    def _execute_in_guarded_worker(
+        self,
+        step: StepSpec,
+        resolved_inputs: Dict[str, Any],
+        context: ExecutionContext
+    ) -> Dict[str, Any]:
+        """
+        Execute a step in a guarded worker process with capability enforcement.
+
+        Args:
+            step: Step specification
+            resolved_inputs: Resolved step inputs
+            context: Execution context
+
+        Returns:
+            Step execution result
+        """
+        import subprocess
+        import tempfile
+
+        # Extract capabilities from context or step
+        capabilities = {}
+
+        # Check context capabilities
+        if hasattr(context, 'capabilities'):
+            capabilities = context.capabilities
+
+        # Check pack manifest
+        elif hasattr(context, 'pack_manifest'):
+            manifest = context.pack_manifest
+            if manifest and 'capabilities' in manifest:
+                capabilities = manifest['capabilities']
+
+        # Check step-specific capabilities
+        if hasattr(step, 'capabilities'):
+            # Merge step capabilities with existing ones
+            step_caps = step.capabilities
+            for cap_name, cap_config in step_caps.items():
+                if cap_name not in capabilities:
+                    capabilities[cap_name] = cap_config
+
+        # Create temporary directories for the worker
+        with tempfile.TemporaryDirectory(prefix=f"gl_worker_{step.name}_") as work_dir:
+            work_path = Path(work_dir)
+            input_dir = work_path / "input"
+            output_dir = work_path / "output"
+            run_tmp = work_path / "tmp"
+
+            input_dir.mkdir()
+            output_dir.mkdir()
+            run_tmp.mkdir()
+
+            # Write inputs to file
+            input_file = input_dir / "inputs.json"
+            with open(input_file, 'w') as f:
+                json.dump(resolved_inputs, f)
+
+            # Prepare environment for worker
+            worker_env = os.environ.copy()
+            worker_env.update({
+                'GL_GUARD_INIT': '1',
+                'GL_CAPS': json.dumps(capabilities),
+                'GL_INPUT_DIR': str(input_dir),
+                'GL_PACK_DATA_DIR': str(work_path / "pack_data"),
+                'GL_RUN_TMP': str(run_tmp),
+                'GL_PACK_NAME': getattr(context, 'pipeline_name', 'unknown'),
+                'GL_RUN_ID': context.run_id,
+                'GL_STEP_NAME': step.name,
+                'PYTHONSAFEPATH': '1',
+                'PYTHONWARNDEFAULTENCODING': '1',
+            })
+
+            # Handle deterministic mode
+            if context.deterministic:
+                worker_env['GL_FROZEN_TIME'] = str(time.time())
+
+            # Build worker command
+            worker_script = self._create_worker_script(step, input_file, output_dir)
+            script_file = work_path / "worker.py"
+            with open(script_file, 'w') as f:
+                f.write(worker_script)
+
+            # Execute worker process with guard
+            cmd = [
+                sys.executable,
+                '-m', 'greenlang.runtime.guard',
+                str(script_file)
+            ]
+
+            logger.info(f"Executing step '{step.name}' in guarded worker process")
+
+            try:
+                result = subprocess.run(
+                    cmd,
+                    env=worker_env,
+                    capture_output=True,
+                    text=True,
+                    timeout=self.default_timeout,
+                    cwd=work_dir
+                )
+
+                if result.returncode != 0:
+                    raise StepExecutionError(
+                        f"Worker process failed with code {result.returncode}: {result.stderr}",
+                        step_name=step.name
+                    )
+
+                # Read output
+                output_file = output_dir / "output.json"
+                if output_file.exists():
+                    with open(output_file) as f:
+                        step_output = json.load(f)
+                else:
+                    step_output = {}
+
+                # Read audit log if present
+                audit_file = work_path / "audit.json"
+                if audit_file.exists():
+                    with open(audit_file) as f:
+                        audit_log = json.load(f)
+                        logger.info(f"Capability audit log for step '{step.name}': {len(audit_log)} events")
+                        # Could store audit log in context if needed
+
+                return {
+                    "output": step_output,
+                    "stdout": result.stdout,
+                    "stderr": result.stderr,
+                    "worker_status": "success"
+                }
+
+            except subprocess.TimeoutExpired:
+                raise StepExecutionError(
+                    f"Worker process timed out after {self.default_timeout}s",
+                    step_name=step.name
+                )
+            except Exception as e:
+                raise StepExecutionError(
+                    f"Worker process failed: {e}",
+                    step_name=step.name,
+                    original_error=e
+                )
+
+    def _create_worker_script(self, step: StepSpec, input_file: Path, output_dir: Path) -> str:
+        """
+        Create a Python script to execute in the worker process.
+
+        Args:
+            step: Step specification
+            input_file: Path to input JSON file
+            output_dir: Output directory path
+
+        Returns:
+            Python script as string
+        """
+        # Generate worker script that will be executed with guard
+        script = f'''
+import json
+import sys
+from pathlib import Path
+
+# The guard is already initialized by running with -m greenlang.runtime.guard
+
+# Load inputs
+with open("{input_file}") as f:
+    inputs = json.load(f)
+
+# Import and execute the agent
+try:
+    # Dynamic import of the agent module
+    agent_module = "{step.agent}"
+
+    # Import agent
+    if "." in agent_module:
+        module_path, agent_class = agent_module.rsplit(".", 1)
+        exec(f"from {{module_path}} import {{agent_class}}")
+        agent = eval(f"{{agent_class}}()")
+    else:
+        # Try to import from greenlang.agents
+        exec(f"from greenlang.agents import {{agent_module}}")
+        agent = eval(f"{{agent_module}}()")
+
+    # Execute the action
+    action = "{step.action}"
+    if hasattr(agent, action):
+        result = getattr(agent, action)(inputs)
+    else:
+        result = {{"error": f"Agent {{agent_module}} has no action {{action}}"}}
+
+    # Write output
+    output_file = Path("{output_dir}") / "output.json"
+    with open(output_file, "w") as f:
+        json.dump(result, f)
+
+    # Save audit log if guard is active
+    if 'greenlang.runtime.guard' in sys.modules:
+        guard_module = sys.modules['greenlang.runtime.guard']
+        if hasattr(guard_module, 'guard_instance'):
+            guard = guard_module.guard_instance
+            audit_log = guard.get_audit_log()
+            audit_file = Path("{output_dir}").parent / "audit.json"
+            with open(audit_file, "w") as f:
+                json.dump(audit_log, f, default=str)
+
+except Exception as e:
+    # Write error output
+    error_output = {{"error": str(e), "type": type(e).__name__}}
+    output_file = Path("{output_dir}") / "output.json"
+    with open(output_file, "w") as f:
+        json.dump(error_output, f)
+    sys.exit(1)
+'''
+        return script
 
     def shutdown(self) -> None:
         """Shutdown the executor and clean up resources."""

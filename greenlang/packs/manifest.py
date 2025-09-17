@@ -8,6 +8,75 @@ import re
 from pathlib import Path
 
 
+class NetCapability(BaseModel):
+    """Network capability configuration"""
+    allow: bool = Field(False, description="Allow network access")
+    outbound: Optional[Dict[str, List[str]]] = Field(None, description="Outbound access configuration")
+
+    @field_validator('outbound')
+    @classmethod
+    def validate_outbound(cls, v: Optional[Dict[str, List[str]]], info) -> Optional[Dict[str, List[str]]]:
+        """Validate outbound configuration"""
+        if v and 'allowlist' in v:
+            for domain in v['allowlist']:
+                # Basic validation for domain patterns
+                if not domain:
+                    raise ValueError("Empty domain pattern not allowed")
+                if domain.startswith('.'):
+                    raise ValueError(f"Domain pattern cannot start with dot: {domain}")
+        return v
+
+
+class FsCapability(BaseModel):
+    """Filesystem capability configuration"""
+    allow: bool = Field(False, description="Allow filesystem access")
+    read: Optional[Dict[str, List[str]]] = Field(None, description="Read access configuration")
+    write: Optional[Dict[str, List[str]]] = Field(None, description="Write access configuration")
+
+    @field_validator('read', 'write')
+    @classmethod
+    def validate_paths(cls, v: Optional[Dict[str, List[str]]]) -> Optional[Dict[str, List[str]]]:
+        """Validate filesystem paths"""
+        if v and 'allowlist' in v:
+            for path in v['allowlist']:
+                # Validate no path traversal
+                if '..' in path:
+                    raise ValueError(f"Path traversal not allowed: {path}")
+                # Ensure paths use environment variables
+                if not any(var in path for var in ['${INPUT_DIR}', '${PACK_DATA_DIR}', '${RUN_TMP}']):
+                    if not path.startswith('/'):
+                        raise ValueError(f"Path must be absolute or use environment variables: {path}")
+        return v
+
+
+class ClockCapability(BaseModel):
+    """Clock/time capability configuration"""
+    allow: bool = Field(False, description="Allow real-time clock access (false = frozen/deterministic time)")
+
+
+class SubprocessCapability(BaseModel):
+    """Subprocess execution capability configuration"""
+    allow: bool = Field(False, description="Allow subprocess execution")
+    allowlist: List[str] = Field(default_factory=list, description="List of allowed binaries (absolute paths)")
+
+    @field_validator('allowlist')
+    @classmethod
+    def validate_binaries(cls, v: List[str]) -> List[str]:
+        """Validate binary paths are absolute"""
+        for binary in v:
+            if not binary.startswith('/'):
+                raise ValueError(f"Binary path must be absolute: {binary}")
+        return v
+
+
+class Capabilities(BaseModel):
+    """Security capabilities for pack execution"""
+    net: Optional[NetCapability] = Field(default_factory=lambda: NetCapability(), description="Network access capability")
+    fs: Optional[FsCapability] = Field(default_factory=lambda: FsCapability(), description="Filesystem access capability")
+    clock: Optional[ClockCapability] = Field(default_factory=lambda: ClockCapability(), description="Clock access capability")
+    subprocess: Optional[SubprocessCapability] = Field(default_factory=lambda: SubprocessCapability(), description="Subprocess execution capability")
+
+
 class Compat(BaseModel):
     """Compatibility constraints for runtime environments"""
     greenlang: Optional[str] = Field(None, description="GreenLang version compatibility range")
@@ -57,6 +126,10 @@ class PackManifest(BaseModel):
     dependencies: List[Union[str, Dict[str, str]]] = Field(
         default_factory=list,
         description="External dependencies required by this pack"
+    )
+    capabilities: Optional[Capabilities] = Field(
+        None,
+        description="Security capabilities for pack execution (deny-by-default when absent)"
     )
     card: Optional[str] = Field(None, description="Path to Model Card or Pack Card documentation")
     policy: Dict[str, Any] = Field(
