@@ -24,6 +24,16 @@ import requests
 
 from .manifest import PackManifest
 from .registry import PackRegistry, InstalledPack
+from ..security import (
+    create_secure_session,
+    validate_url,
+    validate_git_url,
+    safe_download,
+    safe_extract_archive,
+    validate_pack_structure,
+    PackVerifier,
+    SignatureVerificationError
+)
 
 logger = logging.getLogger(__name__)
 
@@ -36,13 +46,15 @@ class PackInstaller:
     def __init__(self, registry: Optional[PackRegistry] = None):
         """
         Initialize installer
-        
+
         Args:
             registry: Pack registry (creates new if not provided)
         """
         self.registry = registry or PackRegistry()
         self.cache_dir = Path.home() / ".greenlang" / "cache"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.session = create_secure_session()
+        self.verifier = PackVerifier()
     
     def install(self, source: str, version: Optional[str] = None, 
                 force: bool = False, verify: bool = True) -> InstalledPack:
@@ -83,7 +95,7 @@ class PackInstaller:
             return self._install_from_github(source, version, verify)
         elif source.startswith("hub:"):
             return self._install_from_hub(source, version, verify)
-        elif source.startswith("http"):
+        elif source.startswith(("http://", "https://")):
             return self._install_from_url(source, verify)
         elif Path(source).exists():
             return self._install_from_local(Path(source), verify)
@@ -224,27 +236,25 @@ class PackInstaller:
             url = f"https://github.com/{owner}/{repo}/archive/{branch}.tar.gz"
         else:
             url = f"https://github.com/{owner}/{repo}/archive/{branch}.tar.gz"
-        
+
+        # Validate Git URL
+        validate_git_url(url)
+
         logger.info(f"Downloading from GitHub: {url}")
-        
+
         # Download to temp directory
         with tempfile.TemporaryDirectory() as tmpdir:
             archive_path = Path(tmpdir) / "pack.tar.gz"
+
+            # Secure download
+            safe_download(url, str(archive_path), session=self.session)
             
-            # Download archive
-            response = requests.get(url, stream=True)
-            response.raise_for_status()
-            
-            with open(archive_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            
-            # Extract archive
-            with tarfile.open(archive_path, "r:gz") as tar:
-                tar.extractall(tmpdir)
+            # Extract archive safely
+            extract_dir = Path(tmpdir) / "extracted"
+            safe_extract_archive(archive_path, extract_dir)
             
             # Find pack directory
-            extracted = list(Path(tmpdir).glob("*/"))
+            extracted = list(extract_dir.glob("*/"))
             if not extracted:
                 raise RuntimeError("No files extracted from archive")
             
@@ -287,11 +297,14 @@ class PackInstaller:
         metadata_url = f"{hub_url}/api/packs/{pack_name}"
         if version:
             metadata_url += f"?version={version}"
-        
+
+        # Validate Hub URL
+        validate_url(metadata_url)
+
         logger.info(f"Fetching metadata from Hub: {metadata_url}")
-        
+
         try:
-            response = requests.get(metadata_url)
+            response = self.session.get(metadata_url)
             response.raise_for_status()
             metadata = response.json()
         except requests.exceptions.RequestException as e:
@@ -301,19 +314,17 @@ class PackInstaller:
         download_url = metadata.get("download_url")
         if not download_url:
             raise RuntimeError("No download URL in Hub response")
-        
+
+        # Validate download URL
+        validate_url(download_url)
+
         logger.info(f"Downloading pack: {download_url}")
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             archive_path = Path(tmpdir) / f"{pack_name}.glpack"
-            
-            # Download
-            response = requests.get(download_url, stream=True)
-            response.raise_for_status()
-            
-            with open(archive_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
+
+            # Secure download
+            safe_download(download_url, str(archive_path), session=self.session)
             
             # Extract and install
             return self._install_from_archive(archive_path, verify)
@@ -329,57 +340,61 @@ class PackInstaller:
         Returns:
             InstalledPack metadata
         """
+        # Validate URL
+        validate_url(url)
+
         logger.info(f"Downloading from URL: {url}")
-        
+
         with tempfile.TemporaryDirectory() as tmpdir:
             # Determine filename from URL
             parsed = urlparse(url)
             filename = Path(parsed.path).name or "pack.archive"
             archive_path = Path(tmpdir) / filename
-            
-            # Download
-            response = requests.get(url, stream=True)
-            response.raise_for_status()
-            
-            with open(archive_path, 'wb') as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            
+
+            # Secure download
+            safe_download(url, str(archive_path), session=self.session)
+
             # Install from archive
             return self._install_from_archive(archive_path, verify)
     
     def _install_from_archive(self, archive_path: Path, verify: bool = True) -> InstalledPack:
         """
         Install pack from archive file
-        
+
         Args:
             archive_path: Path to archive (.glpack, .tar.gz, .zip)
             verify: Verify pack
-        
+
         Returns:
             InstalledPack metadata
         """
+        # Verify signature if required
+        if verify:
+            try:
+                verified, metadata = self.verifier.verify_pack(archive_path)
+                if not verified:
+                    logger.warning(f"Pack signature not verified: {archive_path.name}")
+            except SignatureVerificationError as e:
+                logger.error(f"Signature verification failed: {e}")
+                raise
+
         with tempfile.TemporaryDirectory() as tmpdir:
             extract_dir = Path(tmpdir) / "extracted"
             extract_dir.mkdir()
-            
-            # Extract based on file type
-            if archive_path.suffix == ".glpack" or archive_path.name.endswith(".tar.gz"):
-                with tarfile.open(archive_path, "r:gz") as tar:
-                    tar.extractall(extract_dir)
-            elif archive_path.suffix == ".zip":
-                with zipfile.ZipFile(archive_path, 'r') as zip_ref:
-                    zip_ref.extractall(extract_dir)
-            else:
-                raise ValueError(f"Unsupported archive format: {archive_path.suffix}")
+
+            # Safe extraction with path traversal protection
+            safe_extract_archive(archive_path, extract_dir)
             
             # Find pack.yaml
             pack_yamls = list(extract_dir.glob("**/pack.yaml"))
             if not pack_yamls:
                 raise RuntimeError("No pack.yaml found in archive")
-            
+
             pack_dir = pack_yamls[0].parent
-            
+
+            # Validate pack structure
+            validate_pack_structure(pack_dir)
+
             # Install from extracted directory
             return self._install_from_local(pack_dir, verify)
     
