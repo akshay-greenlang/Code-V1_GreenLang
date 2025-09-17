@@ -12,15 +12,17 @@ from unittest.mock import Mock, patch, MagicMock
 import sys
 import base64
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+# Removed sys.path manipulation - using installed package
 
 from greenlang.provenance.signing import (
-    DevKeyVerifier,
-    SigstoreVerifier,
     UnsignedPackError,
-    verify_pack_signature,
-    sign_pack
+    verify_pack_signature
+)
+from greenlang.security.signing import (
+    EphemeralKeypairSigner,
+    DetachedSigVerifier,
+    sign_artifact,
+    verify_artifact
 )
 from greenlang.packs.installer import PackInstaller
 
@@ -28,75 +30,53 @@ from greenlang.packs.installer import PackInstaller
 class TestSignatureVerification:
     """Test suite for signature verification"""
 
-    def test_unsigned_pack_install_fails(self):
+    def test_unsigned_pack_install_fails(self, temp_pack_dir):
         """Test E: Installing pack without .sig ⇒ fails (UnsignedPackError)"""
         installer = PackInstaller()
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            pack_dir = Path(tmpdir) / "test-pack"
-            pack_dir.mkdir()
+        # No signature file created in temp_pack_dir
 
-            # Create a minimal pack.yaml
-            manifest = pack_dir / "pack.yaml"
-            manifest.write_text("""
-name: test-pack
-version: 1.0.0
-kind: pack
-license: MIT
-contents:
-  pipelines:
-    - pipeline.yaml
-""")
+        # Try to install without signature
+        with pytest.raises(UnsignedPackError) as exc_info:
+            installer.install_pack(
+                temp_pack_dir,
+                allow_unsigned=False  # Enforce signature requirement
+            )
 
-            # No signature file created
+        assert "signature" in str(exc_info.value).lower()
+        assert "--allow-unsigned" in str(exc_info.value)
 
-            # Try to install without signature
-            with pytest.raises(UnsignedPackError) as exc_info:
-                installer.install_pack(
-                    pack_dir,
-                    allow_unsigned=False  # Enforce signature requirement
-                )
-
-            assert "signature" in str(exc_info.value).lower()
-            assert "--allow-unsigned" in str(exc_info.value)
-
-    def test_invalid_signature_fails(self):
+    def test_invalid_signature_fails(self, temp_pack_dir):
         """Test F: Installing pack with invalid .sig ⇒ fails"""
         installer = PackInstaller()
-        verifier = DevKeyVerifier()
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            pack_dir = Path(tmpdir) / "test-pack"
-            pack_dir.mkdir()
+        # Create an invalid signature (random bytes)
+        sig_file = temp_pack_dir / "pack.sig"
+        invalid_sig = {
+            "version": "2.0.0",
+            "kind": "greenlang-signature",
+            "metadata": {
+                "timestamp": "2024-01-01T00:00:00",
+                "artifact": "pack.yaml",
+                "hash": {"algorithm": "sha256", "value": "invalid_hash"}
+            },
+            "spec": {
+                "signature": {
+                    "algorithm": "ed25519",
+                    "value": base64.b64encode(b"invalid signature").decode()
+                }
+            }
+        }
+        import json
+        with open(sig_file, 'w') as f:
+            json.dump(invalid_sig, f)
 
-            # Create pack.yaml
-            manifest = pack_dir / "pack.yaml"
-            manifest_content = """
-name: test-pack
-version: 1.0.0
-kind: pack
-license: MIT
-contents:
-  pipelines:
-    - pipeline.yaml
-"""
-            manifest.write_text(manifest_content)
-
-            # Create an invalid signature (random bytes)
-            sig_file = pack_dir / "pack.sig"
-            sig_file.write_bytes(base64.b64encode(b"invalid signature"))
-
-            # Mock the verifier to be used
-            with patch('greenlang.packs.installer.create_verifier') as mock_create:
-                mock_create.return_value = verifier
-
-                # Try to install with invalid signature
-                with pytest.raises(UnsignedPackError) as exc_info:
-                    installer.install_pack(
-                        pack_dir,
-                        allow_unsigned=False,
-                        verifier=verifier
-                    )
+        # Try to install with invalid signature
+        with pytest.raises(UnsignedPackError) as exc_info:
+            installer.install_pack(
+                temp_pack_dir,
+                allow_unsigned=False
+            )
 
                 assert "verification failed" in str(exc_info.value).lower()
 

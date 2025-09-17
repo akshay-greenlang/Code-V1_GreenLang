@@ -1,5 +1,6 @@
 """Pytest configuration and shared fixtures."""
 
+import asyncio
 import json
 import os
 import socket
@@ -7,6 +8,9 @@ from pathlib import Path
 from typing import Dict, Any
 import pytest
 from hypothesis import settings, Verbosity
+
+# Set test environment for ephemeral signing
+os.environ['GL_SIGNING_MODE'] = 'ephemeral'
 
 
 @pytest.fixture(scope="session")
@@ -304,3 +308,111 @@ settings.register_profile(
 
 # Load profile from environment or default to 'fast' for <90s guarantee
 settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "fast"))
+
+
+# ============================================================================
+# Signing fixtures - NO HARDCODED KEYS
+# ============================================================================
+
+@pytest.fixture
+def ephemeral_signer():
+    """Provide ephemeral signer for tests - generates new keys each time"""
+    from greenlang.security.signing import EphemeralKeypairSigner
+    return EphemeralKeypairSigner()
+
+
+@pytest.fixture
+def temp_pack_dir(tmp_path):
+    """Create a temporary pack directory for testing"""
+    pack_dir = tmp_path / "test-pack"
+    pack_dir.mkdir()
+
+    # Create minimal pack.yaml
+    manifest = pack_dir / "pack.yaml"
+    manifest.write_text("""
+name: test-pack
+version: 1.0.0
+kind: pack
+license: MIT
+contents:
+  pipelines:
+    - pipeline.yaml
+""")
+
+    # Create dummy pipeline
+    pipeline = pack_dir / "pipeline.yaml"
+    pipeline.write_text("""
+version: "1.0"
+name: test-pipeline
+steps: []
+""")
+
+    return pack_dir
+
+
+@pytest.fixture
+def signed_pack(temp_pack_dir, ephemeral_signer):
+    """Create a signed pack for testing with ephemeral keys"""
+    from greenlang.security.signing import sign_artifact
+
+    # Sign the pack manifest
+    signature = sign_artifact(temp_pack_dir / "pack.yaml", signer=ephemeral_signer)
+
+    # Save signature
+    sig_path = temp_pack_dir / "pack.sig"
+    with open(sig_path, 'w') as f:
+        json.dump(signature, f)
+
+    return temp_pack_dir, signature, ephemeral_signer
+
+
+@pytest.fixture
+def mock_sigstore_env(monkeypatch):
+    """Mock environment for Sigstore testing"""
+    monkeypatch.setenv('CI', 'true')
+    monkeypatch.setenv('GITHUB_ACTIONS', 'true')
+    monkeypatch.setenv('GITHUB_REPOSITORY', 'test/repo')
+    monkeypatch.setenv('GITHUB_WORKFLOW', 'test-workflow')
+    monkeypatch.setenv('GL_SIGSTORE_STAGING', '1')  # Use staging for tests
+    yield
+
+
+@pytest.fixture
+def disable_signing(monkeypatch):
+    """Disable signing for tests that don't need it"""
+    monkeypatch.setenv('GL_SIGNING_MODE', 'disabled')
+    yield
+
+
+@pytest.fixture
+def fixtures_dir() -> Path:
+    """Get the path to test fixtures directory."""
+    return Path(__file__).parent / "fixtures"
+
+
+@pytest.fixture
+def anyio_backend():
+    """Backend for async tests."""
+    return "asyncio"
+
+
+@pytest.fixture(scope="function")
+def event_loop():
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
+
+
+@pytest.fixture(autouse=True)
+def _no_network(monkeypatch, request):
+    """Block network access by default in unit tests."""
+    # Allow network for integration and e2e tests
+    if any(mark in request.keywords for mark in ("integration", "e2e", "network")):
+        return
+
+    # Block socket connections for unit tests
+    def guard(*args, **kwargs):
+        raise RuntimeError("Network access disabled in unit tests. Use @pytest.mark.integration to allow network.")
+
+    monkeypatch.setattr(socket, "create_connection", guard)

@@ -1,4 +1,4 @@
-.PHONY: help install dev test lint demo fetch-opa clean
+.PHONY: help install dev test unit integ e2e cov test-all lint demo fetch-opa clean
 
 # Variables
 OPA_VERSION ?= 0.64.0
@@ -24,8 +24,24 @@ dev:
 	$(PYTHON) -m pip install -e ".[dev]"
 	pre-commit install
 
-test:
-	pytest tests/ -v
+test: ## Run unit-only tests with coverage
+	pytest -q -m "not integration and not e2e" --cov=greenlang --cov-report=term-missing
+
+unit: ## Run unit tests only
+	pytest -q -m "not integration and not e2e"
+
+integ: ## Run integration tests
+	pytest -q -m integration
+
+e2e: ## Run end-to-end tests
+	pytest -q -m e2e
+
+cov: ## Run all tests with coverage report
+	pytest -q --cov=greenlang --cov-report=term-missing --cov-report=html
+	@echo "Coverage report generated in .coverage_html/"
+
+test-all: ## Run all tests (unit, integration, e2e)
+	pytest -v tests/
 
 lint:
 	black greenlang/ tests/
