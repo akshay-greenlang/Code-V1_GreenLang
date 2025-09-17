@@ -11,8 +11,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 import sys
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+# Removed sys.path manipulation - using installed package
 
 from greenlang.registry.oci_client import OCIClient, OCIAuth, create_client
 

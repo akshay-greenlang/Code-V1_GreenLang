@@ -6,8 +6,7 @@ Test script to verify all GreenLang Developer Interface commands
 import sys
 from pathlib import Path
 
-# Add parent directory to path to import greenlang
-sys.path.insert(0, str(Path(__file__).parent))
+# Removed sys.path manipulation - using installed package
 
 from greenlang.cli.dev_interface import GreenLangDevInterface
 from greenlang.sdk import GreenLangClient

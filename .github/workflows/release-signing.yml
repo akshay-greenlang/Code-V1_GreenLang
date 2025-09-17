@@ -1,0 +1,178 @@
+name: Release with Sigstore Signing
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+        type: string
+
+permissions:
+  # Required for OIDC token
+  id-token: write
+  # Required for release uploads
+  contents: write
+  # Required for package publishing
+  packages: write
+
+jobs:
+  build-and-sign:
+    name: Build and Sign Release Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+          pip install sigstore  # For keyless signing
+          pip install -e .
+
+      - name: Build distribution
+        run: |
+          python -m build
+          echo "Built packages:"
+          ls -la dist/
+
+      - name: Sign with Sigstore (keyless)
+        env:
+          GL_SIGNING_MODE: keyless
+        run: |
+          # Sign each artifact with Sigstore
+          for file in dist/*; do
+            echo "Signing $file with Sigstore..."
+            python -m sigstore sign "$file" \
+              --oidc-issuer https://oauth2.sigstore.dev/auth \
+              --oidc-client-id sigstore
+          done
+
+          # List signature files
+          echo "Signature files created:"
+          ls -la dist/*.sig dist/*.bundle
+
+      - name: Verify signatures
+        run: |
+          # Verify each signed artifact
+          for file in dist/*.whl dist/*.tar.gz; do
+            if [ -f "$file" ]; then
+              echo "Verifying $file..."
+              python -m sigstore verify identity "$file" \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com \
+                --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/release-signing.yml@${{ github.ref }}"
+            fi
+          done
+
+      - name: Upload to Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Upload artifacts and signatures to release
+          for file in dist/*; do
+            echo "Uploading $file to release..."
+            gh release upload "${{ github.event.release.tag_name }}" "$file" --clobber
+          done
+
+      - name: Generate SBOM
+        run: |
+          pip install cyclonedx-bom
+          # Generate SBOM in SPDX format
+          cyclonedx-py environment -o sbom.spdx.json --format json --schema-version 1.4
+
+          # Sign SBOM
+          python -m sigstore sign sbom.spdx.json
+
+      - name: Upload SBOM to Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" sbom.spdx.json sbom.spdx.json.sig --clobber
+
+      - name: Create transparency log entry
+        run: |
+          echo "All artifacts have been signed and logged to Rekor transparency log"
+          echo "Verification can be done using:"
+          echo "  python -m sigstore verify identity <artifact> \\"
+          echo "    --cert-oidc-issuer https://token.actions.githubusercontent.com \\"
+          echo "    --cert-identity https://github.com/${{ github.repository }}/.github/workflows/release-signing.yml@${{ github.ref }}"
+
+  verify-post-publish:
+    name: Verify Published Artifacts
+    runs-on: ubuntu-latest
+    needs: build-and-sign
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Download release artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir verification
+          cd verification
+
+          # Download all release artifacts
+          gh release download "${{ github.event.release.tag_name }}" \
+            --repo "${{ github.repository }}"
+
+          ls -la
+
+      - name: Install Sigstore
+        run: pip install sigstore
+
+      - name: Verify all signatures
+        run: |
+          cd verification
+
+          # Verify each signed artifact
+          for file in *.whl *.tar.gz sbom.spdx.json; do
+            if [ -f "$file" ] && [ -f "$file.sig" ]; then
+              echo "Verifying $file..."
+              python -m sigstore verify identity "$file" \
+                --cert-oidc-issuer https://token.actions.githubusercontent.com \
+                --cert-identity "https://github.com/${{ github.repository }}/.github/workflows/release-signing.yml@${{ github.ref }}"
+
+              if [ $? -eq 0 ]; then
+                echo "✅ $file verification passed"
+              else
+                echo "❌ $file verification failed"
+                exit 1
+              fi
+            fi
+          done
+
+          echo "✅ All signatures verified successfully"
+
+  secret-scan:
+    name: Scan for Secrets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Check for PEM keys
+        run: |
+          # Ensure no private keys in codebase
+          if git grep -E "BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY" -- '*.py' '*.yml' '*.yaml' '*.json'; then
+            echo "❌ Found private keys in codebase!"
+            exit 1
+          fi
+
+          echo "✅ No private keys found"
