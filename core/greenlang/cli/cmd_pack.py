@@ -559,8 +559,8 @@ def add(
                 
                 progress.update(task, description="Installing...")
                 
-                # Register pack
-                registry.register(pack_dir, verify=False)
+                # Register pack with verification enabled
+                registry.register(pack_dir, verify=True)
                 
                 progress.update(task, completed=True)
                 console.print(f"[green][OK][/green] Installed {pack_ref}@{version} -> {cache}")

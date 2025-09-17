@@ -192,6 +192,13 @@ class OCIClient:
         # Create SSL context
         self.ssl_context = ssl.create_default_context()
         if insecure:
+            # Only allow insecure mode in development
+            if os.environ.get('GL_ALLOW_INSECURE_FOR_DEV') != '1':
+                raise ValueError(
+                    "Insecure mode is disabled. To enable for development only, "
+                    "set GL_ALLOW_INSECURE_FOR_DEV=1"
+                )
+            logger.warning("INSECURE: SSL verification disabled (development mode)")
             self.ssl_context.check_hostname = False
             self.ssl_context.verify_mode = ssl.CERT_NONE
     

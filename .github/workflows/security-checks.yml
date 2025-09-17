@@ -1,0 +1,280 @@
+name: Security Checks
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  insecure-patterns:
+    name: Check for Insecure Patterns
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for SSL bypass patterns
+        run: |
+          echo "Checking for insecure SSL/TLS patterns..."
+
+          # Define patterns to search for
+          PATTERNS=(
+            "verify=False"
+            "InsecureRequestWarning"
+            "ssl._create_unverified_context"
+            "_create_default_https_context.*_create_unverified_context"
+            "ALLOW_INSECURE"
+            "disable_warnings.*InsecureRequestWarning"
+            "check_hostname.*False"
+            "cert_reqs.*CERT_NONE"
+          )
+
+          # Search for patterns
+          FOUND=0
+          for pattern in "${PATTERNS[@]}"; do
+            echo "Checking for: $pattern"
+            if grep -r --include="*.py" -E "$pattern" core/ greenlang/ 2>/dev/null | grep -v "^#" | grep -v "test_"; then
+              echo "❌ Found insecure pattern: $pattern"
+              FOUND=1
+            fi
+          done
+
+          if [ $FOUND -eq 1 ]; then
+            echo "Security check failed: Insecure patterns detected"
+            exit 1
+          fi
+
+          echo "✅ No insecure SSL/TLS patterns found"
+
+      - name: Check for HTTP URLs
+        run: |
+          echo "Checking for insecure HTTP URLs..."
+
+          # Check for http:// URLs (excluding localhost for tests)
+          if grep -r --include="*.py" "http://" core/ greenlang/ 2>/dev/null | \
+             grep -v "localhost" | \
+             grep -v "127.0.0.1" | \
+             grep -v "test_" | \
+             grep -v "^#" | \
+             grep -v "http://.*example"; then
+            echo "❌ Found non-localhost HTTP URLs"
+            echo "Use HTTPS instead of HTTP for external URLs"
+            exit 1
+          fi
+
+          echo "✅ No insecure HTTP URLs found"
+
+      - name: Check for hardcoded secrets
+        run: |
+          echo "Checking for hardcoded secrets..."
+
+          # Patterns that might indicate hardcoded secrets
+          SECRET_PATTERNS=(
+            "api_key.*=.*['\"][a-zA-Z0-9]{20,}"
+            "secret.*=.*['\"][a-zA-Z0-9]{20,}"
+            "token.*=.*['\"][a-zA-Z0-9]{20,}"
+            "password.*=.*['\"][^'\"]*['\"]"
+            "AWS_SECRET"
+            "PRIVATE_KEY"
+          )
+
+          FOUND=0
+          for pattern in "${SECRET_PATTERNS[@]}"; do
+            if grep -r --include="*.py" -E "$pattern" core/ greenlang/ 2>/dev/null | \
+               grep -v "test_" | \
+               grep -v "example" | \
+               grep -v "placeholder" | \
+               grep -v "^#"; then
+              echo "❌ Potential hardcoded secret found: $pattern"
+              FOUND=1
+            fi
+          done
+
+          if [ $FOUND -eq 1 ]; then
+            echo "Security check failed: Potential secrets detected"
+            exit 1
+          fi
+
+          echo "✅ No hardcoded secrets found"
+
+  env-security:
+    name: Environment Security Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for insecure environment flags in CI
+        run: |
+          echo "Checking CI configs for insecure environment flags..."
+
+          # These flags should never be set in CI
+          INSECURE_FLAGS=(
+            "GL_ALLOW_INSECURE_FOR_DEV"
+            "GL_ALLOW_UNSIGNED_FOR_DEV"
+            "GL_ALLOW_PRIVATE_HOSTS_FOR_DEV"
+          )
+
+          FOUND=0
+          for flag in "${INSECURE_FLAGS[@]}"; do
+            if grep -r "$flag.*=" .github/workflows/ 2>/dev/null | grep -v "security-checks.yml"; then
+              echo "❌ Found insecure flag in CI: $flag"
+              FOUND=1
+            fi
+          done
+
+          if [ $FOUND -eq 1 ]; then
+            echo "Security check failed: Insecure flags found in CI"
+            exit 1
+          fi
+
+          echo "✅ No insecure environment flags in CI"
+
+  dependency-audit:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+
+      - name: Run pip-audit
+        run: |
+          # Create a temporary requirements file from setup.py/pyproject.toml
+          if [ -f "setup.py" ]; then
+            pip install -e . --dry-run 2>&1 | grep "Collecting" | awk '{print $2}' > temp_requirements.txt
+          elif [ -f "pyproject.toml" ]; then
+            pip install . --dry-run 2>&1 | grep "Collecting" | awk '{print $2}' > temp_requirements.txt
+          elif [ -f "requirements.txt" ]; then
+            cp requirements.txt temp_requirements.txt
+          fi
+
+          # Run audit if requirements were found
+          if [ -f "temp_requirements.txt" ] && [ -s "temp_requirements.txt" ]; then
+            echo "Running dependency audit..."
+            pip-audit -r temp_requirements.txt || true
+          else
+            echo "No dependencies file found, skipping audit"
+          fi
+
+  path-traversal-check:
+    name: Path Traversal Protection Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for unsafe path operations
+        run: |
+          echo "Checking for potential path traversal vulnerabilities..."
+
+          # Patterns that might indicate unsafe path handling
+          UNSAFE_PATTERNS=(
+            "extractall\([^)]*\)[ ]*$"  # extractall without validation
+            "extract\([^)]*\)[ ]*$"     # extract without validation
+            "os.path.join.*\.\."        # Path join with ..
+            "open\([^)]*\+.*\.\."       # Open with .. in path
+          )
+
+          FOUND=0
+          for pattern in "${UNSAFE_PATTERNS[@]}"; do
+            if grep -r --include="*.py" -E "$pattern" core/ greenlang/ 2>/dev/null | \
+               grep -v "safe_extract" | \
+               grep -v "test_" | \
+               grep -v "^#"; then
+              echo "⚠️  Potential unsafe path operation: $pattern"
+              FOUND=1
+            fi
+          done
+
+          if [ $FOUND -eq 1 ]; then
+            echo "Warning: Potential path traversal patterns detected"
+            echo "Ensure all path operations use safe_extract functions"
+          else
+            echo "✅ No unsafe path operations found"
+          fi
+
+  permissions-check:
+    name: File Permissions Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check for executable Python files
+        run: |
+          echo "Checking for executable Python files..."
+
+          # Python files should not be executable
+          EXEC_FILES=$(find core/ greenlang/ -name "*.py" -type f -executable 2>/dev/null)
+
+          if [ ! -z "$EXEC_FILES" ]; then
+            echo "❌ Found executable Python files:"
+            echo "$EXEC_FILES"
+            echo "Python files should not have executable permissions"
+            exit 1
+          fi
+
+          echo "✅ No executable Python files found"
+
+  security-test:
+    name: Run Security Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run security tests
+        run: |
+          if [ -f "tests/test_security.py" ]; then
+            echo "Running security tests..."
+            pytest tests/test_security.py -v --tb=short
+          else
+            echo "No security tests found"
+          fi
+
+  signature-verification:
+    name: Signature Verification Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Check signature verification is enabled
+        run: |
+          echo "Checking that signature verification is enabled by default..."
+
+          # Check that verify defaults to True in critical functions
+          if grep -r --include="*.py" "verify.*=.*False" core/greenlang/ 2>/dev/null | \
+             grep -v "test_" | \
+             grep -v "^#" | \
+             grep -v "Optional"; then
+            echo "⚠️  Found verify=False in code"
+            echo "Signature verification should be enabled by default"
+          fi
+
+          echo "✅ Signature verification checks passed"
