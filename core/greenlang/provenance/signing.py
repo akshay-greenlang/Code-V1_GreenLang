@@ -37,101 +37,75 @@ except ImportError:
 
 def sign_artifact(artifact_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any]:
     """
-    Sign an artifact
-    
+    Sign an artifact using secure provider
+
     Args:
         artifact_path: Path to artifact to sign
-        key_path: Path to signing key (optional)
-    
+        key_path: Deprecated - keys are managed by provider
+
     Returns:
         Signature dictionary
     """
-    # TODO: Integrate with actual cosign or sigstore
-    # For now, create a simple signature format
-    
-    if not artifact_path.exists():
-        raise ValueError(f"Artifact not found: {artifact_path}")
-    
-    # Calculate artifact hash
-    artifact_hash = _calculate_file_hash(artifact_path)
-    
-    # Create signature payload
-    signature = {
-        "version": "1.0.0",
-        "kind": "greenlang-signature",
-        "metadata": {
-            "timestamp": datetime.now().isoformat(),
-            "artifact": str(artifact_path.name),
-            "size": artifact_path.stat().st_size
-        },
-        "spec": {
-            "hash": {
-                "algorithm": "sha256",
-                "value": artifact_hash
-            },
-            "signature": {
-                "algorithm": "mock",  # Would be RSA, ECDSA, etc.
-                "value": _mock_sign(artifact_hash, key_path)
-            }
-        }
-    }
-    
+    if key_path:
+        logger.warning("key_path parameter is deprecated and will be ignored")
+
+    # Import the new secure signing module
+    from ...greenlang.security import signing as secure_signing
+
+    # Sign using secure provider
+    signature = secure_signing.sign_artifact(artifact_path)
+
     # Save signature next to artifact
     sig_path = artifact_path.with_suffix(artifact_path.suffix + ".sig")
     with open(sig_path, "w", encoding='utf-8') as f:
         json.dump(signature, f, indent=2, ensure_ascii=False)
-    
+
     return signature
 
 
 def verify_artifact(artifact_path: Path, signature_path: Optional[Path] = None) -> tuple[bool, Optional[Dict[str, Any]]]:
     """
-    Verify an artifact signature
-    
+    Verify an artifact signature using secure provider
+
     Args:
         artifact_path: Path to artifact
         signature_path: Path to signature file (optional)
-    
+
     Returns:
         Tuple of (is_valid, signer_info)
     """
     if not artifact_path.exists():
         raise ValueError(f"Artifact not found: {artifact_path}")
-    
+
     # Find signature file
     if signature_path is None:
         signature_path = artifact_path.with_suffix(artifact_path.suffix + ".sig")
-    
+
     if not signature_path.exists():
         return False, None
-    
+
     # Load signature
     with open(signature_path, 'r', encoding='utf-8', errors='replace') as f:
         signature = json.load(f)
-    
-    # Verify hash
-    expected_hash = signature["spec"]["hash"]["value"]
-    actual_hash = _calculate_file_hash(artifact_path)
-    
-    if expected_hash != actual_hash:
-        return False, None
-    
-    # Verify signature (mock for now)
-    sig_value = signature["spec"]["signature"]["value"]
-    expected_sig = _mock_sign(actual_hash, None)
-    
-    is_valid = sig_value == expected_sig
-    
-    # Extract signer info
-    signer_info = None
-    if is_valid:
+
+    # Import the new secure signing module
+    from ...greenlang.security import signing as secure_signing
+
+    try:
+        # Verify using secure provider
+        secure_signing.verify_artifact(artifact_path, signature)
+
+        # Extract signer info
         signer_info = {
             "subject": signature.get("metadata", {}).get("artifact", "Unknown"),
-            "issuer": "greenlang-mock",
+            "issuer": signature.get("metadata", {}).get("signer", {}).get("type", "unknown"),
             "timestamp": signature.get("metadata", {}).get("timestamp", "Unknown")
         }
-    
-    return is_valid, signer_info
+
+        return True, signer_info
+    except Exception as e:
+        logger.debug(f"Signature verification failed: {e}")
+        return False, None
 
 
 def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any]:
@@ -160,19 +134,21 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
     else:
         manifest = {}
     
+    # Sign using secure provider
+    from ...greenlang.security import signing as secure_signing
+
+    # Create payload for signing
+    payload = pack_hash.encode('utf-8')
+
+    # Get signer based on environment
+    signer = secure_signing.create_signer()
+
     # Sign the hash
-    if CRYPTO_AVAILABLE:
-        # Use real cryptographic signing
-        if key_path is None:
-            # Generate or use default key
-            key_path = _get_or_create_key_pair(pack_path)
-        
-        signature_value, algorithm, public_key_pem = _cryptographic_sign(pack_hash, key_path)
-    else:
-        # Fallback to mock signing
-        signature_value = _mock_sign(pack_hash, key_path)
-        algorithm = "mock"
-        public_key_pem = None
+    result = signer.sign(payload)
+
+    signature_value = base64.b64encode(result['signature']).decode()
+    algorithm = result['algorithm']
+    public_key_pem = result.get('public_key')
     
     # Create pack signature
     signature = {
@@ -239,11 +215,27 @@ def verify_pack(pack_path: Path) -> bool:
     if current_hash != expected_hash:
         return False
     
-    # Verify signature
-    sig_value = signature["spec"]["signature"]["value"]
-    expected_sig = _mock_sign(current_hash, None)
-    
-    return sig_value == expected_sig
+    # Import the new secure signing module
+    from ...greenlang.security import signing as secure_signing
+
+    try:
+        # Create verifier
+        verifier = secure_signing.create_verifier()
+
+        # Verify signature
+        sig_spec = signature["spec"]
+        sig_bytes = base64.b64decode(sig_spec["signature"]["value"])
+        payload = current_hash.encode('utf-8')
+
+        verify_kwargs = {}
+        if sig_spec.get('publicKey'):
+            verify_kwargs['public_key'] = sig_spec['publicKey']
+
+        verifier.verify(payload, sig_bytes, **verify_kwargs)
+        return True
+    except Exception as e:
+        logger.debug(f"Pack verification failed: {e}")
+        return False
 
 
 def _calculate_file_hash(file_path: Path) -> str:
@@ -283,90 +275,10 @@ def _calculate_directory_hash(directory: Path, exclude: list = None) -> str:
     return hasher.hexdigest()
 
 
-def _mock_sign(data: str, key_path: Optional[Path]) -> str:
-    """
-    Mock signing function
-    
-    Real implementation would use cryptographic signing
-    """
-    # For demo purposes, just create a deterministic "signature"
-    signer = hashlib.sha256()
-    signer.update(data.encode())
-    
-    if key_path and key_path.exists():
-        with open(key_path, 'rb') as f:
-            signer.update(f.read())
-    else:
-        signer.update(b"mock-key")
-    
-    return base64.b64encode(signer.digest()).decode()
+# _mock_sign removed - using secure provider instead
 
 
-def _get_or_create_key_pair(pack_path: Path) -> Path:
-    """
-    Get or create RSA key pair for signing
-    
-    Args:
-        pack_path: Pack directory
-    
-    Returns:
-        Path to private key
-    """
-    # Check for existing keys in pack
-    private_key_path = pack_path / "private.key"
-    public_key_path = pack_path / "public.pem"
-    
-    if private_key_path.exists():
-        return private_key_path
-    
-    # Check for global keys
-    gl_home = Path.home() / ".greenlang"
-    gl_home.mkdir(exist_ok=True)
-    
-    global_private = gl_home / "signing.key"
-    global_public = gl_home / "signing.pub"
-    
-    if global_private.exists():
-        return global_private
-    
-    # Generate new key pair
-    if CRYPTO_AVAILABLE:
-        logger.info("Generating new RSA key pair for signing")
-        
-        # Generate private key
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-            backend=default_backend()
-        )
-        
-        # Save private key
-        private_pem = private_key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.PKCS8,
-            encryption_algorithm=serialization.NoEncryption()
-        )
-        
-        with open(global_private, 'wb') as f:
-            f.write(private_pem)
-        
-        # Save public key
-        public_key = private_key.public_key()
-        public_pem = public_key.public_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-        )
-        
-        with open(global_public, 'wb') as f:
-            f.write(public_pem)
-        
-        logger.info(f"Keys saved to {gl_home}")
-        return global_private
-    else:
-        # Create mock key
-        with open(global_private, 'w', encoding='utf-8') as f:
-            f.write("MOCK_PRIVATE_KEY")
-        return global_private
+# _get_or_create_key_pair removed - keys are managed by secure provider
 
 
 def _cryptographic_sign(data: str, key_path: Path) -> Tuple[str, str, str]:
@@ -459,9 +371,9 @@ def verify_pack_signature(pack_path: Path, signature_path: Optional[Path] = None
     sig_value = signature["spec"]["signature"]["value"]
     
     if sig_algorithm == "mock":
-        # Mock verification
-        expected_sig = _mock_sign(current_hash, None)
-        is_valid = sig_value == expected_sig
+        # Legacy mock signatures are no longer supported
+        logger.warning("Mock signatures are deprecated and will be rejected")
+        is_valid = False
     elif CRYPTO_AVAILABLE and sig_algorithm in ["rsa-pss-sha256", "ecdsa-sha256"]:
         # Cryptographic verification
         public_key_pem = signature["spec"].get("publicKey")

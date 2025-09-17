@@ -8,8 +8,8 @@ import yaml
 from pathlib import Path
 from pydantic import ValidationError
 
-from core.greenlang.packs.manifest import PackManifest, Compat, Policy, Security, Contents
-from core.greenlang.packs.loader_simple import load_manifest, validate_pack
+from greenlang.packs.manifest import PackManifest, Compat, Policy, Security, Contents
+from greenlang.packs.loader_simple import load_manifest, validate_pack
 
 
 class TestPackManifest:
