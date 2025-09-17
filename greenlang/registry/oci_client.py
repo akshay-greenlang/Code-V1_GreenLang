@@ -11,6 +11,8 @@ import base64
 import gzip
 import tarfile
 import tempfile
+import os
+import logging
 from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple, BinaryIO
 from dataclasses import dataclass, field
@@ -20,6 +22,8 @@ import urllib.request
 import urllib.error
 import ssl
 import re
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -176,29 +180,44 @@ class OCIClient:
     """
     
     def __init__(self, registry: str = "ghcr.io", auth: Optional[OCIAuth] = None,
-                 insecure: bool = False):
+                 insecure: bool = False, insecure_transport: bool = False):
         """
         Initialize OCI client.
-        
+
         Args:
             registry: Registry URL (default: ghcr.io)
             auth: Authentication credentials
-            insecure: Allow insecure HTTPS connections
+            insecure: Allow insecure HTTPS connections (DANGEROUS - dev only)
+            insecure_transport: Allow HTTP instead of HTTPS (DANGEROUS - dev only)
         """
         self.registry = registry.rstrip('/')
         self.auth = auth or OCIAuth()
         self.insecure = insecure
-        
+        self.insecure_transport = insecure_transport
+
+        # SECURITY: Enforce HTTPS by default
+        if self.registry.startswith('http://'):
+            if not (os.environ.get('GL_DEBUG_INSECURE') == '1' and insecure_transport):
+                raise ValueError(
+                    "SECURITY: HTTP registries are disabled by default. "
+                    "Use HTTPS or set GL_DEBUG_INSECURE=1 AND --insecure-transport for local dev only."
+                )
+            logger.warning("⚠️  SECURITY WARNING: Using insecure HTTP transport (dev only!)")
+        elif not self.registry.startswith('https://') and '://' not in self.registry:
+            # Prepend https:// if no protocol specified
+            self.registry = f"https://{self.registry}"
+
         # Create SSL context
         self.ssl_context = ssl.create_default_context()
         if insecure:
-            # Only allow insecure mode in development
-            if os.environ.get('GL_ALLOW_INSECURE_FOR_DEV') != '1':
+            # SECURITY: Require both env var and flag for insecure mode
+            if os.environ.get('GL_DEBUG_INSECURE') != '1':
                 raise ValueError(
-                    "Insecure mode is disabled. To enable for development only, "
-                    "set GL_ALLOW_INSECURE_FOR_DEV=1"
+                    "SECURITY: Insecure TLS is disabled by default. "
+                    "Set GL_DEBUG_INSECURE=1 AND use --insecure flag for local dev only."
                 )
-            logger.warning("INSECURE: SSL verification disabled (development mode)")
+            logger.warning("⚠️  SECURITY WARNING: SSL/TLS verification disabled (dev only!)")
+            logger.warning("⚠️  This connection is vulnerable to MITM attacks!")
             self.ssl_context.check_hostname = False
             self.ssl_context.verify_mode = ssl.CERT_NONE
     
@@ -499,23 +518,26 @@ class OCIClient:
         return code in [202, 204]
 
 
-def create_client(registry: str = "ghcr.io", 
+def create_client(registry: str = "ghcr.io",
                  username: Optional[str] = None,
                  password: Optional[str] = None,
                  token: Optional[str] = None,
-                 insecure: bool = False) -> OCIClient:
+                 insecure: bool = False,
+                 insecure_transport: bool = False) -> OCIClient:
     """
     Create an OCI client with authentication.
-    
+
     Args:
-        registry: Registry URL
+        registry: Registry URL (HTTPS enforced by default)
         username: Username for basic auth
         password: Password for basic auth
         token: Bearer token
-        insecure: Allow insecure connections
-    
+        insecure: Allow insecure TLS/SSL (requires GL_DEBUG_INSECURE=1)
+        insecure_transport: Allow HTTP transport (requires GL_DEBUG_INSECURE=1)
+
     Returns:
         Configured OCIClient
     """
     auth = OCIAuth(username=username, password=password, token=token)
-    return OCIClient(registry=registry, auth=auth, insecure=insecure)
+    return OCIClient(registry=registry, auth=auth, insecure=insecure,
+                    insecure_transport=insecure_transport)

@@ -8,9 +8,26 @@ import json
 import logging
 import shutil
 import tempfile
+import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from .manifest import PackManifest, Capabilities
+from ..provenance import (
+    SignatureVerifier,
+    DevKeyVerifier,
+    UnsignedPackError,
+    verify_pack_signature,
+    create_verifier
+)
+from ..auth.audit import audit_log as _audit_log_impl
+
+# Wrapper for audit logging with string event types
+def audit_log(event_type: str, data: Dict[str, Any]):
+    """Log audit event with string type for simplicity"""
+    try:
+        _audit_log_impl(event_type, **data)
+    except Exception as e:
+        logger.warning(f"Failed to log audit event: {e}")
 
 logger = logging.getLogger(__name__)
 
@@ -282,17 +299,65 @@ class PackInstaller:
 
         return "\n".join(report)
 
-    def install_pack(self, pack_path: Path, validate_capabilities: bool = True) -> Tuple[bool, str]:
+    def install_pack(self, pack_path: Path,
+                      validate_capabilities: bool = True,
+                      allow_unsigned: bool = False,
+                      verifier: Optional[SignatureVerifier] = None) -> Tuple[bool, str]:
         """
-        Install a pack with capability validation
+        Install a pack with capability and signature validation
 
         Args:
             pack_path: Path to pack directory or archive
             validate_capabilities: Whether to validate capabilities
+            allow_unsigned: Whether to allow unsigned packs (DANGEROUS!)
+            verifier: Optional signature verifier to use
 
         Returns:
             (success, message)
+
+        Raises:
+            UnsignedPackError: If pack is unsigned and allow_unsigned is False
         """
+        # SECURITY: Verify pack signature (default-deny unsigned packs)
+        if not allow_unsigned:
+            if not verifier:
+                verifier = create_verifier("dev")  # Default to dev verifier for now
+
+            # Check for pack archive or manifest
+            if pack_path.is_file():
+                # Archive file - verify signature
+                is_valid, sig_msg = verify_pack_signature(pack_path, verifier)
+                if not is_valid:
+                    error_msg = f"SECURITY: Signature verification failed - {sig_msg}"
+                    logger.error(error_msg)
+                    audit_log("PACK_INSTALL_DENIED", {
+                        "pack": str(pack_path),
+                        "reason": "signature_verification_failed",
+                        "message": sig_msg
+                    })
+                    raise UnsignedPackError(f"{error_msg}\nUse --allow-unsigned to bypass (not recommended)")
+                logger.info(f"✅ Signature verified for {pack_path.name}")
+            else:
+                # Directory install - check for signature file
+                sig_file = pack_path / "pack.sig"
+                if not sig_file.exists():
+                    error_msg = "SECURITY: No signature file found (pack.sig required)"
+                    logger.error(error_msg)
+                    audit_log("PACK_INSTALL_DENIED", {
+                        "pack": str(pack_path),
+                        "reason": "no_signature_file"
+                    })
+                    raise UnsignedPackError(f"{error_msg}\nUse --allow-unsigned to bypass (not recommended)")
+        else:
+            # SECURITY WARNING: Bypassing signature verification
+            logger.warning("⚠️  SECURITY WARNING: Installing unsigned pack (--allow-unsigned used)")
+            logger.warning("⚠️  This pack has not been cryptographically verified!")
+            audit_log("PACK_INSTALL_UNSIGNED", {
+                "pack": str(pack_path),
+                "warning": "signature_verification_bypassed",
+                "allow_unsigned": True
+            })
+
         # Find manifest file
         if pack_path.is_dir():
             manifest_path = pack_path / "pack.yaml"
@@ -301,7 +366,30 @@ class PackInstaller:
                 if not manifest_path.exists():
                     return False, "No pack.yaml or manifest.yaml found"
         else:
-            return False, "Pack path must be a directory"
+            # Extract archive first if it's a file
+            import tarfile
+            import zipfile
+
+            temp_dir = Path(tempfile.mkdtemp())
+            try:
+                if pack_path.suffix == '.tar' or pack_path.suffixes[-2:] == ['.tar', '.gz']:
+                    with tarfile.open(pack_path) as tar:
+                        tar.extractall(temp_dir)
+                elif pack_path.suffix == '.zip':
+                    with zipfile.ZipFile(pack_path) as zip_file:
+                        zip_file.extractall(temp_dir)
+                else:
+                    return False, f"Unsupported archive format: {pack_path.suffix}"
+
+                # Find manifest in extracted files
+                pack_path = temp_dir
+                manifest_path = pack_path / "pack.yaml"
+                if not manifest_path.exists():
+                    manifest_path = pack_path / "manifest.yaml"
+                    if not manifest_path.exists():
+                        return False, "No pack.yaml or manifest.yaml found in archive"
+            except Exception as e:
+                return False, f"Failed to extract archive: {e}"
 
         # Validate manifest
         if validate_capabilities:
@@ -330,6 +418,8 @@ class PackInstaller:
                 'version': manifest.version,
                 'installed_at': datetime.datetime.utcnow().isoformat(),
                 'capabilities': manifest.capabilities.model_dump() if manifest.capabilities else {},
+                'signature_verified': not allow_unsigned,
+                'verifier_type': verifier.get_verifier_info()['type'] if verifier else 'none',
             }
 
             with open(install_dir / '.installation.json', 'w') as f:
@@ -393,5 +483,3 @@ class PackInstaller:
             shutil.rmtree(pack_dir)
             return True, f"Uninstalled all versions of {name}"
 
-
-import datetime  # Add this import at the top of the file

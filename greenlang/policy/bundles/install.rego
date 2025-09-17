@@ -10,12 +10,18 @@ default reason := "policy denied"
 
 # Allow installation if all conditions are met
 allow if {
+	signature_verified
 	license_allowed
 	network_policy_present
 	vintage_requirement_met
 	publisher_allowed
 	region_allowed
 	organization_allowed
+}
+
+# SECURITY: Require cryptographic signatures (default-deny unsigned packs)
+signature_verified if {
+	input.pack.signature_verified == true
 }
 
 # License allowlist - deny GPL and restrictive licenses
@@ -109,7 +115,9 @@ organization_allowed if {
 
 # Specific denial reasons for better error messages
 # Select most specific denial reason
-reason := "GPL or restrictive license not allowed" if {
+reason := "POLICY.DENIED_INSTALL: Pack must be cryptographically signed (use --allow-unsigned for dev only)" if {
+	not signature_verified
+} else := "GPL or restrictive license not allowed" if {
 	not license_allowed
 	input.pack.license in ["GPL-2.0", "GPL-3.0", "AGPL-3.0", "LGPL-2.1", "LGPL-3.0"]
 } else := "missing network allowlist - must specify allowed domains" if {
