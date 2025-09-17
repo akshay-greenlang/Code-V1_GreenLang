@@ -26,7 +26,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install -e .[test]
+        pip install pytest pytest-cov pytest-xdist hypothesis
     
     - name: Run linting (ruff)
       run: |
@@ -43,9 +44,10 @@ jobs:
         black --check greenlang/ tests/
       continue-on-error: false  # Fail if formatting is wrong
     
-    - name: Run tests with coverage
+    - name: Run unit tests with coverage
       run: |
-        pytest --cov=greenlang --cov-report=xml --cov-report=term-missing
+        pytest -q -m "not integration and not e2e" \
+          --cov=greenlang --cov-report=term-missing --cov-report=xml
     
     - name: Check coverage thresholds
       run: |

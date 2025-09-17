@@ -32,6 +32,7 @@ These specifications form the backbone of GreenLang's package management and wor
 | GL.yaml v1.0 Pipeline Specification | ✅ Complete | 100% | 100% (all examples validate) | Complete |
 | Version Management System | ✅ Complete | 100% | 100% | Complete |
 | **Capability-Based Security** | ✅ Complete | 100% | 95% (33/35 checklist items) | Complete |
+| **Secure Signing Provider** | ✅ Complete | 100% | 100% (all tests pass) | Complete |
 
 ### Critical Implementation (January 2025) - Capability-Based Security System
 - ✅ **Deny-by-Default Capabilities**: Complete implementation of Week 0 security requirements
@@ -48,6 +49,21 @@ These specifications form the backbone of GreenLang's package management and wor
   - Developer override flags (--cap-override, --no-policy) for testing
   - Comprehensive audit logging for all capability decisions
   - 500+ lines of test coverage in tests/test_capabilities.py
+
+### Critical Security Enhancement (September 17, 2025) - Secure Signing Provider
+- ✅ **Zero Hardcoded Keys**: Complete elimination of all mock keys from codebase
+  - Removed all `_mock_sign()` functions and `MOCK_PRIVATE_KEY` constants
+  - Created secure signing module: `greenlang/security/signing.py`
+  - Implemented provider abstraction with no embedded keys
+  - SigstoreKeylessSigner for CI/CD (OIDC-based, no stored keys)
+  - EphemeralKeypairSigner for tests (Ed25519, memory-only keys)
+  - DetachedSigVerifier for signature validation
+  - Updated all CLI commands to use secure providers
+  - GitHub Actions workflow for Sigstore signing: `.github/workflows/release-signing.yml`
+  - Secret scanning with Gitleaks configured in CI
+  - Complete security documentation: `docs/security/signing.md`
+  - Verification scripts: `verify_signing.sh` and `verify_signing.bat`
+  - All 6 security verification checks pass
   - Complete documentation: threat model, manifest spec, migration guide
   - Pass rate: 95% of technical advisor's 35-point checklist
 

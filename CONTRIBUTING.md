@@ -35,9 +35,53 @@ pre-commit install
 
 ## Testing
 
+### Test Structure
+
+Our tests are organized into three categories:
+
+- **Unit Tests** (`tests/unit/`): Fast, isolated tests with no external dependencies
+- **Integration Tests** (`tests/integration/`): Tests that interact with external systems
+- **End-to-End Tests** (`tests/e2e/`): Full pipeline tests that validate complete workflows
+
+### Running Tests
+
+```bash
+# Run unit tests only (default, fast)
+make test
+
+# Run specific test categories
+make unit       # Unit tests only
+make integ      # Integration tests only
+make e2e        # End-to-end tests only
+
+# Run all tests with coverage report
+make cov
+
+# Run all tests (unit, integration, e2e)
+make test-all
+
+# Using pytest directly
+pytest -q -m "not integration and not e2e"  # Unit tests only
+pytest -q -m integration                     # Integration tests only
+pytest -q -m e2e                            # E2E tests only
+```
+
+### Test Requirements
+
 - Write tests for any new functionality
-- Ensure all tests pass: `pytest tests/`
-- Maintain or improve code coverage
+- Ensure all tests pass before submitting PR
+- Maintain code coverage above 85% overall
+- Unit tests should complete in under 1 second each
+- Mark slow tests with `@pytest.mark.slow`
+- Mark integration tests with `@pytest.mark.integration`
+- Mark e2e tests with `@pytest.mark.e2e`
+
+### Coverage Requirements
+
+- Overall coverage must be ≥85%
+- Agent modules must maintain ≥90% coverage
+- Run `make cov` to generate HTML coverage report
+- Coverage report will be in `.coverage_html/`
 
 ## Pull Request Requirements
 
