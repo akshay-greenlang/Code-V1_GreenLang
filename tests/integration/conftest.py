@@ -17,8 +17,7 @@ import pytest
 import numpy as np
 from click.testing import CliRunner
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+# Removed sys.path manipulation - using installed package
 
 
 # ==================== Network Guard ====================

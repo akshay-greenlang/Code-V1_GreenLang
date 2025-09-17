@@ -17,9 +17,8 @@ import zipfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-# Add parent directory to path for imports
+# Removed sys.path manipulation - using installed package
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
 
 from greenlang.security import (
     validate_url,

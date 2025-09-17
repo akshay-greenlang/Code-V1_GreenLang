@@ -11,8 +11,9 @@
 **Architecture:** Hybrid Climate Intelligence + Infrastructure Platform
 **Readiness Level:** **TRL 9** (Actual system proven in operational environment)
 **Security:** **GATE COMPLETE ✅** - Default-deny everywhere (Sept 17, 2025)
+**Signing:** **SECURE ✅** - Zero hardcoded keys, provider abstraction (Sept 17, 2025)
 **Capability System:** **COMPLETE** - All capabilities default to FALSE
-**Verification:** 36/36 security checks PASSED
+**Verification:** 36/36 security checks + 6/6 signing checks PASSED
 **Release Date:** January 2025
 
 ---
@@ -431,7 +432,12 @@ SECURITY_FEATURES = {
 ✅ **COMPLETED (Sept 17, 2025):**
 - **Security Hardening** - All SSL bypasses removed, HTTPS enforced
 - **Path Traversal Protection** - Safe archive extraction implemented
-- **Signature Verification** - Framework ready for Sigstore integration
+- **Signature Verification** - ✅ Secure provider abstraction COMPLETE
+  - Zero hardcoded keys in codebase
+  - SigstoreKeylessSigner for CI/CD (OIDC-based)
+  - EphemeralKeypairSigner for tests (memory-only)
+  - GitHub Actions workflow configured
+  - Complete security documentation
 - **Security Tests** - 23 test cases, CI/CD checks added
 
 ✅ **COMPLETED (Sept 15, 2025):**
