@@ -533,6 +533,13 @@ class PolicyEnforcer:
         if hasattr(pipeline, 'requested_capabilities'):
             capabilities.extend(pipeline.requested_capabilities)
 
+        # Check pack manifest capabilities
+        if hasattr(pipeline, 'pack_manifest'):
+            manifest_caps = pipeline.pack_manifest.get('capabilities', {})
+            for cap_name, cap_config in manifest_caps.items():
+                if cap_config.get('allow', False):
+                    capabilities.append(cap_name)
+
         # Check steps for capabilities
         if hasattr(pipeline, 'steps'):
             for step in pipeline.steps:
@@ -548,6 +555,60 @@ class PolicyEnforcer:
                         capabilities.append('subprocess')
 
         return list(set(capabilities))  # Remove duplicates
+
+    def check_capability_policy(self, pack_capabilities: Dict[str, Any],
+                                 org_policy: Optional[Dict[str, Any]] = None) -> Tuple[bool, List[str]]:
+        """
+        Check if pack capabilities are allowed by organization policy
+
+        Args:
+            pack_capabilities: Capabilities requested by the pack
+            org_policy: Organization's capability policy
+
+        Returns:
+            (allowed, list_of_reasons)
+        """
+        if self.permissive_mode:
+            return True, ["Permissive mode enabled"]
+
+        reasons = []
+        org_policy = org_policy or self.config.get('capability_policy', {})
+
+        # Check each capability
+        for cap_name, cap_config in pack_capabilities.items():
+            if not cap_config.get('allow', False):
+                continue  # Capability not requested
+
+            # Check if capability is allowed by org
+            org_allowed = org_policy.get(cap_name, {}).get('allow', False)
+            if not org_allowed:
+                reasons.append(f"Capability '{cap_name}' denied by organization policy")
+
+            # Check specific restrictions
+            if cap_name == 'net' and org_allowed:
+                # Check domain allowlist
+                requested_domains = cap_config.get('outbound', {}).get('allowlist', [])
+                org_domains = org_policy.get('net', {}).get('allowed_domains', [])
+
+                for domain in requested_domains:
+                    if not any(self._match_domain_pattern(domain, allowed) for allowed in org_domains):
+                        reasons.append(f"Domain '{domain}' not in organization allowlist")
+
+            elif cap_name == 'subprocess' and org_allowed:
+                # Check binary allowlist
+                requested_bins = cap_config.get('allowlist', [])
+                org_bins = org_policy.get('subprocess', {}).get('allowed_binaries', [])
+
+                for binary in requested_bins:
+                    if binary not in org_bins:
+                        reasons.append(f"Binary '{binary}' not in organization allowlist")
+
+        return len(reasons) == 0, reasons
+
+    def _match_domain_pattern(self, domain: str, pattern: str) -> bool:
+        """Check if domain matches a pattern (with wildcard support)"""
+        import fnmatch
+        return fnmatch.fnmatch(domain, pattern)
 
     def _get_allowed_publishers(self) -> List[str]:
         """Get list of allowed publishers from config"""

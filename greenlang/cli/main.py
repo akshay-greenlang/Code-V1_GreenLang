@@ -617,12 +617,30 @@ def recommend() -> None:
 @click.option("--backend", "-b", type=click.Choice(["local", "docker", "k8s", "kubernetes"]), default="local", help="Execution backend")
 @click.option("--namespace", help="Kubernetes namespace (for k8s backend)")
 @click.option("--deterministic", is_flag=True, help="Enforce deterministic execution")
-def run(workflow_file: str, input: Optional[str], output: Optional[str], format: str, 
-        backend: str, namespace: Optional[str], deterministic: bool) -> None:
+@click.option("--cap-override", type=str, help="Override capabilities (comma-separated, DEV ONLY!)")
+@click.option("--no-policy", is_flag=True, help="Skip policy checks (DEV ONLY!)")
+def run(workflow_file: str, input: Optional[str], output: Optional[str], format: str,
+        backend: str, namespace: Optional[str], deterministic: bool,
+        cap_override: Optional[str], no_policy: bool) -> None:
     """Run a workflow or pipeline with the specified input data"""
     
     console.print(Panel.fit("GreenLang Climate Intelligence", style="green bold"))
-    
+
+    # Handle capability overrides (DEV ONLY)
+    if cap_override:
+        console.print("[bold yellow]⚠️  SECURITY WARNING: Capability override mode enabled![/bold yellow]")
+        console.print("[yellow]This mode is for development only. DO NOT use in production![/yellow]")
+        os.environ['GL_CAPS_OVERRIDE'] = '1'
+        os.environ['GL_CAPS'] = json.dumps({
+            cap: {'allow': True} for cap in cap_override.split(',')
+        })
+        console.print(f"[yellow]Overriding capabilities: {cap_override}[/yellow]\n")
+
+    # Handle policy bypass (DEV ONLY)
+    if no_policy:
+        console.print("[bold yellow]⚠️  SECURITY WARNING: Policy checks disabled![/bold yellow]")
+        console.print("[yellow]This mode is for development only. DO NOT use in production![/yellow]\n")
+
     # Handle different backends
     if backend in ["k8s", "kubernetes"]:
         # Use Kubernetes backend for pipeline execution
