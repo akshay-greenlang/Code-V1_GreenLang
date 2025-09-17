@@ -13,8 +13,7 @@ from unittest.mock import Mock, patch, MagicMock
 import sys
 import os
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+# Removed sys.path manipulation - using installed package
 
 from greenlang.policy.enforcer import PolicyEnforcer, check_install, check_run
 from greenlang.policy.opa import evaluate

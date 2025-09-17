@@ -11,9 +11,6 @@ from unittest.mock import Mock, patch, MagicMock
 import sys
 import os
 
-# Add parent directory to path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-
 from greenlang.registry.oci_client import (
     OCIClient, OCIAuth, OCIManifest, OCIDescriptor,
     create_client

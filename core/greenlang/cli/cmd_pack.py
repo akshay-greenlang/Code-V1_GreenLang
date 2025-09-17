@@ -2,6 +2,7 @@
 gl pack - Pack management commands
 """
 
+import os
 import typer
 import subprocess
 import json
@@ -315,7 +316,7 @@ def publish(
     """Test -> policy -> SBOM -> sign -> push"""
     from ..packs.manifest import load_manifest, validate_pack
     from ..provenance.sbom import generate_sbom
-    from ..provenance.sign import cosign_sign
+    from ..provenance.signing import sign_pack
     from ..policy.enforcer import check_install
     from ..hub.index import HubIndex, IndexEntry
     
@@ -370,10 +371,15 @@ def publish(
     if sign:
         console.print("[cyan]Signing pack...[/cyan]")
         try:
-            cosign_sign(path)
-            console.print(f"[green][OK][/green] Pack signed")
+            # Use the new secure signing
+            signature = sign_pack(path)
+            console.print(f"[green][OK][/green] Pack signed with {signature['spec']['signature']['algorithm']}")
         except Exception as e:
-            console.print(f"[yellow]Warning: Could not sign: {e}[/yellow]")
+            console.print(f"[red]Failed to sign pack: {e}[/red]")
+            if not os.environ.get('GL_ALLOW_UNSIGNED'):
+                console.print("[yellow]Set GL_ALLOW_UNSIGNED=1 to continue without signing[/yellow]")
+                raise typer.Exit(1)
+            console.print(f"[yellow]Warning: Continuing without signature[/yellow]")
     
     # Build and push
     org = manifest.dict().get("org", "greenlang") if hasattr(manifest, 'dict') else getattr(manifest, 'org', 'greenlang')

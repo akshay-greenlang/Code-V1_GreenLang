@@ -26,7 +26,7 @@
 | Feature | Plan Status | **ACTUAL STATUS** | Implementation Details |
 |---------|------------|-------------------|------------------------|
 | Policy default-deny | ❌ Not Started | ✅ **COMPLETE** | enforcer.py, opa.py updated |
-| Signature verification | ❌ Not Started | ✅ **COMPLETE** | DevKeyVerifier, no hardcoded keys |
+| Signature verification | ❌ Not Started | ✅ **COMPLETE** | Secure provider abstraction, zero hardcoded keys |
 | Network deny-by-default | ❌ Not Started | ✅ **COMPLETE** | HTTPS enforced, HTTP blocked |
 | Filesystem sandboxing | ❌ Not Started | ✅ **COMPLETE** | Path validation with symlink protection |
 | Subprocess control | ❌ Not Started | ✅ **COMPLETE** | Binary allowlisting with env sanitization |

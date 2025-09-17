@@ -12,8 +12,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 import sys
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+# Removed sys.path manipulation - using installed package
 
 from greenlang.runtime.executor import PipelineExecutor, ExecutionContext
 from greenlang.packs.manifest import Capabilities, NetCapability, FsCapability, SubprocessCapability
