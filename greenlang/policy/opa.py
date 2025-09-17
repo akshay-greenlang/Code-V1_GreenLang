@@ -33,7 +33,7 @@ def evaluate(policy_path: str, input_doc: Dict[str, Any],
             logger.warning("⚠️  OPA not installed, PERMISSIVE MODE ACTIVE (security risk!)")
             return {"allow": True, "reason": "OPA not available (PERMISSIVE MODE)"}
         logger.error("OPA not installed, denying by default")
-        return {"allow": False, "reason": "POLICY.DENIED: OPA not installed - install OPA or use --policy-permissive flag"}
+        return {"allow": False, "reason": "POLICY.DENIED: OPA not installed (default-deny)"}
 
     # Resolve policy path
     policy_file = _resolve_policy_path(policy_path)
@@ -42,7 +42,7 @@ def evaluate(policy_path: str, input_doc: Dict[str, Any],
             logger.warning(f"⚠️  Policy not found: {policy_path}, PERMISSIVE MODE ACTIVE (security risk!)")
             return {"allow": True, "reason": f"Policy not found (PERMISSIVE MODE): {policy_path}"}
         logger.error(f"Policy not found: {policy_path}, denying by default")
-        return {"allow": False, "reason": f"POLICY.DENIED: Policy not found - {policy_path}"}
+        return {"allow": False, "reason": f"POLICY.DENIED: No policy loaded (default-deny) - {policy_path}"}
     
     try:
         # Create temporary input file
@@ -104,12 +104,15 @@ def evaluate(policy_path: str, input_doc: Dict[str, Any],
             if expressions and len(expressions) > 0:
                 decision = expressions[0].get("value", {})
                 
-                # Ensure required fields - default to deny
+                # SECURITY: Default-deny - explicit allow required
                 if "allow" not in decision:
                     decision["allow"] = False
-                    logger.warning("Policy did not return 'allow' field, defaulting to deny")
+                    logger.warning("Policy did not return 'allow' field, defaulting to deny (default-deny)")
                 if "reason" not in decision:
-                    decision["reason"] = "Policy denial - no reason provided"
+                    decision["reason"] = "POLICY.DENIED: No explicit allow (default-deny)"
+
+                # Ensure allow is boolean - treat any non-true value as false
+                decision["allow"] = bool(decision.get("allow", False))
 
                 # Log decision for audit
                 if not decision["allow"]:
@@ -117,22 +120,22 @@ def evaluate(policy_path: str, input_doc: Dict[str, Any],
 
                 return decision
 
-        # Fallback if no valid result - always deny
+        # SECURITY: Default-deny - no valid result means deny
         logger.error("No valid policy decision returned, denying by default")
-        return {"allow": False, "reason": "POLICY.DENIED: No valid decision from policy"}
+        return {"allow": False, "reason": "POLICY.DENIED: No valid decision (default-deny)"}
         
     except subprocess.TimeoutExpired:
-        logger.error("OPA evaluation timed out")
+        logger.error("OPA evaluation timed out, denying by default")
         if permissive_mode:
             logger.warning("⚠️  OPA timeout, PERMISSIVE MODE ACTIVE (security risk!)")
             return {"allow": True, "reason": "Policy evaluation timeout (PERMISSIVE MODE)"}
-        return {"allow": False, "reason": "POLICY.DENIED: Evaluation timeout"}
+        return {"allow": False, "reason": "POLICY.DENIED: Timeout (default-deny)"}
     except Exception as e:
-        logger.error(f"OPA evaluation error: {e}")
+        logger.error(f"OPA evaluation error, denying by default: {e}")
         if permissive_mode:
             logger.warning(f"⚠️  OPA error, PERMISSIVE MODE ACTIVE (security risk!): {e}")
             return {"allow": True, "reason": f"Policy error (PERMISSIVE MODE): {str(e)[:200]}"}
-        return {"allow": False, "reason": f"POLICY.DENIED: {str(e)[:200]}"}
+        return {"allow": False, "reason": f"POLICY.DENIED: Error (default-deny) - {str(e)[:200]}"}
     finally:
         # Cleanup temp files
         if 'input_file' in locals():

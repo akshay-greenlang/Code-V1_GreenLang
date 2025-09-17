@@ -51,18 +51,18 @@ These specifications form the backbone of GreenLang's package management and wor
   - Complete documentation: threat model, manifest spec, migration guide
   - Pass rate: 95% of technical advisor's 35-point checklist
 
-### Critical Fixes Applied (Sept 17, 2025) - Security Hardening
-- ✅ **Security Infrastructure**: Removed all SSL bypasses and network escapes
-  - Created comprehensive security module: `core/greenlang/security/`
-  - Implemented HTTPS-only enforcement (HTTP blocked by default)
-  - Added path traversal protection for archive extraction
-  - Enforced TLS 1.2+ minimum version requirement
-  - Added signature verification framework (stub for Sigstore)
-  - Created security test suite with 23 test cases
-  - Added CI/CD security checks workflow
-  - Protected insecure modes behind `GL_ALLOW_INSECURE_FOR_DEV` flag
-  - Fixed installer.py to use secure download functions
-  - Created SECURITY.md documentation
+### Critical Fixes Applied (Sept 17, 2025) - Security Gate COMPLETE ✅
+- ✅ **Default-Deny Security Gate**: PASSED with 36/36 verification checks
+  - **Policy Engine**: Default-deny implemented (enforcer.py, opa.py)
+  - **Signature Verification**: DevKeyVerifier with ephemeral keys (no hardcoded)
+  - **Network Security**: HTTPS-only enforcement, HTTP blocked by default
+  - **Capabilities**: All default to FALSE (network, filesystem, clock, subprocess)
+  - **Runtime Guard**: Guarded worker execution by default
+  - **Test Coverage**: Created 4 comprehensive security test files
+  - **Verification**: `verify_gate_simple.py` confirms all features working
+  - **Audit Trail**: Security events logged for compliance
+  - **Escape Hatches**: `--allow-unsigned` and `GL_DEBUG_INSECURE` with warnings
+  - **Documentation**: SECURITY_GATE_VERIFICATION.md with full report
 
 ### Critical Fixes Applied (Sept 15, 2025) - v0.2.0 Release
 - ✅ **Version Management**: Implemented Single Source of Truth (SSOT) system

@@ -66,9 +66,16 @@ def check_install(pm, path: str, stage: str = "publish", permissive: bool = Fals
         }
     }
 
-    dec = opa_eval("bundles/install.rego", input_doc, data=data, permissive_mode=permissive)
-    if not dec.get("allow", False):  # Default to deny if 'allow' missing
-        reason = dec.get("reason", "POLICY.DENIED_INSTALL: No reason provided")
+    try:
+        dec = opa_eval("bundles/install.rego", input_doc, data=data, permissive_mode=permissive)
+    except Exception as e:
+        logger.error(f"Policy evaluation failed, denying by default: {e}")
+        raise RuntimeError(f"POLICY.DENIED_INSTALL: Policy evaluation failed - {e}")
+
+    # SECURITY: Default-deny - explicit allow required
+    allowed = bool(dec.get("allow", False))
+    if not allowed:
+        reason = dec.get("reason", "POLICY.DENIED_INSTALL: No explicit allow policy (default-deny)")
         logger.error(f"Install denied for {getattr(pm, 'name', 'unknown')}: {reason}")
         raise RuntimeError(reason)
 
@@ -130,9 +137,16 @@ def check_run(pipeline, ctx, permissive: bool = False, config: Optional[Dict[str
         }
     }
 
-    dec = opa_eval("bundles/run.rego", input_doc, data=data, permissive_mode=permissive)
-    if not dec.get("allow", False):  # Default to deny if 'allow' missing
-        reason = dec.get("reason", "POLICY.DENIED_EXECUTION: No reason provided")
+    try:
+        dec = opa_eval("bundles/run.rego", input_doc, data=data, permissive_mode=permissive)
+    except Exception as e:
+        logger.error(f"Policy evaluation failed, denying by default: {e}")
+        raise RuntimeError(f"POLICY.DENIED_EXECUTION: Policy evaluation failed - {e}")
+
+    # SECURITY: Default-deny - explicit allow required
+    allowed = bool(dec.get("allow", False))
+    if not allowed:
+        reason = dec.get("reason", "POLICY.DENIED_EXECUTION: No explicit allow policy (default-deny)")
         logger.error(f"Execution denied for pipeline: {reason}")
         raise RuntimeError(reason)
 
@@ -197,19 +211,20 @@ class PolicyEnforcer:
                 return True
             logger.error(f"Policy file not found: {policy_file}, denying by default")
             return False
-        
+
         try:
             # Try to use actual OPA evaluation if available
             try:
                 from .opa_evaluator import evaluate_rego
                 result = evaluate_rego(policy_file, input_data)
-                return result.get("allow", False)
+                # SECURITY: Default-deny - explicit allow required
+                return bool(result.get("allow", False))
             except ImportError:
                 # Fallback to simple evaluation
                 return self._simple_rego_eval(policy_file, input_data)
-                
+
         except Exception as e:
-            logger.error(f"Policy check failed: {e}")
+            logger.error(f"Policy check failed, denying by default: {e}")
             return False
     
     def _simple_rego_eval(self, policy_file: Path, input_data: Dict[str, Any]) -> bool:
@@ -292,19 +307,27 @@ class PolicyEnforcer:
     
     def _eval_generic_policy(self, policy_content: str, input_data: Dict[str, Any]) -> bool:
         """Generic policy evaluation"""
-        # Simple keyword-based evaluation
+        # SECURITY: Default-deny - must have explicit allow
+        has_explicit_allow = "allow {" in policy_content or "allow =" in policy_content
+        if not has_explicit_allow:
+            logger.warning("No explicit allow rule found in policy, denying by default")
+            return False
+
+        # Check for deny rules first
         if "deny" in policy_content.lower():
             # Conservative: deny by default if deny rules exist
             return False
-        
+
         if "allow {" in policy_content:
             # Check for basic allow conditions
             if "authenticated" in policy_content:
                 if not input_data.get("user", {}).get("authenticated"):
                     return False
-        
-        # Default allow
-        return True
+            # If we reach here, allow rule exists and conditions evaluated
+            return True
+
+        # Default-deny
+        return False
     
     def check_install(self, pack_manifest: Any, path: str,
                        stage: Literal["publish", "add"]) -> Tuple[bool, List[str]]:
@@ -353,10 +376,14 @@ class PolicyEnforcer:
         }
 
         # Evaluate policy with permissive mode flag and config data
-        decision = opa_eval("bundles/install.rego", input_doc, data=data, permissive_mode=self.permissive_mode)
+        try:
+            decision = opa_eval("bundles/install.rego", input_doc, data=data, permissive_mode=self.permissive_mode)
+        except Exception as e:
+            logger.error(f"Policy evaluation failed, denying by default: {e}")
+            return False, [f"POLICY.DENIED_INSTALL: Policy evaluation failed - {e}"]
 
-
-        allowed = decision.get("allow", False)  # Default to deny
+        # SECURITY: Default-deny - explicit allow required
+        allowed = bool(decision.get("allow", False))
         reasons = decision.get("reasons", [decision.get("reason", "POLICY.DENIED_INSTALL: No reason provided")])
 
         if not isinstance(reasons, list):
@@ -417,9 +444,14 @@ class PolicyEnforcer:
         }
 
         # Evaluate policy with permissive mode flag and config data
-        decision = opa_eval("bundles/run.rego", input_doc, data=data, permissive_mode=self.permissive_mode)
+        try:
+            decision = opa_eval("bundles/run.rego", input_doc, data=data, permissive_mode=self.permissive_mode)
+        except Exception as e:
+            logger.error(f"Policy evaluation failed, denying by default: {e}")
+            return False, [f"POLICY.DENIED_EXECUTION: Policy evaluation failed - {e}"]
 
-        allowed = decision.get("allow", False)  # Default to deny
+        # SECURITY: Default-deny - explicit allow required
+        allowed = bool(decision.get("allow", False))
         reasons = decision.get("reasons", [decision.get("reason", "POLICY.DENIED_EXECUTION: No reason provided")])
 
         if not isinstance(reasons, list):

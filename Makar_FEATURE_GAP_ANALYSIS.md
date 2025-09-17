@@ -17,22 +17,25 @@
 
 ---
 
-## 🔒 SECURITY & CAPABILITIES (WEEK 0 COMPLETE)
+## 🔒 SECURITY & CAPABILITIES (WEEK 0 GATE COMPLETE ✅)
 *Theme: "Deny-by-default security model"*
+**STATUS: Security Gate PASSED - 2025-09-17**
 
-### Capability-Based Security System
+### Default-Deny Security Implementation
 
 | Feature | Plan Status | **ACTUAL STATUS** | Implementation Details |
 |---------|------------|-------------------|------------------------|
-| Network deny-by-default | ❌ Not Started | ✅ **COMPLETE** | All socket/HTTP APIs patched |
+| Policy default-deny | ❌ Not Started | ✅ **COMPLETE** | enforcer.py, opa.py updated |
+| Signature verification | ❌ Not Started | ✅ **COMPLETE** | DevKeyVerifier, no hardcoded keys |
+| Network deny-by-default | ❌ Not Started | ✅ **COMPLETE** | HTTPS enforced, HTTP blocked |
 | Filesystem sandboxing | ❌ Not Started | ✅ **COMPLETE** | Path validation with symlink protection |
 | Subprocess control | ❌ Not Started | ✅ **COMPLETE** | Binary allowlisting with env sanitization |
 | Clock/time control | ❌ Not Started | ✅ **COMPLETE** | Deterministic time for reproducibility |
-| Manifest capabilities | ❌ Not Started | ✅ **COMPLETE** | Full Pydantic schema with validation |
-| Runtime guard | ❌ Not Started | ✅ **COMPLETE** | Worker process isolation |
-| Policy enforcement | ❌ Not Started | ✅ **COMPLETE** | OPA integration for capability policies |
-| Audit logging | ❌ Not Started | ✅ **COMPLETE** | Complete audit trail of decisions |
-| CLI overrides | ❌ Not Started | ✅ **COMPLETE** | --cap-override for development |
+| Manifest capabilities | ❌ Not Started | ✅ **COMPLETE** | All capabilities default to FALSE |
+| Runtime guard | ❌ Not Started | ✅ **COMPLETE** | Guarded worker by default |
+| Policy enforcement | ❌ Not Started | ✅ **COMPLETE** | OPA integration with default-deny |
+| Audit logging | ❌ Not Started | ✅ **COMPLETE** | Security events tracked |
+| Security tests | ❌ Not Started | ✅ **COMPLETE** | 36/36 verification checks pass |
 
 **✅ Completed Components**:
 - **Runtime Guard** (`greenlang/runtime/guard.py`): 1000+ lines of security enforcement

@@ -820,13 +820,22 @@ class PipelineExecutor:
         """
         Check if step should be executed in a guarded worker process.
 
+        SECURITY: Default-deny - always use guard unless explicitly disabled.
+
         Args:
             step: Step specification
             context: Execution context
 
         Returns:
-            True if guarded worker should be used
+            True if guarded worker should be used (default: True)
         """
+        # SECURITY: Default to guarded mode for safety
+        # Only disable if explicitly set (dangerous!)
+        if os.environ.get('GL_DISABLE_GUARD') == '1':
+            logger.warning("⚠️  SECURITY WARNING: Guard disabled - capabilities not enforced!")
+            return False
+
+        # Always use guard if capabilities are defined anywhere
         # Check if capabilities are defined in context
         if hasattr(context, 'capabilities') and context.capabilities:
             return True
@@ -841,11 +850,8 @@ class PipelineExecutor:
             if manifest and manifest.get('capabilities'):
                 return True
 
-        # Check environment variable override
-        if os.environ.get('GL_USE_GUARD') == '1':
-            return True
-
-        return False
+        # SECURITY: Default to using guard for safety (deny-by-default)
+        return True
 
     def _execute_in_guarded_worker(
         self,
@@ -868,25 +874,48 @@ class PipelineExecutor:
         import tempfile
 
         # Extract capabilities from context or step
-        capabilities = {}
+        # SECURITY: Default-deny - no capabilities by default
+        capabilities = {
+            'net': {'allow': False},
+            'fs': {'allow': False},
+            'clock': {'allow': False},
+            'subprocess': {'allow': False}
+        }
 
         # Check context capabilities
         if hasattr(context, 'capabilities'):
-            capabilities = context.capabilities
+            # Merge with context capabilities
+            ctx_caps = context.capabilities
+            if isinstance(ctx_caps, dict):
+                for cap_name, cap_config in ctx_caps.items():
+                    if cap_name in capabilities and isinstance(cap_config, dict):
+                        if cap_config.get('allow', False):
+                            capabilities[cap_name] = cap_config
 
         # Check pack manifest
         elif hasattr(context, 'pack_manifest'):
             manifest = context.pack_manifest
             if manifest and 'capabilities' in manifest:
-                capabilities = manifest['capabilities']
+                manifest_caps = manifest['capabilities']
+                if isinstance(manifest_caps, dict):
+                    for cap_name, cap_config in manifest_caps.items():
+                        if cap_name in capabilities and isinstance(cap_config, dict):
+                            if cap_config.get('allow', False):
+                                capabilities[cap_name] = cap_config
 
         # Check step-specific capabilities
         if hasattr(step, 'capabilities'):
             # Merge step capabilities with existing ones
             step_caps = step.capabilities
-            for cap_name, cap_config in step_caps.items():
-                if cap_name not in capabilities:
-                    capabilities[cap_name] = cap_config
+            if isinstance(step_caps, dict):
+                for cap_name, cap_config in step_caps.items():
+                    if cap_name in capabilities and isinstance(cap_config, dict):
+                        if cap_config.get('allow', False):
+                            # Only allow if not already allowed (no privilege escalation)
+                            if not capabilities[cap_name].get('allow', False):
+                                logger.warning(f"Step '{step.name}' requested capability '{cap_name}' not granted by manifest")
+                            else:
+                                capabilities[cap_name] = cap_config
 
         # Create temporary directories for the worker
         with tempfile.TemporaryDirectory(prefix=f"gl_worker_{step.name}_") as work_dir:
