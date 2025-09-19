@@ -1,0 +1,50 @@
+# TruffleHog ignore file
+# Ignore specific files and patterns that are known false positives
+
+# Test fixtures and example files
+tests/fixtures/
+examples/
+*.example
+*.sample
+*.test
+
+# Documentation
+docs/
+README.md
+*.md
+
+# Generated files
+*.min.js
+*.min.css
+dist/
+build/
+*.egg-info/
+
+# Binary and media files
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.pdf
+*.zip
+*.tar.gz
+
+# Known false positives
+# Add specific file paths here if needed
+# path/to/specific/file.txt
+
+# Vendor and third-party code
+vendor/
+node_modules/
+.venv/
+venv/
+*.lock
+package-lock.json
+
+# Cache and temporary files
+*.cache
+*.tmp
+.coverage
+*.pyc
+__pycache__/

@@ -39,16 +39,25 @@ Current Architecture Reality:
 │   ├── _version.py        # ✅ SSOT versioning implemented
 │   └── core/              # Tightly coupled orchestration
 │
-└── core/greenlang/         # v0.2.0 - THE ASPIRATION (Infrastructure)
-    ├── sdk/               # Abstract base classes (unused)
-    ├── packs/             # Pack system (demo quality)
-    ├── runtime/           # Execution abstraction (theoretical)
-    ├── _version.py        # ✅ SSOT versioning implemented
-    └── cli/               # Infrastructure commands (incomplete)
-
-VERSION file               # ✅ Single Source of Truth (0.2.0)
+├── core/greenlang/         # v0.2.0 - THE ASPIRATION (Infrastructure)
+│   ├── sdk/               # Abstract base classes (unused)
+│   ├── packs/             # Pack system (demo quality)
+│   ├── runtime/           # Execution abstraction (theoretical)
+│   ├── _version.py        # ✅ SSOT versioning implemented
+│   └── cli/               # Infrastructure commands (incomplete)
+│
+├── tests/                  # ✅ Test Infrastructure COMPLETE (Sept 19, 2025)
+│   ├── unit/              # Unit tests properly organized
+│   ├── integration/       # Integration tests
+│   ├── e2e/              # End-to-end tests
+│   ├── conftest.py       # Shared fixtures and utilities
+│   └── test_utils.py     # Test helper functions
+│
+├── VERSION file           # ✅ Single Source of Truth (0.2.0)
 ├── pyproject.toml        # ✅ Dynamic version loading
 ├── setup.py              # ✅ Reads from VERSION
+├── pytest.ini            # ✅ Test discovery configured
+├── .coveragerc          # ✅ Coverage with path merging
 ├── Dockerfile            # ✅ GL_VERSION build args
 └── scripts/              # ✅ Version consistency checks
 ```

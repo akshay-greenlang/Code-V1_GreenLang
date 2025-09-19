@@ -2,7 +2,10 @@
 
 import pytest
 from greenlang.agents.carbon_agent import CarbonAgent
-from tests.utils import assert_close, assert_percentage_sum
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from test_utils import assert_close, assert_percentage_sum
 
 
 class TestCarbonAgent:
@@ -74,7 +77,7 @@ class TestCarbonAgent:
         # Each percentage must be non-negative
         for item in data["breakdown"]:
             assert item["percentage"] >= 0, f"Negative percentage: {item['percentage']}"
-            assert item["percentage"] <= 100, f"Percentage > 100: {item['percentage']}""
+            assert item["percentage"] <= 100, f"Percentage > 100: {item['percentage']}"
     
     def test_empty_input(self, agent_contract_validator):
         """Test handling of empty input returns 0 with reason."""
