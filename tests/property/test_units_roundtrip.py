@@ -1,7 +1,10 @@
 """Property-based tests for unit conversions and round-trips."""
 
 from hypothesis import given, strategies as st, assume
-from tests.utils import assert_close, normalize_factor
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from test_utils import assert_close, normalize_factor
 
 
 class TestUnitRoundTrips:
