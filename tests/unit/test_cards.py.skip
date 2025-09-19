@@ -6,21 +6,16 @@ Test script for GreenLang Model/Dataset Cards system
 import tempfile
 from pathlib import Path
 
-# Test imports
-try:
-    from greenlang.cards import (
-        generate_pack_card,
-        generate_dataset_card,
-        generate_model_card,
-        generate_pipeline_card,
-        validate_card,
-        CardValidator,
-        generate_validation_report
-    )
-    print("OK: All card modules imported successfully")
-except ImportError as e:
-    print(f"FAIL: Import error: {e}")
-    exit(1)
+# Import card modules
+from greenlang.cards import (
+    generate_pack_card,
+    generate_dataset_card,
+    generate_model_card,
+    generate_pipeline_card,
+    validate_card,
+    CardValidator,
+    generate_validation_report
+)
 
 
 def test_pack_card_generation():

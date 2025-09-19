@@ -67,6 +67,36 @@ These specifications form the backbone of GreenLang's package management and wor
   - Complete documentation: threat model, manifest spec, migration guide
   - Pass rate: 95% of technical advisor's 35-point checklist
 
+### Critical Infrastructure Fix (Sept 19, 2025) - Test Infrastructure ✅ COMPLETE
+- ✅ **Test Reorganization**: Complete restructuring of test infrastructure
+  - **Problem Solved**: 40+ test files scattered at root and in pack directories
+  - **Solution Implemented**:
+    - All tests consolidated under `/tests/` directory
+    - Proper hierarchy: `/tests/unit/`, `/tests/integration/`, `/tests/e2e/`
+    - Pack test files removed from `packs/*/tests/` directories
+    - Git tracking updated with proper .gitignore entries
+  - **pytest Discovery**: Fixed and working correctly
+    - `pytest.ini` configured with `testpaths = tests`
+    - Test markers defined (unit, integration, e2e, slow)
+    - Collection only discovers tests under `/tests/`
+  - **Coverage Configuration**: Properly configured with path merging
+    - `.coveragerc` with `[paths]` section for greenlang module merging
+    - Coverage excludes test files (`omit = tests/*`)
+    - Coverage.xml generation successful
+    - Terminal reports show only package files
+  - **Fixed Test Issues**:
+    - `test_carbon_agent.py`: Fixed syntax error (extra quote on line 80)
+    - `test_cards.py`: Removed module-level exit() call
+    - Import paths fixed with `test_utils.py` module
+    - All tests now use proper imports without sys.path hacks
+  - **CTO Acceptance Criteria**: All 6 criteria PASSED
+    - No test files outside /tests/
+    - pytest discovers only in /tests/
+    - Unit tests run successfully (exit code 0)
+    - Coverage.xml generated
+    - No test files in coverage reports
+    - Coverage paths properly merged
+
 ### Critical Fixes Applied (Sept 17, 2025) - Security Gate COMPLETE ✅
 - ✅ **Default-Deny Security Gate**: PASSED with 36/36 verification checks
   - **Policy Engine**: Default-deny implemented (enforcer.py, opa.py)

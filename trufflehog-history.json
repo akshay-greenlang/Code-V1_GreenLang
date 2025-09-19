@@ -1,0 +1,30 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\rshar\AppData\Roaming\Python\Python313\Scripts\trufflehog.exe\__main__.py", line 6, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "C:\Users\rshar\AppData\Roaming\Python\Python313\site-packages\truffleHog\truffleHog.py", line 92, in main
+    output = find_strings(args.git_url, args.since_commit, args.max_depth, args.output_json, args.do_regex, do_entropy,
+            surpress_output=False, branch=args.branch, repo_path=args.repo_path, path_inclusions=path_inclusions, path_exclusions=path_exclusions, allow=allow)
+  File "C:\Users\rshar\AppData\Roaming\Python\Python313\site-packages\truffleHog\truffleHog.py", line 329, in find_strings
+    project_path = clone_git_repo(git_url)
+  File "C:\Users\rshar\AppData\Roaming\Python\Python313\site-packages\truffleHog\truffleHog.py", line 170, in clone_git_repo
+    Repo.clone_from(git_url, project_path)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rshar\AppData\Roaming\Python\Python313\site-packages\git\repo\base.py", line 1017, in clone_from
+    return cls._clone(git, url, to_path, GitCmdObjectDB, progress, multi_options, **kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rshar\AppData\Roaming\Python\Python313\site-packages\git\repo\base.py", line 958, in _clone
+    finalize_process(proc, stderr=stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rshar\AppData\Roaming\Python\Python313\site-packages\git\util.py", line 328, in finalize_process
+    proc.wait(**kwargs)
+    ~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\rshar\AppData\Roaming\Python\Python313\site-packages\git\cmd.py", line 408, in wait
+    raise GitCommandError(self.args, status, errstr)
+git.exc.GitCommandError: Cmd('git') failed due to: exit code(128)
+  cmdline: git clone -v file://. C:\Users\rshar\AppData\Local\Temp\tmpea_bt2ue
+  stderr: 'Cloning into 'C:\Users\rshar\AppData\Local\Temp\tmpea_bt2ue'...
+fatal: no path specified; see 'git help pull' for valid url syntax
+'
