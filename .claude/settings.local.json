@@ -103,7 +103,22 @@
       "Bash(.venv\\Scripts\\python.exe -m pip install:*)",
       "Bash(del nul)",
       "Bash(git tag:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(for:*)",
+      "Bash(do sed -i 's/from tests.utils import/from tests.conftest import/' \"$file\")",
+      "Bash(done)",
+      "Bash(do sed -i 's/from tests.conftest import/from tests.test_utils import/' \"$file\")",
+      "Bash(do sed -i '1,10s/from tests.test_utils import/import sys\\nfrom pathlib import Path\\nsys.path.insert(0, str(Path(__file__).parent.parent.parent))\\nfrom test_utils import/' \"$file\")",
+      "Bash(do sed -i '1,10s/from tests.test_utils import/import sys\\nfrom pathlib import Path\\nsys.path.insert(0, str(Path(__file__).parent.parent))\\nfrom test_utils import/' \"$file\")",
+      "Bash(awk:*)",
+      "Bash([ -f coverage.xml ])",
+      "Bash(coverage report:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rev-list:*)",
+      "Bash(trufflehog:*)",
+      "Bash(pip uninstall:*)",
+      "Bash(gzip:*)",
+      "Bash(zcat:*)"
     ],
     "deny": []
   }

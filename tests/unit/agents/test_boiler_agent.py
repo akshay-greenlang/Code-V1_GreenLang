@@ -1,9 +1,15 @@
 """Tests for BoilerAgent."""
 
 import math
+import sys
+from pathlib import Path
 import pytest
+
+# Add tests directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
 from greenlang.agents.boiler_agent import BoilerAgent
-from tests.utils import assert_close
+from test_utils import assert_close
 
 
 class TestBoilerAgent:

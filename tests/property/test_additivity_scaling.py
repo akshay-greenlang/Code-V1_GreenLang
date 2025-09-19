@@ -2,7 +2,10 @@
 
 from hypothesis import given, strategies as st, assume
 from greenlang.agents.fuel_agent import FuelAgent
-from tests.utils import assert_close
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from test_utils import assert_close
 
 
 class TestAdditivityProperty:

@@ -88,7 +88,36 @@
 - Build & push Docker images (1 day - framework ready)
 - Update README (1 day)
 
-### 2. Pack Abstraction + Loader
+### 2. Test Infrastructure & Coverage ✅ **COMPLETE (Sept 19, 2025)**
+
+| Feature | Plan Status | **ACTUAL STATUS** | Gap Analysis |
+|---------|------------|-------------------|--------------|
+| Test organization | ❌ Scattered | ✅ **COMPLETE** | All tests in /tests/ directory |
+| pytest discovery | ❌ Broken | ✅ **COMPLETE** | pytest.ini configured correctly |
+| Coverage reporting | ❌ Not Working | ✅ **COMPLETE** | coverage.xml generation working |
+| Test structure | ❌ Mixed | ✅ **COMPLETE** | unit/integration/e2e separation |
+| CI/CD integration | ❌ Partial | ✅ **COMPLETE** | GitHub Actions configured |
+| Coverage threshold | ⚠️ 7.83% | ⚠️ **NEEDS WORK** | Target: 85% (fail_under set) |
+
+**✅ Completed Items**:
+- **Test Consolidation**: All 103 test files moved to /tests/ directory
+- **Directory Structure**: Proper hierarchy with unit/, integration/, e2e/
+- **Configuration Files**:
+  - `pytest.ini` with markers and test paths
+  - `.coveragerc` with path merging and exclusions
+- **Fixed Test Issues**:
+  - Syntax errors in test_carbon_agent.py
+  - Module-level exits in test_cards.py
+  - Import path issues resolved with test_utils.py
+- **Coverage Generation**: Working with proper exclusions
+- **CTO Acceptance**: All 6 criteria passed
+
+**Action Required**:
+- Increase test coverage from 7.83% to 85%
+- Add missing unit tests for core modules
+- Enable integration tests in CI
+
+### 3. Pack Abstraction + Loader
 
 | Feature | Plan Status | **ACTUAL STATUS** | Gap Analysis |
 |---------|------------|-------------------|--------------|
