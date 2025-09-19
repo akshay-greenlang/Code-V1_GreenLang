@@ -3,7 +3,10 @@
 from hypothesis import given, strategies as st, assume
 import pytest
 from greenlang.agents.input_validator_agent import InputValidatorAgent
-from tests.utils import assert_close, normalize_factor
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from test_utils import assert_close, normalize_factor
 
 
 class TestInputValidatorProperties:
