@@ -49,6 +49,11 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Pack test files (should be in /tests/)
+packs/*/tests/
+test-*-pack/tests/
+tmp-pack/tests/
+
 # Environments
 .env
 .venv

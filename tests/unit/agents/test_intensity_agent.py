@@ -2,7 +2,10 @@
 
 import pytest
 from greenlang.agents.intensity_agent import IntensityAgent
-from tests.utils import assert_close
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from test_utils import assert_close
 
 
 class TestIntensityAgent:
