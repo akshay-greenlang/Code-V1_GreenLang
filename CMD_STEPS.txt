@@ -1,0 +1,125 @@
+STEP-BY-STEP GUIDE FOR TRIGGERING DOCKER RELEASE IN CMD
+=========================================================
+
+METHOD 1: CHECK IF GITHUB CLI IS ALREADY INSTALLED
+---------------------------------------------------
+
+Step 1: Open Command Prompt and check for GitHub CLI
+cmd> where gh
+
+If you see a path like "C:\Program Files\CLI\gh.exe", skip to Step 4.
+If you see "INFO: Could not find files", continue to Step 2.
+
+Step 2: Download GitHub CLI
+- Open browser: https://github.com/cli/cli/releases/latest
+- Download: gh_2.63.2_windows_amd64.msi (or latest version)
+- Save to Downloads folder
+
+Step 3: Install GitHub CLI
+cmd> cd %USERPROFILE%\Downloads
+cmd> start gh_2.63.2_windows_amd64.msi
+
+- Click through the installer
+- After installation completes, close and reopen Command Prompt
+
+Step 4: Navigate to project directory
+cmd> cd "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang"
+
+Step 5: Run the fixed trigger script
+cmd> trigger-workflow.bat
+
+Step 6: If prompted for authentication:
+- Select: GitHub.com
+- Select: HTTPS
+- Select: Login with a web browser
+- Copy the code shown (like XXXX-XXXX)
+- Press Enter
+- Browser opens -> Paste the code -> Authorize
+
+Step 7: Script will trigger the workflow
+You should see: "SUCCESS! Workflow triggered."
+
+Step 8: Wait 10-15 minutes for completion
+Check progress at: https://github.com/akshay-greenlang/Code-V1_GreenLang/actions
+
+Step 9: Verify DoD requirements
+cmd> scripts\verify-docker-dod.bat akshay-greenlang 0.2.0
+
+
+METHOD 2: MANUAL COMMANDS (IF SCRIPT FAILS)
+--------------------------------------------
+
+Step 1: Navigate to project
+cmd> cd "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang"
+
+Step 2: Check GitHub CLI
+cmd> gh --version
+
+Step 3: Authenticate (if needed)
+cmd> gh auth login
+
+Step 4: Trigger workflow manually
+cmd> gh workflow run release-docker.yml -f version=0.2.0
+
+Step 5: Check if it started
+cmd> gh run list --workflow=release-docker.yml --limit=1
+
+Step 6: Watch progress (optional)
+cmd> gh run watch
+
+Step 7: After completion, verify DoD
+cmd> scripts\verify-docker-dod.bat akshay-greenlang 0.2.0
+
+
+METHOD 3: USING CURL (NO GH CLI NEEDED)
+----------------------------------------
+
+Step 1: Create a GitHub Personal Access Token
+- Go to: https://github.com/settings/tokens/new
+- Name: "Docker Release Token"
+- Select scopes: [x] repo, [x] workflow
+- Generate token
+- COPY THE TOKEN (you won't see it again!)
+
+Step 2: Navigate to project
+cmd> cd "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang"
+
+Step 3: Run curl directly (replace YOUR_TOKEN_HERE with actual token)
+cmd> curl -X POST -H "Accept: application/vnd.github+json" -H "Authorization: Bearer YOUR_TOKEN_HERE" https://api.github.com/repos/akshay-greenlang/Code-V1_GreenLang/actions/workflows/release-docker.yml/dispatches -d "{\"ref\":\"master\",\"inputs\":{\"version\":\"0.2.0\"}}"
+
+Step 4: Check https://github.com/akshay-greenlang/Code-V1_GreenLang/actions
+
+Step 5: After completion, verify DoD
+cmd> scripts\verify-docker-dod.bat akshay-greenlang 0.2.0
+
+
+TROUBLESHOOTING
+---------------
+
+Error: "was unexpected at this time"
+Solution: Script has been fixed. Use the updated trigger-workflow.bat
+
+Error: "gh is not recognized"
+Solution: Install GitHub CLI first (Method 1, Steps 2-3)
+
+Error: "Could not resolve host"
+Solution: Check internet connection
+
+Error: "Bad credentials"
+Solution: Re-authenticate with: gh auth login
+
+Error: "Workflow not found"
+Solution: Make sure you're in the correct directory
+
+EXPECTED RESULTS FROM DOD VERIFICATION
+---------------------------------------
+When successful, you should see:
+- [PASS] Runner image found on GHCR
+- [PASS] linux/amd64 found in manifest
+- [PASS] linux/arm64 found in manifest
+- [PASS] Non-root user (UID: 10001)
+- [PASS] Healthcheck configured
+- [PASS] gl version works
+- [PASS] Version label present
+- [PASS] Source label present
+- [PASS] License label present
