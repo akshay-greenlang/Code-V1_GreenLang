@@ -26,7 +26,7 @@ exclude_lines =
     pass
 omit =
     tests/*
-    */__init__.py
+    */__main__.py
     **/conftest.py
     **/.venv/*
     **/.tox/*
@@ -35,7 +35,7 @@ omit =
     **/scripts/*
 show_missing = True
 fail_under = 85
-skip_covered = False
+skip_covered = True
 precision = 2
 
 [html]

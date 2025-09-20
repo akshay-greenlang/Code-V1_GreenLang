@@ -1,0 +1,44 @@
+# TruffleHog Configuration
+# For detecting secrets in the repository
+
+[[exclude.paths]]
+# Test directories
+regex = '''^tests?/.*'''
+
+[[exclude.paths]]
+# Virtual environments
+regex = '''(^|/)\.?venv.*'''
+
+[[exclude.paths]]
+# Python cache
+regex = '''__pycache__'''
+
+[[exclude.paths]]
+# Git directory
+regex = '''\.git/'''
+
+[[exclude.paths]]
+# Node modules (if any)
+regex = '''node_modules/'''
+
+[[exclude.paths]]
+# Build artifacts
+regex = '''(^|/)(build|dist|target)/'''
+
+[[exclude.paths]]
+# Documentation
+regex = '''(^|/)docs?/'''
+
+# Allow list for known false positives
+# Add patterns here if TruffleHog flags legitimate strings
+[[allow]]
+description = "Test data patterns"
+regex = '''TEST_ONLY_NOT_REAL'''
+
+[[allow]]
+description = "Example/mock patterns"
+regex = '''(example|mock|fake|dummy|test)[-_]?(key|secret|token|password)'''
+
+[[allow]]
+description = "Documentation examples"
+regex = '''YOUR_API_KEY_HERE|<your-.*-here>|REPLACE_ME'''

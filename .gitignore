@@ -100,6 +100,28 @@ api_keys.json
 secrets.yaml
 credentials.json
 
+# Security - Keys and Certificates (NEVER COMMIT)
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+*.jks
+*.keystore
+*.sig
+*.intoto
+cosign.key
+cosign.pub
+private_key*
+public_key*
+
+# Allow test fixtures only in specific directory
+!tests/fixtures/unsigned/*.pem
+!tests/fixtures/unsigned/*.key
+!tests/fixtures/unsigned/*.crt
+!tests/fixtures/unsigned/*.sig
+
 # Database
 *.db
 *.sqlite
