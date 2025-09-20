@@ -79,10 +79,8 @@ def create_secure_session(timeout: int = 15, max_retries: int = 3) -> requests.S
     secure_adapter = SecureHTTPAdapter(max_retries=retry_strategy)
     session.mount("https://", secure_adapter)
 
-    # Block HTTP by not mounting an adapter for it (unless explicitly allowed for dev)
-    if os.environ.get('GL_ALLOW_INSECURE_FOR_DEV') == '1':
-        logger.warning("INSECURE: HTTP connections allowed (GL_ALLOW_INSECURE_FOR_DEV=1)")
-        session.mount("http://", secure_adapter)
+    # Block HTTP entirely - no adapter mounted for http://
+    # HTTPS is mandatory for all connections
 
     # Set default timeout
     session.request = lambda *args, **kwargs: requests.Session.request(
@@ -108,16 +106,12 @@ def validate_url(url: str, allow_http: bool = False) -> None:
     """
     parsed = urlparse(url)
 
-    # Check scheme
+    # Check scheme - HTTP is never allowed for security
     if not allow_http and parsed.scheme == 'http':
-        # Check if insecure mode is explicitly allowed for dev
-        if os.environ.get('GL_ALLOW_INSECURE_FOR_DEV') != '1':
-            raise ValueError(
-                f"Insecure scheme 'http' not allowed (require https). "
-                f"URL: {url}"
-            )
-        else:
-            logger.warning(f"INSECURE: Allowing HTTP URL in dev mode: {url}")
+        raise ValueError(
+            f"Insecure scheme 'http' not allowed (require https). "
+            f"URL: {url}"
+        )
 
     if parsed.scheme not in ['http', 'https', 'file']:
         raise ValueError(
@@ -131,8 +125,7 @@ def validate_url(url: str, allow_http: bool = False) -> None:
         private_hosts = ['localhost', '127.0.0.1', '::1', '0.0.0.0']
 
         if hostname in private_hosts or hostname.startswith('192.168.') or hostname.startswith('10.'):
-            if os.environ.get('GL_ALLOW_PRIVATE_HOSTS_FOR_DEV') != '1':
-                logger.warning(f"Private/local hostname detected: {hostname}")
+            logger.warning(f"Private/local hostname detected: {hostname}")
 
 
 def validate_git_url(url: str) -> None:

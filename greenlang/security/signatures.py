@@ -34,7 +34,7 @@ class PackVerifier:
 
     def __init__(self):
         """Initialize verifier"""
-        self.allow_unsigned = os.environ.get('GL_ALLOW_UNSIGNED_FOR_DEV') == '1'
+        self.allow_unsigned = False  # Never allow unsigned packs
         self.trusted_publishers = self._load_trusted_publishers()
 
     def _load_trusted_publishers(self) -> Dict[str, Dict[str, Any]]:
