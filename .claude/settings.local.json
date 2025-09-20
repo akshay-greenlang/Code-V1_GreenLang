@@ -156,7 +156,10 @@
       "Bash(numfmt:*)",
       "WebFetch(domain:github.com)",
       "Bash(git show-ref:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(scriptsverify-docker-dod.bat akshay-greenlang 0.2.0)",
+      "Bash(scripts\\verify-docker-dod.bat akshay-greenlang 0.2.0)",
+      "Bash(cosign verify:*)"
     ],
     "deny": []
   }
