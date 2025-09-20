@@ -6,6 +6,7 @@ coverage>=7.2
 pytest-timeout>=2.1
 pytest-asyncio>=0.21
 hypothesis>=6.0
+PyJWT>=2.8.0
 
 # Code quality tools
 black>=23.0
