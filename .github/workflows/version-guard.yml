@@ -29,7 +29,8 @@ jobs:
       - name: Assert CLI version matches
         run: |
           V=$(cat VERSION | tr -d '\n\r')
-          CLI_V=$(python -m greenlang.cli.main --version 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          # Get the full version string from the package, including pre-release identifiers
+          CLI_V=$(python -c "import greenlang; print(greenlang.__version__)")
           echo "VERSION file: $V"
           echo "CLI version: $CLI_V"
           if [ "$V" != "$CLI_V" ]; then
@@ -42,7 +43,8 @@ jobs:
         run: |
           # Check for hardcoded versions in setup.py and pyproject.toml
           # (excluding dynamic version configuration)
-          if git grep -E 'version\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+"' setup.py pyproject.toml | grep -v 'file = "VERSION"'; then
+          # Updated regex to also catch pre-release versions
+          if git grep -E 'version\s*=\s*"[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.-]+)?"' setup.py pyproject.toml 2>/dev/null | grep -v 'file = "VERSION"' | grep -v 'dynamic = \["version"\]'; then
             echo "❌ Found hardcoded versions in setup.py or pyproject.toml"
             exit 1
           fi
