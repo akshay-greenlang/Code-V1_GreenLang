@@ -1,8 +1,8 @@
 {
   "status": "NO_GO",
   "release_version": "0.2.0",
-  "readiness_score": 45,
-  "audit_timestamp": "2025-01-20T12:00:00Z",
+  "readiness_score": 55,
+  "audit_timestamp": "2025-09-20T14:30:00Z",
   "exit_bar_results": {
     "quality": {
       "status": "PARTIAL",
