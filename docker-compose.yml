@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  greenlang-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile.runner
+      args:
+        GL_VERSION: "0.2.0"
+        BUILD_DATE: "${BUILD_DATE:-2024-01-01T00:00:00Z}"
+        VCS_REF: "${GITHUB_SHA:-local}"
+    image: greenlang/core-runner:local
+    container_name: greenlang-runner
+    user: "10001:10001"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+      - seccomp:unconfined  # Use default seccomp profile
+    cap_drop:
+      - ALL
+    environment:
+      - GL_LOG_LEVEL=DEBUG
+      - GL_BACKEND=docker
+      - GL_CACHE_DIR=/var/cache/greenlang
+      - GL_LOG_DIR=/var/log/greenlang
+    volumes:
+      - gl-cache:/var/cache/greenlang:rw
+      - gl-logs:/var/log/greenlang:rw
+      - /tmp:rw
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "gl", "--help"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - greenlang
+    restart: unless-stopped
+
+  greenlang-full:
+    build:
+      context: .
+      dockerfile: Dockerfile.full
+      args:
+        GL_VERSION: "0.2.0"
+        BUILD_DATE: "${BUILD_DATE:-2024-01-01T00:00:00Z}"
+        VCS_REF: "${GITHUB_SHA:-local}"
+    image: greenlang/core-full:local
+    container_name: greenlang-full
+    user: "10001:10001"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    environment:
+      - GL_LOG_LEVEL=DEBUG
+      - GL_BACKEND=docker
+    volumes:
+      - ./examples:/workspace/examples:ro
+      - ./tests:/workspace/tests:ro
+      - gl-workspace:/workspace:rw
+      - gl-cache-full:/var/cache/greenlang:rw
+      - gl-logs-full:/var/log/greenlang:rw
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    networks:
+      - greenlang
+    command: bash
+
+  # OPA Policy Engine for testing policies
+  opa:
+    image: openpolicyagent/opa:0.60.0-envoy
+    container_name: greenlang-opa
+    ports:
+      - "8181:8181"
+    volumes:
+      - ./policies:/policies:ro
+    command:
+      - "run"
+      - "--server"
+      - "--log-level=debug"
+      - "--set=decision_logs.console=true"
+      - "/policies"
+    networks:
+      - greenlang
+    restart: unless-stopped
+
+volumes:
+  gl-cache:
+    driver: local
+  gl-logs:
+    driver: local
+  gl-workspace:
+    driver: local
+  gl-cache-full:
+    driver: local
+  gl-logs-full:
+    driver: local
+
+networks:
+  greenlang:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

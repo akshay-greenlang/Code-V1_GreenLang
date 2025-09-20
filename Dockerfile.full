@@ -1,0 +1,134 @@
+# syntax=docker/dockerfile:1.7
+# Multi-stage build for developer/CI image with build tools
+ARG PYTHON_VERSION=3.11-slim
+FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228 AS builder
+
+# Build stage environment
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
+# Create virtual environment
+RUN python -m venv $VIRTUAL_ENV
+
+# Install build dependencies and development tools
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    git \
+    curl \
+    wget \
+    pkg-config \
+    libpq-dev \
+    libssl-dev \
+    libffi-dev \
+    ca-certificates \
+    tini \
+    make \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy source code for installation
+WORKDIR /build
+COPY pyproject.toml setup.py MANIFEST.in VERSION README.md ./
+COPY greenlang/ ./greenlang/
+COPY core/ ./core/
+
+# Install GreenLang with all extras from local source
+ARG GL_VERSION=0.2.0
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel \
+    && pip install -e ".[full,dev,test]"
+
+# Final stage - still includes build tools for CI/dev use
+FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_HOME=/var/lib/greenlang \
+    GL_CACHE_DIR=/var/cache/greenlang \
+    GL_LOG_DIR=/var/log/greenlang
+
+# Install all dev/CI tools and runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc \
+    g++ \
+    git \
+    curl \
+    wget \
+    make \
+    pkg-config \
+    libpq-dev \
+    libssl-dev \
+    libffi-dev \
+    ca-certificates \
+    tini \
+    jq \
+    vim \
+    openssh-client \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment from builder
+COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+# Copy the installed source (since we used -e flag)
+COPY --from=builder /build /opt/greenlang-src
+ENV PYTHONPATH=/opt/greenlang-src:$PYTHONPATH
+
+# Verify installation
+RUN gl version \
+    && python -c "import greenlang; print('GreenLang installed')" \
+    && python -c "import pytest; import mypy; import black; print('Dev tools OK')"
+
+# Install additional CI/CD tools
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install \
+    pre-commit \
+    tox \
+    twine \
+    wheel \
+    build
+
+# Create non-root user with proper UID
+RUN groupadd -g 10001 appuser \
+    && useradd -u 10001 -g 10001 -m -s /bin/bash appuser \
+    && mkdir -p ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} /workspace \
+    && chown -R appuser:appuser ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} /workspace
+
+# Git safe directory configuration for CI environments
+RUN git config --global --add safe.directory '*'
+
+USER appuser
+WORKDIR /workspace
+
+# OCI standard labels
+ARG VCS_REF
+ARG BUILD_DATE
+ARG VERSION=${GL_VERSION}
+LABEL org.opencontainers.image.title="GreenLang Core Full" \
+      org.opencontainers.image.description="Developer/CI image with build tools for GreenLang" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/akshay-greenlang/Code-V1_GreenLang" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="GreenLang Team" \
+      security.capabilities.drop="ALL" \
+      security.no-new-privileges="true"
+
+# Volume for workspace and caches
+VOLUME ["${GL_CACHE_DIR}", "${GL_LOG_DIR}", "/workspace", "/tmp"]
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD gl --help >/dev/null 2>&1 || exit 1
+
+# Default to bash for interactive development
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["bash"]

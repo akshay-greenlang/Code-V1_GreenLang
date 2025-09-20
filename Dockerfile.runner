@@ -1,0 +1,92 @@
+# syntax=docker/dockerfile:1.7
+# SECURITY: Pin base image with SHA256 digest for reproducibility and supply chain security
+# Update this digest when updating Python version
+ARG PYTHON_VERSION=3.11-slim
+FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228 AS base
+
+# Set consistent environment for build reproducibility
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_DEFAULT_TIMEOUT=100 \
+    VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    GL_HOME=/var/lib/greenlang \
+    GL_CACHE_DIR=/var/cache/greenlang \
+    GL_LOG_DIR=/var/log/greenlang
+
+# Create virtual environment for isolation
+RUN python -m venv $VIRTUAL_ENV
+
+# Install minimal runtime dependencies with security updates
+# tini for proper signal handling, ca-certificates for TLS
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    tini \
+    && apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /var/cache/apt/* \
+    && rm -rf /tmp/*
+
+# Copy source code for installation
+WORKDIR /build
+COPY pyproject.toml setup.py MANIFEST.in VERSION README.md ./
+COPY greenlang/ ./greenlang/
+COPY core/ ./core/
+
+# Install from local source (non-editable for production)
+ARG GL_VERSION=0.2.0
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --upgrade pip setuptools wheel \
+    && pip install .
+
+# Verify installation
+RUN python -c "import greenlang; print(f'GreenLang installed')" \
+    && gl version
+
+# Clean build artifacts
+WORKDIR /app
+RUN rm -rf /build
+
+# Create non-root user with high UID for security (10001+ recommended for containers)
+RUN groupadd -g 10001 appuser \
+    && useradd -u 10001 -g 10001 -m -s /bin/bash appuser \
+    && mkdir -p ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} /app \
+    && chown -R appuser:appuser ${GL_HOME} ${GL_CACHE_DIR} ${GL_LOG_DIR} /app
+
+# Security: Drop all capabilities
+RUN setcap -r /usr/local/bin/python3.11 2>/dev/null || true
+
+# Switch to non-root user
+USER appuser
+WORKDIR /app
+
+# OCI standard labels
+ARG VCS_REF
+ARG BUILD_DATE
+ARG VERSION=${GL_VERSION}
+LABEL org.opencontainers.image.title="GreenLang Core Runner" \
+      org.opencontainers.image.description="Minimal production runtime for GreenLang pipelines" \
+      org.opencontainers.image.version="${VERSION}" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.source="https://github.com/akshay-greenlang/Code-V1_GreenLang" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="GreenLang Team" \
+      security.capabilities.drop="ALL" \
+      security.no-new-privileges="true" \
+      security.read-only-rootfs="true" \
+      io.containers.read-only-root="true"
+
+# Declare writable volumes explicitly (for read-only root filesystem)
+VOLUME ["${GL_CACHE_DIR}", "${GL_LOG_DIR}", "/tmp"]
+
+# Lightweight healthcheck using gl CLI
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD gl --help >/dev/null 2>&1 || exit 1
+
+# Use tini for proper signal handling (prevents zombie processes)
+ENTRYPOINT ["/usr/bin/tini", "--", "gl"]
+CMD ["--help"]
