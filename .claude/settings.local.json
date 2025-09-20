@@ -153,7 +153,8 @@
       "Bash(docker:*)",
       "Bash(scriptsverify-docker-dod.bat)",
       "Bash(powershell:*)",
-      "Bash(numfmt:*)"
+      "Bash(numfmt:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
