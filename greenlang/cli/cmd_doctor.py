@@ -1,653 +1,361 @@
 """
-Environment validation and diagnostic commands for GreenLang CLI
+gl doctor - Environment diagnostics
 """
 
-import click
-import json
+import typer
 import sys
 import os
 import subprocess
-import platform
 import shutil
+import platform
 from pathlib import Path
-from typing import Dict, Any, List, Tuple, Optional
+from typing import List, Tuple, Optional
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich import print as rprint
-import time
+import importlib.metadata as md
 
+app = typer.Typer()
 console = Console()
 
 
-@click.group()
-def doctor():
-    """System health and environment validation
+def check_command(command: str) -> Tuple[bool, str]:
+    """Check if a command is available and get its version"""
+    try:
+        if shutil.which(command):
+            # Try to get version
+            try:
+                result = subprocess.run(
+                    [command, "--version"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                version = result.stdout.strip().split("\n")[0]
+                return True, version
+            except:
+                return True, "installed"
+        return False, "not found"
+    except:
+        return False, "error"
 
-    Check environment setup, dependencies, and configuration.
+
+def check_python_package(package: str) -> Tuple[bool, str]:
+    """Check if a Python package is installed"""
+    try:
+        version = md.version(package)
+        return True, version
+    except:
+        return False, "not installed"
+
+
+def check_directory(path: Path) -> Tuple[bool, str]:
+    """Check if a directory exists and is writable"""
+    if path.exists():
+        if path.is_dir():
+            # Check if writable
+            test_file = path / ".gl_test"
+            try:
+                test_file.touch()
+                test_file.unlink()
+                return True, "OK writable"
+            except:
+                return True, "read-only"
+        else:
+            return False, "not a directory"
+    else:
+        # Try to create it
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+            return True, "OK created"
+        except:
+            return False, "cannot create"
+
+
+def check_kubernetes() -> Tuple[bool, str]:
+    """Check Kubernetes connectivity"""
+    try:
+        result = subprocess.run(
+            ["kubectl", "cluster-info"],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        if result.returncode == 0:
+            # Extract cluster name
+            for line in result.stdout.split("\n"):
+                if "is running at" in line:
+                    return True, "OK connected"
+            return True, "connected"
+        else:
+            return False, "not connected"
+    except FileNotFoundError:
+        return False, "kubectl not found"
+    except:
+        return False, "error"
+
+
+def check_hub_auth() -> Tuple[bool, str]:
+    """Check Hub authentication"""
+    # Check for credentials in various locations
+    cred_locations = [
+        Path.home() / ".greenlang" / "credentials",
+        Path.home() / ".config" / "greenlang" / "auth.json",
+        Path("/etc/greenlang/auth.json")
+    ]
+    
+    for loc in cred_locations:
+        if loc.exists():
+            return True, f"OK {loc.name}"
+    
+    # Check environment variable
+    if os.getenv("GL_HUB_TOKEN"):
+        return True, "OK via GL_HUB_TOKEN"
+    
+    return False, "not configured"
+
+
+@app.callback(invoke_without_command=True)
+def doctor(
+    ctx: typer.Context,
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output"),
+    json_output: bool = typer.Option(False, "--json", help="Output as JSON")
+):
     """
-    pass
-
-
-@doctor.command(name="check")
-@click.option("--json", "output_json", is_flag=True, help="Output results as JSON")
-@click.option("--verbose", "-v", is_flag=True, help="Show detailed information")
-@click.option("--fix", is_flag=True, help="Attempt to fix issues automatically")
-def check_environment(output_json: bool, verbose: bool, fix: bool):
-    """Check environment setup and dependencies
-
-    Examples:
-        gl doctor check                 # Basic health check
-        gl doctor check --verbose       # Detailed diagnostics
-        gl doctor check --json         # JSON output
-        gl doctor check --fix          # Auto-fix issues
+    Check GreenLang installation and environment
+    
+    Checks:
+    - Python version and packages
+    - CLI tools (cosign, oras, kubectl)
+    - Configuration and cache directories
+    - Hub authentication
+    - Policy bundles
     """
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
-    ) as progress:
-
-        task = progress.add_task("Running diagnostics...", total=None)
-
-        # Run all checks
-        results = {
-            "system": check_system_info(),
-            "python": check_python_environment(),
-            "dependencies": check_dependencies(),
-            "greenlang": check_greenlang_installation(),
-            "project": check_project_structure(),
-            "configuration": check_configuration(),
-            "permissions": check_permissions(),
-            "network": check_network_connectivity()
-        }
-
-        progress.update(task, description="Analysis complete!")
-
-    # Analyze results
-    all_issues = []
-    all_warnings = []
-    fixes_applied = []
-
-    for category, result in results.items():
-        all_issues.extend(result.get("issues", []))
-        all_warnings.extend(result.get("warnings", []))
-
-        # Apply fixes if requested
-        if fix and "fixes" in result:
-            for fix_item in result["fixes"]:
-                try:
-                    success = apply_fix(fix_item)
-                    if success:
-                        fixes_applied.append(fix_item["description"])
-                except Exception as e:
-                    all_issues.append(f"Failed to apply fix: {e}")
-
-    # Determine overall health
-    health_status = "HEALTHY" if not all_issues else "UNHEALTHY"
-    if all_warnings and not all_issues:
-        health_status = "WARNING"
-
-    # Generate summary
-    summary = {
-        "status": health_status,
-        "total_issues": len(all_issues),
-        "total_warnings": len(all_warnings),
-        "fixes_applied": len(fixes_applied),
-        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
-    }
-
-    if output_json:
-        output = {
-            "summary": summary,
-            "results": results,
-            "issues": all_issues,
-            "warnings": all_warnings,
-            "fixes_applied": fixes_applied
-        }
+    if ctx.invoked_subcommand is not None:
+        return
+    
+    console.print(Panel.fit(
+        "[bold]GreenLang Environment Check[/bold]\n"
+        "Checking system requirements and configuration...",
+        title="gl doctor"
+    ))
+    
+    checks = []
+    
+    # === Core Requirements ===
+    console.print("\n[bold cyan]Core Requirements:[/bold cyan]")
+    
+    # Python version
+    py_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    py_ok = sys.version_info >= (3, 8)
+    checks.append(("Python Version", py_version, py_ok))
+    
+    # GreenLang version
+    try:
+        gl_version = md.version("greenlang")
+        checks.append(("GreenLang Version", gl_version, True))
+    except:
+        checks.append(("GreenLang Version", "development", True))
+    
+    # Typer
+    typer_ok, typer_version = check_python_package("typer")
+    checks.append(("Typer CLI Framework", typer_version, typer_ok))
+    
+    # === Supply Chain Tools ===
+    console.print("\n[bold cyan]Supply Chain Tools:[/bold cyan]")
+    
+    # cosign
+    cosign_ok, cosign_version = check_command("cosign")
+    checks.append(("cosign (signatures)", cosign_version, cosign_ok))
+    
+    # oras
+    oras_ok, oras_version = check_command("oras")
+    checks.append(("oras (OCI registry)", oras_version, oras_ok))
+    
+    # git
+    git_ok, git_version = check_command("git")
+    checks.append(("git", git_version, git_ok))
+    
+    # === Runtime Backends ===
+    console.print("\n[bold cyan]Runtime Backends:[/bold cyan]")
+    
+    # Docker
+    docker_ok, docker_version = check_command("docker")
+    checks.append(("Docker", docker_version, docker_ok))
+    
+    # Kubernetes
+    k8s_ok, k8s_status = check_kubernetes()
+    checks.append(("Kubernetes", k8s_status, k8s_ok))
+    
+    # === Configuration ===
+    console.print("\n[bold cyan]Configuration:[/bold cyan]")
+    
+    # Config directory
+    config_dir = Path.home() / ".greenlang"
+    config_ok, config_status = check_directory(config_dir)
+    checks.append(("Config Directory", str(config_dir), config_ok))
+    
+    # Cache directory
+    cache_dir = Path(os.getenv("GL_CACHE_DIR", str(Path.home() / ".greenlang" / "cache")))
+    cache_ok, cache_status = check_directory(cache_dir)
+    checks.append(("Cache Directory", f"{cache_dir} ({cache_status})", cache_ok))
+    
+    # Hub authentication
+    hub_ok, hub_status = check_hub_auth()
+    checks.append(("Hub Authentication", hub_status, hub_ok))
+    
+    # Policy bundle
+    policy_dir = Path.home() / ".greenlang" / "policies"
+    policy_ok = policy_dir.exists() and list(policy_dir.glob("*.rego"))
+    policy_count = len(list(policy_dir.glob("*.rego"))) if policy_dir.exists() else 0
+    checks.append(("Policy Bundle", f"{policy_count} policies", policy_ok))
+    
+    # === Platform Detection ===
+    console.print("\n[bold cyan]Platform:[/bold cyan]")
+    checks.append(("Operating System", platform.system(), True))
+    checks.append(("Architecture", platform.machine(), True))
+    checks.append(("Platform", platform.platform(), True))
+    
+    # === Display Results ===
+    if json_output:
+        import json
+        output = []
+        for name, value, status in checks:
+            output.append({
+                "check": name,
+                "value": value,
+                "status": "pass" if status else "fail"
+            })
         console.print(json.dumps(output, indent=2))
     else:
-        display_health_report(summary, results, all_issues, all_warnings, fixes_applied, verbose)
-
-    # Exit with appropriate code
-    sys.exit(0 if health_status == "HEALTHY" else 1)
-
-
-@doctor.command(name="deps")
-@click.option("--install", is_flag=True, help="Install missing dependencies")
-@click.option("--upgrade", is_flag=True, help="Upgrade existing dependencies")
-def check_deps(install: bool, upgrade: bool):
-    """Check and manage Python dependencies
-
-    Examples:
-        gl doctor deps                  # Check dependencies
-        gl doctor deps --install        # Install missing ones
-        gl doctor deps --upgrade        # Upgrade existing ones
-    """
-    console.print("[bold blue]Checking Python Dependencies[/bold blue]\n")
-
-    # Core dependencies
-    core_deps = [
-        ("click", ">=8.0.0"),
-        ("rich", ">=12.0.0"),
-        ("pydantic", ">=1.8.0"),
-        ("requests", ">=2.25.0"),
-        ("PyYAML", ">=6.0"),
-        ("jsonschema", ">=4.0.0"),
-    ]
-
-    # Optional dependencies
-    optional_deps = [
-        ("pandas", ">=1.3.0", "Data analysis"),
-        ("numpy", ">=1.21.0", "Numerical computing"),
-        ("matplotlib", ">=3.5.0", "Plotting"),
-        ("jupyter", ">=1.0.0", "Notebook support"),
-        ("pytest", ">=6.0.0", "Testing"),
-        ("black", ">=21.0.0", "Code formatting"),
-    ]
-
-    missing_core = []
-    missing_optional = []
-    installed = []
-
-    # Check core dependencies
-    for package, version in core_deps:
-        status = check_package(package, version)
-        if status["installed"]:
-            installed.append((package, status["version"], "core"))
-        else:
-            missing_core.append((package, version))
-
-    # Check optional dependencies
-    for item in optional_deps:
-        package, version = item[0], item[1]
-        description = item[2] if len(item) > 2 else ""
-        status = check_package(package, version)
-        if status["installed"]:
-            installed.append((package, status["version"], "optional"))
-        else:
-            missing_optional.append((package, version, description))
-
-    # Display results
-    if installed:
-        table = Table(title="Installed Dependencies")
-        table.add_column("Package", style="green")
-        table.add_column("Version", style="cyan")
-        table.add_column("Type", style="yellow")
-
-        for package, version, dep_type in installed:
-            table.add_row(package, version, dep_type)
-
+        # Create table
+        table = Table(show_header=False, box=None)
+        table.add_column("Status", width=3)
+        table.add_column("Check", style="cyan")
+        table.add_column("Value")
+        
+        for name, value, status in checks:
+            icon = "[green]OK[/green]" if status else "[red]FAIL[/red]"
+            table.add_row(icon, name, value)
+        
         console.print(table)
-
-    if missing_core:
-        console.print("\n[bold red]Missing Core Dependencies:[/bold red]")
-        for package, version in missing_core:
-            console.print(f"  [red]x[/red] {package} {version}")
-
-    if missing_optional:
-        console.print("\n[bold yellow]Missing Optional Dependencies:[/bold yellow]")
-        for item in missing_optional:
-            package, version = item[0], item[1]
-            description = item[2] if len(item) > 2 else ""
-            console.print(f"  [yellow]o[/yellow] {package} {version} - {description}")
-
-    # Install missing dependencies
-    if install and (missing_core or missing_optional):
-        console.print("\n[bold blue]Installing Dependencies...[/bold blue]")
-
-        to_install = [pkg for pkg, _ in missing_core]
-        if click.confirm("Also install optional dependencies?"):
-            to_install.extend([pkg for pkg, _, _ in missing_optional])
-
-        for package in to_install:
-            try:
-                console.print(f"Installing {package}...")
-                subprocess.check_call([sys.executable, "-m", "pip", "install", package],
-                                    capture_output=True)
-                console.print(f"  [green]+[/green] {package} installed")
-            except subprocess.CalledProcessError:
-                console.print(f"  [red]x[/red] Failed to install {package}")
-
-    # Upgrade dependencies
-    if upgrade and installed:
-        console.print("\n[bold blue]Upgrading Dependencies...[/bold blue]")
-
-        for package, current_version, _ in installed:
-            try:
-                console.print(f"Upgrading {package}...")
-                subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", package],
-                                    capture_output=True)
-                console.print(f"  [green]+[/green] {package} upgraded")
-            except subprocess.CalledProcessError:
-                console.print(f"  [yellow]o[/yellow] {package} already up to date")
-
-
-@doctor.command(name="config")
-def check_config():
-    """Validate GreenLang configuration
-
-    Examples:
-        gl doctor config               # Check configuration
-    """
-    console.print("[bold blue]Configuration Validation[/bold blue]\n")
-
-    config_files = [
-        ".env",
-        "greenlang.yaml",
-        "greenlang.yml",
-        "config/greenlang.yaml"
-    ]
-
-    found_configs = []
-    issues = []
-
-    # Check for configuration files
-    for config_file in config_files:
-        path = Path(config_file)
-        if path.exists():
-            found_configs.append(str(path))
-            try:
-                validate_config_file(path)
-            except Exception as e:
-                issues.append(f"{config_file}: {e}")
-
-    if found_configs:
-        console.print("[green]+[/green] Found configuration files:")
-        for config in found_configs:
-            console.print(f"  • {config}")
-    else:
-        console.print("[yellow]o[/yellow] No configuration files found")
-        console.print("  Consider creating a .env file with your settings")
-
-    # Check environment variables
-    env_vars = [
-        ("GREENLANG_ENV", "Environment setting"),
-        ("GREENLANG_LOG_LEVEL", "Logging level"),
-        ("OPENAI_API_KEY", "OpenAI API key (optional)"),
-        ("ANTHROPIC_API_KEY", "Anthropic API key (optional)"),
-    ]
-
-    console.print("\n[bold]Environment Variables:[/bold]")
-    for var, description in env_vars:
-        value = os.environ.get(var)
-        if value:
-            # Mask sensitive values
-            if "key" in var.lower() or "token" in var.lower():
-                masked_value = value[:8] + "..." if len(value) > 8 else "***"
-                console.print(f"  [green]+[/green] {var} = {masked_value}")
-            else:
-                console.print(f"  [green]+[/green] {var} = {value}")
+        
+        # Overall summary
+        passed = sum(1 for _, _, status in checks if status)
+        total = len(checks)
+        
+        console.print(f"\n[bold]Summary:[/bold] {passed}/{total} checks passed")
+        
+        if passed == total:
+            console.print("[green]OK All checks passed! GreenLang is ready to use.[/green]")
         else:
-            console.print(f"  [dim]o[/dim] {var} (not set) - {description}")
-
-    if issues:
-        console.print(f"\n[bold red]Configuration Issues:[/bold red]")
-        for issue in issues:
-            console.print(f"  [red]x[/red] {issue}")
-
-
-@doctor.command(name="network")
-def check_network():
-    """Test network connectivity
-
-    Examples:
-        gl doctor network              # Test network connections
-    """
-    console.print("[bold blue]Network Connectivity Check[/bold blue]\n")
-
-    endpoints = [
-        ("github.com", 443, "GitHub (for packages)"),
-        ("pypi.org", 443, "PyPI (for Python packages)"),
-        ("api.openai.com", 443, "OpenAI API"),
-        ("api.anthropic.com", 443, "Anthropic API"),
-    ]
-
-    for host, port, description in endpoints:
-        try:
-            import socket
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(5)
-            result = sock.connect_ex((host, port))
-            sock.close()
-
-            if result == 0:
-                console.print(f"  [green]+[/green] {host}:{port} - {description}")
-            else:
-                console.print(f"  [red]x[/red] {host}:{port} - {description} (unreachable)")
-
-        except Exception as e:
-            console.print(f"  [red]x[/red] {host}:{port} - {description} (error: {e})")
+            console.print("[yellow]WARNING: Some checks failed. See details above.[/yellow]")
+            
+            # Provide fix suggestions
+            if verbose:
+                console.print("\n[bold]Suggested Fixes:[/bold]")
+                
+                if not cosign_ok:
+                    console.print("  - Install cosign: https://docs.sigstore.dev/cosign/installation/")
+                
+                if not oras_ok:
+                    console.print("  - Install oras: https://oras.land/docs/installation")
+                
+                if not docker_ok:
+                    console.print("  - Install Docker: https://docs.docker.com/get-docker/")
+                
+                if not hub_ok:
+                    console.print("  - Configure Hub auth: gl auth login")
+                
+                if not policy_ok:
+                    console.print("  - Add policies: gl policy add <policy.rego>")
+        
+        # Environment variables
+        if verbose:
+            console.print("\n[bold]Environment Variables:[/bold]")
+            env_vars = [
+                ("GL_PROFILE", os.getenv("GL_PROFILE", "not set")),
+                ("GL_REGION", os.getenv("GL_REGION", "not set")),
+                ("GL_HUB", os.getenv("GL_HUB", "hub.greenlang.io")),
+                ("GL_TELEMETRY", os.getenv("GL_TELEMETRY", "on")),
+                ("GL_POLICY_BUNDLE", os.getenv("GL_POLICY_BUNDLE", "not set")),
+                ("GL_CACHE_DIR", os.getenv("GL_CACHE_DIR", "~/.greenlang/cache"))
+            ]
+            
+            for var, value in env_vars:
+                console.print(f"  {var}: {value}")
 
 
-def check_system_info() -> Dict[str, Any]:
-    """Check system information"""
-    return {
-        "platform": platform.system(),
-        "platform_version": platform.version(),
-        "architecture": platform.machine(),
-        "python_version": platform.python_version(),
-        "python_executable": sys.executable,
-        "issues": [],
-        "warnings": []
-    }
+@app.command("fix")
+def fix(
+    component: Optional[str] = typer.Argument(None, help="Component to fix (cosign|oras|policies)")
+):
+    """Auto-fix common issues"""
+    console.print("[cyan]Running auto-fix...[/cyan]\n")
+    
+    fixed = []
+    
+    # Fix config directory
+    config_dir = Path.home() / ".greenlang"
+    if not config_dir.exists():
+        config_dir.mkdir(parents=True)
+        fixed.append("Created config directory")
+    
+    # Fix cache directory
+    cache_dir = config_dir / "cache"
+    if not cache_dir.exists():
+        cache_dir.mkdir(parents=True)
+        fixed.append("Created cache directory")
+    
+    # Fix policies directory
+    policies_dir = config_dir / "policies"
+    if not policies_dir.exists():
+        policies_dir.mkdir(parents=True)
+        fixed.append("Created policies directory")
+        
+        # Add default policy
+        default_policy = '''package greenlang.default
 
+# Default allow-all policy
+default allow = true
 
-def check_python_environment() -> Dict[str, Any]:
-    """Check Python environment"""
-    issues = []
-    warnings = []
-
-    # Check Python version
-    python_version = tuple(map(int, platform.python_version().split('.')))
-    if python_version < (3, 8):
-        issues.append("Python 3.8 or higher is required")
-    elif python_version < (3, 9):
-        warnings.append("Python 3.9+ recommended for better performance")
-
-    # Check virtual environment
-    in_venv = hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)
-    if not in_venv:
-        warnings.append("Not running in a virtual environment (recommended)")
-
-    # Check pip
-    pip_available = shutil.which('pip') is not None
-    if not pip_available:
-        issues.append("pip is not available")
-
-    return {
-        "version": platform.python_version(),
-        "executable": sys.executable,
-        "virtual_env": in_venv,
-        "pip_available": pip_available,
-        "issues": issues,
-        "warnings": warnings
-    }
-
-
-def check_dependencies() -> Dict[str, Any]:
-    """Check Python dependencies"""
-    required_packages = ["click", "rich", "pydantic", "requests", "PyYAML"]
-    optional_packages = ["pandas", "numpy", "matplotlib", "jsonschema"]
-
-    missing_required = []
-    missing_optional = []
-    installed = []
-
-    for package in required_packages:
-        try:
-            __import__(package)
-            installed.append(package)
-        except ImportError:
-            missing_required.append(package)
-
-    for package in optional_packages:
-        try:
-            __import__(package)
-            installed.append(package)
-        except ImportError:
-            missing_optional.append(package)
-
-    issues = []
-    warnings = []
-    fixes = []
-
-    if missing_required:
-        issues.extend([f"Required package missing: {pkg}" for pkg in missing_required])
-        fixes.extend([{"type": "install_package", "package": pkg, "description": f"Install {pkg}"}
-                     for pkg in missing_required])
-
-    if missing_optional:
-        warnings.extend([f"Optional package missing: {pkg}" for pkg in missing_optional])
-
-    return {
-        "installed": installed,
-        "missing_required": missing_required,
-        "missing_optional": missing_optional,
-        "issues": issues,
-        "warnings": warnings,
-        "fixes": fixes
-    }
-
-
-def check_greenlang_installation() -> Dict[str, Any]:
-    """Check GreenLang installation"""
-    issues = []
-    warnings = []
-
-    try:
-        import greenlang
-        version = getattr(greenlang, '__version__', 'unknown')
-        installed = True
-    except ImportError:
-        issues.append("GreenLang package not found")
-        installed = False
-        version = None
-
-    # Check for CLI availability
-    cli_available = shutil.which('gl') is not None
-    if not cli_available:
-        warnings.append("GreenLang CLI (gl) not found in PATH")
-
-    return {
-        "installed": installed,
-        "version": version,
-        "cli_available": cli_available,
-        "issues": issues,
-        "warnings": warnings
-    }
-
-
-def check_project_structure() -> Dict[str, Any]:
-    """Check project structure"""
-    warnings = []
-    suggestions = []
-
-    # Check for common directories
-    expected_dirs = ["pipelines", "data", "reports", "logs", "cache"]
-    missing_dirs = [d for d in expected_dirs if not Path(d).exists()]
-
-    if missing_dirs:
-        warnings.extend([f"Directory not found: {d}" for d in missing_dirs])
-        suggestions.append("Run 'gl init project' to create project structure")
-
-    # Check for configuration files
-    config_files = [".env", "greenlang.yaml", "greenlang.yml"]
-    has_config = any(Path(f).exists() for f in config_files)
-
-    if not has_config:
-        warnings.append("No configuration file found")
-        suggestions.append("Create .env file with your settings")
-
-    return {
-        "missing_directories": missing_dirs,
-        "has_configuration": has_config,
-        "issues": [],
-        "warnings": warnings,
-        "suggestions": suggestions
-    }
-
-
-def check_configuration() -> Dict[str, Any]:
-    """Check configuration settings"""
-    issues = []
-    warnings = []
-
-    # Check environment variables
-    important_vars = ["GREENLANG_ENV", "GREENLANG_LOG_LEVEL"]
-    missing_vars = [var for var in important_vars if not os.environ.get(var)]
-
-    if missing_vars:
-        warnings.extend([f"Environment variable not set: {var}" for var in missing_vars])
-
-    # Check for API keys if needed
-    api_keys = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY"]
-    has_api_key = any(os.environ.get(key) for key in api_keys)
-
-    if not has_api_key:
-        warnings.append("No API keys configured (needed for AI features)")
-
-    return {
-        "missing_env_vars": missing_vars,
-        "has_api_keys": has_api_key,
-        "issues": issues,
-        "warnings": warnings
-    }
-
-
-def check_permissions() -> Dict[str, Any]:
-    """Check file system permissions"""
-    issues = []
-    warnings = []
-
-    # Check write permissions for common directories
-    dirs_to_check = [
-        Path.home() / ".greenlang",
-        Path.cwd(),
-        Path("/tmp") if Path("/tmp").exists() else Path.cwd() / "tmp"
-    ]
-
-    for directory in dirs_to_check:
-        if directory.exists():
-            if not os.access(directory, os.W_OK):
-                issues.append(f"No write permission: {directory}")
+# Example deny rule (commented out)
+# deny[msg] {
+#     input.pipeline.backend == "k8s"
+#     not input.profile == "prod"
+#     msg := "K8s backend requires prod profile"
+# }
+'''
+        with open(policies_dir / "default.rego", "w") as f:
+            f.write(default_policy)
+        fixed.append("Added default policy")
+    
+    # Component-specific fixes
+    if component == "cosign":
+        console.print("[cyan]Installing cosign...[/cyan]")
+        # Platform-specific installation
+        if platform.system() == "Darwin":
+            subprocess.run(["brew", "install", "cosign"])
+        elif platform.system() == "Linux":
+            console.print("Run: wget -O - https://github.com/sigstore/cosign/releases/latest/download/cosign-linux-amd64 | sudo tee /usr/local/bin/cosign > /dev/null && sudo chmod +x /usr/local/bin/cosign")
         else:
-            try:
-                directory.mkdir(parents=True, exist_ok=True)
-            except PermissionError:
-                issues.append(f"Cannot create directory: {directory}")
-
-    return {
-        "issues": issues,
-        "warnings": warnings
-    }
-
-
-def check_network_connectivity() -> Dict[str, Any]:
-    """Check network connectivity"""
-    issues = []
-    warnings = []
-
-    # Test basic connectivity
-    try:
-        import socket
-        socket.create_connection(("8.8.8.8", 53), timeout=3)
-        network_available = True
-    except OSError:
-        network_available = False
-        warnings.append("No internet connectivity detected")
-
-    return {
-        "network_available": network_available,
-        "issues": issues,
-        "warnings": warnings
-    }
-
-
-def check_package(package: str, version_req: Optional[str] = None) -> Dict[str, Any]:
-    """Check if a package is installed with version requirements"""
-    try:
-        import importlib.metadata
-        version = importlib.metadata.version(package)
-        installed = True
-
-        # Simple version checking (could be enhanced)
-        version_ok = True
-        if version_req and version_req.startswith(">="):
-            required = version_req[2:]
-            version_ok = version >= required
-
-        return {
-            "installed": installed,
-            "version": version,
-            "version_ok": version_ok
-        }
-    except importlib.metadata.PackageNotFoundError:
-        return {
-            "installed": False,
-            "version": None,
-            "version_ok": False
-        }
-
-
-def validate_config_file(config_path: Path):
-    """Validate a configuration file"""
-    if config_path.suffix in ['.yaml', '.yml']:
-        import yaml
-        with open(config_path, 'r') as f:
-            yaml.safe_load(f)
-    elif config_path.name == '.env':
-        # Basic .env validation
-        with open(config_path, 'r') as f:
-            for line_no, line in enumerate(f, 1):
-                line = line.strip()
-                if line and not line.startswith('#') and '=' not in line:
-                    raise ValueError(f"Invalid .env format at line {line_no}")
-
-
-def apply_fix(fix_item: Dict[str, Any]) -> bool:
-    """Apply an automatic fix"""
-    if fix_item["type"] == "install_package":
-        package = fix_item["package"]
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", package],
-                                capture_output=True)
-            return True
-        except subprocess.CalledProcessError:
-            return False
-
-    return False
-
-
-def display_health_report(summary: Dict, results: Dict, issues: List[str], warnings: List[str], fixes_applied: List[str], verbose: bool):
-    """Display health report in formatted output"""
-
-    # Status panel
-    status_color = "green" if summary["status"] == "HEALTHY" else "red" if summary["status"] == "UNHEALTHY" else "yellow"
-    status_panel = Panel(
-        f"[bold {status_color}]{summary['status']}[/bold {status_color}]\n\n"
-        f"Issues: {summary['total_issues']}\n"
-        f"Warnings: {summary['total_warnings']}\n"
-        f"Fixes Applied: {summary['fixes_applied']}\n"
-        f"Checked: {summary['timestamp']}",
-        title="System Health",
-        expand=False
-    )
-    console.print(status_panel)
-
-    # Issues
-    if issues:
-        console.print(f"\n[bold red]Issues ({len(issues)}):[/bold red]")
-        for issue in issues:
-            console.print(f"  [red]x[/red] {issue}")
-
-    # Warnings
-    if warnings:
-        console.print(f"\n[bold yellow]Warnings ({len(warnings)}):[/bold yellow]")
-        for warning in warnings:
-            console.print(f"  [yellow]o[/yellow] {warning}")
-
-    # Applied fixes
-    if fixes_applied:
-        console.print(f"\n[bold green]Fixes Applied ({len(fixes_applied)}):[/bold green]")
-        for fix in fixes_applied:
-            console.print(f"  [green]+[/green] {fix}")
-
-    # Detailed results if verbose
-    if verbose:
-        console.print("\n[bold]Detailed Results:[/bold]")
-        for category, result in results.items():
-            console.print(f"\n[cyan]{category.title()}:[/cyan]")
-            for key, value in result.items():
-                if key not in ["issues", "warnings", "fixes"]:
-                    console.print(f"  {key}: {value}")
-
-    # Suggestions
-    console.print("\n[bold cyan]Recommendations:[/bold cyan]")
-    if summary["status"] == "HEALTHY":
-        console.print("  [green]+[/green] Your environment is healthy!")
+            console.print("Visit: https://docs.sigstore.dev/cosign/installation/")
+    
+    elif component == "oras":
+        console.print("[cyan]Installing oras...[/cyan]")
+        if platform.system() == "Darwin":
+            subprocess.run(["brew", "install", "oras"])
+        elif platform.system() == "Linux":
+            console.print("Run: curl -LO https://github.com/oras-project/oras/releases/download/v1.0.0/oras_1.0.0_linux_amd64.tar.gz && tar -xzf oras_1.0.0_linux_amd64.tar.gz && sudo mv oras /usr/local/bin/")
+        else:
+            console.print("Visit: https://oras.land/docs/installation")
+    
+    # Display results
+    if fixed:
+        console.print("[green]OK Fixed issues:[/green]")
+        for fix in fixed:
+            console.print(f"  - {fix}")
     else:
-        console.print("  • Run 'gl doctor check --fix' to auto-fix issues")
-        console.print("  • Check documentation for manual fixes")
-        console.print("  • Use 'gl doctor deps --install' for missing packages")
+        console.print("[yellow]No issues to fix[/yellow]")
+    
+    console.print("\nRun [cyan]gl doctor[/cyan] to verify")

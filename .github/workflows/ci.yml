@@ -106,3 +106,26 @@ jobs:
           pip install dist/*.whl
           gl --version || echo "GL command not found, checking alternate installations"
           python -c "import greenlang; print(greenlang.__version__)"
+
+  security:
+    name: Security Scan
+    needs: tests
+    uses: ./.github/workflows/security.yml
+
+  gate-check:
+    name: CI Gate Check
+    runs-on: ubuntu-latest
+    needs: [tests, security]
+    if: always()
+    steps:
+      - name: Check all required jobs passed
+        run: |
+          if [[ "${{ needs.tests.result }}" != "success" ]]; then
+            echo "Tests failed"
+            exit 1
+          fi
+          if [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "Security checks failed"
+            exit 1
+          fi
+          echo "✅ All CI gates passed"
