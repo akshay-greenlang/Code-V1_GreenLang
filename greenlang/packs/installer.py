@@ -1,485 +1,515 @@
 """
-Pack Installer with Capability Validation
+Pack Installer
+==============
 
-Validates and installs packs with security capability checks.
+Handles installation of packs from various sources:
+- PyPI (pip install)
+- Local directories
+- GitHub repositories
+- GreenLang Hub
 """
 
 import json
 import logging
-import shutil
+import subprocess
+import sys
 import tempfile
-import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-from .manifest import PackManifest, Capabilities
-from ..provenance import (
-    SignatureVerifier,
-    DevKeyVerifier,
-    UnsignedPackError,
-    verify_pack_signature,
-    create_verifier
-)
-from ..auth.audit import audit_log as _audit_log_impl
+from typing import Optional, Dict, Any, List
+import shutil
+import tarfile
+import zipfile
+from urllib.parse import urlparse
+import requests
 
-# Wrapper for audit logging with string event types
-def audit_log(event_type: str, data: Dict[str, Any]):
-    """Log audit event with string type for simplicity"""
-    try:
-        _audit_log_impl(event_type, **data)
-    except Exception as e:
-        logger.warning(f"Failed to log audit event: {e}")
+from .manifest import PackManifest
+from .registry import PackRegistry, InstalledPack
+from ..security import (
+    create_secure_session,
+    validate_url,
+    validate_git_url,
+    safe_download,
+    safe_extract_archive,
+    validate_pack_structure,
+    PackVerifier,
+    SignatureVerificationError
+)
 
 logger = logging.getLogger(__name__)
 
 
 class PackInstaller:
     """
-    Handles pack installation with capability validation
+    Installs packs from various sources
     """
-
-    def __init__(self, packs_dir: Optional[Path] = None):
+    
+    def __init__(self, registry: Optional[PackRegistry] = None):
         """
-        Initialize pack installer
+        Initialize installer
 
         Args:
-            packs_dir: Directory where packs are installed
+            registry: Pack registry (creates new if not provided)
         """
-        self.packs_dir = packs_dir or Path.home() / ".greenlang" / "packs"
-        self.packs_dir.mkdir(parents=True, exist_ok=True)
-
-    def validate_manifest(self, manifest_path: Path) -> Tuple[bool, List[str]]:
+        self.registry = registry or PackRegistry()
+        self.cache_dir = Path.home() / ".greenlang" / "cache"
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.session = create_secure_session()
+        self.verifier = PackVerifier()
+    
+    def install(self, source: str, version: Optional[str] = None, 
+                force: bool = False, verify: bool = True) -> InstalledPack:
         """
-        Validate pack manifest including capabilities
-
+        Install a pack from any source
+        
         Args:
-            manifest_path: Path to pack.yaml or manifest.yaml
-
+            source: Pack source (name, path, URL, or git repo)
+            version: Optional version constraint
+            force: Force reinstall if already exists
+            verify: Verify pack integrity
+        
         Returns:
-            (is_valid, list_of_issues)
+            InstalledPack metadata
+        
+        Examples:
+            # Install from PyPI
+            installer.install("greenlang-boiler-solar")
+            installer.install("greenlang-boiler-solar==0.2.0")
+            
+            # Install from local directory
+            installer.install("./packs/boiler-solar")
+            
+            # Install from GitHub
+            installer.install("github:greenlang/packs/boiler-solar")
+            
+            # Install from Hub
+            installer.install("hub:boiler-solar")
         """
-        issues = []
-
-        try:
-            # Load and parse manifest
-            manifest = PackManifest.from_file(manifest_path)
-
-            # Check capabilities if present
-            if manifest.capabilities:
-                cap_issues = self._validate_capabilities(manifest.capabilities)
-                issues.extend(cap_issues)
-
-            # Check for dangerous patterns
-            security_issues = self._check_security_issues(manifest)
-            issues.extend(security_issues)
-
-            # Get warnings for best practices
-            warnings = manifest.get_warnings()
-            for warning in warnings:
-                issues.append(f"Warning: {warning}")
-
-            # Validate referenced files exist
-            base_path = manifest_path.parent
-            missing_files = manifest.validate_files_exist(base_path)
-            issues.extend(missing_files)
-
-        except Exception as e:
-            issues.append(f"Error parsing manifest: {e}")
-            return False, issues
-
-        return len([i for i in issues if not i.startswith("Warning:")]) == 0, issues
-
-    def _validate_capabilities(self, capabilities: Capabilities) -> List[str]:
-        """
-        Validate capability declarations
-
-        Args:
-            capabilities: Capabilities object from manifest
-
-        Returns:
-            List of validation issues
-        """
-        issues = []
-
-        # Check network capabilities
-        if capabilities.net and capabilities.net.allow:
-            if capabilities.net.outbound:
-                allowlist = capabilities.net.outbound.get('allowlist', [])
-                if not allowlist:
-                    issues.append("Network capability enabled but no allowlist specified")
-
-                for domain in allowlist:
-                    if domain == '*':
-                        issues.append("Wildcard '*' domain is too permissive")
-                    elif domain.startswith('http://'):
-                        issues.append(f"Insecure HTTP in allowlist: {domain}")
-                    elif '..' in domain:
-                        issues.append(f"Invalid domain pattern: {domain}")
-
-        # Check filesystem capabilities
-        if capabilities.fs and capabilities.fs.allow:
-            # Check read allowlist
-            if capabilities.fs.read:
-                read_list = capabilities.fs.read.get('allowlist', [])
-                if not read_list:
-                    issues.append("Filesystem read capability enabled but no allowlist specified")
-
-                for path in read_list:
-                    if path == '/**':
-                        issues.append("Root filesystem read access is too permissive")
-                    elif path == '${HOME}/**':
-                        issues.append("Home directory read access is too permissive")
-                    elif '/etc/**' in path:
-                        issues.append("System configuration read access is dangerous")
-                    elif '..' in path:
-                        issues.append(f"Path traversal pattern detected: {path}")
-
-            # Check write allowlist
-            if capabilities.fs.write:
-                write_list = capabilities.fs.write.get('allowlist', [])
-                if not write_list:
-                    issues.append("Filesystem write capability enabled but no allowlist specified")
-
-                for path in write_list:
-                    if path == '/**':
-                        issues.append("Root filesystem write access is not allowed")
-                    elif '${HOME}' in path and '${RUN_TMP}' not in path:
-                        issues.append("Writing to home directory outside RUN_TMP is dangerous")
-                    elif '/etc' in path:
-                        issues.append("Writing to system configuration is not allowed")
-                    elif '/usr' in path or '/bin' in path:
-                        issues.append("Writing to system directories is not allowed")
-                    elif '..' in path:
-                        issues.append(f"Path traversal pattern detected: {path}")
-
-        # Check subprocess capabilities
-        if capabilities.subprocess and capabilities.subprocess.allow:
-            binaries = capabilities.subprocess.allowlist
-            if not binaries:
-                issues.append("Subprocess capability enabled but no binaries specified")
-
-            dangerous_binaries = [
-                '/bin/sh', '/bin/bash', '/bin/zsh', '/usr/bin/sh',
-                '/usr/bin/bash', '/usr/bin/zsh', '/bin/dash',
-                '/usr/bin/python', '/usr/bin/python3', '/usr/bin/perl',
-                '/usr/bin/ruby', '/usr/bin/node', '/usr/bin/php',
-                '/bin/nc', '/usr/bin/nc', '/usr/bin/netcat',
-                '/usr/bin/curl', '/usr/bin/wget',
-                '/usr/bin/sudo', '/bin/su', '/usr/bin/su',
-                '/sbin/iptables', '/usr/sbin/iptables',
-            ]
-
-            for binary in binaries:
-                if not binary.startswith('/'):
-                    issues.append(f"Binary path must be absolute: {binary}")
-                elif binary in dangerous_binaries:
-                    issues.append(f"Dangerous binary in allowlist: {binary}")
-                elif '*' in binary:
-                    issues.append(f"Wildcards not allowed in binary paths: {binary}")
-
-        return issues
-
-    def _check_security_issues(self, manifest: PackManifest) -> List[str]:
-        """
-        Check for security issues in manifest
-
-        Args:
-            manifest: PackManifest object
-
-        Returns:
-            List of security issues
-        """
-        issues = []
-
-        # Check if capabilities are missing (implies deny-all)
-        if not manifest.capabilities:
-            issues.append("Info: No capabilities specified - all access denied by default")
-
-        # Check license
-        if manifest.license in ['UNLICENSED', 'Proprietary']:
-            issues.append("Warning: Proprietary license may have legal implications")
-
-        # Check for SBOM
-        if not manifest.security or not manifest.security.sbom:
-            issues.append("Warning: No SBOM (Software Bill of Materials) provided")
-
-        # Check for signatures
-        if not manifest.security or not manifest.security.signatures:
-            issues.append("Warning: No digital signatures provided")
-
-        return issues
-
-    def lint_capabilities(self, manifest_path: Path) -> str:
-        """
-        Lint capabilities and provide a formatted report
-
-        Args:
-            manifest_path: Path to pack manifest
-
-        Returns:
-            Formatted lint report
-        """
-        try:
-            manifest = PackManifest.from_file(manifest_path)
-        except Exception as e:
-            return f"Error loading manifest: {e}"
-
-        report = []
-        report.append(f"Pack: {manifest.name} v{manifest.version}")
-        report.append("=" * 50)
-        report.append("\nCapabilities Summary:")
-        report.append("-" * 20)
-
-        if not manifest.capabilities:
-            report.append("✓ No capabilities requested (deny-all by default)")
+        # Check if already installed
+        existing = self.registry.get(self._extract_pack_name(source))
+        if existing and not force:
+            logger.info(f"Pack already installed: {existing.name} v{existing.version}")
+            return existing
+        
+        # Determine source type and install
+        if source.startswith("github:"):
+            return self._install_from_github(source, version, verify)
+        elif source.startswith("hub:"):
+            return self._install_from_hub(source, version, verify)
+        elif source.startswith(("http://", "https://")):
+            return self._install_from_url(source, verify)
+        elif Path(source).exists():
+            return self._install_from_local(Path(source), verify)
         else:
-            caps = manifest.capabilities
+            # Assume PyPI package
+            return self._install_from_pip(source, version, verify)
+    
+    def _extract_pack_name(self, source: str) -> str:
+        """Extract pack name from source"""
+        if ":" in source:
+            # Remove prefix (github:, hub:, etc)
+            source = source.split(":", 1)[1]
+        
+        if "/" in source:
+            # Take last component
+            source = source.split("/")[-1]
+        
+        # Remove version specifiers
+        for op in ["==", ">=", "<=", ">", "<", "~="]:
+            if op in source:
+                source = source.split(op)[0]
+        
+        return source.strip()
+    
+    def _install_from_pip(self, package: str, version: Optional[str] = None, 
+                         verify: bool = True) -> InstalledPack:
+        """
+        Install pack from PyPI using pip
+        
+        Args:
+            package: Package name
+            version: Optional version constraint
+            verify: Verify after install
+        
+        Returns:
+            InstalledPack metadata
+        """
+        # Construct pip install command
+        if version:
+            if not any(op in version for op in ["==", ">=", "<=", ">", "<", "~="]):
+                version = f"=={version}"
+            install_spec = f"{package}{version}"
+        else:
+            install_spec = package
+        
+        logger.info(f"Installing from PyPI: {install_spec}")
+        
+        # Run pip install
+        try:
+            subprocess.check_call([
+                sys.executable, "-m", "pip", "install", install_spec
+            ])
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"Failed to install {install_spec}: {e}")
+        
+        # Force rediscovery of entry points
+        self.registry._discover_entry_points()
+        
+        # Get the installed pack
+        pack_name = self._extract_pack_name(package)
+        installed = self.registry.get(pack_name)
+        
+        if not installed:
+            # Try with greenlang- prefix
+            installed = self.registry.get(f"greenlang-{pack_name}")
+        
+        if not installed:
+            raise RuntimeError(f"Pack not found after installation: {pack_name}")
+        
+        logger.info(f"Successfully installed: {installed.name} v{installed.version}")
+        return installed
+    
+    def _install_from_local(self, path: Path, verify: bool = True) -> InstalledPack:
+        """
+        Install pack from local directory
+        
+        Args:
+            path: Path to pack directory
+            verify: Verify pack integrity
+        
+        Returns:
+            InstalledPack metadata
+        """
+        if not path.exists():
+            raise ValueError(f"Path does not exist: {path}")
+        
+        # Check for pack.yaml
+        manifest_path = path / "pack.yaml"
+        if not manifest_path.exists():
+            raise ValueError(f"No pack.yaml found at {path}")
+        
+        logger.info(f"Installing from local directory: {path}")
+        
+        # Load and validate manifest
+        manifest = PackManifest.from_yaml(path)
+        
+        # Copy to packs directory
+        dest_dir = Path.home() / ".greenlang" / "packs" / manifest.name
+        dest_dir.parent.mkdir(parents=True, exist_ok=True)
+        
+        if dest_dir.exists():
+            logger.warning(f"Removing existing pack at {dest_dir}")
+            shutil.rmtree(dest_dir)
+        
+        shutil.copytree(path, dest_dir)
+        
+        # Register with registry
+        installed = self.registry.register(dest_dir, verify=verify)
+        
+        logger.info(f"Successfully installed: {installed.name} v{installed.version}")
+        return installed
+    
+    def _install_from_github(self, repo_spec: str, version: Optional[str] = None,
+                           verify: bool = True) -> InstalledPack:
+        """
+        Install pack from GitHub repository
+        
+        Args:
+            repo_spec: GitHub repo spec (github:owner/repo/pack-name)
+            version: Optional version/tag
+            verify: Verify pack
+        
+        Returns:
+            InstalledPack metadata
+        """
+        # Parse repo spec
+        parts = repo_spec.replace("github:", "").split("/")
+        if len(parts) < 2:
+            raise ValueError(f"Invalid GitHub spec: {repo_spec}")
+        
+        owner = parts[0]
+        repo = parts[1]
+        pack_name = parts[2] if len(parts) > 2 else None
+        
+        # Construct download URL
+        branch = version or "main"
+        if pack_name:
+            url = f"https://github.com/{owner}/{repo}/archive/{branch}.tar.gz"
+        else:
+            url = f"https://github.com/{owner}/{repo}/archive/{branch}.tar.gz"
 
-            # Network
-            if caps.net and caps.net.allow:
-                report.append("⚠️  NETWORK: Enabled")
-                if caps.net.outbound:
-                    domains = caps.net.outbound.get('allowlist', [])
-                    report.append(f"   Allowed domains: {len(domains)}")
-                    for domain in domains[:5]:  # Show first 5
-                        report.append(f"     - {domain}")
-                    if len(domains) > 5:
-                        report.append(f"     ... and {len(domains) - 5} more")
+        # Validate Git URL
+        validate_git_url(url)
+
+        logger.info(f"Downloading from GitHub: {url}")
+
+        # Download to temp directory
+        with tempfile.TemporaryDirectory() as tmpdir:
+            archive_path = Path(tmpdir) / "pack.tar.gz"
+
+            # Secure download
+            safe_download(url, str(archive_path), session=self.session)
+            
+            # Extract archive safely
+            extract_dir = Path(tmpdir) / "extracted"
+            safe_extract_archive(archive_path, extract_dir)
+            
+            # Find pack directory
+            extracted = list(extract_dir.glob("*/"))
+            if not extracted:
+                raise RuntimeError("No files extracted from archive")
+            
+            repo_dir = extracted[0]
+            if pack_name:
+                pack_dir = repo_dir / pack_name
             else:
-                report.append("✓ NETWORK: Disabled")
-
-            # Filesystem
-            if caps.fs and caps.fs.allow:
-                report.append("⚠️  FILESYSTEM: Enabled")
-                if caps.fs.read:
-                    read_paths = caps.fs.read.get('allowlist', [])
-                    report.append(f"   Read paths: {len(read_paths)}")
-                    for path in read_paths[:3]:
-                        report.append(f"     - {path}")
-                if caps.fs.write:
-                    write_paths = caps.fs.write.get('allowlist', [])
-                    report.append(f"   Write paths: {len(write_paths)}")
-                    for path in write_paths[:3]:
-                        report.append(f"     - {path}")
-            else:
-                report.append("✓ FILESYSTEM: Disabled")
-
-            # Clock
-            if caps.clock and caps.clock.allow:
-                report.append("⚠️  CLOCK: Real-time enabled")
-            else:
-                report.append("✓ CLOCK: Frozen/deterministic")
-
-            # Subprocess
-            if caps.subprocess and caps.subprocess.allow:
-                report.append("⚠️  SUBPROCESS: Enabled")
-                binaries = caps.subprocess.allowlist
-                report.append(f"   Allowed binaries: {len(binaries)}")
-                for binary in binaries[:3]:
-                    report.append(f"     - {binary}")
-            else:
-                report.append("✓ SUBPROCESS: Disabled")
-
-        # Validation issues
-        is_valid, issues = self.validate_manifest(manifest_path)
-        if issues:
-            report.append("\n\nValidation Results:")
-            report.append("-" * 20)
-            for issue in issues:
-                if issue.startswith("Warning:"):
-                    report.append(f"⚠️  {issue}")
-                elif issue.startswith("Info:"):
-                    report.append(f"ℹ️  {issue}")
+                pack_dir = repo_dir
+            
+            if not (pack_dir / "pack.yaml").exists():
+                # Search for pack.yaml
+                pack_yamls = list(repo_dir.glob("**/pack.yaml"))
+                if pack_yamls:
+                    pack_dir = pack_yamls[0].parent
                 else:
-                    report.append(f"❌ {issue}")
-
-        if is_valid:
-            report.append("\n✅ Manifest is valid")
-        else:
-            report.append("\n❌ Manifest has errors")
-
-        return "\n".join(report)
-
-    def install_pack(self, pack_path: Path,
-                      validate_capabilities: bool = True,
-                      allow_unsigned: bool = False,
-                      verifier: Optional[SignatureVerifier] = None) -> Tuple[bool, str]:
+                    raise RuntimeError("No pack.yaml found in repository")
+            
+            # Install from extracted directory
+            return self._install_from_local(pack_dir, verify)
+    
+    def _install_from_hub(self, hub_spec: str, version: Optional[str] = None,
+                         verify: bool = True) -> InstalledPack:
         """
-        Install a pack with capability and signature validation
+        Install pack from GreenLang Hub
+        
+        Args:
+            hub_spec: Hub spec (hub:pack-name)
+            version: Optional version
+            verify: Verify pack
+        
+        Returns:
+            InstalledPack metadata
+        """
+        pack_name = hub_spec.replace("hub:", "")
+        
+        # Hub API endpoint (configurable)
+        hub_url = "https://hub.greenlang.ai"
+        
+        # Get pack metadata
+        metadata_url = f"{hub_url}/api/packs/{pack_name}"
+        if version:
+            metadata_url += f"?version={version}"
+
+        # Validate Hub URL
+        validate_url(metadata_url)
+
+        logger.info(f"Fetching metadata from Hub: {metadata_url}")
+
+        try:
+            response = self.session.get(metadata_url)
+            response.raise_for_status()
+            metadata = response.json()
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(f"Failed to fetch from Hub: {e}")
+        
+        # Download pack archive
+        download_url = metadata.get("download_url")
+        if not download_url:
+            raise RuntimeError("No download URL in Hub response")
+
+        # Validate download URL
+        validate_url(download_url)
+
+        logger.info(f"Downloading pack: {download_url}")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            archive_path = Path(tmpdir) / f"{pack_name}.glpack"
+
+            # Secure download
+            safe_download(download_url, str(archive_path), session=self.session)
+            
+            # Extract and install
+            return self._install_from_archive(archive_path, verify)
+    
+    def _install_from_url(self, url: str, verify: bool = True) -> InstalledPack:
+        """
+        Install pack from direct URL
+        
+        Args:
+            url: Direct URL to pack archive
+            verify: Verify pack
+        
+        Returns:
+            InstalledPack metadata
+        """
+        # Validate URL
+        validate_url(url)
+
+        logger.info(f"Downloading from URL: {url}")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Determine filename from URL
+            parsed = urlparse(url)
+            filename = Path(parsed.path).name or "pack.archive"
+            archive_path = Path(tmpdir) / filename
+
+            # Secure download
+            safe_download(url, str(archive_path), session=self.session)
+
+            # Install from archive
+            return self._install_from_archive(archive_path, verify)
+    
+    def _install_from_archive(self, archive_path: Path, verify: bool = True) -> InstalledPack:
+        """
+        Install pack from archive file
 
         Args:
-            pack_path: Path to pack directory or archive
-            validate_capabilities: Whether to validate capabilities
-            allow_unsigned: Whether to allow unsigned packs (DANGEROUS!)
-            verifier: Optional signature verifier to use
+            archive_path: Path to archive (.glpack, .tar.gz, .zip)
+            verify: Verify pack
 
         Returns:
-            (success, message)
-
-        Raises:
-            UnsignedPackError: If pack is unsigned and allow_unsigned is False
+            InstalledPack metadata
         """
-        # SECURITY: Verify pack signature (default-deny unsigned packs)
-        if not allow_unsigned:
-            if not verifier:
-                verifier = create_verifier("dev")  # Default to dev verifier for now
-
-            # Check for pack archive or manifest
-            if pack_path.is_file():
-                # Archive file - verify signature
-                is_valid, sig_msg = verify_pack_signature(pack_path, verifier)
-                if not is_valid:
-                    error_msg = f"SECURITY: Signature verification failed - {sig_msg}"
-                    logger.error(error_msg)
-                    audit_log("PACK_INSTALL_DENIED", {
-                        "pack": str(pack_path),
-                        "reason": "signature_verification_failed",
-                        "message": sig_msg
-                    })
-                    raise UnsignedPackError(f"{error_msg}\nUse --allow-unsigned to bypass (not recommended)")
-                logger.info(f"✅ Signature verified for {pack_path.name}")
-            else:
-                # Directory install - check for signature file
-                sig_file = pack_path / "pack.sig"
-                if not sig_file.exists():
-                    error_msg = "SECURITY: No signature file found (pack.sig required)"
-                    logger.error(error_msg)
-                    audit_log("PACK_INSTALL_DENIED", {
-                        "pack": str(pack_path),
-                        "reason": "no_signature_file"
-                    })
-                    raise UnsignedPackError(f"{error_msg}\nUse --allow-unsigned to bypass (not recommended)")
-        else:
-            # SECURITY WARNING: Bypassing signature verification
-            logger.warning("⚠️  SECURITY WARNING: Installing unsigned pack (--allow-unsigned used)")
-            logger.warning("⚠️  This pack has not been cryptographically verified!")
-            audit_log("PACK_INSTALL_UNSIGNED", {
-                "pack": str(pack_path),
-                "warning": "signature_verification_bypassed",
-                "allow_unsigned": True
-            })
-
-        # Find manifest file
-        if pack_path.is_dir():
-            manifest_path = pack_path / "pack.yaml"
-            if not manifest_path.exists():
-                manifest_path = pack_path / "manifest.yaml"
-                if not manifest_path.exists():
-                    return False, "No pack.yaml or manifest.yaml found"
-        else:
-            # Extract archive first if it's a file
-            import tarfile
-            import zipfile
-
-            temp_dir = Path(tempfile.mkdtemp())
+        # Verify signature if required
+        if verify:
             try:
-                if pack_path.suffix == '.tar' or pack_path.suffixes[-2:] == ['.tar', '.gz']:
-                    with tarfile.open(pack_path) as tar:
-                        tar.extractall(temp_dir)
-                elif pack_path.suffix == '.zip':
-                    with zipfile.ZipFile(pack_path) as zip_file:
-                        zip_file.extractall(temp_dir)
-                else:
-                    return False, f"Unsupported archive format: {pack_path.suffix}"
+                verified, metadata = self.verifier.verify_pack(archive_path)
+                if not verified:
+                    logger.warning(f"Pack signature not verified: {archive_path.name}")
+            except SignatureVerificationError as e:
+                logger.error(f"Signature verification failed: {e}")
+                raise
 
-                # Find manifest in extracted files
-                pack_path = temp_dir
-                manifest_path = pack_path / "pack.yaml"
-                if not manifest_path.exists():
-                    manifest_path = pack_path / "manifest.yaml"
-                    if not manifest_path.exists():
-                        return False, "No pack.yaml or manifest.yaml found in archive"
-            except Exception as e:
-                return False, f"Failed to extract archive: {e}"
+        with tempfile.TemporaryDirectory() as tmpdir:
+            extract_dir = Path(tmpdir) / "extracted"
+            extract_dir.mkdir()
 
-        # Validate manifest
-        if validate_capabilities:
-            is_valid, issues = self.validate_manifest(manifest_path)
-            if not is_valid:
-                error_issues = [i for i in issues if not i.startswith("Warning:")]
-                return False, f"Manifest validation failed:\n" + "\n".join(error_issues)
+            # Safe extraction with path traversal protection
+            safe_extract_archive(archive_path, extract_dir)
+            
+            # Find pack.yaml
+            pack_yamls = list(extract_dir.glob("**/pack.yaml"))
+            if not pack_yamls:
+                raise RuntimeError("No pack.yaml found in archive")
 
-        try:
-            # Load manifest
-            manifest = PackManifest.from_file(manifest_path)
+            pack_dir = pack_yamls[0].parent
 
-            # Create installation directory
-            install_dir = self.packs_dir / manifest.name / manifest.version
-            if install_dir.exists():
-                return False, f"Pack {manifest.name} v{manifest.version} already installed"
+            # Validate pack structure
+            validate_pack_structure(pack_dir)
 
-            install_dir.mkdir(parents=True)
-
-            # Copy pack files
-            shutil.copytree(pack_path, install_dir, dirs_exist_ok=True)
-
-            # Write installation metadata
-            metadata = {
-                'name': manifest.name,
-                'version': manifest.version,
-                'installed_at': datetime.datetime.utcnow().isoformat(),
-                'capabilities': manifest.capabilities.model_dump() if manifest.capabilities else {},
-                'signature_verified': not allow_unsigned,
-                'verifier_type': verifier.get_verifier_info()['type'] if verifier else 'none',
-            }
-
-            with open(install_dir / '.installation.json', 'w') as f:
-                json.dump(metadata, f, indent=2)
-
-            logger.info(f"Installed pack {manifest.name} v{manifest.version}")
-            return True, f"Successfully installed {manifest.name} v{manifest.version}"
-
-        except Exception as e:
-            logger.error(f"Failed to install pack: {e}")
-            return False, f"Installation failed: {e}"
-
-    def list_installed_packs(self) -> List[Dict]:
-        """
-        List all installed packs with their capabilities
-
-        Returns:
-            List of pack info dictionaries
-        """
-        packs = []
-
-        for pack_dir in self.packs_dir.iterdir():
-            if pack_dir.is_dir():
-                for version_dir in pack_dir.iterdir():
-                    if version_dir.is_dir():
-                        metadata_file = version_dir / '.installation.json'
-                        if metadata_file.exists():
-                            with open(metadata_file) as f:
-                                metadata = json.load(f)
-                                packs.append(metadata)
-
-        return packs
-
-    def uninstall_pack(self, name: str, version: Optional[str] = None) -> Tuple[bool, str]:
+            # Install from extracted directory
+            return self._install_from_local(pack_dir, verify)
+    
+    def uninstall(self, pack_name: str) -> bool:
         """
         Uninstall a pack
-
+        
         Args:
-            name: Pack name
-            version: Pack version (if None, uninstall all versions)
-
+            pack_name: Name of pack to uninstall
+        
         Returns:
-            (success, message)
+            True if uninstalled successfully
         """
-        pack_dir = self.packs_dir / name
-
-        if not pack_dir.exists():
-            return False, f"Pack {name} not found"
-
-        if version:
-            version_dir = pack_dir / version
-            if version_dir.exists():
-                shutil.rmtree(version_dir)
-                # Remove pack dir if empty
-                if not any(pack_dir.iterdir()):
-                    pack_dir.rmdir()
-                return True, f"Uninstalled {name} v{version}"
-            else:
-                return False, f"Pack {name} v{version} not found"
+        pack = self.registry.get(pack_name)
+        if not pack:
+            logger.warning(f"Pack not found: {pack_name}")
+            return False
+        
+        # If installed via pip, use pip uninstall
+        if pack.location.startswith("entry_point:") or "site-packages" in pack.location:
+            # Try to uninstall via pip
+            package_name = f"greenlang-{pack_name}"
+            try:
+                subprocess.check_call([
+                    sys.executable, "-m", "pip", "uninstall", "-y", package_name
+                ])
+                logger.info(f"Uninstalled via pip: {package_name}")
+            except subprocess.CalledProcessError:
+                logger.warning(f"Failed to uninstall via pip: {package_name}")
+        
+        # Remove from local directory if exists
+        if Path(pack.location).exists() and not "site-packages" in pack.location:
+            shutil.rmtree(pack.location)
+            logger.info(f"Removed local files: {pack.location}")
+        
+        # Unregister from registry
+        self.registry.unregister(pack_name)
+        
+        logger.info(f"Successfully uninstalled: {pack_name}")
+        return True
+    
+    def update(self, pack_name: str, version: Optional[str] = None) -> InstalledPack:
+        """
+        Update a pack to latest or specified version
+        
+        Args:
+            pack_name: Name of pack to update
+            version: Optional target version
+        
+        Returns:
+            Updated InstalledPack metadata
+        """
+        pack = self.registry.get(pack_name)
+        if not pack:
+            raise ValueError(f"Pack not found: {pack_name}")
+        
+        logger.info(f"Updating {pack_name} from v{pack.version}")
+        
+        # Determine source for update
+        if pack.location.startswith("entry_point:") or "site-packages" in pack.location:
+            # Update via pip
+            return self._install_from_pip(f"greenlang-{pack_name}", version, verify=True)
         else:
-            shutil.rmtree(pack_dir)
-            return True, f"Uninstalled all versions of {name}"
-
+            # For local packs, need to know original source
+            # This would require storing source info in registry
+            logger.warning("Cannot update local pack without source information")
+            raise NotImplementedError("Local pack updates not yet supported")
+    
+    def list_available(self, source: str = "pypi") -> List[Dict[str, Any]]:
+        """
+        List available packs from a source
+        
+        Args:
+            source: Source to list from (pypi, hub)
+        
+        Returns:
+            List of available packs with metadata
+        """
+        if source == "pypi":
+            return self._list_pypi_packs()
+        elif source == "hub":
+            return self._list_hub_packs()
+        else:
+            raise ValueError(f"Unknown source: {source}")
+    
+    def _list_pypi_packs(self) -> List[Dict[str, Any]]:
+        """List available packs from PyPI"""
+        # Search PyPI for greenlang packs
+        try:
+            import xmlrpc.client
+            client = xmlrpc.client.ServerProxy("https://pypi.org/pypi")
+            
+            # Search for packages with greenlang prefix
+            results = []
+            for package in client.search({"name": "greenlang-"}):
+                results.append({
+                    "name": package["name"],
+                    "version": package["version"],
+                    "summary": package["summary"],
+                    "source": "pypi"
+                })
+            
+            return results
+        except Exception as e:
+            logger.error(f"Failed to search PyPI: {e}")
+            return []
+    
+    def _list_hub_packs(self) -> List[Dict[str, Any]]:
+        """List available packs from Hub"""
+        hub_url = "https://hub.greenlang.ai"
+        
+        try:
+            response = requests.get(f"{hub_url}/api/packs")
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to fetch from Hub: {e}")
+            return []

@@ -1,25 +1,7 @@
 """
-GreenLang Runtime - Execution Backends for Enterprise Deployment
+GreenLang Runtime - Execution engines
 """
 
-from .backends import (
-    Backend,
-    KubernetesBackend,
-    DockerBackend,
-    LocalBackend,
-    BackendFactory,
-    ExecutionContext,
-    Pipeline,
-    PipelineExecutor
-)
+from .executor import Executor
 
-__all__ = [
-    'Backend',
-    'KubernetesBackend',
-    'DockerBackend',
-    'LocalBackend',
-    'BackendFactory',
-    'ExecutionContext',
-    'Pipeline',
-    'PipelineExecutor'
-]
+__all__ = ["Executor"]

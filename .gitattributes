@@ -66,6 +66,20 @@
 *.db binary
 *.sqlite binary
 
+# Security - Keys and Certificates
+*.pem filter=clean text
+*.key filter=clean text
+*.crt filter=clean text
+*.cer filter=clean text
+*.pfx binary
+*.p12 binary
+*.jks binary
+*.keystore binary
+*.sig text
+*.intoto text
+cosign.key filter=clean text
+cosign.pub text
+
 # Jupyter notebooks
 *.ipynb text eol=lf
 

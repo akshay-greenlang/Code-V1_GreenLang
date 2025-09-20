@@ -1,0 +1,245 @@
+# Build and verify GreenLang packages across multiple OS and Python versions
+name: Build and Verify
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+  pull_request:
+    paths:
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'MANIFEST.in'
+      - 'core/**'
+      - 'greenlang/**'
+      - '.github/workflows/release-build.yml'
+
+jobs:
+  build:
+    name: Build Distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip build twine
+
+      - name: Build sdist and wheel
+        run: |
+          python -m build
+
+      - name: Check distributions
+        run: |
+          python -m twine check dist/*
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+          retention-days: 7
+
+  verify:
+    name: Verify on ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ['3.10', '3.11', '3.12']
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Create test venv
+        run: |
+          python -m venv test_env
+
+      - name: Upgrade pip
+        run: |
+          python -m pip install --upgrade pip
+        if: runner.os != 'Windows'
+
+      - name: Upgrade pip (Windows)
+        run: |
+          test_env\Scripts\python.exe -m pip install --upgrade pip
+        shell: cmd
+        if: runner.os == 'Windows'
+
+      - name: Install wheel
+        run: |
+          . test_env/bin/activate
+          pip install dist/greenlang-*.whl
+        if: runner.os != 'Windows'
+
+      - name: Install wheel (Windows)
+        run: |
+          test_env\Scripts\activate.bat
+          pip install dist\greenlang-*.whl
+        shell: cmd
+        if: runner.os == 'Windows'
+
+      - name: Test gl command
+        run: |
+          . test_env/bin/activate
+          which gl || where gl || true
+          gl --version
+          gl --help | head -10
+        shell: bash
+        if: runner.os != 'Windows'
+
+      - name: Test gl command (Windows)
+        run: |
+          test_env\Scripts\activate.bat
+          where gl
+          gl --version
+          gl --help
+        shell: cmd
+        if: runner.os == 'Windows'
+
+      - name: Test Python import
+        run: |
+          . test_env/bin/activate
+          python -c "import core.greenlang; print('Version:', core.greenlang.__version__)"
+          python -c "from core.greenlang import PackRegistry, PackLoader, Executor; print('Core imports OK')"
+        if: runner.os != 'Windows'
+
+      - name: Test Python import (Windows)
+        run: |
+          test_env\Scripts\activate.bat
+          python -c "import core.greenlang; print('Version:', core.greenlang.__version__)"
+          python -c "from core.greenlang import PackRegistry, PackLoader, Executor; print('Core imports OK')"
+        shell: cmd
+        if: runner.os == 'Windows'
+
+      - name: Test pack commands
+        run: |
+          . test_env/bin/activate
+          gl pack list || true
+          gl doctor
+        if: runner.os != 'Windows'
+
+      - name: Test pack commands (Windows)
+        run: |
+          test_env\Scripts\activate.bat
+          gl pack list
+          gl doctor
+        shell: cmd
+        continue-on-error: true
+        if: runner.os == 'Windows'
+
+  sbom:
+    name: Generate SBOM
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM for wheel
+        run: |
+          syft packages dist/greenlang-*.whl -o spdx-json > greenlang-sbom.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: greenlang-sbom.spdx.json
+          retention-days: 7
+
+  sign:
+    name: Sign Artifacts
+    needs: [build, verify]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Install sigstore
+        run: |
+          python -m pip install sigstore
+
+      - name: Sign artifacts
+        run: |
+          python -m sigstore sign dist/*.whl dist/*.tar.gz
+
+      - name: Verify signatures
+        run: |
+          for file in dist/*.whl dist/*.tar.gz; do
+            python -m sigstore verify identity \
+              --cert-identity-regexp ".*" \
+              --cert-oidc-issuer https://token.actions.githubusercontent.com \
+              "$file"
+          done
+
+      - name: Upload signatures
+        uses: actions/upload-artifact@v4
+        with:
+          name: signatures
+          path: |
+            dist/*.sig
+            dist/*.crt
+          retention-days: 30
+
+  summary:
+    name: Build Summary
+    needs: [build, verify, sbom]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display build info
+        run: |
+          echo "## Build Summary"
+          echo
+          echo "### Artifacts"
+          ls -lh artifacts/dist/
+          echo
+          echo "### Wheel Contents"
+          python -m zipfile -l artifacts/dist/greenlang-*.whl | head -20
+          echo
+          echo "### Package Metadata"
+          python -m zipfile -e artifacts/dist/greenlang-*.whl temp_extract
+          cat temp_extract/greenlang-*/METADATA | head -30
+          echo
+          if [ -f artifacts/sbom/greenlang-sbom.spdx.json ]; then
+            echo "### SBOM Summary"
+            python -c "import json; sbom=json.load(open('artifacts/sbom/greenlang-sbom.spdx.json')); print(f\"Components: {len(sbom.get('packages', []))}\")"
+          fi
