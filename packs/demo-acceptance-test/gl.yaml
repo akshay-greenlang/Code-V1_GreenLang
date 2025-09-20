@@ -1,6 +1,57 @@
-version: '1.0'
-name: packs/demo-acceptance-test-pipeline
-description: Main pipeline for packs/demo-acceptance-test
-inputs: {}
-steps: []
-outputs: {}
+version: 1
+name: demo-acceptance-pipeline
+description: Demonstration pipeline for acceptance testing with emissions calculation
+vars:
+  default_load: 100.0
+  default_emission_factor: 0.8
+inputs:
+  load_kwh:
+    type: number
+    default: 100.0
+    description: Energy load in kilowatt-hours
+  grid_emission_factor:
+    type: number
+    default: 0.8
+    description: Grid emission factor in kgCO2/kWh
+  enable_validation:
+    type: boolean
+    default: true
+    description: Enable input validation
+steps:
+  - name: validate-inputs
+    agent: greenlang.agents.demo_agent.DemoAgent
+    action: validate_inputs
+    condition: "$inputs.enable_validation"
+    inputs:
+      load_kwh: "$inputs.load_kwh"
+      grid_emission_factor: "$inputs.grid_emission_factor"
+    on_error: continue
+  - name: calculate-emissions
+    agent: greenlang.agents.demo_agent.DemoAgent
+    action: run
+    inputs:
+      load_kwh: "$inputs.load_kwh"
+      grid_emission_factor: "$inputs.grid_emission_factor"
+    outputs:
+      emissions_result: "$"
+  - name: format-output
+    agent: greenlang.agents.demo_agent.DemoAgent
+    action: run
+    inputs:
+      load_kwh: "$vars.default_load"
+      grid_emission_factor: "$vars.default_emission_factor"
+    outputs:
+      baseline_emissions: "$"
+outputs:
+  emissions_kgco2:
+    type: number
+    value: "$steps.calculate-emissions.emissions_result.emissions_kgco2"
+    description: Calculated CO2 emissions in kilograms
+  baseline_emissions_kgco2:
+    type: number
+    value: "$steps.format-output.baseline_emissions.emissions_kgco2"
+    description: Baseline emissions using default values
+  calculation_details:
+    type: object
+    value: "$steps.calculate-emissions.emissions_result.calculation"
+    description: Details of the emissions calculation

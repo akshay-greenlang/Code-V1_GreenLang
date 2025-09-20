@@ -9,11 +9,15 @@ This module provides a production-ready executor with sophisticated features inc
 - Step isolation and cleanup
 """
 
+import ast
 import asyncio
 import hashlib
+import importlib
+import importlib.util
 import json
 import logging
 import os
+import operator
 import random
 import re
 import sys
@@ -493,8 +497,8 @@ class PipelineExecutor:
             if not self._is_safe_expression(condition):
                 raise ConditionalExecutionError(f"Unsafe expression detected: {condition}")
 
-            # Evaluate condition
-            result = eval(condition, {"__builtins__": {}}, eval_context)
+            # Use safe evaluation with AST parsing
+            result = self._safe_eval_expression(condition, eval_context)
 
             if not isinstance(result, bool):
                 # Try to convert to boolean
@@ -505,6 +509,156 @@ class PipelineExecutor:
 
         except Exception as e:
             raise ConditionalExecutionError(f"Failed to evaluate condition '{condition}': {e}") from e
+
+    def _safe_eval_expression(self, expression: str, context: Dict[str, Any]) -> Any:
+        """
+        Safely evaluate an expression using AST parsing.
+
+        Only allows:
+        - Literals (strings, numbers, booleans)
+        - Names (variables)
+        - Comparisons
+        - Boolean operations
+        - Arithmetic operations
+        - Attribute access
+        - Subscript access
+        - Function calls to allowed functions
+
+        Args:
+            expression: Expression to evaluate
+            context: Context dictionary with variables
+
+        Returns:
+            Result of expression evaluation
+
+        Raises:
+            ConditionalExecutionError: If expression contains unsafe operations
+        """
+        try:
+            # Parse the expression
+            tree = ast.parse(expression, mode='eval')
+
+            # Validate the AST
+            self._validate_ast(tree)
+
+            # Compile and evaluate
+            compiled = compile(tree, '<conditional>', 'eval')
+
+            # Create a restricted namespace
+            restricted_namespace = {
+                '__builtins__': {
+                    'len': len,
+                    'str': str,
+                    'int': int,
+                    'float': float,
+                    'bool': bool,
+                    'isinstance': isinstance,
+                    'type': type,
+                    'min': min,
+                    'max': max,
+                    'abs': abs,
+                    'round': round,
+                    'sum': sum,
+                    'all': all,
+                    'any': any,
+                }
+            }
+
+            # Helper class for attribute access
+            class AttributeDict(dict):
+                """A dict that allows attribute access."""
+                def __getattr__(self, key):
+                    try:
+                        return self[key]
+                    except KeyError:
+                        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'")
+
+            # Convert dicts to AttributeDict for attribute access
+            for key, value in context.items():
+                if isinstance(value, dict) and not isinstance(value, AttributeDict):
+                    restricted_namespace[key] = AttributeDict(value)
+                else:
+                    restricted_namespace[key] = value
+
+            return eval(compiled, restricted_namespace)
+
+        except SyntaxError as e:
+            raise ConditionalExecutionError(f"Invalid expression syntax: {e}")
+        except Exception as e:
+            raise ConditionalExecutionError(f"Expression evaluation failed: {e}")
+
+    def _validate_ast(self, tree: ast.AST) -> None:
+        """
+        Validate an AST to ensure it only contains safe operations.
+
+        Args:
+            tree: AST to validate
+
+        Raises:
+            ConditionalExecutionError: If AST contains unsafe operations
+        """
+        # Define allowed node types
+        allowed_nodes = {
+            # Literals
+            ast.Constant, ast.Num, ast.Str, ast.Bytes, ast.NameConstant,
+            # Variables
+            ast.Name, ast.Load, ast.Store,
+            # Operations
+            ast.BinOp, ast.UnaryOp, ast.BoolOp, ast.Compare,
+            ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod, ast.Pow,
+            ast.LShift, ast.RShift, ast.BitOr, ast.BitXor, ast.BitAnd,
+            ast.And, ast.Or, ast.Not,
+            ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
+            ast.Is, ast.IsNot, ast.In, ast.NotIn,
+            ast.UAdd, ast.USub, ast.Invert,
+            # Conditionals
+            ast.IfExp,
+            # Collections
+            ast.List, ast.Tuple, ast.Dict, ast.Set,
+            # Access
+            ast.Attribute, ast.Subscript, ast.Index, ast.Slice,
+            # Calls (restricted)
+            ast.Call,
+            # Expression wrapper
+            ast.Expression,
+            # Comprehensions
+            ast.ListComp, ast.SetComp, ast.DictComp,
+            ast.comprehension,
+        }
+
+        # Walk the AST and check each node
+        for node in ast.walk(tree):
+            if type(node) not in allowed_nodes:
+                raise ConditionalExecutionError(
+                    f"Unsafe operation in expression: {type(node).__name__}"
+                )
+
+            # Additional checks for specific node types
+            if isinstance(node, ast.Name):
+                # Block access to dangerous builtins
+                if node.id in {'eval', 'exec', 'compile', '__import__', 'open', 'file', 'input'}:
+                    raise ConditionalExecutionError(
+                        f"Access to dangerous builtin '{node.id}' not allowed"
+                    )
+
+            elif isinstance(node, ast.Attribute):
+                # Block access to dangerous attributes
+                if node.attr.startswith('_'):
+                    raise ConditionalExecutionError(
+                        f"Access to private attribute '{node.attr}' not allowed"
+                    )
+
+            elif isinstance(node, ast.Call):
+                # Only allow calls to safe functions
+                if isinstance(node.func, ast.Name):
+                    allowed_calls = {
+                        'len', 'str', 'int', 'float', 'bool', 'isinstance',
+                        'type', 'min', 'max', 'abs', 'round', 'sum', 'all', 'any'
+                    }
+                    if node.func.id not in allowed_calls:
+                        raise ConditionalExecutionError(
+                            f"Call to function '{node.func.id}' not allowed"
+                        )
 
     def _is_safe_expression(self, expression: str) -> bool:
         """Check if expression is safe for evaluation."""
@@ -517,7 +671,9 @@ class PipelineExecutor:
             r'\bdelattr\b',
             r'\bglobals\b',
             r'\blocals\b',
-            r'\bvars\b',
+            # Note: We allow 'vars' as it's used for context variables (vars.x)
+            # Only block vars() function call
+            r'\bvars\s*\(',
             r'\bdir\b',
         ]
 
@@ -1034,6 +1190,7 @@ class PipelineExecutor:
         script = f'''
 import json
 import sys
+import importlib
 from pathlib import Path
 
 # The guard is already initialized by running with -m greenlang.runtime.guard
@@ -1046,23 +1203,85 @@ with open("{input_file}") as f:
 try:
     # Dynamic import of the agent module
     agent_module = "{step.agent}"
+    action = "{step.action}"
 
-    # Import agent
+    # Safe dynamic import using importlib
+    agent = None
+
     if "." in agent_module:
-        module_path, agent_class = agent_module.rsplit(".", 1)
-        exec(f"from {{module_path}} import {{agent_class}}")
-        agent = eval(f"{{agent_class}}()")
+        # Module path with class name (e.g., "mymodule.MyAgent")
+        module_path, agent_class_name = agent_module.rsplit(".", 1)
+
+        try:
+            # Import the module
+            module = importlib.import_module(module_path)
+            # Get the agent class
+            agent_class = getattr(module, agent_class_name, None)
+
+            if agent_class is None:
+                raise AttributeError(f"Module '{{module_path}}' has no class '{{agent_class_name}}'")
+
+            # Instantiate the agent
+            agent = agent_class()
+
+        except ImportError as e:
+            raise ImportError(f"Failed to import module '{{module_path}}': {{e}}")
+
     else:
-        # Try to import from greenlang.agents
-        exec(f"from greenlang.agents import {{agent_module}}")
-        agent = eval(f"{{agent_module}}()")
+        # Simple module name, try standard locations
+
+        # Try greenlang.agents first
+        try:
+            module = importlib.import_module(f"greenlang.agents.{{agent_module}}")
+
+            # Look for a class with the same name as the module
+            agent_class = getattr(module, agent_module, None)
+
+            if agent_class:
+                agent = agent_class()
+            else:
+                # If no class with that name, try to find any Agent subclass
+                import inspect
+                for name, obj in inspect.getmembers(module):
+                    if inspect.isclass(obj) and name != "Agent" and hasattr(obj, "execute"):
+                        agent = obj()
+                        break
+
+        except ImportError:
+            # Try importing directly
+            try:
+                module = importlib.import_module(agent_module)
+
+                # Look for the agent class
+                if hasattr(module, agent_module):
+                    agent_class = getattr(module, agent_module)
+                    agent = agent_class()
+                elif hasattr(module, "Agent"):
+                    agent_class = getattr(module, "Agent")
+                    agent = agent_class()
+                else:
+                    # Find first suitable class
+                    import inspect
+                    for name, obj in inspect.getmembers(module):
+                        if inspect.isclass(obj) and hasattr(obj, "execute"):
+                            agent = obj()
+                            break
+
+            except ImportError as e:
+                raise ImportError(f"Failed to import agent module '{{agent_module}}': {{e}}")
+
+    if agent is None:
+        raise RuntimeError(f"Could not instantiate agent from module '{{agent_module}}'")
 
     # Execute the action
-    action = "{step.action}"
     if hasattr(agent, action):
-        result = getattr(agent, action)(inputs)
+        action_method = getattr(agent, action)
+        result = action_method(inputs)
+    elif hasattr(agent, "execute"):
+        # Fallback to execute method with action parameter
+        result = agent.execute(action, inputs)
     else:
-        result = {{"error": f"Agent {{agent_module}} has no action {{action}}"}}
+        result = {{"error": f"Agent '{{agent_module}}' has no action '{{action}}' or 'execute' method"}}
 
     # Write output
     output_file = Path("{output_dir}") / "output.json"
