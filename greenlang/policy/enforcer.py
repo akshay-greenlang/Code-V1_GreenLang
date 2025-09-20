@@ -136,7 +136,12 @@ class PolicyEnforcer:
     def _eval_install_policy(self, input_data: Dict[str, Any]) -> bool:
         """Evaluate install policy"""
         pack = input_data.get("pack", {})
-        
+
+        # CRITICAL: Default deny unsigned packs
+        if not pack.get("provenance", {}).get("signed", False):
+            logger.warning("Policy denied: Pack is not signed - unsigned packs are forbidden")
+            return False
+
         # Check license
         license = pack.get("license", "")
         if license not in ["MIT", "Apache-2.0", "Commercial"]:

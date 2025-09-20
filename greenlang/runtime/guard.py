@@ -68,7 +68,8 @@ class RuntimeGuard:
         """
         self.capabilities = capabilities or {}
         self.audit_log = []
-        self.override_mode = os.environ.get('GL_CAPS_OVERRIDE') == '1'
+        # Capability override removed for production security
+        self.override_mode = False
 
         # Parse environment variables for paths
         self.input_dir = Path(os.environ.get('GL_INPUT_DIR', '/tmp/gl_input'))
@@ -95,9 +96,8 @@ class RuntimeGuard:
             ('192.168.0.0', '192.168.255.255'),
         ]
 
-        if self.override_mode:
-            logger.warning("⚠️  SECURITY WARNING: Capability override mode enabled!")
-            logger.warning("⚠️  This mode is for development only. DO NOT use in production!")
+        # Override mode has been removed for production security
+        # All capabilities must be explicitly declared in manifests
 
         # Store original functions before patching
         self._store_originals()
@@ -145,8 +145,7 @@ class RuntimeGuard:
 
     def _check_capability(self, capability: str) -> bool:
         """Check if a capability is allowed"""
-        if self.override_mode:
-            return True
+        # No override mode - capabilities must be explicitly declared
 
         cap_config = self.capabilities.get(capability, {})
         return cap_config.get('allow', False)
