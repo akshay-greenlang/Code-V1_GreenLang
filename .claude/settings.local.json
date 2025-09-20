@@ -118,7 +118,8 @@
       "Bash(trufflehog:*)",
       "Bash(pip uninstall:*)",
       "Bash(gzip:*)",
-      "Bash(zcat:*)"
+      "Bash(zcat:*)",
+      "Bash(bash:*)"
     ],
     "deny": []
   }
