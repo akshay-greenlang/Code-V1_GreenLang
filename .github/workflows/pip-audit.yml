@@ -26,51 +26,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install pip-audit
 
-      - name: Run pip-audit on requirements
+      - name: Run pip-audit
         run: |
-          set -e
-          echo "Running pip-audit for Python ${{ matrix.python-version }}"
-
-          # Check for different requirement files
-          if [ -f requirements.txt ]; then
-            echo "Auditing requirements.txt..."
-            pip-audit -r requirements.txt --strict --desc --format json -o pip-audit-requirements.json || {
-              echo "❌ Vulnerabilities found in requirements.txt"
-              cat pip-audit-requirements.json
-              exit 1
-            }
-            echo "✅ No vulnerabilities in requirements.txt"
-          fi
-
-          if [ -f requirements-dev.txt ]; then
-            echo "Auditing requirements-dev.txt..."
-            pip-audit -r requirements-dev.txt --strict --desc --format json -o pip-audit-dev.json || {
-              echo "⚠️ Vulnerabilities found in dev dependencies"
-              cat pip-audit-dev.json
-              # Don't fail on dev dependencies, just warn
-            }
-          fi
-
-          if [ -f pyproject.toml ]; then
-            echo "Auditing pyproject.toml dependencies..."
-            # Install the package first to get dependencies
-            pip install -e . || true
-            # Run audit on installed packages
-            pip-audit --strict --desc --format json -o pip-audit-installed.json || {
-              echo "❌ Vulnerabilities found in installed packages"
-              cat pip-audit-installed.json
-              exit 1
-            }
-            echo "✅ No vulnerabilities in installed packages"
-          fi
+          pip install .[all]
+          pip-audit --strict --desc --format json -o pip-audit.json || {
+            echo "❌ Vulnerabilities found"
+            cat pip-audit.json
+            exit 1
+          }
+          echo "✅ No vulnerabilities found"
 
       - name: Upload audit results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pip-audit-results-${{ matrix.python-version }}
-          path: |
-            pip-audit-*.json
+          path: pip-audit.json
           retention-days: 30
 
   audit-summary:
