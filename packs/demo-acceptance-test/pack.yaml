@@ -1,13 +1,14 @@
-name: packs/demo-acceptance-test
-version: 0.1.0
+name: demo-acceptance-test
+version: "0.1.0"
 kind: pack
 description: A GreenLang pack for packs/demo-acceptance-test
 license: MIT
 authors:
-- name: Your Name
-  email: you@example.com
+- name: GreenLang Demo
+  email: demo@greenlang.ai
 contents:
-  pipelines: []
+  pipelines:
+  - gl.yaml
   agents: []
   datasets: []
 dependencies:
