@@ -1,0 +1,38 @@
+name: Docker Debug
+
+on:
+  workflow_dispatch:
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check files
+        run: |
+          echo "=== Checking required files ==="
+          ls -la VERSION README.md MANIFEST.in setup.py pyproject.toml
+          echo ""
+          echo "=== VERSION content ==="
+          cat VERSION
+          echo ""
+          echo "=== Checking directories ==="
+          ls -la greenlang/ | head -10
+          ls -la core/ | head -10
+
+      - name: Test local Docker build
+        run: |
+          echo "=== Testing runner build locally ==="
+          docker build -f Dockerfile.runner -t test-runner:local --build-arg GL_VERSION=0.2.0 .
+
+      - name: Test run
+        run: |
+          echo "=== Testing gl command ==="
+          docker run --rm test-runner:local --version || true
+          docker run --rm test-runner:local version || true
