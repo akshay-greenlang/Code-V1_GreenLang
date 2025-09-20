@@ -12,37 +12,29 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def evaluate(policy_path: str, input_doc: Dict[str, Any],
-             data: Optional[Dict[str, Any]] = None,
-             permissive_mode: bool = False) -> Dict[str, Any]:
+def evaluate(policy_path: str, input_doc: Dict[str, Any], 
+             data: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Evaluate an OPA policy against input document
-
+    
     Args:
         policy_path: Path to .rego policy file or bundle
         input_doc: Input document for policy evaluation
         data: Optional data document for policy
-        permissive_mode: If True, allow when OPA/policy missing (dangerous!)
-
+    
     Returns:
         Decision document with at least {"allow": bool, "reason": str}
     """
     # Check if OPA is available
     if not _check_opa_installed():
-        if permissive_mode:
-            logger.warning("⚠️  OPA not installed, PERMISSIVE MODE ACTIVE (security risk!)")
-            return {"allow": True, "reason": "OPA not available (PERMISSIVE MODE)"}
         logger.error("OPA not installed, denying by default")
-        return {"allow": False, "reason": "POLICY.DENIED: OPA not installed (default-deny)"}
-
+        return {"allow": False, "reason": "POLICY.DENIED: OPA not available"}
+    
     # Resolve policy path
     policy_file = _resolve_policy_path(policy_path)
     if not policy_file.exists():
-        if permissive_mode:
-            logger.warning(f"⚠️  Policy not found: {policy_path}, PERMISSIVE MODE ACTIVE (security risk!)")
-            return {"allow": True, "reason": f"Policy not found (PERMISSIVE MODE): {policy_path}"}
         logger.error(f"Policy not found: {policy_path}, denying by default")
-        return {"allow": False, "reason": f"POLICY.DENIED: No policy loaded (default-deny) - {policy_path}"}
+        return {"allow": False, "reason": f"POLICY.DENIED: Policy not found: {policy_path}"}
     
     try:
         # Create temporary input file
@@ -83,15 +75,9 @@ def evaluate(policy_path: str, input_doc: Dict[str, Any],
         
         if result.returncode != 0:
             logger.error(f"OPA evaluation failed: {result.stderr}")
-            if permissive_mode:
-                logger.warning("⚠️  OPA evaluation failed, PERMISSIVE MODE ACTIVE (security risk!)")
-                return {
-                    "allow": True,
-                    "reason": f"Policy evaluation error (PERMISSIVE MODE): {result.stderr[:200]}"
-                }
             return {
-                "allow": False,
-                "reason": f"POLICY.DENIED: Evaluation error - {result.stderr[:200]}"
+                "allow": False, 
+                "reason": f"Policy evaluation error: {result.stderr[:200]}"
             }
         
         # Parse result
@@ -104,38 +90,23 @@ def evaluate(policy_path: str, input_doc: Dict[str, Any],
             if expressions and len(expressions) > 0:
                 decision = expressions[0].get("value", {})
                 
-                # SECURITY: Default-deny - explicit allow required
+                # Ensure required fields
                 if "allow" not in decision:
                     decision["allow"] = False
-                    logger.warning("Policy did not return 'allow' field, defaulting to deny (default-deny)")
                 if "reason" not in decision:
-                    decision["reason"] = "POLICY.DENIED: No explicit allow (default-deny)"
-
-                # Ensure allow is boolean - treat any non-true value as false
-                decision["allow"] = bool(decision.get("allow", False))
-
-                # Log decision for audit
-                if not decision["allow"]:
-                    logger.info(f"Policy denied: {decision.get('reason', 'unknown')}")
-
+                    decision["reason"] = "No reason provided"
+                
                 return decision
-
-        # SECURITY: Default-deny - no valid result means deny
-        logger.error("No valid policy decision returned, denying by default")
-        return {"allow": False, "reason": "POLICY.DENIED: No valid decision (default-deny)"}
+        
+        # Fallback if no valid result
+        return {"allow": False, "reason": "No policy decision returned"}
         
     except subprocess.TimeoutExpired:
-        logger.error("OPA evaluation timed out, denying by default")
-        if permissive_mode:
-            logger.warning("⚠️  OPA timeout, PERMISSIVE MODE ACTIVE (security risk!)")
-            return {"allow": True, "reason": "Policy evaluation timeout (PERMISSIVE MODE)"}
-        return {"allow": False, "reason": "POLICY.DENIED: Timeout (default-deny)"}
+        logger.error("OPA evaluation timed out")
+        return {"allow": False, "reason": "Policy evaluation timeout"}
     except Exception as e:
-        logger.error(f"OPA evaluation error, denying by default: {e}")
-        if permissive_mode:
-            logger.warning(f"⚠️  OPA error, PERMISSIVE MODE ACTIVE (security risk!): {e}")
-            return {"allow": True, "reason": f"Policy error (PERMISSIVE MODE): {str(e)[:200]}"}
-        return {"allow": False, "reason": f"POLICY.DENIED: Error (default-deny) - {str(e)[:200]}"}
+        logger.error(f"OPA evaluation error: {e}")
+        return {"allow": False, "reason": f"Policy evaluation error: {str(e)[:200]}"}
     finally:
         # Cleanup temp files
         if 'input_file' in locals():

@@ -1,1352 +1,847 @@
 """
-Advanced Pipeline Executor for GreenLang Runtime
+Runtime Executor
+================
 
-This module provides a production-ready executor with sophisticated features including:
-- Conditional execution evaluation
-- Reference resolution
-- Retry logic with deterministic backoff
-- Comprehensive error handling
-- Step isolation and cleanup
+Executes pipelines with different runtime profiles (local, k8s, cloud).
+Supports deterministic execution for reproducible runs.
 """
 
-import ast
-import asyncio
-import hashlib
-import importlib
-import importlib.util
-import json
-import logging
 import os
-import operator
-import random
-import re
 import sys
-import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from contextlib import contextmanager
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+import json
+import random
+import hashlib
+import subprocess
+import tempfile
+import logging
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Tuple
+from uuid import uuid4
+from contextlib import contextmanager
+
+from ..sdk.base import Result, Status
+from ..sdk.context import Context
+from ..packs.loader import PackLoader
+import yaml
 
 try:
-    from ..sdk.pipeline_spec import PipelineSpec, StepSpec
+    import numpy as np
+    HAS_NUMPY = True
 except ImportError:
-    # Fallback for direct imports
-    from greenlang.sdk.pipeline_spec import PipelineSpec, StepSpec
+    HAS_NUMPY = False
+    np = None
 
 logger = logging.getLogger(__name__)
 
 
-@dataclass
-class ExecutionContext:
-    """Execution context that tracks state and provides step isolation."""
-
-    # Core identification
-    run_id: str
-    pipeline_name: str
-
-    # Runtime state
-    inputs: Dict[str, Any] = field(default_factory=dict)
-    outputs: Dict[str, Any] = field(default_factory=dict)
-    step_results: Dict[str, Any] = field(default_factory=dict)
-    variables: Dict[str, Any] = field(default_factory=dict)
-
-    # Execution metadata
-    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
-    current_step: Optional[str] = None
-    completed_steps: Set[str] = field(default_factory=set)
-    failed_steps: Set[str] = field(default_factory=set)
-    skipped_steps: Set[str] = field(default_factory=set)
-
-    # Configuration
-    artifacts_dir: Path = field(default_factory=lambda: Path("out"))
-    deterministic: bool = False
-    max_retries: int = 3
-    base_backoff_seconds: float = 1.0
-
-    # Resource tracking
-    temp_dirs: List[Path] = field(default_factory=list)
-    open_files: List[Any] = field(default_factory=list)
-
-
-class ExecutionError(Exception):
-    """Base exception for execution errors."""
-
-    def __init__(self, message: str, step_name: Optional[str] = None, original_error: Optional[Exception] = None):
-        super().__init__(message)
-        self.step_name = step_name
-        self.original_error = original_error
-
-
-class ConditionalExecutionError(ExecutionError):
-    """Raised when conditional expression evaluation fails."""
-    pass
-
-
-class ReferenceResolutionError(ExecutionError):
-    """Raised when reference resolution fails."""
-    pass
+class DeterministicConfig:
+    """Configuration for deterministic execution"""
+    
+    def __init__(self, 
+                 seed: int = 42,
+                 freeze_env: bool = True,
+                 normalize_floats: bool = True,
+                 float_precision: int = 6,
+                 quantization_bits: Optional[int] = None):
+        self.seed = seed
+        self.freeze_env = freeze_env
+        self.normalize_floats = normalize_floats
+        self.float_precision = float_precision
+        self.quantization_bits = quantization_bits
+        
+    def apply(self):
+        """Apply deterministic settings"""
+        # Set random seeds
+        random.seed(self.seed)
+        if HAS_NUMPY:
+            np.random.seed(self.seed)
+        
+        # Set Python hash seed
+        os.environ['PYTHONHASHSEED'] = str(self.seed)
+        
+        # Disable Python optimizations that can affect determinism
+        os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
+        
+        # Set TensorFlow/PyTorch determinism if available
+        try:
+            import tensorflow as tf
+            tf.random.set_seed(self.seed)
+            os.environ['TF_DETERMINISTIC_OPS'] = '1'
+        except ImportError:
+            pass
+            
+        try:
+            import torch
+            torch.manual_seed(self.seed)
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+        except ImportError:
+            pass
 
 
-class StepExecutionError(ExecutionError):
-    """Raised when step execution fails."""
-    pass
-
-
-class PipelineExecutor:
+class Executor:
     """
-    Production-ready pipeline executor with advanced features.
-
-    Features:
-    - Conditional execution with expression evaluation
-    - Reference resolution for dynamic inputs
-    - Deterministic retry with exponential backoff
-    - Step isolation and resource cleanup
-    - Comprehensive error handling and recovery
+    Pipeline executor with runtime profiles
+    
+    Profiles:
+    - local: Run on local machine
+    - k8s: Run on Kubernetes
+    - cloud: Run on cloud functions
+    
+    Supports deterministic execution for reproducible runs.
     """
-
-    def __init__(
-        self,
-        max_parallel_steps: int = 4,
-        default_timeout: float = 300.0,
-        cleanup_on_failure: bool = True
-    ):
+    
+    def __init__(self, 
+                 backend: str = "local",
+                 deterministic: bool = False,
+                 det_config: Optional[DeterministicConfig] = None):
         """
-        Initialize the executor.
-
+        Initialize executor
+        
         Args:
-            max_parallel_steps: Maximum concurrent step execution
-            default_timeout: Default step timeout in seconds
-            cleanup_on_failure: Whether to clean up resources on failure
+            backend: Execution backend (local, k8s, cloud)
+            deterministic: Enable deterministic execution
+            det_config: Deterministic configuration
         """
-        self.max_parallel_steps = max_parallel_steps
-        self.default_timeout = default_timeout
-        self.cleanup_on_failure = cleanup_on_failure
-        self._thread_pool = ThreadPoolExecutor(max_workers=max_parallel_steps)
-
-        logger.info(f"PipelineExecutor initialized with {max_parallel_steps} max parallel steps")
-
-    def execute_pipeline(
-        self,
-        spec: PipelineSpec,
-        context: ExecutionContext,
-        dry_run: bool = False
-    ) -> Dict[str, Any]:
-        """
-        Execute a complete pipeline.
-
-        Args:
-            spec: Pipeline specification
-            context: Execution context
-            dry_run: If True, validate but don't execute
-
-        Returns:
-            Execution results dictionary
-
-        Raises:
-            ExecutionError: If pipeline execution fails
-        """
-        logger.info(f"Starting pipeline execution: {spec.name} (run_id: {context.run_id})")
-
-        if dry_run:
-            logger.info("Dry run mode - validating pipeline without execution")
-            return self._validate_pipeline(spec, context)
-
-        start_time = time.time()
-        results = {
-            "run_id": context.run_id,
-            "pipeline_name": spec.name,
-            "started_at": context.started_at.isoformat(),
-            "status": "running",
-            "steps": {},
-            "summary": {
-                "total_steps": len(spec.steps),
-                "completed": 0,
-                "failed": 0,
-                "skipped": 0
-            }
-        }
-
-        try:
-            # Setup artifacts directory
-            context.artifacts_dir.mkdir(parents=True, exist_ok=True)
-
-            # Execute steps in order or parallel as specified
-            parallel_steps = []
-            sequential_steps = []
-
-            for step in spec.steps:
-                if step.parallel:
-                    parallel_steps.append(step)
-                else:
-                    # Execute any pending parallel steps first
-                    if parallel_steps:
-                        self._execute_parallel_steps(parallel_steps, context, results)
-                        parallel_steps = []
-
-                    # Execute sequential step
-                    sequential_steps.append(step)
-                    self._execute_sequential_steps(sequential_steps, context, results)
-                    sequential_steps = []
-
-            # Execute any remaining parallel steps
-            if parallel_steps:
-                self._execute_parallel_steps(parallel_steps, context, results)
-
-            # Execute any remaining sequential steps
-            if sequential_steps:
-                self._execute_sequential_steps(sequential_steps, context, results)
-
-            # Finalize results
-            execution_time = time.time() - start_time
-            results.update({
-                "status": "completed",
-                "completed_at": datetime.now(timezone.utc).isoformat(),
-                "execution_time_seconds": execution_time,
-                "outputs": context.outputs.copy(),
-                "summary": {
-                    "total_steps": len(spec.steps),
-                    "completed": len(context.completed_steps),
-                    "failed": len(context.failed_steps),
-                    "skipped": len(context.skipped_steps)
-                }
-            })
-
-            logger.info(f"Pipeline execution completed in {execution_time:.2f}s")
-            return results
-
-        except Exception as e:
-            logger.error(f"Pipeline execution failed: {e}")
-            results.update({
-                "status": "failed",
-                "error": str(e),
-                "failed_at": datetime.now(timezone.utc).isoformat(),
-                "execution_time_seconds": time.time() - start_time
-            })
-
-            if self.cleanup_on_failure:
-                self._cleanup_context(context)
-
-            raise ExecutionError(f"Pipeline execution failed: {e}") from e
-
-        finally:
-            self._cleanup_context(context)
-
-    def _execute_sequential_steps(
-        self,
-        steps: List[StepSpec],
-        context: ExecutionContext,
-        results: Dict[str, Any]
-    ) -> None:
-        """Execute steps sequentially."""
-        for step in steps:
-            if self._should_skip_step(step, context):
-                context.skipped_steps.add(step.name)
-                results["steps"][step.name] = {
-                    "status": "skipped",
-                    "reason": "condition not met"
-                }
-                logger.info(f"Step '{step.name}' skipped due to condition")
-                continue
-
+        self.backend = backend
+        self.profile = backend  # Maintain backward compatibility
+        self.deterministic = deterministic
+        self.det_config = det_config or DeterministicConfig()
+        self.loader = PackLoader()
+        self.run_ledger = []
+        self.artifacts_dir = Path.home() / ".greenlang" / "artifacts"
+        self.artifacts_dir.mkdir(parents=True, exist_ok=True)
+        self._validate_backend()
+    
+    def _validate_backend(self):
+        """Validate backend availability"""
+        if self.backend not in ["local", "k8s", "kubernetes", "cloud"]:
+            raise ValueError(f"Unknown backend: {self.backend}")
+            
+        if self.backend in ["k8s", "kubernetes"]:
+            # Check kubectl availability
             try:
-                step_result = self.execute_step(step, context)
-                results["steps"][step.name] = step_result
-                context.completed_steps.add(step.name)
-                logger.info(f"Step '{step.name}' completed successfully")
-
-            except Exception as e:
-                context.failed_steps.add(step.name)
-                results["steps"][step.name] = {
-                    "status": "failed",
-                    "error": str(e),
-                    "failed_at": datetime.now(timezone.utc).isoformat()
-                }
-                logger.error(f"Step '{step.name}' failed: {e}")
-
-                # Handle error policy
-                if not self._handle_step_error(step, e, context):
-                    raise StepExecutionError(f"Step '{step.name}' failed and pipeline stopped") from e
-
-    def _execute_parallel_steps(
-        self,
-        steps: List[StepSpec],
-        context: ExecutionContext,
-        results: Dict[str, Any]
-    ) -> None:
-        """Execute steps in parallel."""
-        futures = {}
-
-        for step in steps:
-            if self._should_skip_step(step, context):
-                context.skipped_steps.add(step.name)
-                results["steps"][step.name] = {
-                    "status": "skipped",
-                    "reason": "condition not met"
-                }
-                continue
-
-            future = self._thread_pool.submit(self.execute_step, step, context)
-            futures[future] = step
-
-        # Wait for completion
-        for future in as_completed(futures):
-            step = futures[future]
-            try:
-                step_result = future.result()
-                results["steps"][step.name] = step_result
-                context.completed_steps.add(step.name)
-                logger.info(f"Parallel step '{step.name}' completed successfully")
-
-            except Exception as e:
-                context.failed_steps.add(step.name)
-                results["steps"][step.name] = {
-                    "status": "failed",
-                    "error": str(e),
-                    "failed_at": datetime.now(timezone.utc).isoformat()
-                }
-                logger.error(f"Parallel step '{step.name}' failed: {e}")
-
-                if not self._handle_step_error(step, e, context):
-                    # Cancel remaining futures
-                    for remaining_future in futures:
-                        if not remaining_future.done():
-                            remaining_future.cancel()
-                    raise StepExecutionError(f"Parallel step '{step.name}' failed and pipeline stopped") from e
-
-    def execute_step(
-        self,
-        step: StepSpec,
-        context: ExecutionContext
-    ) -> Dict[str, Any]:
-        """
-        Execute a single pipeline step with retry logic and error handling.
-
-        If capabilities are defined, the step will be executed in a guarded worker process.
-
-        Args:
-            step: Step specification
-            context: Execution context
-
-        Returns:
-            Step execution results
-
-        Raises:
-            StepExecutionError: If step execution fails after retries
-        """
-        logger.debug(f"Executing step: {step.name}")
-        context.current_step = step.name
-
-        start_time = time.time()
-        step_result = {
-            "name": step.name,
-            "status": "running",
-            "started_at": datetime.now(timezone.utc).isoformat(),
-            "agent": step.agent,
-            "action": step.action,
-            "attempts": []
-        }
-
-        # Check if we need to use guarded worker
-        use_guarded_worker = self._should_use_guarded_worker(step, context)
-
-        # Resolve inputs
-        try:
-            resolved_inputs = self._resolve_step_inputs(step, context)
-        except Exception as e:
-            raise StepExecutionError(f"Failed to resolve inputs for step '{step.name}': {e}") from e
-
-        # Determine retry configuration
-        max_retries = self._get_max_retries(step, context)
-        backoff_seconds = self._get_backoff_seconds(step, context)
-
-        # Execute with retry logic
-        last_error = None
-        for attempt in range(max_retries + 1):
-            attempt_start = time.time()
-            attempt_result = {
-                "attempt": attempt + 1,
-                "started_at": datetime.now(timezone.utc).isoformat(),
-                "status": "running"
-            }
-
-            try:
-                # Check if we should use guarded worker
-                if use_guarded_worker:
-                    # Execute in guarded worker process
-                    result = self._execute_in_guarded_worker(step, resolved_inputs, context)
-                    outputs = result.get("output", {})
-                else:
-                    # Create isolated execution environment
-                    with self._create_step_environment(step, context) as step_env:
-                        # Execute the actual step
-                        outputs = self._execute_step_action(
-                            step,
-                            resolved_inputs,
-                            step_env,
-                            timeout=step.timeout or self.default_timeout
-                        )
-
-                    # Store results
-                    context.step_results[step.name] = outputs
-                    if step.outputs:
-                        # Map outputs according to step specification
-                        mapped_outputs = self._map_step_outputs(outputs, step.outputs)
-                        context.outputs.update(mapped_outputs)
-
-                    # Success
-                    attempt_time = time.time() - attempt_start
-                    attempt_result.update({
-                        "status": "success",
-                        "completed_at": datetime.now(timezone.utc).isoformat(),
-                        "execution_time_seconds": attempt_time,
-                        "outputs": outputs
-                    })
-                    step_result["attempts"].append(attempt_result)
-
-                    # Update final step result
-                    total_time = time.time() - start_time
-                    step_result.update({
-                        "status": "success",
-                        "completed_at": datetime.now(timezone.utc).isoformat(),
-                        "execution_time_seconds": total_time,
-                        "outputs": outputs,
-                        "total_attempts": attempt + 1
-                    })
-
-                    logger.debug(f"Step '{step.name}' completed in {total_time:.2f}s after {attempt + 1} attempts")
-                    return step_result
-
-            except Exception as e:
-                last_error = e
-                attempt_time = time.time() - attempt_start
-                attempt_result.update({
-                    "status": "failed",
-                    "failed_at": datetime.now(timezone.utc).isoformat(),
-                    "execution_time_seconds": attempt_time,
-                    "error": str(e)
-                })
-                step_result["attempts"].append(attempt_result)
-
-                logger.warning(f"Step '{step.name}' attempt {attempt + 1} failed: {e}")
-
-                # Don't retry on the last attempt
-                if attempt < max_retries:
-                    # Calculate backoff with deterministic jitter
-                    backoff_time = self._calculate_backoff(
-                        attempt,
-                        backoff_seconds,
-                        context.deterministic,
-                        step.name
-                    )
-
-                    logger.info(f"Retrying step '{step.name}' in {backoff_time:.2f}s (attempt {attempt + 2}/{max_retries + 1})")
-                    time.sleep(backoff_time)
-
-        # All retries exhausted
-        total_time = time.time() - start_time
-        step_result.update({
-            "status": "failed",
-            "failed_at": datetime.now(timezone.utc).isoformat(),
-            "execution_time_seconds": total_time,
-            "error": str(last_error),
-            "total_attempts": max_retries + 1
-        })
-
-        raise StepExecutionError(
-            f"Step '{step.name}' failed after {max_retries + 1} attempts: {last_error}",
-            step_name=step.name,
-            original_error=last_error
-        )
-
-    def _eval_when(self, condition: str, context: ExecutionContext) -> bool:
-        """
-        Evaluate conditional expression for step execution.
-
-        Args:
-            condition: Conditional expression string
-            context: Execution context with variables and step results
-
-        Returns:
-            Boolean result of condition evaluation
-
-        Raises:
-            ConditionalExecutionError: If evaluation fails
-        """
-        if not condition:
-            return True
-
-        try:
-            # Create evaluation context
-            eval_context = {
-                "steps": context.step_results.copy(),
-                "vars": context.variables.copy(),
-                "inputs": context.inputs.copy(),
-                "env": dict(os.environ),
-                # Add utility functions
-                "len": len,
-                "str": str,
-                "int": int,
-                "float": float,
-                "bool": bool,
-                "isinstance": isinstance,
-            }
-
-            # Sanitize condition - only allow safe operations
-            if not self._is_safe_expression(condition):
-                raise ConditionalExecutionError(f"Unsafe expression detected: {condition}")
-
-            # Use safe evaluation with AST parsing
-            result = self._safe_eval_expression(condition, eval_context)
-
-            if not isinstance(result, bool):
-                # Try to convert to boolean
-                result = bool(result)
-
-            logger.debug(f"Condition '{condition}' evaluated to {result}")
-            return result
-
-        except Exception as e:
-            raise ConditionalExecutionError(f"Failed to evaluate condition '{condition}': {e}") from e
-
-    def _safe_eval_expression(self, expression: str, context: Dict[str, Any]) -> Any:
-        """
-        Safely evaluate an expression using AST parsing.
-
-        Only allows:
-        - Literals (strings, numbers, booleans)
-        - Names (variables)
-        - Comparisons
-        - Boolean operations
-        - Arithmetic operations
-        - Attribute access
-        - Subscript access
-        - Function calls to allowed functions
-
-        Args:
-            expression: Expression to evaluate
-            context: Context dictionary with variables
-
-        Returns:
-            Result of expression evaluation
-
-        Raises:
-            ConditionalExecutionError: If expression contains unsafe operations
-        """
-        try:
-            # Parse the expression
-            tree = ast.parse(expression, mode='eval')
-
-            # Validate the AST
-            self._validate_ast(tree)
-
-            # Compile and evaluate
-            compiled = compile(tree, '<conditional>', 'eval')
-
-            # Create a restricted namespace
-            restricted_namespace = {
-                '__builtins__': {
-                    'len': len,
-                    'str': str,
-                    'int': int,
-                    'float': float,
-                    'bool': bool,
-                    'isinstance': isinstance,
-                    'type': type,
-                    'min': min,
-                    'max': max,
-                    'abs': abs,
-                    'round': round,
-                    'sum': sum,
-                    'all': all,
-                    'any': any,
-                }
-            }
-
-            # Helper class for attribute access
-            class AttributeDict(dict):
-                """A dict that allows attribute access."""
-                def __getattr__(self, key):
-                    try:
-                        return self[key]
-                    except KeyError:
-                        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{key}'")
-
-            # Convert dicts to AttributeDict for attribute access
-            for key, value in context.items():
-                if isinstance(value, dict) and not isinstance(value, AttributeDict):
-                    restricted_namespace[key] = AttributeDict(value)
-                else:
-                    restricted_namespace[key] = value
-
-            return eval(compiled, restricted_namespace)
-
-        except SyntaxError as e:
-            raise ConditionalExecutionError(f"Invalid expression syntax: {e}")
-        except Exception as e:
-            raise ConditionalExecutionError(f"Expression evaluation failed: {e}")
-
-    def _validate_ast(self, tree: ast.AST) -> None:
-        """
-        Validate an AST to ensure it only contains safe operations.
-
-        Args:
-            tree: AST to validate
-
-        Raises:
-            ConditionalExecutionError: If AST contains unsafe operations
-        """
-        # Define allowed node types
-        allowed_nodes = {
-            # Literals
-            ast.Constant, ast.Num, ast.Str, ast.Bytes, ast.NameConstant,
-            # Variables
-            ast.Name, ast.Load, ast.Store,
-            # Operations
-            ast.BinOp, ast.UnaryOp, ast.BoolOp, ast.Compare,
-            ast.Add, ast.Sub, ast.Mult, ast.Div, ast.FloorDiv, ast.Mod, ast.Pow,
-            ast.LShift, ast.RShift, ast.BitOr, ast.BitXor, ast.BitAnd,
-            ast.And, ast.Or, ast.Not,
-            ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
-            ast.Is, ast.IsNot, ast.In, ast.NotIn,
-            ast.UAdd, ast.USub, ast.Invert,
-            # Conditionals
-            ast.IfExp,
-            # Collections
-            ast.List, ast.Tuple, ast.Dict, ast.Set,
-            # Access
-            ast.Attribute, ast.Subscript, ast.Index, ast.Slice,
-            # Calls (restricted)
-            ast.Call,
-            # Expression wrapper
-            ast.Expression,
-            # Comprehensions
-            ast.ListComp, ast.SetComp, ast.DictComp,
-            ast.comprehension,
-        }
-
-        # Walk the AST and check each node
-        for node in ast.walk(tree):
-            if type(node) not in allowed_nodes:
-                raise ConditionalExecutionError(
-                    f"Unsafe operation in expression: {type(node).__name__}"
-                )
-
-            # Additional checks for specific node types
-            if isinstance(node, ast.Name):
-                # Block access to dangerous builtins
-                if node.id in {'eval', 'exec', 'compile', '__import__', 'open', 'file', 'input'}:
-                    raise ConditionalExecutionError(
-                        f"Access to dangerous builtin '{node.id}' not allowed"
-                    )
-
-            elif isinstance(node, ast.Attribute):
-                # Block access to dangerous attributes
-                if node.attr.startswith('_'):
-                    raise ConditionalExecutionError(
-                        f"Access to private attribute '{node.attr}' not allowed"
-                    )
-
-            elif isinstance(node, ast.Call):
-                # Only allow calls to safe functions
-                if isinstance(node.func, ast.Name):
-                    allowed_calls = {
-                        'len', 'str', 'int', 'float', 'bool', 'isinstance',
-                        'type', 'min', 'max', 'abs', 'round', 'sum', 'all', 'any'
-                    }
-                    if node.func.id not in allowed_calls:
-                        raise ConditionalExecutionError(
-                            f"Call to function '{node.func.id}' not allowed"
-                        )
-
-    def _is_safe_expression(self, expression: str) -> bool:
-        """Check if expression is safe for evaluation."""
-        # Block dangerous keywords and patterns
-        dangerous_patterns = [
-            r'\b(import|exec|eval|compile|open|file|input|raw_input)\b',
-            r'__[a-zA-Z_]+__',  # Dunder methods
-            r'\bgetattr\b',
-            r'\bsetattr\b',
-            r'\bdelattr\b',
-            r'\bglobals\b',
-            r'\blocals\b',
-            # Note: We allow 'vars' as it's used for context variables (vars.x)
-            # Only block vars() function call
-            r'\bvars\s*\(',
-            r'\bdir\b',
-        ]
-
-        for pattern in dangerous_patterns:
-            if re.search(pattern, expression, re.IGNORECASE):
-                return False
-
-        return True
-
-    def _resolve_refs(self, data: Any, context: ExecutionContext) -> Any:
-        """
-        Resolve references in data structures.
-
-        Args:
-            data: Data to resolve references in
-            context: Execution context
-
-        Returns:
-            Data with references resolved
-
-        Raises:
-            ReferenceResolutionError: If reference resolution fails
-        """
-        if isinstance(data, str):
-            return self._resolve_string_refs(data, context)
-        elif isinstance(data, dict):
-            return {key: self._resolve_refs(value, context) for key, value in data.items()}
-        elif isinstance(data, list):
-            return [self._resolve_refs(item, context) for item in data]
-        else:
-            return data
-
-    def _resolve_string_refs(self, text: str, context: ExecutionContext) -> Any:
-        """Resolve string references like $steps.step_name.output."""
-        if not text.startswith('$'):
-            return text
-
-        try:
-            # Parse reference
-            if text.startswith('$steps.'):
-                # Step output reference
-                parts = text[7:].split('.')  # Remove '$steps.'
-                if not parts:
-                    raise ReferenceResolutionError(f"Invalid step reference: {text}")
-
-                step_name = parts[0]
-                if step_name not in context.step_results:
-                    raise ReferenceResolutionError(f"Step '{step_name}' not found or not executed yet")
-
-                result = context.step_results[step_name]
-
-                # Navigate nested path
-                for part in parts[1:]:
-                    if isinstance(result, dict) and part in result:
-                        result = result[part]
-                    else:
-                        raise ReferenceResolutionError(f"Path not found in step result: {text}")
-
-                return result
-
-            elif text.startswith('$vars.'):
-                # Variable reference
-                var_name = text[6:]  # Remove '$vars.'
-                if var_name not in context.variables:
-                    raise ReferenceResolutionError(f"Variable '{var_name}' not found")
-                return context.variables[var_name]
-
-            elif text.startswith('$inputs.'):
-                # Input reference
-                input_name = text[8:]  # Remove '$inputs.'
-                if input_name not in context.inputs:
-                    raise ReferenceResolutionError(f"Input '{input_name}' not found")
-                return context.inputs[input_name]
-
-            elif text.startswith('$env.'):
-                # Environment variable reference
-                env_name = text[5:]  # Remove '$env.'
-                return os.environ.get(env_name, '')
-
-            else:
-                raise ReferenceResolutionError(f"Unknown reference type: {text}")
-
-        except Exception as e:
-            if isinstance(e, ReferenceResolutionError):
-                raise
-            raise ReferenceResolutionError(f"Failed to resolve reference '{text}': {e}") from e
-
-    def _calculate_backoff(
-        self,
-        attempt: int,
-        base_seconds: float,
-        deterministic: bool,
-        step_name: str
-    ) -> float:
-        """
-        Calculate backoff delay with deterministic or random jitter.
-
-        Args:
-            attempt: Attempt number (0-based)
-            base_seconds: Base backoff time
-            deterministic: Whether to use deterministic jitter
-            step_name: Step name for deterministic seed
-
-        Returns:
-            Backoff time in seconds
-        """
-        # Exponential backoff: base * 2^attempt
-        backoff = base_seconds * (2 ** attempt)
-
-        # Add jitter to prevent thundering herd
-        if deterministic:
-            # Use step name and attempt for deterministic jitter
-            seed_str = f"{step_name}-{attempt}"
-            seed = int(hashlib.md5(seed_str.encode()).hexdigest()[:8], 16)
-            # Use seed to generate consistent pseudo-random jitter
-            jitter_factor = (seed % 1000) / 1000.0  # 0.0 to 0.999
-            jitter = backoff * 0.1 * jitter_factor  # 0-10% jitter
-        else:
-            # Random jitter
-            jitter = backoff * 0.1 * random.random()  # 0-10% jitter
-
-        total_backoff = backoff + jitter
-
-        # Cap at reasonable maximum
-        return min(total_backoff, 60.0)  # Max 60 seconds
-
-    def _should_skip_step(self, step: StepSpec, context: ExecutionContext) -> bool:
-        """Check if step should be skipped based on condition."""
-        if not step.condition:
-            return False
-
-        try:
-            return not self._eval_when(step.condition, context)
-        except ConditionalExecutionError:
-            # If condition evaluation fails, don't skip (safer)
-            logger.warning(f"Condition evaluation failed for step '{step.name}', executing anyway")
-            return False
-
-    def _resolve_step_inputs(self, step: StepSpec, context: ExecutionContext) -> Dict[str, Any]:
-        """Resolve step inputs, handling references."""
-        if step.inputsRef:
-            # Use reference to get inputs
-            return self._resolve_refs(step.inputsRef, context)
-        elif step.inputs:
-            # Resolve references in inputs
-            return self._resolve_refs(step.inputs, context)
-        else:
-            return {}
-
-    def _get_max_retries(self, step: StepSpec, context: ExecutionContext) -> int:
-        """Get maximum retries for step."""
-        if hasattr(step.on_error, 'retry') and step.on_error.retry:
-            return step.on_error.retry.max
-        return context.max_retries
-
-    def _get_backoff_seconds(self, step: StepSpec, context: ExecutionContext) -> float:
-        """Get backoff seconds for step."""
-        if hasattr(step.on_error, 'retry') and step.on_error.retry:
-            return step.on_error.retry.backoff_seconds
-        return context.base_backoff_seconds
-
-    def _handle_step_error(self, step: StepSpec, error: Exception, context: ExecutionContext) -> bool:
-        """
-        Handle step error according to error policy.
-
-        Returns:
-            True if pipeline should continue, False if it should stop
-        """
-        error_policy = step.on_error
-
-        if hasattr(error_policy, 'policy'):
-            policy = error_policy.policy
-        else:
-            policy = error_policy
-
-        if policy == "continue":
-            logger.info(f"Step '{step.name}' failed but pipeline continues due to error policy")
-            return True
-        elif policy == "skip":
-            logger.info(f"Step '{step.name}' failed, marking as skipped")
-            context.skipped_steps.add(step.name)
-            return True
-        elif policy == "stop":
-            logger.error(f"Step '{step.name}' failed, stopping pipeline")
-            return False
-        elif policy == "fail":
-            logger.error(f"Step '{step.name}' failed, failing pipeline")
-            return False
-        else:
-            # Default to stop
-            return False
-
+                subprocess.run(["kubectl", "version", "--client"], 
+                             capture_output=True, check=True, timeout=5)
+            except (FileNotFoundError, subprocess.CalledProcessError, subprocess.TimeoutExpired):
+                logger.warning("kubectl not found or not configured, falling back to local")
+                self.backend = "local"
+    
     @contextmanager
-    def _create_step_environment(self, step: StepSpec, context: ExecutionContext):
-        """Create isolated environment for step execution."""
-        step_dir = context.artifacts_dir / step.name
-        step_dir.mkdir(parents=True, exist_ok=True)
-
-        env = {
-            "step_name": step.name,
-            "step_dir": str(step_dir),
-            "artifacts_dir": str(context.artifacts_dir),
-            "run_id": context.run_id
+    def context(self, artifacts_dir: Path):
+        """
+        Create execution context
+        
+        Args:
+            artifacts_dir: Directory for artifacts
+            
+        Yields:
+            ExecutionContext instance
+        """
+        from ..provenance.utils import ProvenanceContext
+        
+        ctx = ProvenanceContext(str(artifacts_dir))
+        ctx.backend = self.backend
+        
+        # Apply deterministic settings
+        if self.deterministic:
+            self.det_config.apply()
+            
+            # Freeze environment
+            if self.det_config.freeze_env:
+                ctx.environment = dict(os.environ)
+        
+        # Record versions
+        ctx.versions = {
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
+            "backend": self.backend,
+            "deterministic": str(self.deterministic)
         }
-
+        
         try:
-            yield env
+            yield ctx
         finally:
             # Cleanup if needed
             pass
-
-    def _execute_step_action(
-        self,
-        step: StepSpec,
-        inputs: Dict[str, Any],
-        environment: Dict[str, Any],
-        timeout: float
-    ) -> Dict[str, Any]:
-        """Execute the actual step action (placeholder implementation)."""
-        # This is where you would integrate with the actual agent execution system
-        # For now, return a mock result
-
-        logger.debug(f"Executing step action: {step.agent}.{step.action}")
-
-        # Simulate execution time
-        execution_time = random.uniform(0.1, 2.0) if not environment.get("deterministic") else 1.0
-        time.sleep(execution_time)
-
-        # Mock result
-        return {
-            "status": "success",
-            "message": f"Step {step.name} executed successfully",
-            "inputs_received": inputs,
-            "execution_time": execution_time
-        }
-
-    def _map_step_outputs(self, outputs: Dict[str, Any], output_spec: Dict[str, Any]) -> Dict[str, Any]:
-        """Map step outputs according to output specification."""
-        # Simple mapping for now
-        mapped = {}
-        for key, mapping in output_spec.items():
-            if isinstance(mapping, str) and mapping in outputs:
-                mapped[key] = outputs[mapping]
+    
+    def execute(self, pipeline: Any, inputs: Dict[str, Any]) -> Result:
+        """
+        Execute pipeline with specified backend
+        
+        Args:
+            pipeline: Pipeline specification
+            inputs: Input parameters
+            
+        Returns:
+            Execution result
+        """
+        if self.backend == "local":
+            return self._exec_local(pipeline, inputs)
+        elif self.backend in ["k8s", "kubernetes"]:
+            return self._exec_k8s(pipeline, inputs)
+        else:
+            raise ValueError(f"Unknown backend: {self.backend}")
+    
+    def _load_pipeline(self, pipeline_path: str) -> Dict[str, Any]:
+        """
+        Load pipeline from file or reference
+        
+        Args:
+            pipeline_path: Path to pipeline YAML file or pack reference
+            
+        Returns:
+            Pipeline dictionary
+        """
+        path = Path(pipeline_path)
+        
+        # If it's a file path
+        if path.exists():
+            with open(path, 'r') as f:
+                pipeline = yaml.safe_load(f)
+            return pipeline
+        
+        # Try loading from pack
+        if "/" in pipeline_path or ":" in pipeline_path:
+            # Format: pack_name/pipeline or pack_name:pipeline
+            if "/" in pipeline_path:
+                pack_name, pipeline_name = pipeline_path.split("/", 1)
             else:
-                mapped[key] = mapping
-        return mapped
-
-    def _validate_pipeline(self, spec: PipelineSpec, context: ExecutionContext) -> Dict[str, Any]:
-        """Validate pipeline without executing it."""
-        validation_results = {
-            "status": "validated",
-            "pipeline_name": spec.name,
-            "validation_time": datetime.now(timezone.utc).isoformat(),
-            "steps_validated": len(spec.steps),
-            "issues": []
-        }
-
-        # Validate each step
-        for step in spec.steps:
+                pack_name, pipeline_name = pipeline_path.split(":", 1)
+            
+            # Load pack and get pipeline
             try:
-                # Check if condition is valid
-                if step.condition:
-                    self._eval_when(step.condition, context)
-
-                # Check if inputs can be resolved
-                self._resolve_step_inputs(step, context)
-
-                logger.debug(f"Step '{step.name}' validation passed")
-
+                loaded_pack = self.loader.load(pack_name)
+                pipeline = loaded_pack.get_pipeline(pipeline_name)
+                if pipeline:
+                    return pipeline
             except Exception as e:
-                validation_results["issues"].append({
-                    "step": step.name,
-                    "type": "validation_error",
-                    "message": str(e)
-                })
-
-        return validation_results
-
-    def _cleanup_context(self, context: ExecutionContext) -> None:
-        """Clean up execution context resources."""
-        # Close any open files
-        for file_obj in context.open_files:
-            try:
-                file_obj.close()
-            except Exception as e:
-                logger.warning(f"Failed to close file: {e}")
-
-        # Remove temporary directories
-        for temp_dir in context.temp_dirs:
-            try:
-                if temp_dir.exists():
-                    import shutil
-                    shutil.rmtree(temp_dir)
-            except Exception as e:
-                logger.warning(f"Failed to remove temp directory {temp_dir}: {e}")
-
-        logger.debug(f"Cleaned up execution context for run {context.run_id}")
-
-    def _should_use_guarded_worker(self, step: StepSpec, context: ExecutionContext) -> bool:
+                logger.warning(f"Failed to load pipeline from pack: {e}")
+        
+        # Try as direct pipeline name in discovered packs
+        for pack in self.loader.loaded_packs.values():
+            pipeline = pack.get_pipeline(pipeline_path)
+            if pipeline:
+                return pipeline
+        
+        raise ValueError(f"Pipeline not found: {pipeline_path}")
+    
+    def run(self, pipeline_path: str, inputs: Dict = None, artifacts_dir: Path = None) -> Result:
         """
-        Check if step should be executed in a guarded worker process.
-
-        SECURITY: Default-deny - always use guard unless explicitly disabled.
-
+        Execute pipeline with proper agent loading
+        
         Args:
-            step: Step specification
-            context: Execution context
-
+            pipeline_path: Path to pipeline file or reference
+            inputs: Input data for pipeline
+            artifacts_dir: Optional artifacts directory
+            
         Returns:
-            True if guarded worker should be used (default: True)
+            Execution result
         """
-        # SECURITY: Default to guarded mode for safety
-        # Only disable if explicitly set (dangerous!)
-        if os.environ.get('GL_DISABLE_GUARD') == '1':
-            logger.warning("⚠️  SECURITY WARNING: Guard disabled - capabilities not enforced!")
-            return False
-
-        # Always use guard if capabilities are defined anywhere
-        # Check if capabilities are defined in context
-        if hasattr(context, 'capabilities') and context.capabilities:
-            return True
-
-        # Check if step has capability requirements
-        if hasattr(step, 'capabilities') and step.capabilities:
-            return True
-
-        # Check for pack manifest capabilities
-        if hasattr(context, 'pack_manifest'):
-            manifest = context.pack_manifest
-            if manifest and manifest.get('capabilities'):
-                return True
-
-        # SECURITY: Default to using guard for safety (deny-by-default)
-        return True
-
-    def _execute_in_guarded_worker(
-        self,
-        step: StepSpec,
-        resolved_inputs: Dict[str, Any],
-        context: ExecutionContext
-    ) -> Dict[str, Any]:
-        """
-        Execute a step in a guarded worker process with capability enforcement.
-
-        Args:
-            step: Step specification
-            resolved_inputs: Resolved step inputs
-            context: Execution context
-
-        Returns:
-            Step execution result
-        """
-        import subprocess
-        import tempfile
-
-        # Extract capabilities from context or step
-        # SECURITY: Default-deny - no capabilities by default
-        capabilities = {
-            'net': {'allow': False},
-            'fs': {'allow': False},
-            'clock': {'allow': False},
-            'subprocess': {'allow': False}
-        }
-
-        # Check context capabilities
-        if hasattr(context, 'capabilities'):
-            # Merge with context capabilities
-            ctx_caps = context.capabilities
-            if isinstance(ctx_caps, dict):
-                for cap_name, cap_config in ctx_caps.items():
-                    if cap_name in capabilities and isinstance(cap_config, dict):
-                        if cap_config.get('allow', False):
-                            capabilities[cap_name] = cap_config
-
-        # Check pack manifest
-        elif hasattr(context, 'pack_manifest'):
-            manifest = context.pack_manifest
-            if manifest and 'capabilities' in manifest:
-                manifest_caps = manifest['capabilities']
-                if isinstance(manifest_caps, dict):
-                    for cap_name, cap_config in manifest_caps.items():
-                        if cap_name in capabilities and isinstance(cap_config, dict):
-                            if cap_config.get('allow', False):
-                                capabilities[cap_name] = cap_config
-
-        # Check step-specific capabilities
-        if hasattr(step, 'capabilities'):
-            # Merge step capabilities with existing ones
-            step_caps = step.capabilities
-            if isinstance(step_caps, dict):
-                for cap_name, cap_config in step_caps.items():
-                    if cap_name in capabilities and isinstance(cap_config, dict):
-                        if cap_config.get('allow', False):
-                            # Only allow if not already allowed (no privilege escalation)
-                            if not capabilities[cap_name].get('allow', False):
-                                logger.warning(f"Step '{step.name}' requested capability '{cap_name}' not granted by manifest")
-                            else:
-                                capabilities[cap_name] = cap_config
-
-        # Create temporary directories for the worker
-        with tempfile.TemporaryDirectory(prefix=f"gl_worker_{step.name}_") as work_dir:
-            work_path = Path(work_dir)
-            input_dir = work_path / "input"
-            output_dir = work_path / "output"
-            run_tmp = work_path / "tmp"
-
-            input_dir.mkdir()
-            output_dir.mkdir()
-            run_tmp.mkdir()
-
-            # Write inputs to file
-            input_file = input_dir / "inputs.json"
-            with open(input_file, 'w') as f:
-                json.dump(resolved_inputs, f)
-
-            # Prepare environment for worker
-            worker_env = os.environ.copy()
-            worker_env.update({
-                'GL_GUARD_INIT': '1',
-                'GL_CAPS': json.dumps(capabilities),
-                'GL_INPUT_DIR': str(input_dir),
-                'GL_PACK_DATA_DIR': str(work_path / "pack_data"),
-                'GL_RUN_TMP': str(run_tmp),
-                'GL_PACK_NAME': getattr(context, 'pipeline_name', 'unknown'),
-                'GL_RUN_ID': context.run_id,
-                'GL_STEP_NAME': step.name,
-                'PYTHONSAFEPATH': '1',
-                'PYTHONWARNDEFAULTENCODING': '1',
-            })
-
-            # Handle deterministic mode
-            if context.deterministic:
-                worker_env['GL_FROZEN_TIME'] = str(time.time())
-
-            # Build worker command
-            worker_script = self._create_worker_script(step, input_file, output_dir)
-            script_file = work_path / "worker.py"
-            with open(script_file, 'w') as f:
-                f.write(worker_script)
-
-            # Execute worker process with guard
-            cmd = [
-                sys.executable,
-                '-m', 'greenlang.runtime.guard',
-                str(script_file)
-            ]
-
-            logger.info(f"Executing step '{step.name}' in guarded worker process")
-
+        # Load pipeline
+        pipeline = self._load_pipeline(pipeline_path)
+        
+        # Create context with proper artifact management
+        context = Context(
+            inputs=inputs,
+            artifacts_dir=artifacts_dir or Path("out"),
+            backend=self.backend,
+            metadata={
+                "pipeline": pipeline.get("name", "unknown"),
+                "version": pipeline.get("version", "1.0.0")
+            }
+        )
+        
+        # Get steps from pipeline
+        steps = pipeline.get("steps", pipeline.get("stages", []))
+        
+        for step in steps:
+            step_name = step.get("name", step.get("id", f"step_{len(context.steps)}"))
+            agent_ref = step.get("agent")
+            
+            if not agent_ref:
+                logger.warning(f"No agent specified for step {step_name}")
+                continue
+            
             try:
-                result = subprocess.run(
-                    cmd,
-                    env=worker_env,
-                    capture_output=True,
-                    text=True,
-                    timeout=self.default_timeout,
-                    cwd=work_dir
-                )
-
-                if result.returncode != 0:
-                    raise StepExecutionError(
-                        f"Worker process failed with code {result.returncode}: {result.stderr}",
-                        step_name=step.name
-                    )
-
-                # Read output
-                output_file = output_dir / "output.json"
-                if output_file.exists():
-                    with open(output_file) as f:
-                        step_output = json.load(f)
-                else:
-                    step_output = {}
-
-                # Read audit log if present
-                audit_file = work_path / "audit.json"
-                if audit_file.exists():
-                    with open(audit_file) as f:
-                        audit_log = json.load(f)
-                        logger.info(f"Capability audit log for step '{step.name}': {len(audit_log)} events")
-                        # Could store audit log in context if needed
-
-                return {
-                    "output": step_output,
-                    "stdout": result.stdout,
-                    "stderr": result.stderr,
-                    "worker_status": "success"
-                }
-
-            except subprocess.TimeoutExpired:
-                raise StepExecutionError(
-                    f"Worker process timed out after {self.default_timeout}s",
-                    step_name=step.name
-                )
-            except Exception as e:
-                raise StepExecutionError(
-                    f"Worker process failed: {e}",
-                    step_name=step.name,
-                    original_error=e
-                )
-
-    def _create_worker_script(self, step: StepSpec, input_file: Path, output_dir: Path) -> str:
-        """
-        Create a Python script to execute in the worker process.
-
-        Args:
-            step: Step specification
-            input_file: Path to input JSON file
-            output_dir: Output directory path
-
-        Returns:
-            Python script as string
-        """
-        # Generate worker script that will be executed with guard
-        script = f'''
-import json
-import sys
-import importlib
-from pathlib import Path
-
-# The guard is already initialized by running with -m greenlang.runtime.guard
-
-# Load inputs
-with open("{input_file}") as f:
-    inputs = json.load(f)
-
-# Import and execute the agent
-try:
-    # Dynamic import of the agent module
-    agent_module = "{step.agent}"
-    action = "{step.action}"
-
-    # Safe dynamic import using importlib
-    agent = None
-
-    if "." in agent_module:
-        # Module path with class name (e.g., "mymodule.MyAgent")
-        module_path, agent_class_name = agent_module.rsplit(".", 1)
-
-        try:
-            # Import the module
-            module = importlib.import_module(module_path)
-            # Get the agent class
-            agent_class = getattr(module, agent_class_name, None)
-
-            if agent_class is None:
-                raise AttributeError(f"Module '{{module_path}}' has no class '{{agent_class_name}}'")
-
-            # Instantiate the agent
-            agent = agent_class()
-
-        except ImportError as e:
-            raise ImportError(f"Failed to import module '{{module_path}}': {{e}}")
-
-    else:
-        # Simple module name, try standard locations
-
-        # Try greenlang.agents first
-        try:
-            module = importlib.import_module(f"greenlang.agents.{{agent_module}}")
-
-            # Look for a class with the same name as the module
-            agent_class = getattr(module, agent_module, None)
-
-            if agent_class:
+                # Load agent class
+                agent_class = self.loader.get_agent(agent_ref)
                 agent = agent_class()
-            else:
-                # If no class with that name, try to find any Agent subclass
-                import inspect
-                for name, obj in inspect.getmembers(module):
-                    if inspect.isclass(obj) and name != "Agent" and hasattr(obj, "execute"):
-                        agent = obj()
-                        break
-
-        except ImportError:
-            # Try importing directly
-            try:
-                module = importlib.import_module(agent_module)
-
-                # Look for the agent class
-                if hasattr(module, agent_module):
-                    agent_class = getattr(module, agent_module)
-                    agent = agent_class()
-                elif hasattr(module, "Agent"):
-                    agent_class = getattr(module, "Agent")
-                    agent = agent_class()
+                
+                # Determine action to execute
+                action = step.get("action", "process")
+                
+                # Prepare inputs for step
+                step_inputs = step.get("inputs", step.get("with_", {}))
+                if not step_inputs:
+                    step_inputs = context.data
+                
+                # Execute action
+                if hasattr(agent, action):
+                    method = getattr(agent, action)
+                    result = method(step_inputs)
                 else:
-                    # Find first suitable class
-                    import inspect
-                    for name, obj in inspect.getmembers(module):
-                        if inspect.isclass(obj) and hasattr(obj, "execute"):
-                            agent = obj()
-                            break
-
-            except ImportError as e:
-                raise ImportError(f"Failed to import agent module '{{agent_module}}': {{e}}")
-
-    if agent is None:
-        raise RuntimeError(f"Could not instantiate agent from module '{{agent_module}}'")
-
-    # Execute the action
-    if hasattr(agent, action):
-        action_method = getattr(agent, action)
-        result = action_method(inputs)
-    elif hasattr(agent, "execute"):
-        # Fallback to execute method with action parameter
-        result = agent.execute(action, inputs)
-    else:
-        result = {{"error": f"Agent '{{agent_module}}' has no action '{{action}}' or 'execute' method"}}
-
-    # Write output
-    output_file = Path("{output_dir}") / "output.json"
-    with open(output_file, "w") as f:
-        json.dump(result, f)
-
-    # Save audit log if guard is active
-    if 'greenlang.runtime.guard' in sys.modules:
-        guard_module = sys.modules['greenlang.runtime.guard']
-        if hasattr(guard_module, 'guard_instance'):
-            guard = guard_module.guard_instance
-            audit_log = guard.get_audit_log()
-            audit_file = Path("{output_dir}").parent / "audit.json"
-            with open(audit_file, "w") as f:
-                json.dump(audit_log, f, default=str)
-
-except Exception as e:
-    # Write error output
-    error_output = {{"error": str(e), "type": type(e).__name__}}
-    output_file = Path("{output_dir}") / "output.json"
-    with open(output_file, "w") as f:
-        json.dump(error_output, f)
-    sys.exit(1)
-'''
-        return script
-
-    def shutdown(self) -> None:
-        """Shutdown the executor and clean up resources."""
-        logger.info("Shutting down PipelineExecutor")
-        self._thread_pool.shutdown(wait=True)
-
-
-# Utility functions for creating execution contexts
-def create_execution_context(
-    pipeline_name: str,
-    inputs: Optional[Dict[str, Any]] = None,
-    run_id: Optional[str] = None,
-    deterministic: bool = False,
-    artifacts_dir: Optional[Union[str, Path]] = None
-) -> ExecutionContext:
-    """
-    Create an execution context for pipeline execution.
-
-    Args:
-        pipeline_name: Name of the pipeline
-        inputs: Input data for the pipeline
-        run_id: Unique run identifier (generated if not provided)
-        deterministic: Whether to use deterministic execution
-        artifacts_dir: Directory for artifacts (default: "out")
-
-    Returns:
-        ExecutionContext instance
-    """
-    if run_id is None:
-        run_id = f"{pipeline_name}-{int(time.time())}-{random.randint(1000, 9999)}"
-
-    if artifacts_dir is None:
-        artifacts_dir = Path("out") / run_id
-    else:
-        artifacts_dir = Path(artifacts_dir)
-
-    return ExecutionContext(
-        run_id=run_id,
-        pipeline_name=pipeline_name,
-        inputs=inputs or {},
-        deterministic=deterministic,
-        artifacts_dir=artifacts_dir
-    )
+                    # Default to process or run method
+                    if hasattr(agent, "process"):
+                        result = agent.process(step_inputs)
+                    elif hasattr(agent, "run"):
+                        result = agent.run(step_inputs)
+                    else:
+                        raise AttributeError(f"Agent {agent_ref} has no method '{action}', 'process', or 'run'")
+                
+                # Add result to context
+                context.add_step_result(step_name, result)
+                
+                # Save step artifacts if configured
+                if step.get("save_artifacts", False):
+                    context.save_artifact(
+                        f"{step_name}_output",
+                        result.data,
+                        type="json",
+                        step=step_name,
+                        success=result.success
+                    )
+                
+                logger.info(f"Step {step_name} completed: {result.success}")
+                
+            except Exception as e:
+                logger.error(f"Step {step_name} failed: {e}")
+                # Create error result
+                error_result = Result(
+                    success=False,
+                    data={},
+                    metadata={"error": str(e)}
+                )
+                context.add_step_result(step_name, error_result)
+                # Continue or break based on pipeline settings
+                if pipeline.get("stop_on_error", True):
+                    break
+        
+        return context.to_result()
+    
+    def run_legacy(self, pipeline_ref: str, input_data: Dict[str, Any]) -> Result:
+        """
+        Execute a pipeline
+        
+        Args:
+            pipeline_ref: Pipeline reference (pack.pipeline)
+            input_data: Input data for pipeline
+        
+        Returns:
+            Execution result
+        """
+        run_id = str(uuid4())
+        run_start = datetime.now()
+        
+        logger.info(f"Starting run {run_id} for pipeline {pipeline_ref}")
+        
+        try:
+            # Load pipeline
+            pipeline = self.loader.get_pipeline(pipeline_ref)
+            if not pipeline:
+                return Result(
+                    success=False,
+                    error=f"Pipeline not found: {pipeline_ref}"
+                )
+            
+            # Create run context
+            context = {
+                "run_id": run_id,
+                "pipeline": pipeline_ref,
+                "profile": self.profile,
+                "input": input_data,
+                "artifacts": [],
+                "results": {}
+            }
+            
+            # Execute based on profile
+            if self.profile == "local":
+                result = self._run_local(pipeline, context)
+            elif self.profile == "k8s":
+                result = self._run_k8s(pipeline, context)
+            elif self.profile == "cloud":
+                result = self._run_cloud(pipeline, context)
+            else:
+                return Result(
+                    success=False,
+                    error=f"Unknown profile: {self.profile}"
+                )
+            
+            # Record run
+            run_end = datetime.now()
+            run_record = {
+                "run_id": run_id,
+                "pipeline": pipeline_ref,
+                "profile": self.profile,
+                "status": "success" if result.success else "failed",
+                "start_time": run_start.isoformat(),
+                "end_time": run_end.isoformat(),
+                "duration_seconds": (run_end - run_start).total_seconds(),
+                "artifacts": context.get("artifacts", [])
+            }
+            
+            self._save_run_record(run_record)
+            
+            # Generate run.json
+            self._generate_run_json(run_id, pipeline, context, result)
+            
+            return result
+            
+        except Exception as e:
+            logger.error(f"Execution failed: {e}")
+            return Result(
+                success=False,
+                error=str(e)
+            )
+    
+    def _exec_local(self, pipeline: Dict[str, Any], inputs: Dict[str, Any]) -> Result:
+        """
+        Execute pipeline locally with deterministic support
+        """
+        logger.info(f"Executing pipeline locally: {pipeline.get('name', 'unnamed')}")
+        
+        start_time = datetime.utcnow()
+        
+        try:
+            # Apply deterministic settings
+            if self.deterministic:
+                self.det_config.apply()
+            
+            # Process pipeline stages
+            outputs = {}
+            context = {
+                "input": inputs,
+                "results": {},
+                "artifacts": []
+            }
+            
+            steps = pipeline.get("steps", pipeline.get("stages", []))
+            
+            for step in steps:
+                step_name = step.get("name", f"step_{len(outputs)}")
+                logger.info(f"Executing step: {step_name}")
+                
+                # Execute step based on type
+                step_type = step.get("type", "agent")
+                
+                if step_type == "agent":
+                    agent_ref = step.get("agent")
+                    if agent_ref:
+                        # Load and run agent
+                        agent_class = self.loader.get_agent(agent_ref)
+                        if agent_class:
+                            agent = agent_class()
+                            step_input = self._prepare_step_input(step, context)
+                            result = agent.run(step_input)
+                            outputs[step_name] = result.data if result.success else None
+                            context["results"][step_name] = outputs[step_name]
+                        else:
+                            logger.warning(f"Agent not found: {agent_ref}")
+                
+                elif step_type == "python":
+                    outputs[step_name] = self._exec_python_stage(step, context)
+                    context["results"][step_name] = outputs[step_name]
+                    
+                elif step_type == "shell":
+                    outputs[step_name] = self._exec_shell_stage(step, context)
+                    context["results"][step_name] = outputs[step_name]
+                
+                # Update inputs for next stage if configured
+                if step.get("pass_outputs", False):
+                    inputs.update(outputs[step_name] if isinstance(outputs[step_name], dict) else {})
+            
+            # Apply output normalization if deterministic
+            if self.deterministic and self.det_config.normalize_floats:
+                outputs = self._normalize_outputs(outputs)
+            
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            
+            return Result(
+                success=True,
+                data=outputs,
+                metadata={
+                    "duration": duration,
+                    "stages_executed": len(steps),
+                    "backend": self.backend,
+                    "deterministic": self.deterministic
+                }
+            )
+            
+        except Exception as e:
+            logger.error(f"Pipeline execution failed: {e}")
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            
+            return Result(
+                success=False,
+                error=str(e),
+                metadata={
+                    "duration": duration,
+                    "backend": self.backend
+                }
+            )
+    
+    def _run_local(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
+        """Execute pipeline locally (legacy method for compatibility)"""
+        return self._exec_local(pipeline, context.get("input", {}))
+    
+    def _exec_k8s(self, pipeline: Dict[str, Any], inputs: Dict[str, Any]) -> Result:
+        """
+        Execute pipeline on Kubernetes
+        """
+        logger.info(f"Executing pipeline on Kubernetes: {pipeline.get('name', 'unnamed')}")
+        
+        start_time = datetime.utcnow()
+        
+        try:
+            # Generate Kubernetes Job manifest
+            job_manifest = self._create_k8s_job(pipeline, inputs)
+            job_name = job_manifest['metadata']['name']
+            
+            # Create temporary file for manifest
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+                import yaml
+                yaml.dump(job_manifest, f)
+                manifest_path = f.name
+            
+            try:
+                # Apply manifest
+                subprocess.run(
+                    ["kubectl", "apply", "-f", manifest_path],
+                    check=True,
+                    capture_output=True
+                )
+                
+                # Wait for job completion
+                logger.info(f"Waiting for job {job_name} to complete...")
+                self._wait_for_k8s_job(job_name)
+                
+                # Get job logs
+                logs = self._get_k8s_job_logs(job_name)
+                
+                # Parse outputs from logs (simplified)
+                outputs = self._parse_k8s_outputs(logs)
+                
+                # Apply output normalization if deterministic
+                if self.deterministic and self.det_config.normalize_floats:
+                    outputs = self._normalize_outputs(outputs)
+                
+                duration = (datetime.utcnow() - start_time).total_seconds()
+                
+                return Result(
+                    success=True,
+                    data=outputs,
+                    metadata={
+                        "duration": duration,
+                        "backend": self.backend,
+                        "job_name": job_name,
+                        "deterministic": self.deterministic
+                    }
+                )
+                
+            finally:
+                # Cleanup
+                Path(manifest_path).unlink(missing_ok=True)
+                
+                # Delete job if configured
+                if pipeline.get('cleanup', True):
+                    subprocess.run(
+                        ["kubectl", "delete", "job", job_name],
+                        capture_output=True
+                    )
+            
+        except Exception as e:
+            logger.error(f"Kubernetes execution failed: {e}")
+            duration = (datetime.utcnow() - start_time).total_seconds()
+            
+            return Result(
+                success=False,
+                error=str(e),
+                metadata={
+                    "duration": duration,
+                    "backend": self.backend
+                }
+            )
+    
+    def _run_k8s(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
+        """Execute pipeline on Kubernetes (legacy method for compatibility)"""
+        return self._exec_k8s(pipeline, context.get("input", {}))
+    
+    def _run_cloud(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
+        """Execute pipeline on cloud functions"""
+        # TODO: Implement cloud execution
+        # This would invoke Lambda/Cloud Functions for each step
+        return Result(
+            success=False,
+            error="Cloud execution not yet implemented"
+        )
+    
+    def _prepare_step_input(self, step: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """Prepare input for a step"""
+        input_mapping = step.get("input", {})
+        
+        if isinstance(input_mapping, dict):
+            # Map from context
+            step_input = {}
+            for key, path in input_mapping.items():
+                # Simple path resolution (could be more sophisticated)
+                if path.startswith("$input."):
+                    field = path.replace("$input.", "")
+                    step_input[key] = context["input"].get(field)
+                elif path.startswith("$results."):
+                    field = path.replace("$results.", "")
+                    step_input[key] = context["results"].get(field)
+                else:
+                    step_input[key] = path
+            return step_input
+        else:
+            # Use context input directly
+            return context["input"]
+    
+    def _collect_output(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Dict[str, Any]:
+        """Collect pipeline output"""
+        output_mapping = pipeline.get("output", {})
+        
+        if output_mapping:
+            output = {}
+            for key, path in output_mapping.items():
+                if path.startswith("$results."):
+                    field = path.replace("$results.", "")
+                    output[key] = context["results"].get(field)
+                else:
+                    output[key] = path
+            return output
+        else:
+            # Return all results
+            return context["results"]
+    
+    def _save_run_record(self, record: Dict[str, Any]):
+        """Save run record to ledger"""
+        self.run_ledger.append(record)
+        
+        # Persist to file
+        ledger_file = self.artifacts_dir / "run_ledger.jsonl"
+        with open(ledger_file, "a") as f:
+            f.write(json.dumps(record) + "\n")
+    
+    def _generate_run_json(self, run_id: str, pipeline: Dict[str, Any], 
+                          context: Dict[str, Any], result: Result):
+        """Generate deterministic run.json for reproducibility"""
+        run_json = {
+            "run_id": run_id,
+            "pipeline": pipeline,
+            "input": context["input"],
+            "output": result.data if result.success else None,
+            "status": "success" if result.success else "failed",
+            "error": result.error if not result.success else None,
+            "artifacts": context.get("artifacts", []),
+            "profile": self.profile,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        # Save run.json
+        run_file = self.artifacts_dir / f"run_{run_id}.json"
+        with open(run_file, "w") as f:
+            json.dump(run_json, f, indent=2)
+        
+        logger.info(f"Generated run.json: {run_file}")
+    
+    def list_runs(self) -> List[Dict[str, Any]]:
+        """List all runs from ledger"""
+        ledger_file = self.artifacts_dir / "run_ledger.jsonl"
+        
+        if not ledger_file.exists():
+            return []
+        
+        runs = []
+        with open(ledger_file) as f:
+            for line in f:
+                runs.append(json.loads(line))
+        
+        return runs
+    
+    def get_run(self, run_id: str) -> Optional[Dict[str, Any]]:
+        """Get details of a specific run"""
+        run_file = self.artifacts_dir / f"run_{run_id}.json"
+        
+        if run_file.exists():
+            with open(run_file) as f:
+                return json.load(f)
+        
+        return None
+    
+    def _exec_python_stage(self, stage: Dict, context: Dict) -> Dict:
+        """Execute a Python code stage"""
+        code = stage.get('code', '')
+        
+        # Create execution namespace
+        namespace = {
+            'inputs': context.get('input', {}),
+            'outputs': {},
+            'context': context
+        }
+        
+        # Add deterministic utilities if enabled
+        if self.deterministic:
+            namespace['__seed__'] = self.det_config.seed
+            if HAS_NUMPY:
+                namespace['np'] = np
+            namespace['random'] = random
+        
+        # Execute code
+        exec(code, namespace)
+        
+        return namespace.get('outputs', {})
+    
+    def _exec_shell_stage(self, stage: Dict, context: Dict) -> Dict:
+        """Execute a shell command stage"""
+        command = stage.get('command', '')
+        
+        # Substitute variables
+        for key, value in context.get('input', {}).items():
+            command = command.replace(f"${{{key}}}", str(value))
+        
+        # Execute command
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        
+        return {
+            'stdout': result.stdout,
+            'stderr': result.stderr,
+            'returncode': result.returncode
+        }
+    
+    def _create_k8s_job(self, pipeline: Dict, inputs: Dict) -> Dict:
+        """Create Kubernetes Job manifest"""
+        import uuid
+        
+        job_name = f"greenlang-{pipeline.get('name', 'job')}-{uuid.uuid4().hex[:8]}"
+        
+        # Basic Job manifest
+        manifest = {
+            'apiVersion': 'batch/v1',
+            'kind': 'Job',
+            'metadata': {
+                'name': job_name,
+                'labels': {
+                    'app': 'greenlang',
+                    'pipeline': pipeline.get('name', 'unnamed')
+                }
+            },
+            'spec': {
+                'template': {
+                    'spec': {
+                        'containers': [{
+                            'name': 'pipeline',
+                            'image': pipeline.get('image', 'python:3.9-slim'),
+                            'command': ['/bin/sh', '-c'],
+                            'args': [pipeline.get('command', 'echo "No command specified"')],
+                            'env': [
+                                {'name': 'INPUTS', 'value': json.dumps(inputs)}
+                            ]
+                        }],
+                        'restartPolicy': 'Never'
+                    }
+                },
+                'backoffLimit': pipeline.get('retries', 1)
+            }
+        }
+        
+        # Add deterministic settings
+        if self.deterministic:
+            manifest['spec']['template']['spec']['containers'][0]['env'].extend([
+                {'name': 'PYTHONHASHSEED', 'value': str(self.det_config.seed)},
+                {'name': 'RANDOM_SEED', 'value': str(self.det_config.seed)}
+            ])
+        
+        return manifest
+    
+    def _wait_for_k8s_job(self, job_name: str, timeout: int = 300):
+        """Wait for Kubernetes job to complete"""
+        import time
+        
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            # Check job status
+            result = subprocess.run(
+                ["kubectl", "get", "job", job_name, "-o", "json"],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 0:
+                job_status = json.loads(result.stdout)
+                
+                # Check if completed
+                if job_status.get('status', {}).get('succeeded', 0) > 0:
+                    return True
+                elif job_status.get('status', {}).get('failed', 0) > 0:
+                    raise RuntimeError(f"Job {job_name} failed")
+            
+            time.sleep(5)
+        
+        raise TimeoutError(f"Job {job_name} timed out after {timeout} seconds")
+    
+    def _get_k8s_job_logs(self, job_name: str) -> str:
+        """Get logs from Kubernetes job"""
+        result = subprocess.run(
+            ["kubectl", "logs", f"job/{job_name}"],
+            capture_output=True,
+            text=True
+        )
+        
+        return result.stdout
+    
+    def _parse_k8s_outputs(self, logs: str) -> Dict:
+        """Parse outputs from Kubernetes job logs"""
+        outputs = {}
+        
+        # Look for JSON output markers
+        for line in logs.split('\n'):
+            if line.startswith('OUTPUT:'):
+                try:
+                    output_data = json.loads(line[7:])
+                    outputs.update(output_data)
+                except json.JSONDecodeError:
+                    pass
+        
+        return outputs
+    
+    def _normalize_outputs(self, outputs: Any) -> Any:
+        """
+        Normalize outputs for determinism
+        
+        Args:
+            outputs: Raw outputs
+            
+        Returns:
+            Normalized outputs
+        """
+        if isinstance(outputs, dict):
+            return {k: self._normalize_outputs(v) for k, v in outputs.items()}
+        elif isinstance(outputs, list):
+            return [self._normalize_outputs(v) for v in outputs]
+        elif isinstance(outputs, float):
+            # Round to specified precision
+            if self.det_config.quantization_bits:
+                # Quantize to specified bits
+                scale = 2 ** self.det_config.quantization_bits
+                return round(outputs * scale) / scale
+            else:
+                # Round to decimal places
+                return round(outputs, self.det_config.float_precision)
+        elif HAS_NUMPY and isinstance(outputs, np.ndarray):
+            # Normalize numpy arrays
+            if outputs.dtype in [np.float32, np.float64]:
+                if self.det_config.quantization_bits:
+                    scale = 2 ** self.det_config.quantization_bits
+                    return np.round(outputs * scale) / scale
+                else:
+                    return np.round(outputs, self.det_config.float_precision)
+            return outputs
+        else:
+            return outputs
