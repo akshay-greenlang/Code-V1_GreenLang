@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68", "wheel", "setuptools-scm[toml]>=8"]
+requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "greenlang"
-dynamic = ["version"]
+version = "0.2.0"
 description = "Developer-first Climate Intelligence Framework (core rails)"
 readme = "README.md"
 authors = [{ name = "GreenLang Maintainers" }]
@@ -23,11 +23,12 @@ dependencies = [
   "pyyaml>=6.0",
   "rich>=13.0",
   "jsonschema>=4.0",
+  "packaging>=22.0",
 ]
 
 [project.scripts]
-# single entry point → glue for subcommands
-gl = "greenlang.cli:main"
+# CLI entry point for the gl command
+gl = "greenlang.cli.main:main"
 
 [project.optional-dependencies]
 dev = [
@@ -42,18 +43,25 @@ dev = [
     "pre-commit>=3.0",
 ]
 
-[tool.setuptools_scm]
-version_scheme = "post-release"
-local_scheme = "node-and-date"
+# Removed setuptools_scm - using static version
 
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["greenlang*"]
+include = ["core*", "greenlang*"]
+exclude = ["tests*", "docs*", "examples*"]
 
 [tool.setuptools.package-data]
+"*" = ["*.yaml", "*.yml", "*.json", "*.md", "*.jinja"]
+"core.greenlang" = [
+  "schemas/*.json",
+  "data/**/*.json",
+  "configs/*.yaml",
+  "policy/bundles/**/*",
+]
 "greenlang" = [
   "schemas/*.json",
+  "data/**/*.json",
   "examples/**/*",
 ]
 

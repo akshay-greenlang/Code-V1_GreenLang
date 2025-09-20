@@ -2,9 +2,17 @@ include README.md
 include LICENSE
 include CHANGELOG.md
 include VERSION.md
+include VERSION
 include requirements.txt
 
-# Include configuration files
+# Include core package data
+recursive-include core/greenlang *.yaml *.yml *.json *.md
+recursive-include core/greenlang/schemas *.json
+recursive-include core/greenlang/configs *.yaml
+recursive-include core/greenlang/data *.json
+recursive-include core/greenlang/policy/bundles *
+
+# Include legacy greenlang package data
 recursive-include greenlang/configs *.json *.yaml
 recursive-include greenlang/data *.json
 recursive-include greenlang/schemas *.json
