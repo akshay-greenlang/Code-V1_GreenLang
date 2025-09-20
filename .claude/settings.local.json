@@ -155,7 +155,8 @@
       "Bash(powershell:*)",
       "Bash(numfmt:*)",
       "WebFetch(domain:github.com)",
-      "Bash(git show-ref:*)"
+      "Bash(git show-ref:*)",
+      "Bash(findstr:*)"
     ],
     "deny": []
   }
