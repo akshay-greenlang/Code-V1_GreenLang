@@ -20,12 +20,24 @@ app = typer.Typer(
 console = Console()
 
 
-@app.callback()
-def _root():
+@app.callback(invoke_without_command=True)
+def _root(
+    version: bool = typer.Option(False, "--version", help="Show version and exit")
+):
     """
     GreenLang v0.2.0 - Infrastructure for Climate Intelligence
     """
-    pass
+    if version:
+        try:
+            from .. import __version__
+            console.print(f"GreenLang v{__version__}")
+            console.print("Infrastructure for Climate Intelligence")
+            console.print("https://greenlang.io")
+        except ImportError:
+            console.print("GreenLang v0.2.0")
+            console.print("Infrastructure for Climate Intelligence")
+            console.print("https://greenlang.io")
+        raise typer.Exit(0)
 
 
 @app.command()

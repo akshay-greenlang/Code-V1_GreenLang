@@ -48,14 +48,20 @@ app = typer.Typer(
 console = Console()
 
 
-@app.callback()
-def callback():
+@app.callback(invoke_without_command=True)
+def callback(
+    version: bool = typer.Option(False, "--version", help="Show version and exit")
+):
     """
     GreenLang v0.1 - Pure Infrastructure Platform
-    
+
     Domain logic lives in packs. Platform = SDK/CLI/Runtime + Hub + Policy/Provenance
     """
-    pass
+    if version:
+        console.print(f"GreenLang v{__version__}")
+        console.print("Infrastructure for Climate Intelligence")
+        console.print("https://greenlang.io")
+        raise typer.Exit(0)
 
 
 @app.command()
