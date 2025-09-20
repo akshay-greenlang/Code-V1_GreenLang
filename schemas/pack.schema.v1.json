@@ -170,6 +170,111 @@
       "additionalProperties": true,
       "description": "Policy constraints and requirements"
     },
+    "capabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "net": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow network access"
+            },
+            "outbound": {
+              "type": "object",
+              "properties": {
+                "allowlist": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "Allowed network target pattern"
+                  },
+                  "description": "List of allowed outbound network targets"
+                }
+              },
+              "description": "Outbound network configuration"
+            }
+          },
+          "description": "Network capability configuration"
+        },
+        "fs": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow filesystem access"
+            },
+            "read": {
+              "type": "object",
+              "properties": {
+                "allowlist": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "Allowed read path pattern"
+                  },
+                  "description": "List of allowed read paths"
+                }
+              },
+              "description": "File read configuration"
+            },
+            "write": {
+              "type": "object",
+              "properties": {
+                "allowlist": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "description": "Allowed write path pattern"
+                  },
+                  "description": "List of allowed write paths"
+                }
+              },
+              "description": "File write configuration"
+            }
+          },
+          "description": "Filesystem capability configuration"
+        },
+        "clock": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow real-time clock access"
+            }
+          },
+          "description": "Clock capability configuration"
+        },
+        "subprocess": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "type": "boolean",
+              "default": false,
+              "description": "Allow subprocess execution"
+            },
+            "allowlist": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Allowed subprocess command pattern"
+              },
+              "description": "List of allowed subprocess commands"
+            }
+          },
+          "description": "Subprocess capability configuration"
+        }
+      },
+      "description": "Security capabilities required by this pack (default-deny)"
+    },
     "security": {
       "type": "object",
       "properties": {

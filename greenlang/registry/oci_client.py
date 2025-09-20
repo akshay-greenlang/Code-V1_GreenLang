@@ -195,31 +195,23 @@ class OCIClient:
         self.insecure = insecure
         self.insecure_transport = insecure_transport
 
-        # SECURITY: Enforce HTTPS by default
+        # SECURITY: Enforce HTTPS - HTTP is never allowed
         if self.registry.startswith('http://'):
-            if not (os.environ.get('GL_DEBUG_INSECURE') == '1' and insecure_transport):
-                raise ValueError(
-                    "SECURITY: HTTP registries are disabled by default. "
-                    "Use HTTPS or set GL_DEBUG_INSECURE=1 AND --insecure-transport for local dev only."
-                )
-            logger.warning("⚠️  SECURITY WARNING: Using insecure HTTP transport (dev only!)")
+            raise ValueError(
+                "SECURITY: HTTP registries are not allowed. "
+                "Use HTTPS for all registry connections."
+            )
         elif not self.registry.startswith('https://') and '://' not in self.registry:
             # Prepend https:// if no protocol specified
             self.registry = f"https://{self.registry}"
 
-        # Create SSL context
+        # Create SSL context - always verify certificates
         self.ssl_context = ssl.create_default_context()
         if insecure:
-            # SECURITY: Require both env var and flag for insecure mode
-            if os.environ.get('GL_DEBUG_INSECURE') != '1':
-                raise ValueError(
-                    "SECURITY: Insecure TLS is disabled by default. "
-                    "Set GL_DEBUG_INSECURE=1 AND use --insecure flag for local dev only."
-                )
-            logger.warning("⚠️  SECURITY WARNING: SSL/TLS verification disabled (dev only!)")
-            logger.warning("⚠️  This connection is vulnerable to MITM attacks!")
-            self.ssl_context.check_hostname = False
-            self.ssl_context.verify_mode = ssl.CERT_NONE
+            raise ValueError(
+                "SECURITY: Insecure TLS is not allowed. "
+                "SSL/TLS verification is mandatory for all connections."
+            )
     
     def _make_request(self, method: str, url: str, data: Optional[bytes] = None,
                      headers: Optional[Dict[str, str]] = None) -> Tuple[int, bytes, Dict[str, str]]:

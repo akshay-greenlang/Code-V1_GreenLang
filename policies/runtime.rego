@@ -49,27 +49,36 @@ all_targets_allowed {
     })
 }
 
-# Helper to match network patterns (supports wildcards)
+# Helper to match network patterns (NO wildcards for security)
+# Wildcard patterns are explicitly forbidden for security
 match_pattern(target, pattern) {
-    pattern == "*"
-}
-
-match_pattern(target, pattern) {
+    # Exact match only
     pattern == target
 }
 
 match_pattern(target, pattern) {
-    endswith(pattern, ":*")
-    prefix := substring(pattern, 0, length(pattern) - 2)
-    startswith(target, prefix)
+    # Allow specific subdomain patterns like "*.example.com"
+    startswith(pattern, "*.")
+    domain := substring(pattern, 2, length(pattern))
+    endswith(target, domain)
 }
 
-# Data residency check
+match_pattern(target, pattern) {
+    # Allow path wildcards like "example.com/*"
+    endswith(pattern, "/*")
+    domain := substring(pattern, 0, length(pattern) - 2)
+    startswith(target, domain)
+}
+
+# Data residency check - MANDATORY for data operations
 data_residency_ok {
-    not input.data_location
+    # Only skip check if no data operations are involved
+    not input.has_data_operations
 }
 
 data_residency_ok {
+    # Data location must be explicitly declared and allowed
+    input.has_data_operations
     input.data_location
     input.data_location in input.pack.policy.data_residency
 }

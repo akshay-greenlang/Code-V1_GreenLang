@@ -4,10 +4,27 @@ kind: pack
 license: Apache-2.0
 publisher: greenlang-official
 
-# Declare required capabilities
+# Declare required capabilities (v1.0 object format)
 capabilities:
-  - fs   # File system access for datasets
-  - net  # Network access for weather APIs
+  fs:
+    allow: true
+    read:
+      allowlist:
+        - "${INPUT_DIR}/**"
+        - "${PACK_DATA_DIR}/**"
+    write:
+      allowlist:
+        - "${RUN_TMP}/**"
+  net:
+    allow: true
+    outbound:
+      allowlist:
+        - "https://api.weather.gov/*"
+        - "https://solcast.com/*"
+  clock:
+    allow: false
+  subprocess:
+    allow: false
 
 compat:
   greenlang: ">=0.1.0"

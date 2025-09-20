@@ -110,18 +110,8 @@ allow_install {
     true
 }
 
-# Development mode override (DANGEROUS - for local dev only)
-allow_install {
-    input.override.policy_permissive == true
-    # This should trigger loud warnings in the implementation
-    true
-}
-
-allow_execution {
-    input.override.policy_permissive == true
-    # This should trigger loud warnings in the implementation
-    true
-}
+# Development mode override REMOVED for production security
+# All policy checks are mandatory - no bypasses allowed
 
 # =============================================================================
 # DENY REASONS (for better error messages)
