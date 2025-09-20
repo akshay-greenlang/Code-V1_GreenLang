@@ -315,6 +315,14 @@ settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "fast"))
 # Signing fixtures - NO HARDCODED KEYS
 # ============================================================================
 
+@pytest.fixture(autouse=True)
+def _ephemeral_signing_keys(monkeypatch):
+    """Auto-inject ephemeral signing keys for all tests"""
+    from tests.helpers.ephemeral_keys import generate_ephemeral_keypair
+    priv, pub = generate_ephemeral_keypair()
+    monkeypatch.setenv("GL_SIGNING_PRIVATE_KEY_PEM", priv.decode())
+    monkeypatch.setenv("GL_SIGNING_PUBLIC_KEY_PEM", pub.decode())
+
 @pytest.fixture
 def ephemeral_signer():
     """Provide ephemeral signer for tests - generates new keys each time"""

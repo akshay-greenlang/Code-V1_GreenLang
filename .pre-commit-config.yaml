@@ -3,6 +3,12 @@
 # Run manually: pre-commit run --all-files
 
 repos:
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.66.0
+    hooks:
+      - id: trufflehog
+        args: [--no-update]
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
@@ -17,6 +23,8 @@ repos:
       - id: debug-statements
       - id: mixed-line-ending
         args: ['--fix=lf']
+      - id: detect-private-key
+        exclude: 'tests/fixtures/unsigned/'
 
   - repo: https://github.com/psf/black
     rev: 23.12.1

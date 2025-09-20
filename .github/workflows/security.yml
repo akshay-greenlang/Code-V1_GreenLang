@@ -1,0 +1,52 @@
+name: security
+on:
+  pull_request:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  trufflehog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # scan history when needed
+
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@v3.66.0
+        with:
+          path: .
+          base: ${{ github.event.pull_request.base.sha || '' }}
+          head: ${{ github.event.pull_request.head.sha || '' }}
+          extra_args: --no-update --fail
+
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -U pip pip-audit
+          pip install -r requirements.txt || true
+
+      - name: Run pip-audit
+        run: pip-audit --strict --desc
+
+  dependency-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner in repo mode
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '1'
+          ignore-unfixed: true

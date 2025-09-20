@@ -15,140 +15,41 @@ logger = logging.getLogger(__name__)
 
 
 # Standalone functions for direct import
-def check_install(pm, path: str, stage: str = "publish", permissive: bool = False, config: Optional[Dict[str, Any]] = None) -> None:
+def check_install(pm, path: str, stage: str = "publish") -> None:
     """
     Check if pack can be installed or published (raises on failure)
-
+    
     Args:
         pm: PackManifest object
-        path: Path to pack directory
+        path: Path to pack directory  
         stage: Either "publish" or "add"
-        permissive: If True, allow when policy missing (dev only!)
-        config: Optional config dict with allowlists
-
+    
     Raises:
         RuntimeError: If policy denies the operation
     """
-    # Load default config if not provided
-    if config is None:
-        config_file = Path.home() / ".greenlang" / "config.json"
-        if config_file.exists():
-            try:
-                with open(config_file) as f:
-                    config = json.load(f)
-            except Exception:
-                config = {}
-        else:
-            config = {}
-
-    # Build comprehensive input document
-    pack_dict = pm.model_dump() if hasattr(pm, 'model_dump') else pm.dict()
-    input_doc = {
-        "pack": {
-            **pack_dict,
-            "stage": stage,
-            "signature_verified": getattr(pm, 'signature_verified', False),
-            "publisher": getattr(pm, 'publisher', 'unknown'),
-            "region": getattr(pm, 'region', None),
-            "organization": getattr(pm, 'organization', None),
-        },
-        "stage": stage,
-    }
-
-    # Pass config data for allowlists
-    data = {
-        "greenlang": {
-            "config": {
-                "allowed_publishers": config.get("allowed_publishers", []),
-                "allowed_regions": config.get("allowed_regions", []),
-                "allowed_orgs": config.get("allowed_orgs", []),
-            }
-        }
-    }
-
-    try:
-        dec = opa_eval("bundles/install.rego", input_doc, data=data, permissive_mode=permissive)
-    except Exception as e:
-        logger.error(f"Policy evaluation failed, denying by default: {e}")
-        raise RuntimeError(f"POLICY.DENIED_INSTALL: Policy evaluation failed - {e}")
-
-    # SECURITY: Default-deny - explicit allow required
-    allowed = bool(dec.get("allow", False))
-    if not allowed:
-        reason = dec.get("reason", "POLICY.DENIED_INSTALL: No explicit allow policy (default-deny)")
-        logger.error(f"Install denied for {getattr(pm, 'name', 'unknown')}: {reason}")
-        raise RuntimeError(reason)
+    dec = opa_eval("bundles/install.rego", {"pack": pm.model_dump() if hasattr(pm, 'model_dump') else pm.dict(), "stage": stage})
+    if not dec["allow"]: 
+        raise RuntimeError(dec.get("reason", "policy denied"))
 
 
-def check_run(pipeline, ctx, permissive: bool = False, config: Optional[Dict[str, Any]] = None) -> None:
+def check_run(pipeline, ctx) -> None:
     """
     Check if pipeline can be executed (raises on failure)
-
+    
     Args:
         pipeline: Pipeline object
         ctx: Execution context
-        permissive: If True, allow when policy missing (dev only!)
-        config: Optional config dict with allowlists
-
+    
     Raises:
         RuntimeError: If policy denies the operation
     """
-    # Load default config if not provided
-    if config is None:
-        config_file = Path.home() / ".greenlang" / "config.json"
-        if config_file.exists():
-            try:
-                with open(config_file) as f:
-                    config = json.load(f)
-            except Exception:
-                config = {}
-        else:
-            config = {}
-
-    # Build comprehensive input document
-    pipeline_dict = pipeline.to_policy_doc() if hasattr(pipeline, 'to_policy_doc') else pipeline.__dict__
-    input_doc = {
-        "pipeline": {
-            **pipeline_dict,
-            "publisher": getattr(pipeline, 'publisher', None),
-            "region": getattr(pipeline, 'region', None),
-            "organization": getattr(pipeline, 'organization', None),
-            "resources": getattr(pipeline, 'resources', {}),
-            "policy": getattr(pipeline, 'policy', {}),
-        },
+    dec = opa_eval("bundles/run.rego", {
+        "pipeline": pipeline.to_policy_doc() if hasattr(pipeline, 'to_policy_doc') else pipeline.__dict__,
         "egress": getattr(ctx, 'egress_targets', []),
-        "region": getattr(ctx, 'region', 'unknown'),
-        "user": {
-            "authenticated": getattr(ctx, 'authenticated', False),
-            "role": getattr(ctx, 'role', 'basic'),
-        },
-        "requested_capabilities": getattr(pipeline, 'requested_capabilities', []),
-        "stage": getattr(ctx, 'stage', 'run'),
-    }
-
-    # Pass config data for allowlists
-    data = {
-        "greenlang": {
-            "config": {
-                "runtime_allowed_publishers": config.get("runtime_allowed_publishers", []),
-                "runtime_allowed_regions": config.get("runtime_allowed_regions", []),
-                "runtime_allowed_orgs": config.get("runtime_allowed_orgs", []),
-            }
-        }
-    }
-
-    try:
-        dec = opa_eval("bundles/run.rego", input_doc, data=data, permissive_mode=permissive)
-    except Exception as e:
-        logger.error(f"Policy evaluation failed, denying by default: {e}")
-        raise RuntimeError(f"POLICY.DENIED_EXECUTION: Policy evaluation failed - {e}")
-
-    # SECURITY: Default-deny - explicit allow required
-    allowed = bool(dec.get("allow", False))
-    if not allowed:
-        reason = dec.get("reason", "POLICY.DENIED_EXECUTION: No explicit allow policy (default-deny)")
-        logger.error(f"Execution denied for pipeline: {reason}")
-        raise RuntimeError(reason)
+        "region": getattr(ctx, 'region', 'unknown')
+    })
+    if not dec["allow"]: 
+        raise RuntimeError(dec.get("reason", "policy denied"))
 
 
 class PolicyEnforcer:
@@ -161,26 +62,16 @@ class PolicyEnforcer:
     - Data access: When accessing sensitive data
     """
     
-    def __init__(self, policy_dir: Optional[Path] = None, permissive_mode: bool = False,
-                 config: Optional[Dict[str, Any]] = None):
+    def __init__(self, policy_dir: Optional[Path] = None):
         """
         Initialize policy enforcer
-
+        
         Args:
             policy_dir: Directory containing policy files
-            permissive_mode: If True, allow operations when policies missing (DANGEROUS!)
-            config: Configuration dict with allowlists and settings
         """
         self.policy_dir = policy_dir or Path.home() / ".greenlang" / "policies"
         self.policy_dir.mkdir(parents=True, exist_ok=True)
         self.policies = {}
-        self.permissive_mode = permissive_mode
-        self.config = config or self._load_config()
-
-        if permissive_mode:
-            logger.warning("⚠️  SECURITY WARNING: PolicyEnforcer in PERMISSIVE MODE - policies not enforced!")
-            logger.warning("⚠️  This mode is for development only. DO NOT use in production!")
-
         self._load_policies()
     
     def _load_policies(self):
@@ -197,34 +88,30 @@ class PolicyEnforcer:
     def check(self, policy_file: Path, input_data: Dict[str, Any]) -> bool:
         """
         Check if input satisfies policy
-
+        
         Args:
             policy_file: Path to policy file
             input_data: Data to check against policy
-
+        
         Returns:
             True if policy check passes
         """
         if not policy_file.exists():
-            if self.permissive_mode:
-                logger.warning(f"⚠️  Policy file not found: {policy_file} (PERMISSIVE MODE)")
-                return True
-            logger.error(f"Policy file not found: {policy_file}, denying by default")
+            logger.error(f"Policy file not found: {policy_file}")
             return False
-
+        
         try:
             # Try to use actual OPA evaluation if available
             try:
                 from .opa_evaluator import evaluate_rego
                 result = evaluate_rego(policy_file, input_data)
-                # SECURITY: Default-deny - explicit allow required
-                return bool(result.get("allow", False))
+                return result.get("allow", False)
             except ImportError:
                 # Fallback to simple evaluation
                 return self._simple_rego_eval(policy_file, input_data)
-
+                
         except Exception as e:
-            logger.error(f"Policy check failed, denying by default: {e}")
+            logger.error(f"Policy check failed: {e}")
             return False
     
     def _simple_rego_eval(self, policy_file: Path, input_data: Dict[str, Any]) -> bool:
@@ -307,159 +194,82 @@ class PolicyEnforcer:
     
     def _eval_generic_policy(self, policy_content: str, input_data: Dict[str, Any]) -> bool:
         """Generic policy evaluation"""
-        # SECURITY: Default-deny - must have explicit allow
-        has_explicit_allow = "allow {" in policy_content or "allow =" in policy_content
-        if not has_explicit_allow:
-            logger.warning("No explicit allow rule found in policy, denying by default")
-            return False
-
-        # Check for deny rules first
+        # Simple keyword-based evaluation
         if "deny" in policy_content.lower():
             # Conservative: deny by default if deny rules exist
             return False
-
+        
         if "allow {" in policy_content:
             # Check for basic allow conditions
             if "authenticated" in policy_content:
                 if not input_data.get("user", {}).get("authenticated"):
                     return False
-            # If we reach here, allow rule exists and conditions evaluated
-            return True
-
-        # Default-deny
-        return False
+        
+        # Default allow
+        return True
     
-    def check_install(self, pack_manifest: Any, path: str,
+    def check_install(self, pack_manifest: Any, path: str, 
                        stage: Literal["publish", "add"]) -> Tuple[bool, List[str]]:
         """
         Check if pack can be installed or published
-
+        
         Args:
             pack_manifest: Pack manifest object
             path: Path to pack directory
             stage: Either "publish" or "add"
-
+        
         Returns:
             (allowed, list_of_reasons)
         """
-        # Build comprehensive input document
-        pack_dict = pack_manifest.dict() if hasattr(pack_manifest, 'dict') else pack_manifest
-
+        # Build input document
         input_doc = {
             "stage": stage,
-            "pack": {
-                **pack_dict,
-                "signature_verified": pack_dict.get("signature_verified", False),
-                "publisher": pack_dict.get("publisher", "unknown"),
-                "region": pack_dict.get("region", None),
-                "organization": pack_dict.get("organization", None),
-                "declared_capabilities": pack_dict.get("capabilities", []),
-            },
+            "pack": pack_manifest.dict() if hasattr(pack_manifest, 'dict') else pack_manifest,
             "files": self._list_files(path),
             "licenses": self._detect_licenses(path),
-            "org": {
-                "allowed_publishers": self._get_allowed_publishers(),
-                "allowed_regions": self._get_allowed_regions(),
-                "allowed_orgs": self._get_allowed_organizations(),
-            },
         }
-
-        # Also pass config data for OPA policies to use
-        data = {
-            "greenlang": {
-                "config": {
-                    "allowed_publishers": self._get_allowed_publishers(),
-                    "allowed_regions": self._get_allowed_regions(),
-                    "allowed_orgs": self._get_allowed_organizations(),
-                }
-            }
-        }
-
-        # Evaluate policy with permissive mode flag and config data
-        try:
-            decision = opa_eval("bundles/install.rego", input_doc, data=data, permissive_mode=self.permissive_mode)
-        except Exception as e:
-            logger.error(f"Policy evaluation failed, denying by default: {e}")
-            return False, [f"POLICY.DENIED_INSTALL: Policy evaluation failed - {e}"]
-
-        # SECURITY: Default-deny - explicit allow required
-        allowed = bool(decision.get("allow", False))
-        reasons = decision.get("reasons", [decision.get("reason", "POLICY.DENIED_INSTALL: No reason provided")])
-
+        
+        # Evaluate policy
+        decision = opa_eval("bundles/install.rego", input_doc)
+        
+        allowed = decision.get("allow", False)
+        reasons = decision.get("reasons", [decision.get("reason", "No reason provided")])
+        
         if not isinstance(reasons, list):
             reasons = [reasons]
-
-        if not allowed:
-            logger.warning(f"Install denied: {', '.join(reasons)}")
-
+        
         return allowed, reasons
     
     def check_run(self, pipeline: Any, context: Any) -> Tuple[bool, List[str]]:
         """
         Check if pipeline can be executed
-
+        
         Args:
             pipeline: Pipeline object
             context: Execution context
-
+        
         Returns:
             (allowed, list_of_reasons)
         """
-        # Build comprehensive input document
-        pipeline_doc = self._pipeline_to_policy_doc(pipeline)
-
+        # Build input document
         input_doc = {
             "stage": "run",
-            "pipeline": pipeline_doc,
+            "pipeline": self._pipeline_to_policy_doc(pipeline),
             "profile": getattr(context, "profile", "dev"),
             "region": getattr(context, "region", None),
             "egress": self._get_egress_targets(context),
             "ef_vintage": context.metadata.get("ef_vintage") if hasattr(context, "metadata") else None,
-            "user": {
-                "authenticated": getattr(context, "authenticated", False),
-                "role": getattr(context, "user_role", "basic"),
-                "id": getattr(context, "user_id", "unknown"),
-            },
-            "request": {
-                "requested_capabilities": self._extract_capabilities(pipeline),
-                "run_id": getattr(context, "run_id", "unknown"),
-            },
-            "org": {
-                "allowed_capabilities": self._get_allowed_capabilities(),
-                "allowed_publishers": self._get_allowed_publishers(),
-                "allowed_regions": self._get_allowed_regions(),
-                "allowed_orgs": self._get_allowed_organizations(),
-            },
         }
-
-        # Also pass config data for OPA policies to use
-        data = {
-            "greenlang": {
-                "config": {
-                    "runtime_allowed_publishers": self.config.get("runtime_allowed_publishers", self._get_allowed_publishers()),
-                    "runtime_allowed_regions": self.config.get("runtime_allowed_regions", self._get_allowed_regions()),
-                    "runtime_allowed_orgs": self.config.get("runtime_allowed_orgs", self._get_allowed_organizations()),
-                }
-            }
-        }
-
-        # Evaluate policy with permissive mode flag and config data
-        try:
-            decision = opa_eval("bundles/run.rego", input_doc, data=data, permissive_mode=self.permissive_mode)
-        except Exception as e:
-            logger.error(f"Policy evaluation failed, denying by default: {e}")
-            return False, [f"POLICY.DENIED_EXECUTION: Policy evaluation failed - {e}"]
-
-        # SECURITY: Default-deny - explicit allow required
-        allowed = bool(decision.get("allow", False))
-        reasons = decision.get("reasons", [decision.get("reason", "POLICY.DENIED_EXECUTION: No reason provided")])
-
+        
+        # Evaluate policy
+        decision = opa_eval("bundles/run.rego", input_doc)
+        
+        allowed = decision.get("allow", False)
+        reasons = decision.get("reasons", [decision.get("reason", "No reason provided")])
+        
         if not isinstance(reasons, list):
             reasons = [reasons]
-
-        if not allowed:
-            logger.warning(f"Execution denied: {', '.join(reasons)}")
-
+        
         return allowed, reasons
     
     def add_policy(self, policy_file: Path):
@@ -556,180 +366,34 @@ class PolicyEnforcer:
         if hasattr(context, 'config') and hasattr(context.config, 'egress_targets'):
             return context.config.egress_targets
         return []
-
-    def _extract_capabilities(self, pipeline: Any) -> List[str]:
-        """Extract requested capabilities from pipeline"""
-        capabilities = []
-
-        # Check direct capabilities attribute
-        if hasattr(pipeline, 'requested_capabilities'):
-            capabilities.extend(pipeline.requested_capabilities)
-
-        # Check pack manifest capabilities
-        if hasattr(pipeline, 'pack_manifest'):
-            manifest_caps = pipeline.pack_manifest.get('capabilities', {})
-            for cap_name, cap_config in manifest_caps.items():
-                if cap_config.get('allow', False):
-                    capabilities.append(cap_name)
-
-        # Check steps for capabilities
-        if hasattr(pipeline, 'steps'):
-            for step in pipeline.steps:
-                if hasattr(step, 'capabilities'):
-                    capabilities.extend(step.capabilities)
-                # Infer capabilities from step operations
-                if hasattr(step, 'operation'):
-                    if 'http' in str(step.operation).lower() or 'fetch' in str(step.operation).lower():
-                        capabilities.append('net')
-                    if 'file' in str(step.operation).lower() or 'read' in str(step.operation).lower():
-                        capabilities.append('fs')
-                    if 'exec' in str(step.operation).lower() or 'run' in str(step.operation).lower():
-                        capabilities.append('subprocess')
-
-        return list(set(capabilities))  # Remove duplicates
-
-    def check_capability_policy(self, pack_capabilities: Dict[str, Any],
-                                 org_policy: Optional[Dict[str, Any]] = None) -> Tuple[bool, List[str]]:
-        """
-        Check if pack capabilities are allowed by organization policy
-
-        Args:
-            pack_capabilities: Capabilities requested by the pack
-            org_policy: Organization's capability policy
-
-        Returns:
-            (allowed, list_of_reasons)
-        """
-        if self.permissive_mode:
-            return True, ["Permissive mode enabled"]
-
-        reasons = []
-        org_policy = org_policy or self.config.get('capability_policy', {})
-
-        # Check each capability
-        for cap_name, cap_config in pack_capabilities.items():
-            if not cap_config.get('allow', False):
-                continue  # Capability not requested
-
-            # Check if capability is allowed by org
-            org_allowed = org_policy.get(cap_name, {}).get('allow', False)
-            if not org_allowed:
-                reasons.append(f"Capability '{cap_name}' denied by organization policy")
-
-            # Check specific restrictions
-            if cap_name == 'net' and org_allowed:
-                # Check domain allowlist
-                requested_domains = cap_config.get('outbound', {}).get('allowlist', [])
-                org_domains = org_policy.get('net', {}).get('allowed_domains', [])
-
-                for domain in requested_domains:
-                    if not any(self._match_domain_pattern(domain, allowed) for allowed in org_domains):
-                        reasons.append(f"Domain '{domain}' not in organization allowlist")
-
-            elif cap_name == 'subprocess' and org_allowed:
-                # Check binary allowlist
-                requested_bins = cap_config.get('allowlist', [])
-                org_bins = org_policy.get('subprocess', {}).get('allowed_binaries', [])
-
-                for binary in requested_bins:
-                    if binary not in org_bins:
-                        reasons.append(f"Binary '{binary}' not in organization allowlist")
-
-        return len(reasons) == 0, reasons
-
-    def _match_domain_pattern(self, domain: str, pattern: str) -> bool:
-        """Check if domain matches a pattern (with wildcard support)"""
-        import fnmatch
-        return fnmatch.fnmatch(domain, pattern)
-
-    def _get_allowed_publishers(self) -> List[str]:
-        """Get list of allowed publishers from config"""
-        return self.config.get("allowed_publishers", [
-            "greenlang-official",
-            "climatenza",
-            "carbon-aware-foundation",
-            "green-software-foundation"
-        ])
-
-    def _get_allowed_regions(self) -> List[str]:
-        """Get list of allowed regions from config"""
-        return self.config.get("allowed_regions", [
-            "us-west-2",
-            "us-east-1",
-            "eu-west-1",
-            "eu-central-1",
-            "ap-southeast-1"
-        ])
-
-    def _get_allowed_capabilities(self) -> List[str]:
-        """Get list of allowed capabilities from config"""
-        return self.config.get("allowed_capabilities", ["fs"])  # By default, only filesystem access allowed
-
-    def _get_allowed_organizations(self) -> List[str]:
-        """Get list of allowed organizations from config"""
-        return self.config.get("allowed_orgs", [
-            "internal",
-            "greenlang",
-            "climatenza",
-            "carbon-aware"
-        ])
-
-    def _load_config(self) -> Dict[str, Any]:
-        """Load configuration from file or environment"""
-        config_file = Path.home() / ".greenlang" / "config.json"
-        if config_file.exists():
-            try:
-                with open(config_file) as f:
-                    return json.load(f)
-            except Exception as e:
-                logger.warning(f"Failed to load config: {e}")
-        return {}
     
     def create_default_policies(self):
         """Create default policy templates"""
-
-        # Install policy template with default-deny
+        
+        # Install policy template
         install_policy = """package greenlang.install
-
-# DEFAULT DENY - must explicitly allow
-default allow = false
 
 # Deny untrusted sources
 deny[msg] {
     input.pack.source == "untrusted"
-    msg := "POLICY.DENIED_INSTALL: Pack from untrusted source"
+    msg := "Pack from untrusted source"
 }
 
 # Deny packs without signatures
 deny[msg] {
-    not input.pack.signature_verified
-    msg := "POLICY.DENIED_INSTALL: Pack must be signed (use --allow-unsigned for dev only)"
-}
-
-# Deny unknown publishers
-deny[msg] {
-    not (input.pack.publisher in input.org.allowed_publishers)
-    msg := sprintf("POLICY.DENIED_INSTALL: Publisher '%s' not in allowlist", [input.pack.publisher])
+    input.pack.provenance.signing == false
+    msg := "Pack must be signed"
 }
 
 # Limit pack size
 deny[msg] {
     input.pack.size > 100000000  # 100MB
-    msg := "POLICY.DENIED_INSTALL: Pack exceeds 100MB limit"
+    msg := "Pack too large"
 }
 
-# Allow only if all conditions met
+# Allow verified publishers
 allow {
-    input.pack.signature_verified == true
-    input.pack.publisher in input.org.allowed_publishers
-    count(deny) == 0
-}
-
-# Generate reason when denied
-reason := msg {
-    deny[msg]
-} else = "POLICY.DENIED_INSTALL: Does not meet security requirements" {
-    not allow
+    input.pack.publisher in ["greenlang", "verified"]
 }
 """
         
