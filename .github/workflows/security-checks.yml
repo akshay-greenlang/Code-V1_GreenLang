@@ -153,22 +153,8 @@ jobs:
 
       - name: Run pip-audit
         run: |
-          # Create a temporary requirements file from setup.py/pyproject.toml
-          if [ -f "setup.py" ]; then
-            pip install -e . --dry-run 2>&1 | grep "Collecting" | awk '{print $2}' > temp_requirements.txt
-          elif [ -f "pyproject.toml" ]; then
-            pip install . --dry-run 2>&1 | grep "Collecting" | awk '{print $2}' > temp_requirements.txt
-          elif [ -f "requirements.txt" ]; then
-            cp requirements.txt temp_requirements.txt
-          fi
-
-          # Run audit if requirements were found
-          if [ -f "temp_requirements.txt" ] && [ -s "temp_requirements.txt" ]; then
-            echo "Running dependency audit..."
-            pip-audit -r temp_requirements.txt || true
-          else
-            echo "No dependencies file found, skipping audit"
-          fi
+          pip install .[all]
+          pip-audit || true
 
   path-traversal-check:
     name: Path Traversal Protection Check
@@ -245,8 +231,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install .[test,security]
 
       - name: Run security tests
         run: |
