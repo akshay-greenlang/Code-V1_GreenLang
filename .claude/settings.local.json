@@ -150,7 +150,10 @@
       "Bash(git pull:*)",
       "Bash(git merge:*)",
       "Bash(./gl.bat --version)",
-      "Bash(docker:*)"
+      "Bash(docker:*)",
+      "Bash(scriptsverify-docker-dod.bat)",
+      "Bash(powershell:*)",
+      "Bash(numfmt:*)"
     ],
     "deny": []
   }
