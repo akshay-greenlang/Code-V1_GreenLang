@@ -162,7 +162,7 @@ jobs:
           echo ""
           echo "3. Test commands:"
           docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} --version
-          docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} id -u
+          docker run --rm --entrypoint /bin/sh ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} -c "id -u"
           echo ""
           echo "4. Images signed with cosign (keyless OIDC)"
           echo "5. SBOMs generated and uploaded"
