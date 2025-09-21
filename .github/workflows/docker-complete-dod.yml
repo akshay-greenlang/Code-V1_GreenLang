@@ -36,25 +36,64 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build and push FULL image (was missing!)
+      - name: Extract version metadata
+        id: meta
+        run: |
+          VERSION="${{ inputs.version }}"
+          MAJOR_MINOR=$(echo $VERSION | cut -d. -f1,2)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "MAJOR_MINOR=$MAJOR_MINOR" >> $GITHUB_OUTPUT
+          echo "DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
+      # Build and push RUNNER image
+      - name: Build and push runner image
+        id: build-runner
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.runner
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.MAJOR_MINOR }}
+            ghcr.io/${{ github.repository_owner }}/greenlang-runner:latest
+          build-args: |
+            GL_VERSION=${{ steps.meta.outputs.VERSION }}
+            BUILD_DATE=${{ steps.meta.outputs.DATE }}
+            VCS_REF=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=GreenLang Runner
+            org.opencontainers.image.description=Minimal production runtime for GreenLang
+            org.opencontainers.image.version=${{ steps.meta.outputs.VERSION }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.DATE }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+
+      # Build and push FULL image
       - name: Build and push full image
-        uses: docker/build-push-action@v5
+        id: build-full
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile.full
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ inputs.version }}
-            ghcr.io/${{ github.repository_owner }}/greenlang-full:0.2
+            ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.MAJOR_MINOR }}
             ghcr.io/${{ github.repository_owner }}/greenlang-full:latest
-
-      # Add missing 0.2 tag for runner
-      - name: Add minor version tag for runner
-        run: |
-          docker buildx imagetools create \
-            --tag ghcr.io/${{ github.repository_owner }}/greenlang-runner:0.2 \
-            ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }}
+          build-args: |
+            GL_VERSION=${{ steps.meta.outputs.VERSION }}
+            BUILD_DATE=${{ steps.meta.outputs.DATE }}
+            VCS_REF=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=GreenLang Full
+            org.opencontainers.image.description=Developer/CI image with build tools for GreenLang
+            org.opencontainers.image.version=${{ steps.meta.outputs.VERSION }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.DATE }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
       # Install cosign for signing
       - name: Install Cosign
@@ -63,15 +102,11 @@ jobs:
       # Sign the images (keyless OIDC)
       - name: Sign runner image
         run: |
-          cosign sign --yes ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }}
-          cosign sign --yes ghcr.io/${{ github.repository_owner }}/greenlang-runner:0.2
-          cosign sign --yes ghcr.io/${{ github.repository_owner }}/greenlang-runner:latest
+          cosign sign --yes ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
 
       - name: Sign full image
         run: |
-          cosign sign --yes ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ inputs.version }}
-          cosign sign --yes ghcr.io/${{ github.repository_owner }}/greenlang-full:0.2
-          cosign sign --yes ghcr.io/${{ github.repository_owner }}/greenlang-full:latest
+          cosign sign --yes ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
 
       # Generate SBOM with Syft
       - name: Install Syft
@@ -79,13 +114,13 @@ jobs:
 
       - name: Generate SBOM for runner
         run: |
-          syft ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }} \
-            -o spdx-json > sbom-runner-${{ inputs.version }}.spdx.json
+          syft ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} \
+            -o spdx-json > sbom-runner-${{ steps.meta.outputs.VERSION }}.spdx.json
 
       - name: Generate SBOM for full
         run: |
-          syft ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ inputs.version }} \
-            -o spdx-json > sbom-full-${{ inputs.version }}.spdx.json
+          syft ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }} \
+            -o spdx-json > sbom-full-${{ steps.meta.outputs.VERSION }}.spdx.json
 
       - name: Upload SBOMs
         uses: actions/upload-artifact@v4
@@ -99,7 +134,7 @@ jobs:
       - name: Run Trivy vulnerability scanner (runner)
         uses: aquasecurity/trivy-action@0.24.0
         with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}
           format: 'table'
           exit-code: '0'  # Don't fail on vulnerabilities for now
           severity: 'CRITICAL,HIGH'
@@ -107,7 +142,7 @@ jobs:
       - name: Run Trivy vulnerability scanner (full)
         uses: aquasecurity/trivy-action@0.24.0
         with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ inputs.version }}
+          image-ref: ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}
           format: 'table'
           exit-code: '0'
           severity: 'CRITICAL,HIGH'
@@ -118,19 +153,26 @@ jobs:
           echo "=== Verifying DoD Requirements ==="
           echo ""
           echo "1. Multi-arch check:"
-          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }} | grep -E "Platform|linux"
-          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ inputs.version }} | grep -E "Platform|linux"
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} | grep -E "Platform|linux"
+          docker buildx imagetools inspect ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }} | grep -E "Platform|linux"
           echo ""
           echo "2. All tags present:"
-          echo "Runner tags: ${{ inputs.version }}, 0.2, latest"
-          echo "Full tags: ${{ inputs.version }}, 0.2, latest"
+          echo "Runner tags: ${{ steps.meta.outputs.VERSION }}, ${{ steps.meta.outputs.MAJOR_MINOR }}, latest"
+          echo "Full tags: ${{ steps.meta.outputs.VERSION }}, ${{ steps.meta.outputs.MAJOR_MINOR }}, latest"
           echo ""
           echo "3. Test commands:"
-          docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }} --version
-          docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }} id -u
+          docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} --version
+          docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} id -u
           echo ""
           echo "4. Images signed with cosign (keyless OIDC)"
           echo "5. SBOMs generated and uploaded"
           echo "6. Vulnerability scans completed"
           echo ""
-          echo "=== DoD Requirements Met (except Docker Hub) ==="
+          echo "=== DoD Requirements Met ==="
+          echo ""
+          echo "### Published Images"
+          echo "Runner: ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}"
+          echo "Digest: ${{ steps.build-runner.outputs.digest }}"
+          echo ""
+          echo "Full: ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}"
+          echo "Digest: ${{ steps.build-full.outputs.digest }}"
