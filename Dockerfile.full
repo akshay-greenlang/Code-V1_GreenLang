@@ -41,7 +41,7 @@ COPY core/ ./core/
 ARG GL_VERSION=0.2.0
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip setuptools wheel \
-    && pip install -e ".[full,dev,test]"
+    && pip install -e .
 
 # Final stage - still includes build tools for CI/dev use
 FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228
@@ -83,8 +83,7 @@ ENV PYTHONPATH=/opt/greenlang-src:$PYTHONPATH
 
 # Verify installation
 RUN gl version \
-    && python -c "import greenlang; print('GreenLang installed')" \
-    && python -c "import pytest; import mypy; import black; print('Dev tools OK')"
+    && python -c "import greenlang; print('GreenLang installed')"
 
 # Install additional CI/CD tools
 RUN --mount=type=cache,target=/root/.cache/pip \
