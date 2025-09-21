@@ -315,15 +315,24 @@ jobs:
       - name: Install Syft for SBOM generation
         uses: anchore/sbom-action/download-syft@v0.15.0
 
-      # Generate comprehensive SBOM
+      # Generate comprehensive SBOM (CycloneDX primary, SPDX secondary)
       - name: Generate SBOM for ${{ matrix.image }} image
         run: |
           echo "Generating SBOM for ${{ matrix.image }} image..."
 
+          # Primary format: CycloneDX JSON
+          syft ${{ steps.images.outputs.VERSION_TAG }} \
+            -o cyclonedx-json=sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.cdx.json \
+            --name "greenlang-${{ matrix.image }}" \
+            --source-name "ghcr.io/${{ github.repository_owner }}/greenlang-${{ matrix.image }}" \
+            --source-version "${{ needs.preflight.outputs.version }}"
+
+          # Secondary format: SPDX JSON
           syft ${{ steps.images.outputs.VERSION_TAG }} \
             -o spdx-json=sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.spdx.json \
-            -o cyclonedx-json=sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.cyclonedx.json \
-            -o syft-json=sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.syft.json
+            --name "greenlang-${{ matrix.image }}" \
+            --source-name "ghcr.io/${{ github.repository_owner }}/greenlang-${{ matrix.image }}" \
+            --source-version "${{ needs.preflight.outputs.version }}"
 
       # Sign images with Cosign (keyless OIDC)
       - name: Sign ${{ matrix.image }} images with Cosign
@@ -342,21 +351,42 @@ jobs:
             cosign sign --yes ${{ steps.images.outputs.DOCKERHUB_VERSION_TAG }}@$DIGEST
           fi
 
-      # Attach SBOMs to images
-      - name: Attach SBOM to ${{ matrix.image }} images
+      # Attach SBOMs to images as attestations
+      - name: Attach SBOM attestations to ${{ matrix.image }} images
         run: |
-          echo "Attaching SBOM to ${{ matrix.image }} images..."
+          echo "Attaching SBOM attestations to ${{ matrix.image }} images..."
 
           # Get the digest for this image
           DIGEST=$(docker buildx imagetools inspect ${{ steps.images.outputs.VERSION_TAG }} --format '{{.Manifest.Digest}}')
 
-          # Attach SBOM to GHCR image
+          # Create CycloneDX attestation (PRIMARY)
+          echo "Creating CycloneDX attestation for GHCR image..."
+          cosign attest --yes \
+            --predicate sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.cdx.json \
+            --type cyclonedx \
+            ${{ steps.images.outputs.VERSION_TAG }}@$DIGEST
+
+          # Verify the CycloneDX attestation
+          echo "Verifying CycloneDX attestation..."
+          cosign verify-attestation \
+            --type cyclonedx \
+            --certificate-identity-regexp ".*" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            ${{ steps.images.outputs.VERSION_TAG }}@$DIGEST
+
+          # Also attach legacy SBOM format for compatibility
           cosign attach sbom \
             --sbom sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.spdx.json \
             ${{ steps.images.outputs.VERSION_TAG }}@$DIGEST
 
-          # Attach SBOM to Docker Hub image if enabled
+          # Attach to Docker Hub image if enabled
           if [[ "${{ needs.preflight.outputs.docker_hub_enabled }}" == "true" ]]; then
+            echo "Creating CycloneDX attestation for Docker Hub image..."
+            cosign attest --yes \
+              --predicate sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.cdx.json \
+              --type cyclonedx \
+              ${{ steps.images.outputs.DOCKERHUB_VERSION_TAG }}@$DIGEST
+
             cosign attach sbom \
               --sbom sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.spdx.json \
               ${{ steps.images.outputs.DOCKERHUB_VERSION_TAG }}@$DIGEST
@@ -395,6 +425,22 @@ jobs:
           path: |
             sbom-${{ matrix.image }}-*.json
           retention-days: 90
+
+  # Generate comprehensive SBOMs using dedicated workflow
+  generate-sboms:
+    name: Generate Comprehensive SBOMs
+    needs: [preflight, build-and-publish]
+    uses: ./.github/workflows/sbom-generation.yml
+    with:
+      version: ${{ needs.preflight.outputs.version }}
+      python_artifacts: false  # Python SBOMs handled in release-build.yml
+      docker_images: true
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+      attestations: write
+    secrets: inherit
 
   # Post-build verification and testing
   verification:

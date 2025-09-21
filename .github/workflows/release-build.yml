@@ -145,31 +145,20 @@ jobs:
         continue-on-error: true
         if: runner.os == 'Windows'
 
+  # Comprehensive SBOM Generation (v0.2.0 requirements)
   sbom:
-    name: Generate SBOM
+    name: Generate Comprehensive SBOMs
     needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
-
-      - name: Install syft
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-
-      - name: Generate SBOM for wheel
-        run: |
-          syft packages dist/greenlang-*.whl -o spdx-json > greenlang-sbom.spdx.json
-
-      - name: Upload SBOM
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom
-          path: greenlang-sbom.spdx.json
-          retention-days: 7
+    uses: ./.github/workflows/sbom-generation.yml
+    with:
+      version: ${{ github.ref_type == 'tag' && github.ref_name || '0.2.0' }}
+      python_artifacts: true
+      docker_images: false  # Docker SBOMs handled in docker-release-complete.yml
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+      attestations: write
 
   sign:
     name: Sign Artifacts
