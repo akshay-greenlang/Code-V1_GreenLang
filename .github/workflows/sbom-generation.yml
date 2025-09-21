@@ -111,17 +111,11 @@ jobs:
 
           # Generate CycloneDX SBOM for wheel (PRIMARY)
           syft "$WHEEL_FILE" \
-            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-wheel.cdx.json" \
-            --name "${PKG_NAME}-wheel" \
-            --source-name "${WHEEL_NAME}" \
-            --source-version "${PKG_VERSION}"
+            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-wheel.cdx.json"
 
           # Generate SPDX SBOM for wheel (SECONDARY)
           syft "$WHEEL_FILE" \
-            -o spdx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-wheel.spdx.json" \
-            --name "${PKG_NAME}-wheel" \
-            --source-name "${WHEEL_NAME}" \
-            --source-version "${PKG_VERSION}"
+            -o spdx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-wheel.spdx.json"
 
           # Display SBOM summary
           echo "CycloneDX SBOM components:"
@@ -150,17 +144,11 @@ jobs:
 
           # Generate CycloneDX SBOM for sdist (REQUIRED)
           syft "$SDIST_FILE" \
-            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-sdist.cdx.json" \
-            --name "${PKG_NAME}-sdist" \
-            --source-name "${SDIST_NAME}" \
-            --source-version "${PKG_VERSION}"
+            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-sdist.cdx.json"
 
           # Generate SPDX SBOM for sdist (OPTIONAL)
           syft "$SDIST_FILE" \
-            -o spdx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-sdist.spdx.json" \
-            --name "${PKG_NAME}-sdist" \
-            --source-name "${SDIST_NAME}" \
-            --source-version "${PKG_VERSION}"
+            -o spdx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-sdist.spdx.json"
 
           # Display SBOM summary
           echo "CycloneDX SBOM components:"
@@ -344,17 +332,11 @@ jobs:
 
           # Generate CycloneDX SBOM (PRIMARY)
           syft "docker:${IMAGE_NAME}" \
-            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.cdx.json" \
-            --name "greenlang-${{ matrix.image.name }}" \
-            --source-name "ghcr.io/${{ github.repository_owner }}/greenlang-${{ matrix.image.name }}" \
-            --source-version "${{ inputs.version }}"
+            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.cdx.json"
 
           # Generate SPDX SBOM (SECONDARY)
           syft "docker:${IMAGE_NAME}" \
-            -o spdx-json="${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.spdx.json" \
-            --name "greenlang-${{ matrix.image.name }}" \
-            --source-name "ghcr.io/${{ github.repository_owner }}/greenlang-${{ matrix.image.name }}" \
-            --source-version "${{ inputs.version }}"
+            -o spdx-json="${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.spdx.json"
 
           # Display SBOM summary
           echo "CycloneDX SBOM components:"
