@@ -381,6 +381,33 @@ More packs → More developers → More packs → Industry standard
 - 🔍 **Data lineage** tracking
 - ✅ **Compliance automation** (SOX, GDPR, etc.)
 
+## 📋 Software Bill of Materials (SBOM)
+
+Starting with **v0.2.0**, GreenLang includes comprehensive SBOM generation for all releases:
+
+- **Formats**: CycloneDX (primary) + SPDX (secondary) for complete transparency
+- **Coverage**: All Python packages (wheels/sdists) and Docker images
+- **Attestations**: Cosign-signed attestations attached to container images
+- **Verification**: Full supply chain verification with `cosign verify-attestation`
+- **Local Generation**: `./scripts/generate-sboms.sh 0.2.0`
+
+### Verify Our Artifacts
+
+```bash
+# Verify Docker image attestation
+cosign verify-attestation \
+  --type cyclonedx \
+  --certificate-identity-regexp ".*" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  ghcr.io/greenlang/core:0.2.0
+
+# Download and inspect SBOM
+cosign download attestation --type cyclonedx \
+  ghcr.io/greenlang/core:0.2.0 | jq
+```
+
+See [SBOM Documentation](docs/security/sbom.md) for complete verification steps and local generation instructions.
+
 ## 💬 Community
 
 - **GitHub:** [github.com/greenlang/greenlang](https://github.com/greenlang/greenlang)
