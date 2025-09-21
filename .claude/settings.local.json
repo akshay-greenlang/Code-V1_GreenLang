@@ -161,7 +161,17 @@
       "Bash(scripts\\verify-docker-dod.bat akshay-greenlang 0.2.0)",
       "Bash(cosign verify:*)",
       "Bash(git show:*)",
-      "Bash(./scripts/validate-sbom-pipeline.sh:*)"
+      "Bash(./scripts/validate-sbom-pipeline.sh:*)",
+      "Bash(yamllint:*)",
+      "Bash(cosign verify-attestation:*)",
+      "Bash(./scripts/generate-sboms.bat --docker-only)",
+      "Bash(syft version:*)",
+      "Bash(./syft.exe version)",
+      "Bash(./syft.exe:*)",
+      "Bash(scripts\\verify-sbom-dod-windows.bat:*)",
+      "Bash(./scripts/verify-sbom-dod-windows.bat:*)",
+      "Bash(./jq.exe:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }
