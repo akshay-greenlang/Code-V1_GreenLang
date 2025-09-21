@@ -1,3 +1,27 @@
+# GreenLang Infrastructure
+
+## What is GreenLang?
+
+GreenLang is a comprehensive infrastructure automation and orchestration platform designed to streamline DevOps workflows, enhance software supply chain security, and provide unified management for complex deployment pipelines. It combines multiple critical capabilities into a single, cohesive toolchain:
+
+### Core Capabilities:
+- **Pipeline Orchestration**: Define, manage, and execute complex deployment pipelines with built-in support for multi-stage workflows
+- **Pack Management**: Create, publish, and consume reusable infrastructure components (packs) with dependency resolution
+- **Policy Enforcement**: Integrate with Open Policy Agent (OPA) for security policies, compliance checks, and governance rules
+- **Supply Chain Security**: Generate and verify Software Bill of Materials (SBOM), digital signatures, and provenance attestations
+- **Multi-Environment Support**: Deploy consistently across local development, Kubernetes, and cloud environments
+- **Connector Framework**: Built-in connectors for popular services (AWS, Azure, GCP, Docker, Kubernetes, etc.)
+- **Security Scanning**: Integrated vulnerability scanning, secret detection, and compliance validation
+
+### Key Features:
+- **Declarative Configuration**: Use YAML/JSON to define infrastructure as code
+- **Deterministic Execution**: Ensure reproducible builds and deployments across environments
+- **Extensible Architecture**: Plugin system for custom connectors and transformations
+- **Comprehensive CLI**: Full-featured command-line interface for all operations
+- **Enterprise Ready**: Support for air-gapped environments, RBAC, and audit logging
+
+## SBOM Generation with Syft Integration
+
 <p align="center">
     <img src="https://user-images.githubusercontent.com/5199289/136844524-1527b09f-c5cb-4aa9-be54-5aa92a6086c1.png" width="271" alt="Cute pink owl syft logo">
 </p>
@@ -9,7 +33,7 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/anchore/syft/blob/main/LICENSE)
 [![Slack Invite](https://img.shields.io/badge/Slack-Join-blue?logo=slack)](https://anchore.com/slack)
 
-A CLI tool and Go library for generating a Software Bill of Materials (SBOM) from container images and filesystems. Exceptional for vulnerability detection when used with a scanner like [Grype](https://github.com/anchore/grype).
+GreenLang leverages Syft, a CLI tool and Go library for generating a Software Bill of Materials (SBOM) from container images and filesystems. This integration provides exceptional vulnerability detection capabilities when used with scanners like [Grype](https://github.com/anchore/grype).
 
 ### Join our community meetings!
 
