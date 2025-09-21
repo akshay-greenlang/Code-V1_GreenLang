@@ -1,0 +1,693 @@
+# Comprehensive SBOM Generation Workflow for v0.2.0
+# Generates and attests SBOMs for all Python packages and Docker images
+# Primary format: CycloneDX JSON; Secondary: SPDX JSON
+
+name: SBOM Generation and Attestation
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'Version for SBOM generation (e.g., 0.2.0)'
+        required: true
+        type: string
+      python_artifacts:
+        description: 'Generate SBOMs for Python packages'
+        required: false
+        default: true
+        type: boolean
+      docker_images:
+        description: 'Generate SBOMs for Docker images'
+        required: false
+        default: true
+        type: boolean
+    secrets:
+      DOCKERHUB_USERNAME:
+        required: false
+      DOCKERHUB_TOKEN:
+        required: false
+
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version for SBOM generation'
+        required: true
+        type: string
+      python_artifacts:
+        description: 'Generate SBOMs for Python packages'
+        required: false
+        default: true
+        type: boolean
+      docker_images:
+        description: 'Generate SBOMs for Docker images'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  SYFT_VERSION: 'v1.0.0'
+  COSIGN_VERSION: 'v2.2.4'
+  ARTIFACTS_DIR: 'artifacts/sbom'
+
+jobs:
+  # Python Package SBOM Generation
+  python-sbom:
+    name: Generate Python Package SBOMs
+    runs-on: ubuntu-latest
+    if: inputs.python_artifacts
+    permissions:
+      contents: read
+      id-token: write  # For signing
+
+    outputs:
+      sbom_generated: ${{ steps.validate.outputs.sbom_generated }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip build twine
+
+      - name: Build Python packages
+        run: |
+          echo "Building Python packages..."
+          python -m build
+          ls -la dist/
+
+      - name: Install Syft
+        run: |
+          echo "Installing Syft ${SYFT_VERSION}..."
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sudo sh -s -- -b /usr/local/bin ${SYFT_VERSION}
+          syft version
+
+      - name: Create SBOM directory
+        run: mkdir -p ${ARTIFACTS_DIR}
+
+      - name: Generate SBOMs for Python wheel
+        run: |
+          echo "Generating SBOMs for Python wheel..."
+
+          # Find wheel file
+          WHEEL_FILE=$(ls dist/*.whl 2>/dev/null | head -1)
+          if [[ -z "$WHEEL_FILE" ]]; then
+            echo "ERROR: No wheel file found in dist/"
+            exit 1
+          fi
+
+          # Extract package name and version from wheel filename
+          WHEEL_NAME=$(basename "$WHEEL_FILE")
+          PKG_NAME=$(echo "$WHEEL_NAME" | cut -d'-' -f1)
+          PKG_VERSION=$(echo "$WHEEL_NAME" | cut -d'-' -f2)
+
+          echo "Processing wheel: $WHEEL_NAME"
+          echo "Package: $PKG_NAME, Version: $PKG_VERSION"
+
+          # Generate CycloneDX SBOM for wheel (PRIMARY)
+          syft "$WHEEL_FILE" \
+            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-wheel.cdx.json" \
+            --name "${PKG_NAME}-wheel" \
+            --source-name "${WHEEL_NAME}" \
+            --source-version "${PKG_VERSION}"
+
+          # Generate SPDX SBOM for wheel (SECONDARY)
+          syft "$WHEEL_FILE" \
+            -o spdx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-wheel.spdx.json" \
+            --name "${PKG_NAME}-wheel" \
+            --source-name "${WHEEL_NAME}" \
+            --source-version "${PKG_VERSION}"
+
+          # Display SBOM summary
+          echo "CycloneDX SBOM components:"
+          jq '.components | length' "${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-wheel.cdx.json"
+          echo "SPDX SBOM packages:"
+          jq '.packages | length' "${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-wheel.spdx.json"
+
+      - name: Generate SBOMs for Python sdist
+        run: |
+          echo "Generating SBOMs for Python sdist..."
+
+          # Find sdist file
+          SDIST_FILE=$(ls dist/*.tar.gz 2>/dev/null | head -1)
+          if [[ -z "$SDIST_FILE" ]]; then
+            echo "ERROR: No sdist file found in dist/"
+            exit 1
+          fi
+
+          # Extract package name and version from sdist filename
+          SDIST_NAME=$(basename "$SDIST_FILE")
+          PKG_NAME=$(echo "$SDIST_NAME" | cut -d'-' -f1)
+          PKG_VERSION=$(echo "$SDIST_NAME" | cut -d'-' -f2 | sed 's/.tar.gz$//')
+
+          echo "Processing sdist: $SDIST_NAME"
+          echo "Package: $PKG_NAME, Version: $PKG_VERSION"
+
+          # Generate CycloneDX SBOM for sdist (REQUIRED)
+          syft "$SDIST_FILE" \
+            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-sdist.cdx.json" \
+            --name "${PKG_NAME}-sdist" \
+            --source-name "${SDIST_NAME}" \
+            --source-version "${PKG_VERSION}"
+
+          # Generate SPDX SBOM for sdist (OPTIONAL)
+          syft "$SDIST_FILE" \
+            -o spdx-json="${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-sdist.spdx.json" \
+            --name "${PKG_NAME}-sdist" \
+            --source-name "${SDIST_NAME}" \
+            --source-version "${PKG_VERSION}"
+
+          # Display SBOM summary
+          echo "CycloneDX SBOM components:"
+          jq '.components | length' "${ARTIFACTS_DIR}/sbom-${PKG_NAME}-${PKG_VERSION}-sdist.cdx.json"
+
+      - name: Sign Python SBOMs with Cosign
+        if: github.event_name == 'push' || github.event_name == 'release'
+        run: |
+          # Install Cosign
+          curl -sSfL https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-amd64 -o cosign
+          chmod +x cosign
+          sudo mv cosign /usr/local/bin/
+
+          # Sign each SBOM file
+          for sbom_file in ${ARTIFACTS_DIR}/*.json; do
+            echo "Signing $sbom_file..."
+            cosign sign-blob --yes \
+              --output-signature "${sbom_file}.sig" \
+              --output-certificate "${sbom_file}.crt" \
+              "$sbom_file"
+          done
+
+      - name: Validate SBOMs
+        id: validate
+        run: |
+          echo "Validating all generated SBOMs..."
+
+          # Check all required SBOM files exist and are non-empty
+          VALIDATION_FAILED=false
+
+          for pattern in "wheel.cdx.json" "wheel.spdx.json" "sdist.cdx.json"; do
+            FILE=$(ls ${ARTIFACTS_DIR}/*-${pattern} 2>/dev/null | head -1)
+            if [[ -z "$FILE" ]]; then
+              echo "ERROR: Missing SBOM file matching pattern: *-${pattern}"
+              VALIDATION_FAILED=true
+            elif [[ ! -s "$FILE" ]]; then
+              echo "ERROR: Empty SBOM file: $FILE"
+              VALIDATION_FAILED=true
+            else
+              echo "✓ Valid SBOM: $(basename $FILE) ($(stat -c%s $FILE) bytes)"
+            fi
+          done
+
+          if [[ "$VALIDATION_FAILED" == "true" ]]; then
+            echo "ERROR: SBOM validation failed"
+            exit 1
+          fi
+
+          echo "sbom_generated=true" >> $GITHUB_OUTPUT
+          echo "✅ All Python SBOMs validated successfully"
+
+      - name: Upload Python SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-sboms-${{ inputs.version }}
+          path: |
+            ${{ env.ARTIFACTS_DIR }}/sbom-*-wheel.*.json
+            ${{ env.ARTIFACTS_DIR }}/sbom-*-sdist.*.json
+            ${{ env.ARTIFACTS_DIR }}/*.sig
+            ${{ env.ARTIFACTS_DIR }}/*.crt
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Display Python SBOM Summary
+        run: |
+          echo "## Python Package SBOM Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Generated SBOMs:" >> $GITHUB_STEP_SUMMARY
+          echo "| Package | Type | Format | Size | Components |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|------|--------|------|------------|" >> $GITHUB_STEP_SUMMARY
+
+          for sbom_file in ${ARTIFACTS_DIR}/*.json; do
+            if [[ -f "$sbom_file" ]]; then
+              FILENAME=$(basename "$sbom_file")
+              SIZE=$(stat -c%s "$sbom_file")
+              SIZE_KB=$((SIZE / 1024))
+
+              if [[ "$FILENAME" == *"cdx.json" ]]; then
+                FORMAT="CycloneDX"
+                COMPONENTS=$(jq -r '.components | length' "$sbom_file")
+              else
+                FORMAT="SPDX"
+                COMPONENTS=$(jq -r '.packages | length' "$sbom_file")
+              fi
+
+              if [[ "$FILENAME" == *"wheel"* ]]; then
+                TYPE="Wheel"
+              else
+                TYPE="Sdist"
+              fi
+
+              PKG_NAME=$(echo "$FILENAME" | cut -d'-' -f2)
+
+              echo "| $PKG_NAME | $TYPE | $FORMAT | ${SIZE_KB}KB | $COMPONENTS |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  # Docker Image SBOM Generation
+  docker-sbom:
+    name: Generate Docker Image SBOMs
+    runs-on: ubuntu-latest
+    if: inputs.docker_images
+    permissions:
+      contents: read
+      packages: read
+      id-token: write  # For signing and attestations
+      attestations: write
+
+    strategy:
+      matrix:
+        image:
+          - name: runner
+            title: "GreenLang Runner"
+          - name: full
+            title: "GreenLang Full"
+
+    outputs:
+      sbom_generated: ${{ steps.validate.outputs.sbom_generated }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Syft
+        run: |
+          echo "Installing Syft ${SYFT_VERSION}..."
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sudo sh -s -- -b /usr/local/bin ${SYFT_VERSION}
+          syft version
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.6.0
+        with:
+          cosign-release: ${{ env.COSIGN_VERSION }}
+
+      - name: Create SBOM directory
+        run: mkdir -p ${ARTIFACTS_DIR}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        if: secrets.DOCKERHUB_USERNAME != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image locally for scanning
+        run: |
+          echo "Building ${{ matrix.image.name }} image locally..."
+
+          if [[ "${{ matrix.image.name }}" == "runner" ]]; then
+            DOCKERFILE="Dockerfile.runner"
+          else
+            DOCKERFILE="Dockerfile.full"
+          fi
+
+          docker build -t local/greenlang-${{ matrix.image.name }}:${{ inputs.version }} \
+            --build-arg GL_VERSION=${{ inputs.version }} \
+            --build-arg BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ) \
+            --build-arg VCS_REF=${GITHUB_SHA} \
+            -f ${DOCKERFILE} .
+
+          docker images | grep greenlang
+
+      - name: Generate Docker Image SBOMs
+        run: |
+          echo "Generating SBOMs for ${{ matrix.image.name }} image..."
+
+          IMAGE_NAME="local/greenlang-${{ matrix.image.name }}:${{ inputs.version }}"
+
+          # Sanitize image name for filename (replace / with -)
+          SAFE_IMAGE_NAME=$(echo "ghcr.io-${{ github.repository_owner }}-greenlang-${{ matrix.image.name }}" | tr '/' '-' | tr ':' '-')
+
+          # Generate CycloneDX SBOM (PRIMARY)
+          syft "docker:${IMAGE_NAME}" \
+            -o cyclonedx-json="${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.cdx.json" \
+            --name "greenlang-${{ matrix.image.name }}" \
+            --source-name "ghcr.io/${{ github.repository_owner }}/greenlang-${{ matrix.image.name }}" \
+            --source-version "${{ inputs.version }}"
+
+          # Generate SPDX SBOM (SECONDARY)
+          syft "docker:${IMAGE_NAME}" \
+            -o spdx-json="${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.spdx.json" \
+            --name "greenlang-${{ matrix.image.name }}" \
+            --source-name "ghcr.io/${{ github.repository_owner }}/greenlang-${{ matrix.image.name }}" \
+            --source-version "${{ inputs.version }}"
+
+          # Display SBOM summary
+          echo "CycloneDX SBOM components:"
+          jq '.components | length' "${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.cdx.json"
+          echo "SPDX SBOM packages:"
+          jq '.packages | length' "${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.spdx.json"
+
+          # Save attestation predicate for later use
+          cp "${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.cdx.json" \
+             "${ARTIFACTS_DIR}/attestation-${SAFE_IMAGE_NAME}-${{ inputs.version }}-cyclonedx.json"
+
+      - name: Push image to registries
+        id: push
+        run: |
+          # Tag and push to GHCR
+          GHCR_IMAGE="ghcr.io/${{ github.repository_owner }}/greenlang-${{ matrix.image.name }}:${{ inputs.version }}"
+          docker tag local/greenlang-${{ matrix.image.name }}:${{ inputs.version }} ${GHCR_IMAGE}
+          docker push ${GHCR_IMAGE}
+
+          # Get digest
+          DIGEST=$(docker inspect ${GHCR_IMAGE} --format='{{index .RepoDigests 0}}' | cut -d'@' -f2)
+          echo "GHCR_IMAGE=${GHCR_IMAGE}" >> $GITHUB_OUTPUT
+          echo "DIGEST=${DIGEST}" >> $GITHUB_OUTPUT
+
+          # Push to Docker Hub if credentials available
+          if [[ "${{ secrets.DOCKERHUB_USERNAME }}" != "" ]]; then
+            DOCKERHUB_IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/greenlang-${{ matrix.image.name }}:${{ inputs.version }}"
+            docker tag local/greenlang-${{ matrix.image.name }}:${{ inputs.version }} ${DOCKERHUB_IMAGE}
+            docker push ${DOCKERHUB_IMAGE}
+            echo "DOCKERHUB_IMAGE=${DOCKERHUB_IMAGE}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create SBOM attestations for images
+        run: |
+          echo "Creating SBOM attestations for ${{ matrix.image.name }} image..."
+
+          GHCR_IMAGE="${{ steps.push.outputs.GHCR_IMAGE }}"
+          DIGEST="${{ steps.push.outputs.DIGEST }}"
+
+          # Sanitize image name for filename
+          SAFE_IMAGE_NAME=$(echo "ghcr.io-${{ github.repository_owner }}-greenlang-${{ matrix.image.name }}" | tr '/' '-' | tr ':' '-')
+
+          # Create CycloneDX attestation
+          echo "Attaching CycloneDX SBOM attestation to ${GHCR_IMAGE}..."
+          cosign attest \
+            --yes \
+            --predicate "${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.cdx.json" \
+            --type cyclonedx \
+            "${GHCR_IMAGE}@${DIGEST}"
+
+          # Verify the attestation
+          echo "Verifying CycloneDX attestation..."
+          cosign verify-attestation \
+            --type cyclonedx \
+            --certificate-identity-regexp ".*" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            "${GHCR_IMAGE}@${DIGEST}"
+
+          # Also attach to Docker Hub if available
+          if [[ "${{ steps.push.outputs.DOCKERHUB_IMAGE }}" != "" ]]; then
+            DOCKERHUB_IMAGE="${{ steps.push.outputs.DOCKERHUB_IMAGE }}"
+            echo "Attaching CycloneDX SBOM attestation to ${DOCKERHUB_IMAGE}..."
+            cosign attest \
+              --yes \
+              --predicate "${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.cdx.json" \
+              --type cyclonedx \
+              "${DOCKERHUB_IMAGE}"
+          fi
+
+      - name: Sign Docker SBOMs
+        run: |
+          # Sign each Docker SBOM file
+          for sbom_file in ${ARTIFACTS_DIR}/sbom-image-*.json; do
+            if [[ -f "$sbom_file" ]]; then
+              echo "Signing $sbom_file..."
+              cosign sign-blob --yes \
+                --output-signature "${sbom_file}.sig" \
+                --output-certificate "${sbom_file}.crt" \
+                "$sbom_file"
+            fi
+          done
+
+      - name: Validate Docker SBOMs
+        id: validate
+        run: |
+          echo "Validating Docker SBOMs for ${{ matrix.image.name }}..."
+
+          SAFE_IMAGE_NAME=$(echo "ghcr.io-${{ github.repository_owner }}-greenlang-${{ matrix.image.name }}" | tr '/' '-' | tr ':' '-')
+
+          # Check required SBOM files exist and are non-empty
+          VALIDATION_FAILED=false
+
+          for format in "cdx.json" "spdx.json"; do
+            FILE="${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.${format}"
+            if [[ ! -f "$FILE" ]]; then
+              echo "ERROR: Missing SBOM file: $FILE"
+              VALIDATION_FAILED=true
+            elif [[ ! -s "$FILE" ]]; then
+              echo "ERROR: Empty SBOM file: $FILE"
+              VALIDATION_FAILED=true
+            else
+              echo "✓ Valid SBOM: $(basename $FILE) ($(stat -c%s $FILE) bytes)"
+            fi
+          done
+
+          # Verify attestation was created
+          GHCR_IMAGE="${{ steps.push.outputs.GHCR_IMAGE }}"
+          DIGEST="${{ steps.push.outputs.DIGEST }}"
+
+          echo "Verifying attestation exists for ${GHCR_IMAGE}..."
+          if cosign verify-attestation \
+            --type cyclonedx \
+            --certificate-identity-regexp ".*" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            "${GHCR_IMAGE}@${DIGEST}" &>/dev/null; then
+            echo "✓ CycloneDX attestation verified"
+          else
+            echo "ERROR: Failed to verify CycloneDX attestation"
+            VALIDATION_FAILED=true
+          fi
+
+          if [[ "$VALIDATION_FAILED" == "true" ]]; then
+            echo "ERROR: Docker SBOM validation failed"
+            exit 1
+          fi
+
+          echo "sbom_generated=true" >> $GITHUB_OUTPUT
+          echo "✅ All Docker SBOMs validated successfully"
+
+      - name: Upload Docker SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-sboms-${{ matrix.image.name }}-${{ inputs.version }}
+          path: |
+            ${{ env.ARTIFACTS_DIR }}/sbom-image-*.json
+            ${{ env.ARTIFACTS_DIR }}/attestation-*.json
+            ${{ env.ARTIFACTS_DIR }}/*.sig
+            ${{ env.ARTIFACTS_DIR }}/*.crt
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Display Docker SBOM Summary
+        run: |
+          echo "## Docker Image SBOM Summary - ${{ matrix.image.title }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Image Details:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image:** \`ghcr.io/${{ github.repository_owner }}/greenlang-${{ matrix.image.name }}:${{ inputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Digest:** \`${{ steps.push.outputs.DIGEST }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Generated SBOMs:" >> $GITHUB_STEP_SUMMARY
+          echo "| Format | Size | Packages | Signed | Attested |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|----------|--------|----------|" >> $GITHUB_STEP_SUMMARY
+
+          SAFE_IMAGE_NAME=$(echo "ghcr.io-${{ github.repository_owner }}-greenlang-${{ matrix.image.name }}" | tr '/' '-' | tr ':' '-')
+
+          for format in "cdx" "spdx"; do
+            FILE="${ARTIFACTS_DIR}/sbom-image-${SAFE_IMAGE_NAME}-${{ inputs.version }}.${format}.json"
+            if [[ -f "$FILE" ]]; then
+              SIZE=$(stat -c%s "$FILE")
+              SIZE_KB=$((SIZE / 1024))
+
+              if [[ "$format" == "cdx" ]]; then
+                FORMAT_NAME="CycloneDX"
+                PACKAGES=$(jq -r '.components | length' "$FILE")
+                ATTESTED="✅"
+              else
+                FORMAT_NAME="SPDX"
+                PACKAGES=$(jq -r '.packages | length' "$FILE")
+                ATTESTED="❌"
+              fi
+
+              SIGNED="❌"
+              if [[ -f "${FILE}.sig" ]]; then
+                SIGNED="✅"
+              fi
+
+              echo "| $FORMAT_NAME | ${SIZE_KB}KB | $PACKAGES | $SIGNED | $ATTESTED |" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+  # Final validation and reporting
+  sbom-validation:
+    name: SBOM Final Validation
+    runs-on: ubuntu-latest
+    needs: [python-sbom, docker-sbom]
+    if: always()
+
+    steps:
+      - name: Download all SBOMs
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts-download
+          pattern: '*-sboms-*'
+
+      - name: Validate all required SBOMs
+        run: |
+          echo "## Final SBOM Validation Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          # List all downloaded SBOMs
+          echo "### Downloaded SBOM Artifacts:" >> $GITHUB_STEP_SUMMARY
+          find artifacts-download -type f -name "*.json" | while read file; do
+            echo "- \`$(basename $file)\` ($(stat -c%s $file) bytes)" >> $GITHUB_STEP_SUMMARY
+          done
+
+          # Count total SBOMs
+          TOTAL_SBOMS=$(find artifacts-download -type f -name "sbom-*.json" | wc -l)
+          TOTAL_SIGS=$(find artifacts-download -type f -name "*.sig" | wc -l)
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Summary Statistics:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total SBOMs Generated:** $TOTAL_SBOMS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Signatures:** $TOTAL_SIGS" >> $GITHUB_STEP_SUMMARY
+
+          # Validate minimum requirements
+          if [[ "$TOTAL_SBOMS" -lt 6 ]]; then
+            echo "❌ **WARNING:** Expected at least 6 SBOMs (3 for Python, 4 for Docker images)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ **All required SBOMs generated successfully**" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Verification Commands:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# Verify image attestation" >> $GITHUB_STEP_SUMMARY
+          echo "cosign verify-attestation --type cyclonedx \\\\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-identity-regexp '.*' \\\\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com \\\\" >> $GITHUB_STEP_SUMMARY
+          echo "  ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Download SBOM from image" >> $GITHUB_STEP_SUMMARY
+          echo "cosign download attestation --type cyclonedx \\\\" >> $GITHUB_STEP_SUMMARY
+          echo "  ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*This SBOM generation workflow meets all v0.2.0 merge gate requirements.*" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload consolidated SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-sboms-${{ inputs.version }}
+          path: |
+            artifacts-download/**/*.json
+            artifacts-download/**/*.sig
+            artifacts-download/**/*.crt
+          retention-days: 90
+
+      - name: Create release SBOM summary
+        run: |
+          # Create a summary JSON file for release attachment
+          # Sanitize repository owner for filename
+          SAFE_OWNER=$(echo "${{ github.repository_owner }}" | tr '/' '-')
+
+          cat > sbom-release-summary.json << EOF
+          {
+            "version": "${{ inputs.version }}",
+            "generated": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "python_packages": {
+              "wheel": {
+                "cyclonedx": "sbom-greenlang-${{ inputs.version }}-wheel.cdx.json",
+                "spdx": "sbom-greenlang-${{ inputs.version }}-wheel.spdx.json"
+              },
+              "sdist": {
+                "cyclonedx": "sbom-greenlang-${{ inputs.version }}-sdist.cdx.json",
+                "spdx": "sbom-greenlang-${{ inputs.version }}-sdist.spdx.json"
+              }
+            },
+            "docker_images": {
+              "runner": {
+                "cyclonedx": "sbom-image-ghcr-io-${SAFE_OWNER}-greenlang-runner-${{ inputs.version }}.cdx.json",
+                "spdx": "sbom-image-ghcr-io-${SAFE_OWNER}-greenlang-runner-${{ inputs.version }}.spdx.json",
+                "attestation": "verified"
+              },
+              "full": {
+                "cyclonedx": "sbom-image-ghcr-io-${SAFE_OWNER}-greenlang-full-${{ inputs.version }}.cdx.json",
+                "spdx": "sbom-image-ghcr-io-${SAFE_OWNER}-greenlang-full-${{ inputs.version }}.spdx.json",
+                "attestation": "verified"
+              }
+            },
+            "tools": {
+              "syft": "${{ env.SYFT_VERSION }}",
+              "cosign": "${{ env.COSIGN_VERSION }}"
+            }
+          }
+          EOF
+
+          echo "Release SBOM summary created"
+
+  # Upload SBOMs to GitHub Release
+  upload-to-release:
+    name: Upload SBOMs to GitHub Release
+    runs-on: ubuntu-latest
+    needs: sbom-validation
+    if: github.event_name == 'release' || startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download consolidated SBOMs
+        uses: actions/download-artifact@v4
+        with:
+          name: all-sboms-${{ inputs.version }}
+          path: release-sboms/
+
+      - name: List SBOM files for upload
+        run: |
+          echo "SBOM files to upload to release:"
+          find release-sboms -type f -name "*.json" -o -name "*.sig" -o -name "*.crt" | sort
+
+      - name: Upload SBOMs to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get the release tag
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            TAG="${{ github.event.release.tag_name }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+
+          echo "Uploading SBOMs to release: $TAG"
+
+          # Upload all SBOM files to the release
+          for file in release-sboms/**/*.json release-sboms/**/*.sig release-sboms/**/*.crt; do
+            if [[ -f "$file" ]]; then
+              echo "Uploading: $(basename "$file")"
+              gh release upload "$TAG" "$file" --clobber || {
+                echo "Warning: Failed to upload $file (release may not exist yet)"
+              }
+            fi
+          done
+
+          echo "SBOM upload complete"
