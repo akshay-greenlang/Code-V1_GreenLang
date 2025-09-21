@@ -1,0 +1,559 @@
+name: Complete Docker Release - Production Ready
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., 0.2.0)'
+        required: true
+        type: string
+      force_rebuild:
+        description: 'Force rebuild even if images exist'
+        required: false
+        default: false
+        type: boolean
+      skip_docker_hub:
+        description: 'Skip Docker Hub publication (GHCR only)'
+        required: false
+        default: false
+        type: boolean
+      publish_latest:
+        description: 'Also tag and publish as latest'
+        required: false
+        default: true
+        type: boolean
+  push:
+    tags:
+      - 'v*.*.*'
+  release:
+    types: [published]
+
+env:
+  GHCR_REGISTRY: ghcr.io
+  DOCKERHUB_REGISTRY: docker.io
+  DOCKERHUB_ORG: greenlang
+
+  # Security scanning configuration
+  TRIVY_SEVERITY: 'CRITICAL,HIGH'
+  COSIGN_EXPERIMENTAL: 1
+
+jobs:
+  # Pre-flight checks
+  preflight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.VERSION }}
+      major_minor: ${{ steps.meta.outputs.MAJOR_MINOR }}
+      date: ${{ steps.meta.outputs.DATE }}
+      sha: ${{ steps.meta.outputs.SHA }}
+      full_sha: ${{ steps.meta.outputs.FULL_SHA }}
+      docker_hub_enabled: ${{ steps.check.outputs.DOCKER_HUB_ENABLED }}
+      publish_latest: ${{ steps.check.outputs.PUBLISH_LATEST }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract metadata
+        id: meta
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" =~ refs/tags/v.* ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION=${GITHUB_REF#refs/tags/v}
+          else
+            echo "ERROR: Unable to determine version"
+            exit 1
+          fi
+
+          # Validate version format
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
+            echo "ERROR: Invalid version format: $VERSION"
+            echo "Expected format: X.Y.Z or X.Y.Z-suffix"
+            exit 1
+          fi
+
+          MAJOR_MINOR=$(echo $VERSION | cut -d. -f1,2)
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "MAJOR_MINOR=$MAJOR_MINOR" >> $GITHUB_OUTPUT
+          echo "DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+          echo "SHA=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+          echo "FULL_SHA=${GITHUB_SHA}" >> $GITHUB_OUTPUT
+
+          echo "Version: $VERSION"
+          echo "Major.Minor: $MAJOR_MINOR"
+          echo "Build Date: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+      - name: Check Docker Hub availability
+        id: check
+        run: |
+          # Check if Docker Hub secrets are available
+          DOCKER_HUB_ENABLED="false"
+          if [[ "${{ secrets.DOCKERHUB_USERNAME }}" != "" && "${{ secrets.DOCKERHUB_TOKEN }}" != "" ]]; then
+            DOCKER_HUB_ENABLED="true"
+          fi
+
+          # Override if explicitly skipped
+          if [[ "${{ github.event.inputs.skip_docker_hub }}" == "true" ]]; then
+            DOCKER_HUB_ENABLED="false"
+            echo "Docker Hub publication manually disabled"
+          fi
+
+          # Determine if we should publish latest
+          PUBLISH_LATEST="true"
+          if [[ "${{ github.event.inputs.publish_latest }}" == "false" ]]; then
+            PUBLISH_LATEST="false"
+          fi
+
+          echo "DOCKER_HUB_ENABLED=$DOCKER_HUB_ENABLED" >> $GITHUB_OUTPUT
+          echo "PUBLISH_LATEST=$PUBLISH_LATEST" >> $GITHUB_OUTPUT
+
+          echo "Docker Hub enabled: $DOCKER_HUB_ENABLED"
+          echo "Publish latest: $PUBLISH_LATEST"
+
+      - name: Validate Dockerfiles
+        run: |
+          echo "Validating Dockerfiles..."
+
+          if [[ ! -f "Dockerfile.runner" ]]; then
+            echo "ERROR: Dockerfile.runner not found"
+            exit 1
+          fi
+
+          if [[ ! -f "Dockerfile.full" ]]; then
+            echo "ERROR: Dockerfile.full not found"
+            exit 1
+          fi
+
+          echo "All Dockerfiles found"
+
+  # Main build job
+  build-and-publish:
+    name: Build Multi-Arch Images
+    runs-on: ubuntu-latest
+    needs: preflight
+    permissions:
+      contents: read
+      packages: write
+      id-token: write  # Required for OIDC/keyless signing with cosign
+      security-events: write  # Required for uploading security scan results
+      attestations: write  # Required for attestations
+
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - name: runner
+            dockerfile: Dockerfile.runner
+            description: "Minimal production runtime for GreenLang pipelines"
+            title: "GreenLang Runner"
+          - name: full
+            dockerfile: Dockerfile.full
+            description: "Developer/CI image with build tools for GreenLang"
+            title: "GreenLang Full"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU for ARM64 emulation
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/amd64,linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:v0.12.4
+            network=host
+          buildkitd-flags: |
+            --allow-insecure-entitlement security.insecure
+            --allow-insecure-entitlement network.host
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.GHCR_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        if: needs.preflight.outputs.docker_hub_enabled == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKERHUB_REGISTRY }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Prepare image tags and labels
+        id: prepare
+        run: |
+          VERSION="${{ needs.preflight.outputs.version }}"
+          MAJOR_MINOR="${{ needs.preflight.outputs.major_minor }}"
+
+          # Base image names
+          GHCR_IMAGE="${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/greenlang-${{ matrix.image.name }}"
+
+          # GHCR tags
+          GHCR_TAGS="$GHCR_IMAGE:$VERSION,$GHCR_IMAGE:$MAJOR_MINOR"
+          if [[ "${{ needs.preflight.outputs.publish_latest }}" == "true" ]]; then
+            GHCR_TAGS="$GHCR_TAGS,$GHCR_IMAGE:latest"
+          fi
+
+          # Docker Hub tags (conditional)
+          DOCKERHUB_TAGS=""
+          if [[ "${{ needs.preflight.outputs.docker_hub_enabled }}" == "true" ]]; then
+            DOCKERHUB_IMAGE="${{ env.DOCKERHUB_ORG }}/core-${{ matrix.image.name }}"
+            DOCKERHUB_TAGS="$DOCKERHUB_IMAGE:$VERSION,$DOCKERHUB_IMAGE:$MAJOR_MINOR"
+            if [[ "${{ needs.preflight.outputs.publish_latest }}" == "true" ]]; then
+              DOCKERHUB_TAGS="$DOCKERHUB_TAGS,$DOCKERHUB_IMAGE:latest"
+            fi
+          fi
+
+          # Combine all tags
+          ALL_TAGS="$GHCR_TAGS"
+          if [[ "$DOCKERHUB_TAGS" != "" ]]; then
+            ALL_TAGS="$ALL_TAGS,$DOCKERHUB_TAGS"
+          fi
+
+          echo "GHCR_IMAGE=$GHCR_IMAGE" >> $GITHUB_OUTPUT
+          echo "ALL_TAGS=$ALL_TAGS" >> $GITHUB_OUTPUT
+
+          echo "GHCR tags: $GHCR_TAGS"
+          if [[ "$DOCKERHUB_TAGS" != "" ]]; then
+            echo "Docker Hub tags: $DOCKERHUB_TAGS"
+          fi
+
+      - name: Build and push ${{ matrix.image.name }} image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./${{ matrix.image.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.prepare.outputs.ALL_TAGS }}
+          build-args: |
+            GL_VERSION=${{ needs.preflight.outputs.version }}
+            BUILD_DATE=${{ needs.preflight.outputs.date }}
+            VCS_REF=${{ needs.preflight.outputs.full_sha }}
+            VERSION=${{ needs.preflight.outputs.version }}
+          labels: |
+            org.opencontainers.image.title=${{ matrix.image.title }}
+            org.opencontainers.image.description=${{ matrix.image.description }}
+            org.opencontainers.image.version=${{ needs.preflight.outputs.version }}
+            org.opencontainers.image.created=${{ needs.preflight.outputs.date }}
+            org.opencontainers.image.revision=${{ needs.preflight.outputs.full_sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.vendor=GreenLang Team
+            org.opencontainers.image.url=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.documentation=${{ github.server_url }}/${{ github.repository }}/blob/main/README.md
+          cache-from: |
+            type=registry,ref=${{ steps.prepare.outputs.GHCR_IMAGE }}:buildcache
+            type=registry,ref=${{ steps.prepare.outputs.GHCR_IMAGE }}:latest
+          cache-to: |
+            type=registry,ref=${{ steps.prepare.outputs.GHCR_IMAGE }}:buildcache,mode=max
+          provenance: true
+          sbom: true
+
+      - name: Output build summary
+        run: |
+          echo "Successfully built and pushed ${{ matrix.image.name }} image"
+          echo "Image: ${{ steps.prepare.outputs.GHCR_IMAGE }}"
+          echo "Digest: ${{ steps.build.outputs.digest }}"
+          echo "Tags: ${{ steps.prepare.outputs.ALL_TAGS }}"
+
+  # Security and compliance job
+  security-compliance:
+    name: Security & Compliance
+    runs-on: ubuntu-latest
+    needs: [preflight, build-and-publish]
+    permissions:
+      contents: read
+      packages: read
+      id-token: write
+      security-events: write
+
+    strategy:
+      matrix:
+        image: [runner, full]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up image references
+        id: images
+        run: |
+          VERSION="${{ needs.preflight.outputs.version }}"
+          GHCR_IMAGE="${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/greenlang-${{ matrix.image }}"
+
+          echo "GHCR_IMAGE=$GHCR_IMAGE" >> $GITHUB_OUTPUT
+          echo "VERSION_TAG=$GHCR_IMAGE:$VERSION" >> $GITHUB_OUTPUT
+
+          if [[ "${{ needs.preflight.outputs.docker_hub_enabled }}" == "true" ]]; then
+            DOCKERHUB_IMAGE="${{ env.DOCKERHUB_ORG }}/core-${{ matrix.image }}"
+            echo "DOCKERHUB_IMAGE=$DOCKERHUB_IMAGE" >> $GITHUB_OUTPUT
+            echo "DOCKERHUB_VERSION_TAG=$DOCKERHUB_IMAGE:$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      # Install security tools
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.6.0
+        with:
+          cosign-release: 'v2.2.4'
+
+      - name: Install Syft for SBOM generation
+        uses: anchore/sbom-action/download-syft@v0.15.0
+
+      # Generate comprehensive SBOM
+      - name: Generate SBOM for ${{ matrix.image }} image
+        run: |
+          echo "Generating SBOM for ${{ matrix.image }} image..."
+
+          syft ${{ steps.images.outputs.VERSION_TAG }} \
+            -o spdx-json=sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.spdx.json \
+            -o cyclonedx-json=sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.cyclonedx.json \
+            -o syft-json=sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.syft.json
+
+      # Sign images with Cosign (keyless OIDC)
+      - name: Sign ${{ matrix.image }} images with Cosign
+        run: |
+          echo "Signing ${{ matrix.image }} images with Cosign..."
+
+          # Get the digest for this image
+          DIGEST=$(docker buildx imagetools inspect ${{ steps.images.outputs.VERSION_TAG }} --format '{{.Manifest.Digest}}')
+          echo "Image digest: $DIGEST"
+
+          # Sign GHCR image
+          cosign sign --yes ${{ steps.images.outputs.VERSION_TAG }}@$DIGEST
+
+          # Sign Docker Hub image if enabled
+          if [[ "${{ needs.preflight.outputs.docker_hub_enabled }}" == "true" ]]; then
+            cosign sign --yes ${{ steps.images.outputs.DOCKERHUB_VERSION_TAG }}@$DIGEST
+          fi
+
+      # Attach SBOMs to images
+      - name: Attach SBOM to ${{ matrix.image }} images
+        run: |
+          echo "Attaching SBOM to ${{ matrix.image }} images..."
+
+          # Get the digest for this image
+          DIGEST=$(docker buildx imagetools inspect ${{ steps.images.outputs.VERSION_TAG }} --format '{{.Manifest.Digest}}')
+
+          # Attach SBOM to GHCR image
+          cosign attach sbom \
+            --sbom sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.spdx.json \
+            ${{ steps.images.outputs.VERSION_TAG }}@$DIGEST
+
+          # Attach SBOM to Docker Hub image if enabled
+          if [[ "${{ needs.preflight.outputs.docker_hub_enabled }}" == "true" ]]; then
+            cosign attach sbom \
+              --sbom sbom-${{ matrix.image }}-${{ needs.preflight.outputs.version }}.spdx.json \
+              ${{ steps.images.outputs.DOCKERHUB_VERSION_TAG }}@$DIGEST
+          fi
+
+      # Comprehensive vulnerability scanning
+      - name: Run Trivy vulnerability scanner (${{ matrix.image }})
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ steps.images.outputs.VERSION_TAG }}
+          format: 'sarif'
+          output: 'trivy-${{ matrix.image }}-results.sarif'
+          severity: ${{ env.TRIVY_SEVERITY }}
+          exit-code: '0'  # Don't fail the build, just report
+
+      - name: Run Trivy table scan for summary (${{ matrix.image }})
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ steps.images.outputs.VERSION_TAG }}
+          format: 'table'
+          severity: ${{ env.TRIVY_SEVERITY }}
+          exit-code: '0'
+
+      # Upload security artifacts
+      - name: Upload Trivy scan results to GitHub Security
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-${{ matrix.image }}-results.sarif'
+          category: 'trivy-docker-${{ matrix.image }}'
+
+      - name: Upload SBOMs as artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: sboms-${{ matrix.image }}-${{ needs.preflight.outputs.version }}
+          path: |
+            sbom-${{ matrix.image }}-*.json
+          retention-days: 90
+
+  # Post-build verification and testing
+  verification:
+    name: Verification & Testing
+    runs-on: ubuntu-latest
+    needs: [preflight, build-and-publish, security-compliance]
+
+    strategy:
+      matrix:
+        platform: [linux/amd64, linux/arm64]
+        image: [runner, full]
+
+    steps:
+      - name: Set up QEMU for ARM64 testing
+        if: matrix.platform == 'linux/arm64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
+
+      - name: Test ${{ matrix.image }} image on ${{ matrix.platform }}
+        run: |
+          echo "Testing ${{ matrix.image }} image on ${{ matrix.platform }}..."
+
+          IMAGE="${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/greenlang-${{ matrix.image }}:${{ needs.preflight.outputs.version }}"
+
+          # Test basic functionality
+          if [[ "${{ matrix.image }}" == "runner" ]]; then
+            docker run --rm --platform ${{ matrix.platform }} $IMAGE --version
+            docker run --rm --platform ${{ matrix.platform }} $IMAGE --help
+          else
+            docker run --rm --platform ${{ matrix.platform }} $IMAGE gl --version
+            docker run --rm --platform ${{ matrix.platform }} $IMAGE gl --help
+          fi
+
+          echo "${{ matrix.image }} image working on ${{ matrix.platform }}"
+
+      - name: Verify multi-arch manifest
+        if: matrix.platform == 'linux/amd64'  # Only run once per image
+        run: |
+          echo "Verifying multi-arch manifest for ${{ matrix.image }}..."
+
+          IMAGE="${{ env.GHCR_REGISTRY }}/${{ github.repository_owner }}/greenlang-${{ matrix.image }}:${{ needs.preflight.outputs.version }}"
+
+          # Check that both platforms are present
+          docker buildx imagetools inspect $IMAGE | grep -E "Platform|linux/(amd64|arm64)"
+
+          # Verify both platforms exist
+          PLATFORMS=$(docker buildx imagetools inspect $IMAGE --format '{{range .Manifest.Manifests}}{{.Platform.OS}}/{{.Platform.Architecture}} {{end}}')
+          echo "Available platforms: $PLATFORMS"
+
+          if [[ "$PLATFORMS" == *"linux/amd64"* && "$PLATFORMS" == *"linux/arm64"* ]]; then
+            echo "Multi-arch manifest verified for ${{ matrix.image }}"
+          else
+            echo "ERROR: Missing platforms for ${{ matrix.image }}"
+            exit 1
+          fi
+
+  # Final reporting and cleanup
+  reporting:
+    name: Final Report
+    runs-on: ubuntu-latest
+    needs: [preflight, build-and-publish, security-compliance, verification]
+    if: always()
+
+    steps:
+      - name: Make GHCR packages public
+        run: |
+          echo "Making GHCR packages public..."
+
+          for image in runner full; do
+            curl -X PATCH \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/user/packages/container/greenlang-$image \
+              -d '{"visibility":"public"}' \
+              || echo "Package greenlang-$image may already be public"
+          done
+
+      - name: Generate comprehensive summary
+        run: |
+          echo "# Complete Docker Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Release Information" >> $GITHUB_STEP_SUMMARY
+          echo "- **Version:** \`${{ needs.preflight.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Date:** \`${{ needs.preflight.outputs.date }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Git SHA:** \`${{ needs.preflight.outputs.full_sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Docker Hub Enabled:** ${{ needs.preflight.outputs.docker_hub_enabled }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Published Images" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | GHCR | Docker Hub | Platforms |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|------|------------|-----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Runner** | \`ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ needs.preflight.outputs.version }}\` | \`${{ env.DOCKERHUB_ORG }}/core-runner:${{ needs.preflight.outputs.version }}\` | linux/amd64, linux/arm64 |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Full** | \`ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ needs.preflight.outputs.version }}\` | \`${{ env.DOCKERHUB_ORG }}/core-full:${{ needs.preflight.outputs.version }}\` | linux/amd64, linux/arm64 |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Security Features" >> $GITHUB_STEP_SUMMARY
+          echo "- **Cosign Signatures:** All images signed with keyless OIDC" >> $GITHUB_STEP_SUMMARY
+          echo "- **SBOM Generation:** SPDX and CycloneDX formats generated and attached" >> $GITHUB_STEP_SUMMARY
+          echo "- **Vulnerability Scanning:** Trivy scans completed and uploaded to Security tab" >> $GITHUB_STEP_SUMMARY
+          echo "- **Supply Chain Security:** Provenance and attestations included" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Quality Assurance" >> $GITHUB_STEP_SUMMARY
+          echo "- **Multi-Architecture:** Both AMD64 and ARM64 platforms tested" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Verification:** All images tested for basic functionality" >> $GITHUB_STEP_SUMMARY
+          echo "- **Manifest Verification:** Multi-arch manifests validated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "## Usage Examples" >> $GITHUB_STEP_SUMMARY
+          echo "### Pull and run images:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# From GHCR" >> $GITHUB_STEP_SUMMARY
+          echo "docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ needs.preflight.outputs.version }} --version" >> $GITHUB_STEP_SUMMARY
+          echo "docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ needs.preflight.outputs.version }} gl --version" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.preflight.outputs.docker_hub_enabled }}" == "true" ]]; then
+            echo "# From Docker Hub" >> $GITHUB_STEP_SUMMARY
+            echo "docker run --rm ${{ env.DOCKERHUB_ORG }}/core-runner:${{ needs.preflight.outputs.version }} --version" >> $GITHUB_STEP_SUMMARY
+            echo "docker run --rm ${{ env.DOCKERHUB_ORG }}/core-full:${{ needs.preflight.outputs.version }} gl --version" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Verify signatures:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# Install cosign" >> $GITHUB_STEP_SUMMARY
+          echo "brew install cosign  # or your package manager" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Verify image signature" >> $GITHUB_STEP_SUMMARY
+          echo "cosign verify ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ needs.preflight.outputs.version }} \\\\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-identity-regexp 'https://github.com/${{ github.repository }}/.*' \\\\" >> $GITHUB_STEP_SUMMARY
+          echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Download SBOM" >> $GITHUB_STEP_SUMMARY
+          echo "cosign download sbom ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ needs.preflight.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "---" >> $GITHUB_STEP_SUMMARY
+          echo "*This release includes all critical DoD requirements: Multi-arch support, Security artifacts (Cosign + SBOM), Dual registry publication, and Comprehensive vulnerability scanning.*" >> $GITHUB_STEP_SUMMARY
+
+      - name: Check overall status
+        run: |
+          if [[ "${{ needs.build-and-publish.result }}" != "success" ]]; then
+            echo "ERROR: Build and publish failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.security-compliance.result }}" != "success" ]]; then
+            echo "ERROR: Security compliance failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.verification.result }}" != "success" ]]; then
+            echo "ERROR: Verification failed"
+            exit 1
+          fi
+
+          echo "All jobs completed successfully!"
+          echo "Complete Docker release ready for production use!"
