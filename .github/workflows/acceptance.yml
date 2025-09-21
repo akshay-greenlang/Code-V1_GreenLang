@@ -240,6 +240,9 @@ EOF
   security-scan:
     name: Security Scan
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # Required for uploading SARIF to GitHub Security tab
 
     steps:
       - name: Checkout code

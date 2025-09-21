@@ -36,32 +36,57 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract version metadata
+        id: meta
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          MAJOR_MINOR=$(echo $VERSION | cut -d. -f1,2)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "MAJOR_MINOR=$MAJOR_MINOR" >> $GITHUB_OUTPUT
+          echo "DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
+
       - name: Build and push runner
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile.runner
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ github.event.inputs.version }}
+            ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.MAJOR_MINOR }}
             ghcr.io/${{ github.repository_owner }}/greenlang-runner:latest
           build-args: |
-            GL_VERSION=${{ github.event.inputs.version }}
-            BUILD_DATE=${{ github.run_id }}
+            GL_VERSION=${{ steps.meta.outputs.VERSION }}
+            BUILD_DATE=${{ steps.meta.outputs.DATE }}
             VCS_REF=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=GreenLang Runner
+            org.opencontainers.image.description=Minimal production runtime for GreenLang
+            org.opencontainers.image.version=${{ steps.meta.outputs.VERSION }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.DATE }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
       - name: Build and push full
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile.full
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ github.event.inputs.version }}
+            ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}
+            ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.MAJOR_MINOR }}
             ghcr.io/${{ github.repository_owner }}/greenlang-full:latest
           build-args: |
-            GL_VERSION=${{ github.event.inputs.version }}
-            BUILD_DATE=${{ github.run_id }}
+            GL_VERSION=${{ steps.meta.outputs.VERSION }}
+            BUILD_DATE=${{ steps.meta.outputs.DATE }}
             VCS_REF=${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=GreenLang Full
+            org.opencontainers.image.description=Developer/CI image with build tools for GreenLang
+            org.opencontainers.image.version=${{ steps.meta.outputs.VERSION }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.DATE }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}

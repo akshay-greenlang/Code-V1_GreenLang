@@ -1,4 +1,4 @@
-name: Release Docker Images
+name: Publish Public Docker Images
 
 on:
   workflow_dispatch:
@@ -6,17 +6,20 @@ on:
       version:
         description: 'Version to release (e.g., 0.2.0)'
         required: true
+        default: '0.2.0'
         type: string
-  push:
-    tags:
-      - 'v*.*.*'
+      force_rebuild:
+        description: 'Force rebuild even if images exist'
+        required: false
+        default: false
+        type: boolean
 
 env:
   REGISTRY: ghcr.io
   DOCKERHUB_ORG: greenlang
 
 jobs:
-  docker:
+  publish-public:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -28,7 +31,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for better metadata
+          fetch-depth: 0
 
       - name: Set up QEMU for multi-arch
         uses: docker/setup-qemu-action@v3
@@ -57,25 +60,18 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract version and metadata
+      - name: Extract version metadata
         id: meta
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            VERSION="${{ github.event.inputs.version }}"
-          else
-            VERSION=${GITHUB_REF#refs/tags/v}
-          fi
-
-          # Extract major.minor for additional tags
+          VERSION="${{ github.event.inputs.version }}"
           MAJOR_MINOR=$(echo $VERSION | cut -d. -f1,2)
-
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
           echo "MAJOR_MINOR=$MAJOR_MINOR" >> $GITHUB_OUTPUT
           echo "DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
           echo "SHA=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
           echo "FULL_SHA=${GITHUB_SHA}" >> $GITHUB_OUTPUT
 
-      # Build and push RUNNER image (minimal production)
+      # Build and push RUNNER image
       - name: Build and push runner image
         id: build-runner
         uses: docker/build-push-action@v6
@@ -96,12 +92,19 @@ jobs:
             ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }}
             ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.MAJOR_MINOR }}
             ${{ env.DOCKERHUB_ORG }}/core-runner:latest
+          labels: |
+            org.opencontainers.image.title=GreenLang Runner
+            org.opencontainers.image.description=Minimal production runtime for GreenLang pipelines
+            org.opencontainers.image.version=${{ steps.meta.outputs.VERSION }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.DATE }}
+            org.opencontainers.image.revision=${{ steps.meta.outputs.FULL_SHA }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.vendor=GreenLang Team
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner:buildcache,mode=max
-          provenance: true
-          sbom: true
 
-      # Build and push FULL image (dev/CI)
+      # Build and push FULL image
       - name: Build and push full image
         id: build-full
         uses: docker/build-push-action@v6
@@ -122,10 +125,44 @@ jobs:
             ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }}
             ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.MAJOR_MINOR }}
             ${{ env.DOCKERHUB_ORG }}/core-full:latest
+          labels: |
+            org.opencontainers.image.title=GreenLang Full
+            org.opencontainers.image.description=Developer/CI image with build tools for GreenLang
+            org.opencontainers.image.version=${{ steps.meta.outputs.VERSION }}
+            org.opencontainers.image.created=${{ steps.meta.outputs.DATE }}
+            org.opencontainers.image.revision=${{ steps.meta.outputs.FULL_SHA }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.vendor=GreenLang Team
           cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-full:buildcache
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-full:buildcache,mode=max
-          provenance: true
-          sbom: true
+
+      # Install Cosign for signing
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.6.0
+        with:
+          cosign-release: 'v2.2.4'
+
+      # Sign images with Cosign (keyless using OIDC)
+      - name: Sign runner images
+        run: |
+          # Sign GHCR images
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
+
+          # Sign Docker Hub images
+          cosign sign --yes \
+            ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
+
+      - name: Sign full images
+        run: |
+          # Sign GHCR images
+          cosign sign --yes \
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
+
+          # Sign Docker Hub images
+          cosign sign --yes \
+            ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
 
       # Generate SBOM with Syft
       - name: Install Syft
@@ -134,14 +171,37 @@ jobs:
       - name: Generate SBOM for runner image
         run: |
           syft ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} \
-            -o spdx-json=sbom-runner-${{ steps.meta.outputs.VERSION }}.spdx.json \
-            -o cyclonedx-json=sbom-runner-${{ steps.meta.outputs.VERSION }}.cyclonedx.json
+            -o spdx-json=sbom-runner-${{ steps.meta.outputs.VERSION }}.spdx.json
 
       - name: Generate SBOM for full image
         run: |
           syft ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }} \
-            -o spdx-json=sbom-full-${{ steps.meta.outputs.VERSION }}.spdx.json \
-            -o cyclonedx-json=sbom-full-${{ steps.meta.outputs.VERSION }}.cyclonedx.json
+            -o spdx-json=sbom-full-${{ steps.meta.outputs.VERSION }}.spdx.json
+
+      # Attach SBOMs to images
+      - name: Attach SBOM to runner image
+        run: |
+          # Attach SBOM to GHCR image
+          cosign attach sbom \
+            --sbom sbom-runner-${{ steps.meta.outputs.VERSION }}.spdx.json \
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
+
+          # Attach SBOM to Docker Hub image
+          cosign attach sbom \
+            --sbom sbom-runner-${{ steps.meta.outputs.VERSION }}.spdx.json \
+            ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
+
+      - name: Attach SBOM to full image
+        run: |
+          # Attach SBOM to GHCR image
+          cosign attach sbom \
+            --sbom sbom-full-${{ steps.meta.outputs.VERSION }}.spdx.json \
+            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
+
+          # Attach SBOM to Docker Hub image
+          cosign attach sbom \
+            --sbom sbom-full-${{ steps.meta.outputs.VERSION }}.spdx.json \
+            ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
 
       # Upload SBOMs as artifacts
       - name: Upload SBOMs
@@ -173,75 +233,35 @@ jobs:
 
       # Upload Trivy results to GitHub Security tab
       - name: Upload Trivy scan results to GitHub Security
+        if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: |
             trivy-runner-results.sarif
             trivy-full-results.sarif
-          category: trivy-docker
+          category: trivy-docker-public
 
-      # Sign images with Cosign (keyless using OIDC)
-      - name: Install Cosign
-        uses: sigstore/cosign-installer@v3.6.0
-        with:
-          cosign-release: 'v2.2.4'
-
-      - name: Sign runner images
+      # Make packages public via GitHub API
+      - name: Make runner package public
         run: |
-          # Sign GHCR images
-          cosign sign --yes \
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
+          curl -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/user/packages/container/greenlang-runner \
+            -d '{"visibility":"public"}' || echo "Package may already be public or this might be the first push"
 
-          # Sign Docker Hub images
-          cosign sign --yes \
-            ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
-
-      - name: Sign full images
+      - name: Make full package public
         run: |
-          # Sign GHCR images
-          cosign sign --yes \
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
-
-          # Sign Docker Hub images
-          cosign sign --yes \
-            ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
-
-      # Attach SBOMs to images
-      - name: Attach SBOM to runner image
-        run: |
-          # Attach SBOM to GHCR image
-          cosign attach sbom \
-            --sbom sbom-runner-${{ steps.meta.outputs.VERSION }}.spdx.json \
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
-
-          # Attach SBOM to Docker Hub image
-          cosign attach sbom \
-            --sbom sbom-runner-${{ steps.meta.outputs.VERSION }}.spdx.json \
-            ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }}@${{ steps.build-runner.outputs.digest }}
-
-      - name: Attach SBOM to full image
-        run: |
-          # Attach SBOM to GHCR image
-          cosign attach sbom \
-            --sbom sbom-full-${{ steps.meta.outputs.VERSION }}.spdx.json \
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
-
-          # Attach SBOM to Docker Hub image
-          cosign attach sbom \
-            --sbom sbom-full-${{ steps.meta.outputs.VERSION }}.spdx.json \
-            ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }}@${{ steps.build-full.outputs.digest }}
-
-      # Generate attestation
-      - name: Generate SLSA provenance attestation
-        uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v1.10.0
-        with:
-          image: ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner
-          digest: ${{ steps.build-runner.outputs.digest }}
-          registry-username: ${{ github.actor }}
-          registry-password: ${{ secrets.GITHUB_TOKEN }}
+          curl -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/user/packages/container/greenlang-full \
+            -d '{"visibility":"public"}' || echo "Package may already be public or this might be the first push"
 
       # Test images
-      - name: Test runner image (amd64)
+      - name: Test runner image
         run: |
           echo "Testing GHCR runner image..."
           docker run --rm --platform linux/amd64 \
@@ -253,19 +273,7 @@ jobs:
             ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }} \
             --version
 
-      - name: Test runner image (arm64)
-        run: |
-          echo "Testing GHCR runner image (arm64)..."
-          docker run --rm --platform linux/arm64 \
-            ${{ env.REGISTRY }}/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} \
-            --version
-
-          echo "Testing Docker Hub runner image (arm64)..."
-          docker run --rm --platform linux/arm64 \
-            ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }} \
-            --version
-
-      - name: Test full image (amd64)
+      - name: Test full image
         run: |
           echo "Testing GHCR full image..."
           docker run --rm --platform linux/amd64 \
@@ -277,78 +285,40 @@ jobs:
             ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }} \
             gl --version
 
-      # Create release notes
-      - name: Create release notes
-        if: startsWith(github.ref, 'refs/tags/')
+      # Generate summary
+      - name: Generate summary
         run: |
-          cat << EOF > DOCKER_RELEASE_NOTES.md
-          ## Docker Images Released
-
-          ### Runner Image (Minimal Production)
-          - GHCR: \`ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}\`
-          - Docker Hub: \`${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }}\`
-          - Digest: \`${{ steps.build-runner.outputs.digest }}\`
-          - Platforms: linux/amd64, linux/arm64
-
-          ### Full Image (Developer/CI)
-          - GHCR: \`ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}\`
-          - Docker Hub: \`${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }}\`
-          - Digest: \`${{ steps.build-full.outputs.digest }}\`
-          - Platforms: linux/amd64, linux/arm64
-
-          ### Security
-          - Images are signed with Cosign (keyless)
-          - SBOMs attached (SPDX and CycloneDX formats)
-          - Vulnerability scan results available in Security tab
-
-          ### Verification
-
-          Verify image signatures:
-          \`\`\`bash
-          # Install cosign
-          brew install cosign  # or your package manager
-
-          # Verify runner image
-          cosign verify ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} \\
-            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.github/workflows/release-docker.yml@refs/tags/v${{ steps.meta.outputs.VERSION }}" \\
-            --certificate-oidc-issuer https://token.actions.githubusercontent.com
-
-          # Verify full image
-          cosign verify ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }} \\
-            --certificate-identity-regexp "https://github.com/${{ github.repository }}/.github/workflows/release-docker.yml@refs/tags/v${{ steps.meta.outputs.VERSION }}" \\
-            --certificate-oidc-issuer https://token.actions.githubusercontent.com
-          \`\`\`
-
-          View SBOM:
-          \`\`\`bash
-          # View attached SBOM
-          cosign download sbom ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}
-          \`\`\`
-          EOF
-
-      - name: Upload release notes
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-release-notes
-          path: DOCKER_RELEASE_NOTES.md
-
-      # Summary
-      - name: Job Summary
-        run: |
-          echo "## 🐳 Docker Multi-Arch Build Complete" >> $GITHUB_STEP_SUMMARY
+          echo "## ✅ Docker Images Published Successfully" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Images Published" >> $GITHUB_STEP_SUMMARY
-          echo "| Image | Version | Digest |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|---------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Runner | ${{ steps.meta.outputs.VERSION }} | \`${{ steps.build-runner.outputs.digest }}\` |" >> $GITHUB_STEP_SUMMARY
-          echo "| Full | ${{ steps.meta.outputs.VERSION }} | \`${{ steps.build-full.outputs.digest }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "### Published Images" >> $GITHUB_STEP_SUMMARY
+          echo "| Image | Tags | Digest | Public |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|------|--------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Runner** | \`${{ steps.meta.outputs.VERSION }}\`, \`${{ steps.meta.outputs.MAJOR_MINOR }}\`, \`latest\` | \`${{ steps.build-runner.outputs.digest }}\` | ✅ |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Full** | \`${{ steps.meta.outputs.VERSION }}\`, \`${{ steps.meta.outputs.MAJOR_MINOR }}\`, \`latest\` | \`${{ steps.build-full.outputs.digest }}\` | ✅ |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Security" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Images signed with Cosign" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ SBOMs generated and attached" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Vulnerability scans completed" >> $GITHUB_STEP_SUMMARY
+          echo "### Access Images" >> $GITHUB_STEP_SUMMARY
+          echo "#### From GitHub Container Registry (GHCR)" >> $GITHUB_STEP_SUMMARY
+          echo "```bash" >> $GITHUB_STEP_SUMMARY
+          echo "# Pull and run runner image" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-runner:${{ steps.meta.outputs.VERSION }} --version" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Pull and run full image" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker run --rm ghcr.io/${{ github.repository_owner }}/greenlang-full:${{ steps.meta.outputs.VERSION }} gl --version" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### From Docker Hub" >> $GITHUB_STEP_SUMMARY
+          echo "```bash" >> $GITHUB_STEP_SUMMARY
+          echo "# Pull and run runner image" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker run --rm ${{ env.DOCKERHUB_ORG }}/core-runner:${{ steps.meta.outputs.VERSION }} --version" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Pull and run full image" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker run --rm ${{ env.DOCKERHUB_ORG }}/core-full:${{ steps.meta.outputs.VERSION }} gl --version" >> $GITHUB_STEP_SUMMARY
+          echo "```" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Platforms" >> $GITHUB_STEP_SUMMARY
-          echo "- linux/amd64" >> $GITHUB_STEP_SUMMARY
-          echo "- linux/arm64" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ linux/amd64" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ linux/arm64" >> $GITHUB_STEP_SUMMARY

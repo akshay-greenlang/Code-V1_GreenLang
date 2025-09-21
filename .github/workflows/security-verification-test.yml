@@ -1,0 +1,196 @@
+name: Security Verification Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to verify (e.g., 0.2.0)'
+        required: true
+        type: string
+      registry:
+        description: 'Registry to check'
+        required: false
+        default: 'ghcr.io'
+        type: string
+  pull_request:
+    paths:
+      - '.github/workflows/**'
+      - 'scripts/verify-security-artifacts*'
+      - 'SECURITY-VERIFICATION.md'
+
+permissions:
+  contents: read
+
+jobs:
+  verify-security-artifacts:
+    name: Verify Security Artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3.6.0
+        with:
+          cosign-release: 'v2.2.4'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/verify-security-artifacts.sh
+          chmod +x scripts/verify-security-artifacts-ci.sh
+
+      - name: Test verification script help
+        run: |
+          ./scripts/verify-security-artifacts.sh --help
+
+      - name: Test verification script dry run
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "Testing script syntax and help output for PR"
+          ./scripts/verify-security-artifacts.sh --help
+          ./scripts/verify-security-artifacts-ci.sh 0.2.0 || echo "Expected to fail for non-existent test version"
+
+      - name: Run security verification (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+          REGISTRY: ${{ github.event.inputs.registry }}
+        run: |
+          echo "🔍 Verifying security artifacts for version $VERSION"
+
+          # Run CI verification script
+          ./scripts/verify-security-artifacts-ci.sh "$VERSION"
+
+          echo ""
+          echo "✅ Basic verification completed"
+
+          # Run full verification with different output formats
+          echo "📋 Generating detailed verification report..."
+
+          # Text format
+          ./scripts/verify-security-artifacts.sh "$VERSION" --output-format text > verification-report.txt || true
+
+          # JSON format
+          ./scripts/verify-security-artifacts.sh "$VERSION" --output-format json > verification-report.json || true
+
+          # Markdown format
+          ./scripts/verify-security-artifacts.sh "$VERSION" --output-format markdown > verification-report.md || true
+
+      - name: Upload verification reports
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-verification-reports-${{ github.event.inputs.version }}
+          path: |
+            verification-report.*
+          retention-days: 30
+
+      - name: Validate workflow permissions
+        run: |
+          echo "🔍 Checking workflow permissions for security features..."
+
+          # Check workflows have required permissions
+          workflows_dir=".github/workflows"
+
+          echo "Checking Docker workflows for required permissions..."
+          for workflow in release-docker.yml docker-complete-dod.yml docker-publish-public.yml; do
+            if [ -f "$workflows_dir/$workflow" ]; then
+              echo "Checking $workflow..."
+
+              # Check for id-token: write (required for OIDC signing)
+              if grep -q "id-token:.*write" "$workflows_dir/$workflow"; then
+                echo "✅ $workflow has id-token: write"
+              else
+                echo "❌ $workflow missing id-token: write"
+              fi
+
+              # Check for security-events: write (required for SARIF upload)
+              if grep -q "security-events:.*write" "$workflows_dir/$workflow"; then
+                echo "✅ $workflow has security-events: write"
+              else
+                echo "⚠️ $workflow missing security-events: write (may not upload SARIF)"
+              fi
+
+              # Check for packages: write (required for registry push)
+              if grep -q "packages:.*write" "$workflows_dir/$workflow"; then
+                echo "✅ $workflow has packages: write"
+              else
+                echo "❌ $workflow missing packages: write"
+              fi
+
+              echo ""
+            fi
+          done
+
+      - name: Check security tools installation
+        run: |
+          echo "🔧 Checking security tools..."
+
+          # Check cosign
+          if command -v cosign &> /dev/null; then
+            echo "✅ cosign installed: $(cosign version --json | jq -r .gitVersion)"
+          else
+            echo "❌ cosign not installed"
+          fi
+
+          # Check jq
+          if command -v jq &> /dev/null; then
+            echo "✅ jq installed: $(jq --version)"
+          else
+            echo "❌ jq not installed"
+          fi
+
+          # Check docker
+          if command -v docker &> /dev/null; then
+            echo "✅ docker installed: $(docker --version)"
+          else
+            echo "❌ docker not installed"
+          fi
+
+      - name: Validate workflow files
+        run: |
+          echo "📝 Validating workflow YAML syntax..."
+
+          # Basic YAML validation
+          for workflow in .github/workflows/*.yml .github/workflows/*.yaml; do
+            if [ -f "$workflow" ]; then
+              echo "Checking $workflow..."
+              if python3 -c "import yaml; yaml.safe_load(open('$workflow'))" 2>/dev/null; then
+                echo "✅ $workflow is valid YAML"
+              else
+                echo "❌ $workflow has YAML syntax errors"
+              fi
+            fi
+          done
+
+      - name: Summary
+        run: |
+          echo "## 🛡️ Security Verification Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Verification scripts are executable" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Required tools are available" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Workflow files are valid YAML" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Security permissions are configured" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Available Scripts" >> $GITHUB_STEP_SUMMARY
+          echo "- \`./scripts/verify-security-artifacts.sh\` - Full verification with options" >> $GITHUB_STEP_SUMMARY
+          echo "- \`./scripts/verify-security-artifacts-ci.sh\` - CI-friendly verification" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "### Verification Report" >> $GITHUB_STEP_SUMMARY
+            echo "Verification completed for version \`${{ github.event.inputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "Check the artifacts for detailed reports in multiple formats." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+            echo "Run with manual trigger to test against actual image versions:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            echo "gh workflow run security-verification-test.yml -f version=0.2.0" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi

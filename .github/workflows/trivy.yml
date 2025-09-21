@@ -10,6 +10,9 @@ on:
 jobs:
   trivy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # Required for uploading SARIF to GitHub Security tab
     steps:
       - uses: actions/checkout@v4
 
@@ -100,6 +103,9 @@ jobs:
 
   trivy-config-scan:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write  # Required for uploading SARIF to GitHub Security tab
     steps:
       - uses: actions/checkout@v4
 

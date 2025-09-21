@@ -159,7 +159,8 @@
       "Bash(findstr:*)",
       "Bash(scriptsverify-docker-dod.bat akshay-greenlang 0.2.0)",
       "Bash(scripts\\verify-docker-dod.bat akshay-greenlang 0.2.0)",
-      "Bash(cosign verify:*)"
+      "Bash(cosign verify:*)",
+      "Bash(git show:*)"
     ],
     "deny": []
   }
