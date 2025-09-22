@@ -1,0 +1,37 @@
+{
+  "policy_name": "publisher-allowlist",
+  "version": "1.0",
+  "description": "Sample publisher-based allowlist for default-deny policy demonstration",
+  "type": "allowlist",
+  "scope": "publisher",
+  "rules": {
+    "allowed_publishers": [
+      "verified.greenlang.io",
+      "trusted.climatetechhub.org",
+      "official.energydata.gov"
+    ],
+    "allowed_orgs": [
+      "greenlang-official",
+      "climate-tech-collective",
+      "open-energy-initiative"
+    ],
+    "signature_requirements": {
+      "require_signature": true,
+      "require_provenance": true,
+      "min_trust_level": "verified"
+    },
+    "default_action": "deny"
+  },
+  "enforcement": {
+    "strict_mode": true,
+    "verify_signatures": true,
+    "check_revocation": true,
+    "audit_installs": true
+  },
+  "metadata": {
+    "created_by": "greenlang-policy-engine",
+    "created_at": "2024-09-23T00:00:00Z",
+    "last_updated": "2024-09-23T00:00:00Z",
+    "compliance_framework": "Week0-DoD-Security-Part1"
+  }
+}

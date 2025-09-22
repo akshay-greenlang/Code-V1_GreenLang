@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greenlang"
-version = "0.2.0"
+version = "0.2.0b1"
 description = "Developer-first Climate Intelligence Framework (core rails)"
 readme = "README.md"
 authors = [{ name = "GreenLang Maintainers" }]
@@ -168,4 +168,32 @@ line_length = 88
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --cov=greenlang --cov=core.greenlang --cov-report=term-missing:skip-covered --cov-report=xml"
+
+[tool.coverage.run]
+branch = true
+source = ["greenlang", "core/greenlang"]
+omit = [
+    "*/tests/*",
+    "*/__main__.py",
+    "*/compat/*",
+    "*/examples/*",
+    "*/cli/templates/*",
+    "*/_version.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "def __str__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+precision = 2
+show_missing = true
+skip_covered = false

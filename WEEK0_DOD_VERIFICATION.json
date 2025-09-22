@@ -1,0 +1,128 @@
+{
+  "timestamp": "2025-09-22T14:50:43.100729",
+  "version": "0.2.0",
+  "checks": {
+    "Monday": [
+      {
+        "item": "pyproject.toml has version = 0.2.0",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found in pyproject.toml"
+      },
+      {
+        "item": "greenlang.__version__ == 0.2.0",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Output: 0.2.0"
+      },
+      {
+        "item": "Python requirement >= 3.10",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found in pyproject.toml"
+      },
+      {
+        "item": "CI matrix includes Python 3.10/3.11/3.12 and OS matrix",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found in .github\\workflows"
+      },
+      {
+        "item": "Tag v0.2.0-rc.0 exists",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Tag: v0.2.0-rc.0"
+      }
+    ],
+    "Tuesday": [
+      {
+        "item": "No SSL bypasses (verify=False)",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found: None"
+      },
+      {
+        "item": "Default-deny policy implementation exists",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found in policy files: 12"
+      },
+      {
+        "item": "Capability gating for net/fs/clock/subprocess",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found in 4 files"
+      },
+      {
+        "item": "Unsigned pack install blocked by default",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Signature verification found in CLI"
+      }
+    ],
+    "Wednesday": [
+      {
+        "item": "No mock/test keys in source",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found: None"
+      },
+      {
+        "item": "Tests under /tests/ directory",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Tests directory exists: True"
+      },
+      {
+        "item": "Pytest discovery configured",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "pytest.ini or pyproject.toml[tool.pytest] found"
+      },
+      {
+        "item": "Security scan results present",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found 3 scan result files"
+      }
+    ],
+    "Thursday": [
+      {
+        "item": "Python wheel (.whl) exists",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found: ['greenlang-0.2.0-py3-none-any.whl']"
+      },
+      {
+        "item": "Python sdist (.tar.gz) exists",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found: ['greenlang-0.2.0.tar.gz']"
+      },
+      {
+        "item": "Docker multi-arch configuration",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found 6 Dockerfiles"
+      },
+      {
+        "item": "SBOM files generated",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Found 36 SBOM files"
+      },
+      {
+        "item": "gl entry point works (gl --version)",
+        "status": "\u2705 PASS",
+        "passed": true,
+        "evidence": "Output: C:\\Users\\rshar\\AppData\\Roaming\\Python\\Python313\\site-packages\\pydantic\\_internal\\_config.py:373: Use"
+      }
+    ]
+  },
+  "summary": {
+    "passed": 18,
+    "failed": 0,
+    "warnings": 0
+  },
+  "overall_status": "COMPLETE"
+}

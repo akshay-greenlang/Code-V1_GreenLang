@@ -9,7 +9,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Import executor and related classes
-from greenlang.runtime.executor import PipelineExecutor
+from greenlang.runtime.executor import Executor as PipelineExecutor
 
 
 def test_direct_pipeline_execution():

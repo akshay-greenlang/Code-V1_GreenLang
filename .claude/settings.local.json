@@ -171,7 +171,17 @@
       "Bash(scripts\\verify-sbom-dod-windows.bat:*)",
       "Bash(./scripts/verify-sbom-dod-windows.bat:*)",
       "Bash(./jq.exe:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(\".venv-build/Scripts/python.exe\" -m pip install --upgrade pip build twine)",
+      "Bash(\".venv-build/Scripts/python.exe\" -m build)",
+      "Bash(\".venv-build/Scripts/twine.exe\" check dist/*)",
+      "Bash(do echo \"File: $file\")",
+      "Bash(\".venv-smoke/Scripts/python.exe\" -m pip install --upgrade pip)",
+      "Bash(\".venv-smoke/Scripts/python.exe\" -m pip install dist/greenlang-0.2.0-py3-none-any.whl)",
+      "Bash(\".venv-smoke/Scripts/gl.exe\" --version)",
+      "Bash(\".venv-smoke/Scripts/gl.exe\" --help)",
+      "Bash(.syft.exe scan dir:dist/ -o spdx-json=sbom/greenlang-dist-0.2.0.spdx.json)",
+      "Bash(jq:*)"
     ],
     "deny": []
   }

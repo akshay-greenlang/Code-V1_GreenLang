@@ -2,7 +2,7 @@
 """GreenLang unified CLI entry point."""
 
 import sys
-from core.greenlang.cli import app
+from greenlang.cli.main import main
 
 if __name__ == "__main__":
-    app()
+    main()
