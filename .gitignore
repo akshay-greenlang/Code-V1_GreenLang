@@ -168,3 +168,10 @@ grafana_data/
 opa.exe
 opa
 .tools/
+cosign.exe
+syft.exe
+syft.zip
+jq.exe
+*.exe
+coverage.json
+trufflehog*.json*
