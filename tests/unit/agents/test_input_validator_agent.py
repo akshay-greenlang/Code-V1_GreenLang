@@ -2,7 +2,7 @@
 
 import math
 import pytest
-from greenlang.agents.input_validator_agent import InputValidatorAgent
+from greenlang.agents.validator_agent import InputValidatorAgent
 
 
 class TestInputValidatorAgent:

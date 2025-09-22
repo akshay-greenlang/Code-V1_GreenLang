@@ -78,7 +78,7 @@ class TestSignatureVerification:
                 allow_unsigned=False
             )
 
-                assert "verification failed" in str(exc_info.value).lower()
+        assert "verification failed" in str(exc_info.value).lower()
 
     def test_valid_signature_succeeds(self):
         """Test G: Installing pack with valid signature via DevKeyVerifier ⇒ succeeds"""

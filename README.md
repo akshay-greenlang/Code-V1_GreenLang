@@ -111,8 +111,23 @@ connector.schedule_workload(
 
 ## 📦 Installation
 
-### Quick Start
+### 🔥 Beta Release (v0.2.0b1) - Available Now!
+We're excited to announce the beta release of GreenLang v0.2.0b1! This preview build includes core CLI functionality, pack management, and policy enforcement.
+
+**Install from TestPyPI (Beta):**
 ```bash
+# Install the beta version for testing
+pip install -i https://test.pypi.org/simple --extra-index-url https://pypi.org/simple greenlang==0.2.0b1
+
+# Verify installation
+gl --version  # Should show: GreenLang v0.2.0b1
+```
+
+⚠️ **Beta Notice**: This is a preview release for early adopters. Expect changes and report issues via [GitHub Issues](https://github.com/greenlang/greenlang/issues).
+
+### Production Release (Coming Soon)
+```bash
+# Will be available after beta testing completes
 pip install greenlang
 ```
 

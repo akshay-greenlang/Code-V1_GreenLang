@@ -1,188 +1,338 @@
-name: release
+name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.2.0)'
+        required: true
+        type: string
+      create_tag:
+        description: 'Create git tag for this version'
+        required: false
+        default: false
+        type: boolean
+      publish_to_pypi:
+        description: 'Publish to PyPI'
+        required: false
+        default: false
+        type: boolean
+      publish_docker:
+        description: 'Publish Docker images'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  PYTHON_VERSION: '3.11'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  publish:
+  prepare-release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is-prerelease: ${{ steps.version.outputs.is-prerelease }}
+      release-name: ${{ steps.version.outputs.release-name }}
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python  
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: Install GreenLang
-      run: pip install -e .
-    
-    - name: Install additional tools
-      run: |
-        pip install cyclonedx-bom || true
-    
-    - name: Install cosign
-      uses: sigstore/cosign-installer@v3
-      with:
-        cosign-release: 'v2.2.0'
-    
-    - name: Install ORAS
-      run: |
-        curl -LO "https://github.com/oras-project/oras/releases/latest/download/oras_linux_amd64.tar.gz"
-        mkdir -p oras-install/
-        tar -zxf oras_*.tar.gz -C oras-install/
-        sudo mv oras-install/oras /usr/local/bin/
-    
-    - name: Verify tools
-      run: |
-        cosign version
-        oras version
-    
-    - name: Validate packs
-      run: gl pack validate packs/**/
-    
-    - name: Generate SBOMs
-      run: |
-        for pack_dir in $(find packs -name "pack.yaml" -type f | xargs dirname); do
-          python -c "
-from core.greenlang.provenance.sbom import generate_sbom
-from pathlib import Path
-generate_sbom(Path('$pack_dir'))
-"
-        done
-    
-    - name: Publish sample pack
-      env:
-        COSIGN_EXPERIMENTAL: 1
-      run: |
-        gl pack publish packs/boiler-solar/ --registry ghcr.io/greenlang || echo "Pack publish failed"
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  test-install:
-    name: Test installation (${{ matrix.os }} / Python ${{ matrix.python-version }})
-    needs: build
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.10', '3.11', '3.12']
-    
-    steps:
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: dist-artifacts
-        path: dist/
-    
-    - name: Test wheel installation
-      run: |
-        python -m pip install --upgrade pip
-        pip install dist/*.whl
-        python -c "import greenlang; print(f'GreenLang {greenlang.__version__} installed successfully')"
-        greenlang --version
-    
-    - name: Test basic functionality
-      run: |
-        python -c "from greenlang.agents import FuelAgent; print('Core agents importable')"
-        python -c "from greenlang.sdk import GreenLangClient; print('SDK importable')"
+      - name: Extract version information
+        id: version
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+            VERSION=${VERSION#v}  # Remove 'v' prefix if present
+          else
+            VERSION=${GITHUB_REF#refs/tags/v}
+          fi
 
-  publish-testpypi:
-    name: Publish to TestPyPI
-    needs: test-install
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+          # Check if this is a prerelease (contains alpha, beta, rc, dev)
+          if [[ "$VERSION" =~ (alpha|beta|rc|dev) ]]; then
+            echo "is-prerelease=true" >> $GITHUB_OUTPUT
+            echo "release-name=GreenLang $VERSION (Pre-release)" >> $GITHUB_OUTPUT
+          else
+            echo "is-prerelease=false" >> $GITHUB_OUTPUT
+            echo "release-name=GreenLang $VERSION" >> $GITHUB_OUTPUT
+          fi
+
+          echo "Detected version: $VERSION"
+
+      - name: Create tag if requested
+        if: github.event.inputs.create_tag == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "Release version ${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
+
+      - name: Verify version consistency
+        run: |
+          # Check pyproject.toml version
+          PYPROJECT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          if [[ "$PYPROJECT_VERSION" != "${{ steps.version.outputs.version }}" ]]; then
+            echo "ERROR: Version mismatch between tag (${{ steps.version.outputs.version }}) and pyproject.toml ($PYPROJECT_VERSION)"
+            exit 1
+          fi
+
+          # Check VERSION file if it exists
+          if [[ -f VERSION ]]; then
+            FILE_VERSION=$(cat VERSION | tr -d '\n\r ')
+            if [[ "$FILE_VERSION" != "${{ steps.version.outputs.version }}" ]]; then
+              echo "ERROR: Version mismatch between tag (${{ steps.version.outputs.version }}) and VERSION file ($FILE_VERSION)"
+              exit 1
+            fi
+          fi
+
+          echo "Version consistency check passed"
+
+  build-python:
+    needs: prepare-release
+    uses: ./.github/workflows/build-and-package.yml
+    with:
+      python_version: '3.11'
+      os_matrix: 'all'
+
+  build-docker:
+    needs: prepare-release
+    if: github.event.inputs.publish_docker != 'false'
+    uses: ./.github/workflows/docker-build.yml
+    with:
+      push_to_registry: true
+      platforms: 'linux/amd64,linux/arm64'
+      image_tag: ${{ needs.prepare-release.outputs.version }}
+
+  create-release:
+    needs: [prepare-release, build-python]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/greenlang
-    
+    permissions:
+      contents: write
+      discussions: write
     steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: dist-artifacts
-        path: dist/
-    
-    - name: Publish to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
-        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        skip-existing: true
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  test-testpypi:
-    name: Test TestPyPI installation
-    needs: publish-testpypi
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install from TestPyPI
-      run: |
-        python -m pip install --upgrade pip
-        pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ greenlang
-        python -c "import greenlang; print(f'GreenLang {greenlang.__version__} from TestPyPI works')"
+      - name: Download all Python build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: greenlang-v0.2.0-build-artifacts
+
+      - name: Download container manifest (if available)
+        uses: actions/download-artifact@v3
+        with:
+          name: container-manifest
+        continue-on-error: true
+
+      - name: Download security reports (if available)
+        uses: actions/download-artifact@v3
+        with:
+          name: security-reports
+        continue-on-error: true
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+
+          # Copy Python packages
+          find wheels -name "*.whl" -exec cp {} release-assets/ \; 2>/dev/null || true
+          find sdist -name "*.tar.gz" -exec cp {} release-assets/ \; 2>/dev/null || true
+
+          # Copy checksums
+          find checksums -name "*.sha256" -exec cp {} release-assets/ \; 2>/dev/null || true
+          find checksums -name "*.sha512" -exec cp {} release-assets/ \; 2>/dev/null || true
+
+          # Copy SBOMs and manifests
+          find . -name "*-sbom.*.json" -exec cp {} release-assets/ \; 2>/dev/null || true
+          find . -name "*-manifest.json" -exec cp {} release-assets/ \; 2>/dev/null || true
+
+          # Create release summary
+          cat > release-assets/RELEASE_NOTES.md << 'EOF'
+          # GreenLang ${{ needs.prepare-release.outputs.version }} Release
+
+          ## 📦 Assets Included
+
+          ### Python Packages
+          - Source distribution (`.tar.gz`)
+          - Wheel packages for multiple platforms and Python versions
+          - SHA256 and SHA512 checksums for all packages
+
+          ### Docker Images
+          - `ghcr.io/${{ github.repository }}:runner-${{ needs.prepare-release.outputs.version }}`
+          - `ghcr.io/${{ github.repository }}:runner-optimized-${{ needs.prepare-release.outputs.version }}`
+          - `ghcr.io/${{ github.repository }}:full-${{ needs.prepare-release.outputs.version }}`
+
+          ### Security & Compliance
+          - SBOM (Software Bill of Materials) files
+          - Security scan reports
+          - Container manifest with metadata
+
+          ## 🚀 Installation
+
+          ### From PyPI
+          ```bash
+          pip install greenlang==${{ needs.prepare-release.outputs.version }}
+          ```
+
+          ### From Docker Hub
+          ```bash
+          docker pull ghcr.io/${{ github.repository }}:runner-${{ needs.prepare-release.outputs.version }}
+          ```
+
+          ## 🔒 Verification
+
+          All release assets include checksums for integrity verification:
+          ```bash
+          # Verify wheel integrity
+          sha256sum -c greenlang-*.whl.sha256
+          ```
+
+          ## 📋 Build Information
+          - **Git SHA**: ${{ github.sha }}
+          - **Build Date**: $(date -u +%Y-%m-%d)
+          - **Workflow Run**: ${{ github.run_id }}
+
+          EOF
+
+          # List all assets
+          echo "=== Release Assets ==="
+          find release-assets -type f | sort
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Extract changelog for this version if CHANGELOG.md exists
+          if [[ -f CHANGELOG.md ]]; then
+            # Try to extract changelog section for this version
+            awk "/^## \[?${{ needs.prepare-release.outputs.version }}\]?|^## \[?v${{ needs.prepare-release.outputs.version }}\]?/{flag=1; next} /^## \[?[0-9]/{flag=0} flag {print}' CHANGELOG.md > version_changelog.txt
+            if [[ -s version_changelog.txt ]]; then
+              echo "Found changelog for version ${{ needs.prepare-release.outputs.version }}"
+              cat version_changelog.txt
+            else
+              echo "No specific changelog found for version ${{ needs.prepare-release.outputs.version }}"
+              echo "## Changes in this release" > version_changelog.txt
+              echo "Please see the commit history for detailed changes." >> version_changelog.txt
+            fi
+          else
+            echo "No CHANGELOG.md found, generating basic changelog"
+            echo "## Changes in this release" > version_changelog.txt
+            echo "GreenLang ${{ needs.prepare-release.outputs.version }} release." >> version_changelog.txt
+            echo "" >> version_changelog.txt
+            echo "### Commits since last release:" >> version_changelog.txt
+            git log --oneline --no-merges $(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD >> version_changelog.txt 2>/dev/null || echo "Unable to generate commit log" >> version_changelog.txt
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.prepare-release.outputs.version }}
+          name: ${{ needs.prepare-release.outputs.release-name }}
+          body_path: version_changelog.txt
+          prerelease: ${{ needs.prepare-release.outputs.is-prerelease }}
+          files: |
+            release-assets/*
+          discussion_category_name: Releases
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-pypi:
-    name: Publish to PyPI
-    needs: test-testpypi
+    needs: [prepare-release, create-release]
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
-    environment:
-      name: pypi
-      url: https://pypi.org/p/greenlang
-    
+    if: github.event.inputs.publish_to_pypi == 'true'
+    environment: pypi
+    permissions:
+      id-token: write  # For trusted publishing
     steps:
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: dist-artifacts
-        path: dist/
-    
-    - name: Publish to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Download Python build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: greenlang-v0.2.0-build-artifacts
 
-  verify-pypi:
-    name: Verify PyPI installation
-    needs: publish-pypi
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.10', '3.11', '3.12']
-    
+      - name: Prepare PyPI assets
+        run: |
+          mkdir -p dist
+          find wheels -name "*.whl" -exec cp {} dist/ \; 2>/dev/null || true
+          find sdist -name "*.tar.gz" -exec cp {} dist/ \; 2>/dev/null || true
+
+          echo "=== PyPI Assets ==="
+          ls -la dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
+          verbose: true
+
+  update-docker-latest:
+    needs: [prepare-release, build-docker, create-release]
+    runs-on: ubuntu-latest
+    if: needs.prepare-release.outputs.is-prerelease == 'false' && github.event.inputs.publish_docker != 'false'
     steps:
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python-version }}
-    
-    - name: Install from PyPI
-      run: |
-        python -m pip install --upgrade pip
-        pip install greenlang
-        python -c "import greenlang; print(f'GreenLang {greenlang.__version__} from PyPI verified')"
-        greenlang --version
-    
-    - name: Run smoke tests
-      run: |
-        python -c "
-        from greenlang.sdk import GreenLangClient
-        client = GreenLangClient()
-        print('SDK client initialized')
-        agents = client.list_agents()
-        print(f'Available agents: {len(agents)}')
-        "
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag and push latest images
+        run: |
+          VERSION=${{ needs.prepare-release.outputs.version }}
+
+          # Tag runner images as latest
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runner-$VERSION
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runner-$VERSION ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+          # Tag optimized runner as latest-optimized
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runner-optimized-$VERSION
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runner-optimized-$VERSION ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-optimized
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-optimized
+
+          # Tag full image as latest-full
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:full-$VERSION
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:full-$VERSION ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-full
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-full
+
+  notify-release:
+    needs: [prepare-release, create-release, publish-pypi, update-docker-latest]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Release Summary
+        run: |
+          echo "=== Release Summary ==="
+          echo "Version: ${{ needs.prepare-release.outputs.version }}"
+          echo "Is Prerelease: ${{ needs.prepare-release.outputs.is-prerelease }}"
+          echo "GitHub Release: ✅ Created"
+          echo "PyPI Publish: ${{ (github.event.inputs.publish_to_pypi == 'true' && 'Requested') || 'Skipped' }}"
+          echo "Docker Images: ${{ (github.event.inputs.publish_docker != 'false' && 'Published') || 'Skipped' }}"
+          echo ""
+          echo "=== Release URL ==="
+          echo "https://github.com/${{ github.repository }}/releases/tag/v${{ needs.prepare-release.outputs.version }}"
+          echo ""
+          echo "=== Docker Images ==="
+          if [[ "${{ github.event.inputs.publish_docker }}" != "false" ]]; then
+            echo "Runner: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runner-${{ needs.prepare-release.outputs.version }}"
+            echo "Runner (Optimized): ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:runner-optimized-${{ needs.prepare-release.outputs.version }}"
+            echo "Full: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:full-${{ needs.prepare-release.outputs.version }}"
+          else
+            echo "Docker publishing was disabled"
+          fi
+
+      # Optional: Send notification to Slack, Discord, etc.
+      # - name: Send notification
+      #   if: success()
+      #   run: |
+      #     # Add notification logic here

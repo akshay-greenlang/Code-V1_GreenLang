@@ -7,7 +7,7 @@ def test_simple_calc():
     """Test simple emissions calculation"""
     print("Testing Simple Calculator...")
     
-    client = GreenLangClient(region="US")
+    client = GreenLangClient()
     
     # Test electricity
     result = client.calculate_emissions("electricity", 5000, "kWh")
@@ -46,37 +46,46 @@ def test_simple_calc():
 def test_building_calc():
     """Test building calculator"""
     print("\n\nTesting Building Calculator...")
-    
-    client = GreenLangClient(region="IN")
-    
-    building_data = {
-        "metadata": {
-            "building_type": "hospital",
-            "area": 100000,
-            "area_unit": "sqft",
-            "location": {"country": "IN"},
-            "occupancy": 500,
-            "floor_count": 5,
-            "building_age": 10
-        },
-        "energy_consumption": {
-            "electricity": {"value": 3500000, "unit": "kWh"},
-            "diesel": {"value": 50000, "unit": "liters"}
-        }
-    }
-    
-    result = client.analyze_building(building_data)
-    if result["success"]:
-        data = result["data"]
-        print(f"[OK] Building Analysis Complete")
-        if "emissions" in data:
-            print(f"  Total: {data['emissions'].get('total_co2e_tons', 0):.2f} metric tons CO2e")
-        if "intensity" in data:
-            print(f"  Intensity: {data['intensity']['intensities'].get('per_sqft_year', 0):.2f} kgCO2e/sqft/year")
-        if "benchmark" in data:
-            print(f"  Rating: {data['benchmark'].get('rating', 'N/A')}")
+
+    client = GreenLangClient()
+
+    # Calculate emissions for electricity
+    elec_result = client.calculate_emissions("electricity", 3500000, "kWh")
+    diesel_result = client.calculate_emissions("diesel", 50000, "liters")
+
+    if elec_result["success"] and diesel_result["success"]:
+        # Aggregate emissions
+        emissions_list = [
+            elec_result["data"],
+            diesel_result["data"]
+        ]
+
+        agg_result = client.aggregate_emissions(emissions_list)
+
+        if agg_result["success"]:
+            total_kg = agg_result["data"]["total_co2e_kg"]
+
+            # Benchmark the building
+            bench_result = client.benchmark_emissions(
+                total_emissions_kg=total_kg,
+                building_area=100000,
+                building_type="hospital",
+                period_months=12
+            )
+
+            if bench_result["success"]:
+                print(f"[OK] Building Analysis Complete")
+                print(f"  Total: {agg_result['data']['total_co2e_tons']:.2f} metric tons CO2e")
+                if "emissions_intensity_kg_per_sqft" in bench_result["data"]:
+                    print(f"  Intensity: {bench_result['data']['emissions_intensity_kg_per_sqft']:.2f} kgCO2e/sqft/year")
+                if "rating" in bench_result["data"]:
+                    print(f"  Rating: {bench_result['data']['rating']}")
+            else:
+                print(f"[FAIL] Benchmark failed: {bench_result.get('error')}")
+        else:
+            print(f"[FAIL] Aggregation failed: {agg_result.get('error')}")
     else:
-        print(f"[FAIL] Building analysis failed: {result.get('error')}")
+        print(f"[FAIL] Emissions calculation failed")
 
 if __name__ == "__main__":
     test_simple_calc()

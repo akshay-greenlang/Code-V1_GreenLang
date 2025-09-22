@@ -1,0 +1,376 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+  workflow_dispatch:
+    inputs:
+      python_version:
+        description: 'Python version to test'
+        required: false
+        default: '3.11'
+        type: choice
+        options:
+          - '3.10'
+          - '3.11'
+          - '3.12'
+      os_matrix:
+        description: 'Operating systems to test'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - 'all'
+          - 'ubuntu-only'
+          - 'windows-only'
+          - 'macos-only'
+
+env:
+  PYTHON_VERSION_DEFAULT: '3.11'
+  CACHE_VERSION: v1
+
+jobs:
+  setup-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      python-versions: ${{ steps.set-matrix.outputs.python-versions }}
+      os-matrix: ${{ steps.set-matrix.outputs.os-matrix }}
+    steps:
+      - name: Set up build matrix
+        id: set-matrix
+        run: |
+          if [[ "${{ github.event.inputs.python_version }}" != "" ]]; then
+            echo "python-versions=[\"${{ github.event.inputs.python_version }}\"]" >> $GITHUB_OUTPUT
+          else
+            echo "python-versions=[\"3.10\", \"3.11\", \"3.12\"]" >> $GITHUB_OUTPUT
+          fi
+
+          case "${{ github.event.inputs.os_matrix }}" in
+            "ubuntu-only")
+              echo "os-matrix=[\"ubuntu-latest\"]" >> $GITHUB_OUTPUT
+              ;;
+            "windows-only")
+              echo "os-matrix=[\"windows-latest\"]" >> $GITHUB_OUTPUT
+              ;;
+            "macos-only")
+              echo "os-matrix=[\"macos-latest\"]" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "os-matrix=[\"ubuntu-latest\", \"windows-latest\", \"macos-latest\"]" >> $GITHUB_OUTPUT
+              ;;
+          esac
+
+  build-wheels:
+    needs: setup-matrix
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJson(needs.setup-matrix.outputs.os-matrix) }}
+        python-version: ${{ fromJson(needs.setup-matrix.outputs.python-versions) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.local/share/pip
+            %APPDATA%\pip\Cache
+          key: ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-${{ matrix.python-version }}-
+            ${{ runner.os }}-pip-${{ env.CACHE_VERSION }}-
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build wheel setuptools
+
+      - name: Build Python package (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x scripts/ci/build-python.sh
+          ./scripts/ci/build-python.sh
+
+      - name: Build Python package (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          scripts\ci\build-python.bat
+
+      - name: Install package for testing
+        run: |
+          pip install dist/*.whl
+
+      - name: Run smoke tests (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          chmod +x scripts/ci/smoke-test.sh
+          ./scripts/ci/smoke-test.sh
+
+      - name: Run smoke tests (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          scripts\ci\smoke-test.bat
+
+      - name: Generate checksums (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd dist
+          for file in *; do
+            sha256sum "$file" > "$file.sha256"
+            sha512sum "$file" > "$file.sha512"
+          done
+
+      - name: Generate checksums (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          cd dist
+          Get-ChildItem | ForEach-Object {
+            $hash256 = Get-FileHash $_.Name -Algorithm SHA256
+            $hash512 = Get-FileHash $_.Name -Algorithm SHA512
+            "$($hash256.Hash.ToLower()) *$($_.Name)" | Out-File -FilePath "$($_.Name).sha256" -Encoding ascii
+            "$($hash512.Hash.ToLower()) *$($_.Name)" | Out-File -FilePath "$($_.Name).sha512" -Encoding ascii
+          }
+        shell: powershell
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-packages-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            dist/
+          retention-days: 7
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            test-results/
+            smoke-test-results.txt
+          retention-days: 3
+
+  build-sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+          cache: 'pip'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build
+
+      - name: Build source distribution
+        run: |
+          python -m build --sdist
+
+      - name: Generate source dist checksums
+        run: |
+          cd dist
+          sha256sum *.tar.gz > greenlang-sdist.sha256
+          sha512sum *.tar.gz > greenlang-sdist.sha512
+
+      - name: Upload source distribution
+        uses: actions/upload-artifact@v3
+        with:
+          name: python-sdist
+          path: |
+            dist/*.tar.gz
+            dist/*.sha256
+            dist/*.sha512
+
+  verify-packages:
+    needs: [build-wheels, build-sdist]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: List downloaded artifacts
+        run: |
+          echo "=== Downloaded Artifacts ==="
+          find . -name "*.whl" -o -name "*.tar.gz" | sort
+          echo "=== Checksums ==="
+          find . -name "*.sha256" -o -name "*.sha512" | sort
+
+      - name: Verify package integrity
+        run: |
+          echo "=== Verifying package checksums ==="
+          for checksum_file in $(find . -name "*.sha256"); do
+            echo "Verifying $checksum_file"
+            dir=$(dirname "$checksum_file")
+            (cd "$dir" && sha256sum -c "$(basename "$checksum_file")")
+          done
+
+      - name: Test wheel installation
+        run: |
+          echo "=== Testing wheel installations ==="
+          for wheel in $(find . -name "*.whl"); do
+            echo "Testing $wheel"
+            python -m venv test_env
+            source test_env/bin/activate
+            pip install "$wheel"
+            python -c "import greenlang; print(f'Successfully imported GreenLang {greenlang.__version__}')"
+            gl --version
+            deactivate
+            rm -rf test_env
+          done
+
+      - name: Test source distribution
+        run: |
+          echo "=== Testing source distribution ==="
+          for sdist in $(find . -name "*.tar.gz"); do
+            echo "Testing $sdist"
+            python -m venv test_env_sdist
+            source test_env_sdist/bin/activate
+            pip install "$sdist"
+            python -c "import greenlang; print(f'Successfully installed from sdist: {greenlang.__version__}')"
+            gl --version
+            deactivate
+            rm -rf test_env_sdist
+          done
+
+  security-scan:
+    needs: [build-wheels]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
+
+      - name: Download Ubuntu wheel
+        uses: actions/download-artifact@v3
+        with:
+          name: python-packages-ubuntu-latest-py${{ env.PYTHON_VERSION_DEFAULT }}
+
+      - name: Install security scanning tools
+        run: |
+          pip install safety bandit pip-audit
+
+      - name: Install package for scanning
+        run: |
+          pip install dist/*.whl
+
+      - name: Run safety check
+        run: |
+          safety check --json --output safety-report.json || true
+          safety check || echo "Safety check found issues (non-blocking)"
+
+      - name: Run bandit security linter
+        run: |
+          bandit -r greenlang/ -f json -o bandit-report.json || true
+          bandit -r greenlang/ || echo "Bandit found issues (non-blocking)"
+
+      - name: Run pip-audit
+        run: |
+          pip-audit --format=json --output=pip-audit-report.json || true
+          pip-audit || echo "pip-audit found issues (non-blocking)"
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            safety-report.json
+            bandit-report.json
+            pip-audit-report.json
+
+  collect-artifacts:
+    needs: [build-wheels, build-sdist, verify-packages, security-scan]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Organize artifacts
+        run: |
+          mkdir -p final-artifacts/{wheels,sdist,checksums,reports}
+
+          # Collect wheels
+          find . -name "*.whl" -exec cp {} final-artifacts/wheels/ \;
+
+          # Collect source distributions
+          find . -name "*.tar.gz" -exec cp {} final-artifacts/sdist/ \;
+
+          # Collect checksums
+          find . -name "*.sha256" -exec cp {} final-artifacts/checksums/ \;
+          find . -name "*.sha512" -exec cp {} final-artifacts/checksums/ \;
+
+          # Collect reports
+          find . -name "*-report.json" -exec cp {} final-artifacts/reports/ \; || true
+          find . -name "*-results.txt" -exec cp {} final-artifacts/reports/ \; || true
+
+      - name: Create build manifest
+        run: |
+          cat > final-artifacts/build-manifest.json << EOF
+          {
+            "build_timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "git_sha": "${{ github.sha }}",
+            "git_ref": "${{ github.ref }}",
+            "workflow_run_id": "${{ github.run_id }}",
+            "workflow_run_number": "${{ github.run_number }}",
+            "version": "0.2.0",
+            "python_versions": ${{ needs.setup-matrix.outputs.python-versions }},
+            "operating_systems": ${{ needs.setup-matrix.outputs.os-matrix }}
+          }
+          EOF
+
+      - name: Upload final artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: greenlang-v0.2.0-build-artifacts
+          path: final-artifacts/
+          retention-days: 30
+
+      - name: Display build summary
+        run: |
+          echo "=== Build Summary ==="
+          echo "Version: 0.2.0"
+          echo "Git SHA: ${{ github.sha }}"
+          echo "Workflow Run: ${{ github.run_id }}"
+          echo ""
+          echo "=== Artifacts Created ==="
+          find final-artifacts -type f | sort
+          echo ""
+          echo "=== Package Counts ==="
+          echo "Wheels: $(find final-artifacts/wheels -name "*.whl" | wc -l)"
+          echo "Source Distributions: $(find final-artifacts/sdist -name "*.tar.gz" | wc -l)"
+          echo "Checksums: $(find final-artifacts/checksums -name "*.sha*" | wc -l)"

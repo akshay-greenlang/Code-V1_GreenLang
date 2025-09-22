@@ -1,0 +1,62 @@
+{
+  "status": "FAIL",
+  "issues": [
+    {
+      "file": "tests/unit/security/test_signature_verification.py",
+      "line": 81,
+      "severity": "ERROR",
+      "category": "style",
+      "message": "IndentationError: unexpected indent - assert statement incorrectly indented",
+      "fix": "Reduce indentation to align with proper block level (FIXED)"
+    },
+    {
+      "file": "greenlang/sdk/__init__.py",
+      "line": 1,
+      "severity": "ERROR",
+      "category": "import",
+      "message": "Missing exports for GreenLangClient, WorkflowBuilder, AgentBuilder causing ImportError in tests",
+      "fix": "Add imports and exports for missing classes (FIXED)"
+    },
+    {
+      "file": "tests/helpers/",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "import",
+      "message": "Missing __init__.py preventing module imports",
+      "fix": "Create __init__.py file (FIXED)"
+    },
+    {
+      "file": "tests/auth/test_multitenancy.py",
+      "line": 6,
+      "severity": "WARNING",
+      "category": "lint",
+      "message": "F401: Multiple unused imports (MagicMock, patch, json, jwt, etc.)",
+      "fix": "Remove unused imports or add # noqa: F401 if intentionally kept"
+    },
+    {
+      "file": "multiple files",
+      "line": 0,
+      "severity": "WARNING",
+      "category": "style",
+      "message": "W293: 90+ instances of blank lines containing whitespace",
+      "fix": "Remove trailing whitespace from blank lines"
+    },
+    {
+      "file": "multiple files",
+      "line": 0,
+      "severity": "WARNING",
+      "category": "style",
+      "message": "E128: 17 instances of continuation line under-indented",
+      "fix": "Fix indentation for line continuations"
+    },
+    {
+      "file": "tests/",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "dangerous",
+      "message": "Coverage at 9.43%, far below 85% DoD requirement",
+      "fix": "Implement missing agent methods, convert scripts to tests, add comprehensive test coverage"
+    }
+  ],
+  "summary": "Critical issues fixed to make tests runnable, but significant work remains. Main blockers: 1) IndentationError (FIXED), 2) Import errors from missing SDK exports (FIXED), 3) Missing package init files (FIXED). Remaining issues: extensive linting violations (100+ warnings), extremely low test coverage (9.43% vs 85% required). The codebase needs systematic cleanup of whitespace issues, unused imports, and major test coverage improvements to meet DoD requirements."
+}

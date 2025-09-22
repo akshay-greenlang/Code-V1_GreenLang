@@ -1,0 +1,46 @@
+{
+  "greenlang_version": "0.2.0",
+  "dod_verification_date": "2025-09-22T13:51:29.103010",
+  "compliance_summary": {
+    "total_checks": 7,
+    "passed_checks": 6,
+    "compliance_percentage": 85.71428571428571,
+    "overall_status": "NON_COMPLIANT"
+  },
+  "detailed_results": {
+    "version_alignment": {
+      "status": true,
+      "details": "PASS: Version 0.2.0 in pyproject.toml, Python >=3.10, version import works, meeting docs created, release tags exist"
+    },
+    "security_part_1": {
+      "status": true,
+      "details": "PASS: No SSL bypass patterns in production code, default-deny policies implemented, capability-gated runtime, unsigned pack blocking enforced"
+    },
+    "security_part_2": {
+      "status": true,
+      "details": "PASS: Mock keys only in test files, comprehensive test structure (126 test files), coverage threshold set to 85%, TruffleHog scan results available"
+    },
+    "build_package": {
+      "status": true,
+      "details": "PASS: dist/*.whl and dist/*.tar.gz exist, Docker images built (multiple variants), SBOMs generated, gl --version works"
+    },
+    "tools_verification": {
+      "status": true,
+      "details": "Package validation with twine"
+    },
+    "coverage_verification": {
+      "status": false,
+      "details": "Coverage threshold verification"
+    },
+    "security_audit": {
+      "status": true,
+      "details": "pip-audit dependency security scan"
+    }
+  },
+  "recommendations": [
+    "Address all failed verification items before final release"
+  ],
+  "blockers": [
+    "coverage_verification: Coverage threshold verification"
+  ]
+}

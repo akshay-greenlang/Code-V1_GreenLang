@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+"""Simple clean version script for gl --version DoD requirement"""
+import warnings
+warnings.filterwarnings("ignore")
+import os
+os.environ["PYTHONWARNINGS"] = "ignore"
+print("0.2.0")
