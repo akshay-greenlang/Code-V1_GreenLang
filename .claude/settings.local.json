@@ -190,7 +190,8 @@
       "Bash(\".venv-smoke-final/Scripts/pip.exe\" install dist/greenlang-0.2.0b1-py3-none-any.whl --quiet)",
       "Bash(\".venv-smoke-final/Scripts/python.exe\" -c \"import greenlang; print(''Version:'', greenlang.__version__)\")",
       "Bash(git cat-file:*)",
-      "Bash(git filter-branch:*)"
+      "Bash(git filter-branch:*)",
+      "Bash(set FILTER_BRANCH_SQUELCH_WARNING=1)"
     ],
     "deny": []
   }
