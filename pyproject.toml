@@ -30,6 +30,10 @@ dependencies = [
   "requests>=2.31.0",
   "networkx>=3.0",
   "tenacity>=8.2.3",
+  "psutil>=5.9.0",
+  # TODO: Move pandas to optional in v0.2.1 - fix lazy loading in solar_resource_agent
+  "pandas>=2.0.0",
+  "numpy>=1.24.0",
 ]
 
 [project.scripts]
