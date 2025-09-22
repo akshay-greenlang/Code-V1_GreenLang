@@ -191,7 +191,9 @@
       "Bash(\".venv-smoke-final/Scripts/python.exe\" -c \"import greenlang; print(''Version:'', greenlang.__version__)\")",
       "Bash(git cat-file:*)",
       "Bash(git filter-branch:*)",
-      "Bash(set FILTER_BRANCH_SQUELCH_WARNING=1)"
+      "Bash(set FILTER_BRANCH_SQUELCH_WARNING=1)",
+      "Bash(git reflog:*)",
+      "Bash(git gc:*)"
     ],
     "deny": []
   }
