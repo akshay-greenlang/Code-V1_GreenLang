@@ -1,7 +1,7 @@
 """Demo command for GreenLang CLI."""
+
 import json
 import time
-from pathlib import Path
 import typer
 from rich.console import Console
 from rich.panel import Panel
@@ -13,7 +13,6 @@ app = typer.Typer(help="Run a tiny offline demo pipeline")
 @app.callback()
 def callback():
     """Demo command callback."""
-    pass
 
 
 @app.command()
@@ -39,12 +38,10 @@ def run():
         "result": {
             "input": {
                 "load_kwh": load_kwh,
-                "grid_emission_factor": grid_emission_factor
+                "grid_emission_factor": grid_emission_factor,
             },
-            "output": {
-                "emissions_kgco2": round(emissions, 3)
-            }
-        }
+            "output": {"emissions_kgco2": round(emissions, 3)},
+        },
     }
 
     console.print("\n[green]✓ Demo pipeline completed successfully![/green]")

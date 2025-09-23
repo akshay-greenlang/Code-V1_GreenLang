@@ -177,41 +177,33 @@ class TestSecurityWorkflows(unittest.TestCase):
         if "opa not" not in output:
             self.assertIn("region", output)
 
-    def test_permissive_mode_workflow(self):
-        """Test that permissive mode allows otherwise denied operations"""
-        # Set environment variable for permissive mode
-        os.environ["GL_POLICY_PERMISSIVE"] = "1"
+    def test_denied_operations_always_blocked(self):
+        """Test that denied operations are consistently blocked with no bypasses"""
+        # Create input that should always be denied
+        denied_input = {
+            "pack": {
+                "name": "bad-pack",
+                "publisher": "unknown-publisher",  # Not in allowlist
+                "signature_verified": False  # Unsigned
+            },
+            "stage": "install"
+        }
 
-        try:
-            # Create input that would normally be denied
-            bad_input = {
-                "pack": {
-                    "name": "bad-pack",
-                    "publisher": "unknown",
-                    "signature_verified": False
-                },
-                "stage": "install"
-            }
+        input_file = self.test_root / "denied_input.json"
+        with open(input_file, "w") as f:
+            json.dump(denied_input, f)
 
-            input_file = self.test_root / "bad_input.json"
-            with open(input_file, "w") as f:
-                json.dump(bad_input, f)
+        # Should always be denied - no permissive mode bypasses
+        from greenlang.policy.opa import evaluate
+        result = evaluate(
+            "policies/default/allowlists.rego",
+            denied_input,
+            permissive_mode=False  # Ensure strict enforcement
+        )
 
-            # In permissive mode, this should pass (with warnings)
-            from greenlang.policy.opa import evaluate
-            result = evaluate(
-                "policies/default/allowlists.rego",
-                bad_input,
-                permissive_mode=True
-            )
-
-            # In permissive mode, should allow
-            self.assertTrue(result.get("allow", False), "Permissive mode should allow")
-            self.assertIn("PERMISSIVE", result.get("reason", ""))
-
-        finally:
-            # Clean up environment
-            del os.environ["GL_POLICY_PERMISSIVE"]
+        # Should be denied
+        self.assertFalse(result.get("allow", True), "Should always deny unsafe operations")
+        self.assertIn("DENIED", result.get("reason", "").upper())
 
 
 class TestCLIIntegration(unittest.TestCase):
@@ -237,7 +229,7 @@ class TestCLIIntegration(unittest.TestCase):
         )
 
         self.assertIn("--allow-unsigned", result.stdout)
-        self.assertIn("--policy-permissive", result.stdout)
+        # Removed --policy-permissive flag - no permissive mode allowed
 
     def test_pack_publish_with_skip_policy_flag(self):
         """Test gl pack publish --skip-policy flag"""
@@ -327,7 +319,7 @@ class TestPolicyDecisionAudit(unittest.TestCase):
             }
 
             with self.assertRaises(RuntimeError):
-                check_install(manifest, "/tmp", "add", permissive=False)
+                check_install(manifest, "/tmp", "add")
 
             # Check logs
             log_contents = log_capture.getvalue()
@@ -361,7 +353,7 @@ class TestPolicyDecisionAudit(unittest.TestCase):
             })()
 
             with self.assertRaises(RuntimeError):
-                check_run(pipeline, context, permissive=False)
+                check_run(pipeline, context)
 
             log_contents = log_capture.getvalue()
             # Should log about capability denial

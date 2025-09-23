@@ -9,9 +9,7 @@ warnings.warn(
     "Importing from 'core.greenlang' is deprecated. Use 'import greenlang' instead. "
     "This compatibility layer will be removed in v0.3.0.",
     DeprecationWarning,
-    stacklevel=2
+    stacklevel=2,
 )
 
 # Re-export everything from the canonical greenlang package
-from greenlang import *
-from greenlang import __version__

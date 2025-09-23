@@ -1,0 +1,242 @@
+{
+  "timestamp": "2025-09-22T19:46:59.824041",
+  "issues_found": {
+    "black": {
+      "status": "success",
+      "files_formatted": 0,
+      "errors": [],
+      "needs_formatting": true,
+      "diff": "--- C:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang\\greenlang\\__init__.py\t2025-09-22 14:13:14.325845+00:00\n+++ C:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang\\greenlang\\__init__.py\t2025-09-22 14:17:01.726410+00:00\n@@ -5,11 +5,10 @@\n GreenLang is now pure infrastructure. Domain logic lives in packs.\n Platform = SDK/CLI/Runtime + Hub + Policy/Provenance\n \n Success = Developer Love + Trust + Distribution\n \"\"\"\n-\n \n __author__ = \"GreenLang Team\"\n __email__ = \"team@greenlang.io\"\n __license__ = \"MIT\"\n \n--- C:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang\\core\\greenlang\\security\\signatures.py\t2025-09-22 14:13:14.321827+00:00\n+++ C:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang\\core\\greenlang\\security\\signatures.py\t2025-09-22 14:17:01.852223+00:00\n@@ -18,11 +18,10 @@\n logger = logging.getLogger(__name__)\n \n \n class SignatureVerificationError(Exception):\n     \"\"\"Raised when signature verification fails\"\"\"\n-\n \n \n class PackVerifier:\n     \"\"\"\n     Verifies pack signatures and integrity\n--- C:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang\\greenlang\\security\\signatures.py\t2025-09-22 14:13:14.800922+00:00\n+++ C:\\Users\\rshar\\Desktop\\Akshay Makar\\Tools\\GreenLang\\Code V1_GreenLang\\greenlang\\security\\signatures.py\t2025-09-22 14:17:02.849070+00:00\n@@ -18,11 +18,10 @@\n logger = logging.getLogger(__name__)\n \n \n class SignatureVerificationError(Exception):\n     \"\"\"Raised when signature verification fails\"\"\"\n-\n \n \n class PackVerifier:\n     \"\"\"\n     Verifies pack signatures and integrity\n"
+    },
+    "autoflake": {
+      "status": "success",
+      "changes_made": true,
+      "errors": [],
+      "output": "greenlang/types.py: No issues detected!\n\ngreenlang/auth\\auth.py: No issues detected!\n\ngreenlang/cli\\assistant.py: No issues detected!\n\ngreenlang/cli\\pack.py: No issues detected!\n\ngreenlang/core\\workflow.py: No issues detected!\n\ngreenlang/policy\\opa.py: No issues detected!\n\ngreenlang/provenance\\signing.py: No issues detected!\n\ngreenlang/runtime\\backends\\k8s.py: No issues detected!\n\ngreenlang/telemetry\\tracing.py: No issues detected!\n\ncore/greenlang\\hub\\index.py: No issues detected!\n\ncore/greenlang\\provenance\\ledger.py: No issues detected!\n\ngreenlang/agents\\energy_balance_agent.py: No issues detected!\n\ngreenlang/cards\\__init__.py: No issues detected!\n\ngreenlang/cli\\cmd_demo.py: No issues detected!\n\ngreenlang/cli\\cmd_init.py: No issues detected!\n\ngreenlang/cli\\cmd_verify.py: No issues detected!\n\ngreenlang/cli\\telemetry.py: No issues detected!\n\ngreenlang/hub\\index.py: No issues detected!\n\ngreenlang/policy\\enforcer.py: No issues detected!\n\ngreenlang/provenance\\utils.py: No issues detected!\n\ngreenlang/runtime\\backends\\docker.py: No issues detected!\n\ngreenlang/sdk\\context.py: No issues detected!\n\ngreenlang/security\\paths.py: No issues detected!\n\ngreenlang/telemetry\\health.py: No issues detected!\n\ncore/greenlang\\cli\\cmd_verify.py: No issues detected!\n\ncore/greenlang\\provenance\\key_provider.py: No issues detected!\n\ncore/greenlang\\provenance\\sign.py: No issues detected!\n\ncore/greenlang\\sdk\\pipeline.py: No issues detected!\n\ncore/greenlang\\security\\__init__.py: No issues detected!\n\ngreenlang/agents\\base.py: No issues detected!\n\ngreenlang/agents\\site_input_agent.py: No issues detected!\n\ngreenlang/agents\\types.py: No issues detected!\n\ngreenlang/auth\\tenant.py: No issues detected!\n\ngreenlang/cli\\cmd_pack_new.py: No issues detected!\n\ngreenlang/cli\\cmd_schema.py: No issues detected!\n\ngreenlang/cli\\tenant.py: No issues detected!\n\ngreenlang/packs\\dependency_resolver.py: No issues detected!\n\ngreenlang/provenance\\ledger.py: No issues detected!\n\ngreenlang/runtime\\__init__.py: No issues detected!\n\ngreenlang/runtime\\backends\\base.py: No issues detected!\n\ngreenlang/runtime\\backends\\__init__.py: No issues detected!\n\ngreenlang/sdk\\builder.py: No issues detected!\n\ngreenlang/sdk\\pipeline_spec.py: No issues detected!\n\ngreenlang/telemetry\\__init__.py: No issues detected!\n\ngreenlang/utils\\net.py: No issues detected!\n\ncore/greenlang\\_version.py: No issues detected!\n\ncore/greenlang\\cards\\generator.py: No issues detected!\n\ncore/greenlang\\cli\\__init__.py: No issues detected!\n\ncore/greenlang\\packs\\loader.py: No issues detected!\n\ncore/greenlang\\runtime\\golden.py: No issues detected!\n\ngreenlang/agents\\field_layout_agent.py: No issues detected!\n\ngreenlang/_version.py: No issues detected!\n\ngreenlang/cards\\templates.py: No issues detected!\n\ngreenlang/cards\\validator.py: No issues detected!\n\ngreenlang/cli\\cmd_run.py: No issues detected!\n\ngreenlang/cli\\enhanced_main.py: No issues detected!\n\ngreenlang/data\\models.py: No issues detected!\n\ngreenlang/hub\\cli.py: No issues detected!\n\ngreenlang/runtime\\golden.py: No issues detected!\n\ngreenlang/sdk\\enhanced_client.py: No issues detected!\n\ngreenlang/utils\\performance_tracker.py: No issues detected!\n\ncore/greenlang\\cli\\__main__.py: No issues detected!\n\ncore/greenlang\\hub\\__init__.py: No issues detected!\n\ncore/greenlang\\packs\\loader_simple.py: No issues detected!\n\ncore/greenlang\\policy\\opa.py: No issues detected!\n\ncore/greenlang\\provenance\\sbom.py: No issues detected!\n\ngreenlang/agents\\benchmark_agent.py: No issues detected!\n\ngreenlang/agents\\intensity_agent.py: No issues detected!\n\ngreenlang/agents\\report_agent.py: No issues detected!\n\ngreenlang/agents\\solar_resource_agent.py: No issues detected!\n\ngreenlang/agents\\__init__.py: No issues detected!\n\ngreenlang/auth\\audit.py: No issues detected!\n\ngreenlang/cli\\cmd_doctor.py: No issues detected!\n\ngreenlang/cli\\cmd_validate.py: No issues detected!\n\ngreenlang/cli\\dev_interface.py: No issues detected!\n\ngreenlang/telemetry\\metrics.py: No issues detected!\n\ncore/greenlang\\cli\\cmd_run.py: No issues detected!\n\ncore/greenlang\\packs\\registry.py: No issues detected!\n\ncore/greenlang\\provenance\\utils.py: No issues detected!\n\ncore/greenlang\\security\\network.py: No issues detected!\n\ngreenlang/agents\\fuel_agent.py: No issues detected!\n\ncore/greenlang\\cli\\cmd_init.py: No issues detected!\n\ncore/greenlang\\packs\\manifest.py: No issues detected!\n\ncore/greenlang\\runtime\\__init__.py: No issues detected!\n\ncore/greenlang\\sdk\\base.py: No issues detected!\n\ngreenlang/agents\\building_profile_agent.py: No issues detected!\n\ngreenlang/auth\\rbac.py: No issues detected!\n\ngreenlang/cli\\cmd_capabilities.py: No issues detected!\n\ngreenlang/cli\\complete_cli.py: No issues detected!\n\ngreenlang/compat\\testing.py: No issues detected!\n\ngreenlang/core\\orchestrator.py: No issues detected!\n\ngreenlang/hub\\manifest.py: No issues detected!\n\ngreenlang/packs\\loader_simple.py: No issues detected!\n\ngreenlang/packs\\manifest.py: No issues detected!\n\ngreenlang/provenance\\__init__.py: No issues detected!\n\ngreenlang/registry\\oci_client.py: No issues detected!\n\ngreenlang/sdk\\base.py: No issues detected!\n\ngreenlang/security\\signatures.py: No issues detected!\n\ngreenlang/telemetry\\performance.py: No issues detected!\n\ncore/greenlang\\cards\\validator.py: No issues detected!\n\ncore/greenlang\\packs\\installer.py: No issues detected!\n\ncore/greenlang\\provenance\\signing.py: No issues detected!\n\ngreenlang/agents\\carbon_agent.py: No issues detected!\n\ngreenlang/cli\\agent_registry.py: No issues detected!\n\ngreenlang/cli\\cmd_policy.py: No issues detected!\n\ngreenlang/cli\\main.py: No issues detected!\n\ngreenlang/cli\\policy.py: No issues detected!\n\ngreenlang/core\\context_manager.py: No issues detected!\n\ngreenlang/hub\\client.py: No issues detected!\n\ngreenlang/provenance\\key_provider.py: No issues detected!\n\ngreenlang/provenance\\sbom.py: No issues detected!\n\ngreenlang/runtime\\backends\\factory.py: No issues detected!\n\ngreenlang/runtime\\backends\\local.py: No issues detected!\n\ngreenlang/security\\signing.py: No issues detected!\n\ngreenlang/utils\\unit_converter.py: No issues detected!\n\ncore/greenlang\\cli\\cmd_pack.py: No issues detected!\n\ncore/greenlang\\security\\signatures.py: No issues detected!\n\ngreenlang/agents\\demo_agent.py: No issues detected!\n\ngreenlang/cli\\main_new.py: No issues detected!\n\ngreenlang/cli\\__init__.py: No issues detected!\n\ngreenlang/cli\\__main__.py: No issues detected!\n\ngreenlang/compat\\__init__.py: No issues detected!\n\ngreenlang/core\\__init__.py: No issues detected!\n\ngreenlang/data\\emission_factors.py: No issues detected!\n\ngreenlang/hub\\auth.py: No issues detected!\n\ngreenlang/packs\\loader.py: No issues detected!\n\ngreenlang/runtime\\executor.py: No issues detected!\n\ngreenlang/sdk\\__init__.py: No issues detected!\n\ngreenlang/security\\network.py: No issues detected!\n\ngreenlang/security\\__init__.py: No issues detected!\n\ngreenlang/telemetry\\logging.py: No issues detected!\n\ncore/greenlang\\cli\\main.py: No issues detected!\n\ncore/greenlang\\sdk\\context.py: No issues detected!\n\ncore/greenlang\\utils\\net.py: No issues detected!\n\ngreenlang/agents\\boiler_agent.py: No issues detected!\n\ngreenlang/cli\\cmd_pack.py: No issues detected!\n\ngreenlang/core\\artifact_manager.py: No issues detected!\n\ngreenlang/packs\\installer.py: No issues detected!\n\ngreenlang/provenance\\sign.py: No issues detected!\n\ngreenlang/runtime\\guard.py: No issues detected!\n\ngreenlang/sdk\\pipeline.py: No issues detected!\n\ngreenlang/security\\key_manager.py: No issues detected!\n\ncore/greenlang\\__init__.py: No issues detected!\n\ncore/greenlang\\agents\\mock.py: No issues detected!\n\ncore/greenlang\\cards\\templates.py: No issues detected!\n\ncore/greenlang\\cards\\__init__.py: No issues detected!\n\ncore/greenlang\\cli\\cmd_doctor.py: No issues detected!\n\ncore/greenlang\\policy\\enforcer.py: No issues detected!\n\ncore/greenlang\\runtime\\executor.py: No issues detected!\n\ngreenlang/__init__.py: No issues detected!\n\ngreenlang/agents\\grid_factor_agent.py: No issues detected!\n\ngreenlang/agents\\load_profile_agent.py: No issues detected!\n\ngreenlang/agents\\mock.py: No issues detected!\n\ngreenlang/agents\\recommendation_agent.py: No issues detected!\n\ngreenlang/agents\\validator_agent.py: No issues detected!\n\ngreenlang/auth\\__init__.py: No issues detected!\n\ngreenlang/cards\\generator.py: No issues detected!\n\ngreenlang/cli\\assistant_rag.py: No issues detected!\n\ngreenlang/cli\\jsonl_logger.py: No issues detected!\n\ngreenlang/cli\\main_old.py: No issues detected!\n\ngreenlang/data\\__init__.py: No issues detected!\n\ngreenlang/hub\\archive.py: No issues detected!\n\ngreenlang/hub\\__init__.py: No issues detected!\n\ngreenlang/middleware\\rate_limiter.py: No issues detected!\n\ngreenlang/packs\\registry.py: No issues detected!\n\ngreenlang/runtime\\backends\\executor.py: No issues detected!\n\ngreenlang/sdk\\client.py: No issues detected!\n\ngreenlang/telemetry\\monitoring.py: No issues detected!\n\ncore/greenlang\\cli\\cmd_policy.py: No issues detected!\n\ncore/greenlang\\sdk\\__init__.py: No issues detected!\n\ncore/greenlang\\security\\paths.py: No issues detected!\n\n"
+    },
+    "unix_paths": {
+      "status": "success",
+      "issues": [
+        {
+          "file": "greenlang\\runtime\\backends\\docker.py",
+          "line": 335,
+          "content": "volumes[temp_dir] = {\"bind\": \"/tmp/outputs\", \"mode\": \"rw\"}",
+          "match": "\"/tmp/outputs\"",
+          "type": "hardcoded_unix_path"
+        }
+      ],
+      "errors": []
+    },
+    "bare_except": {
+      "status": "success",
+      "issues": [
+        {
+          "file": "greenlang\\agents\\fuel_agent.py",
+          "line": 399,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\agents\\recommendation_agent.py",
+          "line": 389,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cards\\validator.py",
+          "line": 193,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\assistant.py",
+          "line": 669,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\assistant_rag.py",
+          "line": 701,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\cmd_doctor.py",
+          "line": 33,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\cmd_doctor.py",
+          "line": 36,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\cmd_doctor.py",
+          "line": 45,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\cmd_doctor.py",
+          "line": 59,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\cmd_doctor.py",
+          "line": 68,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\cmd_doctor.py",
+          "line": 88,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\cmd_doctor.py",
+          "line": 154,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\cmd_verify.py",
+          "line": 28,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\main.py",
+          "line": 84,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\main_new.py",
+          "line": 70,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\main_old.py",
+          "line": 641,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\pack.py",
+          "line": 366,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\cli\\__init__.py",
+          "line": 64,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\hub\\auth.py",
+          "line": 365,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\packs\\dependency_resolver.py",
+          "line": 172,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\packs\\dependency_resolver.py",
+          "line": 409,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\packs\\dependency_resolver.py",
+          "line": 488,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "greenlang\\provenance\\sbom.py",
+          "line": 173,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cards\\validator.py",
+          "line": 193,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cli\\cmd_doctor.py",
+          "line": 33,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cli\\cmd_doctor.py",
+          "line": 36,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cli\\cmd_doctor.py",
+          "line": 45,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cli\\cmd_doctor.py",
+          "line": 59,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cli\\cmd_doctor.py",
+          "line": 68,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cli\\cmd_doctor.py",
+          "line": 88,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cli\\cmd_doctor.py",
+          "line": 154,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\cli\\__init__.py",
+          "line": 64,
+          "content": "except:",
+          "type": "bare_except"
+        },
+        {
+          "file": "core\\greenlang\\provenance\\sbom.py",
+          "line": 173,
+          "content": "except:",
+          "type": "bare_except"
+        }
+      ],
+      "errors": []
+    }
+  },
+  "fixes_applied": {},
+  "summary": {
+    "total_hardcoded_paths": 1,
+    "total_bare_except": 33,
+    "black_formatting_needed": true,
+    "autoflake_changes_needed": true
+  }
+}

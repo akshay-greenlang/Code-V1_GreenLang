@@ -11,13 +11,12 @@ NO HARDCODED KEYS - All keys are either ephemeral or externally managed.
 """
 
 import os
-import json
 import hashlib
 import base64
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional, Dict, Any, Tuple, TypedDict
+from typing import Optional, Dict, Any, TypedDict
 from datetime import datetime
 from dataclasses import dataclass
 
@@ -26,9 +25,15 @@ logger = logging.getLogger(__name__)
 # Try to import cryptography
 try:
     from cryptography.hazmat.primitives import hashes, serialization
-    from cryptography.hazmat.primitives.asymmetric import rsa, ec, ed25519, padding, utils
+    from cryptography.hazmat.primitives.asymmetric import (
+        rsa,
+        ec,
+        ed25519,
+        padding,
+    )
     from cryptography.hazmat.backends import default_backend
     from cryptography.exceptions import InvalidSignature
+
     CRYPTO_AVAILABLE = True
 except ImportError:
     CRYPTO_AVAILABLE = False
@@ -38,7 +43,7 @@ except ImportError:
 try:
     from sigstore.sign import Signer as SigstoreSigner
     from sigstore.verify import Verifier as SigstoreVerifier
-    from sigstore.oidc import detect_credential
+
     SIGSTORE_AVAILABLE = True
 except ImportError:
     SIGSTORE_AVAILABLE = False
@@ -47,6 +52,7 @@ except ImportError:
 
 class SignResult(TypedDict):
     """Result from signing operation"""
+
     signature: bytes
     cert_chain: Optional[bytes]  # for Sigstore bundle
     transparency_entry: Optional[str]  # Rekor entry ID/URL
@@ -58,6 +64,7 @@ class SignResult(TypedDict):
 @dataclass
 class SigningConfig:
     """Configuration for signing operations"""
+
     mode: str  # 'keyless', 'ephemeral', 'kms', 'disabled'
     kms_key_id: Optional[str] = None
     sigstore_audience: Optional[str] = None
@@ -66,22 +73,27 @@ class SigningConfig:
     fulcio_url: Optional[str] = None
 
     @classmethod
-    def from_env(cls) -> 'SigningConfig':
+    def from_env(cls) -> "SigningConfig":
         """Load configuration from environment"""
-        mode = os.environ.get('GL_SIGNING_MODE', 'keyless' if os.environ.get('CI') else 'ephemeral')
+        mode = os.environ.get(
+            "GL_SIGNING_MODE", "keyless" if os.environ.get("CI") else "ephemeral"
+        )
 
         # Detect if we're in CI and have OIDC available
-        if mode == 'keyless' and not os.environ.get('CI'):
-            logger.info("Keyless signing requested but not in CI, falling back to ephemeral")
-            mode = 'ephemeral'
+        if mode == "keyless" and not os.environ.get("CI"):
+            logger.info(
+                "Keyless signing requested but not in CI, falling back to ephemeral"
+            )
+            mode = "ephemeral"
 
         return cls(
             mode=mode,
-            kms_key_id=os.environ.get('GL_KMS_KEY_ID'),
-            sigstore_audience=os.environ.get('GL_SIGSTORE_AUDIENCE', 'sigstore'),
-            sigstore_staging=os.environ.get('GL_SIGSTORE_STAGING', '').lower() in ('1', 'true'),
-            rekor_url=os.environ.get('GL_REKOR_URL'),
-            fulcio_url=os.environ.get('GL_FULCIO_URL')
+            kms_key_id=os.environ.get("GL_KMS_KEY_ID"),
+            sigstore_audience=os.environ.get("GL_SIGSTORE_AUDIENCE", "sigstore"),
+            sigstore_staging=os.environ.get("GL_SIGSTORE_STAGING", "").lower()
+            in ("1", "true"),
+            rekor_url=os.environ.get("GL_REKOR_URL"),
+            fulcio_url=os.environ.get("GL_FULCIO_URL"),
         )
 
 
@@ -99,12 +111,10 @@ class Signer(ABC):
         Returns:
             SignResult with signature and metadata
         """
-        pass
 
     @abstractmethod
     def get_signer_info(self) -> Dict[str, Any]:
         """Get information about this signer"""
-        pass
 
 
 class Verifier(ABC):
@@ -123,12 +133,10 @@ class Verifier(ABC):
         Raises:
             InvalidSignature: If verification fails
         """
-        pass
 
     @abstractmethod
     def get_verifier_info(self) -> Dict[str, Any]:
         """Get information about this verifier"""
-        pass
 
 
 class SigstoreKeylessSigner(Signer):
@@ -150,11 +158,13 @@ class SigstoreKeylessSigner(Signer):
         self.config = config or SigningConfig.from_env()
 
         # Detect if we're in a supported CI environment
-        if not os.environ.get('CI'):
-            raise RuntimeError("Sigstore keyless signing requires CI environment with OIDC")
+        if not os.environ.get("CI"):
+            raise RuntimeError(
+                "Sigstore keyless signing requires CI environment with OIDC"
+            )
 
         # Check for GitHub Actions OIDC
-        if os.environ.get('GITHUB_ACTIONS') != 'true':
+        if os.environ.get("GITHUB_ACTIONS") != "true":
             logger.warning("Not in GitHub Actions, Sigstore signing may not work")
 
         self.staging = self.config.sigstore_staging
@@ -164,7 +174,11 @@ class SigstoreKeylessSigner(Signer):
         """Sign using Sigstore keyless flow"""
         try:
             # Create Sigstore signer
-            signer = SigstoreSigner.production() if not self.staging else SigstoreSigner.staging()
+            signer = (
+                SigstoreSigner.production()
+                if not self.staging
+                else SigstoreSigner.staging()
+            )
 
             # Sign the payload
             result = signer.sign(payload)
@@ -174,11 +188,21 @@ class SigstoreKeylessSigner(Signer):
 
             return SignResult(
                 signature=base64.b64decode(bundle.message_signature.signature),
-                cert_chain=bundle.verification_material.x509_certificate_chain.certificates[0].raw_bytes if bundle.verification_material.x509_certificate_chain else None,
-                transparency_entry=bundle.verification_material.tlog_entries[0].log_id.key_id if bundle.verification_material.tlog_entries else None,
+                cert_chain=(
+                    bundle.verification_material.x509_certificate_chain.certificates[
+                        0
+                    ].raw_bytes
+                    if bundle.verification_material.x509_certificate_chain
+                    else None
+                ),
+                transparency_entry=(
+                    bundle.verification_material.tlog_entries[0].log_id.key_id
+                    if bundle.verification_material.tlog_entries
+                    else None
+                ),
                 algorithm="sigstore-keyless",
                 timestamp=datetime.now().isoformat(),
-                public_key=None  # Keyless doesn't use persistent keys
+                public_key=None,  # Keyless doesn't use persistent keys
             )
 
         except Exception as e:
@@ -190,9 +214,9 @@ class SigstoreKeylessSigner(Signer):
         return {
             "type": "sigstore-keyless",
             "staging": self.staging,
-            "ci_provider": os.environ.get('CI_NAME', 'unknown'),
-            "repository": os.environ.get('GITHUB_REPOSITORY', 'unknown'),
-            "workflow": os.environ.get('GITHUB_WORKFLOW', 'unknown')
+            "ci_provider": os.environ.get("CI_NAME", "unknown"),
+            "repository": os.environ.get("GITHUB_REPOSITORY", "unknown"),
+            "workflow": os.environ.get("GITHUB_WORKFLOW", "unknown"),
         }
 
 
@@ -216,8 +240,8 @@ class EphemeralKeypairSigner(Signer):
         # Store public key in PEM format
         self.public_key_pem = self.public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
-            format=serialization.PublicFormat.SubjectPublicKeyInfo
-        ).decode('utf-8')
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        ).decode("utf-8")
 
         logger.debug("Generated ephemeral Ed25519 keypair for testing")
 
@@ -232,15 +256,17 @@ class EphemeralKeypairSigner(Signer):
             transparency_entry=None,
             algorithm="ed25519",
             timestamp=datetime.now().isoformat(),
-            public_key=self.public_key_pem
+            public_key=self.public_key_pem,
         )
 
     def get_signer_info(self) -> Dict[str, Any]:
         """Get signer information"""
         return {
             "type": "ephemeral-ed25519",
-            "key_fingerprint": hashlib.sha256(self.public_key_pem.encode()).hexdigest()[:16],
-            "test_mode": True
+            "key_fingerprint": hashlib.sha256(self.public_key_pem.encode()).hexdigest()[
+                :16
+            ],
+            "test_mode": True,
         }
 
 
@@ -271,11 +297,7 @@ class ExternalKMSSigner(Signer):
 
     def get_signer_info(self) -> Dict[str, Any]:
         """Get signer information"""
-        return {
-            "type": "kms",
-            "key_id": self.config.kms_key_id,
-            "provider": "unknown"
-        }
+        return {"type": "kms", "key_id": self.config.kms_key_id, "provider": "unknown"}
 
 
 class SigstoreBundleVerifier(Verifier):
@@ -290,15 +312,19 @@ class SigstoreBundleVerifier(Verifier):
 
     def verify(self, payload: bytes, signature: bytes, **kwargs) -> None:
         """Verify Sigstore bundle"""
-        cert_chain = kwargs.get('cert_chain')
-        transparency_entry = kwargs.get('transparency_entry')
+        cert_chain = kwargs.get("cert_chain")
+        transparency_entry = kwargs.get("transparency_entry")
 
         if not cert_chain:
             raise ValueError("Certificate chain required for Sigstore verification")
 
         try:
             # Create verifier
-            verifier = SigstoreVerifier.production() if not self.staging else SigstoreVerifier.staging()
+            verifier = (
+                SigstoreVerifier.production()
+                if not self.staging
+                else SigstoreVerifier.staging()
+            )
 
             # TODO: Reconstruct bundle from components and verify
             # This requires more complex bundle reconstruction
@@ -309,10 +335,7 @@ class SigstoreBundleVerifier(Verifier):
 
     def get_verifier_info(self) -> Dict[str, Any]:
         """Get verifier information"""
-        return {
-            "type": "sigstore-bundle",
-            "staging": self.staging
-        }
+        return {"type": "sigstore-bundle", "staging": self.staging}
 
 
 class DetachedSigVerifier(Verifier):
@@ -320,8 +343,8 @@ class DetachedSigVerifier(Verifier):
 
     def verify(self, payload: bytes, signature: bytes, **kwargs) -> None:
         """Verify detached signature"""
-        public_key_pem = kwargs.get('public_key')
-        algorithm = kwargs.get('algorithm', 'ed25519')
+        public_key_pem = kwargs.get("public_key")
+        algorithm = kwargs.get("algorithm", "ed25519")
 
         if not public_key_pem:
             raise ValueError("Public key required for detached signature verification")
@@ -335,29 +358,30 @@ class DetachedSigVerifier(Verifier):
                 public_key_pem = public_key_pem.encode()
 
             public_key = serialization.load_pem_public_key(
-                public_key_pem,
-                backend=default_backend()
+                public_key_pem, backend=default_backend()
             )
 
             # Verify based on algorithm
-            if algorithm == 'ed25519' and isinstance(public_key, ed25519.Ed25519PublicKey):
+            if algorithm == "ed25519" and isinstance(
+                public_key, ed25519.Ed25519PublicKey
+            ):
                 public_key.verify(signature, payload)
-            elif algorithm.startswith('rsa') and isinstance(public_key, rsa.RSAPublicKey):
+            elif algorithm.startswith("rsa") and isinstance(
+                public_key, rsa.RSAPublicKey
+            ):
                 public_key.verify(
                     signature,
                     payload,
                     padding.PSS(
                         mgf=padding.MGF1(hashes.SHA256()),
-                        salt_length=padding.PSS.MAX_LENGTH
+                        salt_length=padding.PSS.MAX_LENGTH,
                     ),
-                    hashes.SHA256()
+                    hashes.SHA256(),
                 )
-            elif algorithm.startswith('ecdsa') and isinstance(public_key, ec.EllipticCurvePublicKey):
-                public_key.verify(
-                    signature,
-                    payload,
-                    ec.ECDSA(hashes.SHA256())
-                )
+            elif algorithm.startswith("ecdsa") and isinstance(
+                public_key, ec.EllipticCurvePublicKey
+            ):
+                public_key.verify(signature, payload, ec.ECDSA(hashes.SHA256()))
             else:
                 raise ValueError(f"Unsupported algorithm: {algorithm}")
 
@@ -370,7 +394,7 @@ class DetachedSigVerifier(Verifier):
         """Get verifier information"""
         return {
             "type": "detached-signature",
-            "supports": ["ed25519", "rsa-pss", "ecdsa"]
+            "supports": ["ed25519", "rsa-pss", "ecdsa"],
         }
 
 
@@ -386,13 +410,13 @@ def create_signer(config: Optional[SigningConfig] = None) -> Signer:
     """
     config = config or SigningConfig.from_env()
 
-    if config.mode == 'disabled':
+    if config.mode == "disabled":
         raise RuntimeError("Signing is disabled")
-    elif config.mode == 'keyless':
+    elif config.mode == "keyless":
         return SigstoreKeylessSigner(config)
-    elif config.mode == 'ephemeral':
+    elif config.mode == "ephemeral":
         return EphemeralKeypairSigner()
-    elif config.mode == 'kms':
+    elif config.mode == "kms":
         return ExternalKMSSigner(config)
     else:
         raise ValueError(f"Unknown signing mode: {config.mode}")
@@ -409,13 +433,17 @@ def create_verifier(signature_type: str = "auto", **kwargs) -> Verifier:
     Returns:
         Configured verifier instance
     """
-    if signature_type == "sigstore" or (signature_type == "auto" and kwargs.get('cert_chain')):
-        return SigstoreBundleVerifier(staging=kwargs.get('staging', False))
+    if signature_type == "sigstore" or (
+        signature_type == "auto" and kwargs.get("cert_chain")
+    ):
+        return SigstoreBundleVerifier(staging=kwargs.get("staging", False))
     else:
         return DetachedSigVerifier()
 
 
-def sign_artifact(artifact_path: Path, signer: Optional[Signer] = None) -> Dict[str, Any]:
+def sign_artifact(
+    artifact_path: Path, signer: Optional[Signer] = None
+) -> Dict[str, Any]:
     """
     Sign an artifact file
 
@@ -444,38 +472,39 @@ def sign_artifact(artifact_path: Path, signer: Optional[Signer] = None) -> Dict[
         "version": "2.0.0",
         "kind": "greenlang-signature",
         "metadata": {
-            "timestamp": result['timestamp'],
+            "timestamp": result["timestamp"],
             "artifact": str(artifact_path.name),
             "size": len(artifact_bytes),
             "hash": {
                 "algorithm": "sha256",
-                "value": hashlib.sha256(artifact_bytes).hexdigest()
-            }
+                "value": hashlib.sha256(artifact_bytes).hexdigest(),
+            },
         },
         "spec": {
             "signature": {
-                "algorithm": result['algorithm'],
-                "value": base64.b64encode(result['signature']).decode()
+                "algorithm": result["algorithm"],
+                "value": base64.b64encode(result["signature"]).decode(),
             }
-        }
+        },
     }
 
     # Add optional fields
-    if result.get('public_key'):
-        signature['spec']['publicKey'] = result['public_key']
-    if result.get('cert_chain'):
-        signature['spec']['certChain'] = base64.b64encode(result['cert_chain']).decode()
-    if result.get('transparency_entry'):
-        signature['spec']['transparencyLog'] = result['transparency_entry']
+    if result.get("public_key"):
+        signature["spec"]["publicKey"] = result["public_key"]
+    if result.get("cert_chain"):
+        signature["spec"]["certChain"] = base64.b64encode(result["cert_chain"]).decode()
+    if result.get("transparency_entry"):
+        signature["spec"]["transparencyLog"] = result["transparency_entry"]
 
     # Add signer info
-    signature['metadata']['signer'] = signer.get_signer_info()
+    signature["metadata"]["signer"] = signer.get_signer_info()
 
     return signature
 
 
-def verify_artifact(artifact_path: Path, signature: Dict[str, Any],
-                   verifier: Optional[Verifier] = None) -> bool:
+def verify_artifact(
+    artifact_path: Path, signature: Dict[str, Any], verifier: Optional[Verifier] = None
+) -> bool:
     """
     Verify an artifact signature
 
@@ -494,34 +523,34 @@ def verify_artifact(artifact_path: Path, signature: Dict[str, Any],
     artifact_bytes = artifact_path.read_bytes()
 
     # Verify hash first
-    expected_hash = signature['metadata']['hash']['value']
+    expected_hash = signature["metadata"]["hash"]["value"]
     actual_hash = hashlib.sha256(artifact_bytes).hexdigest()
 
     if expected_hash != actual_hash:
-        raise InvalidSignature(f"Hash mismatch: expected {expected_hash}, got {actual_hash}")
+        raise InvalidSignature(
+            f"Hash mismatch: expected {expected_hash}, got {actual_hash}"
+        )
 
     # Extract signature components
-    sig_spec = signature['spec']
-    sig_bytes = base64.b64decode(sig_spec['signature']['value'])
-    algorithm = sig_spec['signature']['algorithm']
+    sig_spec = signature["spec"]
+    sig_bytes = base64.b64decode(sig_spec["signature"]["value"])
+    algorithm = sig_spec["signature"]["algorithm"]
 
     # Create verifier if not provided
     if verifier is None:
         verifier = create_verifier(
-            signature_type="sigstore" if sig_spec.get('certChain') else "detached"
+            signature_type="sigstore" if sig_spec.get("certChain") else "detached"
         )
 
     # Prepare verification kwargs
-    verify_kwargs = {
-        'algorithm': algorithm
-    }
+    verify_kwargs = {"algorithm": algorithm}
 
-    if sig_spec.get('publicKey'):
-        verify_kwargs['public_key'] = sig_spec['publicKey']
-    if sig_spec.get('certChain'):
-        verify_kwargs['cert_chain'] = base64.b64decode(sig_spec['certChain'])
-    if sig_spec.get('transparencyLog'):
-        verify_kwargs['transparency_entry'] = sig_spec['transparencyLog']
+    if sig_spec.get("publicKey"):
+        verify_kwargs["public_key"] = sig_spec["publicKey"]
+    if sig_spec.get("certChain"):
+        verify_kwargs["cert_chain"] = base64.b64decode(sig_spec["certChain"])
+    if sig_spec.get("transparencyLog"):
+        verify_kwargs["transparency_entry"] = sig_spec["transparencyLog"]
 
     # Verify signature
     verifier.verify(artifact_bytes, sig_bytes, **verify_kwargs)

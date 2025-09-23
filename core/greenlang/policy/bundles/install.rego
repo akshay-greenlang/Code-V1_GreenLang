@@ -49,9 +49,5 @@ reason := "GPL or restrictive license not allowed" if {
 	allow
 }
 
-# Stage-specific rules (publish has stricter requirements)
-allow if {
-	input.stage == "dev"
-	input.pack.license in ["Apache-2.0", "MIT", "BSD-3-Clause"]
-	# More lenient for development
-}
+# All stages must follow the same security policies
+# Development should use explicit override flags if needed

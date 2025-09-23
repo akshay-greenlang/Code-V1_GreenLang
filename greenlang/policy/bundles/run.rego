@@ -26,17 +26,7 @@ egress_authorized if {
 unauthorized_egress contains target if {
 	target := input.egress[_]
 	not target in input.pipeline.policy.network
-	not target in default_allowed_domains
 }
-
-# Default allowed domains (infrastructure)
-default_allowed_domains := [
-	"api.openai.com",
-	"api.anthropic.com", 
-	"hub.greenlang.io",
-	"github.com",
-	"pypi.org"
-]
 
 # Check resource limits
 resource_limits_ok if {
@@ -55,8 +45,5 @@ reason := "resource limits exceeded" if {
 	not resource_limits_ok
 }
 
-# Allow for development stage
-allow if {
-	input.stage == "dev"
-	egress_authorized
-}
+# All stages must follow the same security policies
+# Development should use explicit override flags if needed

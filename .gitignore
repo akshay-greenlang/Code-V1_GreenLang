@@ -168,3 +168,15 @@ grafana_data/
 opa.exe
 opa
 .tools/
+cosign.exe
+syft.exe
+syft.zip
+jq.exe
+*.exe
+coverage.json
+trufflehog*.json*
+.pypirc
+*.pypirc
+fix_pypirc.py
+pypi_diagnostic.py
+PYPI_UPLOAD_DIAGNOSIS.md

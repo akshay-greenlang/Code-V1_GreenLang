@@ -13,15 +13,15 @@ from .signing import (
     UnsignedPackError,
     create_verifier,
     verify_pack_signature,
-    sign_pack
+    sign_pack,
 )
 
 __all__ = [
-    'SignatureVerifier',
-    'DevKeyVerifier',
-    'SigstoreVerifier',
-    'UnsignedPackError',
-    'create_verifier',
-    'verify_pack_signature',
-    'sign_pack',
+    "SignatureVerifier",
+    "DevKeyVerifier",
+    "SigstoreVerifier",
+    "UnsignedPackError",
+    "create_verifier",
+    "verify_pack_signature",
+    "sign_pack",
 ]

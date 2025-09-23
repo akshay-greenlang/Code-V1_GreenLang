@@ -1,5 +1,5 @@
 """
-GreenLang v0.1: Infrastructure for Climate Intelligence
+GreenLang v2.0: Infrastructure for Climate Intelligence
 ========================================================
 
 GreenLang is now pure infrastructure. Domain logic lives in packs.
@@ -8,11 +8,12 @@ Platform = SDK/CLI/Runtime + Hub + Policy/Provenance
 Success = Developer Love + Trust + Distribution
 """
 
-from ._version import __version__
-
 __author__ = "GreenLang Team"
-__email__ = "team@greenlang.io"
+__email__ = "team@greenlang.in"
 __license__ = "MIT"
+
+# Import version
+from ._version import __version__
 
 # Core infrastructure exports only
 from .sdk.base import Agent, Pipeline, Connector, Dataset, Report
@@ -25,20 +26,17 @@ from .policy.enforcer import PolicyEnforcer
 __all__ = [
     # Core SDK abstractions
     "Agent",
-    "Pipeline", 
+    "Pipeline",
     "Connector",
     "Dataset",
     "Report",
     "Context",
     "Artifact",
-    
     # Pack system
     "PackRegistry",
     "PackLoader",
-    
     # Runtime
     "Executor",
-    
     # Policy
     "PolicyEnforcer",
 ]

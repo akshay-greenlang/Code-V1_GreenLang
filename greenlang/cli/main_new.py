@@ -15,7 +15,7 @@ app = typer.Typer(
     name="gl",
     help="GreenLang: Infrastructure for Climate Intelligence",
     no_args_is_help=True,
-    add_completion=False
+    add_completion=False,
 )
 console = Console()
 
@@ -25,7 +25,6 @@ def _root():
     """
     GreenLang v0.2.0 - Infrastructure for Climate Intelligence
     """
-    pass
 
 
 @app.command()
@@ -33,6 +32,7 @@ def version():
     """Show GreenLang version"""
     try:
         from .. import __version__
+
         console.print(f"[bold green]GreenLang v{__version__}[/bold green]")
         console.print("Infrastructure for Climate Intelligence")
         console.print("https://greenlang.io")
@@ -43,7 +43,7 @@ def version():
 @app.command()
 def init(
     name: str = typer.Option(..., "--name", "-n", help="Pack name"),
-    path: Path = typer.Option(Path.cwd(), "--path", "-p", help="Pack directory")
+    path: Path = typer.Option(Path.cwd(), "--path", "-p", help="Pack directory"),
 ):
     """Initialize a new pack"""
     pack_dir = path / name
@@ -65,6 +65,7 @@ def doctor():
     # Check version
     try:
         from .. import __version__
+
         version_str = f"v{__version__}"
     except:
         version_str = "v0.2.0"
@@ -72,8 +73,12 @@ def doctor():
     console.print(f"[green][OK][/green] GreenLang Version: {version_str}")
 
     # Check Python version
-    py_version = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-    status = "[green][OK][/green]" if sys.version_info >= (3, 10) else "[red][FAIL][/red]"
+    py_version = (
+        f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+    )
+    status = (
+        "[green][OK][/green]" if sys.version_info >= (3, 10) else "[red][FAIL][/red]"
+    )
     console.print(f"{status} Python Version: {py_version}")
 
     # Check config directory
@@ -86,6 +91,7 @@ def doctor():
 
 # Add sub-applications for pack commands
 from .cmd_pack_new import app as pack_app
+
 app.add_typer(pack_app, name="pack", help="Pack management commands")
 
 
@@ -94,7 +100,9 @@ app.add_typer(pack_app, name="pack", help="Pack management commands")
 def run(
     pipeline: str = typer.Argument(..., help="Pipeline to run"),
     input_file: Optional[Path] = typer.Option(None, "--input", "-i", help="Input file"),
-    output_file: Optional[Path] = typer.Option(None, "--output", "-o", help="Output file")
+    output_file: Optional[Path] = typer.Option(
+        None, "--output", "-o", help="Output file"
+    ),
 ):
     """Run a pipeline from a pack"""
     console.print(f"[cyan]Running pipeline: {pipeline}[/cyan]")
@@ -112,7 +120,7 @@ def run(
 @app.command()
 def policy(
     action: str = typer.Argument(..., help="check, list, or add"),
-    target: Optional[str] = typer.Argument(None, help="Policy target")
+    target: Optional[str] = typer.Argument(None, help="Policy target"),
 ):
     """Manage and enforce policies"""
     if action == "check":
@@ -128,7 +136,9 @@ def policy(
 @app.command()
 def verify(
     artifact: Path = typer.Argument(..., help="Artifact to verify"),
-    signature: Optional[Path] = typer.Option(None, "--sig", "-s", help="Signature file")
+    signature: Optional[Path] = typer.Option(
+        None, "--sig", "-s", help="Signature file"
+    ),
 ):
     """Verify artifact provenance and signature"""
     if not artifact.exists():

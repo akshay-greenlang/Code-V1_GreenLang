@@ -1,0 +1,166 @@
+{
+  "status": "FAIL",
+  "issues": [
+    {
+      "file": "greenlang/cli/__init__.py",
+      "line": 20,
+      "severity": "ERROR",
+      "category": "lint",
+      "message": "E402 module level import not at top of file",
+      "fix": "Move import statements to the top of the file"
+    },
+    {
+      "file": "greenlang/cli/__init__.py",
+      "line": 55,
+      "severity": "ERROR",
+      "category": "dangerous",
+      "message": "E722 do not use bare 'except' - can hide important errors",
+      "fix": "Use specific exception types like 'except ImportError:'"
+    },
+    {
+      "file": "greenlang/cli/multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "lint",
+      "message": "626 lines too long (E501) across CLI module",
+      "fix": "Break long lines using parentheses or string concatenation"
+    },
+    {
+      "file": "greenlang/cli/multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "lint",
+      "message": "62 unused imports (F401) across CLI module",
+      "fix": "Remove unused imports to reduce code bloat"
+    },
+    {
+      "file": "greenlang/cli/multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "lint",
+      "message": "1372 blank lines with whitespace (W293) across CLI module",
+      "fix": "Remove trailing whitespace from blank lines"
+    },
+    {
+      "file": "greenlang/sdk/base.py",
+      "line": 14,
+      "severity": "ERROR",
+      "category": "lint",
+      "message": "F401 'json' imported but unused",
+      "fix": "Remove unused 'import json' statement"
+    },
+    {
+      "file": "greenlang/sdk/multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "lint",
+      "message": "243 blank lines with whitespace (W293) across SDK module",
+      "fix": "Clean up whitespace in blank lines"
+    },
+    {
+      "file": "core/greenlang/multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "lint",
+      "message": "1681 blank lines with whitespace (W293) across core module",
+      "fix": "Remove trailing whitespace from blank lines"
+    },
+    {
+      "file": "core/greenlang/multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "lint",
+      "message": "466 lines too long (E501) across core module",
+      "fix": "Break long lines to improve readability"
+    },
+    {
+      "file": "core/greenlang/multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "import",
+      "message": "F403 'from greenlang import *' used - unable to detect undefined names",
+      "fix": "Use explicit imports instead of wildcard imports"
+    },
+    {
+      "file": "greenlang/types.py",
+      "line": 121,
+      "severity": "ERROR",
+      "category": "type",
+      "message": "Covariant type variable 'OutT' used in protocol where invariant one is expected",
+      "fix": "Change type variable declaration to be invariant"
+    },
+    {
+      "file": "greenlang/data/emission_factors.py",
+      "line": 85,
+      "severity": "ERROR",
+      "category": "type",
+      "message": "Function is missing a return type annotation",
+      "fix": "Add return type annotation: -> None or appropriate type"
+    },
+    {
+      "file": "greenlang/utils/performance_tracker.py",
+      "line": 118,
+      "severity": "ERROR",
+      "category": "type",
+      "message": "Unsupported operand types for - (float and None)",
+      "fix": "Add None check before subtraction or use Optional type properly"
+    },
+    {
+      "file": "greenlang/cli/main.py",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "type",
+      "message": "541 type errors found by mypy across all modules",
+      "fix": "Add type annotations and fix type inconsistencies"
+    },
+    {
+      "file": "greenlang/cli/cmd_doctor.py",
+      "line": 104,
+      "severity": "ERROR",
+      "category": "portability",
+      "message": "Hardcoded Unix path '/etc/greenlang/auth.json' won't work on Windows",
+      "fix": "Use os.path.join() or pathlib for cross-platform paths"
+    },
+    {
+      "file": "greenlang/runtime/guard.py",
+      "line": 75,
+      "severity": "WARNING",
+      "category": "portability",
+      "message": "Default path '/tmp/gl_input' is Unix-specific",
+      "fix": "Use tempfile.gettempdir() for cross-platform temporary directories"
+    },
+    {
+      "file": "greenlang/policy/opa.py",
+      "line": 193,
+      "severity": "ERROR",
+      "category": "portability",
+      "message": "Hardcoded Unix path '/etc/greenlang/policies' won't work on Windows",
+      "fix": "Use platform-appropriate config directory (e.g., AppData on Windows)"
+    },
+    {
+      "file": "multiple files",
+      "line": 0,
+      "severity": "WARNING",
+      "category": "import",
+      "message": "Potential circular dependency risk with cross-module imports",
+      "fix": "Review import structure and consider using dependency injection"
+    },
+    {
+      "file": "multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "dangerous",
+      "message": "15 instances of bare except clauses (E722) that could hide errors",
+      "fix": "Replace with specific exception handling"
+    },
+    {
+      "file": "multiple files",
+      "line": 0,
+      "severity": "ERROR",
+      "category": "style",
+      "message": "70 f-strings missing placeholders (F541)",
+      "fix": "Either add placeholders or use regular strings"
+    }
+  ],
+  "summary": "Critical code quality issues found: 5076 total violations including 2269 in CLI, 394 in SDK, and 2413 in core modules. Major issues include missing type annotations (541 type errors), excessive whitespace (3296 instances), hardcoded non-portable paths, and dangerous bare except clauses. These issues significantly impact test reliability and coverage."
+}

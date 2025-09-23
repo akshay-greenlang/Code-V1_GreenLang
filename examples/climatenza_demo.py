@@ -3,6 +3,9 @@ Climatenza AI Demo - Solar Thermal Feasibility Analysis
 
 This demo shows how to use the GreenLang SDK to run solar thermal
 feasibility analysis for industrial facilities.
+
+Requirements:
+    pip install greenlang[analytics]
 """
 
 import os
@@ -72,7 +75,12 @@ def run_custom_location():
         
         if result.get("success"):
             # Parse the solar data
-            import pandas as pd
+            try:
+                import pandas as pd
+            except ImportError:
+                print("Error: pandas is required for this demo.")
+                print("Install it with: pip install greenlang[analytics]")
+                return
             solar_df = pd.read_json(result["data"]["solar_resource_df"], orient="split")
             
             # Calculate annual statistics

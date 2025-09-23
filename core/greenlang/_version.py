@@ -3,7 +3,7 @@ from pathlib import Path
 
 try:
     # Try to get version from installed package
-    __version__ = version("greenlang-cli")
+    __version__ = version("greenlang")
 except PackageNotFoundError:
     try:
         # Fallback to greenlang package name
@@ -14,4 +14,4 @@ except PackageNotFoundError:
         if version_file.exists():
             __version__ = version_file.read_text().strip()
         else:
-            __version__ = "0.2.0"  # Fallback version
+            __version__ = "0.2.1"  # Fallback version

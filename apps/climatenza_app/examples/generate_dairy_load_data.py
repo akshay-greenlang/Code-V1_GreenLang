@@ -1,9 +1,19 @@
 """
 Generate sample dairy hourly load data for 3 years
+
+Requirements:
+    pip install greenlang[analytics]
 """
 
-import pandas as pd
-import numpy as np
+try:
+    import pandas as pd
+    import numpy as np
+except ImportError:
+    raise ImportError(
+        "pandas and numpy are required for this script. "
+        "Install them with: pip install greenlang[analytics]"
+    )
+
 from datetime import datetime, timedelta
 
 

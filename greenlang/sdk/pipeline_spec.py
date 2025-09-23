@@ -13,19 +13,13 @@ from pydantic import BaseModel, Field, field_validator, model_validator, ConfigD
 # Error Handling and Retry Models
 # =============================================================================
 
+
 class RetrySpec(BaseModel):
     """Retry configuration for step execution."""
 
-    max: int = Field(
-        ...,
-        description="Maximum number of retry attempts",
-        ge=0,
-        le=10
-    )
+    max: int = Field(..., description="Maximum number of retry attempts", ge=0, le=10)
     backoff_seconds: float = Field(
-        ...,
-        description="Backoff delay between retries in seconds",
-        ge=0.0
+        ..., description="Backoff delay between retries in seconds", ge=0.0
     )
 
 
@@ -35,13 +29,9 @@ OnErrorPolicy = Literal["stop", "continue", "skip", "fail"]
 class OnErrorObj(BaseModel):
     """Detailed error handling configuration."""
 
-    policy: OnErrorPolicy = Field(
-        ...,
-        description="Error handling policy"
-    )
+    policy: OnErrorPolicy = Field(..., description="Error handling policy")
     retry: Optional[RetrySpec] = Field(
-        None,
-        description="Retry configuration for this error policy"
+        None, description="Retry configuration for this error policy"
     )
 
 
@@ -53,6 +43,7 @@ OnErrorSpec = Union[OnErrorPolicy, OnErrorObj]
 # Step Specification Model
 # =============================================================================
 
+
 class StepSpec(BaseModel):
     """Specification for a single pipeline step."""
 
@@ -63,63 +54,50 @@ class StepSpec(BaseModel):
 
     # Input specifications with reserved keyword handling
     inputs: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Input data for the step"
+        None, description="Input data for the step"
     )
     in_: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Input data for the step (alias for inputs field)",
-        alias="in"
+        None, description="Input data for the step (alias for inputs field)", alias="in"
     )
 
     # Alternative input reference (mutually exclusive with inputs)
     inputsRef: Optional[str] = Field(
-        None,
-        description="Reference to inputs from another step or context"
+        None, description="Reference to inputs from another step or context"
     )
 
     # Step configuration with reserved keyword handling
     with_: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Additional configuration parameters",
-        alias="with"
+        None, description="Additional configuration parameters", alias="with"
     )
 
     # Execution control
     condition: Optional[str] = Field(
-        None,
-        description="Conditional expression to determine if step should execute"
+        None, description="Conditional expression to determine if step should execute"
     )
     parallel: bool = Field(
-        default=False,
-        description="Whether this step can run in parallel with others"
+        default=False, description="Whether this step can run in parallel with others"
     )
 
     # Error handling and retries
     on_error: OnErrorSpec = Field(
         default="stop",
-        description="Error handling policy - can be simple string or detailed configuration"
+        description="Error handling policy - can be simple string or detailed configuration",
     )
 
     # Output configuration
     outputs: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Expected output schema or configuration"
+        None, description="Expected output schema or configuration"
     )
 
     # Optional metadata
     description: Optional[str] = Field(
-        None,
-        description="Human-readable description of this step"
+        None, description="Human-readable description of this step"
     )
     id: Optional[str] = Field(
-        None,
-        description="Optional unique identifier for the step"
+        None, description="Optional unique identifier for the step"
     )
     timeout: Optional[float] = Field(
-        None,
-        description="Step timeout in seconds",
-        ge=0.0
+        None, description="Step timeout in seconds", ge=0.0
     )
 
     @model_validator(mode="after")
@@ -129,7 +107,9 @@ class StepSpec(BaseModel):
         non_none_count = sum(1 for field in input_fields if field is not None)
 
         if non_none_count > 1:
-            raise ValueError("inputs, in_, and inputsRef are mutually exclusive - use only one")
+            raise ValueError(
+                "inputs, in_, and inputsRef are mutually exclusive - use only one"
+            )
 
         # Normalize inputs field - if in_ is provided, copy to inputs
         if self.in_ is not None and self.inputs is None:
@@ -144,13 +124,16 @@ class StepSpec(BaseModel):
         if not v or not v.strip():
             raise ValueError("Step name cannot be empty")
         if not v.replace("_", "").replace("-", "").isalnum():
-            raise ValueError("Step name must contain only alphanumeric characters, underscores, and hyphens")
+            raise ValueError(
+                "Step name must contain only alphanumeric characters, underscores, and hyphens"
+            )
         return v.strip()
 
 
 # =============================================================================
 # Pipeline Specification Model
 # =============================================================================
+
 
 class PipelineSpec(BaseModel):
     """Complete pipeline specification with metadata and configuration."""
@@ -163,72 +146,56 @@ class PipelineSpec(BaseModel):
 
     # Pipeline metadata
     description: Optional[str] = Field(
-        None,
-        description="Human-readable description of the pipeline"
+        None, description="Human-readable description of the pipeline"
     )
-    author: Optional[str] = Field(
-        None,
-        description="Pipeline author or maintainer"
-    )
+    author: Optional[str] = Field(None, description="Pipeline author or maintainer")
     tags: Optional[List[str]] = Field(
         default_factory=list,
-        description="Tags for categorizing and discovering pipelines"
+        description="Tags for categorizing and discovering pipelines",
     )
 
     # Core pipeline definition
     steps: List[StepSpec] = Field(
-        ...,
-        description="Ordered list of pipeline steps",
-        min_length=1
+        ..., description="Ordered list of pipeline steps", min_length=1
     )
 
     # Input/Output specifications
     inputs: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Pipeline input schema or default values"
+        None, description="Pipeline input schema or default values"
     )
     outputs: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Pipeline output mapping or schema"
+        None, description="Pipeline output mapping or schema"
     )
 
     # Runtime configuration
     parameters: Optional[Dict[str, Any]] = Field(
-        default_factory=dict,
-        description="Runtime parameters and their defaults"
+        default_factory=dict, description="Runtime parameters and their defaults"
     )
     artifacts_dir: str = Field(
-        default="out",
-        description="Directory for storing pipeline artifacts"
+        default="out", description="Directory for storing pipeline artifacts"
     )
 
     # Execution control
     stop_on_error: bool = Field(
-        default=True,
-        description="Whether to stop pipeline execution on any step error"
+        default=True, description="Whether to stop pipeline execution on any step error"
     )
     max_parallel_steps: Optional[int] = Field(
-        None,
-        description="Maximum number of steps that can run in parallel",
-        ge=1
+        None, description="Maximum number of steps that can run in parallel", ge=1
     )
 
     # Global error handling
     on_error: Optional[OnErrorSpec] = Field(
-        None,
-        description="Global error handling policy for the pipeline"
+        None, description="Global error handling policy for the pipeline"
     )
 
     # Lifecycle hooks
     hooks: Optional[Dict[str, List[Dict[str, Any]]]] = Field(
-        None,
-        description="Pipeline lifecycle hooks (on_start, on_complete, on_error)"
+        None, description="Pipeline lifecycle hooks (on_start, on_complete, on_error)"
     )
 
     # Additional metadata
     metadata: Optional[Dict[str, Any]] = Field(
-        default_factory=dict,
-        description="Additional pipeline metadata"
+        default_factory=dict, description="Additional pipeline metadata"
     )
 
     @field_validator("name")
@@ -272,8 +239,12 @@ class PipelineSpec(BaseModel):
                 for step_name in step_names:
                     if f"steps.{step_name}" in step.condition:
                         # Ensure referenced step comes before current step
-                        ref_step_idx = next(i for i, s in enumerate(self.steps) if s.name == step_name)
-                        current_step_idx = next(i for i, s in enumerate(self.steps) if s.name == step.name)
+                        ref_step_idx = next(
+                            i for i, s in enumerate(self.steps) if s.name == step_name
+                        )
+                        current_step_idx = next(
+                            i for i, s in enumerate(self.steps) if s.name == step.name
+                        )
                         if ref_step_idx >= current_step_idx:
                             raise ValueError(
                                 f"Step '{step.name}' condition references step '{step_name}' "

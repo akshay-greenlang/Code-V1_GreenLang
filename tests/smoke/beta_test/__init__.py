@@ -1,0 +1,1 @@
+# Beta test smoke tests
