@@ -177,3 +177,6 @@ coverage.json
 trufflehog*.json*
 .pypirc
 *.pypirc
+fix_pypirc.py
+pypi_diagnostic.py
+PYPI_UPLOAD_DIAGNOSIS.md
