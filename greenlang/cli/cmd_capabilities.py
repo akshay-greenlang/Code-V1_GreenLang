@@ -20,7 +20,6 @@ console = Console()
 @click.group()
 def capabilities():
     """Manage and inspect pack capabilities"""
-    pass
 
 
 @capabilities.command()
@@ -62,7 +61,11 @@ def show(pack_path: str) -> None:
         console.print(f"[red]Error loading manifest: {e}[/red]")
         return
 
-    console.print(Panel.fit(f"[bold]Pack: {manifest.name} v{manifest.version}[/bold]", style="cyan"))
+    console.print(
+        Panel.fit(
+            f"[bold]Pack: {manifest.name} v{manifest.version}[/bold]", style="cyan"
+        )
+    )
 
     if not manifest.capabilities:
         console.print("\n✓ No capabilities requested (deny-all by default)")
@@ -80,7 +83,7 @@ def show(pack_path: str) -> None:
     net_status = "✓ Enabled" if caps.net and caps.net.allow else "✗ Disabled"
     net_config = ""
     if caps.net and caps.net.allow and caps.net.outbound:
-        domains = caps.net.outbound.get('allowlist', [])
+        domains = caps.net.outbound.get("allowlist", [])
         net_config = f"Domains: {', '.join(domains[:3])}"
         if len(domains) > 3:
             net_config += f" (+{len(domains)-3} more)"
@@ -90,18 +93,24 @@ def show(pack_path: str) -> None:
     fs_status = "✓ Enabled" if caps.fs and caps.fs.allow else "✗ Disabled"
     fs_config = ""
     if caps.fs and caps.fs.allow:
-        read_paths = caps.fs.read.get('allowlist', []) if caps.fs.read else []
-        write_paths = caps.fs.write.get('allowlist', []) if caps.fs.write else []
+        read_paths = caps.fs.read.get("allowlist", []) if caps.fs.read else []
+        write_paths = caps.fs.write.get("allowlist", []) if caps.fs.write else []
         fs_config = f"Read: {len(read_paths)} paths, Write: {len(write_paths)} paths"
     table.add_row("Filesystem", fs_status, fs_config)
 
     # Clock
     clock_status = "✓ Real-time" if caps.clock and caps.clock.allow else "✗ Frozen"
-    clock_config = "Access to system clock" if caps.clock and caps.clock.allow else "Deterministic time"
+    clock_config = (
+        "Access to system clock"
+        if caps.clock and caps.clock.allow
+        else "Deterministic time"
+    )
     table.add_row("Clock", clock_status, clock_config)
 
     # Subprocess
-    sub_status = "✓ Enabled" if caps.subprocess and caps.subprocess.allow else "✗ Disabled"
+    sub_status = (
+        "✓ Enabled" if caps.subprocess and caps.subprocess.allow else "✗ Disabled"
+    )
     sub_config = ""
     if caps.subprocess and caps.subprocess.allow:
         binaries = caps.subprocess.allowlist
@@ -113,17 +122,17 @@ def show(pack_path: str) -> None:
     # Show detailed configuration if verbose
     if caps.net and caps.net.allow and caps.net.outbound:
         console.print("\n[bold]Network Allowlist:[/bold]")
-        for domain in caps.net.outbound.get('allowlist', []):
+        for domain in caps.net.outbound.get("allowlist", []):
             console.print(f"  - {domain}")
 
     if caps.fs and caps.fs.allow:
         if caps.fs.read:
             console.print("\n[bold]Filesystem Read Paths:[/bold]")
-            for path in caps.fs.read.get('allowlist', []):
+            for path in caps.fs.read.get("allowlist", []):
                 console.print(f"  - {path}")
         if caps.fs.write:
             console.print("\n[bold]Filesystem Write Paths:[/bold]")
-            for path in caps.fs.write.get('allowlist', []):
+            for path in caps.fs.write.get("allowlist", []):
                 console.print(f"  - {path}")
 
     if caps.subprocess and caps.subprocess.allow:
@@ -155,7 +164,11 @@ def validate(pack_path: str) -> None:
         console.print("\n✅ All capability declarations are valid")
     else:
         # Separate errors, warnings, and info
-        errors = [i for i in issues if not i.startswith("Warning:") and not i.startswith("Info:")]
+        errors = [
+            i
+            for i in issues
+            if not i.startswith("Warning:") and not i.startswith("Info:")
+        ]
         warnings = [i for i in issues if i.startswith("Warning:")]
         infos = [i for i in issues if i.startswith("Info:")]
 
@@ -175,9 +188,13 @@ def validate(pack_path: str) -> None:
                 console.print(f"  ℹ️  {info}")
 
     if is_valid:
-        console.print("\n[bold green]✅ Pack is valid and can be installed[/bold green]")
+        console.print(
+            "\n[bold green]✅ Pack is valid and can be installed[/bold green]"
+        )
     else:
-        console.print("\n[bold red]❌ Pack has errors and cannot be installed[/bold red]")
+        console.print(
+            "\n[bold red]❌ Pack has errors and cannot be installed[/bold red]"
+        )
 
 
 @capabilities.command()
@@ -232,7 +249,9 @@ capabilities:
     console.print("\n[bold]Key Principles:[/bold]")
     console.print("1. All capabilities default to [red]deny[/red] when not specified")
     console.print("2. Be as restrictive as possible - only request what you need")
-    console.print("3. Use environment variables for paths (${INPUT_DIR}, ${PACK_DATA_DIR}, ${RUN_TMP})")
+    console.print(
+        "3. Use environment variables for paths (${INPUT_DIR}, ${PACK_DATA_DIR}, ${RUN_TMP})"
+    )
     console.print("4. Specify absolute paths for binaries")
     console.print("5. Use glob patterns for domains and paths")
 
@@ -252,7 +271,7 @@ def policy() -> None:
     else:
         config = {}
 
-    capability_policy = config.get('capability_policy', {})
+    capability_policy = config.get("capability_policy", {})
 
     if not capability_policy:
         console.print("[yellow]No organization capability policy configured[/yellow]")
@@ -281,24 +300,26 @@ def policy() -> None:
         console.print(syntax)
         return
 
-    console.print(Panel.fit("[bold]Organization Capability Policy[/bold]", style="cyan"))
+    console.print(
+        Panel.fit("[bold]Organization Capability Policy[/bold]", style="cyan")
+    )
 
     table = Table(show_header=True, header_style="bold magenta")
     table.add_column("Capability", style="cyan", width=15)
     table.add_column("Policy", style="green", width=10)
     table.add_column("Restrictions", style="white")
 
-    for cap_name in ['net', 'fs', 'subprocess', 'clock']:
+    for cap_name in ["net", "fs", "subprocess", "clock"]:
         cap_policy = capability_policy.get(cap_name, {})
-        allowed = cap_policy.get('allow', False)
+        allowed = cap_policy.get("allow", False)
         status = "✓ Allowed" if allowed else "✗ Denied"
 
         restrictions = ""
-        if cap_name == 'net' and allowed:
-            domains = cap_policy.get('allowed_domains', [])
+        if cap_name == "net" and allowed:
+            domains = cap_policy.get("allowed_domains", [])
             restrictions = f"Domains: {len(domains)}"
-        elif cap_name == 'subprocess' and allowed:
-            binaries = cap_policy.get('allowed_binaries', [])
+        elif cap_name == "subprocess" and allowed:
+            binaries = cap_policy.get("allowed_binaries", [])
             restrictions = f"Binaries: {len(binaries)}"
 
         table.add_row(cap_name.title(), status, restrictions)

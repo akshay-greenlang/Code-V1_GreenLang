@@ -8,8 +8,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
-from typing import Dict, List, Any, Optional, Union
+from typing import Dict, List, Any, Optional
 import uuid
 
 logger = logging.getLogger(__name__)
@@ -17,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class ExecutionStatus(Enum):
     """Pipeline execution status"""
+
     PENDING = "pending"
     RUNNING = "running"
     SUCCEEDED = "succeeded"
@@ -27,23 +27,25 @@ class ExecutionStatus(Enum):
 
 class ResourceRequirements:
     """Resource requirements for execution"""
-    
-    def __init__(self,
-                 cpu: str = "100m",
-                 memory: str = "128Mi",
-                 gpu: Optional[str] = None,
-                 ephemeral_storage: str = "1Gi"):
+
+    def __init__(
+        self,
+        cpu: str = "100m",
+        memory: str = "128Mi",
+        gpu: Optional[str] = None,
+        ephemeral_storage: str = "1Gi",
+    ):
         self.cpu = cpu
         self.memory = memory
         self.gpu = gpu
         self.ephemeral_storage = ephemeral_storage
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         resources = {
             "cpu": self.cpu,
             "memory": self.memory,
-            "ephemeral-storage": self.ephemeral_storage
+            "ephemeral-storage": self.ephemeral_storage,
         }
         if self.gpu:
             resources["nvidia.com/gpu"] = self.gpu
@@ -53,6 +55,7 @@ class ResourceRequirements:
 @dataclass
 class PipelineStep:
     """Single step in a pipeline"""
+
     name: str
     command: List[str]
     args: List[str] = field(default_factory=list)
@@ -62,7 +65,7 @@ class PipelineStep:
     timeout: int = 300  # seconds
     retry_count: int = 3
     depends_on: List[str] = field(default_factory=list)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
@@ -74,13 +77,14 @@ class PipelineStep:
             "resources": self.resources.to_dict() if self.resources else None,
             "timeout": self.timeout,
             "retry_count": self.retry_count,
-            "depends_on": self.depends_on
+            "depends_on": self.depends_on,
         }
 
 
 @dataclass
 class Pipeline:
     """Pipeline definition"""
+
     name: str
     steps: List[PipelineStep]
     description: str = ""
@@ -88,7 +92,7 @@ class Pipeline:
     annotations: Dict[str, str] = field(default_factory=dict)
     namespace: str = "default"
     service_account: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
@@ -98,18 +102,18 @@ class Pipeline:
             "labels": self.labels,
             "annotations": self.annotations,
             "namespace": self.namespace,
-            "service_account": self.service_account
+            "service_account": self.service_account,
         }
-    
+
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'Pipeline':
+    def from_dict(cls, data: Dict[str, Any]) -> "Pipeline":
         """Create from dictionary"""
         steps = []
         for step_data in data.get("steps", []):
             resources = None
             if step_data.get("resources"):
                 resources = ResourceRequirements(**step_data["resources"])
-            
+
             step = PipelineStep(
                 name=step_data["name"],
                 command=step_data["command"],
@@ -119,10 +123,10 @@ class Pipeline:
                 resources=resources,
                 timeout=step_data.get("timeout", 300),
                 retry_count=step_data.get("retry_count", 3),
-                depends_on=step_data.get("depends_on", [])
+                depends_on=step_data.get("depends_on", []),
             )
             steps.append(step)
-        
+
         return cls(
             name=data["name"],
             steps=steps,
@@ -130,14 +134,14 @@ class Pipeline:
             labels=data.get("labels", {}),
             annotations=data.get("annotations", {}),
             namespace=data.get("namespace", "default"),
-            service_account=data.get("service_account")
+            service_account=data.get("service_account"),
         )
 
 
 @dataclass
 class ExecutionContext:
     """Execution context for pipelines"""
-    
+
     pipeline_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     user: Optional[str] = None
@@ -150,7 +154,7 @@ class ExecutionContext:
     labels: Dict[str, str] = field(default_factory=dict)
     annotations: Dict[str, str] = field(default_factory=dict)
     created_at: datetime = field(default_factory=datetime.utcnow)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
@@ -165,34 +169,36 @@ class ExecutionContext:
             "volumes": self.volumes,
             "labels": self.labels,
             "annotations": self.annotations,
-            "created_at": self.created_at.isoformat()
+            "created_at": self.created_at.isoformat(),
         }
-    
+
     def to_env(self) -> Dict[str, str]:
         """Convert context to environment variables"""
         env = {
             "GL_PIPELINE_ID": self.pipeline_id,
             "GL_RUN_ID": self.run_id,
-            "GL_ENVIRONMENT": self.environment
+            "GL_ENVIRONMENT": self.environment,
         }
-        
+
         if self.user:
             env["GL_USER"] = self.user
         if self.project:
             env["GL_PROJECT"] = self.project
-        
+
         # Add parameters as environment variables
         for key, value in self.parameters.items():
             env_key = f"GL_PARAM_{key.upper()}"
-            env[env_key] = str(value) if not isinstance(value, (dict, list)) else json.dumps(value)
-        
+            env[env_key] = (
+                str(value) if not isinstance(value, (dict, list)) else json.dumps(value)
+            )
+
         return env
 
 
 @dataclass
 class ExecutionResult:
     """Result of pipeline execution"""
-    
+
     run_id: str
     pipeline_name: str
     status: ExecutionStatus
@@ -203,7 +209,7 @@ class ExecutionResult:
     logs: List[str] = field(default_factory=list)
     errors: List[str] = field(default_factory=list)
     metadata: Dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
         return {
@@ -216,109 +222,104 @@ class ExecutionResult:
             "outputs": self.outputs,
             "logs": self.logs,
             "errors": self.errors,
-            "metadata": self.metadata
+            "metadata": self.metadata,
         }
 
 
 class Backend(ABC):
     """Abstract base class for execution backends"""
-    
+
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """
         Initialize backend
-        
+
         Args:
             config: Backend configuration
         """
         self.config = config or {}
         self.name = self.__class__.__name__
         logger.info(f"Initializing {self.name}")
-    
+
     @abstractmethod
     def execute(self, pipeline: Pipeline, context: ExecutionContext) -> ExecutionResult:
         """
         Execute a pipeline
-        
+
         Args:
             pipeline: Pipeline to execute
             context: Execution context
-            
+
         Returns:
             ExecutionResult
         """
-        pass
-    
+
     @abstractmethod
     def get_status(self, run_id: str) -> ExecutionStatus:
         """
         Get execution status
-        
+
         Args:
             run_id: Run ID
-            
+
         Returns:
             ExecutionStatus
         """
-        pass
-    
+
     @abstractmethod
     def get_logs(self, run_id: str, step_name: Optional[str] = None) -> List[str]:
         """
         Get execution logs
-        
+
         Args:
             run_id: Run ID
             step_name: Optional step name
-            
+
         Returns:
             List of log lines
         """
-        pass
-    
+
     @abstractmethod
     def cancel(self, run_id: str) -> bool:
         """
         Cancel execution
-        
+
         Args:
             run_id: Run ID
-            
+
         Returns:
             True if cancelled successfully
         """
-        pass
-    
+
     @abstractmethod
     def cleanup(self, run_id: str) -> bool:
         """
         Cleanup execution resources
-        
+
         Args:
             run_id: Run ID
-            
+
         Returns:
             True if cleaned up successfully
         """
-        pass
-    
+
     def validate_pipeline(self, pipeline: Pipeline) -> List[str]:
         """
         Validate pipeline
-        
+
         Args:
             pipeline: Pipeline to validate
-            
+
         Returns:
             List of validation errors
         """
         errors = []
-        
+
         if not pipeline.name:
             errors.append("Pipeline name is required")
-        
+
         if not pipeline.steps:
             errors.append("Pipeline must have at least one step")
-        
+
         step_names = set()
         for step in pipeline.steps:
             if not step.name:
@@ -327,31 +328,31 @@ class Backend(ABC):
                 errors.append(f"Duplicate step name: {step.name}")
             else:
                 step_names.add(step.name)
-            
+
             if not step.command:
                 errors.append(f"Step {step.name} must have a command")
-            
+
             # Check dependencies
             for dep in step.depends_on:
                 if dep not in step_names:
                     errors.append(f"Step {step.name} depends on unknown step: {dep}")
-        
+
         return errors
-    
+
     def prepare_environment(self, context: ExecutionContext) -> Dict[str, str]:
         """
         Prepare environment variables
-        
+
         Args:
             context: Execution context
-            
+
         Returns:
             Environment variables
         """
         env = context.to_env()
-        
+
         # Add backend-specific environment variables
         env["GL_BACKEND"] = self.name
         env["GL_BACKEND_CONFIG"] = json.dumps(self.config)
-        
+
         return env

@@ -30,8 +30,8 @@ class ClimateZone(str, Enum):
     ZONE_4A = "4A"  # Mixed-Humid
     ZONE_5A = "5A"  # Cool-Humid
     ZONE_6A = "6A"  # Cold-Humid
-    ZONE_7 = "7"    # Very Cold
-    ZONE_8 = "8"    # Subarctic
+    ZONE_7 = "7"  # Very Cold
+    ZONE_8 = "8"  # Subarctic
 
 
 class HVACType(str, Enum):
@@ -72,7 +72,9 @@ class Country(str, Enum):
 
 class BuildingMetadata(BaseModel):
     building_type: BuildingType
-    area: float = Field(..., description="Building area in square feet or square meters")
+    area: float = Field(
+        ..., description="Building area in square feet or square meters"
+    )
     area_unit: Literal["sqft", "sqm"] = "sqft"
     location: Dict[str, str] = Field(..., description="Country, region, city")
     occupancy: Optional[int] = Field(None, description="Average daily occupancy")
@@ -81,15 +83,17 @@ class BuildingMetadata(BaseModel):
     climate_zone: Optional[ClimateZone] = None
     construction_year: Optional[int] = None
     last_retrofit_year: Optional[int] = None
-    operating_hours: Optional[float] = Field(None, description="Operating hours per day")
-    
-    @validator('location')
+    operating_hours: Optional[float] = Field(
+        None, description="Operating hours per day"
+    )
+
+    @validator("location")
     def validate_location(cls, v):
-        if 'country' not in v:
+        if "country" not in v:
             raise ValueError("Country is required in location")
         return v
-    
-    @validator('area')
+
+    @validator("area")
     def validate_area(cls, v):
         if v <= 0:
             raise ValueError("Area must be positive")
@@ -97,17 +101,31 @@ class BuildingMetadata(BaseModel):
 
 
 class EnergyConsumption(BaseModel):
-    electricity: Optional[Dict[str, float]] = Field(None, description="Electricity consumption")
-    natural_gas: Optional[Dict[str, float]] = Field(None, description="Natural gas consumption")
+    electricity: Optional[Dict[str, float]] = Field(
+        None, description="Electricity consumption"
+    )
+    natural_gas: Optional[Dict[str, float]] = Field(
+        None, description="Natural gas consumption"
+    )
     diesel: Optional[Dict[str, float]] = Field(None, description="Diesel consumption")
-    lpg_propane: Optional[Dict[str, float]] = Field(None, description="LPG/Propane consumption")
-    heating_oil: Optional[Dict[str, float]] = Field(None, description="Heating oil consumption")
-    district_heating: Optional[Dict[str, float]] = Field(None, description="District heating")
-    solar_pv_generation: Optional[Dict[str, float]] = Field(None, description="Solar PV generation")
-    renewable_energy: Optional[Dict[str, float]] = Field(None, description="Renewable energy")
+    lpg_propane: Optional[Dict[str, float]] = Field(
+        None, description="LPG/Propane consumption"
+    )
+    heating_oil: Optional[Dict[str, float]] = Field(
+        None, description="Heating oil consumption"
+    )
+    district_heating: Optional[Dict[str, float]] = Field(
+        None, description="District heating"
+    )
+    solar_pv_generation: Optional[Dict[str, float]] = Field(
+        None, description="Solar PV generation"
+    )
+    renewable_energy: Optional[Dict[str, float]] = Field(
+        None, description="Renewable energy"
+    )
     coal: Optional[Dict[str, float]] = Field(None, description="Coal consumption")
     biomass: Optional[Dict[str, float]] = Field(None, description="Biomass consumption")
-    
+
     period: Literal["annual", "monthly", "daily"] = "annual"
     period_details: Optional[Dict[str, Any]] = None  # Year, month, date ranges
 
@@ -117,8 +135,12 @@ class HVACSystem(BaseModel):
     hvac_efficiency_cop: Optional[float] = Field(None, ge=1.0, le=10.0)
     hvac_efficiency_eer: Optional[float] = Field(None, ge=5.0, le=20.0)
     hvac_efficiency_seer: Optional[float] = Field(None, ge=8.0, le=30.0)
-    cooling_capacity: Optional[float] = Field(None, description="Cooling capacity in tons")
-    heating_capacity: Optional[float] = Field(None, description="Heating capacity in kW")
+    cooling_capacity: Optional[float] = Field(
+        None, description="Cooling capacity in tons"
+    )
+    heating_capacity: Optional[float] = Field(
+        None, description="Heating capacity in kW"
+    )
     age: Optional[int] = Field(None, description="System age in years")
 
 
@@ -132,12 +154,18 @@ class BuildingEnvelope(BaseModel):
 
 
 class ApplianceLoad(BaseModel):
-    lighting_load: Optional[float] = Field(None, description="Annual lighting load in kWh")
+    lighting_load: Optional[float] = Field(
+        None, description="Annual lighting load in kWh"
+    )
     it_load: Optional[float] = Field(None, description="IT equipment load in kWh")
-    water_heating_load: Optional[float] = Field(None, description="Water heating load in kWh")
+    water_heating_load: Optional[float] = Field(
+        None, description="Water heating load in kWh"
+    )
     plug_load: Optional[float] = Field(None, description="Plug load in kWh")
     elevator_load: Optional[float] = Field(None, description="Elevator load in kWh")
-    kitchen_load: Optional[float] = Field(None, description="Kitchen equipment load in kWh")
+    kitchen_load: Optional[float] = Field(
+        None, description="Kitchen equipment load in kWh"
+    )
 
 
 class BuildingInput(BaseModel):
@@ -150,7 +178,7 @@ class BuildingInput(BaseModel):
     water_consumption: Optional[Dict[str, float]] = None
     waste_generation: Optional[Dict[str, float]] = None
     transportation: Optional[Dict[str, Any]] = None
-    
+
     class Config:
         schema_extra = {
             "example": {
@@ -161,18 +189,18 @@ class BuildingInput(BaseModel):
                     "location": {
                         "country": "US",
                         "region": "California",
-                        "city": "San Francisco"
+                        "city": "San Francisco",
                     },
                     "occupancy": 200,
                     "floor_count": 10,
                     "building_age": 15,
-                    "climate_zone": "3A"
+                    "climate_zone": "3A",
                 },
                 "energy_consumption": {
                     "electricity": {"value": 500000, "unit": "kWh"},
                     "natural_gas": {"value": 10000, "unit": "therms"},
-                    "period": "annual"
-                }
+                    "period": "annual",
+                },
             }
         }
 

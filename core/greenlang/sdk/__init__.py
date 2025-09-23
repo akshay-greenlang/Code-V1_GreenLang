@@ -9,10 +9,10 @@ from .pipeline import Pipeline as PipelineRunner
 __all__ = [
     "Agent",
     "Pipeline",
-    "Connector", 
+    "Connector",
     "Dataset",
     "Report",
     "Context",
     "Artifact",
-    "PipelineRunner"
+    "PipelineRunner",
 ]

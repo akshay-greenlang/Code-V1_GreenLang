@@ -6,7 +6,6 @@ import click
 import json
 import sys
 from pathlib import Path
-from typing import Optional
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
@@ -18,6 +17,7 @@ console = Console()
 try:
     from greenlang.policy.opa import evaluate, validate_policy
     from greenlang.policy.enforcer import PolicyEnforcer
+
     POLICY_ENABLED = True
 except ImportError:
     console.print("[yellow]Policy module not available[/yellow]")
@@ -28,19 +28,32 @@ except ImportError:
 def policy():
     """Policy management and testing commands"""
     if not POLICY_ENABLED:
-        console.print("[red]Policy features are not available. Please install OPA.[/red]")
+        console.print(
+            "[red]Policy features are not available. Please install OPA.[/red]"
+        )
         sys.exit(1)
 
 
 @policy.command()
-@click.argument('policy_file', type=click.Path(exists=True))
-@click.option('--input', '-i', 'input_file', type=click.Path(exists=True),
-              help='Input JSON file for policy evaluation')
-@click.option('--data', '-d', type=click.Path(exists=True),
-              help='Additional data file for policy')
-@click.option('--policy', '-p', type=click.Path(exists=True),
-              default='./policies/default', help='Policy bundle directory')
-@click.option('--verbose', '-v', is_flag=True, help='Verbose output')
+@click.argument("policy_file", type=click.Path(exists=True))
+@click.option(
+    "--input",
+    "-i",
+    "input_file",
+    type=click.Path(exists=True),
+    help="Input JSON file for policy evaluation",
+)
+@click.option(
+    "--data", "-d", type=click.Path(exists=True), help="Additional data file for policy"
+)
+@click.option(
+    "--policy",
+    "-p",
+    type=click.Path(exists=True),
+    default="./policies/default",
+    help="Policy bundle directory",
+)
+@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
 def test(policy_file: str, input_file: str, data: str, policy: str, verbose: bool):
     """Test a policy against input data
 
@@ -54,13 +67,13 @@ def test(policy_file: str, input_file: str, data: str, policy: str, verbose: boo
             console.print("[red]Error: --input file is required[/red]")
             sys.exit(1)
 
-        with open(input_file, 'r') as f:
+        with open(input_file, "r") as f:
             input_doc = json.load(f)
 
         # Load optional data document
         data_doc = None
         if data:
-            with open(data, 'r') as f:
+            with open(data, "r") as f:
                 data_doc = json.load(f)
 
         # Evaluate policy
@@ -71,17 +84,21 @@ def test(policy_file: str, input_file: str, data: str, policy: str, verbose: boo
 
         # Display result
         if result.get("allow", False):
-            console.print(Panel.fit(
-                f"[bold green]✓ ALLOWED[/bold green]\n\n"
-                f"Reason: {result.get('reason', 'Policy conditions met')}",
-                title="Policy Decision"
-            ))
+            console.print(
+                Panel.fit(
+                    f"[bold green]✓ ALLOWED[/bold green]\n\n"
+                    f"Reason: {result.get('reason', 'Policy conditions met')}",
+                    title="Policy Decision",
+                )
+            )
         else:
-            console.print(Panel.fit(
-                f"[bold red]✗ DENIED[/bold red]\n\n"
-                f"Reason: {result.get('reason', 'Policy conditions not met')}",
-                title="Policy Decision"
-            ))
+            console.print(
+                Panel.fit(
+                    f"[bold red]✗ DENIED[/bold red]\n\n"
+                    f"Reason: {result.get('reason', 'Policy conditions not met')}",
+                    title="Policy Decision",
+                )
+            )
 
         # Verbose output
         if verbose:
@@ -119,12 +136,13 @@ def test(policy_file: str, input_file: str, data: str, policy: str, verbose: boo
         console.print(f"[red]Policy evaluation error: {e}[/red]")
         if verbose:
             import traceback
+
             console.print(traceback.format_exc())
         sys.exit(1)
 
 
 @policy.command()
-@click.argument('policy_file', type=click.Path(exists=True))
+@click.argument("policy_file", type=click.Path(exists=True))
 def validate(policy_file: str):
     """Validate a policy file for syntax errors
 
@@ -197,6 +215,7 @@ def init():
         default_dir = Path("policies/default")
         if default_dir.exists():
             import shutil
+
             for policy_file in default_dir.glob("*.rego"):
                 dest = enforcer.policy_dir / policy_file.name
                 shutil.copy2(policy_file, dest)
@@ -213,12 +232,21 @@ def init():
 
 
 @policy.command()
-@click.argument('input_file', type=click.Path(exists=True))
-@click.option('--policy', '-p', type=click.Path(exists=True),
-              default='policies/default/allowlists.rego',
-              help='Policy file to check against')
-@click.option('--stage', '-s', type=click.Choice(['install', 'run']),
-              default='install', help='Policy stage to check')
+@click.argument("input_file", type=click.Path(exists=True))
+@click.option(
+    "--policy",
+    "-p",
+    type=click.Path(exists=True),
+    default="policies/default/allowlists.rego",
+    help="Policy file to check against",
+)
+@click.option(
+    "--stage",
+    "-s",
+    type=click.Choice(["install", "run"]),
+    default="install",
+    help="Policy stage to check",
+)
 def check(input_file: str, policy: str, stage: str):
     """Check if an operation would be allowed by policy
 
@@ -228,11 +256,12 @@ def check(input_file: str, policy: str, stage: str):
     """
     try:
         # Load input
-        with open(input_file, 'r') as f:
-            if input_file.endswith('.json'):
+        with open(input_file, "r") as f:
+            if input_file.endswith(".json"):
                 input_data = json.load(f)
             else:
                 import yaml
+
                 input_data = yaml.safe_load(f)
 
         # Prepare input document based on stage
@@ -243,8 +272,8 @@ def check(input_file: str, policy: str, stage: str):
                 "org": {
                     "allowed_publishers": ["greenlang-official", "verified"],
                     "allowed_regions": ["US", "EU"],
-                    "allowed_capabilities": ["fs"]
-                }
+                    "allowed_capabilities": ["fs"],
+                },
             }
         else:  # run
             input_doc = {
@@ -255,8 +284,8 @@ def check(input_file: str, policy: str, stage: str):
                 "org": {
                     "allowed_publishers": ["greenlang-official", "verified"],
                     "allowed_regions": ["US", "EU"],
-                    "allowed_capabilities": ["fs"]
-                }
+                    "allowed_capabilities": ["fs"],
+                },
             }
 
         # Evaluate

@@ -111,16 +111,16 @@ connector.schedule_workload(
 
 ## 📦 Installation
 
-### 🔥 Beta Release (v0.2.0b1) - Available Now!
-We're excited to announce the beta release of GreenLang v0.2.0b1! This preview build includes core CLI functionality, pack management, and policy enforcement.
+### 🔥 Beta Release (v0.2.0b2) - Available Now!
+We're excited to announce the beta release of GreenLang v0.2.0b2! This preview build includes core CLI functionality, pack management, and policy enforcement.
 
 **Install from TestPyPI (Beta):**
 ```bash
 # Install the beta version for testing
-pip install -i https://test.pypi.org/simple --extra-index-url https://pypi.org/simple greenlang==0.2.0b1
+pip install -i https://test.pypi.org/simple --extra-index-url https://pypi.org/simple greenlang==0.2.0b2
 
 # Verify installation
-gl --version  # Should show: GreenLang v0.2.0b1
+gl --version  # Should show: GreenLang v0.2.0b2
 ```
 
 ⚠️ **Beta Notice**: This is a preview release for early adopters. Expect changes and report issues via [GitHub Issues](https://github.com/greenlang/greenlang/issues).
@@ -130,6 +130,36 @@ gl --version  # Should show: GreenLang v0.2.0b1
 # Will be available after beta testing completes
 pip install greenlang
 ```
+
+### Optional Dependencies
+
+GreenLang supports optional dependencies for different use cases:
+
+```bash
+# For analytics and data processing (pandas, numpy)
+pip install greenlang[analytics]
+
+# For full feature set including CLI, data processing, and security
+pip install greenlang[full]
+
+# For development (includes linting, testing, and doc generation)
+pip install greenlang[dev]
+
+# Install everything
+pip install greenlang[all]
+```
+
+**Available extras:**
+- `analytics` - Data analysis features (pandas, numpy)
+- `cli` - Enhanced CLI features
+- `data` - Data processing capabilities
+- `llm` - Large Language Model integrations
+- `server` - Web server and API features
+- `security` - Advanced security features
+- `test` - Testing utilities
+- `dev` - Development tools
+- `full` - All production features
+- `all` - Everything including development tools
 
 ### From Source
 ```bash

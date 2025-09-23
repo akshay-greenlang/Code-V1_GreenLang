@@ -195,7 +195,24 @@
       "Bash(git reflog:*)",
       "Bash(git gc:*)",
       "Bash(git for-each-ref:*)",
-      "Bash(git update-ref:*)"
+      "Bash(git update-ref:*)",
+      "Bash(curl:*)",
+      "Bash(.venv-buildScriptstwine.exe upload:*)",
+      "WebFetch(domain:test.pypi.org)",
+      "Bash(./test_testpypi_b2.bat)",
+      "Bash(.venv-testpypi-testScriptsgl.exe --version)",
+      "Bash(\".venv-testpypi-test\\Scripts\\gl.exe\" --version)",
+      "Bash(call .venv-testpypi-testScriptsactivate)",
+      "Bash(..venv-testpypi-testScriptsgl.exe --version)",
+      "Bash(.venv-quick-testScriptspython.exe -m pip install --upgrade pip --quiet)",
+      "Bash(.venv-quick-testScriptspython.exe -m pip install -i https://test.pypi.org/simple --extra-index-url https://pypi.org/simple greenlang==0.2.0b2 --quiet)",
+      "Bash(.venv-quick-testScriptsgl.exe --version)",
+      "Bash(.\\.venv-quick-test\\Scripts\\python.exe -m pip install:*)",
+      "Bash(flake8:*)",
+      "Bash(mypy:*)",
+      "Bash(black:*)",
+      "Bash(autoflake:*)",
+      "Bash(coverage run:*)"
     ],
     "deny": []
   }

@@ -12,7 +12,7 @@ Provides security functions for network operations including:
 import os
 import ssl
 import logging
-from typing import Optional, Dict, Any
+from typing import Optional
 from urllib.parse import urlparse
 import requests
 from requests.adapters import HTTPAdapter
@@ -26,7 +26,7 @@ class SecureHTTPAdapter(HTTPAdapter):
 
     def init_poolmanager(self, *args, **kwargs):
         # Enforce minimum TLS 1.2
-        kwargs['ssl_context'] = create_secure_ssl_context()
+        kwargs["ssl_context"] = create_secure_ssl_context()
         return super().init_poolmanager(*args, **kwargs)
 
 
@@ -43,7 +43,7 @@ def create_secure_ssl_context() -> ssl.SSLContext:
     context.minimum_version = ssl.TLSVersion.TLSv1_2
 
     # Load custom CA bundle if specified
-    ca_bundle = os.environ.get('GL_CA_BUNDLE')
+    ca_bundle = os.environ.get("GL_CA_BUNDLE")
     if ca_bundle:
         if os.path.exists(ca_bundle):
             context.load_verify_locations(ca_bundle)
@@ -72,7 +72,7 @@ def create_secure_session(timeout: int = 15, max_retries: int = 3) -> requests.S
         total=max_retries,
         backoff_factor=0.3,
         status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"]
+        allowed_methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
     )
 
     # Use secure adapter
@@ -84,10 +84,7 @@ def create_secure_session(timeout: int = 15, max_retries: int = 3) -> requests.S
 
     # Set default timeout
     session.request = lambda *args, **kwargs: requests.Session.request(
-        session,
-        *args,
-        timeout=kwargs.pop('timeout', timeout),
-        **kwargs
+        session, *args, timeout=kwargs.pop("timeout", timeout), **kwargs
     )
 
     return session
@@ -107,13 +104,12 @@ def validate_url(url: str, allow_http: bool = False) -> None:
     parsed = urlparse(url)
 
     # Check scheme - HTTP is never allowed for security
-    if not allow_http and parsed.scheme == 'http':
+    if not allow_http and parsed.scheme == "http":
         raise ValueError(
-            f"Insecure scheme 'http' not allowed (require https). "
-            f"URL: {url}"
+            f"Insecure scheme 'http' not allowed (require https). " f"URL: {url}"
         )
 
-    if parsed.scheme not in ['http', 'https', 'file']:
+    if parsed.scheme not in ["http", "https", "file"]:
         raise ValueError(
             f"Invalid URL scheme '{parsed.scheme}'. "
             f"Only https (and file for local dev) are allowed."
@@ -122,9 +118,13 @@ def validate_url(url: str, allow_http: bool = False) -> None:
     # Validate hostname isn't localhost/private unless in dev mode
     if parsed.hostname:
         hostname = parsed.hostname.lower()
-        private_hosts = ['localhost', '127.0.0.1', '::1', '0.0.0.0']
+        private_hosts = ["localhost", "127.0.0.1", "::1", "0.0.0.0"]
 
-        if hostname in private_hosts or hostname.startswith('192.168.') or hostname.startswith('10.'):
+        if (
+            hostname in private_hosts
+            or hostname.startswith("192.168.")
+            or hostname.startswith("10.")
+        ):
             logger.warning(f"Private/local hostname detected: {hostname}")
 
 
@@ -141,26 +141,24 @@ def validate_git_url(url: str) -> None:
     parsed = urlparse(url)
 
     # Only allow HTTPS for git repos
-    if parsed.scheme != 'https':
+    if parsed.scheme != "https":
         raise ValueError(
-            f"Only HTTPS Git repositories are allowed. "
-            f"Got scheme: {parsed.scheme}"
+            f"Only HTTPS Git repositories are allowed. " f"Got scheme: {parsed.scheme}"
         )
 
     # Check for known Git hosts
-    allowed_hosts = [
-        'github.com',
-        'gitlab.com',
-        'bitbucket.org'
-    ]
+    allowed_hosts = ["github.com", "gitlab.com", "bitbucket.org"]
 
     if parsed.hostname and parsed.hostname.lower() not in allowed_hosts:
         logger.warning(f"Non-standard Git host: {parsed.hostname}")
 
 
-def safe_download(url: str, dest_path: str,
-                 verify_checksum: Optional[str] = None,
-                 session: Optional[requests.Session] = None) -> None:
+def safe_download(
+    url: str,
+    dest_path: str,
+    verify_checksum: Optional[str] = None,
+    session: Optional[requests.Session] = None,
+) -> None:
     """
     Safely download a file with security checks
 
@@ -188,16 +186,18 @@ def safe_download(url: str, dest_path: str,
     response.raise_for_status()
 
     # Check content length if provided
-    content_length = response.headers.get('Content-Length')
+    content_length = response.headers.get("Content-Length")
     if content_length:
         max_size = 500 * 1024 * 1024  # 500MB max
         if int(content_length) > max_size:
-            raise ValueError(f"File too large: {content_length} bytes (max: {max_size})")
+            raise ValueError(
+                f"File too large: {content_length} bytes (max: {max_size})"
+            )
 
     # Download and optionally verify checksum
     hasher = hashlib.sha256() if verify_checksum else None
 
-    with open(dest_path, 'wb') as f:
+    with open(dest_path, "wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             if chunk:
                 f.write(chunk)

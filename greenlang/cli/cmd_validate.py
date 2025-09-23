@@ -1,4 +1,5 @@
 """Validate command for GreenLang CLI."""
+
 import typer
 from pathlib import Path
 from rich.console import Console
@@ -13,7 +14,9 @@ app = typer.Typer(help="Validate GreenLang pipeline and pack files")
 @app.command()
 def file(
     path: str = typer.Argument(..., help="Path to the file to validate"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed validation output")
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Show detailed validation output"
+    ),
 ):
     """Validate a GreenLang pipeline (gl.yaml) or pack (pack.yaml) file."""
     file_path = Path(path)
@@ -24,7 +27,7 @@ def file(
 
     try:
         # Load the YAML file
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             data = yaml.safe_load(f)
 
         # Basic validation based on file name
@@ -69,7 +72,9 @@ def validate_pipeline(data: dict, verbose: bool = False):
             raise ValueError(f"Step {i} must have a 'uses' field")
 
     if verbose:
-        console.print(f"[dim]Pipeline '{data['name']}' has {len(data['steps'])} steps[/dim]")
+        console.print(
+            f"[dim]Pipeline '{data['name']}' has {len(data['steps'])} steps[/dim]"
+        )
 
 
 def validate_pack(data: dict, verbose: bool = False):
@@ -88,11 +93,13 @@ def validate_pack(data: dict, verbose: bool = False):
 @app.command()
 def schema(
     path: str = typer.Argument(..., help="Path to validate against schema"),
-    schema_path: Optional[str] = typer.Option(None, "--schema", "-s", help="Path to JSON schema")
+    schema_path: Optional[str] = typer.Option(
+        None, "--schema", "-s", help="Path to JSON schema"
+    ),
 ):
     """Validate a file against a JSON schema."""
     try:
-        import jsonschema
+        pass
 
         file_path = Path(path)
         if not file_path.exists():
@@ -100,8 +107,8 @@ def schema(
             raise typer.Exit(1)
 
         # Load the file
-        with open(file_path, 'r') as f:
-            if file_path.suffix in ['.yaml', '.yml']:
+        with open(file_path, "r") as f:
+            if file_path.suffix in [".yaml", ".yml"]:
                 data = yaml.safe_load(f)
             else:
                 data = json.load(f)

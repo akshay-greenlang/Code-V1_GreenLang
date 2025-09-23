@@ -8,7 +8,6 @@ Provides signature verification for packs including:
 - Checksum validation
 """
 
-import os
 import json
 import hashlib
 import logging
@@ -21,7 +20,6 @@ logger = logging.getLogger(__name__)
 
 class SignatureVerificationError(Exception):
     """Raised when signature verification fails"""
-    pass
 
 
 class PackVerifier:
@@ -50,13 +48,16 @@ class PackVerifier:
             "greenlang": {
                 "name": "GreenLang Official",
                 "key": "placeholder-public-key",
-                "verified": True
+                "verified": True,
             }
         }
 
-    def verify_pack(self, pack_path: Path,
-                   signature_path: Optional[Path] = None,
-                   require_signature: bool = True) -> Tuple[bool, Dict[str, Any]]:
+    def verify_pack(
+        self,
+        pack_path: Path,
+        signature_path: Optional[Path] = None,
+        require_signature: bool = True,
+    ) -> Tuple[bool, Dict[str, Any]]:
         """
         Verify pack signature and integrity
 
@@ -76,7 +77,7 @@ class PackVerifier:
             "signed": False,
             "publisher": None,
             "timestamp": None,
-            "checksum": None
+            "checksum": None,
         }
 
         # Calculate pack checksum
@@ -90,9 +91,9 @@ class PackVerifier:
         # Look for signature file if not provided
         if not signature_path:
             possible_sig_files = [
-                pack_path.with_suffix('.sig'),
-                pack_path.with_suffix('.asc'),
-                pack_path / 'pack.sig' if pack_path.is_dir() else None
+                pack_path.with_suffix(".sig"),
+                pack_path.with_suffix(".asc"),
+                pack_path / "pack.sig" if pack_path.is_dir() else None,
             ]
 
             for sig_file in possible_sig_files:
@@ -139,9 +140,9 @@ class PackVerifier:
                 logger.warning(f"Pack is not signed: {pack_path.name}")
                 return False, metadata
 
-    def _verify_signature_stub(self, pack_path: Path,
-                              signature_path: Path,
-                              checksum: str) -> Dict[str, Any]:
+    def _verify_signature_stub(
+        self, pack_path: Path, signature_path: Path, checksum: str
+    ) -> Dict[str, Any]:
         """
         Stub implementation for signature verification
 
@@ -157,7 +158,7 @@ class PackVerifier:
         """
         # Read signature file
         try:
-            with open(signature_path, 'r') as f:
+            with open(signature_path, "r") as f:
                 content = f.read()
                 # Try to parse as JSON
                 try:
@@ -173,7 +174,7 @@ class PackVerifier:
         metadata = {
             "publisher": sig_data.get("publisher", "unknown"),
             "timestamp": sig_data.get("timestamp", datetime.now().isoformat()),
-            "algorithm": sig_data.get("algorithm", "sha256")
+            "algorithm": sig_data.get("algorithm", "sha256"),
         }
 
         # Check if publisher is trusted
@@ -197,7 +198,7 @@ class PackVerifier:
         """
         hasher = hashlib.sha256()
 
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             while chunk := f.read(8192):
                 hasher.update(chunk)
 
@@ -217,20 +218,21 @@ class PackVerifier:
 
         # Sort files for deterministic hash
         for file_path in sorted(dir_path.rglob("*")):
-            if file_path.is_file() and not file_path.name.startswith('.'):
+            if file_path.is_file() and not file_path.name.startswith("."):
                 # Include relative path in hash
                 rel_path = file_path.relative_to(dir_path)
                 hasher.update(str(rel_path).encode())
 
                 # Include file contents
-                with open(file_path, 'rb') as f:
+                with open(file_path, "rb") as f:
                     while chunk := f.read(8192):
                         hasher.update(chunk)
 
         return hasher.hexdigest()
 
-    def create_signature_stub(self, pack_path: Path,
-                            publisher: str = "developer") -> Path:
+    def create_signature_stub(
+        self, pack_path: Path, publisher: str = "developer"
+    ) -> Path:
         """
         Create a stub signature for development/testing
 
@@ -246,7 +248,7 @@ class PackVerifier:
             sig_path = pack_path / "pack.sig"
         else:
             checksum = self._calculate_file_checksum(pack_path)
-            sig_path = pack_path.with_suffix('.sig')
+            sig_path = pack_path.with_suffix(".sig")
 
         sig_data = {
             "version": "1.0",
@@ -255,18 +257,19 @@ class PackVerifier:
             "algorithm": "sha256",
             "checksum": checksum,
             "signed_with": "stub-key",
-            "note": "This is a development signature stub"
+            "note": "This is a development signature stub",
         }
 
-        with open(sig_path, 'w') as f:
+        with open(sig_path, "w") as f:
             json.dump(sig_data, f, indent=2)
 
         logger.info(f"Created stub signature: {sig_path}")
         return sig_path
 
 
-def verify_pack_integrity(pack_path: Path,
-                         expected_checksum: Optional[str] = None) -> bool:
+def verify_pack_integrity(
+    pack_path: Path, expected_checksum: Optional[str] = None
+) -> bool:
     """
     Verify pack integrity using checksum
 

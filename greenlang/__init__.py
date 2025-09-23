@@ -8,8 +8,6 @@ Platform = SDK/CLI/Runtime + Hub + Policy/Provenance
 Success = Developer Love + Trust + Distribution
 """
 
-from ._version import __version__
-
 __author__ = "GreenLang Team"
 __email__ = "team@greenlang.io"
 __license__ = "MIT"
@@ -25,20 +23,17 @@ from .policy.enforcer import PolicyEnforcer
 __all__ = [
     # Core SDK abstractions
     "Agent",
-    "Pipeline", 
+    "Pipeline",
     "Connector",
     "Dataset",
     "Report",
     "Context",
     "Artifact",
-    
     # Pack system
     "PackRegistry",
     "PackLoader",
-    
     # Runtime
     "Executor",
-    
     # Policy
     "PolicyEnforcer",
 ]

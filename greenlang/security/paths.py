@@ -18,7 +18,9 @@ from typing import Union, Optional
 logger = logging.getLogger(__name__)
 
 
-def validate_safe_path(base_path: Union[str, Path], target_path: Union[str, Path]) -> Path:
+def validate_safe_path(
+    base_path: Union[str, Path], target_path: Union[str, Path]
+) -> Path:
     """
     Validate that target path is safely within base path (no traversal)
 
@@ -54,7 +56,9 @@ def validate_safe_path(base_path: Union[str, Path], target_path: Union[str, Path
     return resolved
 
 
-def safe_extract_tar(archive_path: Union[str, Path], extract_path: Union[str, Path]) -> None:
+def safe_extract_tar(
+    archive_path: Union[str, Path], extract_path: Union[str, Path]
+) -> None:
     """
     Safely extract tar archive with path traversal protection
 
@@ -71,14 +75,12 @@ def safe_extract_tar(archive_path: Union[str, Path], extract_path: Union[str, Pa
     if not extract_path.exists():
         extract_path.mkdir(parents=True, exist_ok=True)
 
-    with tarfile.open(archive_path, 'r:*') as tar:
+    with tarfile.open(archive_path, "r:*") as tar:
         # Check all members for safety
         for member in tar.getmembers():
             # Check for absolute paths
-            if member.name.startswith('/'):
-                raise ValueError(
-                    f"Absolute path in archive not allowed: {member.name}"
-                )
+            if member.name.startswith("/"):
+                raise ValueError(f"Absolute path in archive not allowed: {member.name}")
 
             # Check for path traversal
             try:
@@ -90,14 +92,16 @@ def safe_extract_tar(archive_path: Union[str, Path], extract_path: Union[str, Pa
             if member.issym() or member.islnk():
                 # Get the link target
                 link_target = member.linkname
-                if link_target.startswith('/'):
+                if link_target.startswith("/"):
                     raise ValueError(
                         f"Absolute symlink in archive not allowed: {member.name} -> {link_target}"
                     )
 
                 # Validate link target is within extract path
                 try:
-                    validate_safe_path(extract_path, Path(member.name).parent / link_target)
+                    validate_safe_path(
+                        extract_path, Path(member.name).parent / link_target
+                    )
                 except ValueError:
                     raise ValueError(
                         f"Symlink points outside extraction directory: {member.name} -> {link_target}"
@@ -108,7 +112,9 @@ def safe_extract_tar(archive_path: Union[str, Path], extract_path: Union[str, Pa
         logger.info(f"Safely extracted tar archive to: {extract_path}")
 
 
-def safe_extract_zip(archive_path: Union[str, Path], extract_path: Union[str, Path]) -> None:
+def safe_extract_zip(
+    archive_path: Union[str, Path], extract_path: Union[str, Path]
+) -> None:
     """
     Safely extract zip archive with path traversal protection
 
@@ -125,14 +131,12 @@ def safe_extract_zip(archive_path: Union[str, Path], extract_path: Union[str, Pa
     if not extract_path.exists():
         extract_path.mkdir(parents=True, exist_ok=True)
 
-    with zipfile.ZipFile(archive_path, 'r') as zip_ref:
+    with zipfile.ZipFile(archive_path, "r") as zip_ref:
         # Check all members for safety
         for member in zip_ref.namelist():
             # Check for absolute paths
-            if member.startswith('/'):
-                raise ValueError(
-                    f"Absolute path in archive not allowed: {member}"
-                )
+            if member.startswith("/"):
+                raise ValueError(f"Absolute path in archive not allowed: {member}")
 
             # Check for path traversal
             try:
@@ -145,7 +149,9 @@ def safe_extract_zip(archive_path: Union[str, Path], extract_path: Union[str, Pa
         logger.info(f"Safely extracted zip archive to: {extract_path}")
 
 
-def safe_extract_archive(archive_path: Union[str, Path], extract_path: Union[str, Path]) -> None:
+def safe_extract_archive(
+    archive_path: Union[str, Path], extract_path: Union[str, Path]
+) -> None:
     """
     Safely extract archive (auto-detect format) with path traversal protection
 
@@ -159,9 +165,14 @@ def safe_extract_archive(archive_path: Union[str, Path], extract_path: Union[str
     archive_path = Path(archive_path)
 
     # Determine archive type and extract
-    if archive_path.suffix in ['.tar', '.gz', '.bz2', '.xz'] or archive_path.name.endswith('.tar.gz'):
+    if archive_path.suffix in [
+        ".tar",
+        ".gz",
+        ".bz2",
+        ".xz",
+    ] or archive_path.name.endswith(".tar.gz"):
         safe_extract_tar(archive_path, extract_path)
-    elif archive_path.suffix == '.zip':
+    elif archive_path.suffix == ".zip":
         safe_extract_zip(archive_path, extract_path)
     else:
         raise ValueError(f"Unsupported archive format: {archive_path.suffix}")
@@ -189,11 +200,18 @@ def validate_pack_structure(pack_path: Union[str, Path]) -> None:
 
     # Check for suspicious files
     suspicious_patterns = [
-        '*.exe', '*.dll', '*.so', '*.dylib',  # Binaries
-        '.git', '.svn',  # Version control
-        '__pycache__',  # Python cache
-        '.env', '.env.local',  # Environment files
-        '*.key', '*.pem', '*.crt',  # Certificates/keys
+        "*.exe",
+        "*.dll",
+        "*.so",
+        "*.dylib",  # Binaries
+        ".git",
+        ".svn",  # Version control
+        "__pycache__",  # Python cache
+        ".env",
+        ".env.local",  # Environment files
+        "*.key",
+        "*.pem",
+        "*.crt",  # Certificates/keys
     ]
 
     for pattern in suspicious_patterns:
@@ -202,15 +220,17 @@ def validate_pack_structure(pack_path: Union[str, Path]) -> None:
             logger.warning(f"Suspicious files found in pack: {suspicious_files}")
 
     # Check file permissions (on Unix systems)
-    if os.name != 'nt':  # Not Windows
-        for file_path in pack_path.rglob('*'):
+    if os.name != "nt":  # Not Windows
+        for file_path in pack_path.rglob("*"):
             if file_path.is_file():
                 # Check for executable files
                 if os.access(file_path, os.X_OK):
                     logger.warning(f"Executable file found in pack: {file_path}")
 
 
-def safe_create_directory(dir_path: Union[str, Path], parent_path: Optional[Union[str, Path]] = None) -> Path:
+def safe_create_directory(
+    dir_path: Union[str, Path], parent_path: Optional[Union[str, Path]] = None
+) -> Path:
     """
     Safely create a directory with validation
 

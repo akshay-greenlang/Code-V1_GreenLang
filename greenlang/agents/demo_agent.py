@@ -30,8 +30,8 @@ class DemoAgent:
             "calculation": {
                 "load_kwh": load,
                 "grid_emission_factor": gef,
-                "formula": "load_kwh * grid_emission_factor"
-            }
+                "formula": "load_kwh * grid_emission_factor",
+            },
         }
 
     def validate_inputs(self, params: dict) -> bool:

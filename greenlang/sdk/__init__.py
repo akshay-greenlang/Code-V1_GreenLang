@@ -19,5 +19,5 @@ __all__ = [
     "PipelineRunner",
     "GreenLangClient",
     "AgentBuilder",
-    "WorkflowBuilder"
+    "WorkflowBuilder",
 ]

@@ -11,19 +11,25 @@ import hashlib
 import pickle
 from pathlib import Path
 from datetime import datetime
-from typing import Optional, Dict, Any, List
+from typing import Optional
 import time
 
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
+from rich.progress import (
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    BarColumn,
+    TimeRemainingColumn,
+)
 from rich.logging import RichHandler
 import logging
 
 import greenlang
 from greenlang.core.orchestrator import Orchestrator
-from greenlang.core.workflow import Workflow, WorkflowStep
+from greenlang.core.workflow import Workflow
 from greenlang.cli.jsonl_logger import JSONLLogger
 from greenlang.cli.agent_registry import AgentRegistry
 from greenlang.cli.cmd_pack import pack
@@ -42,23 +48,24 @@ RUNS_DIR.mkdir(parents=True, exist_ok=True)
 
 class CLIContext:
     """Context for CLI state"""
+
     def __init__(self):
         self.verbose = False
         self.dry_run = False
         self.logger = None
         self.agent_registry = AgentRegistry()
         self.orchestrator = Orchestrator()
-        
+
     def setup(self, verbose: bool, dry_run: bool):
         self.verbose = verbose
         self.dry_run = dry_run
-        
+
         # Setup logging
         level = logging.DEBUG if verbose else logging.INFO
         logging.basicConfig(
             level=level,
             format="%(message)s",
-            handlers=[RichHandler(console=console, rich_tracebacks=True)]
+            handlers=[RichHandler(console=console, rich_tracebacks=True)],
         )
         self.logger = logging.getLogger("greenlang")
 
@@ -73,7 +80,7 @@ pass_context = click.make_pass_decorator(CLIContext, ensure=True)
 @click.pass_context
 def cli(ctx: click.Context, verbose: bool, dry_run: bool):
     """GreenLang CLI - Climate Intelligence Framework
-    
+
     Examples:
       gl init                  # Initialize project
       gl agents list          # List available agents
@@ -84,13 +91,15 @@ def cli(ctx: click.Context, verbose: bool, dry_run: bool):
     """
     ctx.obj = CLIContext()
     ctx.obj.setup(verbose, dry_run)
-    
+
     if ctx.invoked_subcommand is None:
-        console.print(Panel.fit(
-            f"[bold green]GreenLang CLI v{greenlang.__version__}[/bold green]\n\n"
-            "Type 'gl --help' for available commands",
-            title="Welcome to GreenLang"
-        ))
+        console.print(
+            Panel.fit(
+                f"[bold green]GreenLang CLI v{greenlang.__version__}[/bold green]\n\n"
+                "Type 'gl --help' for available commands",
+                title="Welcome to GreenLang",
+            )
+        )
 
 
 # ============= INIT COMMAND =============
@@ -98,26 +107,34 @@ def cli(ctx: click.Context, verbose: bool, dry_run: bool):
 @pass_context
 def init(ctx: CLIContext):
     """Initialize a new GreenLang project with scaffolding"""
-    
+
     if ctx.dry_run:
         console.print("[yellow]DRY-RUN: Would create project structure[/yellow]")
         return
-    
+
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
-        console=console
+        console=console,
     ) as progress:
-        
+
         task = progress.add_task("Creating project structure...", total=7)
-        
+
         # Create directories
-        dirs = ["pipelines", "data", "reports", "logs", "agents/custom", "cache", "configs"]
+        dirs = [
+            "pipelines",
+            "data",
+            "reports",
+            "logs",
+            "agents/custom",
+            "cache",
+            "configs",
+        ]
         for i, dir_name in enumerate(dirs):
             Path(dir_name).mkdir(parents=True, exist_ok=True)
             progress.update(task, advance=1, description=f"Created {dir_name}/")
             time.sleep(0.1)  # Visual effect
-        
+
         # Create sample pipeline
         sample_pipeline = {
             "name": "carbon_calculation",
@@ -128,28 +145,28 @@ def init(ctx: CLIContext):
                     "name": "validate_input",
                     "agent_id": "validator",
                     "description": "Validate input data",
-                    "retry_count": 2
+                    "retry_count": 2,
                 },
                 {
                     "name": "calculate_emissions",
                     "agent_id": "carbon",
-                    "description": "Calculate carbon emissions"
+                    "description": "Calculate carbon emissions",
                 },
                 {
                     "name": "generate_report",
                     "agent_id": "report",
-                    "description": "Generate emissions report"
-                }
+                    "description": "Generate emissions report",
+                },
             ],
             "output_mapping": {
                 "total_emissions": "results.calculate_emissions.data.total",
-                "report": "results.generate_report.data.report"
-            }
+                "report": "results.generate_report.data.report",
+            },
         }
-        
+
         Path("pipelines/sample.yaml").write_text(yaml.dump(sample_pipeline))
         progress.update(task, completed=7, description="Project initialized!")
-    
+
     # Create .env template
     env_template = """# GreenLang Environment Configuration
 GREENLANG_ENV=development
@@ -163,23 +180,23 @@ GREENLANG_LOG_LEVEL=INFO
 # GREENLANG_AGENTS_PATH=/path/to/custom/agents
 """
     Path(".env").write_text(env_template)
-    
+
     # Create dataset stub
     dataset_stub = {
         "metadata": {
             "name": "Sample Dataset",
             "version": "1.0.0",
-            "created": datetime.now().isoformat()
+            "created": datetime.now().isoformat(),
         },
         "data": {
             "fuels": [
                 {"type": "electricity", "amount": 1000, "unit": "kWh"},
-                {"type": "natural_gas", "amount": 500, "unit": "therms"}
+                {"type": "natural_gas", "amount": 500, "unit": "therms"},
             ]
-        }
+        },
     }
     Path("data/sample_dataset.json").write_text(json.dumps(dataset_stub, indent=2))
-    
+
     console.print("\n[green]✓ Project initialized successfully![/green]")
     console.print("\nCreated structure:")
     console.print("  📁 pipelines/    - Pipeline definitions")
@@ -200,7 +217,6 @@ GREENLANG_LOG_LEVEL=INFO
 @pass_context
 def agents(ctx: CLIContext):
     """Discover and manage agents"""
-    pass
 
 
 @agents.command(name="list")
@@ -208,21 +224,21 @@ def agents(ctx: CLIContext):
 def agents_list(ctx: CLIContext):
     """List all available agents"""
     agents = ctx.agent_registry.discover_agents()
-    
+
     table = Table(title="Available Agents", show_header=True)
     table.add_column("ID", style="cyan", no_wrap=True)
     table.add_column("Name", style="green")
     table.add_column("Version", style="yellow")
     table.add_column("Type", style="magenta")
-    
+
     for agent in agents:
         table.add_row(
             agent["id"],
             agent["name"],
             agent.get("version", "0.0.1"),
-            agent.get("type", "core")
+            agent.get("type", "core"),
         )
-    
+
     console.print(table)
 
 
@@ -232,19 +248,21 @@ def agents_list(ctx: CLIContext):
 def agents_info(ctx: CLIContext, agent_id: str):
     """Show detailed information about an agent"""
     info = ctx.agent_registry.get_agent_info(agent_id)
-    
+
     if not info:
         console.print(f"[red]Agent '{agent_id}' not found[/red]")
         sys.exit(1)
-    
-    console.print(Panel(
-        f"[bold]{info['name']}[/bold]\n\n"
-        f"ID: {info['id']}\n"
-        f"Version: {info.get('version', '0.0.1')}\n"
-        f"Type: {info.get('type', 'core')}\n"
-        f"Description: {info.get('description', 'No description')}",
-        title=f"Agent: {agent_id}"
-    ))
+
+    console.print(
+        Panel(
+            f"[bold]{info['name']}[/bold]\n\n"
+            f"ID: {info['id']}\n"
+            f"Version: {info.get('version', '0.0.1')}\n"
+            f"Type: {info.get('type', 'core')}\n"
+            f"Description: {info.get('description', 'No description')}",
+            title=f"Agent: {agent_id}",
+        )
+    )
 
 
 @agents.command(name="template")
@@ -254,7 +272,7 @@ def agents_info(ctx: CLIContext, agent_id: str):
 def agents_template(ctx: CLIContext, name: str, output: Optional[str]):
     """Generate agent template"""
     template = ctx.agent_registry.get_agent_template(name)
-    
+
     if output:
         Path(output).write_text(template)
         console.print(f"[green]Template saved to {output}[/green]")
@@ -265,7 +283,9 @@ def agents_template(ctx: CLIContext, name: str, output: Optional[str]):
 # ============= VALIDATE COMMAND =============
 @cli.command()
 @click.argument("file_path", type=click.Path(exists=True))
-@click.option("--json", "output_json", is_flag=True, help="Output validation results as JSON")
+@click.option(
+    "--json", "output_json", is_flag=True, help="Output validation results as JSON"
+)
 @click.option("--strict", is_flag=True, help="Fail on warnings")
 @pass_context
 def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
@@ -279,12 +299,14 @@ def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
 
     if file_path_obj.name in ["gl.yaml", "gl.yml"] or "gl." in file_path_obj.name:
         is_pipeline = True
-    elif file_path_obj.name in ["pack.yaml", "pack.yml"] or "pack." in file_path_obj.name:
+    elif (
+        file_path_obj.name in ["pack.yaml", "pack.yml"] or "pack." in file_path_obj.name
+    ):
         is_pack = True
     else:
         # Try to detect from content
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 content = yaml.safe_load(f)
             if isinstance(content, dict):
                 if "steps" in content and "name" in content:
@@ -298,13 +320,17 @@ def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
         if output_json:
             result = {
                 "ok": False,
-                "errors": ["Unable to detect file type. Expected pipeline (gl.yaml) or pack (pack.yaml) file."],
+                "errors": [
+                    "Unable to detect file type. Expected pipeline (gl.yaml) or pack (pack.yaml) file."
+                ],
                 "warnings": [],
-                "summary": {}
+                "summary": {},
             }
             console.print(json.dumps(result, indent=2))
         else:
-            console.print("[red]Error: Unable to detect file type. Expected pipeline (gl.yaml) or pack (pack.yaml) file.[/red]")
+            console.print(
+                "[red]Error: Unable to detect file type. Expected pipeline (gl.yaml) or pack (pack.yaml) file.[/red]"
+            )
         sys.exit(1)
         return
 
@@ -318,7 +344,11 @@ def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
     try:
         if is_pipeline:
             # Validate pipeline
-            schema_path = Path(__file__).parent.parent.parent / "schemas" / "gl_pipeline.schema.v1.json"
+            schema_path = (
+                Path(__file__).parent.parent.parent
+                / "schemas"
+                / "gl_pipeline.schema.v1.json"
+            )
 
             if not schema_path.exists():
                 errors.append(f"Pipeline schema not found: {schema_path}")
@@ -338,14 +368,20 @@ def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
 
                     # Separate errors from warnings (basic heuristic)
                     for msg in validation_errors:
-                        if any(keyword in msg.lower() for keyword in ["error", "failed", "invalid", "missing required"]):
+                        if any(
+                            keyword in msg.lower()
+                            for keyword in [
+                                "error",
+                                "failed",
+                                "invalid",
+                                "missing required",
+                            ]
+                        ):
                             errors.append(msg)
                         else:
                             warnings.append(msg)
 
-                    summary = {
-                        "steps": len(pipeline.spec.steps)
-                    }
+                    summary = {"steps": len(pipeline.spec.steps)}
 
                 except Exception as e:
                     errors.append(f"Pipeline validation failed: {str(e)}")
@@ -368,7 +404,7 @@ def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
                 summary = {
                     "pipelines": len(pack_manifest.contents.pipelines),
                     "agents": len(pack_manifest.contents.agents),
-                    "datasets": len(pack_manifest.contents.datasets)
+                    "datasets": len(pack_manifest.contents.datasets),
                 }
 
             except Exception as e:
@@ -388,13 +424,15 @@ def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
             "name": file_name,
             "errors": errors,
             "warnings": warnings,
-            "summary": summary
+            "summary": summary,
         }
         console.print(json.dumps(result, indent=2))
     else:
         # Human-readable output
         if success:
-            console.print(f"[green]✓ Validation passed[/green] - {file_type}: {file_name}")
+            console.print(
+                f"[green]✓ Validation passed[/green] - {file_type}: {file_name}"
+            )
         else:
             console.print(f"[red]✗ Validation failed[/red] - {file_type}: {file_name}")
 
@@ -426,32 +464,34 @@ def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
 @pass_context
 def run(ctx: CLIContext, pipeline_file: str, input: Optional[str], no_cache: bool):
     """Execute pipeline with caching and progress tracking"""
-    
+
     # Generate run ID
     run_id = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     run_dir = RUNS_DIR / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Setup JSONL logger
     jsonl_logger = JSONLLogger(run_dir / "events.jsonl")
     jsonl_logger.log_start(run_id, pipeline_file)
-    
+
     try:
         # Load workflow
         workflow = Workflow.from_yaml(pipeline_file)
-        
+
         # Load input data
         input_data = {}
         if input:
-            with open(input, 'r') as f:
-                input_data = json.load(f) if input.endswith('.json') else yaml.safe_load(f)
-        
+            with open(input, "r") as f:
+                input_data = (
+                    json.load(f) if input.endswith(".json") else yaml.safe_load(f)
+                )
+
         if ctx.dry_run:
             console.print("[yellow]DRY-RUN: Would execute pipeline[/yellow]")
             for step in workflow.steps:
                 console.print(f"  • {step.name} ({step.agent_id})")
             return
-        
+
         # Execute with progress bar
         with Progress(
             SpinnerColumn(),
@@ -459,74 +499,77 @@ def run(ctx: CLIContext, pipeline_file: str, input: Optional[str], no_cache: boo
             BarColumn(),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
             TimeRemainingColumn(),
-            console=console
+            console=console,
         ) as progress:
-            
+
             total_steps = len(workflow.steps)
             task = progress.add_task(f"Executing {workflow.name}", total=total_steps)
-            
+
             # Register workflow
             ctx.orchestrator.register_workflow(run_id, workflow)
-            
+
             # Execute each step with caching
             results = {}
             for i, step in enumerate(workflow.steps):
                 progress.update(task, description=f"Running: {step.name}")
-                
+
                 # Generate cache key
                 cache_key = None
                 if not no_cache:
                     cache_data = {
                         "step": step.name,
                         "agent": step.agent_id,
-                        "input": input_data
+                        "input": input_data,
                     }
                     cache_key = hashlib.md5(
                         json.dumps(cache_data, sort_keys=True).encode()
                     ).hexdigest()
                     cache_file = CACHE_DIR / f"{cache_key}.pkl"
-                    
+
                     # Check cache
                     if cache_file.exists():
-                        with open(cache_file, 'rb') as f:
+                        with open(cache_file, "rb") as f:
                             cached_result = pickle.load(f)
                             results[step.name] = cached_result
                             jsonl_logger.log_event("cache_hit", {"step": step.name})
                             progress.update(task, advance=1)
                             continue
-                
+
                 # Execute step
                 start_time = time.time()
                 jsonl_logger.log_step_start(step.name, step.agent_id)
-                
+
                 # Simulate execution (would call actual agent)
                 time.sleep(0.5)  # Simulate work
-                result = {"success": True, "data": {"output": f"Result from {step.name}"}}
+                result = {
+                    "success": True,
+                    "data": {"output": f"Result from {step.name}"},
+                }
                 results[step.name] = result
-                
+
                 duration = time.time() - start_time
                 jsonl_logger.log_step_complete(step.name, True, duration)
-                
+
                 # Cache result
                 if cache_key and not no_cache:
-                    with open(cache_file, 'wb') as f:
+                    with open(cache_file, "wb") as f:
                         pickle.dump(result, f)
-                
+
                 progress.update(task, advance=1)
-            
+
             progress.update(task, description="Pipeline complete!")
-        
+
         # Save results
         results_file = run_dir / "results.json"
         results_file.write_text(json.dumps(results, indent=2))
-        
+
         jsonl_logger.log_complete(run_id, True)
-        
+
         console.print(f"\n[green]✓ Pipeline executed successfully![/green]")
         console.print(f"Run ID: {run_id}")
         console.print(f"Results: {results_file}")
         console.print(f"Logs: {run_dir / 'events.jsonl'}")
-        
+
     except Exception as e:
         jsonl_logger.log_error(str(e))
         console.print(f"[red]Error: {e}[/red]")
@@ -543,7 +586,7 @@ def run(ctx: CLIContext, pipeline_file: str, input: Optional[str], no_cache: boo
 @pass_context
 def report(ctx: CLIContext, run_id: str, format: str, output: Optional[str]):
     """Generate report from run ID"""
-    
+
     # Find run directory
     run_dir = RUNS_DIR / run_id
     if not run_dir.exists():
@@ -553,22 +596,22 @@ def report(ctx: CLIContext, run_id: str, format: str, output: Optional[str]):
             if run.is_dir():
                 console.print(f"  • {run.name}")
         sys.exit(1)
-    
+
     # Load results
     results_file = run_dir / "results.json"
     if not results_file.exists():
         console.print(f"[red]No results found for run '{run_id}'[/red]")
         sys.exit(1)
-    
-    with open(results_file, 'r') as f:
+
+    with open(results_file, "r") as f:
         results = json.load(f)
-    
+
     # Load events
     events_file = run_dir / "events.jsonl"
     events = []
     if events_file.exists():
         events = JSONLLogger.read_jsonl(events_file)
-    
+
     # Generate report content
     if format == "md":
         report_content = f"""# GreenLang Report
@@ -583,12 +626,12 @@ def report(ctx: CLIContext, run_id: str, format: str, output: Optional[str]):
         for step_name, step_result in results.items():
             report_content += f"\n#### {step_name}\n"
             report_content += f"```json\n{json.dumps(step_result, indent=2)}\n```\n"
-        
+
         report_content += f"\n### Execution Timeline\n"
         for event in events:
-            if event['event_type'] in ['step_start', 'step_complete']:
+            if event["event_type"] in ["step_start", "step_complete"]:
                 report_content += f"- [{event['timestamp']}] {event['event_type']}: {event['data'].get('step_name', 'N/A')}\n"
-    
+
     elif format == "html":
         report_content = f"""<!DOCTYPE html>
 <html>
@@ -607,18 +650,20 @@ def report(ctx: CLIContext, run_id: str, format: str, output: Optional[str]):
     <pre>{json.dumps(results, indent=2)}</pre>
 </body>
 </html>"""
-    
+
     elif format == "pdf":
-        console.print("[yellow]PDF generation requires additional dependencies[/yellow]")
+        console.print(
+            "[yellow]PDF generation requires additional dependencies[/yellow]"
+        )
         console.print("Install with: pip install pdfkit")
         return
-    
+
     # Save report
     if output:
         output_path = Path(output)
     else:
         output_path = run_dir / f"report.{format}"
-    
+
     output_path.write_text(report_content)
     console.print(f"[green]Report generated: {output_path}[/green]")
 
@@ -629,20 +674,22 @@ def report(ctx: CLIContext, run_id: str, format: str, output: Optional[str]):
 @pass_context
 def ask(ctx: CLIContext, question: tuple):
     """Natural language assistant (requires API key)"""
-    
+
     # Check for API key
     api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
-    
+
     if not api_key:
-        console.print(Panel(
-            "[yellow]API key required for AI assistant[/yellow]\n\n"
-            "Set one of:\n"
-            "  export OPENAI_API_KEY='your-key'\n"
-            "  export ANTHROPIC_API_KEY='your-key'",
-            title="Configuration Required"
-        ))
+        console.print(
+            Panel(
+                "[yellow]API key required for AI assistant[/yellow]\n\n"
+                "Set one of:\n"
+                "  export OPENAI_API_KEY='your-key'\n"
+                "  export ANTHROPIC_API_KEY='your-key'",
+                title="Configuration Required",
+            )
+        )
         return
-    
+
     if question:
         query = " ".join(question)
         console.print(f"[cyan]Question:[/cyan] {query}")
@@ -651,7 +698,7 @@ def ask(ctx: CLIContext, question: tuple):
         console.print("[cyan]Interactive mode (type 'exit' to quit)[/cyan]")
         while True:
             query = console.input("[bold]Ask > [/bold]")
-            if query.lower() in ['exit', 'quit']:
+            if query.lower() in ["exit", "quit"]:
                 break
             console.print("[dim]Processing...[/dim]")
 

@@ -40,7 +40,7 @@ def list_packs(
             pack.name,
             pack.version,
             pack.manifest.get("type", "unknown"),
-            str(pack.location)
+            str(pack.location),
         )
 
     console.print(table)
@@ -65,7 +65,7 @@ def pack_info(name: str = typer.Argument(..., help="Pack name")):
 @app.command("add")
 def pack_add(
     source: str = typer.Argument(..., help="Pack name or path"),
-    verify: bool = typer.Option(True, "--verify/--no-verify", help="Verify pack")
+    verify: bool = typer.Option(True, "--verify/--no-verify", help="Verify pack"),
 ):
     """Install a pack from registry or local path"""
     console.print(f"[cyan]Installing {source}...[/cyan]")
@@ -82,9 +82,7 @@ def pack_remove(name: str = typer.Argument(..., help="Pack name")):
 
 
 @app.command("validate")
-def pack_validate(
-    path: Path = typer.Argument(..., help="Path to pack directory")
-):
+def pack_validate(path: Path = typer.Argument(..., help="Path to pack directory")):
     """Validate pack structure and manifest"""
     if not path.exists():
         console.print(f"[red]Path not found: {path}[/red]")
