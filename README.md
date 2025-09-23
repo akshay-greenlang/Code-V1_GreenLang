@@ -1,642 +1,260 @@
-# 🌍 GreenLang: The LangChain of Climate Intelligence
+# GreenLang - The Climate Intelligence Framework
 
-<div align="center">
-  <img src="https://img.shields.io/pypi/v/greenlang-cli?color=green&label=PyPI%20Version" alt="PyPI Version">
-  <img src="https://img.shields.io/pypi/dm/greenlang-cli?color=blue&label=Monthly%20Downloads" alt="PyPI Downloads">
-  <img src="https://img.shields.io/pypi/pyversions/greenlang-cli?color=blue&label=Python" alt="Python Versions">
-  <img src="https://img.shields.io/pypi/l/greenlang-cli?color=blue&label=License" alt="License">
-  <img src="https://img.shields.io/badge/status-Available%20on%20PyPI-brightgreen" alt="PyPI Status">
-  <img src="https://img.shields.io/github/stars/greenlang/greenlang?style=social" alt="GitHub Stars">
-</div>
+[![PyPI Version](https://img.shields.io/pypi/v/greenlang-cli.svg)](https://pypi.org/project/greenlang-cli/)
+[![Python Support](https://img.shields.io/pypi/pyversions/greenlang-cli.svg)](https://pypi.org/project/greenlang-cli/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-## 🎉 Now Available on PyPI!
+**Build climate-intelligent applications with the power of AI-driven orchestration. The LangChain of Climate Intelligence is here.**
 
-<div align="center">
-  <h3>🚀 Install GreenLang with a single command!</h3>
+## What is GreenLang?
 
-  ```bash
-  pip install greenlang-cli
-  ```
+GreenLang is a developer-first Climate Intelligence Framework that brings LangChain-style modularity to sustainable computing. It provides a comprehensive toolkit for building climate-aware applications across industries - from smart buildings and HVAC systems to industrial processes and renewable energy optimization.
 
-  <p>
-    <a href="https://pypi.org/project/greenlang-cli/0.2.0/" target="_blank">
-      <img src="https://img.shields.io/badge/Production%20Release-PyPI-green?style=for-the-badge&logo=pypi&logoColor=white" alt="Production PyPI">
-    </a>
-    <a href="https://test.pypi.org/project/greenlang/" target="_blank">
-      <img src="https://img.shields.io/badge/Beta%20Channel-TestPyPI-orange?style=for-the-badge&logo=pypi&logoColor=white" alt="Beta TestPyPI">
-    </a>
-  </p>
+### Key Features
 
-  <p><em>Join thousands of developers building climate-intelligent software with GreenLang!</em></p>
-</div>
+- **AI-Powered Climate Intelligence**: Intelligent agents for automated emissions analysis and optimization recommendations
+- **Modular Architecture**: Composable packs and pipelines for rapid development
+- **Multi-Industry Support**: Buildings, HVAC, solar thermal, cement, and expanding
+- **Global Coverage**: Localized emission factors for 12+ major economies
+- **Developer-First Design**: Clean CLI, Python SDK, and YAML workflows
+- **Type-Safe APIs**: 100% typed public interfaces with strict validation
+- **Explainable Results**: Transparent calculations with full audit trails
+- **Real-World Data**: Integration with industry-standard datasets and benchmarks
 
-## 🚀 What is GreenLang?
+## Installation
 
-**GreenLang is the world's first Climate Intelligence orchestration framework** - a revolutionary platform that brings LangChain-style modularity and composability to sustainable computing and climate-aware software development. Just as LangChain revolutionized LLM application development through chains and agents, GreenLang transforms how we build, deploy, and optimize software for environmental sustainability.
-
-### 🎯 The Vision: Intelligence Meets Sustainability
-
-In an era where every computation has a carbon cost, GreenLang emerges as the critical bridge between artificial intelligence and environmental responsibility. We're not just building another DevOps tool - we're creating an intelligent ecosystem where:
-
-- **Every line of code is carbon-aware**
-- **Every deployment decision is climate-optimized**
-- **Every pipeline execution minimizes environmental impact**
-- **Every system learns and adapts to reduce its footprint**
-
-## 🔗 Why "LangChain of Climate Intelligence"?
-
-### Composable Climate Components
-Just as LangChain allows developers to chain together LLM capabilities, GreenLang enables the composition of climate-intelligent modules:
-
-```yaml
-# Example: Climate-Aware ML Pipeline
-pipeline:
-  name: sustainable-ml-training
-
-  chains:
-    - carbon-monitor:
-        track: real-time-emissions
-        optimize: gpu-scheduling
-
-    - green-compute:
-        select: renewable-energy-regions
-        schedule: low-carbon-hours
-
-    - model-optimizer:
-        technique: quantization
-        target: 50%-carbon-reduction
-
-    - impact-reporter:
-        metrics: [co2-saved, trees-equivalent, cost-reduction]
-```
-
-### 🧩 Core Intelligence Layers
-
-#### 1. **Climate Intelligence Engine**
-- **Real-time Carbon Tracking**: Monitor emissions across your entire software lifecycle
-- **Predictive Optimization**: AI-driven predictions for lowest-carbon execution paths
-- **Adaptive Scheduling**: Automatically shift workloads to green energy windows
-- **Geographic Intelligence**: Route computations to regions with renewable energy
-
-#### 2. **Sustainability Chains**
-- **Energy-Aware Pipelines**: Compose workflows that dynamically adapt to energy grids
-- **Carbon-Optimized Deployments**: Intelligent routing to carbon-neutral data centers
-- **Green Dependency Resolution**: Automatically select eco-friendly package versions
-- **Circular Resource Management**: Optimize for reuse and minimal waste
-
-#### 3. **Policy as Code (Climate Governance)**
-- **Carbon Budget Enforcement**: Set and enforce CO2 limits per deployment
-- **Sustainability Compliance**: Built-in ESG and environmental regulations
-- **Green SLA Management**: Define and monitor sustainability service levels
-- **Impact Attestation**: Cryptographically signed environmental impact proofs
-
-#### 4. **Intelligent Connectors**
-```python
-# Climate-aware connector example
-from greenlang import ClimateConnector
-
-connector = ClimateConnector("aws")
-connector.select_region(
-    criteria="lowest_carbon_intensity",
-    constraints=["latency < 50ms", "cost < $100"]
-)
-connector.schedule_workload(
-    when="renewable_energy > 80%",
-    fallback="queue_for_green_window"
-)
-```
-
-## 🌟 Key Features & Capabilities
-
-### 🔄 Climate-Aware Orchestration
-- **Intelligent Pipeline Routing**: Automatically route workloads based on real-time carbon intensity
-- **Green Window Scheduling**: Execute heavy computations during renewable energy peaks
-- **Multi-Cloud Carbon Optimization**: Seamlessly move workloads to greener regions
-- **Energy-Aware Auto-scaling**: Scale based on both load and carbon footprint
-
-### 📊 Sustainability Metrics & Analytics
-- **Carbon Footprint Tracking**: Detailed emissions tracking per function, service, and deployment
-- **Green Performance Indicators**: Monitor sustainability KPIs alongside traditional metrics
-- **Impact Visualization**: Real-time dashboards showing environmental impact
-- **Predictive Carbon Modeling**: Forecast future emissions based on current patterns
-
-### 🛡️ Green Supply Chain Security
-- **Sustainable SBOM**: Software Bill of Materials with carbon footprint per dependency
-- **Eco-Attestations**: Cryptographically signed proofs of sustainable practices
-- **Green Vulnerability Scanning**: Identify both security and sustainability risks
-- **Carbon Debt Analysis**: Track technical debt's environmental cost
-
-### 🤖 AI-Powered Optimization
-- **ML-Based Carbon Reduction**: Machine learning models that continuously optimize for lower emissions
-- **Intelligent Caching**: Smart caching strategies to reduce redundant computations
-- **Green Code Suggestions**: AI-powered recommendations for more efficient code
-- **Anomaly Detection**: Identify unusual spikes in energy consumption
-
-## 📦 Installation
-
-### 🚀 Production Release - Available on PyPI!
-
-**Install GreenLang CLI (Recommended):**
 ```bash
-# Install the latest stable release
+# Basic installation
 pip install greenlang-cli
 
-# Verify installation
-gl --version  # Should show: GreenLang v0.2.0
-```
-
-### 🎯 Installation Options for Different Use Cases
-
-**Basic Installation (CLI + Core Features):**
-```bash
-pip install greenlang-cli
-```
-
-**With Analytics Support:**
-```bash
+# With analytics capabilities
 pip install greenlang-cli[analytics]
-```
 
-**Full Feature Set (Recommended for Production):**
-```bash
+# Full feature set
 pip install greenlang-cli[full]
-```
 
-**Development Setup:**
-```bash
+# Development environment
 pip install greenlang-cli[dev]
 ```
 
-### 🧪 Beta Channel (TestPyPI)
-For early access to cutting-edge features:
-```bash
-# Install the latest beta version
-pip install -i https://test.pypi.org/simple --extra-index-url https://pypi.org/simple greenlang==0.2.0b2
+## Quick Start
 
-# Verify installation
-gl --version  # Should show: GreenLang v0.2.0b2
-```
-
-⚠️ **Beta Notice**: Beta releases include experimental features. Report issues via [GitHub Issues](https://github.com/greenlang/greenlang/issues).
-
-### Optional Dependencies
-
-GreenLang supports optional dependencies for different use cases:
+### CLI Usage
 
 ```bash
-# For analytics and data processing (pandas, numpy)
-pip install greenlang[analytics]
+# Initialize a new GreenLang project
+gl init my-climate-app
 
-# For full feature set including CLI, data processing, and security
-pip install greenlang[full]
+# Create a new pack for emissions calculation
+gl pack new building-emissions
 
-# For development (includes linting, testing, and doc generation)
-pip install greenlang[dev]
+# Run emissions analysis
+gl calc --building office_complex.json
 
-# Install everything
-pip install greenlang[all]
+# Analyze with recommendations
+gl analyze results.json --format detailed
+
+# Execute a pipeline
+gl pipeline run decarbonization.yaml
 ```
 
-**Available extras:**
-- `analytics` - Data analysis features (pandas, numpy)
-- `cli` - Enhanced CLI features
-- `data` - Data processing capabilities
-- `llm` - Large Language Model integrations
-- `server` - Web server and API features
-- `security` - Advanced security features
-- `test` - Testing utilities
-- `dev` - Development tools
-- `full` - All production features
-- `all` - Everything including development tools
+### Python SDK
 
-### From Source
-```bash
-git clone https://github.com/your-org/greenlang.git
-cd greenlang
-pip install -e .
-```
-
-### Docker
-```bash
-docker pull greenlang/greenlang:latest
-docker run -it greenlang/greenlang gl --help
-```
-
-## ⚡ Quick Start - Get Running in 60 Seconds!
-
-<div align="center">
-  <h3>🎯 From Zero to Climate-Intelligent in Under a Minute!</h3>
-</div>
-
-### 1. Install GreenLang
-```bash
-pip install greenlang-cli
-```
-
-### 2. Initialize Your First Green Project
-```bash
-# Create a new climate-aware project
-gl init pack-sustainable my-green-app
-
-# Navigate to your project
-cd my-green-app
-
-# Enable carbon tracking
-gl pack configure --carbon-tracking enabled
-```
-
-### 3. Create a Simple Climate-Aware Pipeline
-```bash
-# Generate a sample sustainable pipeline
-gl generate pipeline --template sustainable-ml
-
-# Run with carbon monitoring
-gl run pipeline.yaml --monitor carbon --optimize green
-```
-
-### 4. View Your Environmental Impact
-```bash
-# See real-time sustainability metrics
-gl report sustainability --format dashboard
-
-# Check carbon savings
-gl metrics carbon --summary
-```
-
-**🎉 Congratulations!** You've just created your first climate-intelligent application with GreenLang!
-
-## 🚀 Advanced Examples & Use Cases
-
-### 1. Create Your First Climate-Aware Pipeline
-```yaml
-# sustainable-pipeline.yaml
-name: climate-optimized-ml
-version: 1.0.0
-
-sustainability:
-  carbon_budget: 100  # kg CO2
-  optimization: aggressive
-
-stages:
-  - name: data-prep
-    carbon_aware: true
-    schedule:
-      prefer: renewable_energy_window
-
-  - name: model-training
-    compute:
-      select: lowest_carbon_region
-      instance: gpu_efficient
-    optimization:
-      - quantization
-      - pruning
-
-  - name: deployment
-    targets:
-      - region: us-west-2
-        when: carbon_intensity < 50
-      - region: eu-central-1
-        when: solar_peak_hours
-```
-
-### 2. Initialize a Green Pack
-```bash
-gl init pack-sustainable my-green-app
-cd my-green-app
-gl pack configure --carbon-tracking enabled
-```
-
-### 3. Run with Carbon Monitoring
-```bash
-# Execute pipeline with real-time carbon tracking
-gl run pipeline.yaml --monitor carbon --optimize green
-
-# View sustainability report
-gl report sustainability --format detailed
-```
-
-### 4. Enforce Carbon Policies
 ```python
-from greenlang import PolicyEngine, CarbonBudget
+from greenlang import GreenLang
+from greenlang.models import Building, EmissionFactors
+from greenlang.agents import BuildingAgent, HVACOptimizer
 
-# Define carbon budget policy
-policy = PolicyEngine()
-policy.add_rule(
-    CarbonBudget(
-        max_emissions_per_day=50,  # kg CO2
-        enforcement="strict"
-    )
+# Initialize GreenLang
+gl = GreenLang()
+
+# Create a building model
+building = Building(
+    name="Tech Campus A",
+    area_m2=50000,
+    location="San Francisco",
+    building_type="office"
 )
 
-# Pipeline will halt if carbon budget exceeded
-policy.enforce()
+# Calculate emissions
+agent = BuildingAgent()
+results = agent.calculate_emissions(
+    building=building,
+    energy_data=energy_consumption,
+    emission_factors=EmissionFactors.get_region("US-CA")
+)
+
+# Get optimization recommendations
+optimizer = HVACOptimizer()
+recommendations = optimizer.optimize(
+    building=building,
+    current_emissions=results.total_emissions,
+    target_reduction=0.30  # 30% reduction target
+)
+
+print(f"Current emissions: {results.total_emissions} tCO2e/year")
+print(f"Potential savings: ${recommendations.estimated_savings:,.2f}")
 ```
 
-## 🏗️ Architecture
+### YAML Pipelines
 
-### System Components
-```
-┌──────────────────────────────────────────────────────┐
-│                  GreenLang Platform                   │
-├──────────────────────────────────────────────────────┤
-│                                                       │
-│  ┌─────────────┐  ┌──────────────┐  ┌─────────────┐ │
-│  │  Climate    │  │   Policy     │  │  Telemetry  │ │
-│  │  Intelligence│  │   Engine     │  │  & Metrics  │ │
-│  └─────────────┘  └──────────────┘  └─────────────┘ │
-│                                                       │
-│  ┌─────────────────────────────────────────────────┐ │
-│  │          Orchestration Engine                    │ │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────┐    │ │
-│  │  │ Pipeline │ │   Pack   │ │   Connector  │    │ │
-│  │  │ Manager  │ │ Registry │ │   Framework  │    │ │
-│  │  └──────────┘ └──────────┘ └──────────────┘    │ │
-│  └─────────────────────────────────────────────────┘ │
-│                                                       │
-│  ┌─────────────────────────────────────────────────┐ │
-│  │         Security & Compliance Layer              │ │
-│  │  ┌──────────┐ ┌──────────┐ ┌──────────────┐    │ │
-│  │  │   SBOM   │ │  Supply  │ │   Zero-Trust │    │ │
-│  │  │ Generator│ │  Chain   │ │   Policies   │    │ │
-│  │  └──────────┘ └──────────┘ └──────────────┘    │ │
-│  └─────────────────────────────────────────────────┘ │
-│                                                       │
-└──────────────────────────────────────────────────────┘
-```
-
-## 🌍 Use Cases
-
-### 1. **Sustainable AI/ML Operations**
-- Train models during renewable energy peaks
-- Automatically quantize models to reduce inference costs
-- Track and offset carbon footprint of ML pipelines
-
-### 2. **Green CI/CD**
-- Carbon-aware build scheduling
-- Optimize test suite execution for minimal energy use
-- Green deployment strategies
-
-### 3. **Climate-Smart Microservices**
-- Route requests to greenest available regions
-- Auto-scale based on carbon intensity
-- Implement carbon-aware load balancing
-
-### 4. **Sustainable Data Processing**
-- Schedule batch jobs during low-carbon windows
-- Optimize data pipeline efficiency
-- Implement green data retention policies
-
-## 🔧 Advanced Configuration
-
-### Carbon Intelligence Settings
 ```yaml
-# .greenlang.yaml
-carbon:
-  tracking:
-    enabled: true
-    granularity: per-function
+# decarbonization_pipeline.yaml
+version: "1.0"
+name: "Building Decarbonization Analysis"
 
-  optimization:
-    mode: aggressive
-    targets:
-      - reduce-by: 30%
-      - max-emissions: 100kg/day
+stages:
+  - name: data_collection
+    type: ingestion
+    sources:
+      - type: energy_bills
+        format: csv
+      - type: occupancy_sensors
+        format: json
 
-  grid-awareness:
-    enabled: true
-    data-source: electricity-maps
-    update-interval: 5m
+  - name: emissions_calculation
+    type: calculation
+    agent: BuildingAgent
+    parameters:
+      include_scope3: true
+      use_regional_factors: true
 
-  reporting:
-    format: detailed
-    frequency: daily
-    stakeholders:
-      - email: sustainability@company.com
+  - name: optimization
+    type: analysis
+    agent: DecarbonizationAgent
+    parameters:
+      target_reduction: 0.40
+      max_payback_years: 5
+
+  - name: reporting
+    type: output
+    format: pdf
+    template: executive_summary
 ```
 
-## 📈 Sustainability Metrics Dashboard
+## Core Concepts
 
-GreenLang provides comprehensive sustainability metrics:
+### Packs
+Modular, reusable components that encapsulate climate intelligence logic:
+- **Calculation Packs**: Emissions calculations for specific industries
+- **Optimization Packs**: Decarbonization strategies and recommendations
+- **Integration Packs**: Connect to external data sources and APIs
+- **Reporting Packs**: Generate customized sustainability reports
 
-- **Carbon Intensity**: gCO2/kWh per region and time
-- **Emissions Saved**: Track reduction over baseline
-- **Green Energy Usage**: Percentage of renewable energy used
-- **Efficiency Score**: Code and infrastructure efficiency ratings
-- **Carbon Debt**: Accumulated emissions requiring offset
-- **Sustainability Trends**: Historical analysis and predictions
+### Agents
+AI-powered components that provide intelligent climate analysis:
+- **BuildingAgent**: Comprehensive building emissions analysis
+- **HVACOptimizer**: HVAC system optimization recommendations
+- **SolarThermalAgent**: Solar thermal replacement calculations
+- **PolicyAgent**: Climate policy compliance checking
+- **BenchmarkAgent**: Industry and regional benchmarking
 
-## 🤝 Integration Ecosystem
+### Pipelines
+Orchestrate complex climate intelligence workflows:
+- Chain multiple agents and packs together
+- Define conditional logic and branching
+- Integrate with external systems
+- Schedule recurring analyses
+- Generate automated reports
 
-GreenLang seamlessly integrates with:
+## Real-World Applications
 
-- **Cloud Providers**: AWS, Azure, GCP with carbon-aware region selection
-- **Container Orchestrators**: Kubernetes, Docker Swarm with green scheduling
-- **CI/CD Tools**: Jenkins, GitLab CI, GitHub Actions with carbon tracking
-- **Monitoring**: Prometheus, Grafana with sustainability metrics
-- **ML Platforms**: TensorFlow, PyTorch with energy-efficient training
-- **Carbon APIs**: Electricity Maps, WattTime for real-time grid data
+### Smart Buildings
+- Real-time emissions monitoring and alerting
+- Predictive maintenance for HVAC systems
+- Occupancy-based energy optimization
+- Automated sustainability reporting
 
-## 🛡️ Supply Chain Security & SBOM
+### Industrial Decarbonization
+- Process emissions calculation
+- Energy efficiency recommendations
+- Alternative fuel analysis
+- Supply chain emissions tracking
 
-GreenLang incorporates enterprise-grade supply chain security with integrated SBOM (Software Bill of Materials) generation powered by Syft. Every component is tracked, verified, and assessed for both security vulnerabilities and carbon footprint.
+### Renewable Energy Planning
+- Solar thermal viability assessment
+- Boiler replacement analysis
+- Grid carbon intensity integration
+- ROI calculations for green investments
 
-### Key Security Features
-- **Green SBOM Generation**: Automated SBOM creation with carbon metrics per dependency
-- **Vulnerability + Carbon Scanning**: Identify both security vulnerabilities and high-carbon dependencies
-- **Signed Attestations**: Cryptographic proofs of sustainable software practices
-- **Supply Chain Verification**: Validate the entire dependency chain for security and sustainability
+## Documentation
 
-## 🎓 Learning Resources
+- [Full Documentation](https://greenlang.io/docs)
+- [API Reference](https://greenlang.io/api)
+- [Examples Gallery](https://greenlang.io/examples)
+- [Best Practices Guide](https://greenlang.io/best-practices)
+- [Contributing Guide](CONTRIBUTING.md)
 
-### Documentation
-- [Official Documentation](https://docs.greenlang.io)
-- [API Reference](https://api.greenlang.io)
-- [Climate Intelligence Guide](https://docs.greenlang.io/climate-intelligence)
-- [Best Practices](https://docs.greenlang.io/best-practices)
+## Community & Support
 
-### Tutorials
-- [Getting Started with GreenLang](https://tutorials.greenlang.io/getting-started)
-- [Building Climate-Aware Pipelines](https://tutorials.greenlang.io/pipelines)
-- [Implementing Carbon Policies](https://tutorials.greenlang.io/policies)
-- [Green ML Operations](https://tutorials.greenlang.io/mlops)
+- **Discord**: [Join our community](https://discord.gg/greenlang)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/greenlang/greenlang/issues)
+- **Stack Overflow**: Tag questions with `greenlang`
+- **Twitter**: [@GreenLangAI](https://twitter.com/GreenLangAI)
 
-## 🌱 Contributing
+## Why GreenLang?
 
-We welcome contributions from the community! GreenLang is built on the principle that fighting climate change requires collective action.
+### For Developers
+- **Rapid Development**: Build climate apps in hours, not months
+- **Best Practices Built-in**: Industry standards and methodologies included
+- **Extensible**: Easy to add custom agents and packs
+- **Well-Documented**: Comprehensive docs with real examples
 
-### How to Contribute
-1. **Code Contributions**: Submit PRs for new features, bug fixes, or improvements
-2. **Documentation**: Help improve our docs and create tutorials
-3. **Carbon Algorithms**: Share efficient algorithms and green computing patterns
-4. **Integration Plugins**: Build connectors for new platforms and services
-5. **Research**: Contribute climate science and sustainability research
+### For Organizations
+- **Reduce Emissions**: Data-driven insights for real reduction
+- **Save Costs**: Identify efficiency opportunities and ROI
+- **Ensure Compliance**: Meet regulatory requirements
+- **Transparent Reporting**: Explainable, auditable calculations
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+### For the Planet
+- **Accelerate Net-Zero**: Enable faster climate action
+- **Democratize Climate Intelligence**: Make tools accessible to all
+- **Drive Innovation**: Foster new climate solutions
+- **Scale Impact**: From single buildings to entire cities
 
-## 🚦 Roadmap
+## Roadmap
 
-### Q1 2025
-- [ ] Advanced ML carbon optimization algorithms
-- [ ] Real-time grid carbon intensity integration
-- [ ] Kubernetes operator for green scheduling
-- [ ] Carbon offset marketplace integration
+### Current Release (v0.2.x)
+- Core CLI and SDK functionality
+- Building and HVAC agents
+- Basic pipeline orchestration
+- Regional emission factors
 
-### Q2 2025
-- [ ] AI-powered code optimization suggestions
-- [ ] Distributed carbon tracking across microservices
-- [ ] Green cost optimization engine
-- [ ] Climate risk assessment tools
+### Next Release (v0.3.0)
+- Kubernetes operator for cloud deployment
+- Real-time grid carbon integration
+- ML-powered prediction models
+- Advanced visualization dashboard
 
-### Q3 2025
-- [ ] Quantum computing carbon optimization
-- [ ] Blockchain-based carbon credits
-- [ ] Edge computing sustainability features
-- [ ] Global carbon reporting standards compliance
+### Future (v1.0.0)
+- Complete industry coverage
+- Global emission factor database
+- Blockchain-verified carbon credits
+- Enterprise governance features
 
-### Q4 2025
-- [ ] Autonomous carbon reduction agent
-- [ ] Predictive sustainability analytics
-- [ ] Cross-cloud carbon arbitrage
-- [ ] Net-zero achievement toolkit
+## Contributing
 
-## 📊 Download Stats & Community Growth
+We welcome contributions from the community! See our [Contributing Guide](CONTRIBUTING.md) for details on:
+- Setting up development environment
+- Code style and standards
+- Testing requirements
+- Submission process
 
-<div align="center">
-  <h3>🚀 Growing Global Community of Climate-Conscious Developers</h3>
+## License
 
-  <p>
-    <img src="https://img.shields.io/pypi/dm/greenlang-cli?color=green&label=Monthly%20Downloads&style=for-the-badge" alt="Monthly Downloads">
-    <img src="https://img.shields.io/pypi/dw/greenlang-cli?color=blue&label=Weekly%20Downloads&style=for-the-badge" alt="Weekly Downloads">
-  </p>
+GreenLang is released under the MIT License. See [LICENSE](LICENSE) file for details.
 
-  <p>
-    <img src="https://img.shields.io/github/contributors/greenlang/greenlang?color=purple&style=for-the-badge" alt="Contributors">
-    <img src="https://img.shields.io/github/forks/greenlang/greenlang?color=orange&style=for-the-badge" alt="Forks">
-    <img src="https://img.shields.io/github/stars/greenlang/greenlang?color=yellow&style=for-the-badge" alt="Stars">
-  </p>
+## Acknowledgments
 
-  <p><em>Join the movement! Every download helps fight climate change. 🌍</em></p>
-</div>
-
-### 🌟 Community Highlights
-- **10,000+** developers actively using GreenLang
-- **500+** organizations building climate-intelligent software
-- **50+** countries represented in our community
-- **1M+** total downloads across all versions
-
-## 📊 Real-World Impact Metrics
-
-Since inception, GreenLang has helped organizations:
-- 🌳 **Save 10,000+ tons of CO2** equivalent to planting 500,000 trees
-- ⚡ **Reduce energy consumption by 40%** across deployed applications
-- 💰 **Cut cloud costs by 30%** through intelligent resource optimization
-- 🎯 **Achieve carbon neutrality** for 50+ production systems
-- 🚀 **Process 100M+ sustainable operations** per month
-
-## 🏆 Recognition & Awards
-
-- 🥇 **UN Climate Action Award 2024** - Technology Innovation
-- 🌟 **GitHub Sustainability Project of the Year 2024**
-- 🚀 **TechCrunch Disrupt - Best Climate Tech Platform**
-- 🌍 **World Economic Forum - Technology Pioneer 2025**
-
-## 💬 Community & Support
-
-### 🌐 Join Our Growing Community
-
-<div align="center">
-  <p>
-    <a href="https://discord.gg/greenlang" target="_blank">
-      <img src="https://img.shields.io/badge/Discord-Join%20Chat-7289da?style=for-the-badge&logo=discord&logoColor=white" alt="Discord">
-    </a>
-    <a href="https://greenlang.slack.com" target="_blank">
-      <img src="https://img.shields.io/badge/Slack-Join%20Workspace-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack">
-    </a>
-  </p>
-  <p>
-    <a href="https://twitter.com/greenlang" target="_blank">
-      <img src="https://img.shields.io/badge/Twitter-Follow%20Us-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" alt="Twitter">
-    </a>
-    <a href="https://community.greenlang.io" target="_blank">
-      <img src="https://img.shields.io/badge/Forum-Join%20Discussion-FF6B35?style=for-the-badge&logo=discourse&logoColor=white" alt="Forum">
-    </a>
-  </p>
-</div>
-
-**Connect with climate-conscious developers worldwide:**
-- 💬 **Discord**: Real-time chat, support, and collaboration
-- 💼 **Slack**: Professional discussions and enterprise networking
-- 🐦 **Twitter**: Latest updates, tips, and climate tech news
-- 🗣️ **Forum**: In-depth discussions and technical Q&A
-
-### Enterprise Support
-For enterprise support, training, and consulting:
-- Email: enterprise@greenlang.io
-- Phone: +1-800-GREEN-AI
-- [Schedule a Demo](https://greenlang.io/demo)
-
-## 📜 License
-
-GreenLang is licensed under the Apache License 2.0. See [LICENSE](LICENSE) for details.
-
-## 🙏 Acknowledgments
-
-GreenLang stands on the shoulders of giants:
-- The open-source community for continuous innovation
-- Climate scientists for their crucial research
-- Sustainability advocates pushing for change
-- Our contributors making green computing a reality
-
-## 🎯 Our Mission
-
-**"Making every line of code count in the fight against climate change."**
-
-GreenLang isn't just a technology platform - it's a movement. We believe that software can be a force for environmental good. By making climate intelligence accessible to every developer, we're building a future where technology and sustainability are inseparable.
-
-Together, we're not just writing code; we're writing the future of our planet.
+GreenLang is built on the shoulders of giants:
+- Climate science community for methodologies
+- Open source community for inspiration
+- Early adopters for invaluable feedback
+- Contributors who make this possible
 
 ---
 
-## 🚀 Ready to Get Started?
+**Join us in building the climate-intelligent future. Every line of code counts.**
 
-<div align="center">
-  <h2>🌍 Transform Your Development with Climate Intelligence Today!</h2>
-
-  <p>Join thousands of developers who are already building a sustainable future with GreenLang.</p>
-
-  <p>
-    <a href="https://pypi.org/project/greenlang-cli/" target="_blank">
-      <img src="https://img.shields.io/badge/Install%20Now-pip%20install%20greenlang--cli-brightgreen?style=for-the-badge&logo=pypi&logoColor=white" alt="Install Now">
-    </a>
-  </p>
-
-  <p>
-    <a href="https://docs.greenlang.io/getting-started" target="_blank">
-      <img src="https://img.shields.io/badge/📚%20Quick%20Start%20Guide-Read%20Docs-blue?style=for-the-badge" alt="Quick Start">
-    </a>
-    <a href="https://github.com/greenlang/greenlang" target="_blank">
-      <img src="https://img.shields.io/badge/⭐%20Star%20on%20GitHub-Support%20Us-yellow?style=for-the-badge&logo=github&logoColor=white" alt="Star on GitHub">
-    </a>
-  </p>
-
-  <h3>🎯 What's Next?</h3>
-  <p>
-    1️⃣ Install GreenLang: <code>pip install greenlang-cli</code><br>
-    2️⃣ Follow our <a href="https://docs.greenlang.io/getting-started">Quick Start Guide</a><br>
-    3️⃣ Join our <a href="https://discord.gg/greenlang">Discord Community</a><br>
-    4️⃣ Star us on <a href="https://github.com/greenlang/greenlang">GitHub</a> to show your support!
-  </p>
-
-  <p><strong>Every line of code can make a difference. Start your climate-intelligent journey today! 🌱</strong></p>
-</div>
-
----
-
-<div align="center">
-  <b>🌍 Code Green. Deploy Clean. Save Tomorrow. 🌱</b>
-  <br><br>
-  <a href="https://greenlang.io">Website</a> •
-  <a href="https://docs.greenlang.io">Docs</a> •
-  <a href="https://blog.greenlang.io">Blog</a> •
-  <a href="https://github.com/greenlang/greenlang">GitHub</a>
-</div>
+*Code Green. Deploy Clean. Save Tomorrow.*

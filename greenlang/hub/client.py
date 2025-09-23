@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 class HubClient:
     """Client for interacting with GreenLang Hub Registry"""
 
-    DEFAULT_REGISTRY_URL = "https://hub.greenlang.io"
+    DEFAULT_REGISTRY_URL = "https://hub.greenlang.in"
     TIMEOUT = httpx.Timeout(30.0, connect=10.0)
 
     def __init__(

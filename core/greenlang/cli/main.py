@@ -59,7 +59,7 @@ def callback(
     if version:
         console.print(f"GreenLang v{__version__}")
         console.print("Infrastructure for Climate Intelligence")
-        console.print("https://greenlang.io")
+        console.print("https://greenlang.in")
         raise typer.Exit(0)
 
 
@@ -68,7 +68,7 @@ def version():
     """Show GreenLang version"""
     console.print(f"[bold green]GreenLang v{__version__}[/bold green]")
     console.print("Infrastructure for Climate Intelligence")
-    console.print("https://greenlang.io")
+    console.print("https://greenlang.in")
 
 
 # === Pack Management Commands ===
@@ -249,7 +249,7 @@ def pack_info(name: str):
 @pack_app.command("add")
 def pack_add(
     source: str,
-    registry_url: str = typer.Option("hub.greenlang.io", "--registry", "-r"),
+    registry_url: str = typer.Option("hub.greenlang.in", "--registry", "-r"),
     verify: bool = typer.Option(True, "--verify/--no-verify"),
 ):
     """Install a pack from registry or local path"""
@@ -359,7 +359,7 @@ def pack_verify(name: str):
 @pack_app.command("publish")
 def pack_publish(
     path: Path = typer.Argument(..., help="Path to pack directory"),
-    registry_url: str = typer.Option("hub.greenlang.io", "--registry", "-r"),
+    registry_url: str = typer.Option("hub.greenlang.in", "--registry", "-r"),
     sign: bool = typer.Option(True, "--sign/--no-sign"),
     test: bool = typer.Option(
         True, "--test/--no-test", help="Run tests before publishing"

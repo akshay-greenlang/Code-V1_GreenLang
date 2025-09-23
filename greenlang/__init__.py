@@ -9,7 +9,7 @@ Success = Developer Love + Trust + Distribution
 """
 
 __author__ = "GreenLang Team"
-__email__ = "team@greenlang.io"
+__email__ = "team@greenlang.in"
 __license__ = "MIT"
 
 # Core infrastructure exports only

@@ -1,5 +1,5 @@
 """
-GreenLang CLI v0.2.0
+GreenLang CLI v0.2.1
 ====================
 
 Unified CLI for GreenLang infrastructure platform.
@@ -25,19 +25,19 @@ def _root(
     version: bool = typer.Option(False, "--version", help="Show version and exit")
 ):
     """
-    GreenLang v0.2.0 - Infrastructure for Climate Intelligence
+    GreenLang v0.2.1 - Infrastructure for Climate Intelligence
     """
     if version:
         try:
-            from .. import __version__
+            from .._version import __version__
 
             console.print(f"GreenLang v{__version__}")
             console.print("Infrastructure for Climate Intelligence")
-            console.print("https://greenlang.io")
+            console.print("https://greenlang.in")
         except ImportError:
-            console.print("GreenLang v0.2.0")
+            console.print("GreenLang v0.2.1")
             console.print("Infrastructure for Climate Intelligence")
-            console.print("https://greenlang.io")
+            console.print("https://greenlang.in")
         raise typer.Exit(0)
 
 
@@ -49,9 +49,9 @@ def version():
 
         console.print(f"[bold green]GreenLang v{__version__}[/bold green]")
         console.print("Infrastructure for Climate Intelligence")
-        console.print("https://greenlang.io")
+        console.print("https://greenlang.in")
     except ImportError:
-        console.print("[bold green]GreenLang v0.2.0[/bold green]")
+        console.print("[bold green]GreenLang v0.2.1[/bold green]")
 
 
 @app.command()
