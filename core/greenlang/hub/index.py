@@ -12,7 +12,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
-import requests
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +127,14 @@ class HubIndex:
         for url in self.index_urls:
             try:
                 logger.info(f"Fetching index from {url}")
-                response = requests.get(url, timeout=10)
+                from greenlang.security.network import (
+                    create_secure_session,
+                    validate_url,
+                )
+
+                validate_url(url)  # Ensure HTTPS
+                session = create_secure_session()
+                response = session.get(url, timeout=10)
                 response.raise_for_status()
 
                 index_data = response.json()

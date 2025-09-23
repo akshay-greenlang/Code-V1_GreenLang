@@ -19,7 +19,7 @@ from typing import Dict, Any
 from greenlang.agents.base import AgentConfig
 from greenlang.agents.fuel_agent import FuelAgent
 from greenlang.agents.boiler_agent import BoilerAgent
-from greenlang.utils.net import NetworkPolicy, DEFAULT_ALLOWED_DOMAINS
+from greenlang.utils.net import NetworkPolicy
 
 
 class TestAgentConfig:
@@ -169,13 +169,17 @@ class TestNetworkPolicyConfig:
             with patch.object(Path, 'exists', return_value=False):
                 return NetworkPolicy()
 
-    def test_network_policy_default_domains(self):
-        """Test default allowed domains."""
-        policy = self._create_network_policy()
+    def test_network_policy_empty_defaults(self):
+        """Test that default policy has empty allowed domains (secure by default)."""
+        # Create policy without any configuration
+        with patch.dict(os.environ, {}, clear=True):
+            with patch.object(Path, 'exists', return_value=False):
+                with patch.object(Path, 'home', return_value=Path("/fake/home")):
+                    policy = NetworkPolicy()
 
-        # Should include default domains
-        for domain in DEFAULT_ALLOWED_DOMAINS:
-            assert domain in policy.allowed_domains
+                    # Should have empty allowed domains by default (deny all)
+                    assert len(policy.allowed_domains) == 0
+                    assert len(policy.blocked_domains) == 0
 
     def test_network_policy_env_domains(self):
         """Test loading domains from environment variables."""
@@ -311,20 +315,22 @@ class TestEnvironmentVariableConfig:
     def test_empty_environment_variables(self):
         """Test handling of empty environment variables."""
         with patch.dict(os.environ, {'GL_ALLOWED_DOMAINS': ''}):
-            policy = NetworkPolicy()
+            with patch.object(Path, 'exists', return_value=False):
+                policy = NetworkPolicy()
 
-            # Should still have default domains
-            for domain in DEFAULT_ALLOWED_DOMAINS:
-                assert domain in policy.allowed_domains
+                # Should have empty domains when no config provided
+                assert len(policy.allowed_domains) == 0
 
-    def test_environment_variable_precedence(self):
-        """Test that environment variables are added to defaults."""
-        with patch.dict(os.environ, {'GL_ALLOWED_DOMAINS': 'custom.domain.com'}):
-            policy = NetworkPolicy()
+    def test_environment_variable_configuration(self):
+        """Test that environment variables configure allowed domains."""
+        with patch.dict(os.environ, {'GL_ALLOWED_DOMAINS': 'custom.domain.com,another.domain.org'}):
+            with patch.object(Path, 'exists', return_value=False):
+                policy = NetworkPolicy()
 
-            # Should have both default and custom domains
-            assert "greenlang.io" in policy.allowed_domains  # Default
-            assert "custom.domain.com" in policy.allowed_domains  # Custom
+                # Should have only the configured domains
+                assert "custom.domain.com" in policy.allowed_domains
+                assert "another.domain.org" in policy.allowed_domains
+                assert len(policy.allowed_domains) == 2
 
 
 class TestConfigDefaults:
@@ -342,18 +348,15 @@ class TestConfigDefaults:
         assert isinstance(config.parameters, dict)
         assert len(config.parameters) == 0
 
-    def test_network_policy_defaults(self):
-        """Test that network policy has proper defaults."""
+    def test_network_policy_secure_defaults(self):
+        """Test that network policy has secure defaults (empty allowlist)."""
         # Create policy without any environment variables
         with patch.dict(os.environ, {}, clear=True):
             with patch.object(Path, 'exists', return_value=False):
                 with patch.object(Path, 'home', return_value=Path("/fake/home")):
                     policy = NetworkPolicy()
 
-                    # Should have default allowed domains
-                    assert len(policy.allowed_domains) >= len(DEFAULT_ALLOWED_DOMAINS)
-                    for domain in DEFAULT_ALLOWED_DOMAINS:
-                        assert domain in policy.allowed_domains
-
+                    # Should have empty allowed domains by default (secure)
+                    assert len(policy.allowed_domains) == 0
                     # Should have empty blocked list by default
                     assert len(policy.blocked_domains) == 0

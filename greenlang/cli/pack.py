@@ -99,18 +99,12 @@ def publish(
 @click.option("--registry", default="https://hub.greenlang.io", help="Registry URL")
 @click.option("--no-verify", is_flag=True, help="Skip signature verification")
 @click.option("--allow-unsigned", is_flag=True, help="Allow unsigned packs (dev only)")
-@click.option(
-    "--policy-permissive",
-    is_flag=True,
-    help="Enable permissive policy mode (DANGEROUS!)",
-)
 def add(
     pack_ref: str,
     output: str,
     registry: str,
     no_verify: bool,
     allow_unsigned: bool,
-    policy_permissive: bool,
 ):
     """Add (install) a pack from the registry
 
@@ -127,19 +121,10 @@ def add(
             console.print(
                 "[bold yellow]⚠️  WARNING: --allow-unsigned flag used. Security checks relaxed![/bold yellow]"
             )
-        if policy_permissive:
-            console.print(
-                "[bold red]⚠️  DANGER: --policy-permissive flag used. Policies not enforced![/bold red]"
-            )
-            console.print(
-                "[bold red]    This mode is for development only. DO NOT use in production![/bold red]"
-            )
 
         # Setup policy environment
         import os
 
-        if policy_permissive:
-            os.environ["GL_POLICY_PERMISSIVE"] = "1"
         if allow_unsigned:
             os.environ["GL_ALLOW_UNSIGNED"] = "1"
 

@@ -393,8 +393,7 @@ class TestPolicyEnforcement(unittest.TestCase):
         """Set up policy enforcer"""
         self.policy_dir = tempfile.mkdtemp(prefix="gl_policy_test_")
         self.enforcer = PolicyEnforcer(
-            policy_dir=Path(self.policy_dir),
-            permissive_mode=False
+            policy_dir=Path(self.policy_dir)
         )
 
     def tearDown(self):

@@ -1,5 +1,5 @@
 """
-GreenLang v0.1: Infrastructure for Climate Intelligence
+GreenLang v2.0: Infrastructure for Climate Intelligence
 ========================================================
 
 GreenLang is now pure infrastructure. Domain logic lives in packs.
@@ -9,8 +9,11 @@ Success = Developer Love + Trust + Distribution
 """
 
 __author__ = "GreenLang Team"
-__email__ = "team@greenlang.io"
+__email__ = "team@greenlang.in"
 __license__ = "MIT"
+
+# Import version
+from ._version import __version__
 
 # Core infrastructure exports only
 from .sdk.base import Agent, Pipeline, Connector, Dataset, Report

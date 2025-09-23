@@ -40,7 +40,7 @@ def test_enforcer_default_deny():
     """Test that enforcer defaults to deny"""
     from greenlang.policy.enforcer import PolicyEnforcer
 
-    enforcer = PolicyEnforcer(permissive_mode=False)
+    enforcer = PolicyEnforcer()
     # Check with non-existent policy
     result = enforcer.check(Path("nonexistent.rego"), {"test": "data"})
     assert result == False, "Should deny when no policy exists"

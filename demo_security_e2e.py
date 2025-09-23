@@ -32,7 +32,7 @@ from greenlang.policy.opa import evaluate
 
 print("\nTest 1.1: No policy loaded => DENY")
 try:
-    enforcer = PolicyEnforcer(permissive_mode=False)
+    enforcer = PolicyEnforcer()
     pack_manifest = type('obj', (object,), {
         'dict': lambda: {'name': 'test', 'signature_verified': False}
     })()

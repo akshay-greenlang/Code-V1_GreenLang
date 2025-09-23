@@ -22,7 +22,7 @@ class TestDefaultDenyBehavior(unittest.TestCase):
     def setUp(self):
         """Setup test environment"""
         self.test_dir = Path(tempfile.mkdtemp())
-        self.enforcer = PolicyEnforcer(policy_dir=self.test_dir, permissive_mode=False)
+        self.enforcer = PolicyEnforcer(policy_dir=self.test_dir)
 
     def tearDown(self):
         """Cleanup test environment"""
@@ -63,7 +63,7 @@ class TestDefaultDenyBehavior(unittest.TestCase):
         }
 
         with self.assertRaises(RuntimeError) as ctx:
-            check_install(manifest, str(self.test_dir), "add", permissive=False)
+            check_install(manifest, str(self.test_dir), "add")
 
         self.assertIn("POLICY.DENIED", str(ctx.exception))
 
@@ -152,27 +152,32 @@ class TestDefaultDenyBehavior(unittest.TestCase):
             self.assertIn("Region", str(ctx.exception))
             self.assertIn("not allowed", str(ctx.exception))
 
-    def test_permissive_mode_allows_failures(self):
-        """Test that permissive mode allows operations that would be denied"""
+    def test_all_denied_operations_enforced(self):
+        """Test that all denied operations are properly enforced with no bypasses"""
         manifest = {
             "name": "test-pack",
             "version": "1.0.0",
-            "signature_verified": False,  # Would normally be denied
-            "publisher": "unknown"  # Would normally be denied
+            "signature_verified": False,  # Should be denied
+            "publisher": "unknown"  # Should be denied
         }
 
+        # Create a mock manifest object with dict method
+        from unittest.mock import Mock
+        mock_manifest = Mock()
+        mock_manifest.dict.return_value = manifest
+
         with patch('greenlang.policy.enforcer.opa_eval') as mock_eval:
-            # In permissive mode, policy returns allow=True
+            # Policy should always deny unsigned packs from unknown publishers
             mock_eval.return_value = {
-                "allow": True,
-                "reason": "Policy not found (PERMISSIVE MODE)"
+                "allow": False,
+                "reason": "POLICY.DENIED_INSTALL: Unsigned pack from unknown publisher"
             }
 
-            # Should not raise in permissive mode
-            try:
-                check_install(manifest, str(self.test_dir), "add", permissive=True)
-            except RuntimeError:
-                self.fail("Permissive mode should have allowed installation")
+            # Should always raise - no permissive mode bypass
+            with self.assertRaises(RuntimeError) as ctx:
+                check_install(mock_manifest, str(self.test_dir), "add")
+
+            self.assertIn("POLICY.DENIED", str(ctx.exception))
 
 
 class TestCapabilityGates(unittest.TestCase):

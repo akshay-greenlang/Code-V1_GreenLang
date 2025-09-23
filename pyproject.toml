@@ -4,18 +4,46 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greenlang-cli"
-version = "0.2.0"
-description = "Developer-first Climate Intelligence Framework (core rails)"
+version = "0.2.3"
+description = "The Climate Intelligence Framework - Build climate-aware applications with AI-driven orchestration"
 readme = "README.md"
-authors = [{ name = "GreenLang Maintainers" }]
+authors = [{ name = "GreenLang Maintainers", email = "maintainers@greenlang.io" }]
 license = { text = "MIT" }
 requires-python = ">=3.10"
+keywords = [
+  "climate",
+  "emissions",
+  "sustainability",
+  "carbon",
+  "green",
+  "environment",
+  "AI",
+  "orchestration",
+  "framework",
+  "climate-intelligence",
+  "decarbonization",
+  "net-zero",
+  "ESG",
+  "HVAC",
+  "buildings",
+  "energy"
+]
 classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Atmospheric Science",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
+  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+  "Environment :: Console",
+  "Framework :: Pydantic",
+  "Natural Language :: English",
 ]
 dependencies = [
   "typer>=0.12",
@@ -32,6 +60,14 @@ dependencies = [
   "tenacity>=8.2.3",
   "psutil>=5.9.0",
 ]
+
+[project.urls]
+"Homepage" = "https://greenlang.io"
+"Documentation" = "https://greenlang.io/docs"
+"Repository" = "https://github.com/greenlang/greenlang"
+"Bug Tracker" = "https://github.com/greenlang/greenlang/issues"
+"Changelog" = "https://github.com/greenlang/greenlang/blob/main/CHANGELOG.md"
+"Discord" = "https://discord.gg/greenlang"
 
 [project.scripts]
 # CLI entry point for the gl command

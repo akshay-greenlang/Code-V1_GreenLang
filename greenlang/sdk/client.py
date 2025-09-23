@@ -1,26 +1,8 @@
 from typing import Dict, Any, List, Optional
 from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import Workflow
-from greenlang.agents import (
-    FuelAgent,
-    CarbonAgent,
-    InputValidatorAgent,
-    ReportAgent,
-    BenchmarkAgent,
-    BaseAgent,
-    # Enhanced Agents
-    BoilerAgent,
-    GridFactorAgent,
-    BuildingProfileAgent,
-    IntensityAgent,
-    RecommendationAgent,
-    # Climatenza AI Agents
-    SiteInputAgent,
-    SolarResourceAgent,
-    LoadProfileAgent,
-    FieldLayoutAgent,
-    EnergyBalanceAgent,
-)
+import greenlang.agents as agents
+from greenlang.agents import BaseAgent
 
 
 class GreenLangClient:
@@ -31,26 +13,10 @@ class GreenLangClient:
         self._register_default_agents()
 
     def _register_default_agents(self):
-        # Core agents
-        self.orchestrator.register_agent("validator", InputValidatorAgent())
-        self.orchestrator.register_agent("fuel", FuelAgent())
-        self.orchestrator.register_agent("carbon", CarbonAgent())
-        self.orchestrator.register_agent("report", ReportAgent())
-        self.orchestrator.register_agent("benchmark", BenchmarkAgent())
-
-        # Enhanced agents
-        self.orchestrator.register_agent("boiler", BoilerAgent())
-        self.orchestrator.register_agent("grid_factor", GridFactorAgent())
-        self.orchestrator.register_agent("building_profile", BuildingProfileAgent())
-        self.orchestrator.register_agent("intensity", IntensityAgent())
-        self.orchestrator.register_agent("recommendation", RecommendationAgent())
-
-        # Climatenza AI agents
-        self.orchestrator.register_agent("SiteInputAgent", SiteInputAgent())
-        self.orchestrator.register_agent("SolarResourceAgent", SolarResourceAgent())
-        self.orchestrator.register_agent("LoadProfileAgent", LoadProfileAgent())
-        self.orchestrator.register_agent("FieldLayoutAgent", FieldLayoutAgent())
-        self.orchestrator.register_agent("EnergyBalanceAgent", EnergyBalanceAgent())
+        """Register default agents with lazy loading"""
+        # Note: Agents are now registered on-demand when first used
+        # This avoids importing agents with heavy dependencies at startup
+        pass
 
     def register_agent(self, agent_id: str, agent: BaseAgent):
         self.orchestrator.register_agent(agent_id, agent)
@@ -66,9 +32,38 @@ class GreenLangClient:
     def execute_agent(
         self, agent_id: str, input_data: Dict[str, Any]
     ) -> Dict[str, Any]:
+        # Register agent on-demand if not already registered
+        if agent_id not in self.orchestrator.list_agents():
+            self._register_agent_on_demand(agent_id)
         result = self.orchestrator.execute_single_agent(agent_id, input_data)
         # execute_single_agent already returns a dict, no need to call model_dump()
         return result
+
+    def _register_agent_on_demand(self, agent_id: str):
+        """Register an agent on-demand when first used"""
+        agent_map = {
+            "validator": "InputValidatorAgent",
+            "fuel": "FuelAgent",
+            "carbon": "CarbonAgent",
+            "report": "ReportAgent",
+            "benchmark": "BenchmarkAgent",
+            "boiler": "BoilerAgent",
+            "grid_factor": "GridFactorAgent",
+            "building_profile": "BuildingProfileAgent",
+            "intensity": "IntensityAgent",
+            "recommendation": "RecommendationAgent",
+            "SiteInputAgent": "SiteInputAgent",
+            "SolarResourceAgent": "SolarResourceAgent",
+            "LoadProfileAgent": "LoadProfileAgent",
+            "FieldLayoutAgent": "FieldLayoutAgent",
+            "EnergyBalanceAgent": "EnergyBalanceAgent",
+        }
+
+        if agent_id in agent_map:
+            agent_class_name = agent_map[agent_id]
+            # Use getattr to lazily load the agent class
+            agent_class = getattr(agents, agent_class_name)
+            self.orchestrator.register_agent(agent_id, agent_class())
 
     def calculate_carbon_footprint(
         self, fuels: List[Dict], building_info: Optional[Dict] = None
