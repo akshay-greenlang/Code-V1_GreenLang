@@ -519,7 +519,8 @@ class PackInstaller:
         hub_url = "https://hub.greenlang.ai"
 
         try:
-            response = requests.get(f"{hub_url}/api/packs")
+            from greenlang.security.http import get as secure_get
+            response = secure_get(f"{hub_url}/api/packs")
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:

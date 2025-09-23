@@ -395,8 +395,8 @@ class TestNetworkUtilities:
         assert "test.com" not in _network_policy.allowed_domains
         assert "bad.com" not in _network_policy.blocked_domains
 
-        # Should have defaults
-        assert "greenlang.io" in _network_policy.allowed_domains
+        # Should have empty defaults (secure by default)
+        assert len(_network_policy.allowed_domains) == 0
 
 
 class TestPerformanceTracker:

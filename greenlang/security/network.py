@@ -115,7 +115,7 @@ def validate_url(url: str, allow_http: bool = False) -> None:
             f"Only https (and file for local dev) are allowed."
         )
 
-    # Validate hostname isn't localhost/private unless in dev mode
+    # Validate hostname isn't localhost/private - warn about private hosts
     if parsed.hostname:
         hostname = parsed.hostname.lower()
         private_hosts = ["localhost", "127.0.0.1", "::1", "0.0.0.0"]

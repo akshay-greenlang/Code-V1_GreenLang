@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Optional, Any
 from datetime import datetime
-import httpx
+from ..security.http import SecureHTTPSession
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization
@@ -94,10 +94,11 @@ class HubAuth:
         try:
             logger.info(f"Logging in as {username}")
 
-            response = httpx.post(
-                f"{registry_url}/api/v1/auth/login",
-                json={"username": username, "password": password},
-            )
+            with SecureHTTPSession() as session:
+                response = session.post(
+                    f"{registry_url}/api/v1/auth/login",
+                    json={"username": username, "password": password},
+                )
 
             response.raise_for_status()
 
@@ -111,7 +112,7 @@ class HubAuth:
             logger.info("Login successful")
             return True
 
-        except httpx.HTTPStatusError as e:
+        except Exception as e:
             logger.error(f"Login failed: {e.response.status_code} - {e.response.text}")
             return False
         except Exception as e:
@@ -148,9 +149,10 @@ class HubAuth:
         try:
             logger.info("Refreshing token")
 
-            response = httpx.post(
-                f"{registry_url}/api/v1/auth/refresh", headers=self.get_headers()
-            )
+            with SecureHTTPSession() as session:
+                response = session.post(
+                    f"{registry_url}/api/v1/auth/refresh", headers=self.get_headers()
+                )
 
             response.raise_for_status()
 
@@ -163,7 +165,7 @@ class HubAuth:
             logger.info("Token refreshed successfully")
             return True
 
-        except httpx.HTTPStatusError as e:
+        except Exception as e:
             logger.error(f"Token refresh failed: {e.response.status_code}")
             return False
         except Exception as e:
@@ -192,9 +194,10 @@ class HubAuth:
         try:
             logger.info(f"Registering new account: {username}")
 
-            response = httpx.post(
-                f"{registry_url}/api/v1/auth/register",
-                json={"username": username, "email": email, "password": password},
+            with SecureHTTPSession() as session:
+                response = session.post(
+                    f"{registry_url}/api/v1/auth/register",
+                    json={"username": username, "email": email, "password": password},
             )
 
             response.raise_for_status()
@@ -204,7 +207,7 @@ class HubAuth:
             # Auto-login after registration
             return self.login(username, password, registry_url)
 
-        except httpx.HTTPStatusError as e:
+        except Exception as e:
             logger.error(
                 f"Registration failed: {e.response.status_code} - {e.response.text}"
             )
@@ -233,9 +236,10 @@ class HubAuth:
         try:
             logger.info(f"Creating API key: {name}")
 
-            response = httpx.post(
-                f"{registry_url}/api/v1/auth/api-keys",
-                headers=self.get_headers(),
+            with SecureHTTPSession() as session:
+                response = session.post(
+                    f"{registry_url}/api/v1/auth/api-keys",
+                    headers=self.get_headers(),
                 json={"name": name},
             )
 
@@ -247,7 +251,7 @@ class HubAuth:
             logger.info("API key created successfully")
             return api_key
 
-        except httpx.HTTPStatusError as e:
+        except Exception as e:
             logger.error(f"API key creation failed: {e.response.status_code}")
             return None
         except Exception as e:

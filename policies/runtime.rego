@@ -49,25 +49,53 @@ all_targets_allowed {
     })
 }
 
-# Helper to match network patterns (NO wildcards for security)
-# Wildcard patterns are explicitly forbidden for security
+# Helper to match network patterns with strict validation
+# Only allow specific patterns with explicit domain verification
 match_pattern(target, pattern) {
-    # Exact match only
+    # Exact match only - most secure option
     pattern == target
 }
 
 match_pattern(target, pattern) {
-    # Allow specific subdomain patterns like "*.example.com"
+    # Allow limited subdomain patterns with strict validation
     startswith(pattern, "*.")
-    domain := substring(pattern, 2, length(pattern))
-    endswith(target, domain)
+    not pattern == "*.*"  # Deny top-level wildcards
+    not pattern == "*"    # Deny catch-all wildcards
+
+    # Extract parent domain and validate it's legitimate
+    parent_domain := substring(pattern, 2, length(pattern))
+    valid_parent_domain(parent_domain)
+
+    # Ensure target ends with the parent domain
+    endswith(target, parent_domain)
+
+    # Ensure target is actually a subdomain (not the parent itself)
+    target != parent_domain
+
+    # Ensure subdomain part doesn't contain wildcards
+    subdomain_part := substring(target, 0, length(target) - length(parent_domain) - 1)
+    not contains(subdomain_part, "*")
 }
 
-match_pattern(target, pattern) {
-    # Allow path wildcards like "example.com/*"
-    endswith(pattern, "/*")
-    domain := substring(pattern, 0, length(pattern) - 2)
-    startswith(target, domain)
+# Validate parent domain format
+valid_parent_domain(domain) {
+    # Must contain at least one dot (e.g., example.com)
+    contains(domain, ".")
+
+    # Must not start or end with dot
+    not startswith(domain, ".")
+    not endswith(domain, ".")
+
+    # Must not contain wildcards
+    not contains(domain, "*")
+
+    # Must not be too short (prevent abuse)
+    count(split(domain, ".")) >= 2
+
+    # Each part must be valid (no empty segments)
+    all(split(domain, "."), function(part) {
+        count(part) > 0
+    })
 }
 
 # Data residency check - MANDATORY for data operations

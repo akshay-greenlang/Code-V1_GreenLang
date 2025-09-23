@@ -35,7 +35,9 @@ class MockAgent:
         # If expression is provided (for calculator mock)
         if "expression" in kwargs:
             try:
-                result["result"] = eval(kwargs["expression"])
+                import ast
+                # Only evaluate literal expressions safely
+                result["result"] = ast.literal_eval(kwargs["expression"])
             except (SyntaxError, ValueError, NameError, ZeroDivisionError) as e:
                 result["result"] = "error"
 

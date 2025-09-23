@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "greenlang-cli"
-version = "0.2.2"
+version = "0.2.3"
 description = "The Climate Intelligence Framework - Build climate-aware applications with AI-driven orchestration"
 readme = "README.md"
 authors = [{ name = "GreenLang Maintainers", email = "maintainers@greenlang.io" }]

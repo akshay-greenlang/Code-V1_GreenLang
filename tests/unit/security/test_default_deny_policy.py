@@ -24,7 +24,7 @@ class TestDefaultDenyPolicy:
 
     def test_no_policy_loaded_denies(self):
         """Test A: No policies loaded ⇒ deny"""
-        enforcer = PolicyEnforcer(permissive_mode=False)
+        enforcer = PolicyEnforcer()
 
         # Create test input
         test_input = {
@@ -45,7 +45,7 @@ class TestDefaultDenyPolicy:
         """Test B: Policy loaded but returns allow=false ⇒ deny"""
         with tempfile.TemporaryDirectory() as tmpdir:
             policy_dir = Path(tmpdir)
-            enforcer = PolicyEnforcer(policy_dir=policy_dir, permissive_mode=False)
+            enforcer = PolicyEnforcer(policy_dir=policy_dir)
 
             # Create a policy that explicitly denies
             deny_policy = """
@@ -71,7 +71,7 @@ class TestDefaultDenyPolicy:
         """Test C: Policy returns allow=true ⇒ allow"""
         with tempfile.TemporaryDirectory() as tmpdir:
             policy_dir = Path(tmpdir)
-            enforcer = PolicyEnforcer(policy_dir=policy_dir, permissive_mode=False)
+            enforcer = PolicyEnforcer(policy_dir=policy_dir)
 
             # Create a policy that explicitly allows
             allow_policy = """
@@ -113,9 +113,7 @@ class TestDefaultDenyPolicy:
             check_install(
                 Mock(name="test", version="1.0", model_dump=lambda: {}),
                 "/test/path",
-                "add",
-                permissive=False
-            )
+                "add"            )
 
         assert "POLICY.DENIED_INSTALL" in str(exc_info.value)
 
@@ -149,9 +147,7 @@ class TestDefaultDenyPolicy:
                     model_dump=lambda: {"signature_verified": False}
                 ),
                 "/test/path",
-                "add",
-                permissive=False
-            )
+                "add"            )
 
         assert "signature" in str(exc_info.value).lower() or "signed" in str(exc_info.value).lower()
 
@@ -166,7 +162,7 @@ class TestDefaultDenyPolicy:
         )
 
         with pytest.raises(RuntimeError) as exc_info:
-            check_run(pipeline, ctx, permissive=False)
+            check_run(pipeline, ctx)
 
         assert "POLICY.DENIED_EXECUTION" in str(exc_info.value)
 
@@ -179,18 +175,23 @@ class TestDefaultDenyPolicy:
         assert decision["allow"] == False
         assert "OPA not installed" in decision["reason"]
 
-    def test_permissive_mode_warning(self):
-        """Test: Permissive mode logs warning but allows"""
-        import logging
+    def test_no_permissive_mode_available(self):
+        """Test: Verify no permissive mode functionality exists"""
+        # Enforce that PolicyEnforcer always uses strict mode
+        enforcer = PolicyEnforcer()
 
-        with patch.object(logging.getLogger('greenlang.policy.enforcer'), 'warning') as mock_warn:
-            enforcer = PolicyEnforcer(permissive_mode=True)
+        # Test that unsigned packs are always denied
+        test_input = {
+            "pack": {
+                "name": "test-pack",
+                "signature_verified": False,
+                "publisher": "unknown"
+            }
+        }
 
-            # Check that warning was logged
-            assert mock_warn.called
-            warning_msg = str(mock_warn.call_args[0][0])
-            assert "PERMISSIVE MODE" in warning_msg
-            assert "security" in warning_msg.lower() or "dangerous" in warning_msg.lower()
+        policy_file = Path("nonexistent.rego")
+        result = enforcer.check(policy_file, test_input)
+        assert result == False, "Should always deny unsafe operations - no permissive mode"
 
 
 class TestPolicyEnforcerIntegration:
@@ -212,7 +213,7 @@ class TestPolicyEnforcerIntegration:
             }
         )
 
-        enforcer = PolicyEnforcer(permissive_mode=False)
+        enforcer = PolicyEnforcer()
         allowed, reasons = enforcer.check_install(pack_manifest, "/test/path", "add")
 
         assert allowed == False, "Unsigned pack should be denied"
@@ -234,7 +235,7 @@ class TestPolicyEnforcerIntegration:
             config=Mock(egress_targets=[])
         )
 
-        enforcer = PolicyEnforcer(permissive_mode=False)
+        enforcer = PolicyEnforcer()
         allowed, reasons = enforcer.check_run(pipeline, context)
 
         assert allowed == False, "Unauthenticated execution should be denied"

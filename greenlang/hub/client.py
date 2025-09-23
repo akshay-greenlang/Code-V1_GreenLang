@@ -7,8 +7,9 @@ import logging
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from datetime import datetime
-import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
+
+from greenlang.security.http import SecureHTTPSession
 
 from .archive import create_pack_archive, extract_pack_archive
 from .manifest import load_manifest, save_manifest, validate_manifest
@@ -34,13 +35,13 @@ class HubClient:
     """Client for interacting with GreenLang Hub Registry"""
 
     DEFAULT_REGISTRY_URL = "https://hub.greenlang.in"
-    TIMEOUT = httpx.Timeout(30.0, connect=10.0)
+    TIMEOUT = (10.0, 30.0)  # (connect_timeout, read_timeout)
 
     def __init__(
         self,
         registry_url: str = None,
         auth: Optional[HubAuth] = None,
-        timeout: Optional[httpx.Timeout] = None,
+        timeout: Optional[tuple] = None,
     ):
         """
         Initialize Hub Client
@@ -48,25 +49,28 @@ class HubClient:
         Args:
             registry_url: Registry URL (defaults to hub.greenlang.io)
             auth: Authentication handler
-            timeout: Request timeout settings
+            timeout: Request timeout settings as (connect_timeout, read_timeout)
         """
         self.registry_url = registry_url or self.DEFAULT_REGISTRY_URL
         self.auth = auth
         self.timeout = timeout or self.TIMEOUT
 
-        # Setup HTTP client with retry logic
-        self.session = httpx.Client(
-            base_url=self.registry_url,
+        # Setup secure HTTP session
+        self.session = SecureHTTPSession(
             timeout=self.timeout,
-            headers={
-                "User-Agent": "GreenLang-Hub-Client/1.0",
-                "Accept": "application/json",
-            },
+            max_retries=3,
+            backoff_factor=0.3
         )
+
+        # Set default headers
+        self.default_headers = {
+            "User-Agent": "GreenLang-Hub-Client/1.0",
+            "Accept": "application/json",
+        }
 
         # Apply authentication if provided
         if self.auth:
-            self.session.headers.update(self.auth.get_headers())
+            self.default_headers.update(self.auth.get_headers())
 
         # Local cache directory
         self.cache_dir = Path.home() / ".greenlang" / "cache"
@@ -152,24 +156,26 @@ class HubClient:
                 files = {"pack": (archive_path.name, f, "application/x-tar")}
 
                 logger.info(f"Pushing {manifest.get('name', 'pack')} to registry")
+                # Note: files parameter handling needs adjustment for requests library
                 response = self.session.post(
-                    "/api/v1/packs", files=files, data=upload_data
+                    f"{self.registry_url}/api/v1/packs",
+                    files=files,
+                    data=upload_data,
+                    headers=self.default_headers
                 )
-
-                response.raise_for_status()
 
                 result = response.json()
                 logger.info(f"Successfully pushed pack: {result.get('id', 'unknown')}")
 
                 return result
 
-        except httpx.HTTPStatusError as e:
-            logger.error(
-                f"Failed to push pack: {e.response.status_code} - {e.response.text}"
-            )
-            raise
         except Exception as e:
-            logger.error(f"Error pushing pack: {e}")
+            if hasattr(e, 'response'):
+                logger.error(
+                    f"Failed to push pack: {e.response.status_code} - {e.response.text}"
+                )
+            else:
+                logger.error(f"Error pushing pack: {e}")
             raise
         finally:
             # Cleanup temporary archive if created
@@ -213,8 +219,10 @@ class HubClient:
         try:
             # Download pack
             logger.info(f"Pulling pack: {pack_ref}")
-            response = self.session.get(f"/api/v1/packs/{pack_ref}")
-            response.raise_for_status()
+            response = self.session.get(
+                f"{self.registry_url}/api/v1/packs/{pack_ref}",
+                headers=self.default_headers
+            )
 
             # Parse response
             pack_data = response.json()
@@ -226,8 +234,10 @@ class HubClient:
                 # Download binary content separately
                 download_url = pack_data.get("download_url")
                 if download_url:
-                    content_response = self.session.get(download_url)
-                    content_response.raise_for_status()
+                    content_response = self.session.get(
+                        download_url,
+                        headers=self.default_headers
+                    )
                     pack_content = content_response.content
                 else:
                     raise ValueError("No pack content or download URL provided")
@@ -256,7 +266,7 @@ class HubClient:
                         manifest,
                         str(output_dir),
                         stage="add",
-                        permissive=not verify_signature,  # Permissive if --no-verify
+                        permissive=False,  # Always strict - no permissive mode allowed
                     )
                     logger.info("✓ Pack passed policy checks")
                 except RuntimeError as e:
@@ -280,10 +290,13 @@ class HubClient:
             logger.info(f"Successfully pulled pack to {pack_dir}")
             return pack_dir
 
-        except httpx.HTTPStatusError as e:
-            logger.error(
-                f"Failed to pull pack: {e.response.status_code} - {e.response.text}"
-            )
+        except Exception as e:
+            if hasattr(e, 'response'):
+                logger.error(
+                    f"Failed to pull pack: {e.response.status_code} - {e.response.text}"
+                )
+            else:
+                logger.error(f"Failed to pull pack: {e}")
             raise
         except Exception as e:
             logger.error(f"Error pulling pack: {e}")
@@ -323,16 +336,22 @@ class HubClient:
 
         try:
             logger.info(f"Searching registry with query: {query}")
-            response = self.session.get("/api/v1/packs/search", params=params)
-            response.raise_for_status()
+            response = self.session.get(
+                f"{self.registry_url}/api/v1/packs/search",
+                params=params,
+                headers=self.default_headers
+            )
 
             results = response.json()
             logger.info(f"Found {len(results)} packs")
 
             return results
 
-        except httpx.HTTPStatusError as e:
-            logger.error(f"Search failed: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            if hasattr(e, 'response'):
+                logger.error(f"Search failed: {e.response.status_code} - {e.response.text}")
+            else:
+                logger.error(f"Search failed: {e}")
             raise
         except Exception as e:
             logger.error(f"Error searching packs: {e}")
@@ -359,16 +378,22 @@ class HubClient:
 
         try:
             logger.info("Listing packs from registry")
-            response = self.session.get("/api/v1/packs", params=params)
-            response.raise_for_status()
+            response = self.session.get(
+                f"{self.registry_url}/api/v1/packs",
+                params=params,
+                headers=self.default_headers
+            )
 
             packs = response.json()
             logger.info(f"Listed {len(packs)} packs")
 
             return packs
 
-        except httpx.HTTPStatusError as e:
-            logger.error(f"List failed: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            if hasattr(e, 'response'):
+                logger.error(f"List failed: {e.response.status_code} - {e.response.text}")
+            else:
+                logger.error(f"List failed: {e}")
             raise
         except Exception as e:
             logger.error(f"Error listing packs: {e}")
@@ -386,15 +411,20 @@ class HubClient:
         """
         try:
             logger.info(f"Getting info for pack: {pack_ref}")
-            response = self.session.get(f"/api/v1/packs/{pack_ref}/info")
-            response.raise_for_status()
+            response = self.session.get(
+                f"{self.registry_url}/api/v1/packs/{pack_ref}/info",
+                headers=self.default_headers
+            )
 
             return response.json()
 
-        except httpx.HTTPStatusError as e:
-            logger.error(
-                f"Failed to get pack info: {e.response.status_code} - {e.response.text}"
-            )
+        except Exception as e:
+            if hasattr(e, 'response'):
+                logger.error(
+                    f"Failed to get pack info: {e.response.status_code} - {e.response.text}"
+                )
+            else:
+                logger.error(f"Failed to get pack info: {e}")
             raise
         except Exception as e:
             logger.error(f"Error getting pack info: {e}")
@@ -415,16 +445,21 @@ class HubClient:
 
         try:
             logger.info(f"Deleting pack: {pack_ref}")
-            response = self.session.delete(f"/api/v1/packs/{pack_ref}")
-            response.raise_for_status()
+            response = self.session.delete(
+                f"{self.registry_url}/api/v1/packs/{pack_ref}",
+                headers=self.default_headers
+            )
 
             logger.info(f"Successfully deleted pack: {pack_ref}")
             return True
 
-        except httpx.HTTPStatusError as e:
-            logger.error(
-                f"Failed to delete pack: {e.response.status_code} - {e.response.text}"
-            )
+        except Exception as e:
+            if hasattr(e, 'response'):
+                logger.error(
+                    f"Failed to delete pack: {e.response.status_code} - {e.response.text}"
+                )
+            else:
+                logger.error(f"Failed to delete pack: {e}")
             raise
         except Exception as e:
             logger.error(f"Error deleting pack: {e}")

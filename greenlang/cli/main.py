@@ -1,5 +1,5 @@
 """
-GreenLang CLI v0.2.1
+GreenLang CLI
 ====================
 
 Unified CLI for GreenLang infrastructure platform.
@@ -9,6 +9,9 @@ import typer
 from pathlib import Path
 from typing import Optional
 from rich.console import Console
+
+# Fallback version constant
+FALLBACK_VERSION = "2.0.0"
 
 # Create the main app
 app = typer.Typer(
@@ -25,7 +28,7 @@ def _root(
     version: bool = typer.Option(False, "--version", help="Show version and exit")
 ):
     """
-    GreenLang v0.2.1 - Infrastructure for Climate Intelligence
+    GreenLang - Infrastructure for Climate Intelligence
     """
     if version:
         try:
@@ -35,7 +38,8 @@ def _root(
             console.print("Infrastructure for Climate Intelligence")
             console.print("https://greenlang.in")
         except ImportError:
-            console.print("GreenLang v0.2.1")
+            # Fallback version
+            console.print(f"GreenLang v{FALLBACK_VERSION}")
             console.print("Infrastructure for Climate Intelligence")
             console.print("https://greenlang.in")
         raise typer.Exit(0)
@@ -51,7 +55,10 @@ def version():
         console.print("Infrastructure for Climate Intelligence")
         console.print("https://greenlang.in")
     except ImportError:
-        console.print("[bold green]GreenLang v0.2.1[/bold green]")
+        # Fallback version
+        console.print(f"[bold green]GreenLang v{FALLBACK_VERSION}[/bold green]")
+        console.print("Infrastructure for Climate Intelligence")
+        console.print("https://greenlang.in")
 
 
 @app.command()
@@ -81,8 +88,8 @@ def doctor():
         from .. import __version__
 
         version_str = f"v{__version__}"
-    except:
-        version_str = "v0.2.0"
+    except ImportError:
+        version_str = f"v{FALLBACK_VERSION}"
 
     console.print(f"[green][OK][/green] GreenLang Version: {version_str}")
 

@@ -6,21 +6,15 @@ import os
 import logging
 from typing import Optional, Dict, Any, List
 from urllib.parse import urlparse
-import requests
 from pathlib import Path
+
+# Use secure HTTP wrapper instead of direct requests
+from ..security import http as secure_http
 
 logger = logging.getLogger(__name__)
 
-# Global egress allowlist (can be overridden by policy)
-DEFAULT_ALLOWED_DOMAINS = [
-    "greenlang.io",
-    "hub.greenlang.io",
-    "api.greenlang.io",
-    "github.com",
-    "githubusercontent.com",
-    "pypi.org",
-    "files.pythonhosted.org",
-]
+# No hardcoded domains - must be configured via environment or config files
+# This implements a secure deny-by-default policy
 
 
 class NetworkPolicy:
@@ -32,8 +26,14 @@ class NetworkPolicy:
         self.audit_log = []
 
     def _load_allowed_domains(self) -> List[str]:
-        """Load allowed domains from config or environment"""
-        domains = DEFAULT_ALLOWED_DOMAINS.copy()
+        """Load allowed domains from config or environment
+
+        Default is empty list (deny all) unless explicitly configured.
+        Organizations must configure allowed domains via:
+        - GL_ALLOWED_DOMAINS environment variable (comma-separated)
+        - ~/.greenlang/network_allowlist.txt file
+        """
+        domains = []  # Start with empty list - secure by default
 
         # Add from environment
         env_domains = os.getenv("GL_ALLOWED_DOMAINS", "")
@@ -158,7 +158,7 @@ def policy_allow(url: str, tag: str = "unknown") -> None:
 
 def http_get(
     url: str, *, tag: str = "unknown", timeout: int = 30, **kwargs
-) -> requests.Response:
+):
     """
     HTTP GET with policy enforcement
 
@@ -166,24 +166,18 @@ def http_get(
         url: URL to fetch
         tag: Tag describing the purpose
         timeout: Request timeout in seconds
-        **kwargs: Additional arguments for requests.get
+        **kwargs: Additional arguments for secure HTTP
 
     Returns:
         Response object
 
     Raises:
         RuntimeError: If denied by policy
-        requests.RequestException: If request fails
+        Exception: If request fails
     """
-    # Check policy
-    policy_allow(url, tag)
-
-    # Make request
+    # Use secure HTTP wrapper which includes policy checks
     logger.info(f"HTTP GET: {url} (tag: {tag})")
-    response = requests.get(url, timeout=timeout, **kwargs)
-    response.raise_for_status()
-
-    return response
+    return secure_http.get(url, timeout=(5, timeout), **kwargs)
 
 
 def http_post(
@@ -193,7 +187,7 @@ def http_post(
     tag: str = "unknown",
     timeout: int = 30,
     **kwargs,
-) -> requests.Response:
+):
     """
     HTTP POST with policy enforcement
 
@@ -202,24 +196,18 @@ def http_post(
         data: Data to send
         tag: Tag describing the purpose
         timeout: Request timeout
-        **kwargs: Additional arguments for requests.post
+        **kwargs: Additional arguments for secure HTTP
 
     Returns:
         Response object
 
     Raises:
         RuntimeError: If denied by policy
-        requests.RequestException: If request fails
+        Exception: If request fails
     """
-    # Check policy
-    policy_allow(url, tag)
-
-    # Make request
+    # Use secure HTTP wrapper which includes policy checks
     logger.info(f"HTTP POST: {url} (tag: {tag})")
-    response = requests.post(url, data=data, timeout=timeout, **kwargs)
-    response.raise_for_status()
-
-    return response
+    return secure_http.post(url, data=data, timeout=(5, timeout), **kwargs)
 
 
 def download_file(
@@ -241,23 +229,22 @@ def download_file(
         RuntimeError: If denied by policy
         requests.RequestException: If download fails
     """
-    # Check policy
-    policy_allow(url, tag)
-
-    # Download file
+    # Download file using secure HTTP wrapper
     logger.info(f"Downloading: {url} -> {dest} (tag: {tag})")
-
-    response = requests.get(url, stream=True, timeout=30)
-    response.raise_for_status()
 
     # Ensure destination directory exists
     dest.parent.mkdir(parents=True, exist_ok=True)
 
-    # Write file in chunks
-    with open(dest, "wb") as f:
-        for chunk in response.iter_content(chunk_size=chunk_size):
-            if chunk:
-                f.write(chunk)
+    # Use secure session for streaming download
+    with secure_http.SecureHTTPSession() as session:
+        # Note: stream parameter handled via kwargs in secure wrapper
+        response = session.get(url, stream=True)
+
+        # Write file in chunks
+        with open(dest, "wb") as f:
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                if chunk:
+                    f.write(chunk)
 
     logger.info(f"Downloaded {dest.stat().st_size} bytes to {dest}")
     return dest

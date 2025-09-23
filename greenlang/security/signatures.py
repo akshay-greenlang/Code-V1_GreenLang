@@ -32,7 +32,6 @@ class PackVerifier:
 
     def __init__(self):
         """Initialize verifier"""
-        self.allow_unsigned = False  # Never allow unsigned packs
         self.trusted_publishers = self._load_trusted_publishers()
 
     def _load_trusted_publishers(self) -> Dict[str, Dict[str, Any]]:
@@ -117,7 +116,7 @@ class PackVerifier:
                 return True, metadata
 
             except Exception as e:
-                if require_signature and not self.allow_unsigned:
+                if require_signature:
                     raise SignatureVerificationError(
                         f"Signature verification failed: {e}"
                     )
@@ -126,16 +125,11 @@ class PackVerifier:
                     return False, metadata
         else:
             # No signature found
-            if require_signature and not self.allow_unsigned:
+            if require_signature:
                 raise SignatureVerificationError(
                     f"No signature found for pack: {pack_path.name}. "
-                    f"Unsigned packs are not allowed in production mode."
+                    f"Unsigned packs are not allowed."
                 )
-            elif self.allow_unsigned:
-                logger.warning(
-                    f"INSECURE: Allowing unsigned pack in dev mode: {pack_path.name}"
-                )
-                return False, metadata
             else:
                 logger.warning(f"Pack is not signed: {pack_path.name}")
                 return False, metadata

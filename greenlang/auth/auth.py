@@ -2,6 +2,8 @@
 Authentication and API Key Management for GreenLang
 """
 
+import os
+import stat
 import hashlib
 import hmac
 import logging
@@ -9,6 +11,7 @@ import secrets
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Dict, List, Optional, Any, Set
 
 try:
@@ -227,7 +230,10 @@ class AuthManager:
                 - require_mfa: Whether to require MFA
         """
         self.config = config or {}
-        self.secret_key = config.get("secret_key", secrets.token_urlsafe(32))
+
+        # Load or generate and persist secret key
+        self.secret_key = self._load_or_create_secret_key(config)
+
         self.token_expiry = config.get("token_expiry", 3600 * 24)  # 24 hours
         self.password_min_length = config.get("password_min_length", 8)
         self.require_mfa = config.get("require_mfa", False)
@@ -245,6 +251,90 @@ class AuthManager:
         self.failed_attempts: Dict[str, List[datetime]] = {}
 
         logger.info("AuthManager initialized")
+
+    def _load_or_create_secret_key(self, config: Optional[Dict[str, Any]] = None) -> bytes:
+        """
+        Load or create and persist secret key.
+
+        Args:
+            config: Optional configuration dict
+
+        Returns:
+            Secret key as bytes
+
+        Raises:
+            PermissionError: If key file has insecure permissions
+        """
+        # First check environment variable
+        env_key = os.getenv("GL_SECRET_KEY")
+        if env_key:
+            logger.info("Using secret key from GL_SECRET_KEY environment variable")
+            return env_key.encode("utf-8")
+
+        # Then check config
+        if config and "secret_key" in config:
+            logger.info("Using secret key from config")
+            key = config["secret_key"]
+            if isinstance(key, str):
+                return key.encode("utf-8")
+            return key
+
+        # Determine key file path
+        key_path = os.getenv("GL_SECRET_PATH")
+        if not key_path:
+            gl_state_dir = os.getenv("GL_STATE_DIR", os.path.expanduser("~/.greenlang"))
+            key_path = os.path.join(gl_state_dir, "secret.key")
+
+        key_path = Path(key_path)
+
+        # If key file exists, load it
+        if key_path.exists():
+            # Check file permissions
+            st = os.stat(key_path)
+            mode = st.st_mode
+
+            # Check that only owner has permissions (0o600)
+            if os.name != 'nt':  # Unix-like systems
+                if (mode & (stat.S_IRWXG | stat.S_IRWXO)) != 0:
+                    raise PermissionError(
+                        f"Insecure permissions on {key_path}. "
+                        f"Run: chmod 600 {key_path}"
+                    )
+
+            logger.info(f"Loading secret key from {key_path}")
+            with open(key_path, "rb") as f:
+                return f.read()
+
+        # Generate new key and save it
+        logger.info(f"Generating new secret key and saving to {key_path}")
+
+        # Create directory if needed
+        key_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+
+        # Generate key
+        key = secrets.token_bytes(32)
+
+        # Write with secure permissions
+        if os.name != 'nt':  # Unix-like systems
+            # Use low-level open to set permissions atomically
+            fd = os.open(
+                str(key_path),
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                0o600
+            )
+            try:
+                with os.fdopen(fd, "wb") as f:
+                    f.write(key)
+            except:
+                os.close(fd)
+                raise
+        else:  # Windows
+            # Windows doesn't support Unix permissions
+            with open(key_path, "wb") as f:
+                f.write(key)
+
+        logger.info(f"Secret key saved to {key_path}")
+        return key
 
     def create_user(
         self, tenant_id: str, username: str, email: str, password: str, **kwargs

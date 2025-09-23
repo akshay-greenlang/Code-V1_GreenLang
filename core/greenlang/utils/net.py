@@ -6,21 +6,14 @@ import os
 import logging
 from typing import Optional, Dict, Any, List
 from urllib.parse import urlparse
-import requests
+# Use secure HTTP wrapper instead of direct requests
+from ..security import http as secure_http
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-# Global egress allowlist (can be overridden by policy)
-DEFAULT_ALLOWED_DOMAINS = [
-    "greenlang.io",
-    "hub.greenlang.io",
-    "api.greenlang.io",
-    "github.com",
-    "githubusercontent.com",
-    "pypi.org",
-    "files.pythonhosted.org",
-]
+# No hardcoded domains - must be configured via environment or config files
+# This implements a secure deny-by-default policy
 
 
 class NetworkPolicy:
@@ -32,8 +25,14 @@ class NetworkPolicy:
         self.audit_log = []
 
     def _load_allowed_domains(self) -> List[str]:
-        """Load allowed domains from config or environment"""
-        domains = DEFAULT_ALLOWED_DOMAINS.copy()
+        """Load allowed domains from config or environment
+
+        Default is empty list (deny all) unless explicitly configured.
+        Organizations must configure allowed domains via:
+        - GL_ALLOWED_DOMAINS environment variable (comma-separated)
+        - ~/.greenlang/network_allowlist.txt file
+        """
+        domains = []  # Start with empty list - secure by default
 
         # Add from environment
         env_domains = os.getenv("GL_ALLOWED_DOMAINS", "")
@@ -180,7 +179,7 @@ def http_get(
 
     # Make request
     logger.info(f"HTTP GET: {url} (tag: {tag})")
-    response = requests.get(url, timeout=timeout, **kwargs)
+    response = secure_http.get(url, timeout=(5, timeout), **kwargs)
     response.raise_for_status()
 
     return response
@@ -216,7 +215,7 @@ def http_post(
 
     # Make request
     logger.info(f"HTTP POST: {url} (tag: {tag})")
-    response = requests.post(url, data=data, timeout=timeout, **kwargs)
+    response = secure_http.post(url, data=data, timeout=(5, timeout), **kwargs)
     response.raise_for_status()
 
     return response
@@ -247,7 +246,8 @@ def download_file(
     # Download file
     logger.info(f"Downloading: {url} -> {dest} (tag: {tag})")
 
-    response = requests.get(url, stream=True, timeout=30)
+    with secure_http.SecureHTTPSession() as session:
+        response = session.get(url, stream=True)
     response.raise_for_status()
 
     # Ensure destination directory exists
