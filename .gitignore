@@ -175,3 +175,5 @@ jq.exe
 *.exe
 coverage.json
 trufflehog*.json*
+.pypirc
+*.pypirc
