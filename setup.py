@@ -21,12 +21,12 @@ readme_file = Path(__file__).parent / "README.md"
 if readme_file.exists():
     long_description = readme_file.read_text(encoding="utf-8")
 else:
-    long_description = "GreenLang Climate Intelligence Framework"
+    long_description = "GreenLang Climate Intelligence Platform"
 
 setup(
     name="greenlang-cli",
     version=version,
-    description="The Climate Intelligence Framework - Build climate-aware applications with AI-driven orchestration",
+    description="Climate Intelligence Platform - Enterprise infrastructure with powerful SDK for climate-aware applications",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="GreenLang Maintainers",
@@ -189,7 +189,10 @@ setup(
         "environment",
         "AI",
         "orchestration",
+        "platform",
+        "infrastructure",
         "framework",
+        "SDK",
         "climate-intelligence",
         "decarbonization",
         "net-zero",

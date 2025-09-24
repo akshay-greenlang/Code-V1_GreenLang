@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "greenlang-cli"
 version = "0.3.0"
-description = "The Climate Intelligence Framework - Build climate-aware applications with AI-driven orchestration"
+description = "Climate Intelligence Platform - Enterprise infrastructure with powerful SDK for climate-aware applications"
 readme = "README.md"
 authors = [{ name = "GreenLang Maintainers", email = "maintainers@greenlang.io" }]
 license = { text = "MIT" }
@@ -19,7 +19,10 @@ keywords = [
   "environment",
   "AI",
   "orchestration",
+  "platform",
+  "infrastructure",
   "framework",
+  "SDK",
   "climate-intelligence",
   "decarbonization",
   "net-zero",
