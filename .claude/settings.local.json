@@ -275,7 +275,8 @@
       "Bash(.venv-build/Scripts/twine.exe upload --repository pypi dist/*.whl dist/*.tar.gz --verbose)",
       "Bash(.venv-verify-pypi/Scripts/python.exe -m pip install:*)",
       "Bash(.venv-verify-pypi/Scripts/pip.exe install greenlang-cli==0.2.3 --quiet)",
-      "Bash(.venv-verify-pypi/Scripts/gl.exe --version)"
+      "Bash(.venv-verify-pypi/Scripts/gl.exe --version)",
+      "Bash(git log:*)"
     ],
     "deny": []
   }
