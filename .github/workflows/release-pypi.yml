@@ -80,7 +80,8 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
           echo "🧪 Publishing to TestPyPI (dry run)..."
-          python -m twine upload --repository testpypi dist/*
+          # Only upload .whl and .tar.gz files, not .sigstore.json files
+          python -m twine upload --repository testpypi dist/*.whl dist/*.tar.gz
 
       - name: Publish to PyPI
         if: ${{ github.event.inputs.dry_run != 'true' }}
@@ -96,7 +97,8 @@ jobs:
             exit 1
           fi
           echo "✅ PyPI token is available, proceeding with upload..."
-          python -m twine upload dist/*
+          # Only upload .whl and .tar.gz files, not .sigstore.json files
+          python -m twine upload dist/*.whl dist/*.tar.gz
 
       - name: Verify installation
         if: ${{ github.event.inputs.dry_run != 'true' }}
