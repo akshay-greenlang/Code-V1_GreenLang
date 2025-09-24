@@ -1,11 +1,11 @@
 # GreenLang Full Dockerfile
-# Full development image with build tools for GreenLang v0.2.0
+# Full development image with build tools for GreenLang v0.3.0
 FROM python:3.11
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
-ENV GREENLANG_VERSION=0.2.0
+ENV GREENLANG_VERSION=0.3.0
 
 # Install system dependencies and build tools
 RUN apt-get update && apt-get install -y \
@@ -25,12 +25,12 @@ RUN mkdir -p /app && chown gluser:gluser /app
 WORKDIR /app
 
 # Copy wheel file
-COPY dist/greenlang-0.2.0-py3-none-any.whl /tmp/greenlang-0.2.0-py3-none-any.whl
+COPY dist/greenlang-0.3.0-py3-none-any.whl /tmp/greenlang-0.3.0-py3-none-any.whl
 
 # Install development tools and GreenLang from local wheel
 RUN pip install --no-cache-dir --upgrade pip build twine pytest && \
-    pip install --no-cache-dir /tmp/greenlang-0.2.0-py3-none-any.whl && \
-    rm /tmp/greenlang-0.2.0-py3-none-any.whl
+    pip install --no-cache-dir /tmp/greenlang-0.3.0-py3-none-any.whl && \
+    rm /tmp/greenlang-0.3.0-py3-none-any.whl
 
 # Switch to non-root user
 USER gluser
@@ -44,5 +44,5 @@ CMD ["--help"]
 
 # Metadata
 LABEL maintainer="GreenLang Team <team@greenlang.io>"
-LABEL version="0.2.0"
+LABEL version="0.3.0"
 LABEL description="GreenLang Full - Development environment with build tools for Climate Intelligence"

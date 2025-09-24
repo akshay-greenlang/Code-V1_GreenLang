@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.runner
       args:
-        GL_VERSION: "0.2.0"
+        GL_VERSION: "0.3.0"
         BUILD_DATE: "${BUILD_DATE:-2024-01-01T00:00:00Z}"
         VCS_REF: "${GITHUB_SHA:-local}"
     image: greenlang/core-runner:local
@@ -45,7 +45,7 @@ services:
       context: .
       dockerfile: Dockerfile.full
       args:
-        GL_VERSION: "0.2.0"
+        GL_VERSION: "0.3.0"
         BUILD_DATE: "${BUILD_DATE:-2024-01-01T00:00:00Z}"
         VCS_REF: "${GITHUB_SHA:-local}"
     image: greenlang/core-full:local

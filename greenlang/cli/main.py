@@ -11,7 +11,7 @@ from typing import Optional
 from rich.console import Console
 
 # Fallback version constant
-FALLBACK_VERSION = "2.0.0"
+FALLBACK_VERSION = "0.3.0"
 
 # Create the main app
 app = typer.Typer(
