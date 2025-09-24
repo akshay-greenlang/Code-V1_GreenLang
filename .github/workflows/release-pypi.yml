@@ -31,13 +31,17 @@ jobs:
 
       - name: Verify tag matches VERSION
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
-          FILE_VER="$(cat VERSION | tr -d ' \n')"
-          if [ "$TAG" != "$FILE_VER" ]; then
-            echo "❌ Tag $TAG != VERSION $FILE_VER"
-            exit 1
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            TAG="${GITHUB_REF_NAME#v}"
+            FILE_VER="$(cat VERSION | tr -d ' \n')"
+            if [ "$TAG" != "$FILE_VER" ]; then
+              echo "❌ Tag $TAG != VERSION $FILE_VER"
+              exit 1
+            fi
+            echo "✅ Version check passed: $TAG"
+          else
+            echo "✅ Manual trigger - using VERSION file: $(cat VERSION)"
           fi
-          echo "✅ Version check passed: $TAG"
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -116,6 +120,35 @@ jobs:
 
             ### Links
             - [PyPI Package](https://pypi.org/project/greenlang-cli/${{ github.ref_name }}/)
+            - [Documentation](https://greenlang.io/docs)
+            - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+          draft: false
+          prerelease: false
+          files: |
+            dist/*.whl
+            dist/*.tar.gz
+
+      - name: Create GitHub Release (Manual)
+        if: ${{ github.event.inputs.dry_run != 'true' && github.event_name == 'workflow_dispatch' }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v0.3.0
+          name: GreenLang v0.3.0
+          body: |
+            ## 🚀 GreenLang v0.3.0 Released to PyPI
+
+            ### Installation
+            ```bash
+            pip install greenlang-cli==0.3.0
+            ```
+
+            ### Verification
+            ```bash
+            gl --version
+            ```
+
+            ### Links
+            - [PyPI Package](https://pypi.org/project/greenlang-cli/0.3.0/)
             - [Documentation](https://greenlang.io/docs)
             - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
           draft: false
