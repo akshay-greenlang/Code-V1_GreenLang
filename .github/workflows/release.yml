@@ -26,6 +26,12 @@ on:
         default: true
         type: boolean
 
+permissions:
+  contents: write  # Required for release creation
+  packages: write  # Required for container registry
+  id-token: write  # Required for OIDC signing
+  attestations: write  # Required for attestations
+
 env:
   PYTHON_VERSION: '3.11'
   REGISTRY: ghcr.io

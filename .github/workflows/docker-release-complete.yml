@@ -28,6 +28,13 @@ on:
   release:
     types: [published]
 
+permissions:
+  contents: write  # Required for release uploads
+  packages: write  # Required for container registry
+  id-token: write  # Required for OIDC signing
+  security-events: write  # Required for security scanning
+  attestations: write  # Required for attestations
+
 env:
   GHCR_REGISTRY: ghcr.io
   DOCKERHUB_REGISTRY: docker.io
@@ -436,7 +443,7 @@ jobs:
       python_artifacts: false  # Python SBOMs handled in release-build.yml
       docker_images: true
     permissions:
-      contents: read
+      contents: write  # Changed from read to write for release uploads
       packages: read
       id-token: write
       attestations: write
