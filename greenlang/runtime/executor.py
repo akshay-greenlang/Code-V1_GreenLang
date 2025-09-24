@@ -25,10 +25,9 @@ from ..packs.loader import PackLoader
 from ..sandbox import (
     SandboxConfig,
     sandbox_execute,
-    sandbox_context,
     create_basic_sandbox,
     create_data_processing_sandbox,
-    disable_sandbox
+    disable_sandbox,
 )
 import yaml
 
@@ -312,9 +311,13 @@ class Executor:
                 else:
                     # Default to process or run method
                     if hasattr(agent, "process"):
-                        result = self._execute_with_sandbox(agent.process, step_inputs, step_name)
+                        result = self._execute_with_sandbox(
+                            agent.process, step_inputs, step_name
+                        )
                     elif hasattr(agent, "run"):
-                        result = self._execute_with_sandbox(agent.run, step_inputs, step_name)
+                        result = self._execute_with_sandbox(
+                            agent.run, step_inputs, step_name
+                        )
                     else:
                         raise AttributeError(
                             f"Agent {agent_ref} has no method '{action}', 'process', or 'run'"
@@ -450,18 +453,24 @@ class Executor:
                         if agent_class:
                             agent = agent_class()
                             step_input = self._prepare_step_input(step, context)
-                            result = self._execute_with_sandbox(agent.run, step_input, step_name)
+                            result = self._execute_with_sandbox(
+                                agent.run, step_input, step_name
+                            )
                             outputs[step_name] = result.data if result.success else None
                             context["results"][step_name] = outputs[step_name]
                         else:
                             logger.warning(f"Agent not found: {agent_ref}")
 
                 elif step_type == "python":
-                    outputs[step_name] = self._exec_python_stage_with_sandbox(step, context, step_name)
+                    outputs[step_name] = self._exec_python_stage_with_sandbox(
+                        step, context, step_name
+                    )
                     context["results"][step_name] = outputs[step_name]
 
                 elif step_type == "shell":
-                    outputs[step_name] = self._exec_shell_stage_with_sandbox(step, context, step_name)
+                    outputs[step_name] = self._exec_shell_stage_with_sandbox(
+                        step, context, step_name
+                    )
                     context["results"][step_name] = outputs[step_name]
 
                 # Update inputs for next stage if configured
@@ -718,12 +727,16 @@ class Executor:
 
         return namespace.get("outputs", {})
 
-    def _exec_python_stage_with_sandbox(self, stage: Dict, context: Dict, step_name: str) -> Dict:
+    def _exec_python_stage_with_sandbox(
+        self, stage: Dict, context: Dict, step_name: str
+    ) -> Dict:
         """Execute a Python code stage with sandbox capability gating"""
         if not self.sandbox_config.enabled:
             return self._exec_python_stage(stage, context)
 
-        logger.info(f"Executing Python stage {step_name} with sandbox capability gating")
+        logger.info(
+            f"Executing Python stage {step_name} with sandbox capability gating"
+        )
 
         def execute_python():
             return self._exec_python_stage(stage, context)
@@ -752,7 +765,9 @@ class Executor:
             "returncode": result.returncode,
         }
 
-    def _exec_shell_stage_with_sandbox(self, stage: Dict, context: Dict, step_name: str) -> Dict:
+    def _exec_shell_stage_with_sandbox(
+        self, stage: Dict, context: Dict, step_name: str
+    ) -> Dict:
         """Execute a shell command stage with sandbox capability gating"""
         if not self.sandbox_config.enabled:
             return self._exec_shell_stage(stage, context)
@@ -767,7 +782,13 @@ class Executor:
             return result
         except Exception as e:
             logger.error(f"Sandbox shell execution failed for step {step_name}: {e}")
-            return {"error": str(e), "sandbox_error": True, "stdout": "", "stderr": str(e), "returncode": -1}
+            return {
+                "error": str(e),
+                "sandbox_error": True,
+                "stdout": "",
+                "stderr": str(e),
+                "returncode": -1,
+            }
 
     def _create_k8s_job(self, pipeline: Dict, inputs: Dict) -> Dict:
         """Create Kubernetes Job manifest"""
@@ -907,7 +928,9 @@ class Executor:
         else:
             return outputs
 
-    def _execute_with_sandbox(self, method: callable, inputs: Any, step_name: str = "unknown") -> Result:
+    def _execute_with_sandbox(
+        self, method: callable, inputs: Any, step_name: str = "unknown"
+    ) -> Result:
         """
         Execute a method with sandbox capability gating if configured.
 
@@ -931,11 +954,15 @@ class Executor:
             result = sandbox_execute(method, self.sandbox_config, inputs)
 
             # Log sandbox violations if any
-            validator = getattr(sandbox_execute, '_last_validator', None)
+            validator = getattr(sandbox_execute, "_last_validator", None)
             if validator and validator.violations:
-                logger.warning(f"Step {step_name} had {len(validator.violations)} capability violations")
+                logger.warning(
+                    f"Step {step_name} had {len(validator.violations)} capability violations"
+                )
                 for violation in validator.violations:
-                    logger.warning(f"  - {violation['capability']}: {violation['reason']}")
+                    logger.warning(
+                        f"  - {violation['capability']}: {violation['reason']}"
+                    )
 
             return result
 
@@ -945,7 +972,7 @@ class Executor:
             return Result(
                 success=False,
                 error=str(e),
-                metadata={"step": step_name, "sandbox_error": True}
+                metadata={"step": step_name, "sandbox_error": True},
             )
 
     def enable_sandbox(self, config: SandboxConfig = None):
@@ -972,11 +999,11 @@ class Executor:
         Args:
             policy_name: Name of predefined policy ('basic', 'data_processing', 'network', 'disabled')
         """
-        if policy_name == 'basic':
+        if policy_name == "basic":
             self.sandbox_config = create_basic_sandbox()
-        elif policy_name == 'data_processing':
+        elif policy_name == "data_processing":
             self.sandbox_config = create_data_processing_sandbox()
-        elif policy_name == 'disabled':
+        elif policy_name == "disabled":
             self.sandbox_config = disable_sandbox()
         else:
             raise ValueError(f"Unknown sandbox policy: {policy_name}")

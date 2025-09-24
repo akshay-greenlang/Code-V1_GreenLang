@@ -252,7 +252,9 @@ class AuthManager:
 
         logger.info("AuthManager initialized")
 
-    def _load_or_create_secret_key(self, config: Optional[Dict[str, Any]] = None) -> bytes:
+    def _load_or_create_secret_key(
+        self, config: Optional[Dict[str, Any]] = None
+    ) -> bytes:
         """
         Load or create and persist secret key.
 
@@ -294,7 +296,7 @@ class AuthManager:
             mode = st.st_mode
 
             # Check that only owner has permissions (0o600)
-            if os.name != 'nt':  # Unix-like systems
+            if os.name != "nt":  # Unix-like systems
                 if (mode & (stat.S_IRWXG | stat.S_IRWXO)) != 0:
                     raise PermissionError(
                         f"Insecure permissions on {key_path}. "
@@ -315,13 +317,9 @@ class AuthManager:
         key = secrets.token_bytes(32)
 
         # Write with secure permissions
-        if os.name != 'nt':  # Unix-like systems
+        if os.name != "nt":  # Unix-like systems
             # Use low-level open to set permissions atomically
-            fd = os.open(
-                str(key_path),
-                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
-                0o600
-            )
+            fd = os.open(str(key_path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             try:
                 with os.fdopen(fd, "wb") as f:
                     f.write(key)

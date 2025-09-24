@@ -57,9 +57,7 @@ class HubClient:
 
         # Setup secure HTTP session
         self.session = SecureHTTPSession(
-            timeout=self.timeout,
-            max_retries=3,
-            backoff_factor=0.3
+            timeout=self.timeout, max_retries=3, backoff_factor=0.3
         )
 
         # Set default headers
@@ -161,7 +159,7 @@ class HubClient:
                     f"{self.registry_url}/api/v1/packs",
                     files=files,
                     data=upload_data,
-                    headers=self.default_headers
+                    headers=self.default_headers,
                 )
 
                 result = response.json()
@@ -170,7 +168,7 @@ class HubClient:
                 return result
 
         except Exception as e:
-            if hasattr(e, 'response'):
+            if hasattr(e, "response"):
                 logger.error(
                     f"Failed to push pack: {e.response.status_code} - {e.response.text}"
                 )
@@ -221,7 +219,7 @@ class HubClient:
             logger.info(f"Pulling pack: {pack_ref}")
             response = self.session.get(
                 f"{self.registry_url}/api/v1/packs/{pack_ref}",
-                headers=self.default_headers
+                headers=self.default_headers,
             )
 
             # Parse response
@@ -235,8 +233,7 @@ class HubClient:
                 download_url = pack_data.get("download_url")
                 if download_url:
                     content_response = self.session.get(
-                        download_url,
-                        headers=self.default_headers
+                        download_url, headers=self.default_headers
                     )
                     pack_content = content_response.content
                 else:
@@ -291,7 +288,7 @@ class HubClient:
             return pack_dir
 
         except Exception as e:
-            if hasattr(e, 'response'):
+            if hasattr(e, "response"):
                 logger.error(
                     f"Failed to pull pack: {e.response.status_code} - {e.response.text}"
                 )
@@ -339,7 +336,7 @@ class HubClient:
             response = self.session.get(
                 f"{self.registry_url}/api/v1/packs/search",
                 params=params,
-                headers=self.default_headers
+                headers=self.default_headers,
             )
 
             results = response.json()
@@ -348,8 +345,10 @@ class HubClient:
             return results
 
         except Exception as e:
-            if hasattr(e, 'response'):
-                logger.error(f"Search failed: {e.response.status_code} - {e.response.text}")
+            if hasattr(e, "response"):
+                logger.error(
+                    f"Search failed: {e.response.status_code} - {e.response.text}"
+                )
             else:
                 logger.error(f"Search failed: {e}")
             raise
@@ -381,7 +380,7 @@ class HubClient:
             response = self.session.get(
                 f"{self.registry_url}/api/v1/packs",
                 params=params,
-                headers=self.default_headers
+                headers=self.default_headers,
             )
 
             packs = response.json()
@@ -390,8 +389,10 @@ class HubClient:
             return packs
 
         except Exception as e:
-            if hasattr(e, 'response'):
-                logger.error(f"List failed: {e.response.status_code} - {e.response.text}")
+            if hasattr(e, "response"):
+                logger.error(
+                    f"List failed: {e.response.status_code} - {e.response.text}"
+                )
             else:
                 logger.error(f"List failed: {e}")
             raise
@@ -413,13 +414,13 @@ class HubClient:
             logger.info(f"Getting info for pack: {pack_ref}")
             response = self.session.get(
                 f"{self.registry_url}/api/v1/packs/{pack_ref}/info",
-                headers=self.default_headers
+                headers=self.default_headers,
             )
 
             return response.json()
 
         except Exception as e:
-            if hasattr(e, 'response'):
+            if hasattr(e, "response"):
                 logger.error(
                     f"Failed to get pack info: {e.response.status_code} - {e.response.text}"
                 )
@@ -447,14 +448,14 @@ class HubClient:
             logger.info(f"Deleting pack: {pack_ref}")
             response = self.session.delete(
                 f"{self.registry_url}/api/v1/packs/{pack_ref}",
-                headers=self.default_headers
+                headers=self.default_headers,
             )
 
             logger.info(f"Successfully deleted pack: {pack_ref}")
             return True
 
         except Exception as e:
-            if hasattr(e, 'response'):
+            if hasattr(e, "response"):
                 logger.error(
                     f"Failed to delete pack: {e.response.status_code} - {e.response.text}"
                 )

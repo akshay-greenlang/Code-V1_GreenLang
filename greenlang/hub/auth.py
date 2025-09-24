@@ -198,7 +198,7 @@ class HubAuth:
                 response = session.post(
                     f"{registry_url}/api/v1/auth/register",
                     json={"username": username, "email": email, "password": password},
-            )
+                )
 
             response.raise_for_status()
 
@@ -240,8 +240,8 @@ class HubAuth:
                 response = session.post(
                     f"{registry_url}/api/v1/auth/api-keys",
                     headers=self.get_headers(),
-                json={"name": name},
-            )
+                    json={"name": name},
+                )
 
             response.raise_for_status()
 

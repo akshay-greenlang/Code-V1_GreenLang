@@ -150,7 +150,7 @@ class PackManifest(BaseModel):
         # Simple validation for semantic versioning
         if not v or "." not in v:
             raise ValueError(
-                f"Version must be in semantic versioning format (e.g., 1.0.0)"
+                "Version must be in semantic versioning format (e.g., 1.0.0)"
             )
 
         parts = v.split(".")
@@ -315,7 +315,7 @@ def load_manifest(path: Path) -> PackManifest:
     errors = manifest.validate_files(pack_dir)
     if errors:
         raise ValueError(
-            f"Pack validation failed:\n" + "\n".join(f"  - {e}" for e in errors)
+            "Pack validation failed:\n" + "\n".join(f"  - {e}" for e in errors)
         )
 
     return manifest
@@ -450,7 +450,7 @@ outputs:
         )
 
     print(f"Created pack template at {pack_dir}")
-    print(f"  - Edit pack.yaml to configure")
-    print(f"  - Add pipelines, agents, datasets as needed")
-    print(f"  - Write tests in tests/")
-    print(f"  - Document in CARD.md")
+    print("  - Edit pack.yaml to configure")
+    print("  - Add pipelines, agents, datasets as needed")
+    print("  - Write tests in tests/")
+    print("  - Document in CARD.md")

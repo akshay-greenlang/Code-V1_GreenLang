@@ -407,7 +407,7 @@ def init_schema(schema_name: str, output: Optional[str], schema_type: str):
 
     console.print(f"[green]+ Created schema template: {output_path}[/green]")
     console.print(f"Schema type: {schema_type}")
-    console.print(f"\nNext steps:")
+    console.print("\nNext steps:")
     console.print(f"  1. Edit {output_path} to define your schema")
     console.print(
         f"  2. Use 'gl schema validate <file> --schema {schema_name}' to validate files"

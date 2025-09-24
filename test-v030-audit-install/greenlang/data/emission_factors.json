@@ -1,0 +1,81 @@
+{
+  "US": {
+    "electricity": {
+      "kWh": 0.385,
+      "MWh": 385.0,
+      "GWh": 385000.0,
+      "description": "US average grid emission factor"
+    },
+    "natural_gas": {
+      "therms": 5.3,
+      "ccf": 5.3,
+      "mcf": 53.0,
+      "m3": 1.89,
+      "MMBtu": 53.06,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "gallons": 10.21,
+      "liters": 2.68,
+      "kg": 3.16,
+      "description": "Diesel fuel combustion emissions"
+    },
+    "gasoline": {
+      "gallons": 8.78,
+      "liters": 2.31,
+      "kg": 3.16,
+      "description": "Gasoline combustion emissions"
+    },
+    "propane": {
+      "gallons": 5.76,
+      "liters": 1.51,
+      "kg": 2.98,
+      "description": "Propane combustion emissions"
+    },
+    "fuel_oil": {
+      "gallons": 10.16,
+      "liters": 2.68,
+      "kg": 3.16,
+      "description": "Fuel oil combustion emissions"
+    },
+    "coal": {
+      "tons": 2086.0,
+      "kg": 2.086,
+      "lbs": 0.946,
+      "description": "Coal combustion emissions"
+    }
+  },
+  "EU": {
+    "electricity": {
+      "kWh": 0.233,
+      "MWh": 233.0,
+      "GWh": 233000.0,
+      "description": "EU average grid emission factor"
+    },
+    "natural_gas": {
+      "therms": 5.3,
+      "m3": 1.89,
+      "MMBtu": 53.06,
+      "description": "Natural gas combustion emissions"
+    }
+  },
+  "UK": {
+    "electricity": {
+      "kWh": 0.212,
+      "MWh": 212.0,
+      "GWh": 212000.0,
+      "description": "UK grid emission factor"
+    },
+    "natural_gas": {
+      "therms": 5.3,
+      "m3": 1.89,
+      "MMBtu": 53.06,
+      "description": "Natural gas combustion emissions"
+    }
+  },
+  "metadata": {
+    "source": "EPA, IEA, and national inventories",
+    "last_updated": "2024-01",
+    "units": "kg CO2e per unit"
+  }
+}

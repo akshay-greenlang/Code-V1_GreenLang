@@ -1,0 +1,16 @@
+name: demo-pipeline
+version: "1.0"
+description: "Simple emissions calculation pipeline for demo"
+
+steps:
+  - name: calc_emissions
+    agent: DemoAgent
+    inputs:
+      load_kwh: 125
+      grid_emission_factor: 0.7
+
+  - name: calc_emissions_high_load
+    agent: DemoAgent
+    inputs:
+      load_kwh: 500
+      grid_emission_factor: 0.7

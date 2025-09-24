@@ -7,7 +7,6 @@ A simple mock agent that returns predictable outputs for testing.
 
 from typing import Dict, Any
 import ast
-import operator
 import re
 
 
@@ -22,10 +21,10 @@ class MockAgent:
     def _safe_math_eval(self, expression: str) -> float:
         """Safely evaluate simple math expressions using operator precedence"""
         # Remove whitespace
-        expression = expression.replace(' ', '')
+        expression = expression.replace(" ", "")
 
         # Only allow safe characters
-        if not re.match(r'^[0-9+\-*/().]+$', expression):
+        if not re.match(r"^[0-9+\-*/().]+$", expression):
             raise ValueError("Invalid characters in expression")
 
         # For simple expressions, just use ast.literal_eval
@@ -59,10 +58,11 @@ class MockAgent:
         if "expression" in kwargs:
             try:
                 import ast
+
                 # Only evaluate literal expressions (numbers, strings, lists, dicts)
                 # This is safe and prevents code injection
                 result["result"] = ast.literal_eval(kwargs["expression"])
-            except (ValueError, SyntaxError, TypeError) as e:
+            except (ValueError, SyntaxError, TypeError):
                 # For simple math expressions, use a safe evaluator
                 try:
                     result["result"] = self._safe_math_eval(kwargs["expression"])

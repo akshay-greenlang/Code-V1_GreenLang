@@ -98,18 +98,39 @@ valid_parent_domain(domain) {
     })
 }
 
-# Data residency check - MANDATORY for data operations
+# Data residency check - ALWAYS MANDATORY when data capabilities requested
 data_residency_ok {
-    # Only skip check if no data operations are involved
-    not input.has_data_operations
+    # Skip check ONLY if pack declares no data capabilities at all
+    not input.pack.declared_capabilities
 }
 
 data_residency_ok {
-    # Data location must be explicitly declared and allowed
-    input.has_data_operations
+    # Skip check ONLY if no data-related capabilities are declared
+    input.pack.declared_capabilities
+    not any_data_capability_declared
+}
+
+data_residency_ok {
+    # MANDATORY check: If any data capabilities are declared, residency must be enforced
+    input.pack.declared_capabilities
+    any_data_capability_declared
     input.data_location
     input.data_location in input.pack.policy.data_residency
 }
+
+# Helper to detect any data-related capabilities
+any_data_capability_declared {
+    some capability in input.pack.declared_capabilities
+    data_related_capability(capability)
+}
+
+# Define what constitutes data-related capabilities
+data_related_capability("data") { true }
+data_related_capability("storage") { true }
+data_related_capability("database") { true }
+data_related_capability("cache") { true }
+data_related_capability("queue") { true }
+data_related_capability("pubsub") { true }
 
 # Rate limiting
 rate_limit_ok {
@@ -148,6 +169,14 @@ deny_reason["Network target not allowed"] {
 }
 
 deny_reason["Data residency violation"] {
+    input.pack.declared_capabilities
+    any_data_capability_declared
+    not input.data_location
+}
+
+deny_reason["Data location not in allowed residency zones"] {
+    input.pack.declared_capabilities
+    any_data_capability_declared
     input.data_location
     not (input.data_location in input.pack.policy.data_residency)
 }

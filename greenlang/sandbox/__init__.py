@@ -43,13 +43,13 @@ from .capabilities import (
     BASIC_COMPUTE_POLICY,
     DATA_PROCESSING_POLICY,
     NETWORK_CLIENT_POLICY,
-    FULL_ACCESS_POLICY
+    FULL_ACCESS_POLICY,
 )
 
 logger = logging.getLogger(__name__)
 
 # Type variable for return types
-T = TypeVar('T')
+T = TypeVar("T")
 
 # Thread-local storage for sandbox context
 _sandbox_context = threading.local()
@@ -86,7 +86,7 @@ class SandboxConfig:
     def __post_init__(self):
         """Initialize sandbox configuration"""
         if self.temp_dir is None:
-            self.temp_dir = tempfile.mkdtemp(prefix='greenlang_sandbox_')
+            self.temp_dir = tempfile.mkdtemp(prefix="greenlang_sandbox_")
 
         # Ensure temp directory exists
         Path(self.temp_dir).mkdir(parents=True, exist_ok=True)
@@ -95,7 +95,12 @@ class SandboxConfig:
 class SandboxViolationError(Exception):
     """Raised when a capability violation occurs in strict mode"""
 
-    def __init__(self, capability: Capability, reason: str, context: Optional[Dict[str, Any]] = None):
+    def __init__(
+        self,
+        capability: Capability,
+        reason: str,
+        context: Optional[Dict[str, Any]] = None,
+    ):
         self.capability = capability
         self.reason = reason
         self.context = context or {}
@@ -104,12 +109,12 @@ class SandboxViolationError(Exception):
 
 def get_current_validator() -> Optional[CapabilityValidator]:
     """Get the capability validator for the current sandbox context"""
-    return getattr(_sandbox_context, 'validator', None)
+    return getattr(_sandbox_context, "validator", None)
 
 
 def get_current_config() -> Optional[SandboxConfig]:
     """Get the sandbox configuration for the current context"""
-    return getattr(_sandbox_context, 'config', None)
+    return getattr(_sandbox_context, "config", None)
 
 
 @contextmanager
@@ -132,8 +137,8 @@ def sandbox_context(config: SandboxConfig):
     validator = CapabilityValidator(config.policy)
 
     # Store in thread-local storage
-    old_validator = getattr(_sandbox_context, 'validator', None)
-    old_config = getattr(_sandbox_context, 'config', None)
+    old_validator = getattr(_sandbox_context, "validator", None)
+    old_config = getattr(_sandbox_context, "config", None)
 
     _sandbox_context.validator = validator
     _sandbox_context.config = config
@@ -149,9 +154,12 @@ def sandbox_context(config: SandboxConfig):
         if config.cleanup_temp and config.temp_dir:
             try:
                 import shutil
+
                 shutil.rmtree(config.temp_dir, ignore_errors=True)
             except Exception as e:
-                logger.warning(f"Failed to cleanup temp directory {config.temp_dir}: {e}")
+                logger.warning(
+                    f"Failed to cleanup temp directory {config.temp_dir}: {e}"
+                )
 
 
 def capability_check(*capabilities: Capability, **kwargs):
@@ -187,7 +195,7 @@ def capability_check(*capabilities: Capability, **kwargs):
                     # Sandbox should be active but no validator found
                     raise SandboxViolationError(
                         capabilities[0] if capabilities else Capability.EXEC_SUBPROCESS,
-                        "No sandbox context found"
+                        "No sandbox context found",
                     )
 
             # Check each required capability
@@ -196,52 +204,52 @@ def capability_check(*capabilities: Capability, **kwargs):
                 context = {}
 
                 # Extract context from function parameters
-                if 'path_context' in kwargs:
-                    param_name = kwargs['path_context']
+                if "path_context" in kwargs:
+                    param_name = kwargs["path_context"]
                     if param_name in func_kwargs:
-                        context['path'] = func_kwargs[param_name]
-                    elif len(args) > 0 and hasattr(func, '__code__'):
+                        context["path"] = func_kwargs[param_name]
+                    elif len(args) > 0 and hasattr(func, "__code__"):
                         # Try to match positional arguments
-                        param_names = func.__code__.co_varnames[:func.__code__.co_argcount]
+                        param_names = func.__code__.co_varnames[
+                            : func.__code__.co_argcount
+                        ]
                         if param_name in param_names:
                             param_index = param_names.index(param_name)
                             if param_index < len(args):
-                                context['path'] = args[param_index]
+                                context["path"] = args[param_index]
 
-                if 'host_context' in kwargs:
-                    param_name = kwargs['host_context']
+                if "host_context" in kwargs:
+                    param_name = kwargs["host_context"]
                     if param_name in func_kwargs:
-                        context['host'] = func_kwargs[param_name]
+                        context["host"] = func_kwargs[param_name]
 
-                if 'env_context' in kwargs:
-                    param_name = kwargs['env_context']
+                if "env_context" in kwargs:
+                    param_name = kwargs["env_context"]
                     if param_name in func_kwargs:
-                        context['var_name'] = func_kwargs[param_name]
+                        context["var_name"] = func_kwargs[param_name]
 
                 # Check the capability
                 if not validator.check_capability(capability, context):
                     if config and config.raise_on_violation:
                         raise SandboxViolationError(
-                            capability,
-                            f"Capability {capability.name} denied",
-                            context
+                            capability, f"Capability {capability.name} denied", context
                         )
                     else:
-                        logger.warning(f"Capability {capability.name} denied but continuing execution")
+                        logger.warning(
+                            f"Capability {capability.name} denied but continuing execution"
+                        )
                         break
 
             # All capabilities approved - execute function
             return func(*args, **func_kwargs)
 
         return wrapper
+
     return decorator
 
 
 def sandbox_execute(
-    func: Callable[..., T],
-    config: SandboxConfig,
-    *args,
-    **kwargs
+    func: Callable[..., T], config: SandboxConfig, *args, **kwargs
 ) -> T:
     """
     Execute a function within a sandbox with the given configuration.
@@ -273,10 +281,7 @@ def sandbox_execute(
 
 
 def _execute_in_subprocess(
-    func: Callable[..., T],
-    config: SandboxConfig,
-    *args,
-    **kwargs
+    func: Callable[..., T], config: SandboxConfig, *args, **kwargs
 ) -> T:
     """
     Execute function in a subprocess with resource limits.
@@ -289,12 +294,12 @@ def _execute_in_subprocess(
     # Serialize function and arguments
     try:
         func_data = pickle.dumps((func, args, kwargs))
-        func_b64 = base64.b64encode(func_data).decode('ascii')
+        func_b64 = base64.b64encode(func_data).decode("ascii")
     except Exception as e:
         raise ValueError(f"Function cannot be serialized for subprocess execution: {e}")
 
     # Create subprocess execution script
-    script = f'''
+    script = f"""
 import pickle
 import base64
 import sys
@@ -312,11 +317,11 @@ try:
     print("GREENLANG_RESULT:" + base64.b64encode(pickle.dumps(result)).decode('ascii'))
 except Exception as e:
     print("GREENLANG_ERROR:" + base64.b64encode(pickle.dumps(e)).decode('ascii'))
-'''
+"""
 
     # Write script to temporary file
-    script_path = os.path.join(config.temp_dir, 'sandbox_script.py')
-    with open(script_path, 'w') as f:
+    script_path = os.path.join(config.temp_dir, "sandbox_script.py")
+    with open(script_path, "w") as f:
         f.write(script)
 
     # Build subprocess command with resource limits
@@ -325,12 +330,14 @@ except Exception as e:
 
     # Apply resource limits if available (Linux/Unix only)
     preexec_fn = None
-    if hasattr(os, 'setrlimit') and config.memory_limit_mb:
+    if hasattr(os, "setrlimit") and config.memory_limit_mb:
         import resource
+
         def limit_resources():
             # Set memory limit
             mem_bytes = config.memory_limit_mb * 1024 * 1024
             resource.setrlimit(resource.RLIMIT_AS, (mem_bytes, mem_bytes))
+
         preexec_fn = limit_resources
 
     try:
@@ -341,15 +348,15 @@ except Exception as e:
             capture_output=True,
             text=True,
             timeout=config.subprocess_timeout,
-            preexec_fn=preexec_fn
+            preexec_fn=preexec_fn,
         )
 
         # Parse result from stdout
-        for line in result.stdout.split('\n'):
-            if line.startswith('GREENLANG_RESULT:'):
+        for line in result.stdout.split("\n"):
+            if line.startswith("GREENLANG_RESULT:"):
                 result_data = base64.b64decode(line[17:])
                 return pickle.loads(result_data)
-            elif line.startswith('GREENLANG_ERROR:'):
+            elif line.startswith("GREENLANG_ERROR:"):
                 error_data = base64.b64decode(line[16:])
                 error = pickle.loads(error_data)
                 raise error
@@ -358,7 +365,9 @@ except Exception as e:
         raise RuntimeError(f"Subprocess execution failed: {result.stderr}")
 
     except subprocess.TimeoutExpired:
-        raise RuntimeError(f"Subprocess execution timed out after {config.subprocess_timeout} seconds")
+        raise RuntimeError(
+            f"Subprocess execution timed out after {config.subprocess_timeout} seconds"
+        )
 
     finally:
         # Cleanup script file
@@ -370,79 +379,65 @@ except Exception as e:
 
 # Convenience functions for common use cases
 
+
 def create_basic_sandbox() -> SandboxConfig:
     """Create a basic sandbox configuration for simple compute tasks"""
     return SandboxConfig(
-        enabled=True,
-        policy=BASIC_COMPUTE_POLICY,
-        raise_on_violation=True
+        enabled=True, policy=BASIC_COMPUTE_POLICY, raise_on_violation=True
     )
 
 
 def create_data_processing_sandbox(
-    read_paths: Optional[List[str]] = None,
-    write_paths: Optional[List[str]] = None
+    read_paths: Optional[List[str]] = None, write_paths: Optional[List[str]] = None
 ) -> SandboxConfig:
     """Create a sandbox configuration for data processing tasks"""
     policy = CapabilityPolicy(
         allowed_capabilities=DATA_PROCESSING_POLICY.allowed_capabilities.copy(),
-        allowed_read_paths=read_paths or ['/tmp'],
-        allowed_write_paths=write_paths or ['/tmp'],
+        allowed_read_paths=read_paths or ["/tmp"],
+        allowed_write_paths=write_paths or ["/tmp"],
         max_memory_mb=1024,
-        max_cpu_time_seconds=300
+        max_cpu_time_seconds=300,
     )
 
-    return SandboxConfig(
-        enabled=True,
-        policy=policy,
-        raise_on_violation=True
-    )
+    return SandboxConfig(enabled=True, policy=policy, raise_on_violation=True)
 
 
-def create_network_sandbox(
-    allowed_hosts: Optional[List[str]] = None
-) -> SandboxConfig:
+def create_network_sandbox(allowed_hosts: Optional[List[str]] = None) -> SandboxConfig:
     """Create a sandbox configuration for network client operations"""
     policy = CapabilityPolicy(
         allowed_capabilities=NETWORK_CLIENT_POLICY.allowed_capabilities.copy(),
-        allowed_hosts=allowed_hosts or ['api.openai.com', 'httpbin.org'],
-        max_memory_mb=512
+        allowed_hosts=allowed_hosts or ["api.openai.com", "httpbin.org"],
+        max_memory_mb=512,
     )
 
-    return SandboxConfig(
-        enabled=True,
-        policy=policy,
-        raise_on_violation=True
-    )
+    return SandboxConfig(enabled=True, policy=policy, raise_on_violation=True)
 
 
 def disable_sandbox() -> SandboxConfig:
     """Create a disabled sandbox configuration (no restrictions)"""
-    return SandboxConfig(
-        enabled=False
-    )
+    return SandboxConfig(enabled=False)
 
 
 # Export main components
 __all__ = [
-    'SandboxConfig',
-    'SandboxViolationError',
-    'sandbox_context',
-    'capability_check',
-    'sandbox_execute',
-    'get_current_validator',
-    'get_current_config',
-    'create_basic_sandbox',
-    'create_data_processing_sandbox',
-    'create_network_sandbox',
-    'disable_sandbox',
+    "SandboxConfig",
+    "SandboxViolationError",
+    "sandbox_context",
+    "capability_check",
+    "sandbox_execute",
+    "get_current_validator",
+    "get_current_config",
+    "create_basic_sandbox",
+    "create_data_processing_sandbox",
+    "create_network_sandbox",
+    "disable_sandbox",
     # Re-export from capabilities
-    'Capability',
-    'CapabilityPolicy',
-    'CapabilityValidator',
-    'DEFAULT_POLICY',
-    'BASIC_COMPUTE_POLICY',
-    'DATA_PROCESSING_POLICY',
-    'NETWORK_CLIENT_POLICY',
-    'FULL_ACCESS_POLICY'
+    "Capability",
+    "CapabilityPolicy",
+    "CapabilityValidator",
+    "DEFAULT_POLICY",
+    "BASIC_COMPUTE_POLICY",
+    "DATA_PROCESSING_POLICY",
+    "NETWORK_CLIENT_POLICY",
+    "FULL_ACCESS_POLICY",
 ]

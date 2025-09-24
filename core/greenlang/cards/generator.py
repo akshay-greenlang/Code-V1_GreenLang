@@ -221,13 +221,13 @@ def generate_dataset_card(
             "supported_tasks": "- Classification\n- Regression\n- Time series analysis",
             "languages": "English",
             # Structure
-            "data_instances": f"""```json
-{{
+            "data_instances": """```json
+{
   "id": "sample_001",
   "timestamp": "2024-01-01T00:00:00Z",
   "value": 42.0,
-  "metadata": {{}}
-}}
+  "metadata": {}
+}
 ```""",
             "data_fields": """- `id` (string): Unique identifier
 - `timestamp` (datetime): Timestamp
@@ -272,7 +272,7 @@ def generate_dataset_card(
 
 dataset = load_dataset("{name}")
 print(f"Loaded {{len(dataset)}} samples")""",
-            "processing_example": f"""# Process dataset
+            "processing_example": """# Process dataset
 for sample in dataset:
     # Apply transformations
     processed = transform(sample)

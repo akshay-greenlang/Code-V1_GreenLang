@@ -1,0 +1,128 @@
+{
+  "timestamp": "2025-09-24T07:41:35.871380",
+  "greenlang_version": "0.2.0",
+  "system_info": {
+    "cpu_count": 12,
+    "memory_total_gb": 15.237815856933594,
+    "python_version": "3.13.5"
+  },
+  "benchmarks": {
+    "agent_execution": {
+      "name": "agent_execution",
+      "duration_ms": 218.0166244506836,
+      "throughput_ops_per_sec": 91.73612356577007,
+      "memory_peak_mb": 40.24609375,
+      "memory_avg_mb": 40.23046875,
+      "cpu_avg_percent": 5.2,
+      "percentiles": {
+        "p50": 0.580299998546252,
+        "p95": 3.4249350017489633,
+        "p99": 3.6326670005655615
+      },
+      "metadata": {
+        "iterations": 20,
+        "complexities_tested": [
+          "light",
+          "medium",
+          "heavy"
+        ],
+        "avg_response_time_ms": 1.0741499994765036
+      },
+      "success": true,
+      "error": null,
+      "timestamp": "2025-09-24T07:41:34.793625"
+    },
+    "pipeline_simple": {
+      "name": "pipeline_simple",
+      "duration_ms": 420.2737808227539,
+      "throughput_ops_per_sec": 47.58802693055647,
+      "memory_peak_mb": 40.296875,
+      "memory_avg_mb": 40.2890625,
+      "cpu_avg_percent": 18.62,
+      "percentiles": {
+        "p50": 0.9572499984642491,
+        "p95": 2.3276850039110286,
+        "p99": 3.0116970111703267
+      },
+      "metadata": {
+        "iterations": 20,
+        "pipeline_steps": 2,
+        "avg_response_time_ms": 1.059220000024652
+      },
+      "success": true,
+      "error": null,
+      "timestamp": "2025-09-24T07:41:35.297236"
+    },
+    "memory_intensive": {
+      "name": "memory_intensive",
+      "duration_ms": 404.7222137451172,
+      "throughput_ops_per_sec": 49.41661050657191,
+      "memory_peak_mb": 46.44140625,
+      "memory_avg_mb": 43.34765625,
+      "cpu_avg_percent": 31.525,
+      "percentiles": {
+        "p50": 8.056750000832835,
+        "p95": 14.153219995569088,
+        "p99": 15.512003994736006
+      },
+      "metadata": {
+        "iterations": 20,
+        "memory_test": true,
+        "avg_response_time_ms": 8.103715000470402
+      },
+      "success": true,
+      "error": null,
+      "timestamp": "2025-09-24T07:41:35.725652"
+    },
+    "context_creation": {
+      "name": "context_creation",
+      "duration_ms": 4.750490188598633,
+      "throughput_ops_per_sec": 4210.091844416562,
+      "memory_peak_mb": 42.7890625,
+      "memory_avg_mb": 42.7890625,
+      "cpu_avg_percent": 0.0,
+      "percentiles": {
+        "p50": 0.20290000247769058,
+        "p95": 0.6812249990616692,
+        "p99": 0.776564997722744
+      },
+      "metadata": {
+        "iterations": 20,
+        "context_operations": [
+          "creation",
+          "step_result_addition"
+        ],
+        "avg_response_time_ms": 0.23666500128456391
+      },
+      "success": true,
+      "error": null,
+      "timestamp": "2025-09-24T07:41:35.826514"
+    }
+  },
+  "load_test": {
+    "concurrent_users": 5,
+    "total_requests": 100,
+    "successful_requests": 100,
+    "failed_requests": 0,
+    "avg_response_time_ms": 0.6106257438659668,
+    "p50_response_time_ms": 0.4184246063232422,
+    "p95_response_time_ms": 0.5563855171203613,
+    "p99_response_time_ms": 18.715858459472656,
+    "requests_per_second": 2262.80029564251,
+    "errors": []
+  },
+  "regressions": {},
+  "summary": {
+    "status": "PASSED",
+    "total_benchmarks": 4,
+    "successful_benchmarks": 4,
+    "failed_benchmarks": 0,
+    "avg_p95_latency_ms": 5.15,
+    "avg_throughput_ops_per_sec": 1099.71,
+    "max_memory_usage_mb": 46.44,
+    "regression_count": 0,
+    "load_test_success_rate": 1.0,
+    "load_test_p95_ms": 0.5563855171203613,
+    "load_test_rps": 2262.80029564251
+  }
+}

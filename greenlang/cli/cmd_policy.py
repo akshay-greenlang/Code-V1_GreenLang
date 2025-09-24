@@ -71,7 +71,7 @@ def check(
             console.print(json.dumps(output, indent=2))
         else:
             if allowed:
-                console.print(f"[green]OK Policy check passed[/green]")
+                console.print("[green]OK Policy check passed[/green]")
                 if explain:
                     console.print(
                         f"  License: {getattr(manifest, 'license', 'unknown')}"
@@ -84,7 +84,7 @@ def check(
                     if hasattr(policy_attr, "ef_vintage_min"):
                         console.print(f"  EF vintage: {policy_attr.ef_vintage_min}")
             else:
-                console.print(f"[red]ERROR Policy check failed[/red]")
+                console.print("[red]ERROR Policy check failed[/red]")
                 console.print(f"  {reason}")
 
                 if explain:
@@ -167,14 +167,14 @@ def run_policy(
             reason = str(e)
 
         if allowed:
-            console.print(f"[green]OK Pipeline would be allowed to run[/green]")
+            console.print("[green]OK Pipeline would be allowed to run[/green]")
             if explain:
                 console.print("\n[bold]Policy requirements satisfied:[/bold]")
                 console.print("  - No unauthorized egress detected")
                 console.print("  - Resource limits within bounds")
                 console.print("  - Data residency compliance")
         else:
-            console.print(f"[red]ERROR Pipeline would be denied[/red]")
+            console.print("[red]ERROR Pipeline would be denied[/red]")
             console.print(f"  {reason}")
 
             if explain:
@@ -343,7 +343,7 @@ def validate_policy(policy: Path = typer.Argument(..., help="Policy file to vali
             if line.startswith("allow") or line.startswith("deny"):
                 rules.append(line.split()[0])
 
-        console.print(f"[green]✓[/green] Policy syntax valid")
+        console.print("[green]✓[/green] Policy syntax valid")
         console.print(f"  Rules found: {', '.join(set(rules))}")
 
     except Exception as e:

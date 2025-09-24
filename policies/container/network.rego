@@ -9,8 +9,10 @@ default allow_egress := false
 
 # Allowed egress destinations for containers
 allowed_egress := {
-    # Internal services
-    {"namespace": "greenlang-system", "service": "*"},
+    # Internal services - explicit service names for security
+    {"namespace": "greenlang-system", "service": "api-server"},
+    {"namespace": "greenlang-system", "service": "job-controller"},
+    {"namespace": "greenlang-system", "service": "policy-engine"},
     {"namespace": "monitoring", "service": "prometheus"},
     {"namespace": "logging", "service": "loki"},
 
@@ -57,11 +59,7 @@ destination_matches(allowed) if {
     token_matches(allowed)
 }
 
-# Service wildcard matching
-service_matches(pattern, service) if {
-    pattern == "*"
-}
-
+# Service matching - only exact matches allowed for security
 service_matches(pattern, service) if {
     pattern == service
 }

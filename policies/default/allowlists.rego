@@ -102,13 +102,8 @@ default_allowed_capabilities := ["fs"]
 # SPECIAL CASES & OVERRIDES
 # =============================================================================
 
-# Allow unsigned packs only with explicit override flag
-allow_install {
-    input.override.allow_unsigned == true
-    input.pack.publisher == allowed_publishers[_]
-    # Log warning - this should be tracked
-    true
-}
+# SECURITY: Unsigned pack override REMOVED for production security
+# All packs must be properly signed - no exceptions allowed
 
 # Development mode override REMOVED for production security
 # All policy checks are mandatory - no bypasses allowed
@@ -119,7 +114,6 @@ allow_install {
 
 deny["POLICY.DENIED_INSTALL: Pack not signed or signature invalid"] {
     not input.pack.signature_verified
-    not input.override.allow_unsigned
 }
 
 deny[msg] {

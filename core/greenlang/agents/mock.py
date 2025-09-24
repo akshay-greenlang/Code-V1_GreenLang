@@ -36,9 +36,10 @@ class MockAgent:
         if "expression" in kwargs:
             try:
                 import ast
+
                 # Only evaluate literal expressions safely
                 result["result"] = ast.literal_eval(kwargs["expression"])
-            except (SyntaxError, ValueError, NameError, ZeroDivisionError) as e:
+            except (SyntaxError, ValueError, NameError, ZeroDivisionError):
                 result["result"] = "error"
 
         return result

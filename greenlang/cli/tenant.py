@@ -285,7 +285,7 @@ def update(tenant_id: str, **kwargs):
                 )
             )
         else:
-            console.print(f"[red]Failed to update tenant[/red]")
+            console.print("[red]Failed to update tenant[/red]")
 
     except Exception as e:
         console.print(f"[red]Error updating tenant: {e}[/red]")
@@ -326,7 +326,7 @@ def delete(tenant_id: str, force: bool):
                 action="delete",
             )
         else:
-            console.print(f"[red]Failed to delete tenant[/red]")
+            console.print("[red]Failed to delete tenant[/red]")
 
     except Exception as e:
         console.print(f"[red]Error deleting tenant: {e}[/red]")
@@ -352,7 +352,7 @@ def suspend(tenant_id: str):
                 tenant_id=tenant_id,
             )
         else:
-            console.print(f"[red]Failed to suspend tenant[/red]")
+            console.print("[red]Failed to suspend tenant[/red]")
 
     except Exception as e:
         console.print(f"[red]Error suspending tenant: {e}[/red]")
@@ -378,7 +378,7 @@ def activate(tenant_id: str):
                 tenant_id=tenant_id,
             )
         else:
-            console.print(f"[red]Failed to activate tenant[/red]")
+            console.print("[red]Failed to activate tenant[/red]")
 
     except Exception as e:
         console.print(f"[red]Error activating tenant: {e}[/red]")
@@ -401,7 +401,7 @@ def quota(tenant_id: str, output: str):
         tenant = manager.get_tenant(tenant_id)
 
         if not tenant or not tenant.quota:
-            console.print(f"[red]Tenant or quota not found[/red]")
+            console.print("[red]Tenant or quota not found[/red]")
             return
 
         quota_dict = tenant.quota.to_dict()
@@ -564,7 +564,7 @@ def assign_role(tenant_id: str, user_id: str, role_name: str):
                 )
             )
         else:
-            console.print(f"[red]Failed to assign role[/red]")
+            console.print("[red]Failed to assign role[/red]")
 
     except Exception as e:
         console.print(f"[red]Error assigning role: {e}[/red]")
@@ -596,7 +596,7 @@ def revoke_role(tenant_id: str, user_id: str, role_name: str):
                 )
             )
         else:
-            console.print(f"[red]Failed to revoke role[/red]")
+            console.print("[red]Failed to revoke role[/red]")
 
     except Exception as e:
         console.print(f"[red]Error revoking role: {e}[/red]")
@@ -654,7 +654,7 @@ def create_apikey(
                 )
             )
         else:
-            console.print(f"[red]Failed to create API key[/red]")
+            console.print("[red]Failed to create API key[/red]")
 
     except Exception as e:
         console.print(f"[red]Error creating API key: {e}[/red]")
@@ -730,7 +730,7 @@ def revoke_apikey(tenant_id: str, api_key: str):
                 )
             )
         else:
-            console.print(f"[red]Failed to revoke API key[/red]")
+            console.print("[red]Failed to revoke API key[/red]")
 
     except Exception as e:
         console.print(f"[red]Error revoking API key: {e}[/red]")

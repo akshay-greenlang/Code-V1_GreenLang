@@ -519,7 +519,7 @@ def track_api_request(method: str, endpoint: str, tenant_id: str = "default"):
 
                 return result
 
-            except Exception as e:
+            except Exception:
                 api_requests.labels(
                     method=method,
                     endpoint=endpoint,

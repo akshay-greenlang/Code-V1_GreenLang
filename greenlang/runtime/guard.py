@@ -3,6 +3,8 @@ Runtime Guard - Enforces capability-based security at runtime
 
 This module is loaded in a separate worker process to enforce deny-by-default
 security policies for network, filesystem, subprocess, and clock access.
+
+Enhanced with OS-level sandbox integration for stronger isolation.
 """
 
 import os
@@ -21,6 +23,24 @@ from pathlib import Path
 from functools import wraps
 from urllib.parse import urlparse
 import fnmatch
+
+# Import OS-level sandbox if available
+try:
+    from ..sandbox.os_sandbox import (
+        OSSandbox,
+        OSSandboxConfig,
+        IsolationType,
+        SandboxMode,
+        ResourceLimits,
+        NetworkConfig,
+        FilesystemConfig,
+        create_default_config,
+        create_secure_config,
+        execute_sandboxed
+    )
+    OS_SANDBOX_AVAILABLE = True
+except ImportError:
+    OS_SANDBOX_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
@@ -45,12 +65,12 @@ class CapabilityViolation(Exception):
         if suggestion:
             message += f"\n  To fix:\n{suggestion}"
         else:
-            message += f"\n  To fix:\n"
-            message += f"  1. Add to manifest.yaml:\n"
-            message += f"     capabilities:\n"
+            message += "\n  To fix:\n"
+            message += "  1. Add to manifest.yaml:\n"
+            message += "     capabilities:\n"
             message += f"       {capability}:\n"
-            message += f"         allow: true\n"
-            message += f"  2. Request approval from security team"
+            message += "         allow: true\n"
+            message += "  2. Request approval from security team"
 
         super().__init__(message)
 
@@ -58,19 +78,34 @@ class CapabilityViolation(Exception):
 class RuntimeGuard:
     """
     Runtime security guard that enforces capability-based access control
+    Enhanced with OS-level sandbox integration for stronger isolation
     """
 
-    def __init__(self, capabilities: Optional[Dict[str, Any]] = None):
+    def __init__(self, capabilities: Optional[Dict[str, Any]] = None, enable_os_sandbox: bool = None):
         """
         Initialize the runtime guard with specified capabilities
 
         Args:
             capabilities: Dict of capability configurations from manifest
+            enable_os_sandbox: Whether to use OS-level sandboxing (auto-detect if None)
         """
         self.capabilities = capabilities or {}
         self.audit_log = []
         # Capability override removed for production security
         self.override_mode = False
+
+        # OS sandbox configuration
+        self.enable_os_sandbox = enable_os_sandbox
+        self.os_sandbox_config = None
+        self.os_sandbox_instance = None
+
+        # Auto-detect OS sandbox availability if not specified
+        if self.enable_os_sandbox is None:
+            self.enable_os_sandbox = OS_SANDBOX_AVAILABLE and self._should_use_os_sandbox()
+
+        # Initialize OS sandbox if enabled
+        if self.enable_os_sandbox and OS_SANDBOX_AVAILABLE:
+            self._setup_os_sandbox()
 
         # Parse environment variables for paths
         temp_dir = Path(tempfile.gettempdir())
@@ -106,8 +141,134 @@ class RuntimeGuard:
         # Store original functions before patching
         self._store_originals()
 
-        # Apply security patches
-        self._patch_all()
+        # Apply security patches (only if not using OS sandbox or as fallback)
+        if not self.enable_os_sandbox:
+            self._patch_all()
+
+    def _should_use_os_sandbox(self) -> bool:
+        """Determine if OS sandbox should be used based on environment and capabilities"""
+        # Check if running in privileged environment where OS sandbox is effective
+        if sys.platform != "linux":
+            logger.info("OS sandbox not available on non-Linux platform")
+            return False
+
+        # Check for high-security requirements
+        security_level = os.environ.get("GL_SECURITY_LEVEL", "standard")
+        if security_level in ("high", "maximum"):
+            return True
+
+        # Check if capabilities require stronger isolation
+        has_dangerous_caps = any(
+            cap in self.capabilities
+            for cap in ["subprocess", "fs", "net"]
+        )
+
+        return has_dangerous_caps
+
+    def _setup_os_sandbox(self):
+        """Setup OS-level sandbox configuration"""
+        try:
+            # Determine security level
+            security_level = os.environ.get("GL_SECURITY_LEVEL", "standard")
+
+            if security_level == "maximum":
+                self.os_sandbox_config = create_secure_config()
+            else:
+                self.os_sandbox_config = create_default_config()
+
+            # Configure based on capabilities
+            self._configure_sandbox_from_capabilities()
+
+            # Set seccomp profile path
+            seccomp_profile_path = Path(__file__).parent.parent / "sandbox" / "seccomp_profiles.json"
+            if seccomp_profile_path.exists():
+                self.os_sandbox_config.seccomp_profile_path = str(seccomp_profile_path)
+
+            # Set AppArmor profile
+            apparmor_profile_path = Path(__file__).parent.parent / "sandbox" / "apparmor_profile.txt"
+            if apparmor_profile_path.exists():
+                self.os_sandbox_config.filesystem.apparmor_profile = "greenlang-sandbox"
+
+            logger.info(f"OS sandbox configured with {self.os_sandbox_config.isolation_type.value} isolation")
+
+        except Exception as e:
+            logger.warning(f"Failed to setup OS sandbox: {e}")
+            self.enable_os_sandbox = False
+
+    def _configure_sandbox_from_capabilities(self):
+        """Configure sandbox based on declared capabilities"""
+        if not self.os_sandbox_config:
+            return
+
+        # Network configuration
+        if self.capabilities.get("net", {}).get("allow", False):
+            self.os_sandbox_config.network.allow_network = True
+
+            # Configure allowed hosts
+            net_config = self.capabilities.get("net", {})
+            if "outbound" in net_config:
+                allowed_hosts = net_config["outbound"].get("allowlist", [])
+                self.os_sandbox_config.network.allowed_hosts = allowed_hosts
+        else:
+            self.os_sandbox_config.network.allow_network = False
+
+        # Filesystem configuration
+        if self.capabilities.get("fs", {}).get("allow", False):
+            fs_config = self.capabilities.get("fs", {})
+
+            if "read" in fs_config:
+                read_paths = fs_config["read"].get("allowlist", [])
+                # Convert GL environment variables to actual paths
+                expanded_paths = []
+                for path in read_paths:
+                    expanded = path.replace("${INPUT_DIR}", str(self.input_dir))
+                    expanded = expanded.replace("${PACK_DATA_DIR}", str(self.pack_data_dir))
+                    expanded = expanded.replace("${RUN_TMP}", str(self.run_tmp))
+                    expanded_paths.append(expanded)
+
+                self.os_sandbox_config.filesystem.read_write_paths.extend(expanded_paths)
+
+            if "write" in fs_config:
+                write_paths = fs_config["write"].get("allowlist", [])
+                expanded_paths = []
+                for path in write_paths:
+                    expanded = path.replace("${INPUT_DIR}", str(self.input_dir))
+                    expanded = expanded.replace("${PACK_DATA_DIR}", str(self.pack_data_dir))
+                    expanded = expanded.replace("${RUN_TMP}", str(self.run_tmp))
+                    expanded_paths.append(expanded)
+
+                self.os_sandbox_config.filesystem.read_write_paths.extend(expanded_paths)
+
+        # Subprocess configuration affects container choice
+        if self.capabilities.get("subprocess", {}).get("allow", False):
+            # Allow subprocess but in secure container
+            self.os_sandbox_config.isolation_type = IsolationType.CONTAINER
+
+        # Resource limits
+        pack_config = self.capabilities.get("pack_config", {})
+        if pack_config.get("memory_limit_mb"):
+            self.os_sandbox_config.limits.memory_limit_bytes = pack_config["memory_limit_mb"] * 1024 * 1024
+        if pack_config.get("cpu_limit_seconds"):
+            self.os_sandbox_config.limits.cpu_time_limit_seconds = pack_config["cpu_limit_seconds"]
+        if pack_config.get("execution_timeout"):
+            self.os_sandbox_config.execution_timeout = pack_config["execution_timeout"]
+
+    def execute_in_sandbox(self, func, *args, **kwargs):
+        """Execute function with OS-level sandbox if available, otherwise use Python-level guard"""
+        if self.enable_os_sandbox and self.os_sandbox_config:
+            try:
+                # Use OS-level sandbox
+                return execute_sandboxed(func, self.os_sandbox_config, *args, **kwargs)
+            except Exception as e:
+                logger.warning(f"OS sandbox execution failed: {e}")
+                # Fallback to Python-level patching
+                if not hasattr(self, '_patches_applied'):
+                    self._patch_all()
+                    self._patches_applied = True
+                return func(*args, **kwargs)
+        else:
+            # Use Python-level patching
+            return func(*args, **kwargs)
 
     def _store_originals(self):
         """Store original functions before patching"""
@@ -213,7 +374,7 @@ class RuntimeGuard:
                     raise CapabilityViolation(
                         "net",
                         f"Connecting to {host}",
-                        f"Domain not in allowlist",
+                        "Domain not in allowlist",
                         f"Add '{host}' to capabilities.net.outbound.allowlist",
                     )
 
@@ -488,7 +649,7 @@ class RuntimeGuard:
                 raise CapabilityViolation(
                     "subprocess",
                     f"Executing: {cmd_path}",
-                    f"Binary not in allowlist",
+                    "Binary not in allowlist",
                     f"Add '{cmd_path}' to capabilities.subprocess.allowlist",
                 )
 
@@ -673,17 +834,108 @@ def initialize_guard():
         logger.error("Failed to parse GL_CAPS environment variable")
         capabilities = {}
 
+    # Check if OS sandbox should be forced on/off
+    force_os_sandbox = os.environ.get("GL_FORCE_OS_SANDBOX")
+    enable_os_sandbox = None
+    if force_os_sandbox is not None:
+        enable_os_sandbox = force_os_sandbox.lower() in ("1", "true", "yes", "on")
+
     # Create and activate guard
-    guard = RuntimeGuard(capabilities)
+    guard = RuntimeGuard(capabilities, enable_os_sandbox=enable_os_sandbox)
 
     # Store guard instance for access
     sys.modules[__name__].guard_instance = guard
 
+    # Log initialization details
+    sandbox_type = "OS-level" if guard.enable_os_sandbox else "Python-level"
     logger.info(
-        f"Runtime guard initialized with capabilities: {list(capabilities.keys())}"
+        f"Runtime guard initialized with {sandbox_type} sandbox, capabilities: {list(capabilities.keys())}"
     )
 
+    if guard.enable_os_sandbox and guard.os_sandbox_config:
+        logger.info(
+            f"OS sandbox using {guard.os_sandbox_config.isolation_type.value} isolation "
+            f"in {guard.os_sandbox_config.sandbox_mode.value} mode"
+        )
+
     return guard
+
+
+# Utility functions for OS sandbox integration
+
+def get_guard_instance() -> Optional[RuntimeGuard]:
+    """Get the current guard instance if available"""
+    return getattr(sys.modules[__name__], 'guard_instance', None)
+
+
+def execute_with_guard(func, *args, **kwargs):
+    """
+    Execute function with active runtime guard protection
+
+    This function automatically uses OS-level sandbox if available,
+    otherwise falls back to Python-level patching.
+    """
+    guard = get_guard_instance()
+    if guard:
+        return guard.execute_in_sandbox(func, *args, **kwargs)
+    else:
+        # No guard active - execute directly (unsafe)
+        logger.warning("No runtime guard active - executing without protection")
+        return func(*args, **kwargs)
+
+
+def is_os_sandbox_available() -> bool:
+    """Check if OS-level sandbox is available in this environment"""
+    return OS_SANDBOX_AVAILABLE
+
+
+def get_sandbox_info() -> Dict[str, Any]:
+    """Get information about the current sandbox configuration"""
+    guard = get_guard_instance()
+    if not guard:
+        return {"guard_active": False}
+
+    info = {
+        "guard_active": True,
+        "os_sandbox_enabled": guard.enable_os_sandbox,
+        "os_sandbox_available": OS_SANDBOX_AVAILABLE,
+        "capabilities": list(guard.capabilities.keys()),
+        "audit_events": len(guard.audit_log)
+    }
+
+    if guard.enable_os_sandbox and guard.os_sandbox_config:
+        info.update({
+            "isolation_type": guard.os_sandbox_config.isolation_type.value,
+            "sandbox_mode": guard.os_sandbox_config.sandbox_mode.value,
+            "network_allowed": guard.os_sandbox_config.network.allow_network,
+            "memory_limit_mb": (guard.os_sandbox_config.limits.memory_limit_bytes // (1024*1024)
+                              if guard.os_sandbox_config.limits.memory_limit_bytes else None),
+            "execution_timeout": guard.os_sandbox_config.execution_timeout
+        })
+
+    return info
+
+
+def create_test_sandbox_config() -> Optional[object]:
+    """Create a test sandbox configuration for development/testing"""
+    if not OS_SANDBOX_AVAILABLE:
+        return None
+
+    from ..sandbox.os_sandbox import OSSandboxConfig, IsolationType, SandboxMode, ResourceLimits
+
+    return OSSandboxConfig(
+        isolation_type=IsolationType.BASIC,
+        sandbox_mode=SandboxMode.PERMISSIVE,
+        limits=ResourceLimits(
+            memory_limit_bytes=128 * 1024 * 1024,  # 128MB
+            max_open_files=256,
+            max_processes=4,
+            cpu_time_limit_seconds=30
+        ),
+        execution_timeout=60,
+        enable_audit=True,
+        fallback_to_basic=True
+    )
 
 
 # Auto-initialize when imported as main guard module

@@ -1,0 +1,403 @@
+Metadata-Version: 2.4
+Name: greenlang-cli
+Version: 0.3.0
+Summary: The Climate Intelligence Framework - Build climate-aware applications with AI-driven orchestration
+Home-page: https://greenlang.io
+Author: GreenLang Maintainers
+Author-email: GreenLang Maintainers <maintainers@greenlang.io>
+License: MIT
+Project-URL: Homepage, https://greenlang.io
+Project-URL: Documentation, https://greenlang.io/docs
+Project-URL: Repository, https://github.com/greenlang/greenlang
+Project-URL: Bug Tracker, https://github.com/greenlang/greenlang/issues
+Project-URL: Changelog, https://github.com/greenlang/greenlang/blob/main/CHANGELOG.md
+Project-URL: Discord, https://discord.gg/greenlang
+Keywords: climate,emissions,sustainability,carbon,green,environment,AI,orchestration,framework,climate-intelligence,decarbonization,net-zero,ESG,HVAC,buildings,energy
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Atmospheric Science
+Classifier: Topic :: Software Development :: Libraries :: Application Frameworks
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Operating System :: OS Independent
+Classifier: Environment :: Console
+Classifier: Framework :: Pydantic
+Classifier: Natural Language :: English
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: typer>=0.12
+Requires-Dist: pydantic>=2.7
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: rich>=13.0
+Requires-Dist: jsonschema>=4.19.0
+Requires-Dist: packaging>=22.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: typing-extensions>=4.9.0
+Requires-Dist: httpx>=0.24.0
+Requires-Dist: requests>=2.31.0
+Requires-Dist: networkx>=3.0
+Requires-Dist: tenacity>=8.2.3
+Requires-Dist: psutil>=5.9.0
+Provides-Extra: analytics
+Requires-Dist: pandas>=2.0.0; extra == "analytics"
+Requires-Dist: numpy>=1.24.0; extra == "analytics"
+Provides-Extra: cli
+Requires-Dist: click>=8.0.0; extra == "cli"
+Requires-Dist: rich>=13.0.0; extra == "cli"
+Provides-Extra: data
+Requires-Dist: pandas>=2.0.0; extra == "data"
+Requires-Dist: numpy>=1.24.0; extra == "data"
+Requires-Dist: openpyxl>=3.1.0; extra == "data"
+Requires-Dist: jinja2>=3.1.0; extra == "data"
+Requires-Dist: weasyprint>=60.0; extra == "data"
+Requires-Dist: sqlalchemy>=2.0.0; extra == "data"
+Requires-Dist: alembic>=1.12.0; extra == "data"
+Requires-Dist: psycopg2-binary>=2.9.0; extra == "data"
+Requires-Dist: pymongo>=4.5.0; extra == "data"
+Provides-Extra: llm
+Requires-Dist: openai>=1.0.0; extra == "llm"
+Requires-Dist: langchain>=0.1.0; extra == "llm"
+Requires-Dist: langchain-openai>=0.0.5; extra == "llm"
+Requires-Dist: langchain-community>=0.0.10; extra == "llm"
+Requires-Dist: anthropic>=0.7.0; extra == "llm"
+Requires-Dist: faiss-cpu>=1.7.4; extra == "llm"
+Requires-Dist: sentence-transformers>=2.2.0; extra == "llm"
+Requires-Dist: pypdf>=3.17.0; extra == "llm"
+Requires-Dist: chromadb>=0.4.0; extra == "llm"
+Provides-Extra: server
+Requires-Dist: aiohttp>=3.8.0; extra == "server"
+Requires-Dist: fastapi>=0.104.0; extra == "server"
+Requires-Dist: uvicorn>=0.24.0; extra == "server"
+Requires-Dist: redis>=5.0.0; extra == "server"
+Requires-Dist: celery>=5.3.0; extra == "server"
+Requires-Dist: prometheus-client>=0.18.0; extra == "server"
+Requires-Dist: opentelemetry-api>=1.20.0; extra == "server"
+Requires-Dist: structlog>=23.0.0; extra == "server"
+Requires-Dist: gunicorn>=21.0.0; extra == "server"
+Provides-Extra: security
+Requires-Dist: cryptography>=41.0.0; extra == "security"
+Requires-Dist: PyJWT>=2.8.0; extra == "security"
+Provides-Extra: test
+Requires-Dist: pytest>=7.4.0; extra == "test"
+Requires-Dist: pytest-cov>=4.1.0; extra == "test"
+Requires-Dist: pytest-asyncio>=0.21.0; extra == "test"
+Requires-Dist: pytest-mock>=3.11.0; extra == "test"
+Requires-Dist: pytest-timeout>=2.1.0; extra == "test"
+Requires-Dist: pytest-xdist>=3.3.0; extra == "test"
+Requires-Dist: pytest-benchmark>=4.0.0; extra == "test"
+Requires-Dist: pytest-regressions>=2.5.0; extra == "test"
+Requires-Dist: hypothesis>=6.80.0; extra == "test"
+Requires-Dist: psutil>=5.9.0; extra == "test"
+Requires-Dist: coverage[toml]>=7.2.0; extra == "test"
+Requires-Dist: faker>=19.0.0; extra == "test"
+Requires-Dist: responses>=0.23.0; extra == "test"
+Requires-Dist: freezegun>=1.2.0; extra == "test"
+Requires-Dist: factory-boy>=3.3.0; extra == "test"
+Requires-Dist: greenlang[cli]; extra == "test"
+Requires-Dist: greenlang[data]; extra == "test"
+Requires-Dist: greenlang[analytics]; extra == "test"
+Requires-Dist: greenlang[security]; extra == "test"
+Provides-Extra: dev
+Requires-Dist: mypy>=1.7.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Requires-Dist: black>=23.7.0; extra == "dev"
+Requires-Dist: isort>=5.12.0; extra == "dev"
+Requires-Dist: bandit>=1.7.0; extra == "dev"
+Requires-Dist: types-PyYAML>=6.0.12; extra == "dev"
+Requires-Dist: types-requests>=2.31.0; extra == "dev"
+Requires-Dist: types-redis>=4.6.0; extra == "dev"
+Requires-Dist: types-jsonschema>=4.19.0; extra == "dev"
+Requires-Dist: ipython>=8.0.0; extra == "dev"
+Requires-Dist: jupyter>=1.0.0; extra == "dev"
+Requires-Dist: pre-commit>=3.0.0; extra == "dev"
+Requires-Dist: watchdog>=3.0.0; extra == "dev"
+Requires-Dist: docker>=6.1.0; extra == "dev"
+Requires-Dist: kubernetes>=28.0.0; extra == "dev"
+Requires-Dist: flake8>=6.0; extra == "dev"
+Provides-Extra: doc
+Requires-Dist: mkdocs>=1.5.0; extra == "doc"
+Requires-Dist: mkdocs-material>=9.0.0; extra == "doc"
+Requires-Dist: mkdocstrings>=0.23.0; extra == "doc"
+Provides-Extra: full
+Requires-Dist: greenlang[cli]; extra == "full"
+Requires-Dist: greenlang[data]; extra == "full"
+Requires-Dist: greenlang[analytics]; extra == "full"
+Requires-Dist: greenlang[llm]; extra == "full"
+Requires-Dist: greenlang[server]; extra == "full"
+Requires-Dist: greenlang[security]; extra == "full"
+Provides-Extra: all
+Requires-Dist: greenlang[full]; extra == "all"
+Requires-Dist: greenlang[test]; extra == "all"
+Requires-Dist: greenlang[dev]; extra == "all"
+Requires-Dist: greenlang[doc]; extra == "all"
+Dynamic: author
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-python
+
+# GreenLang - The Climate Intelligence Framework
+
+[![PyPI Version](https://img.shields.io/pypi/v/greenlang-cli.svg)](https://pypi.org/project/greenlang-cli/)
+[![Python Support](https://img.shields.io/pypi/pyversions/greenlang-cli.svg)](https://pypi.org/project/greenlang-cli/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+**Build climate-intelligent applications with the power of AI-driven orchestration. The LangChain of Climate Intelligence is here.**
+
+## What is GreenLang?
+
+GreenLang is a developer-first Climate Intelligence Framework that brings LangChain-style modularity to sustainable computing. It provides a comprehensive toolkit for building climate-aware applications across industries - from smart buildings and HVAC systems to industrial processes and renewable energy optimization.
+
+### Key Features
+
+- **AI-Powered Climate Intelligence**: Intelligent agents for automated emissions analysis and optimization recommendations
+- **Modular Architecture**: Composable packs and pipelines for rapid development
+- **Multi-Industry Support**: Buildings, HVAC, solar thermal, cement, and expanding
+- **Global Coverage**: Localized emission factors for 12+ major economies
+- **Developer-First Design**: Clean CLI, Python SDK, and YAML workflows
+- **Type-Safe APIs**: 100% typed public interfaces with strict validation
+- **Explainable Results**: Transparent calculations with full audit trails
+- **Real-World Data**: Integration with industry-standard datasets and benchmarks
+
+## Installation
+
+```bash
+# Basic installation
+pip install greenlang-cli
+
+# With analytics capabilities
+pip install greenlang-cli[analytics]
+
+# Full feature set
+pip install greenlang-cli[full]
+
+# Development environment
+pip install greenlang-cli[dev]
+```
+
+## Quick Start
+
+### CLI Usage
+
+```bash
+# Initialize a new GreenLang project
+gl init my-climate-app
+
+# Create a new pack for emissions calculation
+gl pack new building-emissions
+
+# Run emissions analysis
+gl calc --building office_complex.json
+
+# Analyze with recommendations
+gl analyze results.json --format detailed
+
+# Execute a pipeline
+gl pipeline run decarbonization.yaml
+```
+
+### Python SDK
+
+```python
+from greenlang import GreenLang
+from greenlang.models import Building, EmissionFactors
+from greenlang.agents import BuildingAgent, HVACOptimizer
+
+# Initialize GreenLang
+gl = GreenLang()
+
+# Create a building model
+building = Building(
+    name="Tech Campus A",
+    area_m2=50000,
+    location="San Francisco",
+    building_type="office"
+)
+
+# Calculate emissions
+agent = BuildingAgent()
+results = agent.calculate_emissions(
+    building=building,
+    energy_data=energy_consumption,
+    emission_factors=EmissionFactors.get_region("US-CA")
+)
+
+# Get optimization recommendations
+optimizer = HVACOptimizer()
+recommendations = optimizer.optimize(
+    building=building,
+    current_emissions=results.total_emissions,
+    target_reduction=0.30  # 30% reduction target
+)
+
+print(f"Current emissions: {results.total_emissions} tCO2e/year")
+print(f"Potential savings: ${recommendations.estimated_savings:,.2f}")
+```
+
+### YAML Pipelines
+
+```yaml
+# decarbonization_pipeline.yaml
+version: "1.0"
+name: "Building Decarbonization Analysis"
+
+stages:
+  - name: data_collection
+    type: ingestion
+    sources:
+      - type: energy_bills
+        format: csv
+      - type: occupancy_sensors
+        format: json
+
+  - name: emissions_calculation
+    type: calculation
+    agent: BuildingAgent
+    parameters:
+      include_scope3: true
+      use_regional_factors: true
+
+  - name: optimization
+    type: analysis
+    agent: DecarbonizationAgent
+    parameters:
+      target_reduction: 0.40
+      max_payback_years: 5
+
+  - name: reporting
+    type: output
+    format: pdf
+    template: executive_summary
+```
+
+## Core Concepts
+
+### Packs
+Modular, reusable components that encapsulate climate intelligence logic:
+- **Calculation Packs**: Emissions calculations for specific industries
+- **Optimization Packs**: Decarbonization strategies and recommendations
+- **Integration Packs**: Connect to external data sources and APIs
+- **Reporting Packs**: Generate customized sustainability reports
+
+### Agents
+AI-powered components that provide intelligent climate analysis:
+- **BuildingAgent**: Comprehensive building emissions analysis
+- **HVACOptimizer**: HVAC system optimization recommendations
+- **SolarThermalAgent**: Solar thermal replacement calculations
+- **PolicyAgent**: Climate policy compliance checking
+- **BenchmarkAgent**: Industry and regional benchmarking
+
+### Pipelines
+Orchestrate complex climate intelligence workflows:
+- Chain multiple agents and packs together
+- Define conditional logic and branching
+- Integrate with external systems
+- Schedule recurring analyses
+- Generate automated reports
+
+## Real-World Applications
+
+### Smart Buildings
+- Real-time emissions monitoring and alerting
+- Predictive maintenance for HVAC systems
+- Occupancy-based energy optimization
+- Automated sustainability reporting
+
+### Industrial Decarbonization
+- Process emissions calculation
+- Energy efficiency recommendations
+- Alternative fuel analysis
+- Supply chain emissions tracking
+
+### Renewable Energy Planning
+- Solar thermal viability assessment
+- Boiler replacement analysis
+- Grid carbon intensity integration
+- ROI calculations for green investments
+
+## Documentation
+
+- [Full Documentation](https://greenlang.io/docs)
+- [API Reference](https://greenlang.io/api)
+- [Examples Gallery](https://greenlang.io/examples)
+- [Best Practices Guide](https://greenlang.io/best-practices)
+- [Contributing Guide](CONTRIBUTING.md)
+
+## Community & Support
+
+- **Discord**: [Join our community](https://discord.gg/greenlang)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/greenlang/greenlang/issues)
+- **Stack Overflow**: Tag questions with `greenlang`
+- **Twitter**: [@GreenLangAI](https://twitter.com/GreenLangAI)
+
+## Why GreenLang?
+
+### For Developers
+- **Rapid Development**: Build climate apps in hours, not months
+- **Best Practices Built-in**: Industry standards and methodologies included
+- **Extensible**: Easy to add custom agents and packs
+- **Well-Documented**: Comprehensive docs with real examples
+
+### For Organizations
+- **Reduce Emissions**: Data-driven insights for real reduction
+- **Save Costs**: Identify efficiency opportunities and ROI
+- **Ensure Compliance**: Meet regulatory requirements
+- **Transparent Reporting**: Explainable, auditable calculations
+
+### For the Planet
+- **Accelerate Net-Zero**: Enable faster climate action
+- **Democratize Climate Intelligence**: Make tools accessible to all
+- **Drive Innovation**: Foster new climate solutions
+- **Scale Impact**: From single buildings to entire cities
+
+## Roadmap
+
+### Current Release (v0.2.x)
+- Core CLI and SDK functionality
+- Building and HVAC agents
+- Basic pipeline orchestration
+- Regional emission factors
+
+### Next Release (v0.3.0)
+- Kubernetes operator for cloud deployment
+- Real-time grid carbon integration
+- ML-powered prediction models
+- Advanced visualization dashboard
+
+### Future (v1.0.0)
+- Complete industry coverage
+- Global emission factor database
+- Blockchain-verified carbon credits
+- Enterprise governance features
+
+## Contributing
+
+We welcome contributions from the community! See our [Contributing Guide](CONTRIBUTING.md) for details on:
+- Setting up development environment
+- Code style and standards
+- Testing requirements
+- Submission process
+
+## License
+
+GreenLang is released under the MIT License. See [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+GreenLang is built on the shoulders of giants:
+- Climate science community for methodologies
+- Open source community for inspiration
+- Early adopters for invaluable feedback
+- Contributors who make this possible
+
+---
+
+**Join us in building the climate-intelligent future. Every line of code counts.**
+
+*Code Green. Deploy Clean. Save Tomorrow.*

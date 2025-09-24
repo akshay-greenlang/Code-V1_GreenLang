@@ -8,7 +8,7 @@ All HTTP operations must go through this module.
 
 import os
 import logging
-from typing import Optional, Dict, Any, Tuple, Union
+from typing import Optional, Dict, Any, Tuple
 from urllib.parse import urlparse
 
 import requests
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_TIMEOUT: Tuple[int, int] = (5, 30)
 
 # Restricted headers that cannot be overridden
-RESTRICTED_HEADERS = {'host', 'content-length', 'transfer-encoding'}
+RESTRICTED_HEADERS = {"host", "content-length", "transfer-encoding"}
 
 # Minimum TLS version
 MIN_TLS_VERSION = "TLSv1.2"
@@ -33,10 +33,12 @@ MIN_TLS_VERSION = "TLSv1.2"
 class SecureHTTPSession:
     """Secure HTTP session with policy enforcement and audit logging"""
 
-    def __init__(self,
-                 timeout: Optional[Tuple[int, int]] = None,
-                 max_retries: int = 3,
-                 backoff_factor: float = 0.3):
+    def __init__(
+        self,
+        timeout: Optional[Tuple[int, int]] = None,
+        max_retries: int = 3,
+        backoff_factor: float = 0.3,
+    ):
         """
         Initialize secure HTTP session.
 
@@ -57,7 +59,7 @@ class SecureHTTPSession:
             total=max_retries,
             backoff_factor=backoff_factor,
             status_forcelist=[429, 500, 502, 503, 504],
-            allowed_methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"]
+            allowed_methods=["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
         )
 
         adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -66,9 +68,11 @@ class SecureHTTPSession:
 
         # Security defaults
         self.session.verify = True  # Always verify SSL certificates
-        self.session.headers.update({
-            'User-Agent': 'GreenLang/0.2.3 (secure-client)',
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "GreenLang/0.2.3 (secure-client)",
+            }
+        )
 
     def _check_egress_policy(self, url: str, method: str = "GET") -> None:
         """
@@ -84,7 +88,7 @@ class SecureHTTPSession:
         parsed = urlparse(url)
 
         # Check protocol
-        if parsed.scheme not in ('http', 'https'):
+        if parsed.scheme not in ("http", "https"):
             raise ValueError(f"Unsupported protocol: {parsed.scheme}")
 
         # Enforce HTTPS for production
@@ -97,9 +101,9 @@ class SecureHTTPSession:
             "url": url,
             "method": method.upper(),
             "host": parsed.hostname,
-            "port": parsed.port or (443 if parsed.scheme == 'https' else 80),
+            "port": parsed.port or (443 if parsed.scheme == "https" else 80),
             "path": parsed.path,
-            "env": os.getenv("GL_ENV", "prod")
+            "env": os.getenv("GL_ENV", "prod"),
         }
 
         result = self.policy_enforcer.evaluate("egress", policy_input)
@@ -110,8 +114,13 @@ class SecureHTTPSession:
 
         logger.info(f"Egress allowed: {method} {url}")
 
-    def _audit_log(self, method: str, url: str, response: Optional[requests.Response] = None,
-                   error: Optional[Exception] = None) -> None:
+    def _audit_log(
+        self,
+        method: str,
+        url: str,
+        response: Optional[requests.Response] = None,
+        error: Optional[Exception] = None,
+    ) -> None:
         """
         Log HTTP operation for audit trail.
 
@@ -125,35 +134,38 @@ class SecureHTTPSession:
             "action": "http.request",
             "method": method,
             "url": url,
-            "timestamp": pd.Timestamp.now().isoformat() if 'pd' in globals() else None,
+            "timestamp": pd.Timestamp.now().isoformat() if "pd" in globals() else None,
             "env": os.getenv("GL_ENV", "prod"),
             "run_id": os.getenv("GL_RUN_ID"),
             "pack_id": os.getenv("GL_PACK_ID"),
         }
 
         if response:
-            audit_entry.update({
-                "status_code": response.status_code,
-                "response_time_ms": response.elapsed.total_seconds() * 1000,
-                "success": True
-            })
+            audit_entry.update(
+                {
+                    "status_code": response.status_code,
+                    "response_time_ms": response.elapsed.total_seconds() * 1000,
+                    "success": True,
+                }
+            )
 
         if error:
-            audit_entry.update({
-                "error": str(error),
-                "success": False
-            })
+            audit_entry.update({"error": str(error), "success": False})
 
         logger.info(f"HTTP Audit: {audit_entry}")
 
-    def request(self, method: str, url: str,
-                headers: Optional[Dict[str, str]] = None,
-                json: Optional[Any] = None,
-                data: Optional[Any] = None,
-                params: Optional[Dict[str, Any]] = None,
-                timeout: Optional[Tuple[int, int]] = None,
-                allow_redirects: bool = False,
-                **kwargs) -> requests.Response:
+    def request(
+        self,
+        method: str,
+        url: str,
+        headers: Optional[Dict[str, str]] = None,
+        json: Optional[Any] = None,
+        data: Optional[Any] = None,
+        params: Optional[Dict[str, Any]] = None,
+        timeout: Optional[Tuple[int, int]] = None,
+        allow_redirects: bool = False,
+        **kwargs,
+    ) -> requests.Response:
         """
         Make a secure HTTP request with policy enforcement.
 
@@ -177,16 +189,19 @@ class SecureHTTPSession:
         """
         # Validate and clean headers
         if headers:
-            headers = {k: v for k, v in headers.items()
-                      if k.lower() not in RESTRICTED_HEADERS}
+            headers = {
+                k: v for k, v in headers.items() if k.lower() not in RESTRICTED_HEADERS
+            }
 
         # Policy check
         self._check_egress_policy(url, method)
 
         # Forbid dangerous kwargs
-        forbidden_kwargs = {'verify', 'cert', 'proxies', 'stream'}
+        forbidden_kwargs = {"verify", "cert", "proxies", "stream"}
         if any(k in kwargs for k in forbidden_kwargs):
-            raise ValueError(f"Forbidden parameters: {forbidden_kwargs & set(kwargs.keys())}")
+            raise ValueError(
+                f"Forbidden parameters: {forbidden_kwargs & set(kwargs.keys())}"
+            )
 
         # Make request
         response = None
@@ -201,7 +216,7 @@ class SecureHTTPSession:
                 params=params,
                 timeout=timeout or self.timeout,
                 allow_redirects=allow_redirects,
-                **kwargs
+                **kwargs,
             )
             response.raise_for_status()
             return response
@@ -215,23 +230,23 @@ class SecureHTTPSession:
 
     def get(self, url: str, **kwargs) -> requests.Response:
         """Secure GET request"""
-        return self.request('GET', url, **kwargs)
+        return self.request("GET", url, **kwargs)
 
     def post(self, url: str, **kwargs) -> requests.Response:
         """Secure POST request"""
-        return self.request('POST', url, **kwargs)
+        return self.request("POST", url, **kwargs)
 
     def put(self, url: str, **kwargs) -> requests.Response:
         """Secure PUT request"""
-        return self.request('PUT', url, **kwargs)
+        return self.request("PUT", url, **kwargs)
 
     def delete(self, url: str, **kwargs) -> requests.Response:
         """Secure DELETE request"""
-        return self.request('DELETE', url, **kwargs)
+        return self.request("DELETE", url, **kwargs)
 
     def head(self, url: str, **kwargs) -> requests.Response:
         """Secure HEAD request"""
-        return self.request('HEAD', url, **kwargs)
+        return self.request("HEAD", url, **kwargs)
 
     def close(self) -> None:
         """Close the session"""
@@ -260,24 +275,24 @@ def request(method: str, url: str, **kwargs) -> requests.Response:
 
 def get(url: str, **kwargs) -> requests.Response:
     """Secure GET request"""
-    return request('GET', url, **kwargs)
+    return request("GET", url, **kwargs)
 
 
 def post(url: str, **kwargs) -> requests.Response:
     """Secure POST request"""
-    return request('POST', url, **kwargs)
+    return request("POST", url, **kwargs)
 
 
 def put(url: str, **kwargs) -> requests.Response:
     """Secure PUT request"""
-    return request('PUT', url, **kwargs)
+    return request("PUT", url, **kwargs)
 
 
 def delete(url: str, **kwargs) -> requests.Response:
     """Secure DELETE request"""
-    return request('DELETE', url, **kwargs)
+    return request("DELETE", url, **kwargs)
 
 
 def head(url: str, **kwargs) -> requests.Response:
     """Secure HEAD request"""
-    return request('HEAD', url, **kwargs)
+    return request("HEAD", url, **kwargs)

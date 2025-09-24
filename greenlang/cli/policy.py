@@ -293,9 +293,9 @@ def check(input_file: str, policy: str, stage: str):
 
         # Display result
         if result.get("allow", False):
-            console.print(f"[bold green]✓ Operation would be ALLOWED[/bold green]")
+            console.print("[bold green]✓ Operation would be ALLOWED[/bold green]")
         else:
-            console.print(f"[bold red]✗ Operation would be DENIED[/bold red]")
+            console.print("[bold red]✗ Operation would be DENIED[/bold red]")
             console.print(f"Reason: {result.get('reason', 'Unknown')}")
 
         sys.exit(0 if result.get("allow", False) else 1)

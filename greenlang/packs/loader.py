@@ -217,7 +217,7 @@ class PackLoader:
             ValueError: If no agent found
         """
         # Handle pack:agent format
-        if ":" in agent_path and not "/" in agent_path and not "\\" in agent_path:
+        if ":" in agent_path and "/" not in agent_path and "\\" not in agent_path:
             # This might be pack:agent format
             parts = agent_path.split(":", 1)
             if len(parts) == 2:

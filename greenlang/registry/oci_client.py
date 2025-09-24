@@ -15,10 +15,10 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List, Tuple
 from dataclasses import dataclass, field
 import urllib.parse
-import urllib.request
 import urllib.error
 import ssl
 import re
+from greenlang.security.network import create_secure_session, validate_url
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +151,7 @@ class OCIAuth:
     def _request_bearer_token(
         self, realm: str, service: Optional[str], scope: Optional[str]
     ) -> Optional[str]:
-        """Request bearer token from auth endpoint"""
+        """Request bearer token from auth endpoint using secure session"""
         # Build token request URL
         params = {}
         if service:
@@ -164,7 +164,10 @@ class OCIAuth:
 
         url = f"{realm}?{urllib.parse.urlencode(params)}"
 
-        # Make token request
+        # SECURITY: Validate token endpoint URL
+        validate_url(url)
+
+        # Make token request using secure session
         headers = {}
         if self.username and self.password:
             credentials = f"{self.username}:{self.password}"
@@ -172,11 +175,13 @@ class OCIAuth:
             headers["Authorization"] = f"Basic {encoded}"
 
         try:
-            req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req) as response:
-                data = json.loads(response.read())
-                return data.get("token") or data.get("access_token")
-        except Exception:
+            session = create_secure_session()
+            response = session.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
+            return data.get("token") or data.get("access_token")
+        except Exception as e:
+            logger.warning(f"Bearer token request failed: {e}")
             return None
 
 
@@ -234,42 +239,43 @@ class OCIClient:
         data: Optional[bytes] = None,
         headers: Optional[Dict[str, str]] = None,
     ) -> Tuple[int, bytes, Dict[str, str]]:
-        """Make HTTP request to registry"""
+        """Make HTTP request to registry using secure session"""
         headers = headers or {}
+
+        # SECURITY: Validate URL before making any requests
+        validate_url(url)
 
         # Add authentication if available
         auth_header = self.auth.get_auth_header(self.registry)
         if auth_header:
             headers["Authorization"] = auth_header
 
-        # Create request
-        req = urllib.request.Request(url, data=data, headers=headers, method=method)
+        # SECURITY: Use secure session instead of direct urllib calls
+        session = create_secure_session()
 
         try:
-            # Make request
-            with urllib.request.urlopen(req, context=self.ssl_context) as response:
-                return response.code, response.read(), dict(response.headers)
-        except urllib.error.HTTPError as e:
-            # Handle authentication challenge
-            if e.code == 401 and "WWW-Authenticate" in e.headers:
-                if self.auth.authenticate(self.registry, e.headers["WWW-Authenticate"]):
-                    # Retry with new auth
-                    auth_header = self.auth.get_auth_header(self.registry)
-                    if auth_header:
-                        headers["Authorization"] = auth_header
-                        req = urllib.request.Request(
-                            url, data=data, headers=headers, method=method
-                        )
-                        with urllib.request.urlopen(
-                            req, context=self.ssl_context
-                        ) as response:
-                            return (
-                                response.code,
-                                response.read(),
-                                dict(response.headers),
-                            )
+            # Make request using secure session
+            response = session.request(method, url, data=data, headers=headers)
+            response.raise_for_status()
+            return response.status_code, response.content, dict(response.headers)
+        except Exception as http_error:
+            # Handle authentication challenge for requests.HTTPError
+            if hasattr(http_error, 'response') and http_error.response is not None:
+                if http_error.response.status_code == 401 and "WWW-Authenticate" in http_error.response.headers:
+                    if self.auth.authenticate(self.registry, http_error.response.headers["WWW-Authenticate"]):
+                        # Retry with new auth
+                        auth_header = self.auth.get_auth_header(self.registry)
+                        if auth_header:
+                            headers["Authorization"] = auth_header
+                            response = session.request(method, url, data=data, headers=headers)
+                            response.raise_for_status()
+                            return response.status_code, response.content, dict(response.headers)
 
-            return e.code, e.read(), dict(e.headers)
+                return http_error.response.status_code, http_error.response.content, dict(http_error.response.headers)
+
+            # Re-raise if not an HTTP error we can handle
+            logger.error(f"Secure request failed for {method} {url}: {http_error}")
+            raise RuntimeError(f"Request failed: {http_error}")
 
     def _calculate_digest(self, data: bytes) -> str:
         """Calculate SHA256 digest"""

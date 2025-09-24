@@ -283,7 +283,11 @@
       "Bash(test-v030\\Scripts\\python.exe -m pip install dist/greenlang_cli-0.3.0-py3-none-any.whl --quiet)",
       "Bash(./test-v030/Scripts/python.exe -m pip install --upgrade pip --quiet)",
       "Bash(./test-v030/Scripts/python.exe -m pip install dist/greenlang_cli-0.3.0-py3-none-any.whl --quiet)",
-      "Bash(./test-v030/Scripts/gl.exe --version)"
+      "Bash(./test-v030/Scripts/gl.exe --version)",
+      "Bash(Scripts\\activate.bat)",
+      "Bash(test-v030-audit\\Scripts\\pip.exe install --quiet dist/greenlang_cli-0.3.0-py3-none-any.whl)",
+      "Bash(test-v030-audit/Scripts/pip.exe install --quiet dist/greenlang_cli-0.3.0-py3-none-any.whl)",
+      "Bash(ruff check:*)"
     ],
     "deny": []
   }

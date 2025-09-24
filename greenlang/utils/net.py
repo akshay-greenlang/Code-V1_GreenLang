@@ -156,9 +156,7 @@ def policy_allow(url: str, tag: str = "unknown") -> None:
         raise RuntimeError(f"Network access denied by policy: {url}")
 
 
-def http_get(
-    url: str, *, tag: str = "unknown", timeout: int = 30, **kwargs
-):
+def http_get(url: str, *, tag: str = "unknown", timeout: int = 30, **kwargs):
     """
     HTTP GET with policy enforcement
 

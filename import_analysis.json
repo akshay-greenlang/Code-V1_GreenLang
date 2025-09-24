@@ -1,0 +1,13 @@
+{
+  "total_modules": 245,
+  "modules_with_imports": 69,
+  "cycles": [],
+  "issues": [],
+  "import_graph_sample": {
+    "check_agents": "{'greenlang.agents'}",
+    "demo_security_e2e": "{'greenlang.packs.installer', 'greenlang.policy.opa', 'greenlang.packs.manifest', 'greenlang.registry.oci_client', 'greenlang.runtime.executor', 'greenlang.provenance.signing', 'greenlang.policy.enforcer'}",
+    "demo_working_calc": "{'greenlang.sdk'}",
+    "sdk_building": "{'greenlang.sdk'}",
+    "sdk_compare": "{'greenlang.sdk'}"
+  }
+}

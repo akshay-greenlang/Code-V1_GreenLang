@@ -516,7 +516,7 @@ Provide accurate, helpful information. If asked about specific calculations, sug
                 carbon_data = agg_result["data"]
                 total_emissions = carbon_data.get("total_co2e_tons", 0)
 
-                response_parts.append(f"Carbon Footprint Analysis")
+                response_parts.append("Carbon Footprint Analysis")
                 if country != "US":
                     response_parts.append(f"Country/Region: {country}")
                 response_parts.append(f"{'=' * 40}")
@@ -583,7 +583,7 @@ Provide accurate, helpful information. If asked about specific calculations, sug
                 carbon_data = result["results"]["aggregate"].data
                 total_emissions = carbon_data.get("total_co2e_tons", 0)
 
-                response_parts.append(f"Carbon Footprint Analysis\n")
+                response_parts.append("Carbon Footprint Analysis\n")
                 response_parts.append(f"{'=' * 40}\n")
                 response_parts.append(
                     f"Total Emissions: {total_emissions:.3f} metric tons CO2e\n"
@@ -607,7 +607,7 @@ Provide accurate, helpful information. If asked about specific calculations, sug
 
             if "benchmark" in result["results"]:
                 benchmark_data = result["results"]["benchmark"].data
-                response_parts.append(f"\nBenchmark Comparison:")
+                response_parts.append("\nBenchmark Comparison:")
                 response_parts.append(f"  - Rating: {benchmark_data['rating']}")
                 response_parts.append(
                     f"  - Percentile: Top {benchmark_data['percentile']}%"

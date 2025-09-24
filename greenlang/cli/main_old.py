@@ -269,7 +269,7 @@ def pack_add(
                 raise typer.Exit(1)
         else:
             # TODO: Download from registry
-            console.print(f"[yellow]Registry installation not yet implemented[/yellow]")
+            console.print("[yellow]Registry installation not yet implemented[/yellow]")
             console.print(f"Would download {source} from {registry_url}")
 
 
@@ -308,7 +308,7 @@ def pack_validate(
             # Load and display manifest info
             try:
                 manifest = load_manifest(path)
-                console.print(f"\n[bold]Pack Details:[/bold]")
+                console.print("\n[bold]Pack Details:[/bold]")
                 console.print(f"  Name: {manifest.name}")
                 console.print(f"  Version: {manifest.version}")
                 console.print(f"  Kind: {manifest.kind}")
@@ -378,7 +378,7 @@ def pack_publish(
             console.print(f"  - {error}")
         raise typer.Exit(1)
 
-    console.print(f"[green][OK][/green] Pack validation passed")
+    console.print("[green][OK][/green] Pack validation passed")
 
     # Load manifest
     manifest = load_manifest(path)
@@ -444,7 +444,7 @@ def pack_publish(
         console.print("\n[yellow]DRY RUN - Would perform:[/yellow]")
         console.print(f"  - Upload {archive_name} to {registry_url}")
         console.print(f"  - Register {manifest.name} v{manifest.version}")
-        console.print(f"  - Publish metadata and signatures")
+        console.print("  - Publish metadata and signatures")
     else:
         # TODO: Implement actual upload
         console.print(
@@ -514,7 +514,7 @@ def run(
             progress.update(task, completed=True)
 
             if result.success:
-                console.print(f"[green][OK][/green] Pipeline completed successfully")
+                console.print("[green][OK][/green] Pipeline completed successfully")
 
                 # Save output if requested
                 if output_file:
@@ -558,9 +558,9 @@ def policy(
 
         result = enforcer.check(policy_file, {"target": target})
         if result:
-            console.print(f"[green][OK][/green] Policy check passed")
+            console.print("[green][OK][/green] Policy check passed")
         else:
-            console.print(f"[red][FAIL][/red] Policy check failed")
+            console.print("[red][FAIL][/red] Policy check failed")
             raise typer.Exit(1)
 
     elif action == "list":
@@ -595,9 +595,9 @@ def verify(
     # Check signature if provided
     if signature:
         if verify_artifact(artifact, signature):
-            console.print(f"[green][OK][/green] Signature valid")
+            console.print("[green][OK][/green] Signature valid")
         else:
-            console.print(f"[red][FAIL][/red] Signature invalid")
+            console.print("[red][FAIL][/red] Signature invalid")
             raise typer.Exit(1)
 
     # Check SBOM if exists

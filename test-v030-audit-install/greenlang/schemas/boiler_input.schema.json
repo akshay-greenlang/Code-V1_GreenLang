@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BoilerInput",
+  "description": "Input schema for BoilerAgent calculations",
+  "type": "object",
+  "required": ["boiler_type"],
+  "properties": {
+    "boiler_type": {
+      "type": "string",
+      "enum": [
+        "condensing",
+        "standard",
+        "low_efficiency",
+        "modern",
+        "traditional",
+        "pulverized",
+        "stoker",
+        "hand_fired",
+        "resistance",
+        "heat_pump",
+        "ground_source_heat_pump",
+        "modulating",
+        "fuel_cell"
+      ],
+      "description": "Type of boiler system"
+    },
+    "fuel_type": {
+      "type": "string",
+      "enum": [
+        "natural_gas",
+        "oil",
+        "diesel",
+        "propane",
+        "biomass",
+        "coal",
+        "electricity",
+        "district_heating",
+        "hydrogen",
+        "fuel_oil",
+        "wood_pellets",
+        "wood_chips"
+      ],
+      "default": "natural_gas",
+      "description": "Type of fuel used by the boiler"
+    },
+    "thermal_output": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Thermal output value"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "MMBtu",
+            "MBtu",
+            "Btu",
+            "kWh",
+            "MWh",
+            "GWh",
+            "therms",
+            "MJ",
+            "GJ",
+            "kcal",
+            "Mcal",
+            "Gcal"
+          ],
+          "description": "Unit of thermal output"
+        }
+      },
+      "required": ["value", "unit"],
+      "description": "Thermal output of the boiler"
+    },
+    "fuel_consumption": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Fuel consumption value"
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of fuel consumption"
+        }
+      },
+      "required": ["value", "unit"],
+      "description": "Fuel consumption of the boiler"
+    },
+    "efficiency": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Boiler efficiency (0-1 for percentage, >1 for COP)"
+    },
+    "age": {
+      "type": "string",
+      "enum": ["new", "medium", "old"],
+      "default": "medium",
+      "description": "Age category of the boiler"
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "default": "US",
+      "description": "Country code (ISO 3166-1 alpha-2)"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2050,
+      "default": 2025,
+      "description": "Year for emission factors"
+    },
+    "operating_hours": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 8760,
+      "description": "Annual operating hours"
+    },
+    "maintenance_level": {
+      "type": "string",
+      "enum": ["excellent", "good", "average", "poor"],
+      "default": "average",
+      "description": "Maintenance level of the boiler"
+    },
+    "altitude": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5000,
+      "description": "Installation altitude in meters"
+    },
+    "oversizing_factor": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 2.0,
+      "default": 1.0,
+      "description": "Boiler oversizing factor (1.0 = right-sized)"
+    }
+  },
+  "oneOf": [
+    {
+      "required": ["thermal_output"],
+      "not": {
+        "required": ["fuel_consumption"]
+      }
+    },
+    {
+      "required": ["fuel_consumption"],
+      "not": {
+        "required": ["thermal_output"]
+      }
+    }
+  ],
+  "examples": [
+    {
+      "boiler_type": "condensing",
+      "fuel_type": "natural_gas",
+      "thermal_output": {
+        "value": 100,
+        "unit": "MMBtu"
+      },
+      "efficiency": 0.95,
+      "age": "new",
+      "country": "US"
+    },
+    {
+      "boiler_type": "heat_pump",
+      "fuel_type": "electricity",
+      "fuel_consumption": {
+        "value": 50000,
+        "unit": "kWh"
+      },
+      "efficiency": 3.5,
+      "country": "EU"
+    }
+  ]
+}

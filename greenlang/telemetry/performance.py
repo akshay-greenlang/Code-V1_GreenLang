@@ -333,7 +333,7 @@ def profile_function(func: Callable) -> Callable:
         try:
             result = func(*args, **kwargs)
             status = "success"
-        except Exception as e:
+        except Exception:
             status = "error"
             raise
         finally:

@@ -433,7 +433,7 @@ class PackInstaller:
                 logger.warning(f"Failed to uninstall via pip: {package_name}")
 
         # Remove from local directory if exists
-        if Path(pack.location).exists() and not "site-packages" in pack.location:
+        if Path(pack.location).exists() and "site-packages" not in pack.location:
             shutil.rmtree(pack.location)
             logger.info(f"Removed local files: {pack.location}")
 
@@ -520,6 +520,7 @@ class PackInstaller:
 
         try:
             from greenlang.security.http import get as secure_get
+
             response = secure_get(f"{hub_url}/api/packs")
             response.raise_for_status()
             return response.json()

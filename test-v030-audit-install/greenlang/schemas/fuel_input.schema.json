@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FuelInput",
+  "description": "Input schema for FuelAgent calculations",
+  "type": "object",
+  "required": ["fuel_type"],
+  "properties": {
+    "fuel_type": {
+      "type": "string",
+      "enum": [
+        "electricity",
+        "natural_gas",
+        "diesel",
+        "gasoline",
+        "propane",
+        "fuel_oil",
+        "heating_oil",
+        "coal",
+        "biomass",
+        "biogas",
+        "hydrogen",
+        "solar_pv",
+        "wind",
+        "hydro",
+        "geothermal",
+        "nuclear",
+        "district_heating",
+        "district_cooling",
+        "lpg",
+        "kerosene",
+        "wood",
+        "wood_pellets",
+        "waste",
+        "landfill_gas"
+      ],
+      "description": "Type of fuel or energy source"
+    },
+    "amount": {
+      "type": "number",
+      "description": "Amount of fuel consumed (negative for renewable generation)"
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "kWh",
+        "MWh",
+        "GWh",
+        "therms",
+        "ccf",
+        "mcf",
+        "MMBtu",
+        "MBtu",
+        "Btu",
+        "gallons",
+        "liters",
+        "m3",
+        "ft3",
+        "kg",
+        "tons",
+        "tonnes",
+        "lbs",
+        "scf",
+        "GJ",
+        "MJ"
+      ],
+      "description": "Unit of measurement"
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "default": "US",
+      "description": "Country code (ISO 3166-1 alpha-2)"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2050,
+      "default": 2025,
+      "description": "Year for emission factors"
+    },
+    "renewable_percentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Percentage of renewable energy in mix"
+    },
+    "efficiency": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Fuel usage efficiency (0-1)"
+    },
+    "scope": {
+      "type": "string",
+      "enum": ["1", "2", "3"],
+      "description": "GHG Protocol scope"
+    },
+    "location": {
+      "type": "string",
+      "description": "Specific location or facility"
+    },
+    "period": {
+      "type": "string",
+      "enum": ["hourly", "daily", "monthly", "quarterly", "annually"],
+      "default": "monthly",
+      "description": "Reporting period"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "supplier": {
+          "type": "string",
+          "description": "Fuel supplier name"
+        },
+        "contract_type": {
+          "type": "string",
+          "enum": ["fixed", "variable", "green_tariff", "ppa"],
+          "description": "Energy contract type"
+        },
+        "certified_renewable": {
+          "type": "boolean",
+          "description": "Whether renewable energy is certified"
+        },
+        "facility_id": {
+          "type": "string",
+          "description": "Facility identifier"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "oneOf": [
+    {
+      "required": ["amount", "unit"],
+      "properties": {
+        "amount": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    {
+      "required": ["amount", "unit"],
+      "properties": {
+        "fuel_type": {
+          "enum": ["solar_pv", "wind", "hydro", "geothermal"]
+        },
+        "amount": {
+          "type": "number",
+          "exclusiveMaximum": 0
+        }
+      }
+    }
+  ],
+  "examples": [
+    {
+      "fuel_type": "electricity",
+      "amount": 10000,
+      "unit": "kWh",
+      "country": "US",
+      "renewable_percentage": 20
+    },
+    {
+      "fuel_type": "natural_gas",
+      "amount": 500,
+      "unit": "therms",
+      "country": "EU",
+      "efficiency": 0.85
+    },
+    {
+      "fuel_type": "solar_pv",
+      "amount": -5000,
+      "unit": "kWh",
+      "country": "IN",
+      "metadata": {
+        "certified_renewable": true
+      }
+    }
+  ]
+}

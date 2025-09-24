@@ -262,7 +262,7 @@ def search(
         # Show installation hint
         if packs:
             console.print(
-                f"\n[dim]To install a pack, use: gl pack add <pack-name>@<version>[/dim]"
+                "\n[dim]To install a pack, use: gl pack add <pack-name>@<version>[/dim]"
             )
 
     except Exception as e:
@@ -300,7 +300,7 @@ def info(pack_ref: str):
                     f"  Downloads: {stats.get('downloads', 0):,}\n"
                     f"  Stars: {stats.get('stars', 0):,}\n"
                     f"  Published: {info.get('published_at', 'unknown')}",
-                    title=f"Pack Information",
+                    title="Pack Information",
                 )
             )
 

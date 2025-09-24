@@ -78,7 +78,7 @@ def verify(
 
                 # Check SBOM type
                 if "spdxVersion" in sbom_data:
-                    console.print(f"[green][OK][/green] Valid SPDX SBOM")
+                    console.print("[green][OK][/green] Valid SPDX SBOM")
                     console.print(f"  Version: {sbom_data['spdxVersion']}")
                     console.print(f"  Document: {sbom_data.get('name', 'Unknown')}")
                     console.print(f"  Packages: {len(sbom_data.get('packages', []))}")
@@ -86,7 +86,7 @@ def verify(
                         f"  Relationships: {len(sbom_data.get('relationships', []))}"
                     )
                 elif "bomFormat" in sbom_data:
-                    console.print(f"[green][OK][/green] Valid CycloneDX SBOM")
+                    console.print("[green][OK][/green] Valid CycloneDX SBOM")
                     console.print(f"  Format: {sbom_data['bomFormat']}")
                     console.print(
                         f"  Version: {sbom_data.get('specVersion', 'Unknown')}"
@@ -138,7 +138,7 @@ def verify(
 
                         # Show main package
                         for pkg in sbom_data.get("packages", [])[:1]:
-                            console.print(f"\n  Main Package:")
+                            console.print("\n  Main Package:")
                             console.print(f"    Name: {pkg.get('name', 'Unknown')}")
                             console.print(
                                 f"    Version: {pkg.get('versionInfo', 'Unknown')}"
@@ -166,7 +166,7 @@ def verify(
             try:
                 is_valid, signer_info = verify_artifact(artifact_path, signature)
                 if is_valid:
-                    console.print(f"[green][OK][/green] Signature valid")
+                    console.print("[green][OK][/green] Signature valid")
                     if verbose and signer_info:
                         console.print(
                             f"  Signer: {signer_info.get('subject', 'Unknown')}"
@@ -178,7 +178,7 @@ def verify(
                             f"  Timestamp: {signer_info.get('timestamp', 'Unknown')}"
                         )
                 else:
-                    console.print(f"[red][FAIL][/red] Signature invalid")
+                    console.print("[red][FAIL][/red] Signature invalid")
                     raise typer.Exit(1)
             except Exception as e:
                 console.print(
@@ -198,7 +198,7 @@ def verify(
                     with open(sbom_path, "r", encoding="utf-8", errors="replace") as f:
                         sbom_data = json.load(f)
 
-                    console.print(f"[green][OK][/green] SBOM found")
+                    console.print("[green][OK][/green] SBOM found")
 
                     if verbose:
                         # Display SBOM summary
@@ -236,7 +236,7 @@ def verify(
                 ) as f:
                     prov_data = json.load(f)
 
-                console.print(f"[green][OK][/green] Provenance found")
+                console.print("[green][OK][/green] Provenance found")
 
                 if verbose:
                     console.print("\n[bold]Provenance:[/bold]")
@@ -281,7 +281,7 @@ def verify(
 
         # Check pack verification status
         if pack.verified:
-            console.print(f"[green][OK][/green] Pack verified")
+            console.print("[green][OK][/green] Pack verified")
 
             if verbose:
                 # Show verification details
@@ -304,7 +304,7 @@ def verify(
                         f"  SBOM: {len(sbom_data.get('packages', []))} components"
                     )
         else:
-            console.print(f"[red][FAIL][/red] Pack not verified")
+            console.print("[red][FAIL][/red] Pack not verified")
             console.print("\nRun verification with: [cyan]gl pack verify {name}[/cyan]")
             raise typer.Exit(1)
 

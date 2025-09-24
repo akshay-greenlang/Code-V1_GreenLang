@@ -1,0 +1,382 @@
+{
+  "US": {
+    "electricity": {
+      "kWh": 0.385,
+      "MWh": 385.0,
+      "GWh": 385000.0,
+      "description": "US average grid emission factor (EPA eGRID 2024)"
+    },
+    "natural_gas": {
+      "therms": 5.3,
+      "ccf": 5.3,
+      "mcf": 53.0,
+      "m3": 1.89,
+      "MMBtu": 53.06,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "gallons": 10.21,
+      "liters": 2.68,
+      "kg": 3.16,
+      "description": "Diesel fuel combustion emissions"
+    },
+    "gasoline": {
+      "gallons": 8.78,
+      "liters": 2.31,
+      "kg": 3.16,
+      "description": "Gasoline combustion emissions"
+    },
+    "propane": {
+      "gallons": 5.76,
+      "liters": 1.51,
+      "kg": 2.98,
+      "description": "Propane/LPG combustion emissions"
+    },
+    "heating_oil": {
+      "gallons": 10.16,
+      "liters": 2.68,
+      "kg": 3.16,
+      "description": "Heating oil combustion emissions"
+    },
+    "coal": {
+      "tons": 2086.0,
+      "kg": 2.086,
+      "lbs": 0.946,
+      "description": "Coal combustion emissions"
+    },
+    "district_heating": {
+      "kWh": 0.45,
+      "MJ": 0.125,
+      "description": "District heating average"
+    },
+    "grid_renewable_share": 0.21
+  },
+  "IN": {
+    "electricity": {
+      "kWh": 0.71,
+      "MWh": 710.0,
+      "GWh": 710000.0,
+      "description": "India grid emission factor (CEA 2024)"
+    },
+    "natural_gas": {
+      "therms": 5.3,
+      "m3": 1.89,
+      "MMBtu": 53.06,
+      "kg": 2.5,
+      "description": "PNG emissions"
+    },
+    "lng": {
+      "m3": 2.16,
+      "kg": 2.9,
+      "MMBtu": 53.06,
+      "description": "LNG emissions"
+    },
+    "diesel": {
+      "liters": 2.7,
+      "gallons": 10.23,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "lpg_propane": {
+      "kg": 2.98,
+      "liters": 1.51,
+      "cylinders": 42.5,
+      "description": "LPG cylinder emissions (14.2kg cylinder)"
+    },
+    "coal": {
+      "tons": 2400.0,
+      "kg": 2.4,
+      "description": "Indian coal (higher ash content)"
+    },
+    "heating_oil": {
+      "liters": 2.68,
+      "gallons": 10.16,
+      "description": "Heating oil emissions"
+    },
+    "grid_renewable_share": 0.23
+  },
+  "EU": {
+    "electricity": {
+      "kWh": 0.23,
+      "MWh": 230.0,
+      "GWh": 230000.0,
+      "description": "EU-27 average grid emission factor"
+    },
+    "natural_gas": {
+      "therms": 5.0,
+      "m3": 1.89,
+      "MMBtu": 50.0,
+      "kWh": 0.202,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.68,
+      "gallons": 10.14,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "district_heating": {
+      "kWh": 0.28,
+      "MJ": 0.078,
+      "GJ": 78.0,
+      "description": "EU district heating average"
+    },
+    "biomass": {
+      "kg": 0.015,
+      "tons": 15.0,
+      "description": "Sustainable biomass (carbon neutral assumption)"
+    },
+    "heating_oil": {
+      "liters": 2.68,
+      "gallons": 10.14,
+      "description": "Heating oil emissions"
+    },
+    "grid_renewable_share": 0.42
+  },
+  "CN": {
+    "electricity": {
+      "kWh": 0.65,
+      "MWh": 650.0,
+      "GWh": 650000.0,
+      "description": "China grid emission factor (MEE 2024)"
+    },
+    "natural_gas": {
+      "therms": 4.8,
+      "m3": 1.89,
+      "MMBtu": 48.0,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.8,
+      "gallons": 10.6,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "coal": {
+      "tons": 2500.0,
+      "kg": 2.5,
+      "description": "Chinese coal emissions"
+    },
+    "district_heating": {
+      "kWh": 0.55,
+      "MJ": 0.153,
+      "GJ": 153.0,
+      "description": "China district heating (coal-heavy)"
+    },
+    "lpg_propane": {
+      "kg": 2.98,
+      "liters": 1.51,
+      "description": "LPG emissions"
+    },
+    "grid_renewable_share": 0.31
+  },
+  "JP": {
+    "electricity": {
+      "kWh": 0.45,
+      "MWh": 450.0,
+      "GWh": 450000.0,
+      "description": "Japan grid emission factor (METI 2024)"
+    },
+    "natural_gas": {
+      "therms": 4.5,
+      "m3": 1.89,
+      "MMBtu": 45.0,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.5,
+      "gallons": 9.46,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "kerosene": {
+      "liters": 2.49,
+      "gallons": 9.43,
+      "description": "Kerosene heating emissions"
+    },
+    "lpg_propane": {
+      "kg": 2.98,
+      "liters": 1.51,
+      "description": "LPG emissions"
+    },
+    "grid_renewable_share": 0.22
+  },
+  "BR": {
+    "electricity": {
+      "kWh": 0.12,
+      "MWh": 120.0,
+      "GWh": 120000.0,
+      "description": "Brazil grid (hydro-dominant, low emissions)"
+    },
+    "natural_gas": {
+      "therms": 4.5,
+      "m3": 1.89,
+      "MMBtu": 45.0,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.6,
+      "gallons": 9.84,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "ethanol": {
+      "liters": 1.51,
+      "gallons": 5.71,
+      "description": "Sugarcane ethanol (lower emissions)"
+    },
+    "lpg_propane": {
+      "kg": 2.98,
+      "liters": 1.51,
+      "description": "LPG emissions"
+    },
+    "grid_renewable_share": 0.83
+  },
+  "KR": {
+    "electricity": {
+      "kWh": 0.49,
+      "MWh": 490.0,
+      "GWh": 490000.0,
+      "description": "South Korea grid emission factor"
+    },
+    "natural_gas": {
+      "therms": 5.0,
+      "m3": 1.89,
+      "MMBtu": 50.0,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.7,
+      "gallons": 10.23,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "district_heating": {
+      "kWh": 0.42,
+      "MJ": 0.117,
+      "description": "District heating emissions"
+    },
+    "lpg_propane": {
+      "kg": 2.98,
+      "liters": 1.51,
+      "description": "LPG emissions"
+    },
+    "grid_renewable_share": 0.08
+  },
+  "UK": {
+    "electricity": {
+      "kWh": 0.212,
+      "MWh": 212.0,
+      "GWh": 212000.0,
+      "description": "UK grid emission factor (DEFRA 2024)"
+    },
+    "natural_gas": {
+      "therms": 5.3,
+      "m3": 1.89,
+      "kWh": 0.185,
+      "MMBtu": 53.06,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.68,
+      "gallons": 10.14,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "heating_oil": {
+      "liters": 2.68,
+      "gallons": 10.14,
+      "description": "Heating oil emissions"
+    },
+    "grid_renewable_share": 0.43
+  },
+  "DE": {
+    "electricity": {
+      "kWh": 0.38,
+      "MWh": 380.0,
+      "GWh": 380000.0,
+      "description": "Germany grid emission factor"
+    },
+    "natural_gas": {
+      "therms": 5.0,
+      "m3": 1.89,
+      "kWh": 0.202,
+      "MMBtu": 50.0,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.68,
+      "gallons": 10.14,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "district_heating": {
+      "kWh": 0.26,
+      "MJ": 0.072,
+      "description": "District heating emissions"
+    },
+    "grid_renewable_share": 0.46
+  },
+  "CA": {
+    "electricity": {
+      "kWh": 0.13,
+      "MWh": 130.0,
+      "GWh": 130000.0,
+      "description": "Canada grid (hydro-heavy, varies by province)"
+    },
+    "natural_gas": {
+      "therms": 5.3,
+      "m3": 1.89,
+      "MMBtu": 53.06,
+      "GJ": 50.3,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.68,
+      "gallons": 10.14,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "propane": {
+      "liters": 1.51,
+      "gallons": 5.76,
+      "kg": 2.98,
+      "description": "Propane emissions"
+    },
+    "grid_renewable_share": 0.68
+  },
+  "AU": {
+    "electricity": {
+      "kWh": 0.66,
+      "MWh": 660.0,
+      "GWh": 660000.0,
+      "description": "Australia grid (coal-heavy)"
+    },
+    "natural_gas": {
+      "therms": 5.3,
+      "m3": 1.89,
+      "MJ": 0.0514,
+      "GJ": 51.4,
+      "description": "Natural gas combustion emissions"
+    },
+    "diesel": {
+      "liters": 2.68,
+      "gallons": 10.14,
+      "kg": 3.16,
+      "description": "Diesel combustion emissions"
+    },
+    "lpg_propane": {
+      "kg": 2.98,
+      "liters": 1.51,
+      "description": "LPG emissions"
+    },
+    "grid_renewable_share": 0.32
+  },
+  "metadata": {
+    "source": "EPA, IEA, IPCC, National inventories",
+    "last_updated": "2024-12",
+    "units": "kg CO2e per unit",
+    "methodology": "IPCC 2021 Guidelines",
+    "notes": "Factors include CO2, CH4, and N2O converted to CO2e using GWP100"
+  }
+}

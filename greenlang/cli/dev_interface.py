@@ -629,7 +629,7 @@ Percentile: Top {results['benchmark']['percentile']}%
                 f.write(agent_code)
 
             console.print(f"[green]Agent saved to {filepath}[/green]")
-            console.print(f"[dim]To use: Import and register with orchestrator[/dim]")
+            console.print("[dim]To use: Import and register with orchestrator[/dim]")
 
     def _generate_agent_code(self, agent_type: str, name: str, description: str) -> str:
         """Generate agent code based on type"""
@@ -1818,7 +1818,7 @@ class {name}Agent(BaseAgent):
 
         # Display results
         if result["success"]:
-            console.print(f"[green]✓ Workflow completed successfully[/green]")
+            console.print("[green]✓ Workflow completed successfully[/green]")
 
             if "data" in result:
                 console.print("\n[bold]Output:[/bold]")
@@ -1828,7 +1828,7 @@ class {name}Agent(BaseAgent):
                     )
                 )
         else:
-            console.print(f"[red]✗ Workflow failed[/red]")
+            console.print("[red]✗ Workflow failed[/red]")
             if "errors" in result:
                 for error in result["errors"]:
                     console.print(f"  - {error['step']}: {error['error']}", style="red")
@@ -1846,7 +1846,7 @@ class {name}Agent(BaseAgent):
             errors = workflow.validate_workflow()
 
             if errors:
-                console.print(f"[red]Workflow validation failed:[/red]")
+                console.print("[red]Workflow validation failed:[/red]")
                 for error in errors:
                     console.print(f"  - {error}", style="red")
             else:
@@ -1923,7 +1923,7 @@ class {name}Agent(BaseAgent):
         if Confirm.ask("Save changes?"):
             with open(workflow_file, "w") as f:
                 yaml.dump(workflow_data, f, default_flow_style=False)
-            console.print(f"[green]Workflow saved[/green]")
+            console.print("[green]Workflow saved[/green]")
 
     def cmd_repl(self, args):
         """Start Python REPL with GreenLang"""
@@ -2457,8 +2457,8 @@ Improvement needed: {data['comparison']['improvement_to_good']:.2f} kg CO2e/sqft
         data = []
         for i in range(1, periods + 1):
             console.print(f"\n[bold]Month {i}:[/bold]")
-            electricity = float(Prompt.ask(f"  Electricity (kWh)", default="0"))
-            gas = float(Prompt.ask(f"  Natural gas (therms)", default="0"))
+            electricity = float(Prompt.ask("  Electricity (kWh)", default="0"))
+            gas = float(Prompt.ask("  Natural gas (therms)", default="0"))
 
             # Calculate emissions
             emissions = 0
@@ -2505,7 +2505,7 @@ Improvement needed: {data['comparison']['improvement_to_good']:.2f} kg CO2e/sqft
 
         # Summary
         avg_emissions = total_emissions / periods
-        console.print(f"\n[bold]Summary:[/bold]")
+        console.print("\n[bold]Summary:[/bold]")
         console.print(f"Total emissions: {total_emissions:.3f} metric tons CO2e")
         console.print(f"Average monthly: {avg_emissions:.3f} metric tons CO2e")
         console.print(f"Annualized: {avg_emissions * 12:.3f} metric tons CO2e")
@@ -2629,7 +2629,7 @@ Improvement needed: {data['comparison']['improvement_to_good']:.2f} kg CO2e/sqft
 
         for i in range(num_scenarios):
             console.print(f"\n[bold]Scenario {i+1}:[/bold]")
-            name = Prompt.ask(f"Scenario name", default=f"Scenario {i+1}")
+            name = Prompt.ask("Scenario name", default=f"Scenario {i+1}")
             electricity = float(Prompt.ask("Electricity (kWh)", default="0"))
             gas = float(Prompt.ask("Natural gas (therms)", default="0"))
 

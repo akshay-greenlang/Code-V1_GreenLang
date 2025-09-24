@@ -447,7 +447,7 @@ def validate(ctx: CLIContext, file_path: str, output_json: bool, strict: bool):
                 console.print(f"  • {warning}")
 
         if summary:
-            console.print(f"\n[bold]Summary:[/bold]")
+            console.print("\n[bold]Summary:[/bold]")
             for key, value in summary.items():
                 console.print(f"  {key.replace('_', ' ').title()}: {value}")
 
@@ -565,7 +565,7 @@ def run(ctx: CLIContext, pipeline_file: str, input: Optional[str], no_cache: boo
 
         jsonl_logger.log_complete(run_id, True)
 
-        console.print(f"\n[green]✓ Pipeline executed successfully![/green]")
+        console.print("\n[green]✓ Pipeline executed successfully![/green]")
         console.print(f"Run ID: {run_id}")
         console.print(f"Results: {results_file}")
         console.print(f"Logs: {run_dir / 'events.jsonl'}")
@@ -591,7 +591,7 @@ def report(ctx: CLIContext, run_id: str, format: str, output: Optional[str]):
     run_dir = RUNS_DIR / run_id
     if not run_dir.exists():
         console.print(f"[red]Run '{run_id}' not found[/red]")
-        console.print(f"Available runs:")
+        console.print("Available runs:")
         for run in RUNS_DIR.iterdir():
             if run.is_dir():
                 console.print(f"  • {run.name}")
@@ -627,7 +627,7 @@ def report(ctx: CLIContext, run_id: str, format: str, output: Optional[str]):
             report_content += f"\n#### {step_name}\n"
             report_content += f"```json\n{json.dumps(step_result, indent=2)}\n```\n"
 
-        report_content += f"\n### Execution Timeline\n"
+        report_content += "\n### Execution Timeline\n"
         for event in events:
             if event["event_type"] in ["step_start", "step_complete"]:
                 report_content += f"- [{event['timestamp']}] {event['event_type']}: {event['data'].get('step_name', 'N/A')}\n"

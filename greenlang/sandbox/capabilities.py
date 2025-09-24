@@ -22,43 +22,43 @@ class Capability(Enum):
     """
 
     # File system operations
-    FILE_READ = auto()          # Read files from allowed paths
-    FILE_WRITE = auto()         # Write files to allowed paths
-    FILE_CREATE = auto()        # Create new files
-    FILE_DELETE = auto()        # Delete existing files
+    FILE_READ = auto()  # Read files from allowed paths
+    FILE_WRITE = auto()  # Write files to allowed paths
+    FILE_CREATE = auto()  # Create new files
+    FILE_DELETE = auto()  # Delete existing files
 
     # Network operations
-    NETWORK_HTTP = auto()       # HTTP/HTTPS requests
-    NETWORK_SOCKET = auto()     # Raw socket operations
-    NETWORK_DNS = auto()        # DNS lookups
+    NETWORK_HTTP = auto()  # HTTP/HTTPS requests
+    NETWORK_SOCKET = auto()  # Raw socket operations
+    NETWORK_DNS = auto()  # DNS lookups
 
     # Process execution
-    EXEC_SUBPROCESS = auto()    # Execute subprocesses
-    EXEC_SHELL = auto()         # Shell command execution
+    EXEC_SUBPROCESS = auto()  # Execute subprocesses
+    EXEC_SHELL = auto()  # Shell command execution
 
     # System information
-    SYS_ENV_READ = auto()       # Read environment variables
-    SYS_ENV_WRITE = auto()      # Modify environment variables
-    SYS_INFO = auto()           # Access system information
+    SYS_ENV_READ = auto()  # Read environment variables
+    SYS_ENV_WRITE = auto()  # Modify environment variables
+    SYS_INFO = auto()  # Access system information
 
     # Resource access
-    MEMORY_UNLIMITED = auto()   # Unlimited memory usage
-    CPU_INTENSIVE = auto()      # CPU-intensive operations
+    MEMORY_UNLIMITED = auto()  # Unlimited memory usage
+    CPU_INTENSIVE = auto()  # CPU-intensive operations
 
     # External integrations
-    CLOUD_AWS = auto()          # AWS services access
-    CLOUD_GCP = auto()          # Google Cloud services access
-    CLOUD_AZURE = auto()        # Azure services access
+    CLOUD_AWS = auto()  # AWS services access
+    CLOUD_GCP = auto()  # Google Cloud services access
+    CLOUD_AZURE = auto()  # Azure services access
 
     # Database operations
-    DB_READ = auto()            # Database read operations
-    DB_WRITE = auto()           # Database write operations
-    DB_ADMIN = auto()           # Database administration
+    DB_READ = auto()  # Database read operations
+    DB_WRITE = auto()  # Database write operations
+    DB_ADMIN = auto()  # Database administration
 
     # Cryptographic operations
-    CRYPTO_SIGN = auto()        # Digital signing
-    CRYPTO_ENCRYPT = auto()     # Encryption operations
-    CRYPTO_RANDOM = auto()      # Secure random generation
+    CRYPTO_SIGN = auto()  # Digital signing
+    CRYPTO_ENCRYPT = auto()  # Encryption operations
+    CRYPTO_RANDOM = auto()  # Secure random generation
 
 
 @dataclass
@@ -85,16 +85,22 @@ class CapabilityPolicy:
 
     # Environment variable restrictions
     allowed_env_vars: List[str] = field(default_factory=list)
-    blocked_env_vars: List[str] = field(default_factory=lambda: [
-        'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
-        'GOOGLE_APPLICATION_CREDENTIALS', 'AZURE_CLIENT_SECRET'
-    ])
+    blocked_env_vars: List[str] = field(
+        default_factory=lambda: [
+            "AWS_ACCESS_KEY_ID",
+            "AWS_SECRET_ACCESS_KEY",
+            "GOOGLE_APPLICATION_CREDENTIALS",
+            "AZURE_CLIENT_SECRET",
+        ]
+    )
 
     def __post_init__(self):
         """Validate policy configuration"""
         # Ensure file paths are normalized
         self.allowed_read_paths = [os.path.normpath(p) for p in self.allowed_read_paths]
-        self.allowed_write_paths = [os.path.normpath(p) for p in self.allowed_write_paths]
+        self.allowed_write_paths = [
+            os.path.normpath(p) for p in self.allowed_write_paths
+        ]
 
     def has_capability(self, capability: Capability) -> bool:
         """Check if policy grants a specific capability"""
@@ -136,7 +142,7 @@ class CapabilityPolicy:
         if not self.allowed_hosts:
             return False
 
-        return host in self.allowed_hosts or '*' in self.allowed_hosts
+        return host in self.allowed_hosts or "*" in self.allowed_hosts
 
     def can_access_env_var(self, var_name: str) -> bool:
         """Check if policy allows access to an environment variable"""
@@ -158,7 +164,9 @@ class CapabilityValidator:
         self.policy = policy
         self.violations: List[Dict[str, Any]] = []
 
-    def check_capability(self, capability: Capability, context: Optional[Dict[str, Any]] = None) -> bool:
+    def check_capability(
+        self, capability: Capability, context: Optional[Dict[str, Any]] = None
+    ) -> bool:
         """
         Check if a capability is allowed and log violations.
 
@@ -177,37 +185,53 @@ class CapabilityValidator:
             return False
 
         # Additional context-specific checks
-        if capability == Capability.FILE_READ and 'path' in context:
-            if not self.policy.can_read_path(context['path']):
-                self._log_violation(capability, f"Path not allowed: {context['path']}", context)
+        if capability == Capability.FILE_READ and "path" in context:
+            if not self.policy.can_read_path(context["path"]):
+                self._log_violation(
+                    capability, f"Path not allowed: {context['path']}", context
+                )
                 return False
 
-        elif capability == Capability.FILE_WRITE and 'path' in context:
-            if not self.policy.can_write_path(context['path']):
-                self._log_violation(capability, f"Path not allowed: {context['path']}", context)
+        elif capability == Capability.FILE_WRITE and "path" in context:
+            if not self.policy.can_write_path(context["path"]):
+                self._log_violation(
+                    capability, f"Path not allowed: {context['path']}", context
+                )
                 return False
 
-        elif capability == Capability.NETWORK_HTTP and 'host' in context:
-            if not self.policy.can_access_host(context['host']):
-                self._log_violation(capability, f"Host not allowed: {context['host']}", context)
+        elif capability == Capability.NETWORK_HTTP and "host" in context:
+            if not self.policy.can_access_host(context["host"]):
+                self._log_violation(
+                    capability, f"Host not allowed: {context['host']}", context
+                )
                 return False
 
-        elif capability == Capability.SYS_ENV_READ and 'var_name' in context:
-            if not self.policy.can_access_env_var(context['var_name']):
-                self._log_violation(capability, f"Environment variable not allowed: {context['var_name']}", context)
+        elif capability == Capability.SYS_ENV_READ and "var_name" in context:
+            if not self.policy.can_access_env_var(context["var_name"]):
+                self._log_violation(
+                    capability,
+                    f"Environment variable not allowed: {context['var_name']}",
+                    context,
+                )
                 return False
 
         return True
 
-    def _log_violation(self, capability: Capability, reason: str, context: Dict[str, Any]):
+    def _log_violation(
+        self, capability: Capability, reason: str, context: Dict[str, Any]
+    ):
         """Log a capability violation"""
         violation = {
-            'capability': capability.name,
-            'reason': reason,
-            'context': context,
-            'timestamp': logger.handlers[0].formatter.formatTime(logger.makeRecord(
-                logger.name, logging.INFO, '', 0, '', (), None
-            )) if logger.handlers else None
+            "capability": capability.name,
+            "reason": reason,
+            "context": context,
+            "timestamp": (
+                logger.handlers[0].formatter.formatTime(
+                    logger.makeRecord(logger.name, logging.INFO, "", 0, "", (), None)
+                )
+                if logger.handlers
+                else None
+            ),
         }
         self.violations.append(violation)
         logger.warning(f"Capability violation: {capability.name} - {reason}")
@@ -225,10 +249,7 @@ class CapabilityValidator:
 DEFAULT_POLICY = CapabilityPolicy()  # Empty - denies everything
 
 BASIC_COMPUTE_POLICY = CapabilityPolicy(
-    allowed_capabilities={
-        Capability.MEMORY_UNLIMITED,
-        Capability.CRYPTO_RANDOM
-    }
+    allowed_capabilities={Capability.MEMORY_UNLIMITED, Capability.CRYPTO_RANDOM}
 )
 
 DATA_PROCESSING_POLICY = CapabilityPolicy(
@@ -236,11 +257,11 @@ DATA_PROCESSING_POLICY = CapabilityPolicy(
         Capability.FILE_READ,
         Capability.MEMORY_UNLIMITED,
         Capability.CPU_INTENSIVE,
-        Capability.CRYPTO_RANDOM
+        Capability.CRYPTO_RANDOM,
     },
-    allowed_read_paths=['/tmp', '/var/tmp'],
+    allowed_read_paths=["/tmp", "/var/tmp"],
     max_memory_mb=1024,
-    max_cpu_time_seconds=300
+    max_cpu_time_seconds=300,
 )
 
 NETWORK_CLIENT_POLICY = CapabilityPolicy(
@@ -248,16 +269,16 @@ NETWORK_CLIENT_POLICY = CapabilityPolicy(
         Capability.NETWORK_HTTP,
         Capability.NETWORK_DNS,
         Capability.MEMORY_UNLIMITED,
-        Capability.CRYPTO_RANDOM
+        Capability.CRYPTO_RANDOM,
     },
-    allowed_hosts=['*'],  # Allow all hosts (be careful with this in production)
-    max_memory_mb=512
+    allowed_hosts=["*"],  # Allow all hosts (be careful with this in production)
+    max_memory_mb=512,
 )
 
 FULL_ACCESS_POLICY = CapabilityPolicy(
     allowed_capabilities=set(Capability),  # All capabilities
-    allowed_read_paths=['/'],
-    allowed_write_paths=['/tmp', '/var/tmp'],
-    allowed_hosts=['*'],
-    allowed_env_vars=['*']
+    allowed_read_paths=["/"],
+    allowed_write_paths=["/tmp", "/var/tmp"],
+    allowed_hosts=["*"],
+    allowed_env_vars=["*"],
 )

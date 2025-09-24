@@ -627,7 +627,7 @@ You have access to emission factors and can answer questions about:
                 carbon_data = agg_result["data"]
                 total_emissions = carbon_data.get("total_co2e_tons", 0)
 
-                response_parts.append(f"Carbon Footprint Analysis")
+                response_parts.append("Carbon Footprint Analysis")
                 if country != "US":
                     response_parts.append(f"Country/Region: {country}")
                 response_parts.append(f"{'=' * 40}")

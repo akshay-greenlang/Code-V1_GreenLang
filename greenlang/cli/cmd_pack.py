@@ -177,7 +177,7 @@ IN-South,890,2025
     # Create test_pipeline.py
     with open(pack_dir / "tests" / "test_pipeline.py", "w") as f:
         f.write(
-            f"""import pytest
+            """import pytest
 import subprocess
 import json
 from pathlib import Path
@@ -206,7 +206,7 @@ def test_deterministic(tmp_path):
             got = json.load(f)
     else:
         # Fallback if run.json not created
-        got = {{"pipeline_hash": "test", "metrics": {{"annual_co2e_tons": 100}}}}
+        got = {"pipeline_hash": "test", "metrics": {"annual_co2e_tons": 100}}
     
     # Load expected output
     expected_file = pack_dir / "tests" / "golden" / "expected.run.json"
@@ -284,12 +284,12 @@ def validate(
     is_valid, errors = validate_pack(path)
 
     if is_valid:
-        console.print(f"[green][OK][/green] Pack validation passed")
+        console.print("[green][OK][/green] Pack validation passed")
 
         if verbose:
             try:
                 manifest = load_manifest(path)
-                console.print(f"\n[bold]Pack Details:[/bold]")
+                console.print("\n[bold]Pack Details:[/bold]")
                 console.print(f"  Name: {manifest.name}")
                 console.print(f"  Version: {manifest.version}")
                 console.print(f"  Kind: {manifest.kind}")
@@ -307,7 +307,7 @@ def validate(
             except Exception as e:
                 console.print(f"[yellow]Warning: {e}[/yellow]")
     else:
-        console.print(f"[red][FAIL] Pack validation failed[/red]")
+        console.print("[red][FAIL] Pack validation failed[/red]")
         for error in errors:
             console.print(f"  - {error}")
         raise typer.Exit(1)
@@ -356,9 +356,9 @@ def publish(
                     cwd=path,
                 )
                 if result.returncode != 0:
-                    console.print(f"[red]Tests failed[/red]")
+                    console.print("[red]Tests failed[/red]")
                     raise typer.Exit(1)
-                console.print(f"[green][OK][/green] Tests passed")
+                console.print("[green][OK][/green] Tests passed")
             except Exception as e:
                 console.print(f"[yellow]Could not run tests: {e}[/yellow]")
 
@@ -366,13 +366,13 @@ def publish(
     console.print("[cyan]Generating SBOM...[/cyan]")
     sbom_path = path / "sbom.spdx.json"
     generate_sbom(path, sbom_path)
-    console.print(f"[green][OK][/green] Generated SBOM")
+    console.print("[green][OK][/green] Generated SBOM")
 
     # Check policy
     console.print("[cyan]Checking policy...[/cyan]")
     try:
         check_install(manifest, str(path), stage="publish")
-        console.print(f"[green][OK][/green] Policy check passed")
+        console.print("[green][OK][/green] Policy check passed")
     except RuntimeError as e:
         console.print(f"[red]Policy check failed: {e}[/red]")
         raise typer.Exit(1)
@@ -395,7 +395,7 @@ def publish(
                     "[yellow]Set GL_ALLOW_UNSIGNED=1 to continue without signing[/yellow]"
                 )
                 raise typer.Exit(1)
-            console.print(f"[yellow]Warning: Continuing without signature[/yellow]")
+            console.print("[yellow]Warning: Continuing without signature[/yellow]")
 
     # Build and push
     org = (
@@ -407,10 +407,10 @@ def publish(
 
     if dry_run:
         console.print("\n[yellow]DRY RUN - Would perform:[/yellow]")
-        console.print(f"  - Build pack archive")
+        console.print("  - Build pack archive")
         console.print(f"  - Push to {ref}")
-        console.print(f"  - Upload signatures and SBOM")
-        console.print(f"  - Update hub index")
+        console.print("  - Upload signatures and SBOM")
+        console.print("  - Update hub index")
     else:
         console.print(f"[cyan]Publishing to {ref}...[/cyan]")
 
@@ -431,7 +431,7 @@ def publish(
                     ref,
                     str(path),
                     "--annotation",
-                    f"org.greenlang.type=pack",
+                    "org.greenlang.type=pack",
                     "--annotation",
                     f"org.greenlang.version={manifest.version}",
                     "--annotation",
@@ -447,7 +447,7 @@ def publish(
                 console.print("[cyan]Updating hub index...[/cyan]")
                 try:
                     _update_hub_index(path, manifest, org)
-                    console.print(f"[green][OK][/green] Updated hub index")
+                    console.print("[green][OK][/green] Updated hub index")
                 except Exception as e:
                     console.print(
                         f"[yellow]Warning: Could not update index: {e}[/yellow]"
@@ -998,9 +998,7 @@ def search_packs(
 
             console.print(table)
 
-            console.print(
-                f"\n[dim]Install with: gl pack add <org/name>@<version>[/dim]"
-            )
+            console.print("\n[dim]Install with: gl pack add <org/name>@<version>[/dim]")
 
     except Exception as e:
         console.print(f"[red]Search failed: {e}[/red]")

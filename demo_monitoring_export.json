@@ -1,0 +1,932 @@
+{
+  "timestamp": "2025-09-24T07:41:37.784018",
+  "metrics": {
+    "memory_usage_bytes": [
+      {
+        "value": 44318720,
+        "labels": {},
+        "timestamp": 1758699695.8757627,
+        "unit": null
+      }
+    ],
+    "cpu_usage_percent": [
+      {
+        "value": 0.0,
+        "labels": {},
+        "timestamp": 1758699695.8757885,
+        "unit": null
+      }
+    ],
+    "system_memory_used_percent": [
+      {
+        "value": 94.6,
+        "labels": {},
+        "timestamp": 1758699695.8761625,
+        "unit": null
+      }
+    ],
+    "system_memory_available_bytes": [
+      {
+        "value": 876244992,
+        "labels": {},
+        "timestamp": 1758699695.8761678,
+        "unit": null
+      }
+    ],
+    "disk_read_bytes_total": [
+      {
+        "value": 40246919168,
+        "labels": {},
+        "timestamp": 1758699695.8763475,
+        "unit": null
+      }
+    ],
+    "disk_write_bytes_total": [
+      {
+        "value": 34925726208,
+        "labels": {},
+        "timestamp": 1758699695.8763509,
+        "unit": null
+      }
+    ],
+    "pipeline_executions_total": [
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699695.876628,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699695.890465,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699695.9172208,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699695.9386675,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699695.958239,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699695.9759102,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699695.9983811,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699696.0151877,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699696.0428421,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699696.0584784,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699696.0809991,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699696.1021996,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699696.1147003,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699696.1289897,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "demo_pipeline",
+          "status": "success"
+        },
+        "timestamp": 1758699696.1467748,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "success"
+        },
+        "timestamp": 1758699697.783663,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "success"
+        },
+        "timestamp": 1758699697.783668,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "success"
+        },
+        "timestamp": 1758699697.783671,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "success"
+        },
+        "timestamp": 1758699697.7836738,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "success"
+        },
+        "timestamp": 1758699697.7836769,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "success"
+        },
+        "timestamp": 1758699697.7837017,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "success"
+        },
+        "timestamp": 1758699697.7837093,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "error"
+        },
+        "timestamp": 1758699697.7837143,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "error"
+        },
+        "timestamp": 1758699697.783727,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "pipeline_name": "alert_test",
+          "status": "error"
+        },
+        "timestamp": 1758699697.7837343,
+        "unit": null
+      }
+    ],
+    "pipeline_duration_seconds": [
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699695.8766305,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699695.8904693,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699695.9172301,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699695.9386737,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699695.958244,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699695.975923,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699695.9983864,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699696.015192,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699696.042852,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699696.0584831,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699696.0810034,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699696.1022093,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699696.1147048,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699696.128998,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "demo_pipeline"
+        },
+        "timestamp": 1758699696.146781,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.7836654,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.7836692,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.783672,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.7836754,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.7836783,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.783706,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.7837112,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.7837162,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.783729,
+        "unit": null
+      },
+      {
+        "value": 0.05,
+        "labels": {
+          "pipeline_name": "alert_test"
+        },
+        "timestamp": 1758699697.783736,
+        "unit": null
+      }
+    ],
+    "custom_demo_operations": [
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699695.876634,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699695.890473,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699695.9172344,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699695.9386773,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699695.9582474,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699695.9759395,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699695.9983897,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699696.015195,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699696.0428555,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699696.058487,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699696.0810065,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699696.1022131,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699696.1147087,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699696.1290033,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "operation_type": "success"
+        },
+        "timestamp": 1758699696.1467838,
+        "unit": null
+      }
+    ],
+    "demo_operation_duration_seconds": [
+      {
+        "value": 6.860000576125458e-05,
+        "labels": {
+          "complexity": "light",
+          "status": "success"
+        },
+        "timestamp": 1758699695.8766387,
+        "unit": null
+      },
+      {
+        "value": 0.00054929999896558,
+        "labels": {
+          "complexity": "medium",
+          "status": "success"
+        },
+        "timestamp": 1758699695.890478,
+        "unit": null
+      },
+      {
+        "value": 0.003111700003501028,
+        "labels": {
+          "complexity": "heavy",
+          "status": "success"
+        },
+        "timestamp": 1758699695.9172451,
+        "unit": null
+      },
+      {
+        "value": 9.080000018002465e-05,
+        "labels": {
+          "complexity": "light",
+          "status": "success"
+        },
+        "timestamp": 1758699695.9386835,
+        "unit": null
+      },
+      {
+        "value": 0.0005310999986249954,
+        "labels": {
+          "complexity": "medium",
+          "status": "success"
+        },
+        "timestamp": 1758699695.958253,
+        "unit": null
+      },
+      {
+        "value": 0.0029463999962899834,
+        "labels": {
+          "complexity": "heavy",
+          "status": "success"
+        },
+        "timestamp": 1758699695.9759505,
+        "unit": null
+      },
+      {
+        "value": 9.829999908106402e-05,
+        "labels": {
+          "complexity": "light",
+          "status": "success"
+        },
+        "timestamp": 1758699695.9983985,
+        "unit": null
+      },
+      {
+        "value": 0.00044659999548457563,
+        "labels": {
+          "complexity": "medium",
+          "status": "success"
+        },
+        "timestamp": 1758699696.0152,
+        "unit": null
+      },
+      {
+        "value": 0.0030994999979157,
+        "labels": {
+          "complexity": "heavy",
+          "status": "success"
+        },
+        "timestamp": 1758699696.0428681,
+        "unit": null
+      },
+      {
+        "value": 0.00012109999806853011,
+        "labels": {
+          "complexity": "light",
+          "status": "success"
+        },
+        "timestamp": 1758699696.058493,
+        "unit": null
+      },
+      {
+        "value": 0.0005746000024373643,
+        "labels": {
+          "complexity": "medium",
+          "status": "success"
+        },
+        "timestamp": 1758699696.0810113,
+        "unit": null
+      },
+      {
+        "value": 0.004482399999687914,
+        "labels": {
+          "complexity": "heavy",
+          "status": "success"
+        },
+        "timestamp": 1758699696.1022239,
+        "unit": null
+      },
+      {
+        "value": 0.00019210000027669594,
+        "labels": {
+          "complexity": "light",
+          "status": "success"
+        },
+        "timestamp": 1758699696.1147149,
+        "unit": null
+      },
+      {
+        "value": 0.0006017999985488132,
+        "labels": {
+          "complexity": "medium",
+          "status": "success"
+        },
+        "timestamp": 1758699696.129012,
+        "unit": null
+      },
+      {
+        "value": 0.00222869999561226,
+        "labels": {
+          "complexity": "heavy",
+          "status": "success"
+        },
+        "timestamp": 1758699696.14679,
+        "unit": null
+      }
+    ],
+    "degraded_operation_duration_seconds": [
+      {
+        "value": 0.10095239999645855,
+        "labels": {
+          "iteration": "0",
+          "status": "success"
+        },
+        "timestamp": 1758699696.3500006,
+        "unit": null
+      },
+      {
+        "value": 0.21447009999974398,
+        "labels": {
+          "iteration": "1",
+          "status": "success"
+        },
+        "timestamp": 1758699696.564516,
+        "unit": null
+      },
+      {
+        "value": 0.3026227000009385,
+        "labels": {
+          "iteration": "2",
+          "status": "success"
+        },
+        "timestamp": 1758699696.867189,
+        "unit": null
+      },
+      {
+        "value": 0.4021213000014541,
+        "labels": {
+          "iteration": "3",
+          "status": "success"
+        },
+        "timestamp": 1758699697.2693512,
+        "unit": null
+      },
+      {
+        "value": 0.5141948000018601,
+        "labels": {
+          "iteration": "4",
+          "status": "success"
+        },
+        "timestamp": 1758699697.7835896,
+        "unit": null
+      }
+    ],
+    "agent_executions_total": [
+      {
+        "value": 1,
+        "labels": {
+          "agent_name": "DegradedAgent",
+          "status": "success"
+        },
+        "timestamp": 1758699696.3500187,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "agent_name": "DegradedAgent",
+          "status": "success"
+        },
+        "timestamp": 1758699696.5645368,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "agent_name": "DegradedAgent",
+          "status": "success"
+        },
+        "timestamp": 1758699696.8672054,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "agent_name": "DegradedAgent",
+          "status": "success"
+        },
+        "timestamp": 1758699697.2693691,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "agent_name": "DegradedAgent",
+          "status": "success"
+        },
+        "timestamp": 1758699697.7836058,
+        "unit": null
+      }
+    ],
+    "agent_duration_seconds": [
+      {
+        "value": 0.1,
+        "labels": {
+          "agent_name": "DegradedAgent"
+        },
+        "timestamp": 1758699696.3500218,
+        "unit": null
+      },
+      {
+        "value": 0.2,
+        "labels": {
+          "agent_name": "DegradedAgent"
+        },
+        "timestamp": 1758699696.5645413,
+        "unit": null
+      },
+      {
+        "value": 0.30000000000000004,
+        "labels": {
+          "agent_name": "DegradedAgent"
+        },
+        "timestamp": 1758699696.8672078,
+        "unit": null
+      },
+      {
+        "value": 0.4,
+        "labels": {
+          "agent_name": "DegradedAgent"
+        },
+        "timestamp": 1758699697.2693708,
+        "unit": null
+      },
+      {
+        "value": 0.5,
+        "labels": {
+          "agent_name": "DegradedAgent"
+        },
+        "timestamp": 1758699697.7836084,
+        "unit": null
+      }
+    ],
+    "errors_total": [
+      {
+        "value": 1,
+        "labels": {
+          "component": "alert_test",
+          "error_type": "SimulatedError"
+        },
+        "timestamp": 1758699697.7837234,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "component": "alert_test",
+          "error_type": "SimulatedError"
+        },
+        "timestamp": 1758699697.7837315,
+        "unit": null
+      },
+      {
+        "value": 1,
+        "labels": {
+          "component": "alert_test",
+          "error_type": "SimulatedError"
+        },
+        "timestamp": 1758699697.7837384,
+        "unit": null
+      }
+    ]
+  },
+  "operation_stats": {
+    "demo_operation": {
+      "count": 15,
+      "mean": 0.0012761999993623856,
+      "min": 6.860000576125458e-05,
+      "max": 0.004482399999687914,
+      "p50": 0.00054929999896558,
+      "p95": 0.004482399999687914,
+      "p99": 0.004482399999687914
+    },
+    "degraded_operation": {
+      "count": 5,
+      "mean": 0.30687226000009105,
+      "min": 0.10095239999645855,
+      "max": 0.5141948000018601,
+      "p50": 0.3026227000009385,
+      "p95": 0.5141948000018601,
+      "p99": 0.5141948000018601
+    }
+  },
+  "system_info": {
+    "pid": 27024,
+    "memory_rss": 44343296,
+    "cpu_count": 12,
+    "python_version": "3.13.5"
+  }
+}

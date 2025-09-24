@@ -210,7 +210,7 @@ def list_pipelines():
                 f"  - {pipeline['name']}: {pipeline.get('description', 'No description')}"
             )
 
-    console.print(f"\n[dim]Run with: gl run <pack>/<pipeline>[/dim]")
+    console.print("\n[dim]Run with: gl run <pack>/<pipeline>[/dim]")
 
 
 @app.command("info")

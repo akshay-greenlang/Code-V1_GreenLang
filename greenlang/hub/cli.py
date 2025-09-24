@@ -80,7 +80,7 @@ def push(
             signer = PackSigner(Path(key))
             with open(pack_path, "rb") as f:
                 signature = signer.sign_pack(f.read())
-            click.echo(f"✓ Pack signed")
+            click.echo("✓ Pack signed")
 
         # Push to registry
         with HubClient(registry, auth) as client:
@@ -94,7 +94,7 @@ def push(
             pack_id = result.get("id", "unknown")
             pack_url = result.get("url", f"{registry}/packs/{pack_id}")
 
-            click.echo(f"✓ Successfully pushed pack")
+            click.echo("✓ Successfully pushed pack")
             click.echo(f"  ID: {pack_id}")
             click.echo(f"  URL: {pack_url}")
 
@@ -234,14 +234,14 @@ def info(pack_ref: str, output_json: bool, registry: str):
                 click.echo(f"License: {manifest.get('license', 'Not specified')}")
                 click.echo(f"Homepage: {manifest.get('homepage', 'Not specified')}")
 
-                click.echo(f"\nStatistics:")
+                click.echo("\nStatistics:")
                 click.echo(f"  Downloads: {stats.get('downloads', 0)}")
                 click.echo(f"  Stars: {stats.get('stars', 0)}")
                 click.echo(f"  Published: {info.get('published_at', 'unknown')}")
 
                 deps = manifest.get("dependencies", [])
                 if deps:
-                    click.echo(f"\nDependencies:")
+                    click.echo("\nDependencies:")
                     for dep in deps:
                         click.echo(f"  - {dep.get('name')}@{dep.get('version')}")
 
