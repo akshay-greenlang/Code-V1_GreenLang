@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang v0.3.0 Release DoD Verification Script
 ================================================
@@ -55,7 +56,7 @@ class DoDVerifier:
                 self.errors.append(f"VERSION file contains '{version_content}', expected '{self.version}'")
                 return False
 
-            print(f"  {GREEN}✓{RESET} VERSION = {self.version}")
+            print(f"  {GREEN}[PASS]{RESET} VERSION = {self.version}")
             return True
         except Exception as e:
             self.errors.append(f"Error reading VERSION file: {e}")
@@ -70,7 +71,7 @@ class DoDVerifier:
         current_branch = stdout.strip()
 
         if current_branch == f"release/{self.version}":
-            print(f"  {GREEN}✓{RESET} On branch release/{self.version}")
+            print(f"  {GREEN}[PASS]{RESET} On branch release/{self.version}")
             return True
         else:
             # Check if branch exists
@@ -78,7 +79,7 @@ class DoDVerifier:
             branches = stdout.strip().split('\n')
 
             if any(f"release/{self.version}" in b for b in branches):
-                print(f"  {YELLOW}⚠{RESET} Branch release/{self.version} exists but not checked out")
+                print(f"  {YELLOW}[WARN]{RESET} Branch release/{self.version} exists but not checked out")
                 print(f"    Current branch: {current_branch}")
                 return True
             else:
@@ -96,10 +97,10 @@ class DoDVerifier:
 
         content = changelog.read_text()
         if f"## [{self.version}]" in content or f"## {self.version}" in content or f"# {self.version}" in content:
-            print(f"  {GREEN}✓{RESET} CHANGELOG.md has {self.version} section")
+            print(f"  {GREEN}[PASS]{RESET} CHANGELOG.md has {self.version} section")
             return True
         else:
-            print(f"  {YELLOW}⚠{RESET} CHANGELOG.md missing {self.version} section")
+            print(f"  {YELLOW}[WARN]{RESET} CHANGELOG.md missing {self.version} section")
             return False
 
     def check_version_import(self) -> bool:
@@ -114,13 +115,13 @@ class DoDVerifier:
         if rc == 0:
             version = stdout.strip()
             if version == self.version:
-                print(f"  {GREEN}✓{RESET} __version__ = {self.version}")
+                print(f"  {GREEN}[PASS]{RESET} __version__ = {self.version}")
                 return True
             else:
                 self.errors.append(f"__version__ = '{version}', expected '{self.version}'")
                 return False
         else:
-            print(f"  {YELLOW}⚠{RESET} Could not import greenlang module (expected in dev)")
+            print(f"  {YELLOW}[WARN]{RESET} Could not import greenlang module (expected in dev)")
             return True  # Not critical for pre-release
 
     def check_tests(self) -> bool:
@@ -130,10 +131,10 @@ class DoDVerifier:
         # Quick sanity test
         rc, stdout, stderr = self.run_command(["python", "-m", "pytest", "--version"])
         if rc != 0:
-            print(f"  {YELLOW}⚠{RESET} pytest not installed, skipping tests")
+            print(f"  {YELLOW}[WARN]{RESET} pytest not installed, skipping tests")
             return True  # Not blocking for now
 
-        print(f"  {YELLOW}⚠{RESET} Full test suite check skipped (run manually)")
+        print(f"  {YELLOW}[WARN]{RESET} Full test suite check skipped (run manually)")
         return True
 
     def check_packaging(self) -> bool:
@@ -164,7 +165,7 @@ class DoDVerifier:
         ])
 
         if rc == 0:
-            print(f"  {GREEN}✓{RESET} Wheels and sdist pass twine check")
+            print(f"  {GREEN}[PASS]{RESET} Wheels and sdist pass twine check")
             return True
         else:
             self.errors.append(f"twine check failed: {stderr}")
@@ -179,17 +180,17 @@ class DoDVerifier:
         if docker_compose.exists():
             content = docker_compose.read_text()
             if f'GL_VERSION: "{self.version}"' in content:
-                print(f"  {GREEN}✓{RESET} docker-compose.yml has correct version")
+                print(f"  {GREEN}[PASS]{RESET} docker-compose.yml has correct version")
             else:
-                print(f"  {YELLOW}⚠{RESET} docker-compose.yml may need version update")
+                print(f"  {YELLOW}[WARN]{RESET} docker-compose.yml may need version update")
 
         # Check Dockerfiles
         for dockerfile in Path("docker").glob("*.Dockerfile"):
             content = dockerfile.read_text()
             if f'version="{self.version}"' in content.lower():
-                print(f"  {GREEN}✓{RESET} {dockerfile.name} has correct version")
+                print(f"  {GREEN}[PASS]{RESET} {dockerfile.name} has correct version")
             else:
-                print(f"  {YELLOW}⚠{RESET} {dockerfile.name} may need version update")
+                print(f"  {YELLOW}[WARN]{RESET} {dockerfile.name} may need version update")
 
         return True  # Non-blocking
 
@@ -201,10 +202,10 @@ class DoDVerifier:
         rc, _, _ = self.run_command(["python", "-m", "sigstore", "--version"])
 
         if rc == 0:
-            print(f"  {GREEN}✓{RESET} sigstore available for signing")
+            print(f"  {GREEN}[PASS]{RESET} sigstore available for signing")
             return True
         else:
-            print(f"  {YELLOW}⚠{RESET} sigstore not installed (will use CI for signing)")
+            print(f"  {YELLOW}[WARN]{RESET} sigstore not installed (will use CI for signing)")
             return True  # CI will handle signing
 
     def check_tag_available(self) -> bool:
@@ -217,7 +218,7 @@ class DoDVerifier:
             self.errors.append(f"Tag v{self.version} already exists!")
             return False
         else:
-            print(f"  {GREEN}✓{RESET} Tag v{self.version} is available")
+            print(f"  {GREEN}[PASS]{RESET} Tag v{self.version} is available")
             return True
 
     def generate_report(self):
@@ -243,7 +244,7 @@ class DoDVerifier:
 
         print(f"\n{BOLD}Results:{RESET}")
         for name, status in checklist.items():
-            symbol = f"{GREEN}✓{RESET}" if status else f"{RED}✗{RESET}"
+            symbol = f"{GREEN}[PASS]{RESET}" if status else f"{RED}[FAIL]{RESET}"
             print(f"  {symbol} {name}")
 
         print(f"\n{BOLD}Score: {passed}/{total}{RESET}")
@@ -254,14 +255,14 @@ class DoDVerifier:
                 print(f"  • {error}")
 
         if passed == total:
-            print(f"\n{GREEN}{BOLD}✅ READY FOR RELEASE!{RESET}")
+            print(f"\n{GREEN}{BOLD}[READY] ALL CHECKS PASSED - READY FOR RELEASE!{RESET}")
             print(f"\nNext steps:")
             print(f"  1. git push origin release/{self.version}")
             print(f"  2. git tag -a v{self.version} -m 'GreenLang {self.version}'")
             print(f"  3. git push origin v{self.version}")
             return True
         else:
-            print(f"\n{RED}{BOLD}❌ NOT READY - Fix issues above{RESET}")
+            print(f"\n{RED}{BOLD}[NOT READY] FIX ISSUES ABOVE{RESET}")
             return False
 
 def main():

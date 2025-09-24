@@ -287,7 +287,8 @@
       "Bash(Scripts\\activate.bat)",
       "Bash(test-v030-audit\\Scripts\\pip.exe install --quiet dist/greenlang_cli-0.3.0-py3-none-any.whl)",
       "Bash(test-v030-audit/Scripts/pip.exe install --quiet dist/greenlang_cli-0.3.0-py3-none-any.whl)",
-      "Bash(ruff check:*)"
+      "Bash(ruff check:*)",
+      "Bash(git rev-parse:*)"
     ],
     "deny": []
   }
