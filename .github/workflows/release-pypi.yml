@@ -74,7 +74,7 @@ jobs:
           echo "✅ Packages signed with Sigstore"
 
       - name: Publish to TestPyPI (dry run)
-        if: ${{ github.event.inputs.dry_run == true }}
+        if: ${{ github.event.inputs.dry_run == 'true' }}
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
@@ -82,27 +82,24 @@ jobs:
           echo "🧪 Publishing to TestPyPI (dry run)..."
           python -m twine upload --repository testpypi dist/*
 
-      - name: Check PyPI token
-        if: ${{ github.event.inputs.dry_run != true }}
-        run: |
-          if [ -z "${{ secrets.PYPI_API_TOKEN }}" ]; then
-            echo "❌ Error: PYPI_API_TOKEN secret is not set"
-            echo "Please add the PYPI_API_TOKEN secret to your repository settings"
-            exit 1
-          fi
-          echo "✅ PyPI token is configured"
-
       - name: Publish to PyPI
-        if: ${{ github.event.inputs.dry_run != true }}
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           echo "🚀 Publishing to PyPI..."
+          if [ -z "${TWINE_PASSWORD}" ]; then
+            echo "❌ Error: PYPI_API_TOKEN secret is not configured properly"
+            echo "Please ensure the PYPI_API_TOKEN secret is set in your repository settings"
+            echo "Go to: Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          echo "✅ PyPI token is available, proceeding with upload..."
           python -m twine upload dist/*
 
       - name: Verify installation
-        if: ${{ github.event.inputs.dry_run != true }}
+        if: ${{ github.event.inputs.dry_run != 'true' }}
         run: |
           sleep 30  # Give PyPI time to update
           python -m venv test-install
@@ -113,7 +110,7 @@ jobs:
           python -c "import greenlang; print('✅ Import successful:', greenlang.__version__)"
 
       - name: Create GitHub Release
-        if: ${{ github.event.inputs.dry_run != true && startsWith(github.ref, 'refs/tags/') }}
+        if: ${{ github.event.inputs.dry_run != 'true' && startsWith(github.ref, 'refs/tags/') }}
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -143,7 +140,7 @@ jobs:
             dist/*.tar.gz
 
       - name: Create GitHub Release (Manual)
-        if: ${{ github.event.inputs.dry_run != true && github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event.inputs.dry_run != 'true' && github.event_name == 'workflow_dispatch' }}
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
