@@ -288,7 +288,16 @@
       "Bash(test-v030-audit\\Scripts\\pip.exe install --quiet dist/greenlang_cli-0.3.0-py3-none-any.whl)",
       "Bash(test-v030-audit/Scripts/pip.exe install --quiet dist/greenlang_cli-0.3.0-py3-none-any.whl)",
       "Bash(ruff check:*)",
-      "Bash(git rev-parse:*)"
+      "Bash(git rev-parse:*)",
+      "Bash(./test-v030-local/Scripts/python.exe -m pip install --upgrade pip --quiet)",
+      "Bash(./test-v030-local/Scripts/pip.exe install dist/greenlang_cli-0.3.0-py3-none-any.whl --quiet)",
+      "Bash(./test-v030-local/Scripts/gl.exe --version)",
+      "Bash(./test-v030-local/Scripts/python.exe -c \"import greenlang, sys; print(''OK'', greenlang.__version__); sys.exit(0)\")",
+      "Bash(test_venvScriptsactivate)",
+      "Bash(test_venvScriptspython.exe -m pip install --upgrade pip --quiet)",
+      "Bash(test_venvScriptspip.exe install distgreenlang_cli-0.3.0-py3-none-any.whl --quiet)",
+      "Bash(test_venvScriptsgl.exe --version)",
+      "Bash(.test_venvScriptspython.exe -m pip install --upgrade pip --quiet)"
     ],
     "deny": []
   }
