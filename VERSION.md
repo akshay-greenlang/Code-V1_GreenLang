@@ -1,6 +1,6 @@
 # GreenLang Version Information
 
-## Current Version: 0.2.0
+## Current Version: 0.3.0
 
 ### Version Summary
 - **Release Date**: September 23, 2025
@@ -15,14 +15,14 @@ gl --version
 python -c "import greenlang; print(greenlang.__version__)"
 ```
 
-## Version 0.2.0 - Infrastructure Seed (2025-09-27)
+## Version 0.3.0 - Q4'25 Climate Intelligence Baseline (2025-09-24)
 
 ### Major Changes
 - 🏗️ **Single Source of Truth for Versioning**: Implemented VERSION file as SSOT
 - 📦 **PyPI & Docker Ready**: First public release with signed artifacts
 - 🔒 **Default-Deny Policies**: Security-first approach with policy enforcement
 - 🎯 **Pack Architecture**: Transition from agents to packs for domain logic
-- 🚀 **Production Ready**: Exit bar criteria met for v0.2.0 release
+- 🚀 **Production Ready**: Exit bar criteria met for v0.3.0 release
 
 ### Infrastructure Improvements
 - Dynamic version loading from VERSION file
@@ -45,7 +45,9 @@ python -c "import greenlang; print(greenlang.__version__)"
 - AI Assistant feature documentation (optional OpenAI integration)
 
 ### Version History
-- **v0.2.0** (2025-09-27) - Infrastructure Seed Release
+- **v0.3.0** (2025-09-24) - Q4'25 Climate Intelligence Baseline
+- **v0.2.3** (2025-09) - Security hardening release
+- **v0.2.0** (2025-09) - Infrastructure Seed Release
 - **v0.1.0** (2025-09) - Internal infrastructure refactor
 - **v0.0.1** (2025-01) - Initial release with enhanced agents
 

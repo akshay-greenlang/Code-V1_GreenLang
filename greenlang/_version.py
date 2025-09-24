@@ -14,4 +14,4 @@ except PackageNotFoundError:
         if version_file.exists():
             __version__ = version_file.read_text().strip()
         else:
-            __version__ = "0.2.3"  # Fallback version
+            __version__ = "0.3.0"  # Fallback version

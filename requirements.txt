@@ -1,1 +1,23 @@
+# GreenLang Core Requirements
+# Python >= 3.10 required
 
+# Core dependencies
+typer>=0.12
+pydantic>=2.7
+pyyaml>=6.0
+rich>=13.0
+jsonschema>=4.19.0
+packaging>=22.0
+python-dotenv>=1.0.0
+typing-extensions>=4.9.0
+httpx>=0.24.0
+requests>=2.31.0
+networkx>=3.0
+tenacity>=8.2.3
+psutil>=5.9.0
+
+# For development, install with:
+# pip install -e ".[dev,test]"
+#
+# For all features:
+# pip install -e ".[all]"

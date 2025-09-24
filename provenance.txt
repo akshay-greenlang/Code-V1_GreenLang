@@ -1,0 +1,48 @@
+GreenLang CLI Provenance Documentation
+========================================
+
+Build Date: 2025-09-24T14:55:00Z
+Repository: github.com/akshay-greenlang/Code-V1_GreenLang
+Git Commit Hash: d36f9b79182707926e1ffe8a6ca6368790c3112d
+Builder: GitHub Actions
+Version: 0.3.0
+Python Requirement: >=3.10
+
+Build Environment:
+- OS: Ubuntu Latest (GitHub Actions)
+- Python: 3.10+
+- Build Tool: setuptools with wheel
+- Package Manager: pip
+
+Artifacts Generated:
+- greenlang_cli-0.3.0-py3-none-any.whl
+- greenlang_cli-0.3.0.tar.gz
+
+Security Features:
+- Supply chain security implemented
+- SBOM generation (SPDX and CycloneDX formats)
+- Dependency scanning with pip-audit
+- Secret scanning with TruffleHog
+- Code quality checks with pre-commit hooks
+
+Build Process:
+1. Source code checkout from main branch
+2. Python environment setup (>=3.10)
+3. Dependency installation from pyproject.toml
+4. Security scanning and validation
+5. Package building with setuptools
+6. SBOM generation
+7. Artifact signing preparation
+
+Verification:
+- All tests pass
+- Security gates cleared
+- Quality checks completed
+- Dependencies verified
+
+Supply Chain Security Measures:
+- Pinned dependencies with version constraints
+- Vulnerability scanning
+- Provenance tracking
+- Artifact signing ready
+- SLSA compliance preparation
