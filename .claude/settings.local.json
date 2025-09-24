@@ -276,7 +276,14 @@
       "Bash(.venv-verify-pypi/Scripts/python.exe -m pip install:*)",
       "Bash(.venv-verify-pypi/Scripts/pip.exe install greenlang-cli==0.2.3 --quiet)",
       "Bash(.venv-verify-pypi/Scripts/gl.exe --version)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(test-v030\\Scripts\\activate)",
+      "Bash(test-v030\\Scripts\\gl.exe --version)",
+      "Bash(test-v030\\Scripts\\python.exe -m pip install --upgrade pip --quiet)",
+      "Bash(test-v030\\Scripts\\python.exe -m pip install dist/greenlang_cli-0.3.0-py3-none-any.whl --quiet)",
+      "Bash(./test-v030/Scripts/python.exe -m pip install --upgrade pip --quiet)",
+      "Bash(./test-v030/Scripts/python.exe -m pip install dist/greenlang_cli-0.3.0-py3-none-any.whl --quiet)",
+      "Bash(./test-v030/Scripts/gl.exe --version)"
     ],
     "deny": []
   }
