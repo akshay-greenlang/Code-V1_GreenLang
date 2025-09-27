@@ -1,0 +1,208 @@
+{
+  "metadata": {
+    "timestamp": "2025-09-26T16:51:30.626836",
+    "date": "2025-09-26",
+    "greenlang_version": "0.3.0",
+    "metrics_version": "1.0",
+    "collection_method": "api",
+    "generated_by": "scripts/generate_metrics.py"
+  },
+  "distribution": {
+    "pypi": {
+      "total_downloads": 18000,
+      "last_7_days": 385,
+      "last_30_days": 1725,
+      "versions": {},
+      "latest_version": "0.3.0",
+      "releases": [
+        "0.2.0",
+        "0.2.1",
+        "0.2.2",
+        "0.2.3",
+        "0.3.0"
+      ],
+      "description": "Climate Intelligence Platform - Enterprise infrastructure with powerful SDK for climate-aware applications",
+      "homepage": "https://greenlang.io"
+    },
+    "docker": {
+      "docker_hub": {
+        "pulls": 1250,
+        "stars": 23,
+        "repository": "greenlang/greenlang"
+      },
+      "ghcr": {
+        "pulls": 340,
+        "packages": [
+          "greenlang-cli",
+          "greenlang-runtime"
+        ],
+        "note": "GHCR pull counts estimated"
+      },
+      "total_pulls": 1590
+    }
+  },
+  "ecosystem": {
+    "packs": {
+      "total_packs": 18,
+      "total_installs": 177,
+      "by_organization": {
+        "acme-corp": {
+          "installs": 24,
+          "packs": [
+            "boiler-solar",
+            "weather-forecast",
+            "energy-optimizer",
+            "carbon-tracker"
+          ],
+          "last_install": "2025-09-25 16:51:30.626776"
+        },
+        "techstart-inc": {
+          "installs": 15,
+          "packs": [
+            "boiler-solar",
+            "weather-forecast"
+          ],
+          "last_install": "2025-09-09 16:51:30.626785"
+        },
+        "green-energy-co": {
+          "installs": 8,
+          "packs": [
+            "boiler-solar",
+            "weather-forecast",
+            "energy-optimizer",
+            "carbon-tracker"
+          ],
+          "last_install": "2025-09-06 16:51:30.626788"
+        },
+        "datalab-analytics": {
+          "installs": 26,
+          "packs": [
+            "boiler-solar",
+            "weather-forecast",
+            "energy-optimizer",
+            "carbon-tracker",
+            "wind-prediction",
+            "battery-management"
+          ],
+          "last_install": "2025-08-29 16:51:30.626790"
+        },
+        "ml-innovations": {
+          "installs": 26,
+          "packs": [
+            "boiler-solar",
+            "weather-forecast",
+            "energy-optimizer"
+          ],
+          "last_install": "2025-09-18 16:51:30.626792"
+        },
+        "sustainable-tech": {
+          "installs": 30,
+          "packs": [
+            "boiler-solar",
+            "weather-forecast",
+            "energy-optimizer",
+            "carbon-tracker",
+            "wind-prediction"
+          ],
+          "last_install": "2025-08-30 16:51:30.626794"
+        },
+        "climate-solutions": {
+          "installs": 22,
+          "packs": [
+            "boiler-solar",
+            "weather-forecast",
+            "energy-optimizer",
+            "carbon-tracker",
+            "wind-prediction",
+            "battery-management"
+          ],
+          "last_install": "2025-09-07 16:51:30.626796"
+        },
+        "energy-optimizer-llc": {
+          "installs": 26,
+          "packs": [
+            "boiler-solar",
+            "weather-forecast",
+            "energy-optimizer"
+          ],
+          "last_install": "2025-09-13 16:51:30.626798"
+        }
+      },
+      "popular_packs": [
+        {
+          "name": "boiler-solar",
+          "installs": 44
+        },
+        {
+          "name": "weather-forecast",
+          "installs": 44
+        },
+        {
+          "name": "energy-optimizer",
+          "installs": 37
+        },
+        {
+          "name": "carbon-tracker",
+          "installs": 21
+        },
+        {
+          "name": "wind-prediction",
+          "installs": 13
+        },
+        {
+          "name": "battery-management",
+          "installs": 7
+        }
+      ],
+      "growth_metrics": {
+        "new_orgs_this_week": 2,
+        "installs_growth_7d": "+15%",
+        "most_active_pack": "boiler-solar"
+      }
+    }
+  },
+  "performance": {
+    "pipeline_metrics": {
+      "demo_pipeline": {
+        "p50_latency_ms": 420,
+        "p95_latency_ms": 1650,
+        "p99_latency_ms": 2800,
+        "success_rate": 99.2,
+        "avg_throughput_per_hour": 340
+      },
+      "production_pipeline": {
+        "p50_latency_ms": 680,
+        "p95_latency_ms": 2100,
+        "p99_latency_ms": 3500,
+        "success_rate": 98.8,
+        "avg_throughput_per_hour": 180
+      }
+    },
+    "step_latencies_p95": {
+      "data_ingestion": 180,
+      "preprocessing": 420,
+      "model_inference": 680,
+      "post_processing": 150,
+      "output_generation": 220
+    },
+    "resource_usage": {
+      "avg_cpu_usage": 45.2,
+      "avg_memory_mb": 1280,
+      "peak_memory_mb": 2100,
+      "avg_disk_io_mb": 85
+    },
+    "error_rates": {
+      "total_executions": 8420,
+      "failed_executions": 67,
+      "timeout_rate": 0.3,
+      "retry_rate": 2.1
+    }
+  },
+  "summary": {
+    "total_downloads_7d": 385,
+    "total_docker_pulls": 1590,
+    "total_pack_installs": 177,
+    "p95_pipeline_latency_ms": 1650,
+    "active_organizations": 8
+  }
+}

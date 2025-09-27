@@ -161,6 +161,7 @@ setup(
     entry_points={
         "console_scripts": [
             "gl=greenlang.cli.main:main",
+            "greenlang=greenlang.cli.main:main",  # Backward compatibility
         ],
     },
     classifiers=[

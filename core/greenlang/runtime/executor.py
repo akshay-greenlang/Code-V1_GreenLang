@@ -708,15 +708,43 @@ class Executor:
         return namespace.get("outputs", {})
 
     def _exec_shell_stage(self, stage: Dict, context: Dict) -> Dict:
-        """Execute a shell command stage"""
+        """Execute a shell command stage with secure input sanitization"""
+        import shlex
+        import re
+
         command = stage.get("command", "")
 
-        # Substitute variables
+        # Substitute variables with proper sanitization
         for key, value in context.get("input", {}).items():
-            command = command.replace(f"${{{key}}}", str(value))
+            # Validate input to prevent injection
+            str_value = str(value)
+            if not re.match(r'^[a-zA-Z0-9_\-\.\s/]+$', str_value):
+                # For values with special characters, use shlex.quote
+                str_value = shlex.quote(str_value)
+            command = command.replace(f"${{{key}}}", str_value)
 
-        # Execute command
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        # Parse command safely and execute without shell=True
+        try:
+            # Use shlex.split to properly parse the command
+            cmd_parts = shlex.split(command)
+            result = subprocess.run(cmd_parts, shell=False, capture_output=True, text=True)
+        except ValueError as e:
+            # If shlex.split fails, command might have unclosed quotes
+            # Log error and return failure
+            logger.error(f"Invalid command syntax: {e}")
+            return {
+                "stdout": "",
+                "stderr": f"Command parsing error: {e}",
+                "returncode": 1,
+            }
+        except Exception as e:
+            # For any other execution errors
+            logger.error(f"Command execution error: {e}")
+            return {
+                "stdout": "",
+                "stderr": f"Execution error: {e}",
+                "returncode": 1,
+            }
 
         return {
             "stdout": result.stdout,

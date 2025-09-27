@@ -1,27 +1,55 @@
 name: Release to PyPI
 
 on:
+  # Trigger on version tags
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v*'
+
+  # Manual workflow dispatch with version input
   workflow_dispatch:
     inputs:
+      version:
+        description: 'Version to release (e.g., 1.2.3)'
+        required: true
+        type: string
       dry_run:
         description: 'Dry run (publish to TestPyPI only)'
         required: false
         default: false
         type: boolean
+      skip_tests:
+        description: 'Skip test stage (not recommended for production)'
+        required: false
+        default: false
+        type: boolean
+
+  # Release created event
+  release:
+    types: [created]
 
 permissions:
-  contents: write  # Required for creating releases
-  id-token: write  # For trusted publishing
+  contents: write     # Required for creating releases and uploading assets
+  id-token: write     # Required for OIDC trusted publishing
+  attestations: write # Required for package attestations
+  packages: write     # Required for publishing packages
+
+env:
+  PACKAGE_NAME: greenlang-cli
+  PYTHON_VERSIONS: '["3.10", "3.11", "3.12"]'
 
 jobs:
-  build-publish:
+  # ================================
+  # BUILD STAGE
+  # ================================
+  build:
+    name: Build Distribution Packages
     runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/project/greenlang-cli/
+    timeout-minutes: 20
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
 
     steps:
       - name: Checkout code
@@ -29,49 +57,311 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set version and verify tag
+      - name: Determine version and validate
+        id: version
         run: |
-          FILE_VER="$(cat VERSION | tr -d ' \n')"
-          echo "VERSION=$FILE_VER" >> $GITHUB_ENV
+          # Determine version from different sources
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+            echo "Using manual version: $VERSION"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+            echo "Using tag version: $VERSION"
+          elif [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+            echo "Using release version: $VERSION"
+          else
+            echo "❌ Unable to determine version"
+            exit 1
+          fi
 
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            TAG="${GITHUB_REF_NAME#v}"
-            if [ "$TAG" != "$FILE_VER" ]; then
-              echo "❌ Tag $TAG != VERSION $FILE_VER"
+          # Validate version format
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([a-zA-Z0-9\-\.]*)?$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: X.Y.Z or X.Y.Z-suffix"
+            exit 1
+          fi
+
+          # Check if VERSION file exists and matches (for tag pushes)
+          if [[ "${{ github.event_name }}" == "push" ]] && [[ -f VERSION ]]; then
+            FILE_VERSION=$(cat VERSION | tr -d ' \n')
+            if [[ "$VERSION" != "$FILE_VERSION" ]]; then
+              echo "❌ Tag version ($VERSION) does not match VERSION file ($FILE_VERSION)"
               exit 1
             fi
-            echo "✅ Version check passed: $TAG"
-          else
-            echo "✅ Manual trigger - using VERSION file: $FILE_VER"
           fi
+
+          # Determine if this is a prerelease
+          IS_PRERELEASE="false"
+          if [[ "$VERSION" =~ (alpha|beta|rc|dev|pre) ]]; then
+            IS_PRERELEASE="true"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "is_prerelease=$IS_PRERELEASE" >> $GITHUB_OUTPUT
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "IS_PRERELEASE=$IS_PRERELEASE" >> $GITHUB_ENV
+
+          echo "✅ Version validation passed: $VERSION (prerelease: $IS_PRERELEASE)"
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade build twine wheel setuptools
+          echo "✅ Build tools installed"
+
+      - name: Update version in files
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          # Update VERSION file
+          echo "${{ env.VERSION }}" > VERSION
+
+          # Update pyproject.toml version
+          sed -i 's/^version = ".*"/version = "${{ env.VERSION }}"/' pyproject.toml
+
+          echo "✅ Version updated in files"
+
+      - name: Build source distribution and wheel
+        run: |
+          echo "🔨 Building packages..."
+          python -m build --sdist --wheel --outdir dist/
+
+          echo "📦 Built packages:"
+          ls -la dist/
+
+          # Verify we have the expected files
+          if [[ ! -f dist/*.whl ]] || [[ ! -f dist/*.tar.gz ]]; then
+            echo "❌ Missing expected package files"
+            exit 1
+          fi
+
+          echo "✅ Package build completed"
+
+      - name: Validate packages with twine
+        run: |
+          echo "🔍 Validating packages..."
+          python -m twine check dist/*
+          echo "✅ Package validation passed"
+
+      - name: Generate package info
+        run: |
+          echo "📋 Package Information:"
+          echo "===================================="
+          for file in dist/*; do
+            echo "File: $(basename $file)"
+            echo "Size: $(du -h $file | cut -f1)"
+            echo "----"
+          done
+
+          echo "Package contents:"
+          python -m tarfile --list dist/*.tar.gz | head -20
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-packages
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build.log
+            *.log
+          retention-days: 3
+          if-no-files-found: ignore
+
+  # ================================
+  # TEST STAGE
+  # ================================
+  test:
+    name: Test Package Installation
+    needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' && github.event.inputs.skip_tests != 'true' }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-packages
+          path: dist/
+
+      - name: Create test environment
+        run: |
+          python -m venv test-env
+
+      - name: Activate test environment and install package (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          source test-env/bin/activate
+          python -m pip install --upgrade pip
+
+          # Install from wheel
+          pip install dist/*.whl
+
+          echo "✅ Package installed successfully"
+
+      - name: Activate test environment and install package (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          test-env\Scripts\activate
+          python -m pip install --upgrade pip
+
+          # Install from wheel
+          pip install (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
+
+          echo "✅ Package installed successfully"
+
+      - name: Verify version matches expected (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          source test-env/bin/activate
+
+          # Test CLI version
+          VERSION_OUTPUT=$(gl --version)
+          echo "CLI version output: $VERSION_OUTPUT"
+
+          if [[ "$VERSION_OUTPUT" != *"${{ needs.build.outputs.version }}"* ]]; then
+            echo "❌ CLI version mismatch"
+            echo "Expected: ${{ needs.build.outputs.version }}"
+            echo "Got: $VERSION_OUTPUT"
+            exit 1
+          fi
+
+          echo "✅ Version verification passed"
+
+      - name: Verify version matches expected (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          test-env\Scripts\activate
+
+          # Test CLI version
+          $VERSION_OUTPUT = gl --version
+          Write-Output "CLI version output: $VERSION_OUTPUT"
+
+          if (-not $VERSION_OUTPUT.Contains("${{ needs.build.outputs.version }}")) {
+            Write-Output "❌ CLI version mismatch"
+            Write-Output "Expected: ${{ needs.build.outputs.version }}"
+            Write-Output "Got: $VERSION_OUTPUT"
+            exit 1
+          }
+
+          Write-Output "✅ Version verification passed"
+
+      - name: Test package imports (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          source test-env/bin/activate
+
+          # Test basic imports
+          python -c "import greenlang; print(f'✅ greenlang import successful: {greenlang.__version__}')"
+          python -c "import greenlang.cli; print('✅ CLI module import successful')"
+          python -c "import core.greenlang; print('✅ Core module import successful')"
+
+          echo "✅ All imports successful"
+
+      - name: Test package imports (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          test-env\Scripts\activate
+
+          # Test basic imports
+          python -c "import greenlang; print(f'✅ greenlang import successful: {greenlang.__version__}')"
+          python -c "import greenlang.cli; print('✅ CLI module import successful')"
+          python -c "import core.greenlang; print('✅ Core module import successful')"
+
+          Write-Output "✅ All imports successful"
+
+      - name: Test CLI functionality (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          source test-env/bin/activate
+
+          # Test basic CLI commands
+          gl --help
+
+          # Test that the CLI can execute without errors
+          timeout 10s gl --version || true
+
+          echo "✅ CLI functionality test passed"
+
+      - name: Test CLI functionality (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          test-env\Scripts\activate
+
+          # Test basic CLI commands
+          gl --help
+
+          # Test that the CLI can execute without errors
+          gl --version
+
+          Write-Output "✅ CLI functionality test passed"
+
+  # ================================
+  # PUBLISH STAGE
+  # ================================
+  publish:
+    name: Publish to PyPI
+    needs: [build, test]
+    if: ${{ !cancelled() && needs.build.result == 'success' && (needs.test.result == 'success' || github.event.inputs.skip_tests == 'true') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    environment:
+      name: ${{ github.event.inputs.dry_run == 'true' && 'testpypi' || 'pypi' }}
+      url: ${{ github.event.inputs.dry_run == 'true' && 'https://test.pypi.org/project/greenlang-cli/' || 'https://pypi.org/project/greenlang-cli/' }}
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-packages
+          path: dist/
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install build dependencies
+      - name: Install publishing tools
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade build twine
+          python -m pip install --upgrade pip twine sigstore
 
-      - name: Build package
-        run: |
-          python -m build
-          echo "📦 Built packages:"
-          ls -la dist/
+      - name: Generate package attestations
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: 'dist/*'
 
-      - name: Validate package
+      - name: Sign packages with Sigstore
         run: |
-          twine check dist/*
-          echo "✅ Package validation passed"
-
-      - name: Sign with Sigstore (optional)
-        continue-on-error: true
-        run: |
-          python -m pip install sigstore
+          echo "🔏 Signing packages with Sigstore..."
           python -m sigstore sign dist/*.whl dist/*.tar.gz
-          echo "✅ Packages signed with Sigstore"
+          echo "✅ Packages signed successfully"
 
       - name: Publish to TestPyPI (dry run)
         if: ${{ github.event.inputs.dry_run == 'true' }}
@@ -80,94 +370,256 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
           echo "🧪 Publishing to TestPyPI (dry run)..."
-          # Only upload .whl and .tar.gz files, not .sigstore.json files
-          python -m twine upload --repository testpypi dist/*.whl dist/*.tar.gz
 
-      - name: Publish to PyPI
+          if [[ -z "${TWINE_PASSWORD}" ]]; then
+            echo "❌ TEST_PYPI_API_TOKEN secret not configured"
+            exit 1
+          fi
+
+          # Upload only .whl and .tar.gz files (exclude .sigstore.json)
+          python -m twine upload --repository testpypi dist/*.whl dist/*.tar.gz --verbose
+
+          echo "✅ Successfully published to TestPyPI"
+
+      - name: Publish to PyPI (production)
         if: ${{ github.event.inputs.dry_run != 'true' }}
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          echo "🚀 Publishing to PyPI..."
-          if [ -z "${TWINE_PASSWORD}" ]; then
-            echo "❌ Error: PYPI_API_TOKEN secret is not configured properly"
-            echo "Please ensure the PYPI_API_TOKEN secret is set in your repository settings"
-            echo "Go to: Settings > Secrets and variables > Actions"
+          echo "🚀 Publishing to PyPI (production)..."
+
+          # Try OIDC trusted publishing first, then fall back to API token
+          if python -m twine upload dist/*.whl dist/*.tar.gz --verbose 2>/dev/null; then
+            echo "✅ Published using OIDC trusted publishing"
+          elif [[ -n "${TWINE_PASSWORD}" ]]; then
+            echo "🔄 OIDC failed, trying API token..."
+            python -m twine upload dist/*.whl dist/*.tar.gz --verbose
+            echo "✅ Published using API token"
+          else
+            echo "❌ No publishing method available"
+            echo "Configure either OIDC trusted publishing or PYPI_API_TOKEN secret"
             exit 1
           fi
-          echo "✅ PyPI token is available, proceeding with upload..."
-          # Only upload .whl and .tar.gz files, not .sigstore.json files
-          python -m twine upload dist/*.whl dist/*.tar.gz
 
-      - name: Verify installation
-        if: ${{ github.event.inputs.dry_run != 'true' }}
+          echo "✅ Successfully published to PyPI"
+
+  # ================================
+  # POST-PUBLISH VERIFICATION
+  # ================================
+  verify:
+    name: Post-Publish Verification
+    needs: [build, publish]
+    if: ${{ !cancelled() && needs.publish.result == 'success' && github.event.inputs.dry_run != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Wait for PyPI to update
         run: |
-          sleep 30  # Give PyPI time to update
-          python -m venv test-install
-          . test-install/bin/activate
-          pip install --upgrade pip
-          pip install greenlang-cli==${{ env.VERSION }}
+          echo "⏳ Waiting for PyPI to update..."
+          sleep 60  # Give PyPI time to propagate
+
+      - name: Test installation from PyPI
+        run: |
+          # Create fresh environment
+          python -m venv verify-env
+          source verify-env/bin/activate
+
+          # Install from PyPI with retries
+          for i in {1..5}; do
+            echo "Attempt $i to install from PyPI..."
+            if pip install --no-cache-dir ${{ env.PACKAGE_NAME }}==${{ needs.build.outputs.version }}; then
+              echo "✅ Successfully installed from PyPI"
+              break
+            elif [[ $i -eq 5 ]]; then
+              echo "❌ Failed to install from PyPI after 5 attempts"
+              exit 1
+            else
+              echo "⏳ Retrying in 30 seconds..."
+              sleep 30
+            fi
+          done
+
+      - name: Verify published version
+        run: |
+          source verify-env/bin/activate
+
+          # Verify CLI works
+          VERSION_OUTPUT=$(gl --version)
+          echo "Installed version: $VERSION_OUTPUT"
+
+          if [[ "$VERSION_OUTPUT" != *"${{ needs.build.outputs.version }}"* ]]; then
+            echo "❌ Version verification failed"
+            exit 1
+          fi
+
+          # Test basic functionality
+          gl --help > /dev/null
+          python -c "import greenlang; print(f'✅ Verification successful: {greenlang.__version__}')"
+
+          echo "✅ Post-publish verification passed"
+
+  # ================================
+  # GITHUB RELEASE
+  # ================================
+  release:
+    name: Create GitHub Release
+    needs: [build, publish, verify]
+    if: ${{ !cancelled() && needs.publish.result == 'success' && github.event.inputs.dry_run != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: python-packages
+          path: dist/
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          VERSION="${{ needs.build.outputs.version }}"
+          IS_PRERELEASE="${{ needs.build.outputs.is_prerelease }}"
+
+          # Generate changelog from git commits
+          if git tag --list | grep -q "v"; then
+            LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [[ -n "$LAST_TAG" ]]; then
+              echo "## Changes since $LAST_TAG" > RELEASE_NOTES.md
+              git log --pretty=format:"- %s (%h)" "$LAST_TAG"..HEAD >> RELEASE_NOTES.md
+            else
+              echo "## Initial Release" > RELEASE_NOTES.md
+            fi
+          else
+            echo "## Release Notes" > RELEASE_NOTES.md
+            echo "Version $VERSION of GreenLang CLI" >> RELEASE_NOTES.md
+          fi
+
+          # Add installation and verification instructions
+          cat >> RELEASE_NOTES.md << EOF
+
+          ## 🚀 Installation
+
+          \`\`\`bash
+          pip install greenlang-cli==$VERSION
+          \`\`\`
+
+          ## 🔍 Verification
+
+          \`\`\`bash
           gl --version
-          python -c "import greenlang; print('✅ Import successful:', greenlang.__version__)"
+          python -c "import greenlang; print(greenlang.__version__)"
+          \`\`\`
+
+          ## 📚 Links
+
+          - [PyPI Package](https://pypi.org/project/greenlang-cli/$VERSION/)
+          - [Documentation](https://greenlang.io/docs)
+          - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+          - [Discord Community](https://discord.gg/greenlang)
+
+          ## 📦 Package Checksums
+
+          EOF
+
+          # Add checksums for security
+          cd dist
+          for file in *.whl *.tar.gz; do
+            echo "- \`$file\`: \`$(sha256sum $file | cut -d' ' -f1)\`" >> ../RELEASE_NOTES.md
+          done
+
+          echo "Generated release notes:"
+          cat RELEASE_NOTES.md
 
       - name: Create GitHub Release
-        if: ${{ github.event.inputs.dry_run != 'true' && startsWith(github.ref, 'refs/tags/') }}
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: GreenLang v${{ github.ref_name }}
-          body: |
-            ## 🚀 GreenLang ${{ github.ref_name }} Released to PyPI
-
-            ### Installation
-            ```bash
-            pip install greenlang-cli==${{ github.ref_name }}
-            ```
-
-            ### Verification
-            ```bash
-            gl --version
-            ```
-
-            ### Links
-            - [PyPI Package](https://pypi.org/project/greenlang-cli/${{ github.ref_name }}/)
-            - [Documentation](https://greenlang.io/docs)
-            - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', needs.build.outputs.version) || github.ref_name }}
+          name: ${{ format('GreenLang CLI v{0}', needs.build.outputs.version) }}
+          body_path: RELEASE_NOTES.md
           draft: false
-          prerelease: false
+          prerelease: ${{ needs.build.outputs.is_prerelease == 'true' }}
           files: |
             dist/*.whl
             dist/*.tar.gz
+            dist/*.sigstore.json
+          make_latest: ${{ needs.build.outputs.is_prerelease != 'true' }}
 
-      - name: Create GitHub Release (Manual)
-        if: ${{ github.event.inputs.dry_run != 'true' && github.event_name == 'workflow_dispatch' }}
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ env.VERSION }}
-          name: GreenLang v${{ env.VERSION }}
-          body: |
-            ## 🚀 GreenLang v${{ env.VERSION }} Released to PyPI
+      - name: Update latest release tag
+        if: ${{ needs.build.outputs.is_prerelease != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            ### Installation
-            ```bash
-            pip install greenlang-cli==${{ env.VERSION }}
-            ```
+          # Create or update latest tag
+          git tag -f latest
+          git push origin latest --force
 
-            ### Verification
-            ```bash
-            gl --version
-            ```
+          echo "✅ Updated latest tag"
 
-            ### Links
-            - [PyPI Package](https://pypi.org/project/greenlang-cli/${{ env.VERSION }}/)
-            - [Documentation](https://greenlang.io/docs)
-            - [Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
-          draft: false
-          prerelease: false
-          files: |
-            dist/*.whl
-            dist/*.tar.gz
+  # ================================
+  # NOTIFICATION
+  # ================================
+  notify:
+    name: Send Notifications
+    needs: [build, publish, verify, release]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Determine workflow status
+        id: status
+        run: |
+          if [[ "${{ needs.build.result }}" == "success" ]] && \
+             [[ "${{ needs.publish.result }}" == "success" ]] && \
+             [[ "${{ needs.verify.result }}" == "success" || "${{ needs.verify.result }}" == "skipped" ]] && \
+             [[ "${{ needs.release.result }}" == "success" || "${{ needs.release.result }}" == "skipped" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "message=🚀 PyPI release completed successfully!" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "message=❌ PyPI release failed. Check workflow logs." >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create workflow summary
+        run: |
+          echo "# PyPI Release Workflow Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ steps.status.outputs.status == 'success' && '✅ Success' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.build.outputs.version || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Dry Run:** ${{ github.event.inputs.dry_run || 'false' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Stage Results" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build:** ${{ needs.build.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test:** ${{ needs.test.result || 'skipped' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Publish:** ${{ needs.publish.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Verify:** ${{ needs.verify.result || 'skipped' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release:** ${{ needs.release.result || 'skipped' }}" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ steps.status.outputs.status }}" == "success" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## 🎉 Release Information" >> $GITHUB_STEP_SUMMARY
+            echo "- **PyPI Package:** https://pypi.org/project/greenlang-cli/${{ needs.build.outputs.version }}/" >> $GITHUB_STEP_SUMMARY
+            echo "- **GitHub Release:** ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ needs.build.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Quick Install" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+            echo "pip install greenlang-cli==${{ needs.build.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -53,6 +53,130 @@ class PackInstaller:
         self.session = create_secure_session()
         self.verifier = PackVerifier()
 
+    def install_pack(
+        self,
+        path: str,
+        allow_unsigned: bool = False,
+        force: bool = False,
+    ) -> InstalledPack:
+        """
+        Install a pack with security validation
+
+        Args:
+            path: Path to pack directory or archive
+            allow_unsigned: Allow unsigned packs (dev mode only)
+            force: Force reinstall if already exists
+
+        Returns:
+            InstalledPack metadata
+
+        Raises:
+            SignatureVerificationError: If pack is unsigned and allow_unsigned is False
+            ValueError: If pack capabilities are invalid
+        """
+        # Convert to Path
+        pack_path = Path(path)
+
+        # Check signature unless explicitly allowed
+        verify = not allow_unsigned
+
+        if not allow_unsigned:
+            logger.info("Verifying pack signature (signed-only mode)")
+        else:
+            logger.warning("⚠️  SECURITY WARNING: Installing unsigned pack (dev mode)")
+
+        # Install based on path type
+        if pack_path.is_dir():
+            installed = self._install_from_local(pack_path, verify=verify)
+        elif pack_path.is_file():
+            installed = self._install_from_archive(pack_path, verify=verify)
+        else:
+            # Try as a source string (PyPI, GitHub, etc.)
+            installed = self.install(str(path), verify=verify, force=force)
+
+        # Validate capabilities
+        if installed and installed.path:
+            manifest_path = Path(installed.path) / "pack.yaml"
+            if manifest_path.exists():
+                manifest = PackManifest.from_yaml(Path(installed.path))
+                if manifest.capabilities:
+                    issues = self._validate_capabilities(manifest.capabilities)
+                    if issues:
+                        logger.warning(f"Capability validation issues: {issues}")
+                        if not allow_unsigned:  # Strict mode
+                            # Uninstall the pack
+                            self.uninstall(installed.name)
+                            raise ValueError(f"Pack capabilities validation failed: {issues}")
+
+        return installed
+
+    def _validate_capabilities(self, capabilities) -> List[str]:
+        """
+        Validate pack capabilities for security
+
+        Args:
+            capabilities: Capabilities object from manifest
+
+        Returns:
+            List of validation issues (empty if valid)
+        """
+        issues = []
+
+        # Check subprocess capabilities
+        if hasattr(capabilities, 'subprocess') and capabilities.subprocess:
+            if capabilities.subprocess.allow:
+                # Check for dangerous binaries
+                dangerous_binaries = [
+                    '/bin/sh', '/bin/bash', '/usr/bin/python', '/usr/bin/perl',
+                    '/usr/bin/ruby', '/usr/bin/sudo', 'sudo', 'sh', 'bash',
+                    '/usr/bin/curl', 'curl', 'wget', '/usr/bin/wget'
+                ]
+                for binary in capabilities.subprocess.allowlist:
+                    if binary in dangerous_binaries:
+                        issues.append(f"Dangerous binary in allowlist: {binary}")
+
+        # Check filesystem capabilities
+        if hasattr(capabilities, 'fs') and capabilities.fs:
+            if capabilities.fs.allow:
+                # Check for root filesystem access
+                dangerous_paths = ['/', '/*', '/**', '/etc', '/etc/*', '/root', '/root/*']
+
+                if hasattr(capabilities.fs, 'write'):
+                    if isinstance(capabilities.fs.write, dict) and 'allowlist' in capabilities.fs.write:
+                        for path in capabilities.fs.write['allowlist']:
+                            if path in dangerous_paths:
+                                issues.append("Root filesystem write access is not allowed")
+                            if '..' in path:
+                                issues.append(f"Path traversal detected: {path}")
+
+                if hasattr(capabilities.fs, 'read'):
+                    if isinstance(capabilities.fs.read, dict) and 'allowlist' in capabilities.fs.read:
+                        for path in capabilities.fs.read['allowlist']:
+                            if '..' in path:
+                                issues.append(f"Path traversal detected: {path}")
+
+                # Check write_paths and read_paths
+                if hasattr(capabilities.fs, 'write_paths'):
+                    for path in capabilities.fs.write_paths:
+                        if path in dangerous_paths:
+                            issues.append("Root filesystem write access is not allowed")
+                        if '..' in path:
+                            issues.append(f"Path traversal detected: {path}")
+
+                if hasattr(capabilities.fs, 'read_paths'):
+                    for path in capabilities.fs.read_paths:
+                        if '..' in path:
+                            issues.append(f"Path traversal detected: {path}")
+
+        # Check network capabilities
+        if hasattr(capabilities, 'net') and capabilities.net:
+            if capabilities.net.allow:
+                # Check egress allowlist
+                if not capabilities.net.egress_allowlist:
+                    issues.append("Network capability enabled without egress allowlist")
+
+        return issues
+
     def install(
         self,
         source: str,

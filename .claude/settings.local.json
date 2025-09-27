@@ -297,7 +297,21 @@
       "Bash(test_venvScriptspython.exe -m pip install --upgrade pip --quiet)",
       "Bash(test_venvScriptspip.exe install distgreenlang_cli-0.3.0-py3-none-any.whl --quiet)",
       "Bash(test_venvScriptsgl.exe --version)",
-      "Bash(.test_venvScriptspython.exe -m pip install --upgrade pip --quiet)"
+      "Bash(.test_venvScriptspython.exe -m pip install --upgrade pip --quiet)",
+      "Bash(do if [ -f \"$file\" ])",
+      "Bash(then echo \"EXISTS: $file\")",
+      "Bash(else echo \"MISSING: $file\")",
+      "Bash(cosign:*)",
+      "Bash(./validate_demo.sh)",
+      "Bash(git describe:*)",
+      "Bash(./test-gl-install/Scripts/python.exe -m pip install --upgrade pip --quiet)",
+      "Bash(./test-gl-install/Scripts/python.exe -m pip install dist/greenlang_cli-0.3.0-py3-none-any.whl --quiet)",
+      "Bash(./test-gl-install/Scripts/gl.exe --version)",
+      "Bash(./test-gl-install/Scripts/gl.exe --help)",
+      "Bash(C:Python313python.exe -m pip install dist/greenlang_cli-0.3.0-py3-none-any.whl --force-reinstall)",
+      "Bash(\"C:\\Python313\\python.exe\" -m pip install dist/greenlang_cli-0.3.0-py3-none-any.whl --force-reinstall)",
+      "Bash(C:UsersrsharAppDataRoamingPythonPython313Scriptsgl.exe --version)",
+      "Bash(\"C:\\Users\\rshar\\AppData\\Roaming\\Python\\Python313\\Scripts\\gl.exe\" --version)"
     ],
     "deny": []
   }

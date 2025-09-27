@@ -1,0 +1,37 @@
+{
+  "building": {
+    "id": "demo-building-001",
+    "name": "Tech Office Demo",
+    "type": "commercial_office",
+    "area_m2": 2500,
+    "location": "San Francisco, CA",
+    "occupancy": 150,
+    "year_built": 2015,
+    "floors": 3,
+    "description": "Modern office building with open floor plan"
+  },
+  "energy_consumption": [
+    {
+      "fuel_type": "electricity",
+      "consumption": 50000,
+      "unit": "kWh",
+      "period": "annual",
+      "source": "utility_bills",
+      "notes": "Includes lighting, HVAC, computers, and general plug loads"
+    },
+    {
+      "fuel_type": "natural_gas",
+      "consumption": 1000,
+      "unit": "therms",
+      "period": "annual",
+      "source": "utility_bills",
+      "notes": "Heating and domestic hot water"
+    }
+  ],
+  "metadata": {
+    "analysis_year": 2024,
+    "data_quality": "high",
+    "created_date": "2024-09-27",
+    "notes": "Sample data for GreenLang quickstart tutorial"
+  }
+}

@@ -1,0 +1,194 @@
+name: Documentation Build & Check
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'docs/**'
+      - '**.md'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs-build.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - '**.md'
+      - 'mkdocs.yml'
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install documentation dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mkdocs mkdocs-material mkdocs-mermaid2-plugin
+          pip install pymdown-extensions mkdocs-git-revision-date-localized-plugin
+
+      - name: Build documentation
+        run: |
+          # If mkdocs.yml doesn't exist, create a basic one
+          if [ ! -f mkdocs.yml ]; then
+            cat > mkdocs.yml << 'EOF'
+          site_name: GreenLang Documentation
+          site_url: https://docs.greenlang.ai
+          repo_url: https://github.com/greenlang/greenlang
+          repo_name: greenlang/greenlang
+
+          theme:
+            name: material
+            features:
+              - navigation.tabs
+              - navigation.sections
+              - navigation.expand
+              - toc.integrate
+              - search.suggest
+              - search.highlight
+
+          nav:
+            - Home: README.md
+            - Quickstart: QUICKSTART.md
+            - Security: SECURITY.md
+            - Performance: PERFORMANCE.md
+            - API Reference: api/
+            - Examples: examples/
+
+          markdown_extensions:
+            - pymdownx.highlight
+            - pymdownx.superfences
+            - pymdownx.tabbed
+            - admonition
+            - codehilite
+          EOF
+          fi
+
+          # Build docs
+          mkdocs build --strict --verbose
+
+      - name: Check for broken links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: |
+            --verbose
+            --no-progress
+            --accept 200,204,206
+            --timeout 20
+            --max-concurrency 10
+            --exclude-all-private
+            --exclude '^https?://localhost'
+            --exclude '^https?://127\.0\.0\.1'
+            --exclude '^https?://example\.com'
+            --exclude '^https?://\[.*\]'
+            ./docs
+            ./README.md
+            ./QUICKSTART.md
+            ./*.md
+          fail: true
+          jobSummary: true
+
+      - name: Check markdown formatting
+        uses: DavidAnson/markdownlint-cli2-action@v18
+        with:
+          globs: |
+            **/*.md
+            !node_modules
+            !.venv*
+            !test*
+          config: |
+            {
+              "default": true,
+              "MD013": false,
+              "MD033": false,
+              "MD041": false
+            }
+
+      - name: Validate code examples in docs
+        run: |
+          # Extract and validate code blocks from markdown
+          python - << 'EOF'
+          import re
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          def extract_code_blocks(file_path):
+              with open(file_path, 'r') as f:
+                  content = f.read()
+
+              # Find code blocks with language specified
+              pattern = r'```(bash|python|yaml|json)\n(.*?)```'
+              blocks = re.findall(pattern, content, re.DOTALL)
+              return blocks
+
+          def validate_code_block(lang, code):
+              if lang == 'yaml':
+                  try:
+                      import yaml
+                      yaml.safe_load(code)
+                      return True, "Valid YAML"
+                  except Exception as e:
+                      return False, f"Invalid YAML: {e}"
+              elif lang == 'json':
+                  try:
+                      import json
+                      json.loads(code)
+                      return True, "Valid JSON"
+                  except Exception as e:
+                      return False, f"Invalid JSON: {e}"
+              elif lang == 'python':
+                  try:
+                      compile(code, '<string>', 'exec')
+                      return True, "Valid Python syntax"
+                  except SyntaxError as e:
+                      return False, f"Python syntax error: {e}"
+              return True, "Skipped validation"
+
+          errors = []
+          for md_file in Path('.').glob('**/*.md'):
+              if any(skip in str(md_file) for skip in ['.venv', 'node_modules', 'test']):
+                  continue
+
+              blocks = extract_code_blocks(md_file)
+              for lang, code in blocks:
+                  valid, msg = validate_code_block(lang, code)
+                  if not valid:
+                      errors.append(f"{md_file}: {msg}")
+
+          if errors:
+              print("Code block validation errors:")
+              for error in errors:
+                  print(f"  - {error}")
+              sys.exit(1)
+          else:
+              print("✅ All code blocks are valid")
+          EOF
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: documentation-build
+          path: |
+            site/
+            mkdocs.yml
+
+      - name: Deploy to GitHub Pages (main branch only)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Deploy documentation ${{ github.sha }}'

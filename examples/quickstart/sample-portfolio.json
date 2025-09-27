@@ -1,0 +1,176 @@
+{
+  "portfolio_name": "Demo Corporate Portfolio",
+  "description": "Sample building portfolio for GreenLang quickstart tutorial",
+  "organization": "Demo Corporation",
+  "analysis_period": {
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31"
+  },
+  "buildings": [
+    {
+      "id": "corp-hq-001",
+      "name": "Corporate Headquarters",
+      "type": "commercial_office",
+      "area_m2": 5000,
+      "location": "San Francisco, CA",
+      "occupancy": 300,
+      "year_built": 2010,
+      "floors": 8,
+      "energy_consumption": [
+        {
+          "fuel_type": "electricity",
+          "consumption": 75000,
+          "unit": "kWh",
+          "period": "annual",
+          "source": "utility_bills"
+        },
+        {
+          "fuel_type": "natural_gas",
+          "consumption": 1500,
+          "unit": "therms",
+          "period": "annual",
+          "source": "utility_bills"
+        }
+      ]
+    },
+    {
+      "id": "retail-dt-002",
+      "name": "Retail Store Downtown",
+      "type": "retail",
+      "area_m2": 1200,
+      "location": "San Francisco, CA",
+      "occupancy": 25,
+      "year_built": 2005,
+      "floors": 1,
+      "energy_consumption": [
+        {
+          "fuel_type": "electricity",
+          "consumption": 45000,
+          "unit": "kWh",
+          "period": "annual",
+          "source": "utility_bills"
+        },
+        {
+          "fuel_type": "natural_gas",
+          "consumption": 300,
+          "unit": "therms",
+          "period": "annual",
+          "source": "utility_bills"
+        }
+      ]
+    },
+    {
+      "id": "warehouse-oak-003",
+      "name": "Warehouse Facility",
+      "type": "warehouse",
+      "area_m2": 8000,
+      "location": "Oakland, CA",
+      "occupancy": 50,
+      "year_built": 1995,
+      "floors": 1,
+      "energy_consumption": [
+        {
+          "fuel_type": "electricity",
+          "consumption": 120000,
+          "unit": "kWh",
+          "period": "annual",
+          "source": "utility_bills"
+        },
+        {
+          "fuel_type": "natural_gas",
+          "consumption": 800,
+          "unit": "therms",
+          "period": "annual",
+          "source": "utility_bills"
+        }
+      ]
+    },
+    {
+      "id": "medical-sj-004",
+      "name": "Medical Office Complex",
+      "type": "healthcare",
+      "area_m2": 3000,
+      "location": "San Jose, CA",
+      "occupancy": 100,
+      "year_built": 2018,
+      "floors": 2,
+      "energy_consumption": [
+        {
+          "fuel_type": "electricity",
+          "consumption": 90000,
+          "unit": "kWh",
+          "period": "annual",
+          "source": "utility_bills"
+        },
+        {
+          "fuel_type": "natural_gas",
+          "consumption": 1200,
+          "unit": "therms",
+          "period": "annual",
+          "source": "utility_bills"
+        }
+      ]
+    },
+    {
+      "id": "school-pa-005",
+      "name": "Elementary School",
+      "type": "education",
+      "area_m2": 4500,
+      "location": "Palo Alto, CA",
+      "occupancy": 600,
+      "year_built": 2000,
+      "floors": 2,
+      "energy_consumption": [
+        {
+          "fuel_type": "electricity",
+          "consumption": 85000,
+          "unit": "kWh",
+          "period": "annual",
+          "source": "utility_bills"
+        },
+        {
+          "fuel_type": "natural_gas",
+          "consumption": 2000,
+          "unit": "therms",
+          "period": "annual",
+          "source": "utility_bills"
+        }
+      ]
+    },
+    {
+      "id": "hotel-sf-006",
+      "name": "Boutique Hotel",
+      "type": "hospitality",
+      "area_m2": 2800,
+      "location": "San Francisco, CA",
+      "occupancy": 80,
+      "year_built": 2012,
+      "floors": 5,
+      "energy_consumption": [
+        {
+          "fuel_type": "electricity",
+          "consumption": 110000,
+          "unit": "kWh",
+          "period": "annual",
+          "source": "utility_bills"
+        },
+        {
+          "fuel_type": "natural_gas",
+          "consumption": 1800,
+          "unit": "therms",
+          "period": "annual",
+          "source": "utility_bills"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "total_buildings": 6,
+    "total_area_m2": 24500,
+    "portfolio_type": "mixed_use",
+    "geographical_scope": "bay_area",
+    "created_date": "2024-09-27",
+    "data_quality": "high",
+    "notes": "Comprehensive sample portfolio representing various building types common in corporate real estate portfolios"
+  }
+}

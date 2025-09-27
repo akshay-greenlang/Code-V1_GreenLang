@@ -3,6 +3,9 @@
 [![PyPI Version](https://img.shields.io/pypi/v/greenlang-cli.svg)](https://pypi.org/project/greenlang-cli/)
 [![Python Support](https://img.shields.io/pypi/pyversions/greenlang-cli.svg)](https://pypi.org/project/greenlang-cli/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/greenlang/greenlang/ci.yml?branch=master)](https://github.com/greenlang/greenlang/actions)
+[![Test Coverage](https://img.shields.io/badge/coverage-9.43%25-red)](https://github.com/greenlang/greenlang/actions)
+[![Latest Release](https://img.shields.io/github/v/release/greenlang/greenlang?include_prereleases)](https://github.com/greenlang/greenlang/releases)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 **Enterprise-grade climate intelligence platform for building, deploying, and managing climate-aware applications. Infrastructure-first with a powerful SDK.**
@@ -27,7 +30,48 @@ GreenLang is the Climate Intelligence Platform that provides managed runtime pri
 - **Type-Safe Python SDK**: 100% typed interfaces with strict validation
 - **Global Coverage**: Localized emission factors for 12+ major economies
 
-## Installation
+## 🚀 Quick Start - Get Running in 2 Minutes
+
+Choose your preferred installation method and start calculating carbon emissions immediately:
+
+### Option A: PyPI Installation (Recommended)
+
+```bash
+# Install the latest version
+pip install greenlang-cli==0.3.0
+
+# Verify installation
+gl version
+
+# Run your first calculation
+python3 -c "
+from greenlang.sdk import GreenLangClient
+client = GreenLangClient()
+result = client.calculate_carbon_footprint([
+    {'fuel_type': 'electricity', 'consumption': 1000, 'unit': 'kWh'},
+    {'fuel_type': 'natural_gas', 'consumption': 50, 'unit': 'therms'}
+])
+print(f'Total emissions: {result[\"data\"][\"total_emissions_tons\"]:.2f} metric tons CO2e')
+"
+```
+
+### Option B: Docker Installation
+
+```bash
+# Pull and run with Docker
+docker run --rm ghcr.io/greenlang/greenlang:0.3.0 version
+
+# Calculate emissions using Docker
+echo '{"fuels":[{"fuel_type":"electricity","consumption":1000,"unit":"kWh"}]}' | \
+docker run --rm -i ghcr.io/greenlang/greenlang:0.3.0 calc --input-format json
+```
+
+**Next Steps:**
+- 📖 Follow the [10-minute quickstart guide](docs/quickstart.md)
+- 🎯 Try the [ready-to-run examples](examples/quickstart/)
+- 📚 Read the [full documentation](https://greenlang.io/docs)
+
+## Installation Options
 
 ```bash
 # Basic installation
@@ -43,63 +87,48 @@ pip install greenlang-cli[full]
 pip install greenlang-cli[dev]
 ```
 
-## Quick Start
+### System Requirements
+- Python 3.10 or higher
+- 2GB RAM minimum (4GB recommended)
+- Internet connection for emission factor updates
+- Docker (optional, for containerized deployments)
 
-### CLI Usage
+## Feature Highlights
 
-```bash
-# Initialize a new GreenLang project
-gl init my-climate-app
+### ✨ Core Capabilities
+- **🧮 Instant Calculations**: Calculate carbon footprints in milliseconds
+- **🏢 Building Intelligence**: 15+ specialized agents for building optimization
+- **📊 Global Coverage**: Emission factors for 12+ major economies
+- **🔄 Pipeline Orchestration**: YAML-based workflows with conditional logic
+- **🐳 Multi-Deployment**: Local, Docker, and Kubernetes support
+- **🔒 Enterprise Security**: RBAC, audit trails, and signed artifacts
 
-# Create a new pack for emissions calculation
-gl pack new building-emissions
+### 🛠️ Developer Experience
+- **Type-Safe SDK**: 100% typed Python interfaces
+- **Modular Packs**: Reusable components for rapid development
+- **Rich CLI**: Intuitive command-line interface with `gl` command
+- **Hot Reload**: Real-time development with instant feedback
+- **Comprehensive Testing**: Built-in validation and testing framework
 
-# Run emissions analysis
-gl calc --building office_complex.json
-
-# Analyze with recommendations
-gl analyze results.json --format detailed
-
-# Execute a pipeline
-gl pipeline run decarbonization.yaml
-```
-
-### Python SDK
+### Python SDK Example
 
 ```python
-from greenlang import GreenLang
-from greenlang.models import Building, EmissionFactors
-from greenlang.agents import BuildingAgent, HVACOptimizer
+from greenlang.sdk import GreenLangClient
 
-# Initialize GreenLang
-gl = GreenLang()
+# Initialize client
+client = GreenLangClient()
 
-# Create a building model
-building = Building(
-    name="Tech Campus A",
-    area_m2=50000,
-    location="San Francisco",
-    building_type="office"
-)
+# Calculate building emissions
+result = client.calculate_building_emissions({
+    "area_m2": 5000,
+    "building_type": "office",
+    "electricity_kwh": 50000,
+    "gas_therms": 1000,
+    "location": "San Francisco"
+})
 
-# Calculate emissions
-agent = BuildingAgent()
-results = agent.calculate_emissions(
-    building=building,
-    energy_data=energy_consumption,
-    emission_factors=EmissionFactors.get_region("US-CA")
-)
-
-# Get optimization recommendations
-optimizer = HVACOptimizer()
-recommendations = optimizer.optimize(
-    building=building,
-    current_emissions=results.total_emissions,
-    target_reduction=0.30  # 30% reduction target
-)
-
-print(f"Current emissions: {results.total_emissions} tCO2e/year")
-print(f"Potential savings: ${recommendations.estimated_savings:,.2f}")
+print(f"Annual emissions: {result.total_emissions_tons:.1f} tCO2e")
+print(f"Intensity: {result.intensity_per_sqft:.2f} kgCO2e/sqft")
 ```
 
 ### YAML Pipelines
@@ -190,13 +219,23 @@ Orchestrate complex climate intelligence workflows:
 ![Performance](https://img.shields.io/badge/P95-<5ms-green)
 ![Uptime](https://img.shields.io/badge/uptime-alpha-orange)
 
-## Documentation
+## 📚 Documentation & Resources
 
-- [Platform Documentation](https://greenlang.io/platform)
-- [SDK & API Reference](https://greenlang.io/sdk)
-- [Pack Development Guide](https://greenlang.io/packs)
-- [Deployment Guide](https://greenlang.io/deploy)
-- [Contributing Guide](CONTRIBUTING.md)
+### Getting Started
+- **[10-Minute Quickstart](docs/quickstart.md)** - Get running immediately
+- **[Installation Guide](docs/installation.md)** - Detailed setup instructions
+- **[Ready-to-Run Examples](examples/quickstart/)** - Copy-paste examples
+
+### Developer Resources
+- **[Platform Documentation](https://greenlang.io/platform)** - Platform architecture and features
+- **[SDK & API Reference](https://greenlang.io/sdk)** - Complete API documentation
+- **[Pack Development Guide](https://greenlang.io/packs)** - Build custom components
+- **[Deployment Guide](https://greenlang.io/deploy)** - Production deployment
+
+### Advanced Topics
+- **[Pipeline Specification](docs/GL_PIPELINE_SPEC_V1.md)** - YAML workflow syntax
+- **[Security Model](docs/SECURITY_MODEL.md)** - Security and governance
+- **[Performance Guide](docs/PERFORMANCE.md)** - Optimization best practices
 
 ## Community & Support
 
@@ -252,13 +291,32 @@ Orchestrate complex climate intelligence workflows:
 - [ ] ML-powered optimization engine
 - [ ] Enterprise support and SLAs
 
-## Contributing
+## 🤝 Contributing
 
-We welcome contributions from the community! See our [Contributing Guide](CONTRIBUTING.md) for details on:
-- Setting up development environment
-- Code style and standards
-- Testing requirements
-- Submission process
+We welcome contributions from the climate tech community! Whether you're fixing bugs, adding features, or improving documentation, every contribution helps accelerate climate action.
+
+### Quick Start for Contributors
+```bash
+# Clone and setup development environment
+git clone https://github.com/greenlang/greenlang.git
+cd greenlang
+pip install -e ".[dev]"
+
+# Run tests
+pytest
+
+# Submit your first PR
+# See CONTRIBUTING.md for detailed guidelines
+```
+
+### Ways to Contribute
+- **🐛 Bug Reports**: Found an issue? [Open a GitHub issue](https://github.com/greenlang/greenlang/issues)
+- **💡 Feature Requests**: Have an idea? [Start a discussion](https://github.com/greenlang/greenlang/discussions)
+- **📖 Documentation**: Improve guides and examples
+- **🧪 Testing**: Add test coverage or performance benchmarks
+- **🌍 Emission Factors**: Contribute localized data for your region
+
+**Read our [Contributing Guide](CONTRIBUTING.md) for detailed guidelines.**
 
 ## License
 

@@ -73,8 +73,9 @@ dependencies = [
 "Discord" = "https://discord.gg/greenlang"
 
 [project.scripts]
-# CLI entry point for the gl command
+# CLI entry points
 gl = "greenlang.cli.main:main"
+greenlang = "greenlang.cli.main:main"  # Backward compatibility
 
 [project.optional-dependencies]
 analytics = [

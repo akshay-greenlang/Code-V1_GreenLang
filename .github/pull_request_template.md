@@ -67,6 +67,10 @@
 - [ ] SBOM generated for release
 - [ ] No secrets or credentials in code
 - [ ] Dependencies updated to latest secure versions
+- [ ] **Security gate respected (default-deny; signed artifacts)**
+- [ ] **User-facing change has docs**
+- [ ] **Example updated/added**
+- [ ] **Demo smoke passes locally**
 
 ## 🧪 How to Test
 

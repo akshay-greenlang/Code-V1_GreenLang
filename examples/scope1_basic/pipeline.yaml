@@ -1,0 +1,149 @@
+version: "1.0"
+kind: Pipeline
+metadata:
+  name: scope1-basic-demo
+  description: Basic demo pipeline with security capabilities
+  labels:
+    scope: "1"
+    demo: "true"
+    security: "enforced"
+
+# Security capabilities (default-deny)
+capabilities:
+  net:
+    allow: false  # No network access by default
+    egress_allowlist: []
+  fs:
+    allow: true  # Limited filesystem access
+    read_paths:
+      - "./data"
+      - "/tmp/gl-run-*"
+    write_paths:
+      - "/tmp/outputs"
+  subprocess:
+    allow: false  # No subprocess execution
+    allowlist: []
+  clock:
+    allow: true  # Allow time-based operations
+
+# Pipeline inputs
+inputs:
+  params:
+    data_source:
+      type: string
+      default: "local"
+      description: "Data source location"
+    output_format:
+      type: string
+      default: "json"
+      enum: ["json", "csv", "parquet"]
+    batch_size:
+      type: integer
+      default: 100
+      minimum: 1
+      maximum: 1000
+
+# Pipeline steps
+steps:
+  - id: data-fetch
+    name: "Fetch Input Data"
+    agent: DataFetcher
+    with:
+      source: ${{ inputs.params.data_source }}
+      batch_size: ${{ inputs.params.batch_size }}
+    outputs:
+      data: fetched_data.json
+
+  - id: validate-data
+    name: "Validate Data Quality"
+    agent: DataValidator
+    depends_on:
+      - data-fetch
+    with:
+      input_data: ${{ steps.data-fetch.outputs.data }}
+      schema: "./schemas/input_schema.json"
+    outputs:
+      validated_data: validated.json
+      validation_report: validation_report.json
+
+  - id: process-data
+    name: "Process and Transform"
+    agent: DataProcessor
+    depends_on:
+      - validate-data
+    with:
+      input_data: ${{ steps.validate-data.outputs.validated_data }}
+      transformations:
+        - normalize
+        - deduplicate
+        - enrich
+    outputs:
+      processed_data: processed.json
+      metrics: processing_metrics.json
+
+  - id: model-inference
+    name: "Run Model Inference"
+    agent: ModelRunner
+    depends_on:
+      - process-data
+    with:
+      input_data: ${{ steps.process-data.outputs.processed_data }}
+      model_path: "./models/prediction_model.pkl"
+      batch_size: ${{ inputs.params.batch_size }}
+    outputs:
+      predictions: predictions.json
+      model_metrics: model_metrics.json
+
+  - id: generate-output
+    name: "Generate Final Output"
+    agent: OutputGenerator
+    depends_on:
+      - model-inference
+    with:
+      predictions: ${{ steps.model-inference.outputs.predictions }}
+      format: ${{ inputs.params.output_format }}
+      include_metadata: true
+    outputs:
+      final_output: output.${{ inputs.params.output_format }}
+      summary: summary.json
+
+# Pipeline outputs
+outputs:
+  result:
+    type: file
+    path: ${{ steps.generate-output.outputs.final_output }}
+    description: "Final processed output"
+
+  summary:
+    type: file
+    path: ${{ steps.generate-output.outputs.summary }}
+    description: "Processing summary with metrics"
+
+  validation_report:
+    type: file
+    path: ${{ steps.validate-data.outputs.validation_report }}
+    description: "Data validation report"
+
+  model_metrics:
+    type: file
+    path: ${{ steps.model-inference.outputs.model_metrics }}
+    description: "Model performance metrics"
+
+# Resource requirements
+resources:
+  cpu: "2"
+  memory: "4Gi"
+  storage: "10Gi"
+  timeout: 600  # 10 minutes
+
+# Monitoring and observability
+observability:
+  metrics:
+    enabled: true
+    endpoint: "/metrics"
+  traces:
+    enabled: true
+    sampling_rate: 0.1
+  logs:
+    level: "info"
+    format: "json"
