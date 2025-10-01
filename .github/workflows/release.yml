@@ -130,18 +130,18 @@ jobs:
           fetch-depth: 0
 
       - name: Download all Python build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: greenlang-v0.2.0-build-artifacts
 
       - name: Download container manifest (if available)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: container-manifest
         continue-on-error: true
 
       - name: Download security reports (if available)
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: security-reports
         continue-on-error: true
@@ -261,7 +261,7 @@ jobs:
       id-token: write  # For trusted publishing
     steps:
       - name: Download Python build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: greenlang-v0.2.0-build-artifacts
 

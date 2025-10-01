@@ -148,7 +148,7 @@ jobs:
         shell: powershell
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-packages-${{ matrix.os }}-py${{ matrix.python-version }}
           path: |
@@ -156,7 +156,7 @@ jobs:
           retention-days: 7
 
       - name: Upload test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
@@ -195,7 +195,7 @@ jobs:
           sha512sum *.tar.gz > greenlang-sdist.sha512
 
       - name: Upload source distribution
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-sdist
           path: |
@@ -216,7 +216,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: List downloaded artifacts
         run: |
@@ -275,7 +275,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION_DEFAULT }}
 
       - name: Download Ubuntu wheel
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-packages-ubuntu-latest-py${{ env.PYTHON_VERSION_DEFAULT }}
 
@@ -303,7 +303,7 @@ jobs:
           pip-audit || echo "pip-audit found issues (non-blocking)"
 
       - name: Upload security reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-reports
@@ -318,7 +318,7 @@ jobs:
     if: always()
     steps:
       - name: Download all build artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Organize artifacts
         run: |
@@ -354,7 +354,7 @@ jobs:
           EOF
 
       - name: Upload final artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: greenlang-v0.2.0-build-artifacts
           path: final-artifacts/

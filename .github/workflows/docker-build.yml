@@ -180,7 +180,7 @@ jobs:
 
       - name: Upload SBOM artifacts
         if: needs.prepare.outputs.should-push == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-sbom-runner${{ steps.variant.outputs.suffix }}
           path: |
@@ -264,7 +264,7 @@ jobs:
 
       - name: Upload SBOM artifacts
         if: needs.prepare.outputs.should-push == 'true'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-sbom-full
           path: |
@@ -310,7 +310,7 @@ jobs:
           output: 'trivy-${{ matrix.image-variant }}-results.json'
 
       - name: Upload security scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: security-scan-${{ matrix.image-variant }}
@@ -331,7 +331,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download all SBOM artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           pattern: docker-sbom-*
           merge-multiple: true
@@ -359,7 +359,7 @@ jobs:
           EOF
 
       - name: Upload container manifest
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: container-manifest
           path: |
