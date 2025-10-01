@@ -53,7 +53,7 @@ def sign_artifact(
         logger.warning("key_path parameter is deprecated and will be ignored")
 
     # Import the new secure signing module
-    from ...greenlang.security import signing as secure_signing
+    from greenlang.security import signing as secure_signing
 
     # Sign using secure provider
     signature = secure_signing.sign_artifact(artifact_path)
@@ -94,7 +94,7 @@ def verify_artifact(
         signature = json.load(f)
 
     # Import the new secure signing module
-    from ...greenlang.security import signing as secure_signing
+    from greenlang.security import signing as secure_signing
 
     try:
         # Verify using secure provider
@@ -145,7 +145,7 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
         manifest = {}
 
     # Sign using secure provider
-    from ...greenlang.security import signing as secure_signing
+    from greenlang.security import signing as secure_signing
 
     # Create payload for signing
     payload = pack_hash.encode("utf-8")
@@ -222,7 +222,7 @@ def verify_pack(pack_path: Path) -> bool:
         return False
 
     # Import the new secure signing module
-    from ...greenlang.security import signing as secure_signing
+    from greenlang.security import signing as secure_signing
 
     try:
         # Create verifier

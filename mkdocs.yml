@@ -1,0 +1,220 @@
+site_name: GreenLang Documentation
+site_url: https://docs.greenlang.ai
+site_description: Official documentation for GreenLang - The secure, policy-driven pipeline orchestration platform
+site_author: GreenLang Team
+repo_url: https://github.com/greenlang/greenlang
+repo_name: greenlang/greenlang
+copyright: Copyright &copy; 2025 GreenLang
+
+# Theme configuration
+theme:
+  name: material
+  custom_dir: docs/overrides
+  logo: assets/logo.png
+  favicon: assets/favicon.ico
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - toc.integrate
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: green
+      accent: light-green
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: green
+      accent: light-green
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+# Navigation
+nav:
+  - Home:
+    - Introduction: README.md
+    - Quickstart: QUICKSTART.md
+    - Installation: docs/installation.md
+    - Changelog: CHANGELOG.md
+
+  - User Guide:
+    - Getting Started: docs/getting-started.md
+    - Core Concepts: docs/concepts.md
+    - Pipeline Development: docs/pipelines.md
+    - Pack System: docs/packs.md
+    - Connectors: docs/connectors.md
+    - Configuration: docs/configuration.md
+
+  - Security:
+    - Security Model: docs/SECURITY_MODEL.md
+    - Capabilities: docs/security/capabilities.md
+    - Signing & Verification: docs/security/signing.md
+    - Policy Engine: docs/security/policy.md
+    - Best Practices: SECURITY.md
+
+  - CLI Reference:
+    - Commands: docs/cli/commands.md
+    - gl init: docs/cli/init.md
+    - gl run: docs/cli/run.md
+    - gl pack: docs/cli/pack.md
+    - gl verify: docs/cli/verify.md
+    - gl policy: docs/cli/policy.md
+
+  - API Reference:
+    - Python API: docs/api/python.md
+    - REST API: docs/api/rest.md
+    - Pack Manifest: docs/api/manifest.md
+    - Pipeline Schema: docs/api/pipeline.md
+
+  - Examples:
+    - Basic Examples: examples/README.md
+    - Weekly Demos: examples/weekly/
+    - Tutorials: examples/tutorials/
+    - Pack Examples: examples/packs/
+
+  - Performance:
+    - Optimization Guide: docs/PERFORMANCE.md
+    - Benchmarks: docs/performance/benchmarks.md
+    - Scaling: docs/performance/scaling.md
+
+  - Development:
+    - Contributing: CONTRIBUTING.md
+    - Development Setup: docs/dev/setup.md
+    - Testing: docs/dev/testing.md
+    - Release Process: docs/dev/release.md
+
+  - Deployment:
+    - Docker: docs/deployment/docker.md
+    - Kubernetes: docs/deployment/kubernetes.md
+    - Helm Charts: docs/deployment/helm.md
+    - CI/CD Integration: docs/deployment/cicd.md
+
+# Plugins
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\-\.]+'
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+  - mermaid2:
+      arguments:
+        theme: 'neutral'
+  - awesome-pages
+  - tags:
+      tags_file: tags.md
+
+# Markdown extensions
+markdown_extensions:
+  # Python Markdown
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+
+  # Python Markdown Extensions
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets:
+      base_path: .
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Extra configuration
+extra:
+  version:
+    provider: mike
+    default: stable
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/greenlang/greenlang
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/greenlang
+    - icon: fontawesome/brands/docker
+      link: https://hub.docker.com/r/greenlang/greenlang
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_ID
+  consent:
+    title: Cookie consent
+    description: We use cookies to enhance documentation experience and analyze usage
+    cookies:
+      analytics:
+        name: Google Analytics
+        checked: true
+    actions:
+      - accept
+      - reject
+      - manage
+
+# Extra CSS and JavaScript
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
+  - https://unpkg.com/mermaid@10/dist/mermaid.min.js
+
+# Validation and quality
+validation:
+  nav:
+    omitted_files: info
+    not_found: warn
+  links:
+    not_found: warn
+    absolute_links: info
+    unrecognized_links: info
+
+# Security headers for GitHub Pages
+use_directory_urls: true
+strict: true

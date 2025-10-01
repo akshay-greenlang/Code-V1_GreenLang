@@ -1,0 +1,146 @@
+version: "1.0"
+name: "Hello World Carbon Analysis"
+description: "Simple pipeline for first-time users to calculate building emissions"
+
+metadata:
+  author: "GreenLang Team"
+  created: "2024-09-27"
+  version: "1.0.0"
+  tags: ["quickstart", "hello-world", "tutorial"]
+
+inputs:
+  building_data:
+    type: object
+    required: true
+    description: "Building characteristics and energy consumption data"
+    schema:
+      properties:
+        building:
+          type: object
+          required: ["name", "type", "area_m2", "location"]
+        energy_consumption:
+          type: array
+          items:
+            type: object
+            required: ["fuel_type", "consumption", "unit"]
+
+stages:
+  - name: input_validation
+    type: validation
+    description: "Validate input data quality and completeness"
+    agent: data_validator
+    parameters:
+      strict_mode: false
+      required_fields: ["name", "type", "area_m2", "energy_consumption"]
+      validate_fuel_types: true
+    outputs:
+      - validated_data
+      - validation_report
+
+  - name: emissions_calculation
+    type: calculation
+    description: "Calculate Scope 1 and 2 emissions"
+    agent: building_emissions_agent
+    depends_on: [input_validation]
+    parameters:
+      include_scope3: false
+      use_regional_factors: true
+      calculation_method: "ghg_protocol"
+      uncertainty_analysis: false
+    outputs:
+      - total_emissions_tons
+      - emissions_breakdown
+      - calculation_metadata
+
+  - name: performance_benchmarking
+    type: analysis
+    description: "Compare building performance to industry benchmarks"
+    agent: benchmark_agent
+    depends_on: [emissions_calculation]
+    parameters:
+      comparison_dataset: "energy_star"
+      building_type_matching: true
+      regional_adjustments: true
+    outputs:
+      - performance_rating
+      - percentile_ranking
+      - peer_comparison
+
+  - name: basic_recommendations
+    type: optimization
+    description: "Generate initial improvement recommendations"
+    agent: recommendation_agent
+    depends_on: [emissions_calculation, performance_benchmarking]
+    parameters:
+      recommendation_level: "basic"
+      max_recommendations: 5
+      payback_threshold_years: 10
+    outputs:
+      - top_recommendations
+      - estimated_savings
+
+  - name: summary_report
+    type: reporting
+    description: "Generate user-friendly summary report"
+    agent: report_generator
+    depends_on: [basic_recommendations]
+    parameters:
+      template: "hello_world_summary"
+      format: ["json", "txt"]
+      include_charts: false
+      language: "en"
+    outputs:
+      - summary_report
+      - detailed_breakdown
+
+outputs:
+  main_results:
+    total_emissions: "{{ stages.emissions_calculation.outputs.total_emissions_tons }}"
+    performance_rating: "{{ stages.performance_benchmarking.outputs.performance_rating }}"
+    top_recommendation: "{{ stages.basic_recommendations.outputs.top_recommendations[0] }}"
+
+  reports:
+    summary: "{{ stages.summary_report.outputs.summary_report }}"
+    detailed: "{{ stages.summary_report.outputs.detailed_breakdown }}"
+
+  metadata:
+    pipeline_version: "1.0"
+    calculation_timestamp: "{{ datetime.now() }}"
+    processing_time_seconds: "{{ pipeline.execution_time }}"
+
+error_handling:
+  on_stage_failure:
+    action: "continue_with_fallback"
+    fallback_outputs:
+      total_emissions: null
+      performance_rating: "unknown"
+      error_message: "{{ error.message }}"
+
+  retry_policy:
+    max_retries: 2
+    retry_delay_seconds: 5
+    exponential_backoff: false
+
+  validation_failures:
+    action: "warn_and_continue"
+    strict_validation: false
+
+notifications:
+  on_completion:
+    message: "Hello World pipeline completed successfully!"
+    include_summary: true
+
+  on_error:
+    message: "Pipeline encountered an error: {{ error.message }}"
+    include_debug_info: false
+
+# Pipeline configuration
+configuration:
+  execution_timeout_minutes: 5
+  parallel_execution: false
+  cache_intermediate_results: true
+  log_level: "INFO"
+
+# Example usage comment
+# To run this pipeline:
+# gl pipeline run hello.yaml --input sample-building.json --output results/

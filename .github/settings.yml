@@ -1,0 +1,218 @@
+# GitHub repository settings
+# These settings are synced by https://probot.github.io/apps/settings/
+
+repository:
+  # Basic settings
+  name: greenlang
+  description: "Secure, policy-driven pipeline orchestration platform"
+  homepage: https://docs.greenlang.ai
+  topics:
+    - greenlang
+    - pipeline
+    - orchestration
+    - security
+    - opa
+    - sigstore
+    - default-deny
+    - capability-based-security
+
+  # Features
+  has_issues: true
+  has_projects: true
+  has_wiki: false
+  has_downloads: true
+
+  # Security
+  vulnerability_alerts: true
+  security_and_analysis:
+    secret_scanning:
+      status: enabled
+    secret_scanning_push_protection:
+      status: enabled
+
+  # Default branch
+  default_branch: main
+
+  # Merge settings
+  allow_squash_merge: true
+  allow_merge_commit: true
+  allow_rebase_merge: true
+  delete_branch_on_merge: true
+  enable_automated_security_fixes: true
+  enable_vulnerability_alerts: true
+
+# Branch protection rules
+branches:
+  - name: main
+    protection:
+      # Require PR reviews
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: true
+        dismissal_restrictions:
+          users: []
+          teams:
+            - maintainers
+
+      # Required status checks
+      required_status_checks:
+        strict: true  # Require branches to be up to date
+        contexts:
+          # CI checks
+          - "CI / Lint"
+          - "CI / Type Check"
+          - "CI / Test (ubuntu-latest, 3.8)"
+          - "CI / Test (ubuntu-latest, 3.9)"
+          - "CI / Test (ubuntu-latest, 3.10)"
+          - "CI / Test (windows-latest, 3.9)"
+          - "CI / Test (macos-latest, 3.9)"
+
+          # Security checks
+          - "Security / Scan"
+          - "Security / Verify Signatures"
+          - "Security / Policy Check"
+          - "Security / SBOM Validation"
+
+          # Quality checks
+          - "Docs / Build"
+          - "Examples / Smoke Test"
+          - "GreenLang Guards / verify"
+
+      # Restrictions
+      restrictions:
+        users: []
+        teams:
+          - maintainers
+        apps: []
+
+      # Additional settings
+      enforce_admins: false
+      required_linear_history: false
+      allow_force_pushes: false
+      allow_deletions: false
+      block_creations: false
+      required_conversation_resolution: true
+      lock_branch: false
+      allow_fork_syncing: true
+
+  - name: release/*
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 2
+        dismiss_stale_reviews: true
+        require_code_owner_reviews: true
+
+      required_status_checks:
+        strict: true
+        contexts:
+          - "CI / Lint"
+          - "CI / Test (ubuntu-latest, 3.9)"
+          - "Security / Scan"
+          - "RC / Build and Sign"
+          - "RC / Verify Artifacts"
+
+      restrictions:
+        users: []
+        teams:
+          - release-managers
+
+      enforce_admins: true
+      allow_force_pushes: false
+      allow_deletions: false
+
+  - name: develop
+    protection:
+      required_pull_request_reviews:
+        required_approving_review_count: 1
+        dismiss_stale_reviews: false
+        require_code_owner_reviews: false
+
+      required_status_checks:
+        strict: false
+        contexts:
+          - "CI / Lint"
+          - "CI / Test (ubuntu-latest, 3.9)"
+
+      enforce_admins: false
+      allow_force_pushes: false
+      allow_deletions: false
+
+# Labels
+labels:
+  - name: bug
+    color: d73a4a
+    description: "Something isn't working"
+
+  - name: enhancement
+    color: a2eeef
+    description: "New feature or request"
+
+  - name: security
+    color: ee0701
+    description: "Security related issue or PR"
+
+  - name: documentation
+    color: 0075ca
+    description: "Improvements or additions to documentation"
+
+  - name: good first issue
+    color: 7057ff
+    description: "Good for newcomers"
+
+  - name: help wanted
+    color: 008672
+    description: "Extra attention is needed"
+
+  - name: breaking change
+    color: ff0000
+    description: "Introduces breaking changes"
+
+  - name: performance
+    color: ffcc00
+    description: "Performance improvements"
+
+  - name: dependencies
+    color: 0366d6
+    description: "Pull requests that update a dependency file"
+
+  - name: ci/cd
+    color: fbca04
+    description: "CI/CD related changes"
+
+  - name: release
+    color: 00ff00
+    description: "Release related"
+
+# Milestones
+milestones:
+  - title: v0.3.0
+    description: "Global guardrails implementation"
+    state: open
+
+  - title: v0.4.0
+    description: "Enhanced pack ecosystem"
+    state: open
+
+  - title: v1.0.0
+    description: "Production ready release"
+    state: open
+
+# Collaborators
+collaborators:
+  - username: greenlang-bot
+    permission: write
+
+# Teams (requires org-level permissions)
+teams:
+  - name: maintainers
+    permission: maintain
+
+  - name: security
+    permission: write
+
+  - name: docs
+    permission: write
+
+  - name: release-managers
+    permission: admin

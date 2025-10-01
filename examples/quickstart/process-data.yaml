@@ -1,0 +1,258 @@
+version: "1.0"
+name: "Portfolio Data Processing Pipeline"
+description: "Comprehensive pipeline for analyzing multiple buildings with optimization recommendations"
+
+metadata:
+  author: "GreenLang Team"
+  created: "2024-09-27"
+  version: "1.0.0"
+  tags: ["portfolio", "data-processing", "optimization", "tutorial"]
+
+inputs:
+  portfolio_data:
+    type: object
+    required: true
+    description: "Portfolio of buildings with energy consumption data"
+    schema:
+      properties:
+        portfolio_name:
+          type: string
+        buildings:
+          type: array
+          items:
+            type: object
+            required: ["id", "name", "type", "area_m2", "energy_consumption"]
+
+  analysis_options:
+    type: object
+    required: false
+    default:
+      include_scope3: false
+      benchmarking_enabled: true
+      optimization_level: "comprehensive"
+    description: "Analysis configuration options"
+
+stages:
+  - name: portfolio_validation
+    type: validation
+    description: "Validate portfolio data structure and quality"
+    agent: portfolio_validator
+    parameters:
+      validate_building_data: true
+      check_data_completeness: true
+      validate_fuel_types: true
+      check_realistic_values: true
+    outputs:
+      - validated_portfolio
+      - validation_summary
+      - data_quality_score
+
+  - name: batch_emissions_calculation
+    type: calculation
+    description: "Calculate emissions for all buildings in parallel"
+    agent: batch_calculator
+    depends_on: [portfolio_validation]
+    parameters:
+      batch_size: 10
+      parallel_processing: true
+      include_scope3: "{{ inputs.analysis_options.include_scope3 }}"
+      regional_factors: true
+      calculation_method: "ghg_protocol"
+    outputs:
+      - building_emissions
+      - portfolio_totals
+      - calculation_errors
+
+  - name: portfolio_aggregation
+    type: aggregation
+    description: "Aggregate building results into portfolio summary"
+    agent: portfolio_aggregator
+    depends_on: [batch_emissions_calculation]
+    parameters:
+      aggregation_method: "weighted_average"
+      normalize_by_area: true
+      include_building_breakdown: true
+    outputs:
+      - portfolio_summary
+      - building_rankings
+      - outlier_analysis
+
+  - name: benchmark_analysis
+    type: analysis
+    description: "Benchmark buildings against industry standards"
+    agent: portfolio_benchmark_agent
+    depends_on: [batch_emissions_calculation]
+    condition: "{{ inputs.analysis_options.benchmarking_enabled }}"
+    parameters:
+      benchmark_datasets: ["energy_star", "cbecs", "local_standards"]
+      peer_group_analysis: true
+      regional_adjustments: true
+    outputs:
+      - building_benchmarks
+      - portfolio_benchmark
+      - performance_distribution
+
+  - name: optimization_analysis
+    type: optimization
+    description: "Generate comprehensive optimization recommendations"
+    agent: portfolio_optimizer
+    depends_on: [portfolio_aggregation, benchmark_analysis]
+    parameters:
+      optimization_level: "{{ inputs.analysis_options.optimization_level }}"
+      target_reduction_percent: 30
+      max_payback_years: 7
+      include_renewable_options: true
+      cost_benefit_analysis: true
+    outputs:
+      - building_recommendations
+      - portfolio_strategy
+      - investment_priorities
+
+  - name: financial_analysis
+    type: analysis
+    description: "Analyze costs and financial implications"
+    agent: financial_analyzer
+    depends_on: [optimization_analysis]
+    parameters:
+      discount_rate: 0.05
+      analysis_period_years: 10
+      include_carbon_pricing: true
+      carbon_price_per_ton: 50
+    outputs:
+      - cost_analysis
+      - roi_projections
+      - financing_options
+
+  - name: risk_assessment
+    type: analysis
+    description: "Assess climate and regulatory risks"
+    agent: risk_assessor
+    depends_on: [portfolio_aggregation]
+    parameters:
+      include_physical_risk: true
+      include_transition_risk: true
+      scenario_analysis: ["rcp45", "rcp85"]
+      regulatory_frameworks: ["california_cap_trade", "federal_ghg"]
+    outputs:
+      - risk_profile
+      - scenario_impacts
+      - mitigation_strategies
+
+  - name: comprehensive_reporting
+    type: reporting
+    description: "Generate comprehensive reports for stakeholders"
+    agent: portfolio_reporter
+    depends_on: [financial_analysis, risk_assessment]
+    parameters:
+      report_types: ["executive_summary", "technical_report", "action_plan"]
+      formats: ["pdf", "json", "excel", "csv"]
+      include_visualizations: true
+      stakeholder_specific: true
+    outputs:
+      - executive_summary
+      - technical_report
+      - action_plan
+      - data_exports
+
+  - name: monitoring_setup
+    type: configuration
+    description: "Set up ongoing monitoring and alerts"
+    agent: monitoring_configurator
+    depends_on: [comprehensive_reporting]
+    parameters:
+      monitoring_frequency: "monthly"
+      alert_thresholds:
+        emissions_increase: 0.05  # 5% increase
+        efficiency_decrease: 0.10  # 10% decrease
+      dashboard_configuration: true
+    outputs:
+      - monitoring_config
+      - alert_rules
+      - dashboard_specs
+
+outputs:
+  portfolio_results:
+    total_emissions: "{{ stages.portfolio_aggregation.outputs.portfolio_summary.total_emissions }}"
+    average_intensity: "{{ stages.portfolio_aggregation.outputs.portfolio_summary.average_intensity }}"
+    building_count: "{{ stages.portfolio_aggregation.outputs.portfolio_summary.building_count }}"
+    data_quality: "{{ stages.portfolio_validation.outputs.data_quality_score }}"
+
+  performance_metrics:
+    benchmark_rating: "{{ stages.benchmark_analysis.outputs.portfolio_benchmark.overall_rating }}"
+    top_performers: "{{ stages.benchmark_analysis.outputs.building_rankings[:3] }}"
+    improvement_opportunities: "{{ stages.benchmark_analysis.outputs.building_rankings[-3:] }}"
+
+  optimization_summary:
+    total_potential_savings: "{{ stages.optimization_analysis.outputs.portfolio_strategy.total_savings_tons }}"
+    investment_required: "{{ stages.financial_analysis.outputs.cost_analysis.total_investment }}"
+    payback_period: "{{ stages.financial_analysis.outputs.roi_projections.weighted_payback_years }}"
+    priority_projects: "{{ stages.optimization_analysis.outputs.investment_priorities[:5] }}"
+
+  reports:
+    executive_summary: "{{ stages.comprehensive_reporting.outputs.executive_summary }}"
+    technical_report: "{{ stages.comprehensive_reporting.outputs.technical_report }}"
+    action_plan: "{{ stages.comprehensive_reporting.outputs.action_plan }}"
+
+  monitoring:
+    config: "{{ stages.monitoring_setup.outputs.monitoring_config }}"
+    dashboard: "{{ stages.monitoring_setup.outputs.dashboard_specs }}"
+
+error_handling:
+  on_stage_failure:
+    action: "continue_with_partial_results"
+    log_errors: true
+    generate_error_report: true
+
+  building_calculation_failures:
+    action: "exclude_and_continue"
+    min_success_rate: 0.8  # At least 80% of buildings must succeed
+
+  data_quality_issues:
+    action: "warn_and_proceed"
+    quality_threshold: 0.7
+
+retry_policy:
+  max_retries: 3
+  retry_delay_seconds: 10
+  exponential_backoff: true
+  retry_on_errors: ["network_timeout", "rate_limit", "temporary_service_error"]
+
+performance:
+  execution_timeout_minutes: 30
+  memory_limit_gb: 4
+  parallel_stage_execution: true
+  cache_intermediate_results: true
+  optimize_for: "speed"  # Options: speed, memory, accuracy
+
+notifications:
+  on_completion:
+    message: "Portfolio analysis completed successfully!"
+    recipients: ["portfolio_manager", "sustainability_team"]
+    include_summary: true
+
+  on_failure:
+    message: "Portfolio analysis failed: {{ error.message }}"
+    recipients: ["technical_team"]
+    include_logs: true
+
+  progress_updates:
+    enabled: true
+    frequency: "per_stage"
+    include_metrics: true
+
+# Configuration for different execution environments
+environments:
+  development:
+    log_level: "DEBUG"
+    cache_results: false
+    include_test_data: true
+
+  production:
+    log_level: "INFO"
+    cache_results: true
+    performance_monitoring: true
+    data_encryption: true
+
+# Example usage comment
+# To run this pipeline:
+# gl pipeline run process-data.yaml --input sample-portfolio.json --output results/ --env production

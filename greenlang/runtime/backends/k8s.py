@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 # Try to import kubernetes client
 try:
     from kubernetes import client
+    from kubernetes import config as k8s_config
     from kubernetes.client.rest import ApiException
 
     KUBERNETES_AVAILABLE = True
@@ -64,9 +65,9 @@ class KubernetesBackend(Backend):
 
         # Initialize Kubernetes client
         if config.get("in_cluster", False):
-            config.load_incluster_config()
+            k8s_config.load_incluster_config()
         else:
-            config.load_kube_config()
+            k8s_config.load_kube_config()
 
         self.batch_v1 = client.BatchV1Api()
         self.core_v1 = client.CoreV1Api()
@@ -159,7 +160,16 @@ class KubernetesBackend(Backend):
             client.V1EnvVar(name="GL_CONTEXT", value=json.dumps(context.to_dict()))
         )
 
-        # Prepare container
+        # Add capabilities to environment
+        capabilities = getattr(context, 'capabilities', {})
+        env_vars.append(
+            client.V1EnvVar(name="GL_CAPABILITIES", value=json.dumps(capabilities))
+        )
+
+        # Create security context based on capabilities
+        security_context = self._create_security_context(capabilities)
+
+        # Prepare container with security context
         container = client.V1Container(
             name="executor",
             image=step.image or self.default_image,
@@ -167,20 +177,29 @@ class KubernetesBackend(Backend):
             args=step.args,
             env=env_vars,
             resources=self._create_resource_requirements(step),
+            security_context=security_context,
         )
 
         # Add volume mounts if specified
         if context.volumes:
             container.volume_mounts = self._create_volume_mounts(context.volumes)
 
-        # Prepare pod spec
+        # Create pod security context
+        pod_security_context = self._create_pod_security_context(capabilities)
+
+        # Prepare pod spec with security settings
         pod_spec = client.V1PodSpec(
             containers=[container],
             restart_policy="Never",
             service_account_name=self.service_account or pipeline.service_account,
             node_selector=self.node_selector,
             tolerations=self._create_tolerations(),
+            security_context=pod_security_context,
         )
+
+        # Create NetworkPolicy if network is restricted
+        if not capabilities.get("net", {}).get("allow"):
+            self._create_network_policy(job_name, pipeline.name, context)
 
         # Add image pull secrets
         if self.image_pull_secrets:
@@ -547,3 +566,146 @@ class KubernetesBackend(Backend):
             mounts.append(mount)
 
         return mounts
+
+    def _create_security_context(
+        self, capabilities: Dict[str, Any]
+    ) -> client.V1SecurityContext:
+        """
+        Create container security context based on capabilities
+
+        Args:
+            capabilities: Pack capabilities
+
+        Returns:
+            V1SecurityContext for container
+        """
+        security_context = client.V1SecurityContext(
+            run_as_non_root=True,
+            allow_privilege_escalation=False,
+            read_only_root_filesystem=self._should_use_readonly_root(capabilities),
+            capabilities=client.V1Capabilities(
+                drop=["ALL"],  # Drop all capabilities by default
+                add=self._get_required_capabilities(capabilities)
+            )
+        )
+
+        return security_context
+
+    def _create_pod_security_context(
+        self, capabilities: Dict[str, Any]
+    ) -> client.V1PodSecurityContext:
+        """
+        Create pod security context
+
+        Args:
+            capabilities: Pack capabilities
+
+        Returns:
+            V1PodSecurityContext
+        """
+        pod_security_context = client.V1PodSecurityContext(
+            run_as_non_root=True,
+            run_as_user=1000,  # Non-root user ID
+            run_as_group=1000,
+            fs_group=1000,
+            seccomp_profile=client.V1SeccompProfile(
+                type="RuntimeDefault"  # Use runtime's default seccomp profile
+            )
+        )
+
+        return pod_security_context
+
+    def _create_network_policy(
+        self, job_name: str, pipeline_name: str, context: ExecutionContext
+    ):
+        """
+        Create NetworkPolicy to deny network for job
+
+        Args:
+            job_name: Job name
+            pipeline_name: Pipeline name
+            context: Execution context
+        """
+        try:
+            from kubernetes import client as k8s_client
+            networking_v1 = k8s_client.NetworkingV1Api()
+
+            # Create deny-all network policy
+            network_policy = k8s_client.V1NetworkPolicy(
+                metadata=k8s_client.V1ObjectMeta(
+                    name=f"{job_name}-netpol",
+                    namespace=self.namespace,
+                    labels={
+                        "app": "greenlang",
+                        "pipeline": pipeline_name,
+                        "run-id": context.run_id,
+                    }
+                ),
+                spec=k8s_client.V1NetworkPolicySpec(
+                    pod_selector=k8s_client.V1LabelSelector(
+                        match_labels={
+                            "app": "greenlang",
+                            "pipeline": pipeline_name,
+                        }
+                    ),
+                    policy_types=["Ingress", "Egress"],
+                    # Empty ingress/egress lists = deny all
+                    ingress=[],
+                    egress=[]
+                )
+            )
+
+            networking_v1.create_namespaced_network_policy(
+                namespace=self.namespace,
+                body=network_policy
+            )
+
+            logger.info(f"Created NetworkPolicy to deny network for job: {job_name}")
+
+        except Exception as e:
+            logger.warning(f"Failed to create NetworkPolicy: {e}")
+
+    def _get_required_capabilities(
+        self, capabilities: Dict[str, Any]
+    ) -> List[str]:
+        """
+        Get Linux capabilities required based on pack capabilities
+
+        Args:
+            capabilities: Pack capabilities
+
+        Returns:
+            List of Linux capabilities to add
+        """
+        linux_caps = []
+
+        # Check subprocess capability
+        if capabilities.get("subprocess", {}).get("allow"):
+            linux_caps.append("SYS_PTRACE")  # For subprocess debugging
+
+        # Check network capability
+        if capabilities.get("net", {}).get("allow"):
+            linux_caps.append("NET_RAW")  # For raw sockets if needed
+
+        return linux_caps if linux_caps else []
+
+    def _should_use_readonly_root(self, capabilities: Dict[str, Any]) -> bool:
+        """
+        Determine if container should use read-only root filesystem
+
+        Args:
+            capabilities: Pack capabilities
+
+        Returns:
+            True if read-only root should be used
+        """
+        # Check filesystem capability
+        fs_cap = capabilities.get("fs", {})
+        if isinstance(fs_cap, dict) and fs_cap.get("allow"):
+            # Check if root write is needed
+            write_paths = fs_cap.get("write_paths", [])
+            # If any write path is not under /tmp, need writable root
+            if any(not path.startswith("/tmp") for path in write_paths if path):
+                return False
+        # Default to read-only root for security
+        return True

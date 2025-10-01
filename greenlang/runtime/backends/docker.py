@@ -141,8 +141,15 @@ class DockerBackend(Backend):
         environment.update(step.env)
         environment["GL_CONTEXT"] = json.dumps(context.to_dict())
 
-        # Prepare volumes
-        volumes = self._prepare_volumes(context)
+        # Add capabilities to environment
+        capabilities = getattr(context, 'capabilities', {})
+        environment["GL_CAPABILITIES"] = json.dumps(capabilities)
+
+        # Determine network mode based on capabilities
+        network_mode = self._get_network_mode(capabilities)
+
+        # Prepare volumes based on filesystem capabilities
+        volumes = self._prepare_volumes_with_capabilities(context, capabilities)
 
         # Pull image if needed
         image = step.image or "greenlang/executor:latest"
@@ -156,23 +163,40 @@ class DockerBackend(Backend):
         command = step.command + step.args
 
         try:
-            # Run container
-            logger.info(f"Starting container: {container_name}")
-            container = self.client.containers.run(
-                image=image,
-                command=command,
-                name=container_name,
-                environment=environment,
-                volumes=volumes,
-                network=self.network,
-                detach=True,
-                remove=False,
-                labels={
+            # Run container with security settings
+            logger.info(f"Starting container: {container_name} with network: {network_mode}")
+
+            # Build container kwargs with security settings
+            container_kwargs = {
+                "image": image,
+                "command": command,
+                "name": container_name,
+                "environment": environment,
+                "volumes": volumes,
+                "detach": True,
+                "remove": False,
+                "labels": {
                     "greenlang.pipeline": pipeline.name,
                     "greenlang.step": step.name,
                     "greenlang.run_id": context.run_id,
                 },
-            )
+                # Security settings
+                "read_only": self._should_use_readonly_root(capabilities),
+                "security_opt": ["no-new-privileges"],
+                "cap_drop": ["ALL"],  # Drop all capabilities by default
+            }
+
+            # Set network mode
+            if network_mode == "none":
+                container_kwargs["network_mode"] = "none"
+            else:
+                container_kwargs["network"] = network_mode
+
+            # Add specific capabilities if needed
+            if capabilities.get("subprocess", {}).get("allow"):
+                container_kwargs["cap_add"] = ["SYS_PTRACE"]  # For subprocess execution
+
+            container = self.client.containers.run(**container_kwargs)
 
             # Track container
             self.containers[context.run_id] = {
@@ -421,3 +445,104 @@ class DockerBackend(Backend):
         except Exception as e:
             logger.error(f"Failed to cleanup container: {e}")
             return False
+
+    def _get_network_mode(self, capabilities: Dict[str, Any]) -> str:
+        """
+        Determine network mode based on capabilities
+
+        Args:
+            capabilities: Pack capabilities
+
+        Returns:
+            Network mode string
+        """
+        # Check if network capability is allowed
+        net_cap = capabilities.get("net", {})
+        if isinstance(net_cap, dict) and net_cap.get("allow"):
+            # Network allowed - use default or specified network
+            if hasattr(self, 'network') and self.network:
+                return self.network
+            return "bridge"
+        else:
+            # Network not allowed - isolate with none
+            logger.info("Network capability not allowed - using network=none")
+            return "none"
+
+    def _prepare_volumes_with_capabilities(
+        self, context: ExecutionContext, capabilities: Dict[str, Any]
+    ) -> Dict[str, Dict[str, str]]:
+        """
+        Prepare volumes respecting filesystem capabilities
+
+        Args:
+            context: Execution context
+            capabilities: Pack capabilities
+
+        Returns:
+            Volume mappings
+        """
+        volumes = {}
+
+        # Check filesystem capability
+        fs_cap = capabilities.get("fs", {})
+        if not isinstance(fs_cap, dict) or not fs_cap.get("allow"):
+            # No filesystem access - only temp directory
+            logger.info("Filesystem capability not allowed - mounting only temp directory")
+            temp_dir = tempfile.mkdtemp(prefix="greenlang-isolated-")
+            volumes[temp_dir] = {"bind": "/tmp/workspace", "mode": "rw"}
+            return volumes
+
+        # Filesystem allowed - check allowlists
+        read_paths = fs_cap.get("read_paths", [])
+        write_paths = fs_cap.get("write_paths", [])
+
+        # Add allowed read paths
+        for path in read_paths:
+            if path and not path.startswith("/etc") and not path.startswith("/root"):
+                volumes[path] = {"bind": path, "mode": "ro"}
+
+        # Add allowed write paths
+        for path in write_paths:
+            if path and not path.startswith("/etc") and not path.startswith("/root"):
+                volumes[path] = {"bind": path, "mode": "rw"}
+
+        # Add context volumes if allowed
+        if hasattr(context, 'volumes'):
+            for vol in context.volumes:
+                source = vol["source"]
+                target = vol["target"]
+                mode = vol.get("mode", "rw")
+
+                # Check if path is allowed
+                if mode == "ro" and source in read_paths:
+                    volumes[source] = {"bind": target, "mode": mode}
+                elif mode == "rw" and source in write_paths:
+                    volumes[source] = {"bind": target, "mode": mode}
+                else:
+                    logger.warning(f"Volume {source} not in capability allowlist - skipping")
+
+        # Always add temp directory for outputs
+        temp_dir = tempfile.mkdtemp(prefix="greenlang-")
+        volumes[temp_dir] = {"bind": "/tmp/outputs", "mode": "rw"}
+
+        return volumes
+
+    def _should_use_readonly_root(self, capabilities: Dict[str, Any]) -> bool:
+        """
+        Determine if container should use read-only root filesystem
+
+        Args:
+            capabilities: Pack capabilities
+
+        Returns:
+            True if read-only root should be used
+        """
+        # Check filesystem capability
+        fs_cap = capabilities.get("fs", {})
+        if isinstance(fs_cap, dict) and fs_cap.get("allow"):
+            # Check if root write is needed
+            write_paths = fs_cap.get("write_paths", [])
+            if any(path.startswith("/") and not path.startswith("/tmp") for path in write_paths):
+                return False
+        # Default to read-only root for security
+        return True

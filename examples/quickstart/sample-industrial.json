@@ -1,0 +1,109 @@
+{
+  "facility": {
+    "id": "manufacturing-001",
+    "name": "Steel Production Facility",
+    "type": "steel_production",
+    "location": "Pittsburgh, PA",
+    "annual_output_tons": 50000,
+    "operational_hours": 8760,
+    "employees": 200,
+    "year_established": 1985,
+    "description": "Integrated steel production facility with electric arc furnace"
+  },
+  "process_data": {
+    "primary_process": "electric_arc_furnace",
+    "production_capacity_tons_per_day": 137,
+    "capacity_utilization": 0.85,
+    "process_efficiency": 0.78
+  },
+  "energy_inputs": [
+    {
+      "type": "electricity",
+      "consumption": 120000,
+      "unit": "MWh",
+      "period": "annual",
+      "cost_per_unit": 0.08,
+      "source": "grid_mix",
+      "notes": "Electric arc furnace primary consumption"
+    },
+    {
+      "type": "natural_gas",
+      "consumption": 8000,
+      "unit": "MCF",
+      "period": "annual",
+      "cost_per_unit": 4.50,
+      "source": "pipeline",
+      "notes": "Heating and auxiliary processes"
+    },
+    {
+      "type": "coal",
+      "consumption": 75000,
+      "unit": "tons",
+      "period": "annual",
+      "cost_per_unit": 65.00,
+      "source": "local_supplier",
+      "notes": "Coking coal for metallurgical processes"
+    }
+  ],
+  "raw_materials": [
+    {
+      "material": "scrap_steel",
+      "consumption": 55000,
+      "unit": "tons",
+      "period": "annual",
+      "recycled_content": 1.0
+    },
+    {
+      "material": "iron_ore",
+      "consumption": 25000,
+      "unit": "tons",
+      "period": "annual",
+      "recycled_content": 0.0
+    },
+    {
+      "material": "limestone",
+      "consumption": 8000,
+      "unit": "tons",
+      "period": "annual",
+      "recycled_content": 0.0
+    }
+  ],
+  "emissions_sources": {
+    "scope_1": [
+      "combustion_natural_gas",
+      "process_emissions_metallurgical",
+      "fugitive_emissions"
+    ],
+    "scope_2": [
+      "purchased_electricity"
+    ],
+    "scope_3": [
+      "raw_materials_transportation",
+      "employee_commuting",
+      "waste_disposal"
+    ]
+  },
+  "environmental_controls": {
+    "air_pollution_control": true,
+    "waste_water_treatment": true,
+    "waste_recycling_program": true,
+    "energy_management_system": true
+  },
+  "benchmarking": {
+    "industry_sector": "iron_steel_production",
+    "naics_code": "331110",
+    "regional_benchmark": "us_northeast",
+    "certification_programs": [
+      "ISO_14001",
+      "ENERGY_STAR"
+    ]
+  },
+  "metadata": {
+    "analysis_year": 2024,
+    "data_collection_method": "direct_measurement",
+    "data_quality": "high",
+    "uncertainty_level": "low",
+    "created_date": "2024-09-27",
+    "notes": "Sample industrial facility data for advanced GreenLang processing examples"
+  }
+}

@@ -59,6 +59,112 @@ class Policy(BaseModel):
         return v
 
 
+class NetCapability(BaseModel):
+    """Network capability configuration"""
+
+    allow: bool = Field(default=False, description="Allow network access")
+    outbound: Optional[Dict[str, List[str]]] = Field(
+        None, description="Outbound network configuration"
+    )
+    egress_allowlist: List[str] = Field(
+        default_factory=list,
+        description="Allowed egress endpoints (e.g., ['api.example.com:443'])"
+    )
+
+
+class FsCapability(BaseModel):
+    """Filesystem capability configuration"""
+
+    allow: bool = Field(default=False, description="Allow filesystem access")
+    read: Optional[Dict[str, List[str]]] = Field(
+        None, description="Read access configuration"
+    )
+    write: Optional[Dict[str, List[str]]] = Field(
+        None, description="Write access configuration"
+    )
+    read_paths: List[str] = Field(
+        default_factory=list,
+        description="Allowed read paths (e.g., ['./data', '/tmp/gl-run-*'])"
+    )
+    write_paths: List[str] = Field(
+        default_factory=list,
+        description="Allowed write paths"
+    )
+
+
+class SubprocessCapability(BaseModel):
+    """Subprocess capability configuration"""
+
+    allow: bool = Field(default=False, description="Allow subprocess execution")
+    allowlist: List[str] = Field(
+        default_factory=list,
+        description="Allowed binaries"
+    )
+
+
+class ClockCapability(BaseModel):
+    """Clock capability configuration"""
+
+    allow: bool = Field(default=False, description="Allow real-time clock access")
+
+
+class Capabilities(BaseModel):
+    """Security capabilities for the pack (default-deny)"""
+
+    net: NetCapability = Field(
+        default_factory=NetCapability,
+        description="Network capability"
+    )
+    fs: FsCapability = Field(
+        default_factory=FsCapability,
+        description="Filesystem capability"
+    )
+    subprocess: SubprocessCapability = Field(
+        default_factory=SubprocessCapability,
+        description="Subprocess capability"
+    )
+    clock: ClockCapability = Field(
+        default_factory=ClockCapability,
+        description="Clock capability"
+    )
+
+    @model_validator(mode="after")
+    def validate_capabilities(self) -> "Capabilities":
+        """Validate capability configurations"""
+        # Validate network egress allowlist format
+        if self.net.allow and self.net.egress_allowlist:
+            for host in self.net.egress_allowlist:
+                if not host or host == "*":
+                    continue
+                # Basic validation for host:port format
+                if ":" not in host and not host.endswith("*"):
+                    raise ValueError(
+                        f"Invalid egress host format: {host}. Use 'host:port' or 'domain:*'"
+                    )
+
+        # Validate filesystem paths
+        if self.fs.allow:
+            # Check for dangerous paths
+            dangerous_paths = ["/", "/*", "/**", "/etc", "/etc/*", "/root", "/root/*"]
+            for path in self.fs.write_paths:
+                if path in dangerous_paths:
+                    raise ValueError(f"Dangerous write path not allowed: {path}")
+                if ".." in path:
+                    raise ValueError(f"Path traversal not allowed: {path}")
+
+        # Validate subprocess allowlist
+        if self.subprocess.allow:
+            dangerous_binaries = [
+                "/bin/sh", "/bin/bash", "/usr/bin/python", "/usr/bin/perl",
+                "/usr/bin/ruby", "/usr/bin/sudo", "sudo", "sh", "bash"
+            ]
+            for binary in self.subprocess.allowlist:
+                if binary in dangerous_binaries:
+                    raise ValueError(f"Dangerous binary not allowed: {binary}")
+
+        return self
+
+
 class Security(BaseModel):
     """Security and provenance settings"""
 
@@ -125,6 +231,10 @@ class PackManifest(BaseModel):
 
     # Optional fields
     description: Optional[str] = Field(None, description="Short description")
+    capabilities: Capabilities = Field(
+        default_factory=Capabilities,
+        description="Security capabilities (default-deny)"
+    )
     policy: Policy = Field(default_factory=Policy, description="Policy constraints")
     security: Security = Field(
         default_factory=Security, description="Security settings"

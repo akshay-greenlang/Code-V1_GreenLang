@@ -1,0 +1,74 @@
+name: Verify Version Consistency
+
+on:
+  push:
+    branches: [main, master, develop, release/*]
+    paths:
+      - 'VERSION'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'greenlang/_version.py'
+      - 'greenlang/__init__.py'
+      - '.github/workflows/verify-version.yml'
+  pull_request:
+    branches: [main, master, develop, release/*]
+    paths:
+      - 'VERSION'
+      - 'pyproject.toml'
+      - 'setup.py'
+      - 'greenlang/_version.py'
+      - 'greenlang/__init__.py'
+  workflow_dispatch:
+
+jobs:
+  verify-version:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install packaging
+
+    - name: Verify version consistency
+      run: |
+        python scripts/verify_version_consistency.py
+
+    - name: Check VERSION file format
+      run: |
+        # Ensure VERSION file has no trailing newline issues
+        if [ ! -f VERSION ]; then
+          echo "ERROR: VERSION file not found"
+          exit 1
+        fi
+        VERSION_CONTENT=$(cat VERSION | tr -d '\r\n')
+        echo "VERSION content: '$VERSION_CONTENT'"
+        if ! echo "$VERSION_CONTENT" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9.]+)?(\+[a-zA-Z0-9.]+)?$'; then
+          echo "ERROR: VERSION file does not contain valid semantic version"
+          exit 1
+        fi
+
+    - name: Test package version import
+      run: |
+        # Install in editable mode to test version resolution
+        pip install -e .
+        python -c "import greenlang; print(f'Imported version: {greenlang.__version__}')"
+
+        # Verify it matches VERSION file
+        VERSION=$(cat VERSION | tr -d '\r\n')
+        IMPORTED_VERSION=$(python -c "import greenlang; print(greenlang.__version__)")
+        if [ "$VERSION" != "$IMPORTED_VERSION" ]; then
+          echo "ERROR: Imported version '$IMPORTED_VERSION' does not match VERSION file '$VERSION'"
+          exit 1
+        fi
+        echo "SUCCESS: Version consistency verified - $VERSION"

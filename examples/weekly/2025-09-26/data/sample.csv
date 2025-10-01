@@ -1,0 +1,7 @@
+timestamp,location,value,unit,status
+2025-09-26T10:00:00Z,facility-a,120.5,kWh,active
+2025-09-26T11:00:00Z,facility-a,125.3,kWh,active
+2025-09-26T12:00:00Z,facility-b,95.2,kWh,active
+2025-09-26T13:00:00Z,facility-b,98.7,kWh,active
+2025-09-26T14:00:00Z,facility-c,150.0,kWh,maintenance
+2025-09-26T15:00:00Z,facility-c,145.8,kWh,active

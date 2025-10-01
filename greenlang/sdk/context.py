@@ -2,6 +2,7 @@
 Execution context and artifacts
 """
 
+import threading
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 from datetime import datetime
@@ -45,6 +46,11 @@ class Context:
         self.start_time = datetime.utcnow()
         self.steps = {}  # Store step results
 
+        # Thread safety locks
+        self._artifacts_lock = threading.RLock()
+        self._steps_lock = threading.RLock()
+        self._metadata_lock = threading.RLock()
+
         # Add timestamp to metadata
         if "timestamp" not in self.metadata:
             self.metadata["timestamp"] = datetime.utcnow().isoformat()
@@ -57,23 +63,27 @@ class Context:
     ) -> Artifact:
         """Add an artifact to the context"""
         artifact = Artifact(name=name, path=path, type=type, metadata=metadata)
-        self.artifacts[name] = artifact
+        with self._artifacts_lock:
+            self.artifacts[name] = artifact
         return artifact
 
     def get_artifact(self, name: str) -> Optional[Artifact]:
         """Get an artifact by name"""
-        return self.artifacts.get(name)
+        with self._artifacts_lock:
+            return self.artifacts.get(name)
 
     def list_artifacts(self) -> List[str]:
         """List all artifact names"""
-        return list(self.artifacts.keys())
+        with self._artifacts_lock:
+            return list(self.artifacts.keys())
 
     def remove_artifact(self, name: str) -> bool:
         """Remove an artifact by name"""
-        if name in self.artifacts:
-            del self.artifacts[name]
-            return True
-        return False
+        with self._artifacts_lock:
+            if name in self.artifacts:
+                del self.artifacts[name]
+                return True
+            return False
 
     def save_artifact(
         self, name: str, content: Any, type: str = "json", **metadata
@@ -109,35 +119,42 @@ class Context:
 
     def add_step_result(self, name: str, result: Result):
         """Add a step result to the context"""
-        self.steps[name] = {
-            "outputs": result.data if hasattr(result, "data") else result,
-            "success": result.success if hasattr(result, "success") else True,
-            "metadata": result.metadata if hasattr(result, "metadata") else {},
-        }
-        # Update data with step outputs for next steps to access
-        if hasattr(result, "data") and result.data:
-            self.data.update({name: result.data})
+        with self._steps_lock:
+            self.steps[name] = {
+                "outputs": result.data if hasattr(result, "data") else result,
+                "success": result.success if hasattr(result, "success") else True,
+                "metadata": result.metadata if hasattr(result, "metadata") else {},
+            }
+            # Update data with step outputs for next steps to access
+            if hasattr(result, "data") and result.data:
+                self.data.update({name: result.data})
 
     def get_step_output(self, step_name: str) -> Optional[Any]:
         """Get output from a previous step"""
-        if step_name in self.steps:
-            return self.steps[step_name].get("outputs")
-        return None
+        with self._steps_lock:
+            if step_name in self.steps:
+                return self.steps[step_name].get("outputs")
+            return None
 
     def get_all_step_outputs(self) -> Dict[str, Any]:
         """Get outputs from all previous steps"""
-        return {
-            name: step["outputs"]
-            for name, step in self.steps.items()
-            if "outputs" in step
-        }
+        with self._steps_lock:
+            return {
+                name: step["outputs"]
+                for name, step in self.steps.items()
+                if "outputs" in step
+            }
 
     def to_result(self) -> Result:
         """Convert context to a Result object"""
-        all_success = all(step.get("success", False) for step in self.steps.values())
+        with self._steps_lock:
+            all_success = all(step.get("success", False) for step in self.steps.values())
+            steps_copy = dict(self.steps)
+        with self._artifacts_lock:
+            artifacts_copy = list(self.artifacts.values())
         return Result(
             success=all_success,
-            data=self.steps,
+            data=steps_copy,
             metadata={
                 "inputs": self.inputs,
                 "profile": self.profile,
@@ -145,7 +162,7 @@ class Context:
                 "duration": (datetime.utcnow() - self.start_time).total_seconds(),
                 "artifacts": [
                     a.model_dump() if hasattr(a, "model_dump") else a.dict()
-                    for a in self.artifacts.values()
+                    for a in artifacts_copy
                 ],
             },
         )

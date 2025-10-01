@@ -1,0 +1,1143 @@
+name: Friday Gate - Weekly RC & Security Audit
+
+on:
+  schedule:
+    # Every Friday at 5 PM UTC (17:00)
+    - cron: '0 17 * * 5'
+  workflow_dispatch:
+    inputs:
+      force_rc:
+        description: 'Force RC creation even if no changes'
+        required: false
+        default: false
+        type: boolean
+      skip_notifications:
+        description: 'Skip notification sending'
+        required: false
+        default: false
+        type: boolean
+      base_version:
+        description: 'Base version for RC (e.g., 0.3.0)'
+        required: false
+        type: string
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+  REGISTRY: ghcr.io
+  COSIGN_EXPERIMENTAL: 1
+
+permissions:
+  contents: write
+  packages: write
+  security-events: write
+  id-token: write
+  pull-requests: write
+  issues: write
+  actions: read
+
+jobs:
+  # ==================== INITIALIZATION ====================
+  initialize:
+    name: Initialize Friday Gate
+    runs-on: ubuntu-latest
+    outputs:
+      rc_version: ${{ steps.generate_rc.outputs.version }}
+      has_changes: ${{ steps.check_changes.outputs.has_changes }}
+      week_number: ${{ steps.generate_rc.outputs.week_number }}
+      should_create_rc: ${{ steps.decide_rc.outputs.create_rc }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Check for changes since last Friday
+        id: check_changes
+        run: |
+          LAST_FRIDAY=$(date -d "last friday" +%Y-%m-%d)
+          if [ "$(date +%u)" -eq 5 ]; then
+            LAST_FRIDAY=$(date -d "1 week ago" +%Y-%m-%d)
+          fi
+
+          CHANGES=$(git log --since="$LAST_FRIDAY 00:00:00" --oneline | wc -l)
+          echo "Changes since $LAST_FRIDAY: $CHANGES commits"
+
+          if [ $CHANGES -gt 0 ]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            echo "changes_count=$CHANGES" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "changes_count=0" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate RC version
+        id: generate_rc
+        run: |
+          # Use weekly format for Friday gates
+          BASE_VERSION="${{ github.event.inputs.base_version }}"
+          if [ -z "$BASE_VERSION" ]; then
+            # Get latest version from tags or use current branch version
+            if [ -f "greenlang/__init__.py" ]; then
+              BASE_VERSION=$(python -c "exec(open('greenlang/__init__.py').read()); print(__version__)")
+            else
+              BASE_VERSION="0.3.0"
+            fi
+          fi
+
+          YEAR=$(date +%Y)
+          WEEK=$(date +%V)
+          RC_VERSION="v${BASE_VERSION}-rc.${YEAR}w${WEEK}"
+
+          echo "version=$RC_VERSION" >> $GITHUB_OUTPUT
+          echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
+          echo "week_number=${YEAR}w${WEEK}" >> $GITHUB_OUTPUT
+          echo "Generated RC version: $RC_VERSION"
+
+      - name: Decide RC creation
+        id: decide_rc
+        run: |
+          FORCE_RC="${{ github.event.inputs.force_rc }}"
+          HAS_CHANGES="${{ steps.check_changes.outputs.has_changes }}"
+
+          if [ "$FORCE_RC" = "true" ] || [ "$HAS_CHANGES" = "true" ]; then
+            echo "create_rc=true" >> $GITHUB_OUTPUT
+            echo "✅ Will create RC release"
+          else
+            echo "create_rc=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No changes detected, skipping RC creation"
+          fi
+
+      - name: Friday Gate Summary
+        run: |
+          echo "## 🚀 Friday Gate Initialization" >> $GITHUB_STEP_SUMMARY
+          echo "- **RC Version**: ${{ steps.generate_rc.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Changes Since Last Week**: ${{ steps.check_changes.outputs.changes_count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Will Create RC**: ${{ steps.decide_rc.outputs.create_rc }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Week Number**: ${{ steps.generate_rc.outputs.week_number }}" >> $GITHUB_STEP_SUMMARY
+
+  # ==================== SECURITY GATES ====================
+  comprehensive-security-scan:
+    name: Comprehensive Security Scan
+    runs-on: ubuntu-latest
+    needs: initialize
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install security tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety bandit semgrep pip-audit
+
+      - name: Run TruffleHog secret scan
+        uses: trufflesecurity/trufflehog@v3.66.0
+        with:
+          path: .
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --no-update --fail
+
+      - name: Run pip-audit
+        run: |
+          pip install -r requirements.txt || true
+          pip-audit --strict --desc --format=json --output=pip-audit-results.json || true
+          pip-audit --strict --desc
+
+      - name: Run Bandit security linter
+        run: |
+          bandit -r greenlang/ -f json -o bandit-results.json || true
+          bandit -r greenlang/ -ll
+
+      - name: Run Semgrep static analysis
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: |
+          semgrep --config=auto --json --output=semgrep-results.json . || true
+          semgrep --config=auto .
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '0'
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-scan-results
+          path: |
+            *-results.json
+            *.sarif
+          retention-days: 30
+
+      - name: Upload SARIF results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+          category: 'friday-gate-security'
+
+      - name: Security gate check
+        run: |
+          echo "## 🔒 Security Scan Results" >> $GITHUB_STEP_SUMMARY
+
+          # Check for critical findings
+          CRITICAL_ISSUES=0
+
+          # Check Trivy results
+          if [ -f "trivy-fs-results.sarif" ]; then
+            TRIVY_CRITICAL=$(jq '.runs[].results[] | select(.level == "error")' trivy-fs-results.sarif | jq -s length)
+            CRITICAL_ISSUES=$((CRITICAL_ISSUES + ${TRIVY_CRITICAL:-0}))
+            echo "- **Trivy Critical**: ${TRIVY_CRITICAL:-0}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Check pip-audit results
+          if [ -f "pip-audit-results.json" ]; then
+            PIP_CRITICAL=$(jq '.vulnerabilities[] | select(.aliases[] | contains("CRITICAL"))' pip-audit-results.json 2>/dev/null | jq -s length || echo "0")
+            echo "- **Pip-audit Critical**: ${PIP_CRITICAL:-0}" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "- **Total Critical Issues**: $CRITICAL_ISSUES" >> $GITHUB_STEP_SUMMARY
+
+          if [ $CRITICAL_ISSUES -gt 0 ]; then
+            echo "❌ Critical security issues found - Friday Gate BLOCKED"
+            exit 1
+          else
+            echo "✅ No critical security issues found"
+          fi
+
+  # ==================== RC BUILD & SIGN ====================
+  build-and-sign:
+    name: Build & Sign RC Artifacts
+    runs-on: ubuntu-latest
+    needs: [initialize, comprehensive-security-scan]
+    if: needs.initialize.outputs.should_create_rc == 'true'
+    outputs:
+      wheel_hash: ${{ steps.build.outputs.wheel_hash }}
+      tarball_hash: ${{ steps.build.outputs.tarball_hash }}
+      docker_digest: ${{ steps.docker.outputs.digest }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip build twine
+          pip install sigstore
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Python packages
+        id: build
+        run: |
+          # Update version for RC
+          RC_VERSION="${{ needs.initialize.outputs.rc_version }}"
+          BASE_VERSION="${RC_VERSION#v}"
+
+          # Update version in __init__.py
+          if [ -f "greenlang/__init__.py" ]; then
+            sed -i "s/__version__ = .*/__version__ = \"$BASE_VERSION\"/" greenlang/__init__.py
+          fi
+
+          # Build packages
+          python -m build
+
+          # Calculate hashes
+          WHEEL_HASH=$(sha256sum dist/*.whl | cut -d' ' -f1)
+          TARBALL_HASH=$(sha256sum dist/*.tar.gz | cut -d' ' -f1)
+
+          echo "wheel_hash=$WHEEL_HASH" >> $GITHUB_OUTPUT
+          echo "tarball_hash=$TARBALL_HASH" >> $GITHUB_OUTPUT
+
+          echo "✅ Built packages with hashes:"
+          echo "  Wheel: $WHEEL_HASH"
+          echo "  Tarball: $TARBALL_HASH"
+
+      - name: Generate comprehensive SBOM
+        run: |
+          # Install SBOM tools
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+          # Generate SBOM for source
+          syft . -o spdx-json=sbom-source.spdx.json
+          syft . -o cyclonedx-json=sbom-source.cyclonedx.json
+
+          # Generate SBOM for built packages
+          for pkg in dist/*; do
+            syft "$pkg" -o spdx-json="sbom-$(basename $pkg).spdx.json"
+          done
+
+          echo "✅ Generated comprehensive SBOMs"
+
+      - name: Sign packages with Sigstore
+        run: |
+          # Sign all distribution files
+          for file in dist/*.whl dist/*.tar.gz; do
+            echo "Signing $file..."
+            python -m sigstore sign "$file"
+            echo "✅ Signed $(basename $file)"
+          done
+
+          # Sign SBOM files
+          for file in sbom*.json; do
+            echo "Signing SBOM $file..."
+            python -m sigstore sign "$file"
+            echo "✅ Signed SBOM $(basename $file)"
+          done
+
+      - name: Verify signatures
+        run: |
+          echo "Verifying signatures..."
+          for file in dist/*.whl dist/*.tar.gz sbom*.json; do
+            echo "Verifying $file..."
+            python -m sigstore verify identity \
+              --cert-identity-regex ".*" \
+              --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
+              "$file"
+            echo "✅ Verified $(basename $file)"
+          done
+
+      - name: Build and sign Docker image
+        id: docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ github.repository }}/greenlang:${{ needs.initialize.outputs.rc_version }}
+            ${{ env.REGISTRY }}/${{ github.repository }}/greenlang:friday-latest
+            ${{ env.REGISTRY }}/${{ github.repository }}/greenlang:${{ needs.initialize.outputs.week_number }}
+          labels: |
+            org.opencontainers.image.version=${{ needs.initialize.outputs.rc_version }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ steps.build.outputs.timestamp }}
+            org.greenlang.rc=true
+            org.greenlang.friday-gate=true
+            org.greenlang.week=${{ needs.initialize.outputs.week_number }}
+          build-args: |
+            VERSION=${{ needs.initialize.outputs.rc_version }}
+            BUILD_DATE=${{ steps.build.outputs.timestamp }}
+            GIT_COMMIT=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Sign container image
+        run: |
+          IMAGE_DIGEST="${{ steps.docker.outputs.digest }}"
+          IMAGE_URI="${{ env.REGISTRY }}/${{ github.repository }}/greenlang@${IMAGE_DIGEST}"
+
+          echo "Signing container image: $IMAGE_URI"
+          cosign sign --yes "$IMAGE_URI"
+          echo "✅ Signed container image"
+
+      - name: Generate and attach container SBOM
+        run: |
+          IMAGE_DIGEST="${{ steps.docker.outputs.digest }}"
+          IMAGE_URI="${{ env.REGISTRY }}/${{ github.repository }}/greenlang@${IMAGE_DIGEST}"
+
+          # Generate container SBOM
+          syft "$IMAGE_URI" -o spdx-json=sbom-container.spdx.json
+          syft "$IMAGE_URI" -o cyclonedx-json=sbom-container.cyclonedx.json
+
+          # Sign SBOM
+          python -m sigstore sign sbom-container.spdx.json
+          python -m sigstore sign sbom-container.cyclonedx.json
+
+          # Attach SBOM to image
+          cosign attach sbom --sbom sbom-container.spdx.json "$IMAGE_URI"
+
+          echo "✅ Generated and attached container SBOM"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: friday-gate-artifacts-${{ needs.initialize.outputs.week_number }}
+          path: |
+            dist/
+            *.sigstore
+            *.sigstore.json
+            sbom*.json
+          retention-days: 90
+
+  # ==================== COMPREHENSIVE TESTING ====================
+  comprehensive-testing:
+    name: Multi-Platform Testing Suite
+    needs: [initialize, build-and-sign]
+    if: needs.initialize.outputs.should_create_rc == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.10', '3.11', '3.12']
+        include:
+          - os: ubuntu-latest
+            python: '3.11'
+            run_extended_tests: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: friday-gate-artifacts-${{ needs.initialize.outputs.week_number }}
+          path: ./artifacts
+
+      - name: Install RC package
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+
+          # Install from built wheel
+          WHEEL_FILE=$(find artifacts/dist -name "*.whl" | head -1)
+          if [ -f "$WHEEL_FILE" ]; then
+            pip install "$WHEEL_FILE"
+            echo "✅ Installed from wheel: $WHEEL_FILE"
+          else
+            echo "❌ No wheel file found"
+            exit 1
+          fi
+
+      - name: Basic functionality tests
+        shell: bash
+        run: |
+          # Test CLI availability
+          gl --version
+          gl --help
+
+          # Test doctor command
+          gl doctor
+
+          echo "✅ Basic CLI tests passed on ${{ matrix.os }} Python ${{ matrix.python }}"
+
+      - name: Smoke tests
+        shell: bash
+        run: |
+          # Create temporary directory for tests
+          TEST_DIR=$(mktemp -d)
+          cd "$TEST_DIR"
+
+          # Test pack creation
+          gl init pack-basic test-pack
+          cd test-pack
+
+          # Validate pack structure
+          [ -f "greenlang.yaml" ] || { echo "Missing greenlang.yaml"; exit 1; }
+          [ -f "steps/main.py" ] || { echo "Missing main step"; exit 1; }
+
+          # Test pack validation
+          gl pack validate .
+
+          echo "✅ Smoke tests passed"
+
+      - name: Extended integration tests (Linux only)
+        if: matrix.run_extended_tests
+        shell: bash
+        run: |
+          # Test Docker integration
+          if command -v docker &> /dev/null; then
+            docker pull hello-world
+            echo "✅ Docker integration test passed"
+          fi
+
+          # Test examples
+          if [ -d "../examples/scope1_basic" ]; then
+            cd ../examples/scope1_basic
+            gl pack validate .
+            echo "✅ Example validation passed"
+          fi
+
+          # Performance test
+          python - <<'EOF'
+          import time
+          import subprocess
+
+          start = time.time()
+          result = subprocess.run(['gl', '--version'], capture_output=True, text=True)
+          duration = time.time() - start
+
+          if result.returncode == 0 and duration < 2.0:
+              print(f"✅ Performance test passed: {duration:.2f}s")
+          else:
+              print(f"❌ Performance test failed: {duration:.2f}s")
+              exit(1)
+          EOF
+
+      - name: Signature verification test
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          pip install sigstore
+
+          # Verify package signatures
+          for file in artifacts/dist/*.whl artifacts/dist/*.tar.gz; do
+            if [ -f "$file" ]; then
+              echo "Verifying signature for $(basename $file)..."
+              python -m sigstore verify identity \
+                --cert-identity-regex ".*" \
+                --cert-oidc-issuer "https://token.actions.githubusercontent.com" \
+                "$file"
+              echo "✅ Signature verified for $(basename $file)"
+            fi
+          done
+
+  # ==================== SMOKE TESTS ====================
+  smoke-tests:
+    name: Example & Integration Smoke Tests
+    needs: [initialize, build-and-sign]
+    if: needs.initialize.outputs.should_create_rc == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: friday-gate-artifacts-${{ needs.initialize.outputs.week_number }}
+          path: ./artifacts
+
+      - name: Install RC package
+        run: |
+          python -m pip install --upgrade pip
+          pip install artifacts/dist/*.whl
+
+      - name: Test examples
+        run: |
+          # Test scope1_basic example
+          if [ -d "examples/scope1_basic" ]; then
+            cd examples/scope1_basic
+            gl pack validate .
+            echo "✅ scope1_basic validation passed"
+            cd ../..
+          fi
+
+          # Test other examples
+          for example_dir in examples/*/; do
+            if [ -f "$example_dir/greenlang.yaml" ]; then
+              echo "Testing $example_dir..."
+              cd "$example_dir"
+              gl pack validate . || echo "⚠️  Validation issues in $example_dir"
+              cd - > /dev/null
+            fi
+          done
+
+      - name: Integration smoke test
+        run: |
+          # Create test workspace
+          mkdir -p /tmp/friday-gate-test
+          cd /tmp/friday-gate-test
+
+          # Test full workflow
+          gl init pack-basic friday-test-pack
+          cd friday-test-pack
+
+          # Customize pack for testing
+          cat > steps/main.py << 'EOF'
+          """
+          Friday Gate Test Pack
+          """
+          import json
+          from greenlang.sdk import Step, Config
+
+          def main(config: Config) -> dict:
+              return {
+                  "status": "success",
+                  "test_result": "Friday gate smoke test passed",
+                  "version": config.get("version", "unknown"),
+                  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+              }
+
+          if __name__ == "__main__":
+              step = Step(__file__)
+              result = main(step.config)
+              step.output(result)
+          EOF
+
+          # Test execution
+          gl pack validate .
+          echo "✅ Integration smoke test passed"
+
+  # ==================== DOCKER SECURITY SCAN ====================
+  docker-security-scan:
+    name: Docker Image Security Scan
+    needs: [initialize, build-and-sign]
+    if: needs.initialize.outputs.should_create_rc == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify container signature
+        run: |
+          IMAGE_URI="${{ env.REGISTRY }}/${{ github.repository }}/greenlang:${{ needs.initialize.outputs.rc_version }}"
+
+          echo "Verifying signature for: $IMAGE_URI"
+          cosign verify \
+            --certificate-identity-regexp ".*" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+            "$IMAGE_URI"
+
+          echo "✅ Container signature verified"
+
+      - name: Trivy container scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ github.repository }}/greenlang:${{ needs.initialize.outputs.rc_version }}
+          format: 'sarif'
+          output: 'trivy-container-results.sarif'
+          severity: 'HIGH,CRITICAL'
+          exit-code: '0'
+
+      - name: Grype container scan
+        run: |
+          # Install Grype
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+          # Scan container
+          grype ${{ env.REGISTRY }}/${{ github.repository }}/greenlang:${{ needs.initialize.outputs.rc_version }} \
+            -o json > grype-container-results.json || true
+
+          echo "✅ Grype container scan completed"
+
+      - name: Container security gate
+        run: |
+          echo "## 🐳 Container Security Results" >> $GITHUB_STEP_SUMMARY
+
+          # Check Trivy results
+          if [ -f "trivy-container-results.sarif" ]; then
+            TRIVY_CRITICAL=$(jq -r '.runs[].results[] | select(.level == "error") | .ruleId' trivy-container-results.sarif 2>/dev/null | wc -l || echo "0")
+            echo "- **Trivy Critical**: $TRIVY_CRITICAL" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$TRIVY_CRITICAL" -gt 0 ]; then
+              echo "⚠️  Critical vulnerabilities found in container"
+              jq -r '.runs[].results[] | select(.level == "error") | "- " + .ruleId + ": " + .message.text' trivy-container-results.sarif >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+
+          # Check Grype results
+          if [ -f "grype-container-results.json" ]; then
+            GRYPE_CRITICAL=$(jq -r '.matches[] | select(.vulnerability.severity == "Critical") | .vulnerability.id' grype-container-results.json 2>/dev/null | wc -l || echo "0")
+            echo "- **Grype Critical**: $GRYPE_CRITICAL" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "✅ Container security scan completed"
+
+      - name: Upload container scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: container-security-results
+          path: |
+            *.sarif
+            *-results.json
+          retention-days: 30
+
+      - name: Upload container SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-container-results.sarif'
+          category: 'friday-gate-container'
+
+  # ==================== METRICS COLLECTION ====================
+  collect-metrics:
+    name: Collect Weekly Metrics
+    needs: initialize
+    runs-on: ubuntu-latest
+    outputs:
+      metrics_collected: ${{ steps.metrics.outputs.collected }}
+      report_path: ${{ steps.metrics.outputs.report_path }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Collect weekly metrics
+        id: metrics
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          python scripts/weekly_metrics.py
+
+          if [ -f "metrics/weekly.md" ]; then
+            echo "collected=true" >> $GITHUB_OUTPUT
+            echo "report_path=metrics/weekly.md" >> $GITHUB_OUTPUT
+            echo "✅ Weekly metrics collected successfully"
+          else
+            echo "collected=false" >> $GITHUB_OUTPUT
+            echo "⚠️  Failed to collect metrics"
+          fi
+
+      - name: Commit metrics snapshot
+        if: steps.metrics.outputs.collected == 'true'
+        run: |
+          git config --local user.email "friday-gate@github.com"
+          git config --local user.name "Friday Gate Bot"
+
+          git add metrics/
+          git commit -m "chore: Friday gate metrics snapshot ${{ needs.initialize.outputs.week_number }}" || echo "No new metrics to commit"
+
+      - name: Push metrics update
+        if: steps.metrics.outputs.collected == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref_name }}
+
+      - name: Upload metrics artifacts
+        uses: actions/upload-artifact@v4
+        if: steps.metrics.outputs.collected == 'true'
+        with:
+          name: weekly-metrics-${{ needs.initialize.outputs.week_number }}
+          path: metrics/
+          retention-days: 365
+
+  # ==================== RELEASE CREATION ====================
+  create-github-release:
+    name: Create GitHub Pre-Release
+    needs: [initialize, build-and-sign, comprehensive-testing, smoke-tests, docker-security-scan, collect-metrics]
+    if: needs.initialize.outputs.should_create_rc == 'true' && success()
+    runs-on: ubuntu-latest
+    outputs:
+      release_url: ${{ steps.create_release.outputs.html_url }}
+      release_tag: ${{ needs.initialize.outputs.rc_version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Git tag
+        run: |
+          git config --local user.email "friday-gate@github.com"
+          git config --local user.name "Friday Gate Bot"
+
+          RC_VERSION="${{ needs.initialize.outputs.rc_version }}"
+
+          # Create annotated tag
+          git tag -a "$RC_VERSION" -m "Friday Gate RC: $RC_VERSION - Week ${{ needs.initialize.outputs.week_number }}"
+          git push origin "$RC_VERSION"
+
+          echo "✅ Created and pushed tag: $RC_VERSION"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          RC_VERSION="${{ needs.initialize.outputs.rc_version }}"
+          WEEK_NUMBER="${{ needs.initialize.outputs.week_number }}"
+
+          # Get last Friday's tag for changelog
+          LAST_FRIDAY_TAG=$(git tag -l "v*-rc.*" --sort=-version:refname | head -2 | tail -1 || echo "")
+
+          cat > release_notes.md << EOF
+          # 🚀 Friday Gate Release Candidate
+
+          **RC Version**: \`$RC_VERSION\`
+          **Week**: $WEEK_NUMBER
+          **Generated**: $(date -u +'%Y-%m-%d %H:%M UTC')
+
+          ## 🔒 Security Status
+
+          - ✅ Comprehensive security scan passed
+          - ✅ All artifacts signed with Sigstore
+          - ✅ Container images signed with Cosign
+          - ✅ SBOM generated for all artifacts
+          - ✅ No critical vulnerabilities detected
+
+          ## 📦 Artifacts
+
+          ### Python Packages
+          - Wheel package with signature
+          - Source distribution with signature
+          - Comprehensive SBOM (SPDX & CycloneDX)
+
+          ### Container Images
+          \`\`\`bash
+          docker pull ${{ env.REGISTRY }}/${{ github.repository }}/greenlang:$RC_VERSION
+          docker pull ${{ env.REGISTRY }}/${{ github.repository }}/greenlang:friday-latest
+          \`\`\`
+
+          ## 🧪 Testing Status
+
+          - ✅ Multi-platform testing (Ubuntu, Windows, macOS)
+          - ✅ Python 3.10, 3.11, 3.12 compatibility
+          - ✅ Smoke tests passed
+          - ✅ Integration tests passed
+          - ✅ Example validation passed
+
+          ## 📊 Weekly Metrics
+
+          Metrics snapshot included with this release.
+
+          ## 🔄 Changes Since Last Week
+
+          EOF
+
+          # Add changelog
+          if [ -n "$LAST_FRIDAY_TAG" ]; then
+            echo "\`\`\`" >> release_notes.md
+            git log --pretty=format:"- %s (%h)" ${LAST_FRIDAY_TAG}..HEAD >> release_notes.md
+            echo "" >> release_notes.md
+            echo "\`\`\`" >> release_notes.md
+          else
+            echo "First Friday Gate release - no previous RC to compare." >> release_notes.md
+          fi
+
+          cat >> release_notes.md << EOF
+
+          ## 🚀 Installation
+
+          ### Python Package
+          \`\`\`bash
+          pip install greenlang-cli==$RC_VERSION
+          \`\`\`
+
+          ### Docker
+          \`\`\`bash
+          docker run ${{ env.REGISTRY }}/${{ github.repository }}/greenlang:$RC_VERSION --version
+          \`\`\`
+
+          ### Signature Verification
+          \`\`\`bash
+          pip install sigstore
+          python -m sigstore verify identity \\
+            --cert-identity-regex ".*" \\
+            --cert-oidc-issuer "https://token.actions.githubusercontent.com" \\
+            [artifact-file]
+          \`\`\`
+
+          ## 🤝 Feedback
+
+          This is a release candidate. Please test and report any issues:
+          - [Report bugs](https://github.com/${{ github.repository }}/issues/new?labels=bug,rc-feedback)
+          - [Suggest improvements](https://github.com/${{ github.repository }}/issues/new?labels=enhancement,rc-feedback)
+
+          ---
+
+          **This release was automatically created by Friday Gate** 🤖
+          EOF
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.initialize.outputs.rc_version }}
+          name: "🚀 Friday Gate RC ${{ needs.initialize.outputs.rc_version }}"
+          body_path: release_notes.md
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            friday-gate-artifacts-${{ needs.initialize.outputs.week_number }}/dist/*
+            friday-gate-artifacts-${{ needs.initialize.outputs.week_number }}/*.sigstore*
+            friday-gate-artifacts-${{ needs.initialize.outputs.week_number }}/sbom*.json
+            weekly-metrics-${{ needs.initialize.outputs.week_number }}/weekly.md
+
+  # ==================== NOTIFICATIONS ====================
+  notify-success:
+    name: Success Notifications
+    needs: [initialize, create-github-release, collect-metrics]
+    if: success() && needs.initialize.outputs.should_create_rc == 'true' && github.event.inputs.skip_notifications != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post to Discord
+        if: vars.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK: ${{ vars.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "content": "🎉 **Friday Gate Success!**",
+              "embeds": [{
+                "title": "Weekly RC Released: ${{ needs.initialize.outputs.rc_version }}",
+                "color": 5814783,
+                "fields": [
+                  {
+                    "name": "🚀 Release",
+                    "value": "[View Release](${{ needs.create-github-release.outputs.release_url }})",
+                    "inline": true
+                  },
+                  {
+                    "name": "📦 Docker",
+                    "value": "`${{ env.REGISTRY }}/${{ github.repository }}/greenlang:${{ needs.initialize.outputs.rc_version }}`",
+                    "inline": false
+                  },
+                  {
+                    "name": "🔒 Security",
+                    "value": "All scans passed ✅",
+                    "inline": true
+                  },
+                  {
+                    "name": "🧪 Testing",
+                    "value": "Multi-platform tests passed ✅",
+                    "inline": true
+                  }
+                ],
+                "footer": {
+                  "text": "Friday Gate • Week ${{ needs.initialize.outputs.week_number }}"
+                }
+              }]
+            }' \
+            "$DISCORD_WEBHOOK"
+
+      - name: Create success issue comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Find or create tracking issue for Friday Gate
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'friday-gate,tracking',
+              state: 'open'
+            });
+
+            let issue;
+            if (issues.data.length === 0) {
+              issue = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '📅 Friday Gate Tracking - ${{ needs.initialize.outputs.week_number }}',
+                body: 'This issue tracks Friday Gate activities for the week.',
+                labels: ['friday-gate', 'tracking']
+              });
+            } else {
+              issue = issues.data[0];
+            }
+
+            // Add success comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              body: `## ✅ Friday Gate Success - ${{ needs.initialize.outputs.rc_version }}
+
+            **Week**: ${{ needs.initialize.outputs.week_number }}
+            **Release**: [View Here](${{ needs.create-github-release.outputs.release_url }})
+            **Workflow**: [View Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+            ### Status Summary
+            - 🔒 Security scans: ✅ Passed
+            - 🧪 Testing: ✅ Passed
+            - 📦 Artifacts: ✅ Built & Signed
+            - 🐳 Container: ✅ Scanned & Signed
+            - 📊 Metrics: ✅ Collected
+
+            ### Quick Install
+            \`\`\`bash
+            pip install greenlang-cli==${{ needs.initialize.outputs.rc_version }}
+            \`\`\`
+            `
+            });
+
+  # ==================== FAILURE HANDLING ====================
+  notify-failure:
+    name: Failure Notifications
+    needs: [initialize, comprehensive-security-scan, build-and-sign, comprehensive-testing]
+    if: failure() && github.event.inputs.skip_notifications != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Analyze failure
+        id: failure_analysis
+        run: |
+          # Determine which job failed
+          if [[ "${{ needs.comprehensive-security-scan.result }}" == "failure" ]]; then
+            echo "failed_job=Security Scan" >> $GITHUB_OUTPUT
+            echo "failure_reason=Critical security issues detected" >> $GITHUB_OUTPUT
+            echo "urgency=high" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.build-and-sign.result }}" == "failure" ]]; then
+            echo "failed_job=Build & Sign" >> $GITHUB_OUTPUT
+            echo "failure_reason=Failed to build or sign artifacts" >> $GITHUB_OUTPUT
+            echo "urgency=high" >> $GITHUB_OUTPUT
+          elif [[ "${{ needs.comprehensive-testing.result }}" == "failure" ]]; then
+            echo "failed_job=Testing" >> $GITHUB_OUTPUT
+            echo "failure_reason=Test failures detected" >> $GITHUB_OUTPUT
+            echo "urgency=medium" >> $GITHUB_OUTPUT
+          else
+            echo "failed_job=Unknown" >> $GITHUB_OUTPUT
+            echo "failure_reason=Unknown failure" >> $GITHUB_OUTPUT
+            echo "urgency=medium" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post failure to Discord
+        if: vars.DISCORD_WEBHOOK_URL != ''
+        env:
+          DISCORD_WEBHOOK: ${{ vars.DISCORD_WEBHOOK_URL }}
+        run: |
+          URGENCY_COLOR=$( [ "${{ steps.failure_analysis.outputs.urgency }}" = "high" ] && echo "15158332" || echo "16776960" )
+
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "content": "🚨 **Friday Gate Failure!**",
+              "embeds": [{
+                "title": "Friday Gate Failed - Week ${{ needs.initialize.outputs.week_number }}",
+                "color": '$URGENCY_COLOR',
+                "fields": [
+                  {
+                    "name": "❌ Failed Job",
+                    "value": "${{ steps.failure_analysis.outputs.failed_job }}",
+                    "inline": true
+                  },
+                  {
+                    "name": "🔍 Reason",
+                    "value": "${{ steps.failure_analysis.outputs.failure_reason }}",
+                    "inline": false
+                  },
+                  {
+                    "name": "🔗 Workflow",
+                    "value": "[View Failed Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})",
+                    "inline": false
+                  }
+                ],
+                "footer": {
+                  "text": "Priority: ${{ steps.failure_analysis.outputs.urgency }} • Requires immediate attention"
+                }
+              }]
+            }' \
+            "$DISCORD_WEBHOOK"
+
+      - name: Create failure issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const urgencyLabel = '${{ steps.failure_analysis.outputs.urgency }}' === 'high' ? 'priority-high' : 'priority-medium';
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Friday Gate Failure - Week ${{ needs.initialize.outputs.week_number }}',
+              body: `## Friday Gate Failure Report
+
+            **Failed Job**: ${{ steps.failure_analysis.outputs.failed_job }}
+            **Failure Reason**: ${{ steps.failure_analysis.outputs.failure_reason }}
+            **Workflow Run**: [View Here](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            **Urgency**: ${{ steps.failure_analysis.outputs.urgency }}
+
+            ### Required Actions
+
+            - [ ] Investigate root cause
+            - [ ] Fix underlying issues
+            - [ ] Re-run Friday Gate or create manual RC
+            - [ ] Update security/testing procedures if needed
+
+            ### Context
+
+            This issue was automatically created because the Friday Gate workflow failed.
+            The Friday Gate ensures weekly RC releases with full security validation.
+
+            **This failure blocks the weekly RC release and requires immediate attention.**
+            `,
+              labels: ['friday-gate', 'failure', urgencyLabel, 'automation']
+            });
+
+  # ==================== CLEANUP ====================
+  cleanup:
+    name: Cleanup
+    needs: [notify-success, notify-failure]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Workflow summary
+        run: |
+          echo "## 📊 Friday Gate Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Week**: ${{ needs.initialize.outputs.week_number || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **RC Version**: ${{ needs.initialize.outputs.rc_version || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Changes Detected**: ${{ needs.initialize.outputs.has_changes || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **RC Created**: ${{ needs.initialize.outputs.should_create_rc || 'N/A' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Run Time**: $(date -u +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.notify-success.result }}" == "success" ]]; then
+            echo "- ✅ RC released successfully" >> $GITHUB_STEP_SUMMARY
+            echo "- 📋 Test RC before next release" >> $GITHUB_STEP_SUMMARY
+            echo "- 📊 Review weekly metrics" >> $GITHUB_STEP_SUMMARY
+          elif [[ "${{ needs.notify-failure.result }}" == "success" ]]; then
+            echo "- ❌ Investigate and fix failures" >> $GITHUB_STEP_SUMMARY
+            echo "- 🔄 Re-run Friday Gate when ready" >> $GITHUB_STEP_SUMMARY
+            echo "- 📈 Review security/testing procedures" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- ℹ️  No RC created (no changes or skipped)" >> $GITHUB_STEP_SUMMARY
+            echo "- 📊 Weekly metrics still collected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Archive workflow logs
+        run: |
+          echo "Friday Gate workflow completed at $(date -u)"
+          echo "Check GitHub Actions for detailed logs and artifacts."

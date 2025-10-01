@@ -19,7 +19,8 @@ if sys.platform == "win32":
         sys.stdout = codecs.getwriter("utf-8")(sys.stdout.buffer, "strict")
         sys.stderr = codecs.getwriter("utf-8")(sys.stderr.buffer, "strict")
 
-from . import main
+# Import the correct main function
+from .main import main
 
 if __name__ == "__main__":
     main()

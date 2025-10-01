@@ -6,7 +6,10 @@ This file is kept for legacy compatibility and pip editable installs.
 The main package configuration is in pyproject.toml.
 """
 
+import sys
+import platform
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 from pathlib import Path
 
 # Read version from VERSION file
@@ -22,6 +25,45 @@ if readme_file.exists():
     long_description = readme_file.read_text(encoding="utf-8")
 else:
     long_description = "GreenLang Climate Intelligence Platform"
+
+
+class PostInstallCommand(install):
+    """Custom post-installation command for Windows PATH setup."""
+
+    def run(self):
+        install.run(self)
+
+        # Run Windows-specific setup only on Windows
+        if platform.system() == "Windows":
+            try:
+                self.setup_windows_path()
+            except Exception as e:
+                print(f"Warning: Windows PATH setup failed: {e}")
+                print("You may need to manually add Python Scripts to PATH")
+
+    def setup_windows_path(self):
+        """Set up Windows PATH for gl command."""
+        try:
+            from greenlang.utils.post_install import run_post_install
+            run_post_install()
+        except ImportError:
+            print("Warning: Could not import post-install utilities")
+            print("Manual PATH configuration may be required")
+
+
+# Platform-specific configurations
+scripts = []
+data_files = []
+
+# Windows-specific setup
+if platform.system() == "Windows":
+    # Add Windows batch wrapper
+    scripts.append("scripts/gl-wrapper.bat")
+
+    # Add data files for Windows
+    data_files.extend([
+        ("Scripts", ["scripts/gl-wrapper.bat"]),
+    ])
 
 setup(
     name="greenlang-cli",
@@ -161,6 +203,7 @@ setup(
     entry_points={
         "console_scripts": [
             "gl=greenlang.cli.main:main",
+            "greenlang=greenlang.cli.main:main",  # Backward compatibility
         ],
     },
     classifiers=[
@@ -201,5 +244,11 @@ setup(
         "buildings",
         "energy",
     ],
+    # Platform-specific configurations
+    scripts=scripts,
+    data_files=data_files,
+    cmdclass={
+        'install': PostInstallCommand,
+    },
     zip_safe=False,
 )

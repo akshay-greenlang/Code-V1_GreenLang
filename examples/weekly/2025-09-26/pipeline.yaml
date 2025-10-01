@@ -1,0 +1,82 @@
+version: "1.0"
+kind: Pipeline
+metadata:
+  name: weekly-demo-2025-09-26
+  description: Weekly demo pipeline showcasing security capabilities
+  labels:
+    demo: "true"
+    week: "2025-09-26"
+
+# Security capabilities (demonstrating default-deny)
+capabilities:
+  net:
+    allow: false  # Network access denied by default
+    egress_allowlist: []
+  fs:
+    allow: true  # Limited filesystem access
+    read_paths:
+      - "./data"
+      - "/tmp/gl-demo-*"
+    write_paths:
+      - "/tmp/outputs"
+  subprocess:
+    allow: false  # No subprocess execution
+  clock:
+    allow: true  # Allow time operations
+
+# Inputs
+inputs:
+  params:
+    input_file:
+      type: string
+      default: "data/sample.csv"
+    output_format:
+      type: string
+      default: "json"
+
+# Pipeline steps
+steps:
+  - id: load-data
+    name: "Load Sample Data"
+    agent: FileConnector
+    with:
+      path: ${{ inputs.params.input_file }}
+    outputs:
+      data: loaded_data.json
+
+  - id: process-data
+    name: "Process Data"
+    agent: DataProcessor
+    depends_on:
+      - load-data
+    with:
+      input_data: ${{ steps.load-data.outputs.data }}
+      operations:
+        - validate
+        - transform
+    outputs:
+      processed: processed_data.json
+
+  - id: generate-report
+    name: "Generate Report"
+    agent: ReportGenerator
+    depends_on:
+      - process-data
+    with:
+      data: ${{ steps.process-data.outputs.processed }}
+      format: ${{ inputs.params.output_format }}
+    outputs:
+      report: weekly_report.${{ inputs.params.output_format }}
+
+# Outputs
+outputs:
+  report:
+    type: file
+    path: ${{ steps.generate-report.outputs.report }}
+    description: "Weekly demo report"
+
+  metrics:
+    type: object
+    value:
+      execution_time: ${{ context.duration }}
+      steps_completed: ${{ context.steps_count }}
