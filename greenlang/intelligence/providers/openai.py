@@ -24,13 +24,19 @@ Security:
 from __future__ import annotations
 import os
 import json
+import time
 import asyncio
 import logging
 from typing import Any, Dict, List, Mapping, Optional
 
 try:
     from openai import AsyncOpenAI
-    from openai import APIError, APIConnectionError, RateLimitError, Timeout, AuthenticationError
+    from openai import (
+        APIError, APIConnectionError, RateLimitError, AuthenticationError,
+        APITimeoutError, InternalServerError
+    )
+    # Alias for backward compatibility
+    Timeout = APITimeoutError
     OPENAI_AVAILABLE = True
 except ImportError:
     OPENAI_AVAILABLE = False
@@ -55,6 +61,12 @@ from greenlang.intelligence.schemas.tools import ToolDef, ToolCall
 from greenlang.intelligence.schemas.responses import ChatResponse, Usage, FinishReason, ProviderInfo
 from greenlang.intelligence.schemas.jsonschema import JSONSchema
 from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
+from greenlang.intelligence.runtime.json_validator import (
+    parse_and_validate,
+    get_repair_prompt,
+    JSONRetryTracker,
+    GLJsonParseError,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -334,7 +346,8 @@ class OpenAIProvider(LLMProvider):
         """
         openai_messages = []
         for msg in messages:
-            openai_msg: Dict[str, Any] = {"role": msg.role.value}
+            # Note: msg.role is already a string due to use_enum_values=True in ChatMessage
+            openai_msg: Dict[str, Any] = {"role": msg.role}
 
             if msg.content:
                 openai_msg["content"] = msg.content
@@ -693,56 +706,98 @@ class OpenAIProvider(LLMProvider):
                 }
             }
 
-        # 4. Call OpenAI API with retry
-        openai_response = await self._call_with_retry(
-            openai_messages=openai_messages,
-            openai_tools=openai_tools,
-            response_format=response_format,
-            temperature=temperature,
-            top_p=top_p,
-            seed=seed,
-            tool_choice=tool_choice,
-        )
+        # 4. Call OpenAI API with JSON retry logic (CTO SPEC: >3 retries = fail)
+        request_id = metadata.get("request_id", f"req_{int(time.time() * 1000)}") if metadata else f"req_{int(time.time() * 1000)}"
+        json_tracker = JSONRetryTracker(request_id=request_id, max_attempts=3) if json_schema else None
 
-        # 5. Extract response data
-        choice = openai_response.choices[0]
-        message = choice.message
+        for attempt in range(4):  # 0, 1, 2, 3 = 4 attempts total
+            # Call OpenAI API
+            openai_response = await self._call_with_retry(
+                openai_messages=openai_messages,
+                openai_tools=openai_tools,
+                response_format=response_format if attempt == 0 else None,  # Only use native mode on first try
+                temperature=temperature,
+                top_p=top_p,
+                seed=seed,
+                tool_choice=tool_choice,
+            )
 
-        # Get text content
-        text = message.content if message.content else None
-
-        # Get tool calls
-        tool_calls = []
-        if message.tool_calls:
-            tool_calls = self._normalize_tool_calls(message.tool_calls)
-
-        # Calculate actual usage
-        usage = Usage(
-            prompt_tokens=openai_response.usage.prompt_tokens,
-            completion_tokens=openai_response.usage.completion_tokens,
-            total_tokens=openai_response.usage.total_tokens,
-            cost_usd=self._calculate_cost(
+            # Calculate usage for THIS attempt
+            usage = Usage(
                 prompt_tokens=openai_response.usage.prompt_tokens,
                 completion_tokens=openai_response.usage.completion_tokens,
-            ),
-        )
+                total_tokens=openai_response.usage.total_tokens,
+                cost_usd=self._calculate_cost(
+                    prompt_tokens=openai_response.usage.prompt_tokens,
+                    completion_tokens=openai_response.usage.completion_tokens,
+                ),
+            )
 
-        # Normalize finish reason
+            # CTO SPEC: Increment cost meter on EVERY attempt
+            budget.add(add_usd=usage.cost_usd, add_tokens=usage.total_tokens)
+
+            # Extract response data
+            choice = openai_response.choices[0]
+            message = choice.message
+
+            # Get text content
+            text = message.content if message.content else None
+
+            # Get tool calls
+            tool_calls = []
+            if message.tool_calls:
+                tool_calls = self._normalize_tool_calls(message.tool_calls)
+                # Tool calls - no JSON validation needed
+                break
+
+            # If json_schema provided, validate response
+            if json_schema and text:
+                try:
+                    # Validate JSON
+                    validated_json = parse_and_validate(text, json_schema)
+                    json_tracker.record_success(attempt, validated_json)
+                    logger.info(f"JSON validation succeeded on attempt {attempt + 1}")
+                    break
+                except Exception as e:
+                    json_tracker.record_failure(attempt, e)
+
+                    if json_tracker.should_fail():
+                        # CTO SPEC: Raise GLJsonParseError after >3 attempts
+                        logger.error(
+                            f"JSON parsing failed after {json_tracker.attempts} attempts "
+                            f"(request_id={request_id})"
+                        )
+                        raise json_tracker.build_error()
+
+                    # Generate repair prompt for next attempt
+                    repair_prompt = get_repair_prompt(json_schema, attempt + 1)
+
+                    # Add repair instructions to messages
+                    openai_messages = openai_messages + [
+                        {"role": "system", "content": repair_prompt}
+                    ]
+
+                    logger.warning(
+                        f"JSON validation failed on attempt {attempt + 1}, retrying with repair prompt"
+                    )
+                    continue
+            else:
+                # No JSON schema or no text - done
+                break
+
+        # 5. Normalize finish reason and provider info
         finish_reason = self._normalize_finish_reason(choice.finish_reason)
 
-        # Provider info
         provider_info = ProviderInfo(
             provider="openai",
             model=self.config.model,
             request_id=getattr(openai_response, "id", None),
         )
 
-        # 6. Add to budget
-        budget.add(add_usd=usage.cost_usd, add_tokens=usage.total_tokens)
-
         logger.info(
             f"OpenAI call complete: {usage.total_tokens} tokens, "
-            f"${usage.cost_usd:.4f}, finish_reason={finish_reason.value}"
+            f"${usage.cost_usd:.4f}, finish_reason={finish_reason.value}, "
+            f"attempts={attempt + 1 if json_schema else 1}"
         )
 
         # 7. Return normalized response

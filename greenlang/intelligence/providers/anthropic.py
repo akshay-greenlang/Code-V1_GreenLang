@@ -53,7 +53,9 @@ Example:
 from __future__ import annotations
 import os
 import json
+import time
 import asyncio
+import logging
 from typing import Any, Dict, List, Mapping, Optional
 
 try:
@@ -62,6 +64,8 @@ try:
     ANTHROPIC_AVAILABLE = True
 except ImportError:
     ANTHROPIC_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
 
 from greenlang.intelligence.providers.base import (
     LLMProvider,
@@ -86,6 +90,12 @@ from greenlang.intelligence.providers.errors import (
     ProviderBadRequest,
     ProviderContentFilter,
     classify_provider_error,
+)
+from greenlang.intelligence.runtime.json_validator import (
+    parse_and_validate,
+    get_repair_prompt,
+    JSONRetryTracker,
+    GLJsonParseError,
 )
 
 
@@ -280,6 +290,11 @@ class AnthropicProvider(LLMProvider):
             max_retries=0,  # We handle retries ourselves
         )
 
+        logger.info(
+            f"Initialized Anthropic provider: model={config.model}, "
+            f"timeout={config.timeout_s}s, max_retries={config.max_retries}"
+        )
+
     @property
     def capabilities(self) -> LLMCapabilities:
         """
@@ -373,6 +388,11 @@ class AnthropicProvider(LLMProvider):
         estimated_cost = self._estimate_cost(messages, tools)
         budget.check(add_usd=estimated_cost, add_tokens=0)
 
+        logger.debug(
+            f"Estimated cost: ${estimated_cost:.4f} "
+            f"(remaining budget: ${budget.remaining_usd:.4f})"
+        )
+
         # 3. Convert messages to Anthropic format
         system_message, anthropic_messages = self._convert_messages(messages, json_schema)
 
@@ -401,17 +421,101 @@ class AnthropicProvider(LLMProvider):
         if metadata:
             api_params["metadata"] = metadata
 
-        # 5. Call API with retry logic
-        response = await self._call_with_retry(api_params)
+        # 5. Call API with JSON retry logic (CTO SPEC: >3 retries = fail)
+        request_id = metadata.get("request_id", f"req_{int(time.time() * 1000)}") if metadata else f"req_{int(time.time() * 1000)}"
+        json_tracker = JSONRetryTracker(request_id=request_id, max_attempts=3) if json_schema else None
 
-        # 6. Calculate actual usage
-        usage = self._calculate_usage(response)
+        for attempt in range(4):  # 0, 1, 2, 3 = 4 attempts total
+            # Call Anthropic API
+            response = await self._call_with_retry(api_params)
 
-        # 7. Add to budget
-        budget.add(add_usd=usage.cost_usd, add_tokens=usage.total_tokens)
+            # Calculate usage for THIS attempt
+            usage = self._calculate_usage(response)
 
-        # 8. Normalize and return response
-        return self._normalize_response(response, usage)
+            # CTO SPEC: Increment cost meter on EVERY attempt
+            budget.add(add_usd=usage.cost_usd, add_tokens=usage.total_tokens)
+
+            # Extract text and tool calls
+            text_parts = []
+            tool_calls = []
+
+            for block in response.content:
+                if block.type == "text":
+                    text_parts.append(block.text)
+                elif block.type == "tool_use":
+                    tool_calls.append({
+                        "id": block.id,
+                        "name": block.name,
+                        "arguments": block.input
+                    })
+
+            text = "".join(text_parts) if text_parts else None
+
+            # If tool calls, no JSON validation needed
+            if tool_calls:
+                break
+
+            # If json_schema provided, validate response
+            if json_schema and text:
+                try:
+                    # Validate JSON
+                    validated_json = parse_and_validate(text, json_schema)
+                    json_tracker.record_success(attempt, validated_json)
+                    logger.info(f"JSON validation succeeded on attempt {attempt + 1}")
+                    break
+                except Exception as e:
+                    json_tracker.record_failure(attempt, e)
+
+                    if json_tracker.should_fail():
+                        # CTO SPEC: Raise GLJsonParseError after >3 attempts
+                        logger.error(
+                            f"JSON parsing failed after {json_tracker.attempts} attempts "
+                            f"(request_id={request_id})"
+                        )
+                        raise json_tracker.build_error()
+
+                    # Generate repair prompt for next attempt
+                    repair_prompt = get_repair_prompt(json_schema, attempt + 1)
+
+                    # Add repair instructions to system message
+                    if system_message:
+                        api_params["system"] = system_message + "\n\n" + repair_prompt
+                    else:
+                        api_params["system"] = repair_prompt
+
+                    logger.warning(
+                        f"JSON validation failed on attempt {attempt + 1}, retrying with repair prompt"
+                    )
+                    continue
+            else:
+                # No JSON schema or no text - done
+                break
+
+        # 6. Normalize and return response
+        # Create normalized response manually since we already extracted text/tool_calls
+        finish_reason = self._map_finish_reason(response.stop_reason)
+
+        provider_info = ProviderInfo(
+            provider="anthropic",
+            model=response.model,
+            request_id=response.id
+        )
+
+        logger.info(
+            f"Anthropic call complete: {usage.total_tokens} tokens, "
+            f"${usage.cost_usd:.4f}, finish_reason={finish_reason.value}, "
+            f"model={response.model}, request_id={response.id}, "
+            f"attempts={attempt + 1 if json_schema else 1}"
+        )
+
+        return ChatResponse(
+            text=text,
+            tool_calls=tool_calls,
+            usage=usage,
+            finish_reason=finish_reason,
+            provider_info=provider_info,
+            raw=None
+        )
 
     def _estimate_cost(
         self,
@@ -753,6 +857,12 @@ class AnthropicProvider(LLMProvider):
                     delay = error.retry_after
                 else:
                     delay = base_delay * (2 ** attempt)
+
+                # Log retry
+                logger.warning(
+                    f"Retrying after error (attempt {attempt + 1}/{max_retries}), "
+                    f"waiting {delay}s: {error}"
+                )
 
                 # Wait before retry
                 await asyncio.sleep(delay)

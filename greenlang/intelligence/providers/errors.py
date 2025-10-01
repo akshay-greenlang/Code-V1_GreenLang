@@ -229,8 +229,9 @@ def classify_provider_error(
         elif status_code == 429:
             # Try to extract retry_after from error
             retry_after = getattr(error, "retry_after", None)
+            # Note: status_code is hardcoded to 429 in ProviderRateLimit, don't pass it again
             return ProviderRateLimit(
-                message, provider, retry_after=retry_after, status_code=status_code
+                message, provider, retry_after=retry_after
             )
         elif status_code == 408 or status_code == 504:
             return ProviderTimeout(message, provider, status_code=status_code)
