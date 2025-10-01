@@ -148,13 +148,14 @@
    - Score: 75/100
 ```
 
-**Missing (0% Complete):**
+**In Progress:**
 ```
-❌ AI/ML Integration (greenlang/intelligence/)
-   - LLM bridge: NOT BUILT
-   - Tool runtime: NOT BUILT
-   - Provider factory: NOT BUILT
-   - Status: 0% - Week 1 Priority
+✅ AI/ML Integration (greenlang/intelligence/) - INTL-102 COMPLETE
+   - LLM bridge: ✅ COMPLETE (OpenAI + Anthropic providers)
+   - Provider factory: ✅ COMPLETE (Multi-provider support)
+   - Cost tracking: ✅ COMPLETE (Per-request with attempt-level)
+   - Tool runtime: ⏸️ PENDING (Week 1 remaining)
+   - Status: 60% - Provider layer complete, tool runtime in progress
 
 ❌ RAG System (greenlang/rag/)
    - Vector DB: NOT CONFIGURED
@@ -233,17 +234,20 @@
 
 **Week 1: AI Intelligence Foundation**
 ```
-❌ 1. LLM Integration Layer
+✅ 1. LLM Integration Layer - INTL-102 COMPLETE (Oct 1, 2025)
    Location: greenlang/intelligence/
    Components:
-   - LLMProvider interface (abstract base)
-   - OpenAI provider (GPT-4 + function calling)
-   - Anthropic provider (Claude + tool use)
-   - Provider factory pattern
-   - Cost tracking
-   - Prompt caching (LFU cache)
+   - LLMProvider interface (abstract base) ✅
+   - OpenAI provider (GPT-4 + function calling) ✅
+   - Anthropic provider (Claude + tool use) ✅
+   - Provider factory pattern ✅
+   - Cost tracking (per-request with attempts) ✅
+   - Comprehensive test coverage (34 tests, 100% passing) ✅
+   - Complete documentation (550+ lines) ✅
+   - Prompt caching (LFU cache) ⏸️ PENDING
    Owner: Intelligence Squad (2 FTE)
-   Deliverable: 3 intelligent agents (fuel, carbon, grid)
+   Status: Provider layer complete, ready for agent integration
+   Release: v0.3.1-intelligence tagged
 
 ❌ 2. Tool Runtime System
    Location: greenlang/intelligence/tools/
@@ -426,20 +430,20 @@ Week 11:  Final 10 strategic agents (polish extras)
 
 | Day | Date | Tasks | Deliverables | Status |
 |-----|------|-------|--------------|--------|
-| **Mon** | Oct 1 | • Team kickoff<br>• OpenAI/Anthropic API setup<br>• Create greenlang/intelligence/<br>• Design LLMProvider interface<br>• Implement OpenAI provider | LLM bridge v1 | ⏳ TODO |
+| **Mon** | Oct 1 | • Team kickoff<br>• OpenAI/Anthropic API setup ✅<br>• Create greenlang/intelligence/ ✅<br>• Design LLMProvider interface ✅<br>• Implement OpenAI provider ✅<br>• Implement Anthropic provider ✅<br>• Add comprehensive tests ✅<br>• Write provider documentation ✅ | LLM bridge v1 ✅<br>**INTL-102 COMPLETE** | ✅ DONE |
 | **Tue** | Oct 2 | • Tool contract system<br>• Tool registry<br>• Unit-aware validation<br>• "No naked numbers" enforcement<br>• Start RAG v0 | Tool runtime + RAG started | ⏳ TODO |
 | **Wed** | Oct 3 | • RAG architecture design<br>• Vector DB setup<br>• Document ingestor<br>• AgentSpec v2 design (Framework Squad)<br>• Pydantic models | RAG operational<br>AgentSpec v2 defined | ⏳ TODO |
 | **Thu** | Oct 4 | **ALL-HANDS SPRINT:**<br>• Convert FuelAgent + AI<br>• Convert CarbonAgent + AI<br>• Convert GridFactorAgent + AI<br>• Golden tests (deterministic)<br>• Evening demo | 3 intelligent agents<br>working | ⏳ TODO |
 | **Fri** | Oct 5 | • Real-time connector SDK design<br>• Grid intensity mock connector<br>• Snapshot mode for tests<br>• Week 1 retro<br>• Plan Week 2 | Connector framework<br>Week wrap | ⏳ TODO |
 
 **Exit Criteria (Friday 5 PM Review):**
-- [ ] LLM integration operational (OpenAI + Anthropic)
-- [ ] 3 intelligent agents working (fuel, carbon, grid)
-- [ ] Tool runtime enforces "no naked numbers"
-- [ ] RAG retrieves and cites climate docs
-- [ ] AgentSpec v2 defined and validated
-- [ ] Real-time connector framework started
-- [ ] Team confidence: High
+- [x] LLM integration operational (OpenAI + Anthropic) ✅ **INTL-102 COMPLETE**
+- [ ] 3 intelligent agents working (fuel, carbon, grid) ⏸️ IN PROGRESS
+- [ ] Tool runtime enforces "no naked numbers" ⏸️ PENDING
+- [ ] RAG retrieves and cites climate docs ⏸️ PENDING
+- [ ] AgentSpec v2 defined and validated ⏸️ PENDING
+- [ ] Real-time connector framework started ⏸️ PENDING
+- [ ] Team confidence: High ✅
 
 **Risks:**
 - 🟡 LLM API rate limits (Mitigation: Multi-provider + caching)
@@ -1008,7 +1012,7 @@ Week 11:  Final 10 strategic agents (polish extras)
 
 | Component | Location | Current | Target | Gap | Owner | Week Due |
 |-----------|----------|---------|--------|-----|-------|----------|
-| **LLM Bridge** | greenlang/intelligence/ | 0% | 100% | 100% | Intelligence | W1 |
+| **LLM Bridge** | greenlang/intelligence/ | 100% ✅ | 100% | 0% | Intelligence | **DONE** |
 | **Tool Runtime** | greenlang/intelligence/tools/ | 0% | 100% | 100% | Intelligence | W1 |
 | **RAG System** | greenlang/rag/ | 0% | 100% | 100% | Intelligence | W1 |
 | **Agent Factory** | greenlang/factory/ | 0% | 100% | 100% | Framework | W2 |
@@ -1193,12 +1197,16 @@ By December 31, 2025:
 
 ### IMMEDIATE TODOS (Day 1 - October 1)
 
-**Intelligence Squad:**
-- [ ] Set up OpenAI API account (get API key)
-- [ ] Set up Anthropic API account (get API key)
-- [ ] Create `greenlang/intelligence/` module structure
-- [ ] Design LLMProvider abstract base class
-- [ ] Start implementing OpenAI provider
+**Intelligence Squad:** ✅ **INTL-102 COMPLETE**
+- [x] Set up OpenAI API account (get API key) ✅
+- [x] Set up Anthropic API account (get API key) ✅
+- [x] Create `greenlang/intelligence/` module structure ✅
+- [x] Design LLMProvider abstract base class ✅
+- [x] Implement OpenAI provider ✅
+- [x] Implement Anthropic provider ✅
+- [x] Create comprehensive test suite (34 tests) ✅
+- [x] Write provider documentation (550+ lines) ✅
+- [x] Release v0.3.1-intelligence ✅
 
 **Framework Squad:**
 - [ ] Review existing pack.yaml structure
