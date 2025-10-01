@@ -7,21 +7,17 @@ supply chain attestations for GreenLang packs.
 """
 
 from .signing import (
-    SignatureVerifier,
-    DevKeyVerifier,
-    SigstoreVerifier,
-    UnsignedPackError,
-    create_verifier,
     verify_pack_signature,
     sign_pack,
+    sign_artifact,
+    verify_artifact,
+    verify_pack,
 )
 
 __all__ = [
-    "SignatureVerifier",
-    "DevKeyVerifier",
-    "SigstoreVerifier",
-    "UnsignedPackError",
-    "create_verifier",
     "verify_pack_signature",
     "sign_pack",
+    "sign_artifact",
+    "verify_artifact",
+    "verify_pack",
 ]

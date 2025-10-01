@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 # Try to import kubernetes client
 try:
     from kubernetes import client
+    from kubernetes import config as k8s_config
     from kubernetes.client.rest import ApiException
 
     KUBERNETES_AVAILABLE = True
@@ -64,9 +65,9 @@ class KubernetesBackend(Backend):
 
         # Initialize Kubernetes client
         if config.get("in_cluster", False):
-            config.load_incluster_config()
+            k8s_config.load_incluster_config()
         else:
-            config.load_kube_config()
+            k8s_config.load_kube_config()
 
         self.batch_v1 = client.BatchV1Api()
         self.core_v1 = client.CoreV1Api()

@@ -191,7 +191,7 @@ include = ["core*", "greenlang*"]
 exclude = ["tests*", "docs*", "examples*"]
 
 [tool.setuptools.package-data]
-"*" = ["*.yaml", "*.yml", "*.json", "*.md", "*.jinja"]
+"*" = ["*.yaml", "*.yml", "*.json", "*.md", "*.jinja", "*.bat", "*.ps1"]
 "core.greenlang" = [
   "schemas/*.json",
   "data/**/*.json",
@@ -202,6 +202,9 @@ exclude = ["tests*", "docs*", "examples*"]
   "schemas/*.json",
   "data/**/*.json",
   "examples/**/*",
+]
+"greenlang.utils" = [
+  "*.py",
 ]
 
 [tool.black]

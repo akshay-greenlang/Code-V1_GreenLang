@@ -13,6 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Set
+import base64
 
 try:
     import bcrypt
@@ -21,6 +22,17 @@ try:
 except ImportError:
     BCRYPT_AVAILABLE = False
     logging.warning("bcrypt not available. Install with: pip install bcrypt")
+
+try:
+    from cryptography.fernet import Fernet
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+    from cryptography.hazmat.backends import default_backend
+
+    CRYPTO_AVAILABLE = True
+except ImportError:
+    CRYPTO_AVAILABLE = False
+    logging.warning("cryptography not available. Install with: pip install cryptography")
 
 logger = logging.getLogger(__name__)
 
@@ -232,11 +244,11 @@ class AuthManager:
         self.config = config or {}
 
         # Load or generate and persist secret key
-        self.secret_key = self._load_or_create_secret_key(config)
+        self.secret_key = self._load_or_create_secret_key(self.config)
 
-        self.token_expiry = config.get("token_expiry", 3600 * 24)  # 24 hours
-        self.password_min_length = config.get("password_min_length", 8)
-        self.require_mfa = config.get("require_mfa", False)
+        self.token_expiry = self.config.get("token_expiry", 3600 * 24)  # 24 hours
+        self.password_min_length = self.config.get("password_min_length", 8)
+        self.require_mfa = self.config.get("require_mfa", False)
 
         # Storage (in production, use database)
         self.users: Dict[str, Dict[str, Any]] = {}
@@ -305,7 +317,30 @@ class AuthManager:
 
             logger.info(f"Loading secret key from {key_path}")
             with open(key_path, "rb") as f:
-                return f.read()
+                stored_data = f.read()
+
+            # Try to decrypt if cryptography is available
+            if CRYPTO_AVAILABLE:
+                try:
+                    # Derive decryption key from machine-specific data
+                    machine_id = str(uuid.getnode()).encode()  # MAC address as machine ID
+                    kdf = PBKDF2(
+                        algorithm=hashes.SHA256(),
+                        length=32,
+                        salt=b'greenlang_auth_salt',
+                        iterations=100000,
+                        backend=default_backend()
+                    )
+                    encryption_key = base64.urlsafe_b64encode(kdf.derive(machine_id))
+                    fernet = Fernet(encryption_key)
+                    decrypted_key = fernet.decrypt(stored_data)
+                    return decrypted_key
+                except Exception as e:
+                    # Might be an old unencrypted key, try using as-is
+                    logger.warning(f"Could not decrypt key (might be legacy unencrypted): {e}")
+                    return stored_data
+            else:
+                return stored_data
 
         # Generate new key and save it
         logger.info(f"Generating new secret key and saving to {key_path}")
@@ -316,22 +351,42 @@ class AuthManager:
         # Generate key
         key = secrets.token_bytes(32)
 
+        # Encrypt the key before storing if cryptography is available
+        if CRYPTO_AVAILABLE:
+            # Derive encryption key from machine-specific data
+            machine_id = str(uuid.getnode()).encode()  # MAC address as machine ID
+            kdf = PBKDF2(
+                algorithm=hashes.SHA256(),
+                length=32,
+                salt=b'greenlang_auth_salt',
+                iterations=100000,
+                backend=default_backend()
+            )
+            encryption_key = base64.urlsafe_b64encode(kdf.derive(machine_id))
+            fernet = Fernet(encryption_key)
+            encrypted_key = fernet.encrypt(key)
+            key_to_store = encrypted_key
+        else:
+            # Fallback to storing raw key (less secure but functional)
+            logger.warning("Storing secret key without encryption (install cryptography for better security)")
+            key_to_store = key
+
         # Write with secure permissions
         if os.name != "nt":  # Unix-like systems
             # Use low-level open to set permissions atomically
             fd = os.open(str(key_path), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
             try:
                 with os.fdopen(fd, "wb") as f:
-                    f.write(key)
+                    f.write(key_to_store)
             except:
                 os.close(fd)
                 raise
         else:  # Windows
             # Windows doesn't support Unix permissions
             with open(key_path, "wb") as f:
-                f.write(key)
+                f.write(key_to_store)
 
-        logger.info(f"Secret key saved to {key_path}")
+        logger.info(f"Secret key saved securely to {key_path}")
         return key
 
     def create_user(

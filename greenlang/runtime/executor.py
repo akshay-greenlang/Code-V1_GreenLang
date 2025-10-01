@@ -11,6 +11,7 @@ import sys
 import json
 import random
 import subprocess
+import shlex
 import tempfile
 import logging
 from datetime import datetime
@@ -130,6 +131,38 @@ class Executor:
         self.artifacts_dir.mkdir(parents=True, exist_ok=True)
         self._validate_backend()
 
+    def _safe_run(self, cmd_parts, **kwargs):
+        """
+        Safely execute a command with injection protection
+
+        Args:
+            cmd_parts: List of command parts
+            **kwargs: Additional arguments for subprocess.run
+
+        Returns:
+            CompletedProcess result
+        """
+        # Validate command parts
+        safe_cmd = []
+        for part in cmd_parts:
+            if not isinstance(part, str):
+                part = str(part)
+            # Use shlex.quote to safely escape shell metacharacters
+            # but only if the part contains suspicious characters
+            if any(char in part for char in ['|', '>', '<', ';', '&', '$', '`', '\n', '(', ')', '{', '}']):
+                # This part might be trying injection - quote it
+                cleaned = shlex.quote(part)
+                logger.warning(f"Potentially dangerous command part quoted: {part} -> {cleaned}")
+                safe_cmd.append(cleaned)
+            else:
+                safe_cmd.append(part)
+
+        # Never use shell=True for safety
+        kwargs['shell'] = False
+
+        # Execute with safety constraints
+        return subprocess.run(safe_cmd, **kwargs)
+
     def _validate_backend(self):
         """Validate backend availability"""
         if self.backend not in ["local", "k8s", "kubernetes", "cloud"]:
@@ -138,7 +171,7 @@ class Executor:
         if self.backend in ["k8s", "kubernetes"]:
             # Check kubectl availability
             try:
-                subprocess.run(
+                self._safe_run(
                     ["kubectl", "version", "--client"],
                     capture_output=True,
                     check=True,
@@ -538,7 +571,7 @@ class Executor:
 
             try:
                 # Apply manifest
-                subprocess.run(
+                self._safe_run(
                     ["kubectl", "apply", "-f", manifest_path],
                     check=True,
                     capture_output=True,
@@ -577,7 +610,7 @@ class Executor:
 
                 # Delete job if configured
                 if pipeline.get("cleanup", True):
-                    subprocess.run(
+                    self._safe_run(
                         ["kubectl", "delete", "job", job_name], capture_output=True
                     )
 
@@ -768,7 +801,7 @@ class Executor:
         try:
             # Use shlex.split to properly parse the command
             cmd_parts = shlex.split(command)
-            result = subprocess.run(cmd_parts, shell=False, capture_output=True, text=True)
+            result = self._safe_run(cmd_parts, shell=False, capture_output=True, text=True)
         except ValueError as e:
             # If shlex.split fails, command might have unclosed quotes
             # Log error and return failure
@@ -879,7 +912,7 @@ class Executor:
 
         while time.time() - start_time < timeout:
             # Check job status
-            result = subprocess.run(
+            result = self._safe_run(
                 ["kubectl", "get", "job", job_name, "-o", "json"],
                 capture_output=True,
                 text=True,
@@ -900,7 +933,7 @@ class Executor:
 
     def _get_k8s_job_logs(self, job_name: str) -> str:
         """Get logs from Kubernetes job"""
-        result = subprocess.run(
+        result = self._safe_run(
             ["kubectl", "logs", f"job/{job_name}"], capture_output=True, text=True
         )
 

@@ -9,6 +9,7 @@ echo ===============================================
 REM Configuration
 set GL_VERSION=0.2.0
 set REGISTRY=ghcr.io/akshay-greenlang
+
 set PLATFORMS=linux/amd64
 
 echo Version: %GL_VERSION%

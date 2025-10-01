@@ -640,8 +640,49 @@ class RuntimeGuard:
                 self._audit_event("subprocess", "Popen", str(args), "denied")
                 raise CapabilityViolation("subprocess", f"Executing: {args}")
 
+            # Check for shell=True which can bypass security
+            if kwargs.get('shell', False):
+                self._audit_event("subprocess", "Popen", "shell=True", "denied")
+                raise CapabilityViolation(
+                    "subprocess",
+                    "Shell execution not allowed for security",
+                    "Use shell=False with explicit command list"
+                )
+
+            # Check all arguments for network commands and shell operations
+            network_commands = {'curl', 'wget', 'nc', 'netcat', 'telnet', 'ssh', 'scp', 'sftp', 'ftp', 'rsync'}
+            shell_operators = {'|', '>', '<', ';', '&', '$', '`', '(', ')', '{', '}', '&&', '||'}
+
+            # Parse full command
+            if isinstance(args, list):
+                full_cmd = ' '.join(str(a) for a in args)
+                cmd_list = args
+            else:
+                full_cmd = str(args)
+                cmd_list = [args]
+
+            # Check for network commands anywhere in the command
+            for net_cmd in network_commands:
+                if net_cmd in full_cmd.lower():
+                    self._audit_event("subprocess", "Popen", f"network command: {net_cmd}", "denied")
+                    raise CapabilityViolation(
+                        "subprocess",
+                        f"Network operation blocked: {net_cmd}",
+                        "Network operations require explicit network capability"
+                    )
+
+            # Check for shell operators that could bypass security
+            for operator in shell_operators:
+                if operator in full_cmd:
+                    self._audit_event("subprocess", "Popen", f"shell operator: {operator}", "denied")
+                    raise CapabilityViolation(
+                        "subprocess",
+                        f"Shell operator blocked: {operator}",
+                        "Shell operators not allowed in subprocess commands"
+                    )
+
             # Extract command
-            cmd = args[0] if isinstance(args, list) else args.split()[0]
+            cmd = cmd_list[0] if isinstance(cmd_list, list) else cmd_list.split()[0]
             cmd_path = Path(cmd).resolve()
 
             if str(cmd_path) not in allowed_binaries:

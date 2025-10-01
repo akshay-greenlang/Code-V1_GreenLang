@@ -63,6 +63,15 @@ def generate_sbom(
     else:
         raise ValueError(f"Unknown SBOM format: {format}. Use 'spdx' or 'cyclonedx'")
 
+    # Load pack manifest
+    pack_file = pack_path / "pack.yaml"
+    if pack_file.exists():
+        import yaml
+        with open(pack_file, encoding='utf-8') as f:
+            manifest = yaml.safe_load(f)
+    else:
+        manifest = {}
+
     # Create SBOM in CycloneDX format
     sbom = {
         "bomFormat": "CycloneDX",
