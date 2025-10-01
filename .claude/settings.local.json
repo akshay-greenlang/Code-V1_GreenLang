@@ -312,7 +312,8 @@
       "Bash(\"C:\\Python313\\python.exe\" -m pip install dist/greenlang_cli-0.3.0-py3-none-any.whl --force-reinstall)",
       "Bash(C:UsersrsharAppDataRoamingPythonPython313Scriptsgl.exe --version)",
       "Bash(\"C:\\Users\\rshar\\AppData\\Roaming\\Python\\Python313\\Scripts\\gl.exe\" --version)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(git stash:*)"
     ],
     "deny": []
   }
