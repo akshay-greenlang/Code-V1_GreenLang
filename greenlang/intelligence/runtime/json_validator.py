@@ -122,59 +122,57 @@ def extract_candidate_json(text: str) -> str:
         raise ValueError("Empty text - no JSON to extract")
 
     # Remove BOM if present
-    text = text.lstrip('\ufeff')
+    text = text.lstrip("\ufeff")
 
     # 1. Try to extract from code fences (```json ... ```)
     code_fence_match = re.search(
-        r'```(?:json)?\s*\n?(.*?)\n?```',
-        text,
-        re.DOTALL | re.IGNORECASE
+        r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL | re.IGNORECASE
     )
     if code_fence_match:
         text = code_fence_match.group(1).strip()
 
     # 2. Try to extract from inline code (` ... `)
-    elif '`{' in text or '`[' in text:
-        inline_match = re.search(r'`(\{.*?\}|\[.*?\])`', text, re.DOTALL)
+    elif "`{" in text or "`[" in text:
+        inline_match = re.search(r"`(\{.*?\}|\[.*?\])`", text, re.DOTALL)
         if inline_match:
             text = inline_match.group(1).strip()
 
     # 3. Try to extract JSON object or array
     # Find outermost {...} or [...]
-    elif '{' in text:
-        start = text.find('{')
+    elif "{" in text:
+        start = text.find("{")
         if start != -1:
             # Find matching closing brace
             depth = 0
             for i in range(start, len(text)):
-                if text[i] == '{':
+                if text[i] == "{":
                     depth += 1
-                elif text[i] == '}':
+                elif text[i] == "}":
                     depth -= 1
                     if depth == 0:
-                        text = text[start:i+1]
+                        text = text[start : i + 1]
                         break
 
-    elif '[' in text:
-        start = text.find('[')
+    elif "[" in text:
+        start = text.find("[")
         if start != -1:
             # Find matching closing bracket
             depth = 0
             for i in range(start, len(text)):
-                if text[i] == '[':
+                if text[i] == "[":
                     depth += 1
-                elif text[i] == ']':
+                elif text[i] == "]":
                     depth -= 1
                     if depth == 0:
-                        text = text[start:i+1]
+                        text = text[start : i + 1]
                         break
 
     # 4. Basic cleanup
     text = text.strip()
 
     # Remove trailing commas before } or ]
-    text = re.sub(r',\s*}', '}', text)
-    text = re.sub(r',\s*]', ']', text)
+    text = re.sub(r",\s*}", "}", text)
+    text = re.sub(r",\s*]", "]", text)
 
     # Fix single quotes to double quotes (very basic - can break strings)
     # Only do this if no double quotes present
@@ -254,9 +252,7 @@ def validate_json_schema(
             f"Got: {e.instance}"
         )
     except jsonschema.SchemaError as e:
-        raise GLValidationError(
-            f"Invalid JSON schema: {e.message}"
-        )
+        raise GLValidationError(f"Invalid JSON schema: {e.message}")
 
 
 def parse_and_validate(
@@ -338,8 +334,7 @@ def get_repair_prompt(
     example = _generate_example_from_schema(schema)
 
     prompt = REPAIR_PROMPT_TEMPLATE.format(
-        schema=json.dumps(schema, indent=2),
-        example=json.dumps(example, indent=2)
+        schema=json.dumps(schema, indent=2), example=json.dumps(example, indent=2)
     )
 
     logger.info(
@@ -479,12 +474,14 @@ class JSONRetryTracker:
         self.attempts += 1
         self.last_error = str(error)
 
-        self.history.append({
-            "attempt": attempt_number + 1,
-            "status": "failed",
-            "error": str(error),
-            "error_type": error.__class__.__name__,
-        })
+        self.history.append(
+            {
+                "attempt": attempt_number + 1,
+                "status": "failed",
+                "error": str(error),
+                "error_type": error.__class__.__name__,
+            }
+        )
 
         logger.warning(
             f"JSON parse attempt {attempt_number + 1} failed "
@@ -505,11 +502,13 @@ class JSONRetryTracker:
         """
         self.attempts = attempt_number + 1
 
-        self.history.append({
-            "attempt": attempt_number + 1,
-            "status": "success",
-            "data_keys": list(data.keys()) if isinstance(data, dict) else None,
-        })
+        self.history.append(
+            {
+                "attempt": attempt_number + 1,
+                "status": "success",
+                "data_keys": list(data.keys()) if isinstance(data, dict) else None,
+            }
+        )
 
         logger.info(
             f"JSON parse succeeded on attempt {attempt_number + 1} "

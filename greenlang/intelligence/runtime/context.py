@@ -43,7 +43,6 @@ MODEL_CONTEXT_LIMITS = {
     "gpt-4": 8_192,
     "gpt-4-32k": 32_768,
     "gpt-3.5-turbo": 16_385,
-
     # Anthropic models
     "claude-3-opus-20240229": 200_000,
     "claude-3-sonnet-20240229": 200_000,
@@ -124,9 +123,7 @@ class ContextManager:
                 return limit
 
         # Default fallback (conservative)
-        logger.warning(
-            f"Unknown model {model}, using conservative limit: 8192"
-        )
+        logger.warning(f"Unknown model {model}, using conservative limit: 8192")
         return 8_192
 
     def estimate_tokens(self, messages: List[ChatMessage]) -> int:
@@ -153,7 +150,7 @@ class ContextManager:
             total_chars += 20
 
             # Add overhead for tool calls if present
-            if hasattr(msg, 'tool_calls') and msg.tool_calls:
+            if hasattr(msg, "tool_calls") and msg.tool_calls:
                 # Rough estimate: 50 chars per tool call
                 total_chars += len(msg.tool_calls) * 50
 
@@ -194,9 +191,7 @@ class ContextManager:
         """
         # Calculate available budget
         available_tokens = (
-            self.max_context_tokens
-            - max_completion_tokens
-            - self.safety_margin
+            self.max_context_tokens - max_completion_tokens - self.safety_margin
         )
 
         # Estimate current token count
@@ -227,8 +222,7 @@ class ContextManager:
 
         # Truncate from beginning (sliding window - keep most recent)
         truncated_others = self._truncate_sliding_window(
-            other_messages,
-            target_tokens=available_for_others
+            other_messages, target_tokens=available_for_others
         )
 
         # Combine system + truncated messages
@@ -300,9 +294,7 @@ class ContextManager:
             ...     messages = manager.prepare_messages(messages)
         """
         available_tokens = (
-            self.max_context_tokens
-            - max_completion_tokens
-            - self.safety_margin
+            self.max_context_tokens - max_completion_tokens - self.safety_margin
         )
 
         current_tokens = self.estimate_tokens(messages)

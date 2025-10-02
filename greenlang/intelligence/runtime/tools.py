@@ -1,640 +1,858 @@
 """
-Tool Registry and Execution System
+Tool Runtime - "No Naked Numbers" Enforcement (INTL-103)
 
-Bridges GreenLang agents to LLM function-calling:
-- @tool decorator: Marks agent methods as LLM-callable tools
-- ToolRegistry: Auto-discovers and registers tools from agents
-- ToolExecutor: Validates arguments and executes tools safely
-- Error handling: Wraps tool exceptions with context
+Core implementation of CTO specification:
+- Tool execution with JSON Schema validation
+- Unit-aware post-check (all numerics must be Quantity)
+- Claims-based final assembly with {{claim:i}} macros
+- Conservative digit scanner to block "naked numbers"
+- Provenance tracking for every numeric value
 
 Architecture:
-    Agent (@tool methods) → ToolRegistry → LLM (ToolDef) → ToolExecutor → Agent
+    LLM → AssistantStep (tool_call|final) → ToolRuntime → Tool → Claims → Final
 
-Key features:
-1. Auto-discovery: Scan agent classes for @tool-decorated methods
-2. Schema validation: Enforce JSON Schema for arguments and returns
-3. Timeout enforcement: Kill runaway tool executions
-4. Error wrapping: Convert tool exceptions to structured errors
-5. Provenance tracking: Log tool invocations for audit
-
-Example:
-    # Define tool in agent
-    class CarbonAgent(BaseAgent):
-        @tool(
-            name="calculate_emissions",
-            description="Calculate CO2e emissions from fuel combustion",
-            parameters_schema={
-                "type": "object",
-                "properties": {
-                    "fuel_type": {"type": "string", "enum": ["diesel", "gasoline"]},
-                    "amount": {"type": "number", "minimum": 0}
-                },
-                "required": ["fuel_type", "amount"]
-            },
-            returns_schema={
-                "type": "object",
-                "properties": {
-                    "co2e_kg": {"type": "number"},
-                    "source": {"type": "string"}
-                },
-                "required": ["co2e_kg", "source"]
-            }
-        )
-        def calculate_emissions(self, fuel_type: str, amount: float):
-            # Implementation
-            return {"co2e_kg": amount * 2.68, "source": "EPA 2024"}
-
-    # Register tools
-    registry = ToolRegistry()
-    agent = CarbonAgent()
-    registry.register_from_agent(agent)
-
-    # Get tool definitions for LLM
-    tool_defs = registry.get_tool_defs()
-
-    # Execute tool call
-    result = registry.invoke("calculate_emissions", {
-        "fuel_type": "diesel",
-        "amount": 100
-    })
-    print(result)  # {"co2e_kg": 268, "source": "EPA 2024"}
+One-line rubric:
+"No number reaches the user unless it came from a validated tool output,
+ carries a recognized unit, and is tied to explicit provenance."
 """
 
 from __future__ import annotations
-import asyncio
-import inspect
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Literal
+from datetime import datetime
+import re
 import logging
-from typing import Any, Callable, Dict, List, Optional, get_type_hints
-from functools import wraps
-from pydantic import BaseModel, Field, ValidationError
+from jsonschema import Draft202012Validator, ValidationError
+from jsonpath_ng import parse as jsonpath_parse
 
-from greenlang.intelligence.schemas.tools import ToolDef
-from greenlang.intelligence.runtime.jsonio import validate_json_payload
+from .schemas import Quantity, Claim, ASSISTANT_STEP_SCHEMA, QUANTITY_SCHEMA
+from .errors import (
+    GLValidationError,
+    GLRuntimeError,
+    GLSecurityError,
+    GLDataError,
+    GLProvenanceError,
+)
+from .units import UnitRegistry
 
 logger = logging.getLogger(__name__)
 
 
-class ToolExecutionError(Exception):
+# ============================================================================
+# TOOL DEFINITION
+# ============================================================================
+
+
+@dataclass
+class Tool:
     """
-    Error during tool execution
+    Tool definition with schemas and execution function
 
     Attributes:
-        tool_name: Name of tool that failed
-        arguments: Arguments passed to tool
-        original_error: Underlying exception
-    """
+        name: Tool name (must be unique in registry)
+        description: Human-readable description for LLM
+        args_schema: JSON Schema (Draft 2020-12) for arguments
+        result_schema: JSON Schema for results (must use Quantity for numbers)
+        fn: Callable that executes the tool
+        live_required: If True, tool needs Live mode (blocked in Replay)
 
-    def __init__(
-        self,
-        tool_name: str,
-        arguments: Dict[str, Any],
-        original_error: Exception,
-    ):
-        self.tool_name = tool_name
-        self.arguments = arguments
-        self.original_error = original_error
-        super().__init__(
-            f"Tool '{tool_name}' failed: {original_error}"
+    Example:
+        Tool(
+            name="energy_intensity",
+            description="Compute kWh/m2 given annual kWh and floor area",
+            args_schema={
+                "type": "object",
+                "required": ["annual_kwh", "floor_m2"],
+                "properties": {
+                    "annual_kwh": {"type": "number", "minimum": 0},
+                    "floor_m2": {"type": "number", "exclusiveMinimum": 0}
+                }
+            },
+            result_schema={
+                "type": "object",
+                "required": ["intensity"],
+                "properties": {
+                    "intensity": {"$ref": "greenlang://schemas/quantity.json"}
+                }
+            },
+            fn=lambda annual_kwh, floor_m2: {
+                "intensity": {"value": annual_kwh / floor_m2, "unit": "kWh/m2"}
+            }
         )
-
-
-class ToolNotFoundError(Exception):
-    """Tool not found in registry"""
-
-    pass
-
-
-class ToolTimeoutError(Exception):
-    """Tool execution exceeded timeout"""
-
-    pass
-
-
-class ToolSpec(BaseModel):
-    """
-    Internal tool specification
-
-    Extends ToolDef with execution metadata:
-    - callable: The actual function to execute
-    - returns_schema: JSON Schema for return value validation
-    - timeout_s: Execution timeout in seconds
-    - async_fn: Whether function is async
     """
 
     name: str
     description: str
-    parameters_schema: Dict[str, Any]
-    returns_schema: Optional[Dict[str, Any]] = None
-    callable: Optional[Callable] = Field(default=None, exclude=True)
-    timeout_s: float = 30.0
-    async_fn: bool = False
-
-    class Config:
-        arbitrary_types_allowed = True
+    args_schema: Dict[str, Any]
+    result_schema: Dict[str, Any]
+    fn: Callable[..., Dict[str, Any]]
+    live_required: bool = False
 
 
-def tool(
-    name: str,
-    description: str,
-    parameters_schema: Dict[str, Any],
-    returns_schema: Optional[Dict[str, Any]] = None,
-    timeout_s: float = 30.0,
-):
-    """
-    Decorator to mark agent methods as LLM-callable tools
-
-    Adds metadata to method for auto-discovery by ToolRegistry.
-    Validates arguments against JSON Schema before execution.
-    Validates return value against JSON Schema after execution.
-
-    Args:
-        name: Tool name (must be unique, valid Python identifier)
-        description: Tool description for LLM (be specific!)
-        parameters_schema: JSON Schema for parameters (type: object)
-        returns_schema: JSON Schema for return value (optional)
-        timeout_s: Execution timeout in seconds (default: 30s)
-
-    Returns:
-        Decorated method with _tool_spec attribute
-
-    Example:
-        @tool(
-            name="get_grid_intensity",
-            description="Returns carbon intensity of electricity grid",
-            parameters_schema={
-                "type": "object",
-                "properties": {
-                    "region": {"type": "string"},
-                    "year": {"type": "integer"}
-                },
-                "required": ["region"]
-            },
-            returns_schema={
-                "type": "object",
-                "properties": {
-                    "intensity": {"type": "number"},
-                    "unit": {"type": "string"}
-                },
-                "required": ["intensity", "unit"]
-            },
-            timeout_s=10.0
-        )
-        def get_grid_intensity(self, region: str, year: int = 2024):
-            # Implementation
-            return {"intensity": 0.4, "unit": "kg_CO2e/kWh"}
-    """
-
-    def decorator(func: Callable) -> Callable:
-        # Store tool spec on function
-        spec = ToolSpec(
-            name=name,
-            description=description,
-            parameters_schema=parameters_schema,
-            returns_schema=returns_schema,
-            callable=func,
-            timeout_s=timeout_s,
-            async_fn=inspect.iscoroutinefunction(func),
-        )
-        func._tool_spec = spec  # type: ignore
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-
-        @wraps(func)
-        async def async_wrapper(*args, **kwargs):
-            return await func(*args, **kwargs)
-
-        if spec.async_fn:
-            async_wrapper._tool_spec = spec  # type: ignore
-            return async_wrapper
-        else:
-            wrapper._tool_spec = spec  # type: ignore
-            return wrapper
-
-    return decorator
+# ============================================================================
+# TOOL REGISTRY
+# ============================================================================
 
 
 class ToolRegistry:
     """
-    Registry for LLM-callable tools
+    Tool registry for registration and lookup
 
-    Auto-discovers @tool-decorated methods from agents and provides:
-    - Tool definitions (ToolDef) for LLM function calling
-    - Tool execution with argument validation
-    - Error handling and timeout enforcement
-    - Provenance tracking for audit
-
-    Usage:
-        # Create registry
+    Example:
         registry = ToolRegistry()
+        registry.register(energy_intensity_tool)
 
-        # Register tools from agents
-        carbon_agent = CarbonAgent()
-        registry.register_from_agent(carbon_agent)
-
-        energy_agent = EnergyAgent()
-        registry.register_from_agent(energy_agent)
-
-        # Get tool defs for LLM
-        tool_defs = registry.get_tool_defs()
-
-        # Execute tool
-        result = registry.invoke("calculate_emissions", {
-            "fuel_type": "diesel",
-            "amount": 100
-        })
+        tool = registry.get("energy_intensity")
+        tools = registry.list()
     """
 
     def __init__(self):
-        """Initialize empty registry"""
-        self._tools: Dict[str, ToolSpec] = {}
-        logger.info("Initialized ToolRegistry")
+        self._tools: Dict[str, Tool] = {}
 
-    def register_from_agent(self, agent: Any) -> int:
-        """
-        Auto-discover and register @tool-decorated methods from agent
+    def register(self, tool: Tool) -> None:
+        """Register a tool"""
+        if tool.name in self._tools:
+            logger.warning(f"Overwriting tool: {tool.name}")
 
-        Scans agent instance for methods with _tool_spec attribute.
-        Binds methods to agent instance for execution.
+        self._tools[tool.name] = tool
+        logger.info(f"Registered tool: {tool.name}")
 
-        Args:
-            agent: Agent instance with @tool-decorated methods
-
-        Returns:
-            Number of tools registered
-
-        Raises:
-            ValueError: If tool name already registered
-            ValueError: If tool spec invalid
-
-        Example:
-            agent = CarbonAgent()
-            count = registry.register_from_agent(agent)
-            print(f"Registered {count} tools")
-        """
-        count = 0
-
-        for attr_name in dir(agent):
-            # Skip private attributes
-            if attr_name.startswith("_"):
-                continue
-
-            attr = getattr(agent, attr_name)
-
-            # Check if method has _tool_spec
-            if not hasattr(attr, "_tool_spec"):
-                continue
-
-            spec: ToolSpec = attr._tool_spec
-
-            # Check for name conflicts
-            if spec.name in self._tools:
-                raise ValueError(
-                    f"Tool '{spec.name}' already registered. "
-                    f"Use unique tool names across agents."
-                )
-
-            # Bind callable to agent instance
-            spec.callable = attr
-
-            # Register tool
-            self._tools[spec.name] = spec
-            count += 1
-
-            logger.info(
-                f"Registered tool: {spec.name} (timeout={spec.timeout_s}s, "
-                f"async={spec.async_fn})"
+    def get(self, name: str) -> Tool:
+        """Get tool by name"""
+        if name not in self._tools:
+            raise GLDataError(
+                code="PATH_RESOLUTION",
+                message=f"Tool '{name}' not found in registry",
+                hint="Ensure tool is registered before use",
             )
+        return self._tools[name]
 
-        if count == 0:
-            logger.warning(
-                f"No @tool-decorated methods found on {agent.__class__.__name__}. "
-                "Did you forget @tool decorator?"
-            )
-
-        return count
-
-    def register_tool(
-        self,
-        name: str,
-        description: str,
-        callable_fn: Callable,
-        parameters_schema: Dict[str, Any],
-        returns_schema: Optional[Dict[str, Any]] = None,
-        timeout_s: float = 30.0,
-    ) -> None:
-        """
-        Manually register a tool (alternative to @tool decorator)
-
-        Args:
-            name: Tool name
-            description: Tool description for LLM
-            callable_fn: Function to execute
-            parameters_schema: JSON Schema for parameters
-            returns_schema: JSON Schema for return value
-            timeout_s: Execution timeout
-
-        Raises:
-            ValueError: If tool name already registered
-
-        Example:
-            def custom_tool(region: str) -> dict:
-                return {"result": region.upper()}
-
-            registry.register_tool(
-                name="uppercase_region",
-                description="Converts region to uppercase",
-                callable_fn=custom_tool,
-                parameters_schema={
-                    "type": "object",
-                    "properties": {"region": {"type": "string"}},
-                    "required": ["region"]
-                }
-            )
-        """
-        if name in self._tools:
-            raise ValueError(f"Tool '{name}' already registered")
-
-        spec = ToolSpec(
-            name=name,
-            description=description,
-            parameters_schema=parameters_schema,
-            returns_schema=returns_schema,
-            callable=callable_fn,
-            timeout_s=timeout_s,
-            async_fn=inspect.iscoroutinefunction(callable_fn),
-        )
-
-        self._tools[name] = spec
-        logger.info(f"Manually registered tool: {name}")
-
-    def get_tool_defs(self) -> List[ToolDef]:
-        """
-        Get tool definitions for LLM function calling
-
-        Converts internal ToolSpec to ToolDef format for LLM providers.
-
-        Returns:
-            List of ToolDef objects
-
-        Example:
-            tool_defs = registry.get_tool_defs()
-            response = await provider.chat(
-                messages=[...],
-                tools=tool_defs,
-                budget=Budget(max_usd=0.50)
-            )
-        """
-        return [
-            ToolDef(
-                name=spec.name,
-                description=spec.description,
-                parameters=spec.parameters_schema,
-            )
-            for spec in self._tools.values()
-        ]
-
-    def has_tool(self, name: str) -> bool:
-        """Check if tool is registered"""
-        return name in self._tools
+    def list(self) -> List[Tool]:
+        """List all registered tools"""
+        return list(self._tools.values())
 
     def get_tool_names(self) -> List[str]:
-        """Get list of registered tool names"""
+        """Get list of tool names"""
         return list(self._tools.keys())
 
-    def invoke(
-        self,
-        name: str,
-        arguments: Dict[str, Any],
-        timeout_s: Optional[float] = None,
-    ) -> Dict[str, Any]:
-        """
-        Execute tool synchronously with validation
 
-        Workflow:
-        1. Look up tool in registry
-        2. Validate arguments against parameters_schema
-        3. Execute tool with timeout
-        4. Validate return value against returns_schema
-        5. Return result
+# ============================================================================
+# TOOL RUNTIME
+# ============================================================================
+
+
+class ToolRuntime:
+    """
+    Tool runtime with "no naked numbers" enforcement
+
+    Orchestrates:
+    1. Tool call validation (args against schema)
+    2. Tool execution
+    3. Result validation (must use Quantity for all numbers)
+    4. Provenance tracking
+    5. Final assembly with claims validation
+    6. Naked number scanning
+
+    Usage:
+        runtime = ToolRuntime(provider, registry, mode="Replay")
+        result = runtime.run("You are a climate analyst", "What's the intensity?")
+
+        print(result["message"])  # "Energy intensity is 10.0 kWh/m2."
+        print(result["provenance"])  # [{source_call_id: "tc_1", ...}]
+    """
+
+    def __init__(
+        self,
+        provider: Any,  # LLM provider (OpenAI/Anthropic wrapper)
+        registry: ToolRegistry,
+        mode: Literal["Replay", "Live"] = "Replay",
+    ):
+        """
+        Initialize tool runtime
 
         Args:
-            name: Tool name to execute
-            arguments: Tool arguments (must match parameters_schema)
-            timeout_s: Override default timeout
+            provider: LLM provider with chat_step() and inject_tool_result()
+            registry: ToolRegistry with registered tools
+            mode: Execution mode (Replay blocks egress, Live allows)
+        """
+        self.provider = provider
+        self.registry = registry
+        self.mode = mode
+        self.ureg = UnitRegistry()
+        self.provenance: List[Dict[str, Any]] = []
+        self._call_counter = 0
+
+        # Metrics
+        self._naked_number_blocks = 0
+        self._replay_violations = 0
+
+    # ========================================================================
+    # MAIN LOOP
+    # ========================================================================
+
+    def run(
+        self, system_prompt: str, user_msg: str, max_retries: int = 2
+    ) -> Dict[str, Any]:
+        """
+        Main execution loop
+
+        Steps:
+        1. Initialize chat with provider
+        2. Loop:
+           - Get next step from LLM (tool_call or final)
+           - If tool_call: execute and inject result
+           - If final: validate claims and return
+        3. Handle NO_NAKED_NUMBERS errors with retry
+
+        Args:
+            system_prompt: System instruction for LLM
+            user_msg: User message
+            max_retries: Max retries for naked number violations
 
         Returns:
-            Tool result (validated against returns_schema if specified)
+            {
+                "message": str (rendered with quantities),
+                "provenance": List[Claim]
+            }
 
         Raises:
-            ToolNotFoundError: If tool not found
-            ValidationError: If arguments invalid
-            ToolTimeoutError: If execution exceeds timeout
-            ToolExecutionError: If tool raises exception
-
-        Example:
-            result = registry.invoke(
-                "calculate_emissions",
-                {"fuel_type": "diesel", "amount": 100}
-            )
-            print(result["co2e_kg"])
+            GLRuntimeError: If naked numbers persist after retries
         """
-        # 1. Look up tool
-        if name not in self._tools:
-            raise ToolNotFoundError(
-                f"Tool '{name}' not found. Available: {self.get_tool_names()}"
+        # Add no-naked-numbers instruction
+        full_system = (
+            f"{system_prompt}\n\n"
+            "IMPORTANT RULES:\n"
+            "1. You must use tools to get ALL numeric values.\n"
+            "2. In your final message, reference numbers via {{claim:i}} macros ONLY.\n"
+            "3. Never type numeric digits directly in final message.\n"
+            "4. Provide claims[] array linking each {{claim:i}} to a tool output.\n"
+        )
+
+        state = self._start_chat(full_system, user_msg)
+        retry_count = 0
+
+        while True:
+            # Get next step from provider
+            step = self.provider.chat_step(
+                schema=ASSISTANT_STEP_SCHEMA,
+                tools=self._tool_descriptors(),
+                state=state,
             )
 
-        spec = self._tools[name]
+            if step["kind"] == "tool_call":
+                # Execute tool call
+                result = self._execute_tool_call(step)
+                state = self.provider.inject_tool_result(result)
+                retry_count = 0  # Reset on tool call
 
-        # 2. Validate arguments
-        try:
-            validate_json_payload(arguments, spec.parameters_schema)
-        except Exception as e:
-            raise ValidationError(
-                f"Tool '{name}' arguments invalid: {e}"
-            )
-
-        # 3. Execute tool
-        try:
-            # Use override timeout or default
-            timeout = timeout_s if timeout_s is not None else spec.timeout_s
-
-            if spec.async_fn:
-                # Async tool - run in event loop
+            else:  # kind == "final"
                 try:
-                    loop = asyncio.get_event_loop()
-                except RuntimeError:
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
+                    # Validate and assemble final
+                    return self._finalize(step["final"])
 
-                result = loop.run_until_complete(
-                    asyncio.wait_for(
-                        spec.callable(**arguments),
-                        timeout=timeout
-                    )
-                )
-            else:
-                # Sync tool - run directly (no timeout support for sync)
-                result = spec.callable(**arguments)
+                except GLRuntimeError as e:
+                    if e.code == "NO_NAKED_NUMBERS" and retry_count < max_retries:
+                        # Send repair instruction
+                        repair_msg = (
+                            f"❌ Error: {e.message}\n\n"
+                            f"{e.hint}\n\n"
+                            f"Context: {e.context}\n\n"
+                            "Please either:\n"
+                            "1. Call a tool to get the numeric value, OR\n"
+                            "2. Use {{claim:i}} macros backed by claims[]\n\n"
+                            "Try again."
+                        )
+                        state = self.provider.inject_error(repair_msg)
+                        retry_count += 1
+                        self._naked_number_blocks += 1
 
-        except asyncio.TimeoutError:
-            raise ToolTimeoutError(
-                f"Tool '{name}' exceeded timeout of {timeout}s"
-            )
-        except Exception as e:
-            raise ToolExecutionError(
-                tool_name=name,
-                arguments=arguments,
-                original_error=e,
-            )
+                    else:
+                        # Max retries exceeded or other error
+                        raise
 
-        # 4. Validate return value
-        if spec.returns_schema:
-            try:
-                validate_json_payload(result, spec.returns_schema)
-            except Exception as e:
-                raise ValidationError(
-                    f"Tool '{name}' return value invalid: {e}. "
-                    f"Got: {result}"
-                )
+    # ========================================================================
+    # TOOL EXECUTION
+    # ========================================================================
 
-        logger.debug(f"Tool '{name}' executed successfully")
-        return result
-
-    async def invoke_async(
-        self,
-        name: str,
-        arguments: Dict[str, Any],
-        timeout_s: Optional[float] = None,
-    ) -> Dict[str, Any]:
+    def _execute_tool_call(self, step: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute tool asynchronously with validation
+        Execute a tool call with full validation
 
-        Same as invoke() but async-compatible.
-        Handles both sync and async tools.
+        Steps:
+        1. Get tool from registry
+        2. Validate args against args_schema
+        3. Check mode (Live vs Replay)
+        4. Execute tool function
+        5. Validate output against result_schema
+        6. Ensure no raw numbers (only Quantity)
+        7. Index quantities for later claim resolution
+        8. Record provenance
 
         Args:
-            name: Tool name to execute
-            arguments: Tool arguments
-            timeout_s: Override default timeout
+            step: {"kind": "tool_call", "tool_name": str, "arguments": dict}
 
         Returns:
-            Tool result
-
-        Raises:
-            ToolNotFoundError: If tool not found
-            ValidationError: If arguments invalid
-            ToolTimeoutError: If execution exceeds timeout
-            ToolExecutionError: If tool raises exception
-
-        Example:
-            result = await registry.invoke_async(
-                "calculate_emissions",
-                {"fuel_type": "diesel", "amount": 100}
-            )
+            {"tool_call_id": str, "output": dict}
         """
-        # 1. Look up tool
-        if name not in self._tools:
-            raise ToolNotFoundError(
-                f"Tool '{name}' not found. Available: {self.get_tool_names()}"
-            )
-
-        spec = self._tools[name]
+        # 1. Get tool
+        tool = self.registry.get(step["tool_name"])
 
         # 2. Validate arguments
+        self._validate(step["arguments"], tool.args_schema, "ARGS_SCHEMA")
+
+        # 3. Check mode
+        if tool.live_required and self.mode == "Replay":
+            self._replay_violations += 1
+            raise GLSecurityError(
+                code="EGRESS_BLOCKED",
+                message=f"Tool '{tool.name}' requires Live mode but runtime is in Replay",
+                hint="Switch to Live mode or provide snapshot for replay",
+            )
+
+        # 4. Execute
         try:
-            validate_json_payload(arguments, spec.parameters_schema)
+            output = tool.fn(**step["arguments"])
         except Exception as e:
-            raise ValidationError(
-                f"Tool '{name}' arguments invalid: {e}"
+            raise GLDataError(
+                code="PATH_RESOLUTION",
+                message=f"Tool '{tool.name}' execution failed: {e}",
+                hint=f"Check tool implementation: {tool.fn}",
             )
 
-        # 3. Execute tool
+        # 5. Validate output
+        self._validate(output, tool.result_schema, "RESULT_SCHEMA")
+
+        # 6. Ensure no raw numbers
+        self._ensure_no_raw_numbers(output)
+
+        # 7. Index quantities
+        unit_index = self._index_quantities(output)
+
+        # 8. Generate call ID
+        call_id = self._new_call_id()
+
+        # 9. Record provenance
+        provenance_entry = {
+            "id": call_id,
+            "tool_name": tool.name,
+            "arguments": step["arguments"],
+            "output": output,
+            "unit_index": unit_index,
+            "timestamp": datetime.utcnow().isoformat(),
+            "mode": self.mode,
+        }
+        self.provenance.append(provenance_entry)
+
+        logger.info(
+            f"Tool executed: {tool.name} (call_id={call_id}, "
+            f"quantities={len(unit_index)})"
+        )
+
+        return {"tool_call_id": call_id, "output": output}
+
+    # ========================================================================
+    # VALIDATION
+    # ========================================================================
+
+    def _validate(self, data: Any, schema: Dict[str, Any], error_type: str) -> None:
+        """
+        Validate data against JSON Schema (Draft 2020-12)
+
+        Args:
+            data: Data to validate
+            schema: JSON Schema
+            error_type: Error code (ARGS_SCHEMA or RESULT_SCHEMA)
+
+        Raises:
+            GLValidationError: If validation fails
+        """
+        # Resolve $ref if needed (simple resolution for Quantity)
+        resolved_schema = self._resolve_refs(schema)
+
+        validator = Draft202012Validator(resolved_schema)
+
         try:
-            timeout = timeout_s if timeout_s is not None else spec.timeout_s
-
-            if spec.async_fn:
-                # Async tool
-                result = await asyncio.wait_for(
-                    spec.callable(**arguments),
-                    timeout=timeout
-                )
-            else:
-                # Sync tool - run in executor
-                loop = asyncio.get_event_loop()
-                result = await loop.run_in_executor(
-                    None,
-                    lambda: spec.callable(**arguments)
-                )
-
-        except asyncio.TimeoutError:
-            raise ToolTimeoutError(
-                f"Tool '{name}' exceeded timeout of {timeout}s"
+            validator.validate(data)
+        except ValidationError as e:
+            raise GLValidationError(
+                code=error_type,
+                message=f"Schema validation failed: {e.message}",
+                path=".".join(str(p) for p in e.path),
+                hint=f"Check data structure against schema. Path: {list(e.path)}",
             )
+
+    def _resolve_refs(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Resolve $ref pointers in schema (simple implementation)
+
+        Handles: {"$ref": "greenlang://schemas/quantity.json"}
+        """
+        if isinstance(schema, dict):
+            if "$ref" in schema:
+                ref = schema["$ref"]
+                if ref == "greenlang://schemas/quantity.json":
+                    return QUANTITY_SCHEMA
+                else:
+                    return schema  # Unknown ref, keep as-is
+
+            return {k: self._resolve_refs(v) for k, v in schema.items()}
+
+        elif isinstance(schema, list):
+            return [self._resolve_refs(item) for item in schema]
+
+        else:
+            return schema
+
+    # ========================================================================
+    # RAW NUMBER DETECTION
+    # ========================================================================
+
+    def _ensure_no_raw_numbers(self, output: Dict, path: str = "$") -> None:
+        """
+        Recursively scan output for raw numbers
+
+        Raw numbers are forbidden. All numerics must be in Quantity {value, unit}.
+
+        Args:
+            output: Tool output to scan
+            path: Current JSONPath (for error reporting)
+
+        Raises:
+            GLValidationError.RESULT_SCHEMA: If raw number found
+        """
+        if isinstance(output, dict):
+            # Check if it's a Quantity (allowed)
+            if "value" in output and "unit" in output and len(output) == 2:
+                # Valid Quantity - check types
+                if not isinstance(output["value"], (int, float)):
+                    raise GLValidationError(
+                        code="RESULT_SCHEMA",
+                        message=f"Quantity.value must be number at {path}",
+                        path=path,
+                    )
+                if not isinstance(output["unit"], str):
+                    raise GLValidationError(
+                        code="RESULT_SCHEMA",
+                        message=f"Quantity.unit must be string at {path}",
+                        path=path,
+                    )
+                return  # Valid Quantity
+
+            # Recurse into dict
+            for key, value in output.items():
+                self._ensure_no_raw_numbers(value, f"{path}.{key}")
+
+        elif isinstance(output, list):
+            for i, item in enumerate(output):
+                self._ensure_no_raw_numbers(item, f"{path}[{i}]")
+
+        elif isinstance(output, (int, float)):
+            # RAW NUMBER FOUND!
+            raise GLValidationError(
+                code="RESULT_SCHEMA",
+                message=(
+                    f"Raw number at {path}. All numerics must be wrapped in "
+                    f'Quantity {{value: {output}, unit: "..."}}.'
+                ),
+                path=path,
+                hint="Change tool to return Quantity instead of raw number",
+            )
+
+    # ========================================================================
+    # QUANTITY INDEXING
+    # ========================================================================
+
+    def _index_quantities(self, output: Dict, path: str = "$") -> Dict[str, Quantity]:
+        """
+        Extract and index all Quantity objects from output
+
+        Builds a map: JSONPath → Quantity
+
+        Args:
+            output: Tool output
+            path: Current JSONPath
+
+        Returns:
+            Dict mapping paths to Quantity objects
+
+        Example:
+            output = {
+                "emissions": {"value": 1234, "unit": "kgCO2e"},
+                "details": {
+                    "per_unit": {"value": 12.34, "unit": "kgCO2e/m2"}
+                }
+            }
+
+            Result:
+            {
+                "$.emissions": Quantity(value=1234, unit="kgCO2e"),
+                "$.details.per_unit": Quantity(value=12.34, unit="kgCO2e/m2")
+            }
+        """
+        index = {}
+
+        if isinstance(output, dict):
+            # Check if Quantity
+            if "value" in output and "unit" in output and len(output) == 2:
+                index[path] = Quantity(
+                    value=float(output["value"]), unit=output["unit"]
+                )
+                return index
+
+            # Recurse
+            for key, value in output.items():
+                index.update(self._index_quantities(value, f"{path}.{key}"))
+
+        elif isinstance(output, list):
+            for i, item in enumerate(output):
+                index.update(self._index_quantities(item, f"{path}[{i}]"))
+
+        return index
+
+    # ========================================================================
+    # FINAL ASSEMBLY & NAKED NUMBER ENFORCEMENT
+    # ========================================================================
+
+    def _finalize(self, final: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Finalize with claims validation and naked number scanning
+
+        Steps:
+        1. Validate final payload structure
+        2. Resolve each claim:
+           - Find tool result by source_call_id
+           - Resolve JSONPath to Quantity
+           - Compare claimed Quantity to resolved (must match)
+        3. Format quantities for rendering
+        4. Render {{claim:i}} macros
+        5. Scan for naked numbers (conservative)
+        6. Return final result
+
+        Args:
+            final: {"message": str, "claims": List[Claim]}
+
+        Returns:
+            {"message": str, "provenance": List[dict]}
+
+        Raises:
+            GLRuntimeError.NO_NAKED_NUMBERS: If naked numbers found
+            GLDataError.PATH_RESOLUTION: If claim can't be resolved
+        """
+        # 1. Resolve all claims
+        resolved = []
+        for i, claim_dict in enumerate(final.get("claims", [])):
+            # Parse as Claim
+            claim = Claim(**claim_dict)
+
+            # Find tool result
+            tool_result = self._find_prov(claim.source_call_id)
+
+            # Resolve JSONPath
+            quantity_from_tool = self._resolve_jsonpath(
+                tool_result["output"], claim.path
+            )
+
+            # Compare with claimed quantity
+            if not self.ureg.same_quantity(quantity_from_tool, claim.quantity):
+                raise GLDataError(
+                    code="QUANTITY_MISMATCH",
+                    message=(
+                        f"Claim {i} mismatch: tool returned {quantity_from_tool}, "
+                        f"but claimed {claim.quantity}"
+                    ),
+                    path=claim.path,
+                    hint="Ensure claim matches tool output exactly (after normalization)",
+                )
+
+            # Format for rendering
+            formatted = self._format_quantity(claim.quantity)
+            resolved.append(formatted)
+
+        # 2. Render macros
+        rendered = self._render_with_claims(final["message"], resolved)
+
+        # 3. Scan for naked numbers
+        self._scan_for_naked_numbers(rendered, resolved)
+
+        # 4. Return final result
+        return {"message": rendered, "provenance": final.get("claims", [])}
+
+    def _resolve_jsonpath(self, output: Dict, path: str) -> Quantity:
+        """
+        Resolve JSONPath to Quantity
+
+        Args:
+            output: Tool output dict
+            path: JSONPath (e.g., "$.intensity")
+
+        Returns:
+            Quantity at that path
+
+        Raises:
+            GLDataError.PATH_RESOLUTION: If path invalid or doesn't point to Quantity
+        """
+        try:
+            jsonpath_expr = jsonpath_parse(path)
+            matches = jsonpath_expr.find(output)
+
+            if not matches:
+                raise GLDataError(
+                    code="PATH_RESOLUTION",
+                    message=f"Path '{path}' not found in output",
+                    path=path,
+                    hint=f"Available paths: {list(self._index_quantities(output).keys())}",
+                )
+
+            # Get first match
+            value = matches[0].value
+
+            # Must be a Quantity
+            if (
+                not isinstance(value, dict)
+                or "value" not in value
+                or "unit" not in value
+            ):
+                raise GLDataError(
+                    code="PATH_RESOLUTION",
+                    message=f"Path '{path}' did not resolve to Quantity, got: {value}",
+                    path=path,
+                    hint="Path must point to a Quantity {value, unit}",
+                )
+
+            return Quantity(value=float(value["value"]), unit=value["unit"])
+
+        except GLDataError:
+            raise
         except Exception as e:
-            raise ToolExecutionError(
-                tool_name=name,
-                arguments=arguments,
-                original_error=e,
+            raise GLDataError(
+                code="PATH_RESOLUTION",
+                message=f"Invalid JSONPath '{path}': {e}",
+                path=path,
+                hint="Use format: $.field or $.nested.field",
             )
 
-        # 4. Validate return value
-        if spec.returns_schema:
-            try:
-                validate_json_payload(result, spec.returns_schema)
-            except Exception as e:
-                raise ValidationError(
-                    f"Tool '{name}' return value invalid: {e}. "
-                    f"Got: {result}"
+    def _format_quantity(self, q: Quantity) -> str:
+        """
+        Format quantity for display
+
+        Normalizes to canonical unit and formats with thousand separators.
+
+        Args:
+            q: Quantity to format
+
+        Returns:
+            Formatted string (e.g., "1,234.5 kgCO2e")
+        """
+        # Normalize
+        value, unit = self.ureg.normalize(q)
+
+        # Format with thousand separators
+        value_float = float(value)
+
+        if abs(value_float) >= 1000:
+            return f"{value_float:,.1f} {unit}"
+        elif abs(value_float) >= 1:
+            return f"{value_float:.2f} {unit}"
+        else:
+            return f"{value_float:.4f} {unit}"
+
+    def _render_with_claims(self, template: str, resolved: List[str]) -> str:
+        """
+        Replace {{claim:i}} macros with resolved values
+
+        Args:
+            template: Message with {{claim:i}} macros
+            resolved: List of formatted quantities
+
+        Returns:
+            Rendered message
+
+        Raises:
+            GLRuntimeError.NO_NAKED_NUMBERS: If invalid claim index
+        """
+
+        def replacer(match):
+            index = int(match.group(1))
+            if index >= len(resolved):
+                raise GLRuntimeError(
+                    code="NO_NAKED_NUMBERS",
+                    message=f"Invalid claim index: {{{{claim:{index}}}}}",
+                    hint=f"Only {len(resolved)} claims provided, but referenced {{{{claim:{index}}}}}",
+                )
+            return resolved[index]
+
+        # Simple regex replacement
+        return re.sub(r"\{\{claim:(\d+)\}\}", replacer, template)
+
+    def _scan_for_naked_numbers(self, message: str, resolved_values: List[str]) -> None:
+        """
+        Scan for digits not from {{claim:i}} macros
+
+        Conservative whitelist approach - only allow digits in specific contexts.
+
+        Whitelisted contexts:
+        - Resolved claim values: "10.00 kWh/m2" (from {{claim:i}})
+        - Ordered list markers: "1. Item"
+        - Version strings: "v0.4.0" (ONLY inside code blocks)
+        - ISO dates: "2024-01-15"
+        - ID patterns: "ID-123", "ID_456"
+
+        Args:
+            message: Final rendered message
+            resolved_values: List of resolved quantity strings to exclude from scan
+
+        Raises:
+            GLRuntimeError.NO_NAKED_NUMBERS: If unwhitelisted digits found
+        """
+        # Build list of character ranges to exclude (resolved values)
+        excluded_ranges = []
+        for resolved_val in resolved_values:
+            # Find all occurrences of this resolved value
+            start = 0
+            while True:
+                pos = message.find(resolved_val, start)
+                if pos == -1:
+                    break
+                excluded_ranges.append((pos, pos + len(resolved_val)))
+                start = pos + 1
+
+        # Find code blocks (triple backticks) and add to excluded ranges
+        code_block_pattern = r"```[\s\S]*?```"
+        for code_match in re.finditer(code_block_pattern, message):
+            excluded_ranges.append((code_match.start(), code_match.end()))
+
+        # Whitelist patterns (DO NOT flag these) - context-based
+        whitelisted_patterns = [
+            r"(?:^|\n)\d+\.\s",  # Ordered list: "1. Item" (start of line)
+            r"\b\d{4}-\d{2}-\d{2}\b",  # ISO date: 2024-01-15
+            r"\bID[-_]?\d+\b",  # ID: ID-123, ID_456
+            r"\b\d{2}:\d{2}(:\d{2})?\b",  # Time: 14:30, 14:30:00
+        ]
+        # Note: Version strings (v0.4.0) are NOW ONLY allowed inside code blocks
+        # They are excluded via the code_block_pattern above
+
+        # Find all digit sequences
+        digit_pattern = r"\b\d+\.?\d*\b"
+        matches = re.finditer(digit_pattern, message)
+
+        for match in matches:
+            text = match.group()
+            position = match.start()
+
+            # Check if this match is within an excluded range
+            # (resolved value OR code block)
+            in_excluded_range = any(
+                start <= position < end for start, end in excluded_ranges
+            )
+
+            if in_excluded_range:
+                # This digit is part of a resolved claim value or code block - skip
+                continue
+
+            # Get context (20 chars before and after)
+            context_start = max(0, position - 20)
+            context_end = min(len(message), position + 20)
+            context = message[context_start:context_end]
+
+            # Check if in whitelisted context
+            is_whitelisted = any(
+                re.search(pattern, context) for pattern in whitelisted_patterns
+            )
+
+            if not is_whitelisted:
+                raise GLRuntimeError(
+                    code="NO_NAKED_NUMBERS",
+                    message=f"Naked number '{text}' detected at position {position}",
+                    hint=(
+                        "All numeric values must come from tools via {{claim:i}} macros. "
+                        "Either call a tool or remove the number."
+                    ),
+                    context=f"...{context}...",
                 )
 
-        logger.debug(f"Tool '{name}' executed successfully (async)")
-        return result
+    def _find_prov(self, call_id: str) -> Dict[str, Any]:
+        """
+        Find tool result by call ID
 
-    def clear(self) -> None:
-        """Clear all registered tools"""
-        count = len(self._tools)
-        self._tools.clear()
-        logger.info(f"Cleared {count} tools from registry")
+        Args:
+            call_id: Tool call ID to find
 
-    def __len__(self) -> int:
-        """Return number of registered tools"""
-        return len(self._tools)
+        Returns:
+            Tool result dict
 
-    def __contains__(self, name: str) -> bool:
-        """Check if tool is registered (supports 'name in registry')"""
-        return name in self._tools
+        Raises:
+            GLProvenanceError.MISSING_TOOL_CALL: If not found
+        """
+        for result in self.provenance:
+            if result["id"] == call_id:
+                return result
 
-    def __repr__(self) -> str:
-        """String representation"""
-        return f"ToolRegistry({len(self._tools)} tools: {self.get_tool_names()})"
+        raise GLProvenanceError(
+            code="MISSING_TOOL_CALL",
+            message=f"Tool call '{call_id}' not found in provenance",
+            hint=f"Valid call IDs: {[r['id'] for r in self.provenance]}",
+        )
 
+    # ========================================================================
+    # PROVIDER INTERFACE
+    # ========================================================================
 
-# Global registry instance (singleton pattern)
-_global_registry: Optional[ToolRegistry] = None
+    def _tool_descriptors(self) -> List[Dict[str, Any]]:
+        """
+        Convert tools to provider format (OpenAI/Anthropic)
 
+        Returns:
+            List of tool descriptors for LLM
+        """
+        return [
+            {
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": tool.args_schema,
+            }
+            for tool in self.registry.list()
+        ]
 
-def get_global_registry() -> ToolRegistry:
-    """
-    Get global tool registry (singleton)
+    def _start_chat(self, system_prompt: str, user_msg: str) -> Any:
+        """
+        Initialize chat state with provider
 
-    Provides a shared registry across the application.
-    Useful for registering tools once and using everywhere.
+        Args:
+            system_prompt: System instruction (with no-naked-numbers rule)
+            user_msg: User message
 
-    Returns:
-        Global ToolRegistry instance
+        Returns:
+            Provider state object
+        """
+        return self.provider.init_chat(system_prompt, user_msg)
 
-    Example:
-        registry = get_global_registry()
-        registry.register_from_agent(carbon_agent)
+    def _new_call_id(self) -> str:
+        """Generate new tool call ID"""
+        self._call_counter += 1
+        return f"tc_{self._call_counter}"
 
-        # Later, in different module
-        registry = get_global_registry()
-        result = registry.invoke("calculate_emissions", {...})
-    """
-    global _global_registry
-    if _global_registry is None:
-        _global_registry = ToolRegistry()
-    return _global_registry
+    # ========================================================================
+    # METRICS
+    # ========================================================================
+
+    def get_metrics(self) -> Dict[str, Any]:
+        """
+        Get runtime metrics
+
+        Returns:
+            {
+                "tool_use_rate": float,
+                "naked_number_rejections": int,
+                "replay_violations": int,
+                "total_tool_calls": int
+            }
+        """
+        total_steps = len(self.provenance) + 1  # +1 for final
+        tool_calls = len(self.provenance)
+
+        return {
+            "tool_use_rate": tool_calls / total_steps if total_steps > 0 else 0,
+            "naked_number_rejections": self._naked_number_blocks,
+            "replay_violations": self._replay_violations,
+            "total_tool_calls": tool_calls,
+        }

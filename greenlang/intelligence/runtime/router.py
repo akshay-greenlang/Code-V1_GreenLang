@@ -52,6 +52,7 @@ logger = logging.getLogger(__name__)
 
 class QueryType(str, Enum):
     """Query complexity classification"""
+
     SIMPLE_CALC = "simple_calc"  # Basic calculations, lookups
     STANDARD_QUERY = "standard_query"  # Typical questions
     COMPLEX_ANALYSIS = "complex_analysis"  # Multi-step reasoning
@@ -61,6 +62,7 @@ class QueryType(str, Enum):
 
 class LatencyRequirement(str, Enum):
     """Latency tolerance"""
+
     REALTIME = "realtime"  # <3s (user-facing)
     INTERACTIVE = "interactive"  # <10s (dashboards)
     BATCH = "batch"  # <60s (background jobs)

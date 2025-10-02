@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 
 class MetricType(str, Enum):
     """Types of metrics collected"""
+
     COUNTER = "counter"  # Incremental count (requests, errors)
     GAUGE = "gauge"  # Current value (active requests, circuit state)
     HISTOGRAM = "histogram"  # Distribution (latency, token count)
@@ -42,6 +43,7 @@ class MetricType(str, Enum):
 
 class AlertSeverity(str, Enum):
     """Alert severity levels"""
+
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
@@ -51,6 +53,7 @@ class AlertSeverity(str, Enum):
 @dataclass
 class MetricPoint:
     """Single metric data point"""
+
     name: str
     type: MetricType
     value: float
@@ -63,13 +66,14 @@ class MetricPoint:
             "type": self.type.value,
             "value": self.value,
             "timestamp": self.timestamp,
-            "labels": self.labels
+            "labels": self.labels,
         }
 
 
 @dataclass
 class Alert:
     """Alert notification"""
+
     name: str
     severity: AlertSeverity
     message: str
@@ -84,7 +88,7 @@ class Alert:
             "message": self.message,
             "timestamp": self.timestamp,
             "labels": self.labels,
-            "resolved": self.resolved
+            "resolved": self.resolved,
         }
 
 
@@ -137,18 +141,19 @@ class MetricsCollector:
 
         logger.info("MetricsCollector initialized")
 
-    def increment_counter(self, name: str, value: float = 1.0, labels: Dict[str, str] = None):
+    def increment_counter(
+        self, name: str, value: float = 1.0, labels: Dict[str, str] = None
+    ):
         """Increment a counter metric"""
         key = self._make_key(name, labels or {})
         self._counters[key] += value
 
         # Record metric point
-        self._metrics_history.append(MetricPoint(
-            name=name,
-            type=MetricType.COUNTER,
-            value=value,
-            labels=labels or {}
-        ))
+        self._metrics_history.append(
+            MetricPoint(
+                name=name, type=MetricType.COUNTER, value=value, labels=labels or {}
+            )
+        )
 
     def set_gauge(self, name: str, value: float, labels: Dict[str, str] = None):
         """Set a gauge metric"""
@@ -156,12 +161,11 @@ class MetricsCollector:
         self._gauges[key] = value
 
         # Record metric point
-        self._metrics_history.append(MetricPoint(
-            name=name,
-            type=MetricType.GAUGE,
-            value=value,
-            labels=labels or {}
-        ))
+        self._metrics_history.append(
+            MetricPoint(
+                name=name, type=MetricType.GAUGE, value=value, labels=labels or {}
+            )
+        )
 
     def record_histogram(self, name: str, value: float, labels: Dict[str, str] = None):
         """Record a histogram value"""
@@ -169,12 +173,11 @@ class MetricsCollector:
         self._histograms[key].append((time.time(), value))
 
         # Record metric point
-        self._metrics_history.append(MetricPoint(
-            name=name,
-            type=MetricType.HISTOGRAM,
-            value=value,
-            labels=labels or {}
-        ))
+        self._metrics_history.append(
+            MetricPoint(
+                name=name, type=MetricType.HISTOGRAM, value=value, labels=labels or {}
+            )
+        )
 
     def _make_key(self, name: str, labels: Dict[str, str]) -> str:
         """Create unique key for metric with labels"""
@@ -193,10 +196,16 @@ class MetricsCollector:
         key = self._make_key(name, labels or {})
         return self._gauges.get(key)
 
-    def get_histogram_stats(self, name: str, labels: Dict[str, str] = None) -> Dict[str, float]:
+    def get_histogram_stats(
+        self, name: str, labels: Dict[str, str] = None
+    ) -> Dict[str, float]:
         """Get histogram statistics (avg, p50, p95, p99)"""
         key = self._make_key(name, labels or {})
-        values = [v for t, v in self._histograms.get(key, []) if time.time() - t < self.retention_seconds]
+        values = [
+            v
+            for t, v in self._histograms.get(key, [])
+            if time.time() - t < self.retention_seconds
+        ]
 
         if not values:
             return {
@@ -206,7 +215,7 @@ class MetricsCollector:
                 "p95": 0.0,
                 "p99": 0.0,
                 "min": 0.0,
-                "max": 0.0
+                "max": 0.0,
             }
 
         values_sorted = sorted(values)
@@ -217,16 +226,19 @@ class MetricsCollector:
             "p95": values_sorted[int(len(values) * 0.95)],
             "p99": values_sorted[int(len(values) * 0.99)],
             "min": values_sorted[0],
-            "max": values_sorted[-1]
+            "max": values_sorted[-1],
         }
 
-    def create_alert(self, name: str, severity: AlertSeverity, message: str, labels: Dict[str, str] = None):
+    def create_alert(
+        self,
+        name: str,
+        severity: AlertSeverity,
+        message: str,
+        labels: Dict[str, str] = None,
+    ):
         """Create an alert"""
         alert = Alert(
-            name=name,
-            severity=severity,
-            message=message,
-            labels=labels or {}
+            name=name, severity=severity, message=message, labels=labels or {}
         )
 
         # Check if alert already exists
@@ -257,11 +269,10 @@ class MetricsCollector:
             "counters": {k: v for k, v in self._counters.items()},
             "gauges": {k: v for k, v in self._gauges.items()},
             "histograms": {
-                k: self.get_histogram_stats(k)
-                for k in self._histograms.keys()
+                k: self.get_histogram_stats(k) for k in self._histograms.keys()
             },
             "active_alerts": [a.to_dict() for a in self.get_active_alerts()],
-            "timestamp": time.time()
+            "timestamp": time.time(),
         }
 
     def export_prometheus(self) -> str:
@@ -298,11 +309,14 @@ class MetricsCollector:
         """Check all alert conditions and create alerts if thresholds exceeded"""
         # Budget alerts
         budget_pct = self.get_gauge("intelligence_budget_remaining_pct")
-        if budget_pct is not None and budget_pct < self._alert_thresholds["budget_remaining_pct"]:
+        if (
+            budget_pct is not None
+            and budget_pct < self._alert_thresholds["budget_remaining_pct"]
+        ):
             self.create_alert(
                 name="low_budget",
                 severity=AlertSeverity.WARNING,
-                message=f"Budget remaining: {budget_pct:.1f}% (threshold: {self._alert_thresholds['budget_remaining_pct']}%)"
+                message=f"Budget remaining: {budget_pct:.1f}% (threshold: {self._alert_thresholds['budget_remaining_pct']}%)",
             )
 
         # Error rate alerts
@@ -314,7 +328,7 @@ class MetricsCollector:
                 self.create_alert(
                     name="high_error_rate",
                     severity=AlertSeverity.ERROR,
-                    message=f"Error rate: {error_rate:.1f}% (threshold: {self._alert_thresholds['error_rate_pct']}%)"
+                    message=f"Error rate: {error_rate:.1f}% (threshold: {self._alert_thresholds['error_rate_pct']}%)",
                 )
 
         # Circuit breaker alerts
@@ -323,7 +337,7 @@ class MetricsCollector:
             self.create_alert(
                 name="circuit_breaker_open",
                 severity=AlertSeverity.CRITICAL,
-                message=f"{int(open_circuits)} circuit breaker(s) open - provider(s) failing"
+                message=f"{int(open_circuits)} circuit breaker(s) open - provider(s) failing",
             )
 
         # Latency alerts
@@ -332,7 +346,7 @@ class MetricsCollector:
             self.create_alert(
                 name="high_latency",
                 severity=AlertSeverity.WARNING,
-                message=f"p95 latency: {latency_stats['p95']:.0f}ms (threshold: {self._alert_thresholds['latency_p95_ms']}ms)"
+                message=f"p95 latency: {latency_stats['p95']:.0f}ms (threshold: {self._alert_thresholds['latency_p95_ms']}ms)",
             )
 
     def reset(self):
@@ -359,7 +373,15 @@ def get_metrics_collector() -> MetricsCollector:
 
 # Convenience functions for common metrics
 
-def track_provider_request(provider: str, model: str, success: bool, duration_ms: float, cost_usd: float, tokens: int):
+
+def track_provider_request(
+    provider: str,
+    model: str,
+    success: bool,
+    duration_ms: float,
+    cost_usd: float,
+    tokens: int,
+):
     """Track LLM provider request"""
     collector = get_metrics_collector()
     labels = {"provider": provider, "model": model}
@@ -389,7 +411,11 @@ def track_circuit_breaker_state(provider: str, state: str):
     collector.set_gauge("intelligence_circuit_breaker_state", state_value, labels)
 
     # Count open circuits
-    open_count = sum(1 for k, v in collector._gauges.items() if "circuit_breaker_state" in k and v == 2)
+    open_count = sum(
+        1
+        for k, v in collector._gauges.items()
+        if "circuit_breaker_state" in k and v == 2
+    )
     collector.set_gauge("intelligence_circuit_breaker_open_count", open_count)
 
 
@@ -435,4 +461,6 @@ def track_context_overflow(provider: str, model: str, messages_truncated: int):
     labels = {"provider": provider, "model": model}
 
     collector.increment_counter("intelligence_context_overflows_total", 1.0, labels)
-    collector.record_histogram("intelligence_messages_truncated", messages_truncated, labels)
+    collector.record_histogram(
+        "intelligence_messages_truncated", messages_truncated, labels
+    )

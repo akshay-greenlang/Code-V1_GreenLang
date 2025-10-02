@@ -313,7 +313,16 @@
       "Bash(C:UsersrsharAppDataRoamingPythonPython313Scriptsgl.exe --version)",
       "Bash(\"C:\\Users\\rshar\\AppData\\Roaming\\Python\\Python313\\Scripts\\gl.exe\" --version)",
       "Bash(touch:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(test-v030-localScriptsactivate)",
+      "Bash(./test-v030-local/Scripts/python.exe -m pytest tests/intelligence/test_tools_runtime.py -v --tb=short)",
+      "Bash(./test-v030-local/Scripts/python.exe -m pip install pytest jsonpath-ng --quiet)",
+      "Bash(./test-v030-local/Scripts/python.exe -m pip install pytest hypothesis pydantic jsonschema jsonpath-ng pint --quiet)",
+      "Bash(./test-v030-local/Scripts/python.exe:*)",
+      "Bash(../../../test-v030-local/Scripts/python.exe -m pip install ruff mypy --quiet)",
+      "Bash(./test-v030-local/Scripts/ruff.exe check greenlang/intelligence/runtime/tools.py greenlang/intelligence/runtime/schemas.py greenlang/intelligence/runtime/units.py greenlang/intelligence/runtime/errors.py --quiet)",
+      "Bash(./test-v030-local/Scripts/ruff.exe check:*)",
+      "Bash(./test-v030-local/Scripts/black.exe:*)"
     ],
     "deny": []
   }

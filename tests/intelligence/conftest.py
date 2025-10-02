@@ -26,10 +26,11 @@ def disable_network_calls(monkeypatch):
     monkeypatch.setattr("urllib.request.urlopen", mock_network_call, raising=False)
     monkeypatch.setattr("urllib.request.Request", mock_network_call, raising=False)
 
-    # Disable httpx if it's imported
+    # Disable httpx if it's imported (skip on Python 3.13 compatibility issues)
     try:
         import httpx
         monkeypatch.setattr("httpx.Client.request", mock_network_call, raising=False)
         monkeypatch.setattr("httpx.AsyncClient.request", mock_network_call, raising=False)
-    except ImportError:
+    except (ImportError, TypeError):
+        # TypeError can occur on Python 3.13 with httpx compatibility issues
         pass

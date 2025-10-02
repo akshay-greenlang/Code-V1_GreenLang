@@ -225,9 +225,7 @@ class ClimateValidator:
         required = ["value", "unit", "source"]
         missing = [f for f in required if f not in energy]
         if missing:
-            raise GLValidationError(
-                f"Energy value missing required fields: {missing}"
-            )
+            raise GLValidationError(f"Energy value missing required fields: {missing}")
 
         # Validate value
         value = energy["value"]
@@ -237,9 +235,7 @@ class ClimateValidator:
             )
 
         if value < 0:
-            raise GLValidationError(
-                f"Energy 'value' cannot be negative: {value}"
-            )
+            raise GLValidationError(f"Energy 'value' cannot be negative: {value}")
 
         # Validate unit
         unit = energy["unit"]
@@ -252,9 +248,7 @@ class ClimateValidator:
         # Validate source
         source = energy["source"]
         if not source or not isinstance(source, str):
-            raise GLValidationError(
-                "Energy 'source' must be non-empty string"
-            )
+            raise GLValidationError("Energy 'source' must be non-empty string")
 
     def validate_emissions_value(self, emissions: Dict[str, Any]) -> None:
         """
@@ -295,9 +289,7 @@ class ClimateValidator:
             )
 
         if value < 0:
-            raise GLValidationError(
-                f"Emissions 'value' cannot be negative: {value}"
-            )
+            raise GLValidationError(f"Emissions 'value' cannot be negative: {value}")
 
         # Validate unit
         unit = emissions["unit"]
@@ -331,17 +323,12 @@ class ClimateValidator:
             GLValidationError: If region format invalid
         """
         if not region or not isinstance(region, str):
-            raise GLValidationError(
-                "Region must be non-empty string"
-            )
+            raise GLValidationError("Region must be non-empty string")
 
         region = region.strip()
 
         # Check against patterns
-        valid = any(
-            re.match(pattern, region)
-            for pattern in self.REGION_PATTERNS
-        )
+        valid = any(re.match(pattern, region) for pattern in self.REGION_PATTERNS)
 
         if not valid:
             raise GLValidationError(
@@ -463,9 +450,7 @@ class ClimateValidator:
         if expected_keys:
             missing = [k for k in expected_keys if k not in output]
             if missing:
-                raise GLValidationError(
-                    f"Tool output missing expected keys: {missing}"
-                )
+                raise GLValidationError(f"Tool output missing expected keys: {missing}")
 
         # Validate emission factors
         if "emission_factor" in output:
@@ -480,17 +465,14 @@ class ClimateValidator:
         # Validate emissions
         if "emissions" in output or "co2e" in output or "co2e_kg" in output:
             emissions = (
-                output.get("emissions") or
-                output.get("co2e") or
-                output.get("co2e_kg")
+                output.get("emissions") or output.get("co2e") or output.get("co2e_kg")
             )
             if isinstance(emissions, dict):
                 self.validate_emissions_value(emissions)
 
         # Check for naked numbers (allow common keys like count, id, index)
         self.validate_no_naked_numbers(
-            output,
-            allowed_naked_keys=["count", "id", "index", "page", "total"]
+            output, allowed_naked_keys=["count", "id", "index", "page", "total"]
         )
 
 

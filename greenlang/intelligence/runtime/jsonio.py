@@ -12,7 +12,10 @@ Uses JSON Schema Draft 2020-12 specification via jsonschema library.
 from __future__ import annotations
 import json
 from typing import Any, Dict, Tuple, Optional
-from jsonschema import Draft202012Validator, ValidationError as JSONSchemaValidationError
+from jsonschema import (
+    Draft202012Validator,
+    ValidationError as JSONSchemaValidationError,
+)
 
 
 class JSONValidationError(Exception):

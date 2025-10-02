@@ -1,0 +1,9 @@
+{
+  "tool_calls_total": 1,
+  "blocked_naked_numbers_total": 0,
+  "unit_unknown_total": 0,
+  "replay_violations_total": 0,
+  "runtime_p95_ms": 62,
+  "tool_use_rate": 0.5,
+  "total_steps": 2
+}

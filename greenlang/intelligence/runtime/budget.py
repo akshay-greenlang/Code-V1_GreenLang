@@ -50,9 +50,7 @@ class BudgetExceeded(Exception):
             f"Spent: ${self.spent_usd:.4f} / ${self.max_usd:.4f}",
         ]
         if self.max_tokens:
-            parts.append(
-                f"Tokens: {self.spent_tokens:,} / {self.max_tokens:,}"
-            )
+            parts.append(f"Tokens: {self.spent_tokens:,} / {self.max_tokens:,}")
         return " | ".join(parts)
 
 

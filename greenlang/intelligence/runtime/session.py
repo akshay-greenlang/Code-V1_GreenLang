@@ -27,7 +27,10 @@ from greenlang.intelligence.schemas.tools import ToolDef
 from greenlang.intelligence.schemas.responses import ChatResponse
 from greenlang.intelligence.schemas.jsonschema import JSONSchema
 from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
-from greenlang.intelligence.providers.errors import ProviderError, classify_provider_error
+from greenlang.intelligence.providers.errors import (
+    ProviderError,
+    classify_provider_error,
+)
 
 
 class ChatSession:
@@ -295,7 +298,11 @@ class ChatSession:
             # Unknown error, classify and wrap
             classified_error = classify_provider_error(
                 error=e,
-                provider=self.provider.config.model.split("-")[0] if hasattr(self.provider, "config") else "unknown",
+                provider=(
+                    self.provider.config.model.split("-")[0]
+                    if hasattr(self.provider, "config")
+                    else "unknown"
+                ),
             )
             self._emit_error_telemetry(
                 error_type=classified_error.__class__.__name__,

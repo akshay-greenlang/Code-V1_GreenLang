@@ -52,7 +52,9 @@ class CostDashboard:
         spent = self.collector.get_gauge("intelligence_budget_spent_usd") or 0
         remaining = self.collector.get_gauge("intelligence_budget_remaining_usd") or 0
         max_budget = self.collector.get_gauge("intelligence_budget_max_usd") or 0
-        remaining_pct = self.collector.get_gauge("intelligence_budget_remaining_pct") or 0
+        remaining_pct = (
+            self.collector.get_gauge("intelligence_budget_remaining_pct") or 0
+        )
 
         # Calculate burn rate (cost per hour)
         # Note: This is simplified - production should track time windows
@@ -65,7 +67,7 @@ class CostDashboard:
             "max_usd": max_budget,
             "remaining_pct": remaining_pct,
             "burn_rate_per_request_usd": burn_rate_per_request,
-            "status": self._get_budget_status_label(remaining_pct)
+            "status": self._get_budget_status_label(remaining_pct),
         }
 
     def _get_budget_status_label(self, remaining_pct: float) -> str:
@@ -93,7 +95,7 @@ class CostDashboard:
                         "failed_requests": 0,
                         "total_cost_usd": 0.0,
                         "total_tokens": 0,
-                        "avg_latency_ms": 0.0
+                        "avg_latency_ms": 0.0,
                     }
 
         # Populate stats
@@ -145,7 +147,7 @@ class CostDashboard:
                     tools[tool_name] = {
                         "total_invocations": 0,
                         "failed_invocations": 0,
-                        "avg_duration_ms": 0.0
+                        "avg_duration_ms": 0.0,
                     }
 
         # Populate stats
@@ -180,36 +182,40 @@ class CostDashboard:
 
     def print_cli_dashboard(self):
         """Print dashboard to CLI"""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("  GREENLANG INTELLIGENCE LAYER - COST DASHBOARD")
-        print("="*80)
+        print("=" * 80)
         print(f"  Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        print("="*80)
+        print("=" * 80)
 
         # Budget Status
         budget = self.get_budget_status()
         print("\n📊 BUDGET STATUS")
-        print("-"*80)
+        print("-" * 80)
         print(f"  Status: {budget['status']}")
         print(f"  Spent: ${budget['spent_usd']:.4f} / ${budget['max_usd']:.2f}")
-        print(f"  Remaining: ${budget['remaining_usd']:.4f} ({budget['remaining_pct']:.1f}%)")
+        print(
+            f"  Remaining: ${budget['remaining_usd']:.4f} ({budget['remaining_pct']:.1f}%)"
+        )
         print(f"  Burn Rate: ${budget['burn_rate_per_request_usd']:.6f} per request")
 
         # Provider Stats
         print("\n🔌 PROVIDER STATISTICS")
-        print("-"*80)
+        print("-" * 80)
         providers = self.get_provider_stats()
         if providers:
             for provider, stats in providers.items():
                 print(f"\n  {provider.upper()}:")
-                print(f"    Requests: {stats['total_requests']} (Success: {stats['success_rate_pct']:.1f}%)")
+                print(
+                    f"    Requests: {stats['total_requests']} (Success: {stats['success_rate_pct']:.1f}%)"
+                )
                 print(f"    Avg Latency: {stats['avg_latency_ms']:.0f}ms")
         else:
             print("  No provider data yet")
 
         # Circuit Breaker Status
         print("\n⚡ CIRCUIT BREAKER STATUS")
-        print("-"*80)
+        print("-" * 80)
         cb_status = self.get_circuit_breaker_status()
         if cb_status:
             for provider, state in cb_status.items():
@@ -219,27 +225,38 @@ class CostDashboard:
 
         # Tool Stats
         print("\n🔧 TOOL INVOCATIONS")
-        print("-"*80)
+        print("-" * 80)
         tools = self.get_tool_stats()
         if tools:
-            for tool_name, stats in sorted(tools.items(), key=lambda x: x[1]['total_invocations'], reverse=True)[:10]:
-                print(f"  {tool_name}: {stats['total_invocations']} calls ({stats['success_rate_pct']:.1f}% success)")
+            for tool_name, stats in sorted(
+                tools.items(), key=lambda x: x[1]["total_invocations"], reverse=True
+            )[:10]:
+                print(
+                    f"  {tool_name}: {stats['total_invocations']} calls ({stats['success_rate_pct']:.1f}% success)"
+                )
         else:
             print("  No tool invocations yet")
 
         # Active Alerts
         print("\n🚨 ACTIVE ALERTS")
-        print("-"*80)
+        print("-" * 80)
         alerts = self.get_active_alerts()
         if alerts:
             for alert in alerts:
-                severity_icon = {"info": "ℹ️", "warning": "⚠️", "error": "❌", "critical": "🔴"}.get(alert['severity'], "")
-                print(f"  {severity_icon} [{alert['severity'].upper()}] {alert['name']}")
+                severity_icon = {
+                    "info": "ℹ️",
+                    "warning": "⚠️",
+                    "error": "❌",
+                    "critical": "🔴",
+                }.get(alert["severity"], "")
+                print(
+                    f"  {severity_icon} [{alert['severity'].upper()}] {alert['name']}"
+                )
                 print(f"     {alert['message']}")
         else:
             print("  ✅ No active alerts")
 
-        print("\n" + "="*80 + "\n")
+        print("\n" + "=" * 80 + "\n")
 
     def export_json_dashboard(self) -> Dict[str, Any]:
         """Export dashboard data as JSON"""
@@ -249,12 +266,12 @@ class CostDashboard:
             "providers": self.get_provider_stats(),
             "circuit_breakers": self.get_circuit_breaker_status(),
             "tools": self.get_tool_stats(),
-            "alerts": self.get_active_alerts()
+            "alerts": self.get_active_alerts(),
         }
 
 
 # Global dashboard instance
-_dashboard: Optional['CostDashboard'] = None
+_dashboard: Optional["CostDashboard"] = None
 
 
 def get_dashboard() -> CostDashboard:

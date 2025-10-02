@@ -7,7 +7,7 @@ Validates that @tool-decorated methods are properly registered and callable by L
 
 import pytest
 from typing import Dict, Any
-from greenlang.intelligence.runtime.tools import (
+from greenlang.intelligence.runtime.agent_tools import (
     tool, ToolRegistry, ToolSpec, ToolInvocationError
 )
 from greenlang.agents.carbon_agent import CarbonAgent
