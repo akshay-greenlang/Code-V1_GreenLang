@@ -187,8 +187,10 @@ def doctor(
 
 # Add sub-applications for pack commands
 from .cmd_pack_new import app as pack_app
+from .rag_commands import app as rag_app
 
 app.add_typer(pack_app, name="pack", help="Pack management commands")
+app.add_typer(rag_app, name="rag", help="RAG (Retrieval-Augmented Generation) commands")
 
 
 # Add run command

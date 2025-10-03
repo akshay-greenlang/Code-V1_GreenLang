@@ -1,0 +1,53 @@
+{
+  "iso_14064_1": {
+    "doc_path": "audit_example\\iso_14064_1.pdf",
+    "metadata": {
+      "doc_id": "iso-14064-1-2018",
+      "title": "ISO 14064-1:2018 Greenhouse gases",
+      "collection": "iso_14064_1",
+      "source_uri": null,
+      "source_path": null,
+      "publisher": "ISO",
+      "publication_date": "2018-12-01",
+      "revision_date": null,
+      "version": "2018",
+      "content_hash": "e6f9a4b7c2d5e8f1a4b7c2d5e8f1a4b7c2d5e8f1a4b7c2d5e8f1a4b7c2d5e8f1",
+      "doc_hash": "f9a4b7c2d5e8f1a4b7c2d5e8f1a4b7c2d5e8f1a4b7c2d5e8f1a4b7c2d5e8f1a4",
+      "ingested_at": "2025-10-03T08:56:28.877137",
+      "ingested_by": null,
+      "pipeline_version": null,
+      "total_chunks": null,
+      "total_pages": null,
+      "file_size_bytes": null,
+      "extra": {}
+    },
+    "requested_by": "data_team",
+    "requested_at": "2025-10-03T08:56:28.878092",
+    "approvers_required": [
+      "climate_scientist_1",
+      "climate_scientist_2",
+      "audit_lead"
+    ],
+    "approvers_voted": [
+      "climate_scientist_2",
+      "climate_scientist_1"
+    ],
+    "votes_approve": 2,
+    "votes_reject": 0,
+    "status": "approved",
+    "comments": [
+      {
+        "approver": "climate_scientist_1",
+        "vote": "approve",
+        "comment": "ISO standard verified, emission factors accurate",
+        "timestamp": "2025-10-03T08:56:28.879125"
+      },
+      {
+        "approver": "climate_scientist_2",
+        "vote": "approve",
+        "comment": "Reviewed methodology, aligns with IPCC guidelines",
+        "timestamp": "2025-10-03T08:56:28.880391"
+      }
+    ]
+  }
+}

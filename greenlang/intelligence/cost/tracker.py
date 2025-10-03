@@ -42,18 +42,31 @@ class AttemptCost:
         input_tokens: Input token count
         output_tokens: Output token count
         cost_usd: Cost in USD
+        embedding_tokens: Embedding tokens generated (RAG)
+        embedding_cost_usd: Embedding generation cost (RAG)
+        vector_db_queries: Number of vector DB queries (RAG)
+        vector_db_cost_usd: Vector DB operation cost (RAG)
         timestamp: When this attempt occurred
     """
     attempt_number: int
     input_tokens: int
     output_tokens: int
     cost_usd: float
+    embedding_tokens: int = 0
+    embedding_cost_usd: float = 0.0
+    vector_db_queries: int = 0
+    vector_db_cost_usd: float = 0.0
     timestamp: datetime = field(default_factory=datetime.now)
 
     @property
     def total_tokens(self) -> int:
-        """Total tokens for this attempt"""
-        return self.input_tokens + self.output_tokens
+        """Total tokens for this attempt (LLM + embeddings)"""
+        return self.input_tokens + self.output_tokens + self.embedding_tokens
+
+    @property
+    def total_cost_usd(self) -> float:
+        """Total cost for this attempt (LLM + embeddings + vector DB)"""
+        return self.cost_usd + self.embedding_cost_usd + self.vector_db_cost_usd
 
 
 @dataclass
@@ -94,15 +107,39 @@ class RequestCost:
 
     @property
     def total_cost_usd(self) -> float:
-        """Total cost in USD across all attempts"""
-        return sum(a.cost_usd for a in self.attempts)
+        """Total cost in USD across all attempts (LLM + embeddings + vector DB)"""
+        return sum(a.total_cost_usd for a in self.attempts)
+
+    @property
+    def total_embedding_tokens(self) -> int:
+        """Total embedding tokens across all attempts"""
+        return sum(a.embedding_tokens for a in self.attempts)
+
+    @property
+    def total_embedding_cost_usd(self) -> float:
+        """Total embedding cost in USD across all attempts"""
+        return sum(a.embedding_cost_usd for a in self.attempts)
+
+    @property
+    def total_vector_db_queries(self) -> int:
+        """Total vector DB queries across all attempts"""
+        return sum(a.vector_db_queries for a in self.attempts)
+
+    @property
+    def total_vector_db_cost_usd(self) -> float:
+        """Total vector DB cost in USD across all attempts"""
+        return sum(a.vector_db_cost_usd for a in self.attempts)
 
     def add_attempt(
         self,
         attempt_number: int,
         input_tokens: int,
         output_tokens: int,
-        cost_usd: float
+        cost_usd: float,
+        embedding_tokens: int = 0,
+        embedding_cost_usd: float = 0.0,
+        vector_db_queries: int = 0,
+        vector_db_cost_usd: float = 0.0
     ) -> None:
         """
         Add an attempt to this request
@@ -112,12 +149,20 @@ class RequestCost:
             input_tokens: Input token count
             output_tokens: Output token count
             cost_usd: Cost in USD
+            embedding_tokens: Embedding tokens generated (RAG)
+            embedding_cost_usd: Embedding generation cost (RAG)
+            vector_db_queries: Number of vector DB queries (RAG)
+            vector_db_cost_usd: Vector DB operation cost (RAG)
         """
         self.attempts.append(AttemptCost(
             attempt_number=attempt_number,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
-            cost_usd=cost_usd
+            cost_usd=cost_usd,
+            embedding_tokens=embedding_tokens,
+            embedding_cost_usd=embedding_cost_usd,
+            vector_db_queries=vector_db_queries,
+            vector_db_cost_usd=vector_db_cost_usd
         ))
 
     def to_dict(self) -> Dict:
@@ -127,16 +172,25 @@ class RequestCost:
             "attempt_count": self.attempt_count,
             "total_input_tokens": self.total_input_tokens,
             "total_output_tokens": self.total_output_tokens,
+            "total_embedding_tokens": self.total_embedding_tokens,
             "total_tokens": self.total_tokens,
             "total_cost_usd": self.total_cost_usd,
+            "total_embedding_cost_usd": self.total_embedding_cost_usd,
+            "total_vector_db_queries": self.total_vector_db_queries,
+            "total_vector_db_cost_usd": self.total_vector_db_cost_usd,
             "created_at": self.created_at.isoformat(),
             "attempts": [
                 {
                     "attempt": a.attempt_number,
                     "input_tokens": a.input_tokens,
                     "output_tokens": a.output_tokens,
+                    "embedding_tokens": a.embedding_tokens,
                     "total_tokens": a.total_tokens,
                     "cost_usd": a.cost_usd,
+                    "embedding_cost_usd": a.embedding_cost_usd,
+                    "vector_db_queries": a.vector_db_queries,
+                    "vector_db_cost_usd": a.vector_db_cost_usd,
+                    "total_cost_usd": a.total_cost_usd,
                     "timestamp": a.timestamp.isoformat()
                 }
                 for a in self.attempts
@@ -184,7 +238,11 @@ class CostTracker:
         input_tokens: int,
         output_tokens: int,
         cost_usd: float,
-        attempt: int = 0
+        attempt: int = 0,
+        embedding_tokens: int = 0,
+        embedding_cost_usd: float = 0.0,
+        vector_db_queries: int = 0,
+        vector_db_cost_usd: float = 0.0
     ) -> None:
         """
         Record cost for a request attempt
@@ -195,13 +253,27 @@ class CostTracker:
             output_tokens: Output token count
             cost_usd: Cost in USD
             attempt: Attempt number (0-indexed)
+            embedding_tokens: Embedding tokens generated (RAG)
+            embedding_cost_usd: Embedding generation cost (RAG)
+            vector_db_queries: Number of vector DB queries (RAG)
+            vector_db_cost_usd: Vector DB operation cost (RAG)
 
         Example:
-            # First attempt
+            # LLM-only request
             tracker.record("req_1", 100, 50, 0.0015, attempt=0)
 
-            # Retry attempt
-            tracker.record("req_1", 110, 45, 0.0014, attempt=1)
+            # RAG-augmented request
+            tracker.record(
+                "req_2",
+                input_tokens=100,
+                output_tokens=50,
+                cost_usd=0.0015,
+                embedding_tokens=256,
+                embedding_cost_usd=0.0001,
+                vector_db_queries=5,
+                vector_db_cost_usd=0.00005,
+                attempt=0
+            )
         """
         with self._lock:
             if request_id not in self._costs:
@@ -211,7 +283,11 @@ class CostTracker:
                 attempt_number=attempt,
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
-                cost_usd=cost_usd
+                cost_usd=cost_usd,
+                embedding_tokens=embedding_tokens,
+                embedding_cost_usd=embedding_cost_usd,
+                vector_db_queries=vector_db_queries,
+                vector_db_cost_usd=vector_db_cost_usd
             )
 
     def get(self, request_id: str) -> Optional[RequestCost]:

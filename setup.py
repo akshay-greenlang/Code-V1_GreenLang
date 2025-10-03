@@ -143,6 +143,7 @@ setup(
             "sentence-transformers>=2.2.0",
             "pypdf>=3.17.0",
             "chromadb>=0.4.0",
+            "weaviate-client>=3.25.0",
         ],
         "server": [
             "aiohttp>=3.8.0",

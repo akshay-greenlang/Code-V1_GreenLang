@@ -322,7 +322,11 @@
       "Bash(../../../test-v030-local/Scripts/python.exe -m pip install ruff mypy --quiet)",
       "Bash(./test-v030-local/Scripts/ruff.exe check greenlang/intelligence/runtime/tools.py greenlang/intelligence/runtime/schemas.py greenlang/intelligence/runtime/units.py greenlang/intelligence/runtime/errors.py --quiet)",
       "Bash(./test-v030-local/Scripts/ruff.exe check:*)",
-      "Bash(./test-v030-local/Scripts/black.exe:*)"
+      "Bash(./test-v030-local/Scripts/black.exe:*)",
+      "Bash(if exist .test_cache.json del .test_cache.json)",
+      "Bash(set KMP_DUPLICATE_LIB_OK=TRUE)",
+      "Bash(git mv:*)",
+      "Bash(del test_query_integration.py)"
     ],
     "deny": []
   }
