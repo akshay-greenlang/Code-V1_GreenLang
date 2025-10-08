@@ -1,0 +1,396 @@
+# GreenLang AgentSpec v2 - Example Pack Manifest
+#
+# This is a complete example demonstrating all sections of AgentSpec v2:
+# - Metadata: schema_version, id, name, version, summary, tags, owners, license
+# - compute: Entrypoint, inputs/outputs, emission factors, dependencies
+# - ai: LLM configuration, tools, RAG, budget
+# - realtime: Replay/live modes, connectors
+# - provenance: Factor pinning, GWP set, audit fields
+# - tests: Golden tests and property-based tests (optional)
+#
+# Based on: CTO's boiler example (FRMW-201 specification)
+# Author: GreenLang Framework Team
+# Date: October 2025
+# Spec Version: 2.0.0
+
+# ============================================================================
+# METADATA
+# ============================================================================
+schema_version: "2.0.0"
+
+# Agent ID: Unique identifier in format segment/segment/...
+# Must be lowercase alphanumeric with separators (/, -, _)
+id: "buildings/boiler_ng_v1"
+
+# Human-readable name
+name: "Boiler – Natural Gas (LHV)"
+
+# Semantic versioning 2.0.0 (MAJOR.MINOR.PATCH)
+version: "2.1.3"
+
+# Short description
+summary: "Computes CO2e emissions from natural gas boiler fuel consumption using Lower Heating Value (LHV) method."
+
+# Tags for categorization and search
+tags:
+  - "buildings"
+  - "combustion"
+  - "scope1"
+  - "natural-gas"
+  - "boiler"
+
+# Owners (optional)
+owners:
+  - "@gl/industry-buildings"
+  - "@gl/climate-science"
+
+# License (SPDX identifier)
+license: "Apache-2.0"
+
+# ============================================================================
+# COMPUTE SECTION
+# Defines the computational logic: entrypoint, inputs, outputs, factors
+# ============================================================================
+compute:
+  # Python entrypoint (python://module.path:function_name)
+  entrypoint: "python://gl.agents.boiler.ng:compute"
+
+  # Deterministic flag (default: true)
+  # When true: same inputs → same outputs (reproducible)
+  deterministic: true
+
+  # Python dependencies (P0 enhancement - ensures reproducibility)
+  dependencies:
+    - "pandas==2.1.4"
+    - "numpy==1.26.0"
+    - "pint==0.23"
+
+  # Python version requirement (P0 enhancement)
+  python_version: "3.11"
+
+  # Performance constraints (P1 enhancements)
+  timeout_s: 30            # Maximum execution time (seconds)
+  memory_limit_mb: 512     # Maximum memory usage (MB)
+
+  # Input parameters
+  inputs:
+    # Natural gas volume consumed (m^3)
+    fuel_volume:
+      dtype: "float64"
+      unit: "m^3"
+      required: true
+      ge: 0                 # Must be non-negative
+      description: "Volume of natural gas consumed (cubic meters)"
+
+    # Lower Heating Value (MJ/m^3)
+    lhv:
+      dtype: "float64"
+      unit: "MJ/m^3"
+      required: true
+      ge: 0
+      description: "Lower Heating Value of natural gas (MJ per cubic meter)"
+
+    # Boiler efficiency (dimensionless, 0-1)
+    efficiency:
+      dtype: "float64"
+      unit: "1"             # Dimensionless unit
+      required: true
+      gt: 0                 # Must be greater than 0
+      le: 1                 # Cannot exceed 100% efficiency
+      description: "Boiler thermal efficiency (fraction, 0-1)"
+
+    # Optional: Region for region-specific factors
+    region:
+      dtype: "string"
+      unit: "1"             # String inputs must use dimensionless unit
+      required: false
+      default: "US"
+      enum: ["US", "EU", "UK", "CA", "AU", "JP"]
+      description: "Geographic region for regional emission factors"
+
+  # Output parameters
+  outputs:
+    # Total CO2 equivalent emissions (kg)
+    co2e_kg:
+      dtype: "float64"
+      unit: "kgCO2e"
+      description: "Total CO2 equivalent emissions (kilograms)"
+
+    # Energy consumed (MJ)
+    energy_mj:
+      dtype: "float64"
+      unit: "MJ"
+      description: "Total energy consumed (megajoules)"
+
+    # Emission intensity (kgCO2e/MJ)
+    intensity:
+      dtype: "float64"
+      unit: "kgCO2e/MJ"
+      description: "Emission intensity (kgCO2e per MJ)"
+
+  # Emission factor references
+  factors:
+    # Natural gas combustion emission factor
+    co2e_factor:
+      ref: "ef://ipcc_ar6/combustion/ng/co2e_kg_per_mj"
+      gwp_set: "AR6GWP100"
+      description: "IPCC AR6 natural gas combustion emission factor"
+
+    # Optional: Regional grid factor (if electricity used)
+    grid_factor:
+      ref: "ef://epa/egrid/us_average/co2e_kg_per_mwh"
+      description: "US EPA eGRID average emission factor"
+
+# ============================================================================
+# AI SECTION
+# LLM configuration, tools, RAG, budget constraints
+# ============================================================================
+ai:
+  # JSON mode for structured output (default: true)
+  json_mode: true
+
+  # System prompt (instructions for LLM)
+  system_prompt: |
+    You are a climate advisor specializing in industrial building emissions.
+
+    Guidelines:
+    - Use tools to calculate emissions; never guess numbers.
+    - Always cite emission factors with proper URIs (ef://).
+    - Validate all inputs for physical plausibility (efficiency 0-1, volumes ≥ 0).
+    - Provide uncertainty estimates when available.
+    - Follow GHG Protocol Corporate Standard for scope 1 emissions.
+
+    When uncertain, ask clarifying questions rather than making assumptions.
+
+  # Budget constraints (prevents runaway costs)
+  budget:
+    max_cost_usd: 1.00          # Maximum USD per agent run
+    max_input_tokens: 15000      # Maximum input tokens (cumulative)
+    max_output_tokens: 2000      # Maximum output tokens (cumulative)
+    max_retries: 3               # Maximum retries for failed calls (P1 enhancement)
+
+  # RAG collections for document retrieval
+  rag_collections:
+    - "ghg_protocol_corp"        # GHG Protocol Corporate Standard
+    - "ipcc_ar6"                 # IPCC AR6 Guidelines
+    - "gl_docs"                  # GreenLang documentation
+
+  # AI tools for function calling
+  tools:
+    # Tool 1: Select emission factor
+    - name: "select_emission_factor"
+      description: "Select appropriate emission factor based on fuel type, region, and year"
+      schema_in:
+        type: object
+        properties:
+          fuel_type:
+            type: string
+            enum: ["natural_gas", "coal", "oil", "biomass"]
+          region:
+            type: string
+            description: "ISO 3166-1 alpha-2 country code"
+          year:
+            type: integer
+            minimum: 1990
+            maximum: 2100
+        required: ["fuel_type", "region", "year"]
+      schema_out:
+        type: object
+        properties:
+          ef_uri:
+            type: string
+            pattern: "^ef://"
+            description: "Emission factor URI"
+          value:
+            type: number
+            description: "Emission factor value"
+          unit:
+            type: string
+            description: "Emission factor unit"
+          source:
+            type: string
+            description: "Data source (IPCC, EPA, etc.)"
+        required: ["ef_uri", "value", "unit", "source"]
+      impl: "python://gl.ai.tools.ef:select"
+      safe: true
+
+    # Tool 2: Validate input plausibility
+    - name: "validate_input"
+      description: "Validate input parameters for physical plausibility"
+      schema_in:
+        type: object
+        properties:
+          parameter:
+            type: string
+            description: "Parameter name"
+          value:
+            type: number
+            description: "Parameter value"
+          unit:
+            type: string
+            description: "Parameter unit"
+        required: ["parameter", "value", "unit"]
+      schema_out:
+        type: object
+        properties:
+          valid:
+            type: boolean
+            description: "Whether input is valid"
+          warning:
+            type: string
+            description: "Warning message if suspicious"
+          suggestion:
+            type: number
+            description: "Suggested value if invalid"
+        required: ["valid"]
+      impl: "python://gl.ai.tools.validation:validate_input"
+      safe: true
+
+# ============================================================================
+# REALTIME SECTION
+# Replay/live modes, connector configuration
+# ============================================================================
+realtime:
+  # Default mode (replay = cached data, live = fresh data)
+  default_mode: "replay"
+
+  # Snapshot path for replay mode (P1 enhancement)
+  snapshot_path: "snapshots/2024-10-06_boiler_data.json"
+
+  # Realtime connectors (only active in 'live' mode)
+  connectors:
+    # Grid intensity connector
+    - name: "grid_intensity"
+      topic: "region_hourly_ci"
+      window: "1h"           # Time window for data aggregation
+      ttl: "6h"              # Time-to-live for cached data
+      required: false        # Agent can run without this connector
+
+    # Weather connector (for temperature correction)
+    - name: "weather"
+      topic: "outdoor_temperature"
+      window: "15min"
+      ttl: "1h"
+      required: false
+
+# ============================================================================
+# PROVENANCE SECTION
+# Reproducibility, audit trails, factor pinning
+# ============================================================================
+provenance:
+  # Pin emission factor versions (default: true)
+  # When true: factors are content-addressed (immutable)
+  pin_ef: true
+
+  # GWP set for CH4/N2O conversion (P0 enhancement)
+  # Options: AR6GWP100, AR5GWP100, SAR, AR4
+  gwp_set: "AR6GWP100"
+
+  # Fields to include in provenance record (for audit trails)
+  record:
+    - "inputs"              # All input values
+    - "outputs"             # All output values
+    - "factors"             # Emission factor metadata
+    - "ef_uri"              # Emission factor URIs
+    - "ef_cid"              # Emission factor content IDs (hash)
+    - "unit_system"         # Unit system used
+    - "code_sha"            # Git SHA of agent code
+    - "env"                 # Environment metadata (Python version, OS, etc.)
+    - "inputs_hash"         # Hash of inputs (for deduplication)
+    - "seed"                # Random seed (for deterministic AI)
+    - "timestamp"           # ISO 8601 timestamp
+    - "user"                # User who ran the agent
+
+# ============================================================================
+# SECURITY SECTION (P1 enhancement - optional)
+# Network egress control, allowlisted hosts
+# ============================================================================
+security:
+  # Allowlisted hosts for network egress (defense-in-depth)
+  allowlist_hosts:
+    - "api.ipcc.ch"                      # IPCC data API
+    - "api.epa.gov"                      # EPA emission factors
+    - "api.eia.gov"                      # US Energy Information Administration
+
+  # Block on violation (true = hard fail, false = log warning)
+  block_on_violation: true
+
+# ============================================================================
+# TESTS SECTION (optional)
+# Golden tests and property-based tests for validation
+# ============================================================================
+tests:
+  # Golden tests: Known inputs → expected outputs
+  golden:
+    # Test 1: Baseline scenario
+    - name: "baseline"
+      description: "Standard boiler operation with typical efficiency"
+      input:
+        fuel_volume: 100.0        # 100 m^3 natural gas
+        lhv: 38.0                 # 38 MJ/m^3 (typical NG LHV)
+        efficiency: 0.92          # 92% efficient boiler
+        region: "US"
+      expect:
+        co2e_kg:
+          value: 197.6            # Expected: ~198 kgCO2e
+          tol: 0.01               # 1% tolerance (relative)
+        energy_mj:
+          value: 3496.0           # 100 * 38 * 0.92 = 3496 MJ
+          tol: 0.001
+        intensity:
+          value: 0.0565           # ~0.0565 kgCO2e/MJ
+          tol: 0.01
+
+    # Test 2: High efficiency scenario
+    - name: "high_efficiency"
+      description: "Modern condensing boiler with high efficiency"
+      input:
+        fuel_volume: 50.0
+        lhv: 38.0
+        efficiency: 0.98
+        region: "EU"
+      expect:
+        co2e_kg:
+          value: 99.3
+          tol: 0.01
+
+    # Test 3: Low efficiency scenario (warning test)
+    - name: "low_efficiency"
+      description: "Old boiler with poor efficiency"
+      input:
+        fuel_volume: 200.0
+        lhv: 38.0
+        efficiency: 0.70
+        region: "UK"
+      expect:
+        co2e_kg:
+          value: 355.2
+          tol: 0.01
+
+  # Property-based tests (invariants that must always hold)
+  properties:
+    # Property 1: Monotonicity in fuel volume
+    - name: "monotone_fuel_volume"
+      rule: "output.co2e_kg is nondecreasing in input.fuel_volume"
+      description: "More fuel → more emissions (all else equal)"
+
+    # Property 2: Monotonicity in efficiency (inverse)
+    - name: "monotone_efficiency_inverse"
+      rule: "output.co2e_kg is nonincreasing in input.efficiency"
+      description: "Higher efficiency → fewer emissions (all else equal)"
+
+    # Property 3: Non-negativity
+    - name: "non_negative_emissions"
+      rule: "output.co2e_kg >= 0"
+      description: "Emissions cannot be negative"
+
+    # Property 4: Energy balance
+    - name: "energy_balance"
+      rule: "output.energy_mj == input.fuel_volume * input.lhv * input.efficiency"
+      description: "Energy output equals input energy adjusted by efficiency"
+      tolerance: 1e-6
+
+    # Property 5: Intensity bounds
+    - name: "intensity_bounds"
+      rule: "0 < output.intensity < 0.2"
+      description: "Emission intensity should be between 0 and 0.2 kgCO2e/MJ for NG"

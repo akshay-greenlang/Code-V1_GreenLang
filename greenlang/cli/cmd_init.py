@@ -17,6 +17,12 @@ from ..cards.generator import (
 app = typer.Typer()
 console = Console()
 
+# Import agent scaffolding commands
+from .cmd_init_agent import app as agent_app
+
+# Register agent subcommand
+app.add_typer(agent_app, name="agent", help="Initialize new GreenLang agents with AgentSpec v2")
+
 
 @app.command()
 def pack_basic(

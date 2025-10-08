@@ -62,21 +62,6 @@ def version():
 
 
 @app.command()
-def init(
-    name: str = typer.Option(..., "--name", "-n", help="Pack name"),
-    path: Path = typer.Option(Path.cwd(), "--path", "-p", help="Pack directory"),
-):
-    """Initialize a new pack"""
-    pack_dir = path / name
-
-    if pack_dir.exists():
-        console.print(f"[red]Error: Directory already exists: {pack_dir}[/red]")
-        raise typer.Exit(1)
-
-    console.print(f"[green][OK][/green] Created pack: {name}")
-
-
-@app.command()
 def doctor(
     setup_path: bool = typer.Option(False, "--setup-path", help="Setup Windows PATH automatically"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed diagnostics")
@@ -185,11 +170,13 @@ def doctor(
     console.print("\n[green]Environment check completed![/green]")
 
 
-# Add sub-applications for pack commands
+# Add sub-applications for pack, init, and rag commands
 from .cmd_pack_new import app as pack_app
+from .cmd_init import app as init_app
 from .rag_commands import app as rag_app
 
 app.add_typer(pack_app, name="pack", help="Pack management commands")
+app.add_typer(init_app, name="init", help="Initialize new projects, packs, and agents")
 app.add_typer(rag_app, name="rag", help="RAG (Retrieval-Augmented Generation) commands")
 
 

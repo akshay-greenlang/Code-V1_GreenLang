@@ -326,7 +326,13 @@
       "Bash(if exist .test_cache.json del .test_cache.json)",
       "Bash(set KMP_DUPLICATE_LIB_OK=TRUE)",
       "Bash(git mv:*)",
-      "Bash(del test_query_integration.py)"
+      "Bash(del test_query_integration.py)",
+      "Bash(del test_uri_security.py test_safe_tool.py)",
+      "Bash(..venv-test-v2Scriptspython.exe -m pytest tests/specs/test_agentspec_ok.py -v --tb=short)",
+      "Bash(../../test-v030-local/Scripts/python.exe -m pytest tests/ -v --tb=short)",
+      "Bash(../../test-v030-local/Scripts/python.exe -m pytest tests/test_agent.py::TestTestBoilerGolden::test_example_input -v)",
+      "Bash(.gl.bat init --help)",
+      "Bash(bandit:*)"
     ],
     "deny": []
   }
