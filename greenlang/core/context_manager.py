@@ -23,6 +23,7 @@ class ContextType(Enum):
     TENANT = "tenant"
     TRACING = "tracing"
     SDK = "sdk"
+    CONNECTOR = "connector"  # For connector execution contexts
 
 
 @dataclass

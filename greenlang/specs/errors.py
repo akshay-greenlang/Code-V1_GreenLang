@@ -85,6 +85,22 @@ class GLVErr(str, Enum):
     PROVENANCE_INVALID = "GLValidationError.PROVENANCE_INVALID"
     """Provenance configuration is invalid (e.g., pin_ef=true but no factors)"""
 
+    # Scenario validation errors (added October 2025 - SIM-401)
+    SCENARIO_SCHEMA = "GLValidationError.SCENARIO_SCHEMA"
+    """Scenario YAML/JSON schema validation failed"""
+
+    SCENARIO_SEED_RANGE = "GLValidationError.SCENARIO_SEED_RANGE"
+    """Scenario seed outside valid range (0 to 2^64-1)"""
+
+    SCENARIO_DIST_PARAM = "GLValidationError.SCENARIO_DIST_PARAM"
+    """Scenario distribution parameter invalid (e.g., negative stddev, low >= high)"""
+
+    SCENARIO_PARAM_REF = "GLValidationError.SCENARIO_PARAM_REF"
+    """Scenario distribution references unknown parameter"""
+
+    SCENARIO_GRID_EXPLOSION = "GLValidationError.SCENARIO_GRID_EXPLOSION"
+    """Scenario grid search would generate too many combinations"""
+
 
 class GLValidationError(ValueError):
     """

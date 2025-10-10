@@ -314,6 +314,9 @@ class LoadedPack:
             # Load agents
             self._load_agents()
 
+            # Load connectors
+            self._load_connectors()
+
             # Load pipelines
             self._load_pipelines()
 
@@ -384,6 +387,70 @@ class LoadedPack:
 
             except Exception as e:
                 logger.error(f"Failed to load agent {agent_entry}: {e}")
+
+    def _load_connectors(self):
+        """Load connector classes"""
+        if not self.manifest.contents:
+            return
+
+        # Import Connector base class
+        try:
+            from greenlang.connectors.base import Connector
+        except ImportError:
+            logger.warning("Connector module not available, skipping connector loading")
+            return
+
+        for connector_entry in self.manifest.contents.connectors:
+            try:
+                # Handle both file paths and connector names
+                if "/" in connector_entry or "\\" in connector_entry:
+                    # This is a file path
+                    connector_path = self.path / connector_entry
+                    if connector_path.exists():
+                        # Load the module
+                        module_name = f"{self.manifest.name}_connector_{connector_path.stem}"
+                        spec = importlib.util.spec_from_file_location(
+                            module_name, connector_path
+                        )
+
+                        if spec and spec.loader:
+                            module = importlib.util.module_from_spec(spec)
+                            spec.loader.exec_module(module)
+
+                            # Find Connector classes in the module
+                            for name, obj in inspect.getmembers(module):
+                                if (
+                                    inspect.isclass(obj)
+                                    and issubclass(obj, Connector)
+                                    and obj != Connector
+                                ):
+                                    # Store by class name
+                                    self.connectors[name] = obj
+                                    logger.info(
+                                        f"Loaded connector: {name} from {connector_entry}"
+                                    )
+                else:
+                    # This is just a connector name, try to import from connectors module
+                    connector_module_path = self.path / "connectors"
+
+                    if connector_module_path.exists():
+                        # Import the module
+                        module_name = f"{self.manifest.name}.connectors"
+                        spec = importlib.util.spec_from_file_location(
+                            module_name, connector_module_path / "__init__.py"
+                        )
+
+                        if spec and spec.loader:
+                            module = importlib.util.module_from_spec(spec)
+                            spec.loader.exec_module(module)
+
+                            # Try to get the connector class
+                            if hasattr(module, connector_entry):
+                                self.connectors[connector_entry] = getattr(module, connector_entry)
+                                logger.info(f"Loaded connector: {connector_entry}")
+
+            except Exception as e:
+                logger.error(f"Failed to load connector {connector_entry}: {e}")
 
     def _load_pipelines(self):
         """Load pipeline definitions"""
@@ -468,6 +535,10 @@ class LoadedPack:
     def get_agent(self, agent_name: str) -> Optional[Any]:
         """Get an agent class by name"""
         return self.agents.get(agent_name)
+
+    def get_connector(self, connector_name: str) -> Optional[Any]:
+        """Get a connector class by name"""
+        return self.connectors.get(connector_name)
 
     def get_pipeline(self, pipeline_name: str) -> Optional[Dict]:
         """Get a pipeline definition by name"""

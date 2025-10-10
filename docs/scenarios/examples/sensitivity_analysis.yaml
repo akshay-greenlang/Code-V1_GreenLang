@@ -1,0 +1,62 @@
+# GreenLang Scenario Example: Sensitivity Analysis
+# Multiple stochastic parameters for comprehensive uncertainty quantification
+
+schema_version: "1.0.0"
+name: "building_sensitivity_analysis"
+description: "Multi-parameter sensitivity analysis with correlated uncertainties"
+seed: 987654321
+mode: "replay"
+
+parameters:
+  # Building characteristics (deterministic sweep)
+  - id: "building_type"
+    type: "sweep"
+    values: ["office", "retail", "warehouse"]
+
+  # Stochastic weather parameters
+  - id: "ambient_temperature_c"
+    type: "distribution"
+    distribution:
+      kind: "normal"
+      mean: 22.0
+      std: 5.0
+
+  # Stochastic economic parameters
+  - id: "electricity_price_usd_per_kwh"
+    type: "distribution"
+    distribution:
+      kind: "triangular"
+      low: 0.08
+      mode: 0.12
+      high: 0.22
+
+  - id: "gas_price_usd_per_therm"
+    type: "distribution"
+    distribution:
+      kind: "lognormal"
+      mean: 1.2
+      sigma: 0.3
+
+  # Stochastic efficiency degradation
+  - id: "efficiency_degradation_factor"
+    type: "distribution"
+    distribution:
+      kind: "uniform"
+      low: 0.85
+      high: 1.0
+
+monte_carlo:
+  trials: 5000
+  seed_strategy: "derive-by-path"
+
+metadata:
+  owner: "squad-sim-ml"
+  tags: ["buildings", "sensitivity", "uncertainty", "monte-carlo"]
+  description: |
+    Comprehensive sensitivity analysis with 4 stochastic parameters
+    across 3 building types.
+
+    Total simulations: 3 buildings × 5000 trials = 15,000 samples
+
+    Use this scenario to identify which parameters drive the most
+    variance in output metrics (Sobol indices, correlation analysis).

@@ -131,6 +131,115 @@ class ProvenanceContext:
         return ledger_path
 
 
+def record_seed_info(
+    ctx: ProvenanceContext,
+    spec: dict,
+    seed_root: int,
+    seed_path: str = "",
+    seed_child: Optional[int] = None,
+    spec_type: str = "scenario"
+) -> dict:
+    """
+    Record seed information for deterministic replay.
+
+    Integrates with existing GreenLang provenance system to track
+    RNG seeds, spec hashes, and seed derivation paths for reproducibility.
+
+    Args:
+        ctx: Provenance context (from executor or SDK)
+        spec: Scenario/pipeline/agent specification dict
+        seed_root: Root seed value (0 to 2^64-1)
+        seed_path: Hierarchical path (e.g., "scenario:foo|param:bar|trial:42")
+        seed_child: Derived child seed (optional)
+        spec_type: Type of spec ("scenario", "pipeline", "agent")
+
+    Returns:
+        Dictionary of recorded seed info
+
+    Example:
+        >>> from greenlang.provenance.utils import ProvenanceContext, record_seed_info
+        >>> ctx = ProvenanceContext("my_scenario")
+        >>> spec = {"name": "baseline_sweep", "parameters": [...]}
+        >>> seed_info = record_seed_info(
+        ...     ctx=ctx,
+        ...     spec=spec,
+        ...     seed_root=42,
+        ...     seed_path="scenario:baseline_sweep|param:temperature|trial:0",
+        ...     seed_child=123456789
+        ... )
+        >>> print(seed_info["spec_hash"][:16])
+        'a1b2c3d4e5f67890'
+    """
+    from .ledger import stable_hash
+
+    # Calculate spec hash using existing infrastructure
+    spec_hash = stable_hash(spec)
+
+    # Build seed info structure
+    seed_info = {
+        f"spec_hash_{spec_type}": spec_hash,
+        "seed_root": seed_root,
+        "seed_path": seed_path or "root",
+        "seed_child": seed_child,
+        "spec_type": spec_type,
+        "recorded_at": datetime.utcnow().isoformat()
+    }
+
+    # Store in context metadata (extends existing pattern)
+    if not hasattr(ctx, "metadata"):
+        ctx.metadata = {}
+
+    ctx.metadata.setdefault("seed_tracking", {})
+    ctx.metadata["seed_tracking"].update(seed_info)
+
+    # Also add as artifact for discoverability
+    seed_path_safe = seed_path.replace(":", "_").replace("|", "_") if seed_path else "root"
+    ctx.add_artifact(
+        name=f"seed_info_{seed_path_safe}",
+        path=Path(".greenlang") / "seed_info.json",
+        artifact_type="seed_metadata",
+        metadata=seed_info
+    )
+
+    logger.info(
+        f"Recorded seed info: spec_hash={spec_hash[:8]}..., "
+        f"root={seed_root}, path={seed_path}, child={seed_child}"
+    )
+
+    return seed_info
+
+
+def derive_child_seed(parent_seed: int, seed_path: str) -> int:
+    """
+    Derive a child seed from parent seed and hierarchical path.
+
+    Uses deterministic hashing to ensure reproducibility.
+    This is a convenience wrapper around GLRNG's derivation logic.
+
+    Args:
+        parent_seed: Parent seed value (0 to 2^64-1)
+        seed_path: Hierarchical path (e.g., "param:temperature|trial:0")
+
+    Returns:
+        Derived child seed (64-bit unsigned integer)
+
+    Example:
+        >>> child = derive_child_seed(42, "scenario:foo|param:bar")
+        >>> child  # Deterministic output
+        12345678901234567
+    """
+    import hashlib
+
+    # Create deterministic derivation (matches GLRNG implementation)
+    seed_string = f"{parent_seed}:{seed_path}"
+    hash_bytes = hashlib.sha256(seed_string.encode()).digest()
+
+    # Convert first 8 bytes to 64-bit integer
+    child_seed = int.from_bytes(hash_bytes[:8], byteorder='little', signed=False)
+
+    return child_seed
+
+
 def verify_artifact_chain(artifact_path: Path) -> Tuple[bool, List[str]]:
     """
     Verify complete artifact chain (SBOM, signatures, hashes)

@@ -1,0 +1,41 @@
+# GreenLang Scenario Example: Monte Carlo Simulation
+# This example demonstrates Monte Carlo sampling with stochastic parameters
+
+schema_version: "1.0.0"
+name: "building_decarb_baseline"
+description: "Baseline + retrofit sweep with MC on price sensitivity"
+seed: 123456789
+mode: "replay"
+
+parameters:
+  # Deterministic sweep parameters
+  - id: "retrofit_level"
+    type: "sweep"
+    values: ["none", "light", "deep"]
+
+  - id: "chiller_cop"
+    type: "sweep"
+    values: [3.2, 3.6, 4.0]
+
+  # Stochastic parameters (sampled per trial)
+  - id: "electricity_price_usd_per_kwh"
+    type: "distribution"
+    distribution:
+      kind: "triangular"
+      low: 0.08
+      mode: 0.12
+      high: 0.22
+
+monte_carlo:
+  trials: 2000
+  seed_strategy: "derive-by-path"
+
+metadata:
+  owner: "squad-sim-ml"
+  tags: ["buildings", "retrofit", "pricing", "monte-carlo"]
+  description: |
+    Combined grid sweep (3 × 3 = 9 combinations) with Monte Carlo sampling
+    (2000 trials per combination). Total: 18,000 simulations.
+
+    Tests sensitivity to electricity price uncertainty while exploring
+    retrofit and efficiency parameter space.

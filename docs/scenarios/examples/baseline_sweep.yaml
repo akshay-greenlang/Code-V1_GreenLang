@@ -1,0 +1,24 @@
+# GreenLang Scenario Example: Baseline Parameter Sweep
+# This example demonstrates a simple grid sweep without stochastic parameters
+
+schema_version: "1.0.0"
+name: "building_baseline_sweep"
+description: "Baseline sweep of retrofit levels and chiller COP values"
+seed: 42
+mode: "replay"
+
+parameters:
+  - id: "retrofit_level"
+    type: "sweep"
+    values: ["none", "light", "deep"]
+
+  - id: "chiller_cop"
+    type: "sweep"
+    values: [3.2, 3.6, 4.0, 4.4]
+
+metadata:
+  owner: "squad-sim-ml"
+  tags: ["buildings", "retrofit", "baseline"]
+  description: |
+    Grid sweep across retrofit levels and chiller COP values.
+    Total combinations: 3 retrofit levels × 4 COP values = 12 scenarios

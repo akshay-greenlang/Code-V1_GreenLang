@@ -416,3 +416,26 @@ class Validator(ABC, Generic[TInput]):
     def __call__(self, data: TInput) -> bool:
         """Make validator callable"""
         return self.validate(data).success
+
+
+# ==============================================================================
+# Connector Re-export (Backward Compatibility)
+# ==============================================================================
+#
+# NOTE: The Connector class has been enhanced and moved to greenlang/connectors/base.py
+#
+# The SDK version (lines 216-283 above) is kept for backward compatibility but is
+# now deprecated. New code should import from greenlang.connectors:
+#
+#   from greenlang.connectors import Connector  # New (enhanced)
+#
+# The enhanced version provides:
+# - Async-first interface (fetch vs read)
+# - Generic type parameters
+# - Capabilities declaration
+# - Snapshot/restore for deterministic replay
+# - Provenance tracking
+#
+# To maintain compatibility, both versions are available. The original SDK version
+# will be removed in a future release.
+# ==============================================================================

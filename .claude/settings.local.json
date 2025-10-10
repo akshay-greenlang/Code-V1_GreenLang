@@ -332,7 +332,8 @@
       "Bash(../../test-v030-local/Scripts/python.exe -m pytest tests/ -v --tb=short)",
       "Bash(../../test-v030-local/Scripts/python.exe -m pytest tests/test_agent.py::TestTestBoilerGolden::test_example_input -v)",
       "Bash(.gl.bat init --help)",
-      "Bash(bandit:*)"
+      "Bash(bandit:*)",
+      "Bash(if not exist scripts mkdir scripts)"
     ],
     "deny": []
   }
