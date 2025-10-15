@@ -1,0 +1,1519 @@
+# GreenLang Agent Specification v2.0
+# Agent #10: MaintenanceOptimizationAgent_AI
+# Specialized agent for predictive maintenance optimization, FMEA analysis, and maintenance scheduling
+
+agent_metadata:
+  agent_id: "industrial/maintenance_optimization_agent"
+  agent_name: "MaintenanceOptimizationAgent_AI"
+  agent_number: 10
+  version: "1.0.0"
+  domain: "Domain1_Industrial"
+  category: "Industrial_Process"
+  complexity: "Medium"
+  priority: "P2_Medium"
+  base_agent: "None"
+  status: "Spec_Complete"
+  entry_point: false  # Specialized agent for maintenance optimization
+
+description:
+  purpose: |
+    Specialized agent for optimizing industrial maintenance strategies through predictive
+    maintenance, failure mode and effects analysis (FMEA), maintenance scheduling optimization,
+    spare parts inventory management, and condition monitoring technology assessment.
+    Implements Reliability Centered Maintenance (RCM) principles to achieve 30-50% maintenance
+    cost reduction and 10-15% uptime improvement while reducing energy waste from poor maintenance.
+
+  strategic_context:
+    global_impact: "Poor maintenance wastes 3-8% of industrial energy through degraded equipment performance"
+    opportunity: "Predictive maintenance reduces costs 30-50% vs reactive, improves uptime 10-15%"
+    market_size: "$60B global industrial maintenance market (predictive maintenance growing 30% CAGR)"
+    technology_maturity: "Mature RCM methodology, rapidly advancing IoT sensors and ML-based condition monitoring"
+
+  key_capabilities:
+    - "Failure Mode and Effects Analysis (FMEA/FMECA) for critical equipment"
+    - "Maintenance schedule optimization using Reliability Centered Maintenance (RCM)"
+    - "Spare parts inventory optimization (EOQ, safety stock calculations)"
+    - "Downtime cost quantification (direct costs + opportunity costs)"
+    - "Condition monitoring technology assessment and ROI analysis"
+    - "Integration with CMMS/EAM systems (SAP PM, IBM Maximo, Infor EAM)"
+    - "Energy-efficient maintenance practices (bearing lubrication, belt alignment, motor testing)"
+    - "Predictive analytics for failure prediction and remaining useful life (RUL)"
+
+  dependencies:
+    - agent_id: "industrial/process_heat_agent"
+      relationship: "coordinates_with"
+      data: "Thermal system maintenance requirements"
+
+    - agent_id: "industrial/boiler_replacement_agent"
+      relationship: "coordinates_with"
+      data: "Boiler maintenance vs replacement decisions"
+
+    - agent_id: "industrial/cogeneration_chp_agent"
+      relationship: "coordinates_with"
+      data: "CHP maintenance scheduling and overhaul planning"
+
+    - agent_id: "agents/data_acquisition_agent_ai"
+      relationship: "receives_data_from"
+      data: "Equipment condition monitoring data"
+
+    - agent_id: "agents/anomaly_agent_iforest"
+      relationship: "receives_data_from"
+      data: "Anomaly detection for predictive maintenance"
+
+tools:
+  tool_count: 5
+
+  tools_list:
+    - tool_id: "tool_1"
+      name: "analyze_failure_modes"
+      description: "Perform FMEA (Failure Mode and Effects Analysis) for critical equipment"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          equipment_type:
+            type: "string"
+            description: "Type of equipment"
+            enum: ["pump", "motor", "compressor", "heat_exchanger", "boiler", "turbine", "bearing", "gearbox", "valve", "fan", "conveyor"]
+            required: true
+
+          equipment_criticality:
+            type: "string"
+            description: "Equipment criticality rating"
+            enum: ["critical_no_redundancy", "critical_with_backup", "important_affects_production", "routine_minimal_impact"]
+            required: true
+
+          operating_hours_per_year:
+            type: "number"
+            units: "hours/year"
+            required: true
+
+          current_maintenance_strategy:
+            type: "string"
+            enum: ["reactive_breakdown", "preventive_time_based", "predictive_condition_based", "proactive_rcm"]
+            required: true
+
+          historical_failure_data:
+            type: "object"
+            description: "Failure history for Weibull analysis"
+            properties:
+              failure_count:
+                type: "number"
+                description: "Number of failures in observation period"
+              observation_period_years:
+                type: "number"
+              mean_time_between_failures_hours:
+                type: "number"
+                units: "hours"
+              mean_time_to_repair_hours:
+                type: "number"
+                units: "hours"
+            required: true
+
+          operating_environment:
+            type: "string"
+            description: "Operating conditions"
+            enum: ["benign_indoor_controlled", "normal_indoor", "harsh_outdoor", "extreme_corrosive_high_temp"]
+            required: true
+
+          current_pm_interval_hours:
+            type: "number"
+            description: "Current preventive maintenance interval"
+            units: "hours"
+            default: 0
+
+        required: ["equipment_type", "equipment_criticality", "operating_hours_per_year", "current_maintenance_strategy", "historical_failure_data", "operating_environment"]
+
+      returns:
+        type: "object"
+        properties:
+          failure_modes:
+            type: "array"
+            description: "Identified failure modes"
+            items:
+              type: "object"
+              properties:
+                failure_mode:
+                  type: "string"
+                failure_cause:
+                  type: "string"
+                failure_effect:
+                  type: "string"
+                severity:
+                  type: "number"
+                  description: "1-10 scale (10 = catastrophic)"
+                occurrence:
+                  type: "number"
+                  description: "1-10 scale (10 = very high probability)"
+                detection:
+                  type: "number"
+                  description: "1-10 scale (10 = cannot detect)"
+                risk_priority_number:
+                  type: "number"
+                  description: "RPN = Severity × Occurrence × Detection"
+
+          criticality_ranking:
+            type: "array"
+            description: "Failure modes ranked by RPN"
+            items:
+              type: "object"
+
+          recommended_maintenance_strategy:
+            type: "string"
+            enum: ["run_to_failure", "time_based_pm", "condition_based_pm", "predictive_maintenance", "redesign_required"]
+
+          recommended_pm_interval_hours:
+            type: "number"
+            units: "hours"
+
+          recommended_condition_monitoring:
+            type: "array"
+            description: "Condition monitoring technologies recommended"
+            items:
+              type: "string"
+
+          reliability_metrics:
+            type: "object"
+            properties:
+              current_availability_percent:
+                type: "number"
+                description: "MTBF / (MTBF + MTTR)"
+              target_availability_percent:
+                type: "number"
+              weibull_beta:
+                type: "number"
+                description: "Shape parameter (β<1: infant mortality, β=1: random, β>1: wear-out)"
+              weibull_eta:
+                type: "number"
+                description: "Characteristic life"
+                units: "hours"
+
+          cost_benefit_analysis:
+            type: "object"
+            properties:
+              current_maintenance_cost_annual_usd:
+                type: "number"
+              recommended_maintenance_cost_annual_usd:
+                type: "number"
+              annual_savings_usd:
+                type: "number"
+
+      implementation:
+        calculation_method: |
+          FMEA Process:
+
+          1. Risk Priority Number (RPN):
+             RPN = Severity (1-10) × Occurrence (1-10) × Detection (1-10)
+             RPN range: 1-1000
+             High priority: RPN > 100
+             Critical: RPN > 200
+
+          2. Weibull Reliability Analysis:
+             F(t) = 1 - exp(-(t/η)^β)
+             Where:
+               F(t) = probability of failure by time t
+               η = characteristic life (63.2% failure point)
+               β = shape parameter
+                 β < 1: infant mortality (early failures)
+                 β = 1: random failures (exponential distribution)
+                 β > 1: wear-out failures (increasing failure rate)
+
+          3. Availability Calculation:
+             A = MTBF / (MTBF + MTTR)
+             MTBF = Mean Time Between Failures
+             MTTR = Mean Time To Repair
+
+          4. Maintenance Strategy Selection:
+             - RPN < 40: Run to failure (if non-critical)
+             - RPN 40-100: Time-based PM
+             - RPN 100-200: Condition-based PM
+             - RPN > 200: Predictive maintenance + redundancy
+
+          5. PM Interval Optimization:
+             Optimal_Interval = η × (Cp / (Cf - Cp))^(1/β)
+             Where:
+               Cp = cost of planned maintenance
+               Cf = cost of failure (breakdown)
+        data_source: "Equipment failure logs, maintenance records, OEM recommendations, industry standards"
+        accuracy: "RPN accuracy depends on historical data quality; PM interval optimization ±15%"
+        validation: "Review with maintenance team and equipment specialists"
+        standards: ["SAE_JA1011_RCM", "SAE_JA1012_RCM_Guide", "ISO_14224_Reliability_Data", "MIL-STD-1629_FMEA"]
+
+      example:
+        input:
+          equipment_type: "pump"
+          equipment_criticality: "critical_with_backup"
+          operating_hours_per_year: 8760
+          current_maintenance_strategy: "preventive_time_based"
+          historical_failure_data:
+            failure_count: 8
+            observation_period_years: 3
+            mean_time_between_failures_hours: 3285
+            mean_time_to_repair_hours: 12
+          operating_environment: "normal_indoor"
+          current_pm_interval_hours: 2000
+        output:
+          failure_modes:
+            - failure_mode: "Bearing failure"
+              failure_cause: "Inadequate lubrication, contamination"
+              failure_effect: "Pump seizure, production halt"
+              severity: 8
+              occurrence: 6
+              detection: 5
+              risk_priority_number: 240
+            - failure_mode: "Seal leakage"
+              failure_cause: "Wear, misalignment"
+              failure_effect: "Fluid leakage, reduced efficiency"
+              severity: 5
+              occurrence: 7
+              detection: 3
+              risk_priority_number: 105
+            - failure_mode: "Impeller damage"
+              failure_cause: "Cavitation, erosion"
+              failure_effect: "Reduced flow, efficiency loss"
+              severity: 6
+              occurrence: 4
+              detection: 6
+              risk_priority_number: 144
+          criticality_ranking:
+            - failure_mode: "Bearing failure"
+              risk_priority_number: 240
+            - failure_mode: "Impeller damage"
+              risk_priority_number: 144
+            - failure_mode: "Seal leakage"
+              risk_priority_number: 105
+          recommended_maintenance_strategy: "predictive_maintenance"
+          recommended_pm_interval_hours: 2500
+          recommended_condition_monitoring: ["Vibration analysis (monthly)", "Oil analysis (quarterly)", "Thermography (quarterly)", "Ultrasonic leak detection (monthly)"]
+          reliability_metrics:
+            current_availability_percent: 99.64
+            target_availability_percent: 99.85
+            weibull_beta: 2.3
+            weibull_eta: 3800
+          cost_benefit_analysis:
+            current_maintenance_cost_annual_usd: 45000
+            recommended_maintenance_cost_annual_usd: 32000
+            annual_savings_usd: 13000
+
+    - tool_id: "tool_2"
+      name: "optimize_maintenance_schedule"
+      description: "Optimize maintenance scheduling using RCM principles with resource and production constraints"
+      category: "optimization"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          equipment_list:
+            type: "array"
+            description: "List of equipment requiring maintenance"
+            items:
+              type: "object"
+              properties:
+                equipment_id:
+                  type: "string"
+                equipment_type:
+                  type: "string"
+                criticality:
+                  type: "string"
+                recommended_pm_interval_hours:
+                  type: "number"
+                hours_since_last_pm:
+                  type: "number"
+                pm_duration_hours:
+                  type: "number"
+                pm_cost_usd:
+                  type: "number"
+                failure_cost_usd:
+                  type: "number"
+                can_run_during_production:
+                  type: "boolean"
+            required: true
+
+          resource_constraints:
+            type: "object"
+            description: "Maintenance resource availability"
+            properties:
+              technicians_available:
+                type: "number"
+              max_concurrent_jobs:
+                type: "number"
+              working_hours_per_day:
+                type: "number"
+              contractor_available:
+                type: "boolean"
+            required: true
+
+          production_schedule:
+            type: "array"
+            description: "Production schedule and planned shutdowns"
+            items:
+              type: "object"
+              properties:
+                period_start:
+                  type: "string"
+                  description: "ISO 8601 datetime"
+                period_end:
+                  type: "string"
+                production_status:
+                  type: "string"
+                  enum: ["full_production", "reduced_production", "scheduled_shutdown", "maintenance_window"]
+                available_for_maintenance:
+                  type: "boolean"
+
+          optimization_objective:
+            type: "string"
+            enum: ["minimize_cost", "maximize_reliability", "minimize_production_impact", "balanced"]
+            default: "balanced"
+
+          planning_horizon_days:
+            type: "number"
+            description: "Planning horizon"
+            default: 90
+            minimum: 30
+            maximum: 365
+
+        required: ["equipment_list", "resource_constraints"]
+
+      returns:
+        type: "object"
+        properties:
+          optimized_schedule:
+            type: "array"
+            description: "Optimized maintenance schedule"
+            items:
+              type: "object"
+              properties:
+                equipment_id:
+                  type: "string"
+                scheduled_date:
+                  type: "string"
+                duration_hours:
+                  type: "number"
+                assigned_resources:
+                  type: "array"
+                  items:
+                    type: "string"
+                scheduling_rationale:
+                  type: "string"
+                criticality_score:
+                  type: "number"
+
+          resource_utilization:
+            type: "object"
+            properties:
+              average_utilization_percent:
+                type: "number"
+              peak_utilization_percent:
+                type: "number"
+              underutilized_periods:
+                type: "array"
+
+          production_impact:
+            type: "object"
+            properties:
+              total_production_downtime_hours:
+                type: "number"
+              production_loss_usd:
+                type: "number"
+              maintenance_performed_during_production_percent:
+                type: "number"
+
+          cost_analysis:
+            type: "object"
+            properties:
+              total_planned_maintenance_cost_usd:
+                type: "number"
+              avoided_breakdown_cost_usd:
+                type: "number"
+              net_savings_usd:
+                type: "number"
+
+          risk_analysis:
+            type: "object"
+            properties:
+              equipment_at_risk_count:
+                type: "number"
+                description: "Equipment overdue or nearly overdue"
+              highest_risk_equipment:
+                type: "array"
+              recommended_accelerated_maintenance:
+                type: "array"
+
+          schedule_compliance_metrics:
+            type: "object"
+            properties:
+              on_time_percentage:
+                type: "number"
+              resource_conflicts:
+                type: "number"
+              production_conflicts:
+                type: "number"
+
+      implementation:
+        calculation_method: |
+          Maintenance Scheduling Optimization:
+
+          1. Priority Scoring:
+             Priority = (Criticality_Weight × Equipment_Criticality) +
+                        (Age_Weight × (Hours_Since_PM / PM_Interval)) +
+                        (Cost_Weight × (Failure_Cost / PM_Cost))
+
+          2. Constraint Satisfaction:
+             - Resource capacity: Σ(concurrent jobs) ≤ Max_Resources
+             - Production windows: Schedule PM during available windows
+             - Dependencies: Respect equipment dependencies
+
+          3. Optimization Objective Functions:
+             a) Minimize Cost:
+                Min Σ(PM_Cost + Expected_Failure_Cost)
+
+             b) Maximize Reliability:
+                Max Π(Availability_i) for all equipment
+
+             c) Minimize Production Impact:
+                Min Σ(Production_Loss_Hours)
+
+             d) Balanced:
+                Multi-objective optimization with weights
+
+          4. Scheduling Algorithm:
+             - Sort equipment by priority score
+             - Assign to earliest available window satisfying constraints
+             - Use integer programming for complex scenarios
+
+          5. Risk Assessment:
+             Risk = P(failure) × Consequence
+             Where P(failure) increases as (Hours_Since_PM / PM_Interval) increases
+        data_source: "Equipment records, CMMS data, production schedules, resource availability"
+        accuracy: "Schedule optimization within ±10% of optimal (depends on constraints)"
+        validation: "Review with production planning and maintenance teams"
+        standards: ["ISO_55000_Asset_Management", "SAE_JA1011_RCM", "SMRP_Best_Practices"]
+
+      example:
+        input:
+          equipment_list:
+            - equipment_id: "PUMP-001"
+              equipment_type: "pump"
+              criticality: "critical_with_backup"
+              recommended_pm_interval_hours: 2500
+              hours_since_last_pm: 2400
+              pm_duration_hours: 8
+              pm_cost_usd: 3500
+              failure_cost_usd: 75000
+              can_run_during_production: false
+            - equipment_id: "MOTOR-002"
+              equipment_type: "motor"
+              criticality: "important_affects_production"
+              recommended_pm_interval_hours: 4000
+              hours_since_last_pm: 3200
+              pm_duration_hours: 4
+              pm_cost_usd: 1500
+              failure_cost_usd: 35000
+              can_run_during_production: true
+          resource_constraints:
+            technicians_available: 3
+            max_concurrent_jobs: 2
+            working_hours_per_day: 16
+            contractor_available: true
+          optimization_objective: "balanced"
+          planning_horizon_days: 90
+        output:
+          optimized_schedule:
+            - equipment_id: "PUMP-001"
+              scheduled_date: "2025-11-05"
+              duration_hours: 8
+              assigned_resources: ["Tech-1", "Tech-2"]
+              scheduling_rationale: "High priority: 96% of PM interval elapsed, critical equipment"
+              criticality_score: 9.2
+            - equipment_id: "MOTOR-002"
+              scheduled_date: "2025-11-12"
+              duration_hours: 4
+              assigned_resources: ["Tech-3"]
+              scheduling_rationale: "Moderate priority: 80% of PM interval, can maintain during production"
+              criticality_score: 6.5
+          resource_utilization:
+            average_utilization_percent: 67
+            peak_utilization_percent: 100
+            underutilized_periods: ["Week of 2025-11-20", "Week of 2025-12-04"]
+          production_impact:
+            total_production_downtime_hours: 8
+            production_loss_usd: 12000
+            maintenance_performed_during_production_percent: 33
+          cost_analysis:
+            total_planned_maintenance_cost_usd: 5000
+            avoided_breakdown_cost_usd: 110000
+            net_savings_usd: 105000
+          risk_analysis:
+            equipment_at_risk_count: 1
+            highest_risk_equipment: ["PUMP-001: 96% of PM interval"]
+            recommended_accelerated_maintenance: ["PUMP-001: Schedule within 2 weeks"]
+          schedule_compliance_metrics:
+            on_time_percentage: 100
+            resource_conflicts: 0
+            production_conflicts: 0
+
+    - tool_id: "tool_3"
+      name: "calculate_spare_parts"
+      description: "Optimize spare parts inventory using EOQ and safety stock calculations"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          part_description:
+            type: "string"
+            required: true
+
+          annual_demand_quantity:
+            type: "number"
+            description: "Expected annual usage"
+            required: true
+
+          unit_cost_usd:
+            type: "number"
+            units: "USD/unit"
+            required: true
+
+          ordering_cost_usd:
+            type: "number"
+            description: "Cost per purchase order"
+            units: "USD/order"
+            required: true
+
+          holding_cost_percent:
+            type: "number"
+            description: "Annual holding cost as % of inventory value"
+            units: "%"
+            default: 25
+
+          lead_time_days:
+            type: "number"
+            description: "Supplier lead time"
+            units: "days"
+            required: true
+
+          lead_time_variability_days:
+            type: "number"
+            description: "Standard deviation of lead time"
+            units: "days"
+            default: 0
+
+          demand_variability:
+            type: "number"
+            description: "Coefficient of variation of demand (std dev / mean)"
+            default: 0.3
+
+          service_level_target:
+            type: "number"
+            description: "Target service level (probability of not stocking out)"
+            minimum: 0.85
+            maximum: 0.99
+            default: 0.95
+
+          equipment_criticality:
+            type: "string"
+            enum: ["critical_no_substitute", "critical_with_alternative", "important", "routine"]
+            required: true
+
+          stockout_cost_usd:
+            type: "number"
+            description: "Cost of not having part when needed (downtime, expediting)"
+            units: "USD"
+            required: true
+
+          shelf_life_months:
+            type: "number"
+            description: "Part shelf life (0 = unlimited)"
+            default: 0
+
+        required: ["part_description", "annual_demand_quantity", "unit_cost_usd", "ordering_cost_usd", "lead_time_days", "equipment_criticality", "stockout_cost_usd"]
+
+      returns:
+        type: "object"
+        properties:
+          economic_order_quantity:
+            type: "number"
+            description: "Optimal order quantity"
+            units: "units"
+
+          reorder_point:
+            type: "number"
+            description: "Inventory level to trigger reorder"
+            units: "units"
+
+          safety_stock:
+            type: "number"
+            description: "Buffer inventory for variability"
+            units: "units"
+
+          maximum_inventory:
+            type: "number"
+            units: "units"
+
+          average_inventory:
+            type: "number"
+            units: "units"
+
+          orders_per_year:
+            type: "number"
+
+          total_annual_cost:
+            type: "object"
+            properties:
+              ordering_cost_usd:
+                type: "number"
+              holding_cost_usd:
+                type: "number"
+              stockout_cost_usd:
+                type: "number"
+              total_cost_usd:
+                type: "number"
+
+          service_level_achieved:
+            type: "number"
+            description: "Probability of meeting demand from stock"
+
+          inventory_turnover_ratio:
+            type: "number"
+            description: "Annual demand / Average inventory"
+
+          recommendations:
+            type: "array"
+            items:
+              type: "string"
+
+      implementation:
+        calculation_method: |
+          Spare Parts Inventory Optimization:
+
+          1. Economic Order Quantity (EOQ):
+             EOQ = √((2 × D × S) / H)
+             Where:
+               D = annual demand
+               S = ordering cost per order
+               H = holding cost per unit per year = unit_cost × holding_percent
+
+          2. Safety Stock:
+             SS = z × σ_LTD
+             Where:
+               z = z-score for service level (e.g., 1.645 for 95%)
+               σ_LTD = standard deviation of demand during lead time
+               σ_LTD = √(LT × σ_D² + D_avg² × σ_LT²)
+
+          3. Reorder Point:
+             ROP = D_avg × LT + SS
+             Where:
+               D_avg = average daily demand
+               LT = lead time (days)
+               SS = safety stock
+
+          4. Total Annual Cost:
+             TC = (D/Q) × S + (Q/2) × H + SS × H + Expected_Stockout_Cost
+             Where Q = order quantity
+
+          5. Criticality Adjustments:
+             - Critical equipment: Increase service level to 99%, consider 2× safety stock
+             - Routine equipment: Accept lower service level (90-95%)
+             - High stockout cost: Increase safety stock
+
+          6. Shelf Life Consideration:
+             If shelf_life < (EOQ / D) × 365, reduce EOQ to match shelf life
+        data_source: "Historical usage data, lead time records, supplier data, downtime costs"
+        accuracy: "±10% for cost optimization (depends on demand/lead time variability)"
+        validation: "Monitor actual stockouts and adjust parameters"
+        standards: ["ISO_55000_Asset_Management", "APICS_Inventory_Management"]
+
+      example:
+        input:
+          part_description: "Critical pump bearing assembly"
+          annual_demand_quantity: 12
+          unit_cost_usd: 2500
+          ordering_cost_usd: 150
+          holding_cost_percent: 25
+          lead_time_days: 30
+          lead_time_variability_days: 7
+          demand_variability: 0.35
+          service_level_target: 0.95
+          equipment_criticality: "critical_with_alternative"
+          stockout_cost_usd: 50000
+          shelf_life_months: 0
+        output:
+          economic_order_quantity: 3.8
+          reorder_point: 2.7
+          safety_stock: 1.7
+          maximum_inventory: 5.5
+          average_inventory: 3.6
+          orders_per_year: 3.2
+          total_annual_cost:
+            ordering_cost_usd: 480
+            holding_cost_usd: 2250
+            stockout_cost_usd: 2500
+            total_cost_usd: 5230
+          service_level_achieved: 0.95
+          inventory_turnover_ratio: 3.3
+          recommendations: ["Round EOQ to 4 units for practical ordering", "Consider vendor-managed inventory (VMI) program", "Safety stock protects against lead time variability", "Review demand forecast quarterly"]
+
+    - tool_id: "tool_4"
+      name: "estimate_downtime_cost"
+      description: "Calculate comprehensive cost of equipment downtime including direct and opportunity costs"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          equipment_type:
+            type: "string"
+            required: true
+
+          equipment_criticality:
+            type: "string"
+            enum: ["critical_stops_production", "important_reduces_capacity", "routine_minimal_impact"]
+            required: true
+
+          failure_duration_hours:
+            type: "number"
+            description: "Expected downtime for failure"
+            units: "hours"
+            required: true
+
+          production_rate_units_per_hour:
+            type: "number"
+            required: true
+
+          product_value_usd_per_unit:
+            type: "number"
+            units: "USD/unit"
+            required: true
+
+          product_margin_percent:
+            type: "number"
+            description: "Gross margin %"
+            units: "%"
+            required: true
+
+          labor_cost_during_downtime_usd_per_hour:
+            type: "number"
+            units: "USD/hour"
+            required: true
+
+          repair_labor_cost_usd:
+            type: "number"
+            description: "Cost to repair failure"
+            units: "USD"
+            required: true
+
+          repair_parts_cost_usd:
+            type: "number"
+            units: "USD"
+            required: true
+
+          has_backup_equipment:
+            type: "boolean"
+            default: false
+
+          backup_capacity_percent:
+            type: "number"
+            description: "Backup capacity as % of primary"
+            units: "%"
+            default: 0
+
+          startup_recovery_hours:
+            type: "number"
+            description: "Time to return to full production after repair"
+            units: "hours"
+            default: 2
+
+          customer_penalty_usd:
+            type: "number"
+            description: "Late delivery penalties or expedited shipping"
+            units: "USD"
+            default: 0
+
+          reputation_impact:
+            type: "string"
+            enum: ["none", "minor", "moderate", "severe"]
+            default: "none"
+
+        required: ["equipment_type", "equipment_criticality", "failure_duration_hours", "production_rate_units_per_hour", "product_value_usd_per_unit", "product_margin_percent", "labor_cost_during_downtime_usd_per_hour", "repair_labor_cost_usd", "repair_parts_cost_usd"]
+
+      returns:
+        type: "object"
+        properties:
+          direct_costs:
+            type: "object"
+            properties:
+              repair_labor_usd:
+                type: "number"
+              repair_parts_usd:
+                type: "number"
+              idle_labor_usd:
+                type: "number"
+              total_direct_costs_usd:
+                type: "number"
+
+          opportunity_costs:
+            type: "object"
+            properties:
+              lost_production_units:
+                type: "number"
+              lost_revenue_usd:
+                type: "number"
+              lost_profit_usd:
+                type: "number"
+              customer_penalties_usd:
+                type: "number"
+              total_opportunity_costs_usd:
+                type: "number"
+
+          total_downtime_cost_usd:
+            type: "number"
+            description: "Direct + Opportunity costs"
+
+          cost_per_hour_downtime_usd:
+            type: "number"
+            units: "USD/hour"
+
+          annualized_risk:
+            type: "object"
+            properties:
+              expected_failures_per_year:
+                type: "number"
+              annual_downtime_hours:
+                type: "number"
+              annual_downtime_cost_usd:
+                type: "number"
+
+          maintenance_strategy_breakeven:
+            type: "object"
+            properties:
+              max_affordable_pm_cost_usd:
+                type: "number"
+                description: "Annual PM budget justified by avoiding downtime"
+              condition_monitoring_roi_threshold_usd:
+                type: "number"
+
+          recommendations:
+            type: "array"
+            items:
+              type: "string"
+
+      implementation:
+        calculation_method: |
+          Total Cost of Downtime:
+
+          1. Direct Costs:
+             - Repair labor: Labor_Hours × Labor_Rate
+             - Repair parts: Parts_Cost
+             - Idle labor: Downtime_Hours × Idle_Workers × Wage_Rate
+
+          2. Opportunity Costs:
+             - Lost production: Downtime_Hours × Production_Rate
+             - Lost revenue: Lost_Production × Product_Value
+             - Lost profit: Lost_Revenue × Margin%
+             - Customer penalties: Contractual_Penalties + Expediting_Costs
+
+          3. Backup Equipment Impact:
+             If backup available:
+               Lost_Production × (1 - Backup_Capacity%)
+             Else:
+               Lost_Production × 100%
+
+          4. Startup/Recovery Costs:
+             Additional losses during ramp-up to full production
+
+          5. Intangible Costs:
+             - Reputation damage: Moderate = 10-20% of opportunity cost
+             - Customer relationship impact
+             - Market share risk
+
+          6. Annualized Risk:
+             Annual_Cost = Downtime_Cost × Expected_Failures_per_Year
+        data_source: "Production records, financial data, maintenance logs, customer contract terms"
+        accuracy: "±15% for direct costs, ±30% for opportunity costs (depends on assumptions)"
+        validation: "Review with production, finance, and sales teams"
+        standards: ["ISO_55000_Asset_Management", "TCO_Total_Cost_Ownership"]
+
+      example:
+        input:
+          equipment_type: "Critical production line pump"
+          equipment_criticality: "critical_stops_production"
+          failure_duration_hours: 8
+          production_rate_units_per_hour: 500
+          product_value_usd_per_unit: 25
+          product_margin_percent: 35
+          labor_cost_during_downtime_usd_per_hour: 800
+          repair_labor_cost_usd: 2500
+          repair_parts_cost_usd: 5000
+          has_backup_equipment: false
+          startup_recovery_hours: 2
+          customer_penalty_usd: 10000
+          reputation_impact: "moderate"
+        output:
+          direct_costs:
+            repair_labor_usd: 2500
+            repair_parts_usd: 5000
+            idle_labor_usd: 6400
+            total_direct_costs_usd: 13900
+          opportunity_costs:
+            lost_production_units: 4000
+            lost_revenue_usd: 100000
+            lost_profit_usd: 35000
+            customer_penalties_usd: 10000
+            total_opportunity_costs_usd: 45000
+          total_downtime_cost_usd: 58900
+          cost_per_hour_downtime_usd: 7363
+          annualized_risk:
+            expected_failures_per_year: 2.5
+            annual_downtime_hours: 20
+            annual_downtime_cost_usd: 147250
+          maintenance_strategy_breakeven:
+            max_affordable_pm_cost_usd: 140000
+            condition_monitoring_roi_threshold_usd: 50000
+          recommendations: ["High downtime cost ($7,363/hr) justifies predictive maintenance investment", "Consider redundant pump installation (payback < 1 year)", "Implement vibration monitoring and oil analysis", "Stock critical spare parts (bearing, seals) to reduce MTTR"]
+
+    - tool_id: "tool_5"
+      name: "assess_condition_monitoring"
+      description: "Evaluate condition monitoring technologies and calculate ROI for implementation"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          equipment_type:
+            type: "string"
+            enum: ["rotating_equipment", "electrical_equipment", "static_equipment", "process_equipment"]
+            required: true
+
+          equipment_criticality:
+            type: "string"
+            enum: ["critical", "important", "routine"]
+            required: true
+
+          failure_modes_of_concern:
+            type: "array"
+            description: "Primary failure modes to monitor"
+            items:
+              type: "string"
+              enum: ["bearing_failure", "misalignment", "unbalance", "looseness", "electrical_fault", "insulation_degradation", "corrosion", "erosion", "leakage", "overheating", "cavitation"]
+            required: true
+
+          current_maintenance_cost_annual_usd:
+            type: "number"
+            units: "USD/year"
+            required: true
+
+          annual_downtime_cost_usd:
+            type: "number"
+            description: "Current annual cost of unplanned downtime"
+            units: "USD/year"
+            required: true
+
+          equipment_count:
+            type: "number"
+            description: "Number of similar equipment units"
+            default: 1
+
+          budget_available_usd:
+            type: "number"
+            description: "Available budget for condition monitoring"
+            units: "USD"
+            required: true
+
+          monitoring_frequency_desired:
+            type: "string"
+            enum: ["continuous_online", "periodic_weekly", "periodic_monthly", "periodic_quarterly"]
+            required: true
+
+          technical_capability:
+            type: "string"
+            description: "In-house technical expertise"
+            enum: ["high_inhouse_experts", "moderate_some_training", "low_contractor_needed"]
+            required: true
+
+        required: ["equipment_type", "equipment_criticality", "failure_modes_of_concern", "current_maintenance_cost_annual_usd", "annual_downtime_cost_usd", "budget_available_usd", "monitoring_frequency_desired", "technical_capability"]
+
+      returns:
+        type: "object"
+        properties:
+          recommended_technologies:
+            type: "array"
+            description: "Ranked list of condition monitoring technologies"
+            items:
+              type: "object"
+              properties:
+                technology:
+                  type: "string"
+                  enum: ["vibration_analysis", "oil_analysis", "thermography", "ultrasound", "motor_current_analysis", "partial_discharge", "acoustic_emission", "online_monitoring_system"]
+                applicability_score:
+                  type: "number"
+                  description: "0-10 score for this application"
+                failure_modes_detected:
+                  type: "array"
+                  items:
+                    type: "string"
+                implementation_cost_usd:
+                  type: "number"
+                annual_operating_cost_usd:
+                  type: "number"
+                lead_time_months:
+                  type: "number"
+                training_required:
+                  type: "string"
+
+          roi_analysis:
+            type: "object"
+            properties:
+              technology:
+                type: "string"
+              total_implementation_cost_usd:
+                type: "number"
+              annual_operating_cost_usd:
+                type: "number"
+              expected_downtime_reduction_percent:
+                type: "number"
+              expected_maintenance_cost_reduction_percent:
+                type: "number"
+              annual_savings_usd:
+                type: "number"
+              simple_payback_years:
+                type: "number"
+              3yr_npv_usd:
+                type: "number"
+              roi_percent:
+                type: "number"
+
+          implementation_plan:
+            type: "object"
+            properties:
+              phase_1_pilot:
+                type: "string"
+              phase_2_rollout:
+                type: "string"
+              phase_3_optimization:
+                type: "string"
+              total_timeline_months:
+                type: "number"
+
+          vendor_recommendations:
+            type: "array"
+            description: "Recommended vendors/solutions"
+            items:
+              type: "string"
+
+          success_metrics:
+            type: "array"
+            description: "KPIs to track implementation success"
+            items:
+              type: "string"
+
+      implementation:
+        calculation_method: |
+          Condition Monitoring Technology Assessment:
+
+          1. Technology Applicability Matrix:
+             For each failure mode, score technologies 0-10 based on:
+             - Detection capability
+             - Advance warning time
+             - Accuracy/reliability
+             - Cost-effectiveness
+
+          2. Cost-Benefit Analysis:
+             Benefits:
+             - Reduced unplanned downtime (typically 30-50% reduction)
+             - Reduced maintenance costs (15-30% reduction)
+             - Extended equipment life (10-20% improvement)
+             - Energy savings from better equipment condition (2-5%)
+
+             Costs:
+             - Hardware/software purchase
+             - Installation and commissioning
+             - Training
+             - Annual operating costs (data analysis, calibration)
+
+          3. ROI Calculation:
+             Annual_Savings = (Downtime_Reduction × Downtime_Cost) +
+                              (Maint_Reduction × Maint_Cost) +
+                              Energy_Savings
+             ROI = (Annual_Savings - Annual_Operating_Cost) / Implementation_Cost
+             Payback = Implementation_Cost / Net_Annual_Savings
+
+          4. Technology Selection Criteria:
+             - Criticality: Critical equipment → Online monitoring
+             - Budget: High ROI technologies first
+             - Expertise: Match complexity to technical capability
+             - Integration: Compatibility with existing systems (CMMS, SCADA)
+        data_source: "Equipment failure history, vendor specifications, industry case studies, condition monitoring standards"
+        accuracy: "ROI estimates ±25% (actual results depend on implementation quality)"
+        validation: "Pilot program on representative equipment before full rollout"
+        standards: ["ISO_17359_Condition_Monitoring", "ISO_13373_Vibration_Analysis", "ASTM_E1316_NDT_Terminology", "IEEE_43_Electrical_Testing"]
+
+      example:
+        input:
+          equipment_type: "rotating_equipment"
+          equipment_criticality: "critical"
+          failure_modes_of_concern: ["bearing_failure", "misalignment", "unbalance"]
+          current_maintenance_cost_annual_usd: 85000
+          annual_downtime_cost_usd: 250000
+          equipment_count: 5
+          budget_available_usd: 150000
+          monitoring_frequency_desired: "periodic_monthly"
+          technical_capability: "moderate_some_training"
+        output:
+          recommended_technologies:
+            - technology: "vibration_analysis"
+              applicability_score: 9.5
+              failure_modes_detected: ["bearing_failure", "misalignment", "unbalance", "looseness"]
+              implementation_cost_usd: 45000
+              annual_operating_cost_usd: 18000
+              lead_time_months: 2
+              training_required: "2-week vibration analysis certification"
+            - technology: "oil_analysis"
+              applicability_score: 8.0
+              failure_modes_detected: ["bearing_failure", "contamination", "lubricant_degradation"]
+              implementation_cost_usd: 8000
+              annual_operating_cost_usd: 6000
+              lead_time_months: 1
+              training_required: "1-day sampling procedures training"
+            - technology: "thermography"
+              applicability_score: 7.0
+              failure_modes_detected: ["overheating", "electrical_fault", "insulation_issues"]
+              implementation_cost_usd: 25000
+              annual_operating_cost_usd: 5000
+              lead_time_months: 1
+              training_required: "1-week thermography certification"
+          roi_analysis:
+            technology: "vibration_analysis"
+            total_implementation_cost_usd: 45000
+            annual_operating_cost_usd: 18000
+            expected_downtime_reduction_percent: 40
+            expected_maintenance_cost_reduction_percent: 20
+            annual_savings_usd: 117000
+            simple_payback_years: 0.45
+            3yr_npv_usd: 252000
+            roi_percent: 220
+          implementation_plan:
+            phase_1_pilot: "Months 1-3: Implement vibration monitoring on 2 most critical pumps, establish baselines"
+            phase_2_rollout: "Months 4-6: Expand to remaining 3 pumps, integrate with CMMS"
+            phase_3_optimization: "Months 7-12: Optimize monitoring routes, train operators, refine alarm thresholds"
+            total_timeline_months: 12
+          vendor_recommendations: ["SKF IMx-8 vibration analyzer", "Emerson AMS Machinery Manager", "Fluke 810 Vibration Tester"]
+          success_metrics: ["Reduce unplanned downtime by 40%", "Detect 90% of bearing failures 30+ days in advance", "Achieve 95% schedule compliance for condition-based maintenance", "ROI > 200% by year 2"]
+
+ai_integration:
+  temperature: 0.0
+  seed: 42
+  tool_choice: "auto"
+  max_iterations: 5
+  budget_usd: 0.15
+  provenance_tracking: true
+  ai_summary: true
+
+  system_prompt: |
+    You are an industrial maintenance optimization expert specializing in predictive
+    maintenance, Reliability Centered Maintenance (RCM), and condition monitoring for GreenLang.
+    You help facilities reduce maintenance costs by 30-50%, improve uptime by 10-15%, and
+    eliminate energy waste from poorly maintained equipment.
+
+    Your expertise includes:
+    - Failure Mode and Effects Analysis (FMEA/FMECA)
+    - Reliability Centered Maintenance (RCM) methodology
+    - Predictive maintenance and condition monitoring technologies
+    - Maintenance scheduling optimization with production constraints
+    - Spare parts inventory optimization (EOQ, safety stock)
+    - Total Cost of Ownership (TCO) and downtime cost analysis
+    - Integration with CMMS/EAM systems (SAP PM, Maximo, Infor)
+
+    CRITICAL RULES:
+    - Use provided tools for ALL calculations
+    - NEVER estimate or guess numbers
+    - Always explain maintenance strategies clearly
+    - Prioritize safety and reliability
+    - Follow RCM and ISO 55000 asset management principles
+    - Consider energy efficiency impacts of maintenance
+    - Provide data-driven recommendations with clear ROI
+    - Recommend pilot programs before full implementation
+
+  user_prompt_template: |
+    Analyze maintenance optimization opportunity for industrial facility:
+
+    Equipment Profile:
+    - Equipment Type: {equipment_type}
+    - Criticality: {equipment_criticality}
+    - Operating Hours: {operating_hours_per_year} hours/year
+    - Equipment Count: {equipment_count}
+
+    Current Maintenance:
+    - Strategy: {current_maintenance_strategy}
+    - Annual Cost: ${current_maintenance_cost_annual_usd}/year
+    - MTBF: {mean_time_between_failures_hours} hours
+    - MTTR: {mean_time_to_repair_hours} hours
+
+    Performance Issues:
+    - Annual Downtime Cost: ${annual_downtime_cost_usd}/year
+    - Failure Rate: {failure_count} failures in {observation_period_years} years
+    - Production Impact: {production_loss_description}
+
+    Objectives:
+    - Reduce maintenance costs
+    - Improve equipment reliability and uptime
+    - Implement predictive maintenance
+    - Optimize spare parts inventory
+    - Reduce energy waste from poor maintenance
+
+    Budget:
+    - Available: ${budget_available_usd}
+
+    Tasks:
+    1. Use analyze_failure_modes to perform FMEA and identify critical failure modes
+    2. Use optimize_maintenance_schedule to create optimal maintenance plan
+    3. Use calculate_spare_parts to optimize inventory for critical parts
+    4. Use estimate_downtime_cost to quantify business impact
+    5. Use assess_condition_monitoring to evaluate predictive maintenance technologies
+    6. Provide comprehensive analysis with:
+       - FMEA results with RPN-ranked failure modes
+       - Optimized maintenance schedule with resource allocation
+       - Recommended spare parts inventory levels
+       - Total downtime cost analysis
+       - Condition monitoring ROI and implementation plan
+       - Total savings and payback period
+       - Energy efficiency improvements from better maintenance
+
+    IMPORTANT:
+    - Use tools for ALL calculations
+    - Follow RCM principles for maintenance strategy selection
+    - Consider production constraints in scheduling
+    - Quantify energy savings from improved equipment condition
+    - Provide phased implementation roadmap
+    - Format numbers with proper units
+    - Include success metrics and KPIs
+
+sub_agents:
+  sub_agent_count: 0
+  note: "Coordinates with AnomalyAgent for failure prediction, coordinates with equipment-specific agents for maintenance requirements"
+
+inputs:
+  input_schema:
+    type: "object"
+    properties:
+      equipment_type:
+        type: "string"
+        required: true
+
+      equipment_criticality:
+        type: "string"
+        required: true
+
+      operating_hours_per_year:
+        type: "number"
+        required: true
+
+      current_maintenance_strategy:
+        type: "string"
+        required: true
+
+      current_maintenance_cost_annual_usd:
+        type: "number"
+        required: true
+
+      annual_downtime_cost_usd:
+        type: "number"
+        required: true
+
+      mean_time_between_failures_hours:
+        type: "number"
+        required: true
+
+      budget_available_usd:
+        type: "number"
+        required: true
+
+    required: ["equipment_type", "equipment_criticality", "operating_hours_per_year", "current_maintenance_strategy", "current_maintenance_cost_annual_usd", "annual_downtime_cost_usd", "mean_time_between_failures_hours", "budget_available_usd"]
+
+  example_input:
+    equipment_type: "pump"
+    equipment_criticality: "critical_with_backup"
+    operating_hours_per_year: 8760
+    current_maintenance_strategy: "preventive_time_based"
+    current_maintenance_cost_annual_usd: 85000
+    annual_downtime_cost_usd: 250000
+    mean_time_between_failures_hours: 3285
+    budget_available_usd: 150000
+
+outputs:
+  output_schema:
+    type: "object"
+    properties:
+      recommended_maintenance_strategy:
+        type: "string"
+
+      fmea_top_risks:
+        type: "array"
+
+      optimized_schedule_summary:
+        type: "string"
+
+      spare_parts_recommendations:
+        type: "array"
+
+      total_downtime_cost_usd:
+        type: "number"
+
+      recommended_condition_monitoring:
+        type: "array"
+
+      annual_savings_usd:
+        type: "number"
+
+      simple_payback_years:
+        type: "number"
+
+      energy_efficiency_improvement_percent:
+        type: "number"
+
+      ai_explanation:
+        type: "string"
+
+      provenance:
+        type: "object"
+
+  example_output:
+    recommended_maintenance_strategy: "predictive_maintenance"
+    fmea_top_risks: ["Bearing failure (RPN 240)", "Impeller damage (RPN 144)", "Seal leakage (RPN 105)"]
+    optimized_schedule_summary: "5 equipment units on optimized RCM-based schedule, 67% resource utilization"
+    spare_parts_recommendations: ["Critical bearing: EOQ=4 units, ROP=3 units, Safety stock=2 units"]
+    total_downtime_cost_usd: 58900
+    recommended_condition_monitoring: ["Vibration analysis", "Oil analysis", "Thermography"]
+    annual_savings_usd: 142000
+    simple_payback_years: 0.53
+    energy_efficiency_improvement_percent: 3.5
+    ai_explanation: "Maintenance optimization achieves $142K/year savings (42% cost reduction) through predictive maintenance implementation. FMEA identified bearing failure as highest risk (RPN 240). Recommended vibration monitoring has 0.45-year payback, 220% ROI. Optimized spare parts inventory reduces carrying costs while maintaining 95% service level. Better maintained equipment improves energy efficiency 3.5%. Total implementation cost $150K with 6-month payback."
+    provenance:
+      model: "gpt-4o"
+      tools_used: ["analyze_failure_modes", "optimize_maintenance_schedule", "calculate_spare_parts", "estimate_downtime_cost", "assess_condition_monitoring"]
+      cost_usd: 0.14
+      deterministic: true
+
+testing:
+  test_coverage_target: 0.85
+
+  test_categories:
+    - category: "unit_tests"
+      description: "Test individual tool implementations"
+      count: 25
+
+    - category: "integration_tests"
+      description: "Test AI orchestration"
+      count: 8
+
+    - category: "determinism_tests"
+      description: "Verify reproducibility"
+      count: 3
+
+    - category: "boundary_tests"
+      description: "Test edge cases"
+      count: 6
+
+    - category: "rcm_tests"
+      description: "Validate RCM methodology compliance"
+      count: 4
+
+  performance_requirements:
+    max_latency_ms: 4500
+    max_cost_usd: 0.15
+    accuracy_target: 0.85
+
+deployment:
+  pack_id: "industrial/maintenance_optimization_pack"
+  pack_version: "1.0.0"
+
+  dependencies:
+    python_packages:
+      - "pydantic>=2.0"
+      - "numpy>=1.24"
+      - "scipy>=1.11"
+      - "pandas>=2.0"
+
+    greenlang_modules:
+      - "greenlang.agents.base"
+      - "greenlang.intelligence"
+      - "greenlang.agents.anomaly_agent_iforest"
+
+  resource_requirements:
+    memory_mb: 512
+    cpu_cores: 1
+    gpu_required: false
+
+  api_endpoints:
+    - endpoint: "/api/v1/agents/industrial/maintenance/execute"
+      method: "POST"
+      authentication: "required"
+
+documentation:
+  readme: true
+  api_docs: true
+  examples: true
+  tutorials: true
+
+  example_use_cases:
+    - title: "Critical Pump Predictive Maintenance"
+      description: "FMEA analysis and condition monitoring ROI for critical pumps"
+      output_summary: "$142K/year savings, 0.53-year payback, 220% ROI on vibration monitoring"
+
+    - title: "Maintenance Schedule Optimization"
+      description: "RCM-based schedule optimization with production constraints"
+      output_summary: "67% resource utilization, $105K avoided breakdown costs"
+
+    - title: "Spare Parts Inventory Optimization"
+      description: "EOQ and safety stock optimization for critical components"
+      output_summary: "30% inventory cost reduction while maintaining 95% service level"
+
+compliance:
+  zero_secrets: true
+  sbom_required: true
+  digital_signature: true
+
+  standards:
+    - "SAE_JA1011_RCM"
+    - "SAE_JA1012_RCM_Guide"
+    - "ISO_55000_Asset_Management"
+    - "ISO_14224_Reliability_Data"
+    - "ISO_17359_Condition_Monitoring"
+    - "MIL-STD-1629_FMEA"
+
+business_impact:
+  market_opportunity:
+    addressable_market_usd: 60000000000
+    market_segment: "Industrial facilities with critical production equipment"
+    target_customers: "Manufacturing, chemical, oil & gas, power generation, mining"
+
+  carbon_impact:
+    addressable_emissions_gt_co2e: 0.5
+    realistic_reduction_2030_gt: 0.025
+    note: "Poor maintenance wastes 3-8% energy; optimization saves 2-4% of industrial energy"
+
+  economic_value:
+    typical_savings_range: "30-50% maintenance cost reduction, 10-15% uptime improvement"
+    typical_payback_years: "0.5-2 years"
+    irr_range: "50-200%"
+
+metadata:
+  created_date: "2025-10-13"
+  created_by: "Head of AI & Climate Intelligence"
+  last_modified: "2025-10-13"
+  review_status: "Approved"
+  reviewers: ["AI Lead", "Reliability Engineer"]
+
+  change_log:
+    - version: "1.0.0"
+      date: "2025-10-13"
+      changes: "Initial specification - production ready for Agent Factory generation"
+      author: "Chief AI & Climate Intelligence"
+
+# END OF AGENT #10 SPECIFICATION
+# Production Ready for Agent Factory Generation

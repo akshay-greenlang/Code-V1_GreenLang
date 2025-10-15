@@ -1,0 +1,31 @@
+================================================================================
+Validation Report: agent_002_boiler_replacement.yaml
+================================================================================
+Status: ✅ PASS
+Errors: 0
+Warnings: 6
+Info: 0
+--------------------------------------------------------------------------------
+
+🟡 WARNINGS:
+⚠️  WARNING: [tools.tools_list[1]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[4]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[5]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[6]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[7]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [ai_integration] system_prompt
+   system_prompt should emphasize: use tools, never guess, deterministic
+
+
+✨ All validation checks passed!
+================================================================================

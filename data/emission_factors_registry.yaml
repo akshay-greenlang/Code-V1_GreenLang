@@ -1,0 +1,953 @@
+# Emission Factors Registry with URIs for Provenance and Audit Compliance
+# All factors include source URIs for data traceability
+# Designed for 84+ agents across GreenLang ecosystem
+# Last Updated: 2025-01-15
+
+metadata:
+  version: "1.0.0"
+  last_updated: "2025-01-15"
+  standards:
+    - "GHG Protocol Corporate Standard"
+    - "ISO 14064-1:2018"
+    - "IPCC 2021 Guidelines"
+    - "EPA GHG Reporting Program"
+  units: "kg CO2e per unit unless otherwise specified"
+  gwp_basis: "IPCC AR6 GWP100 (2021)"
+  notes: "All URIs verified as of last_updated date"
+
+# ====================
+# FUELS - Scope 1 Emissions
+# ====================
+fuels:
+  natural_gas:
+    name: "Natural Gas (Pipeline)"
+    emission_factor_kg_co2e_per_kwh: 0.202
+    emission_factor_kg_co2e_per_m3: 1.89
+    emission_factor_kg_co2e_per_mmbtu: 53.06
+    emission_factor_kg_co2e_per_therm: 5.30
+    emission_factor_kg_co2e_per_scf: 0.0535
+    scope: "Scope 1"
+    source: "EPA Emission Factors for Greenhouse Gas Inventories"
+    uri: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    standard: "GHG Protocol"
+    last_updated: "2024-11-01"
+    data_quality: "Tier 1 - National Average"
+    uncertainty: "+/- 5%"
+    geographic_scope: "United States"
+
+  lng_liquefied_natural_gas:
+    name: "Liquefied Natural Gas (LNG)"
+    emission_factor_kg_co2e_per_m3: 2.16
+    emission_factor_kg_co2e_per_kg: 2.90
+    emission_factor_kg_co2e_per_mmbtu: 56.10
+    scope: "Scope 1"
+    source: "IPCC 2021 Guidelines for National GHG Inventories"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/index.html"
+    standard: "IPCC Guidelines"
+    last_updated: "2024-09-15"
+    data_quality: "Tier 2 - Technology Specific"
+    uncertainty: "+/- 7%"
+    notes: "Includes upstream methane leakage factor"
+
+  coal_bituminous:
+    name: "Coal - Bituminous"
+    emission_factor_kg_co2e_per_kg: 2.40
+    emission_factor_kg_co2e_per_ton: 2400.0
+    emission_factor_kg_co2e_per_mmbtu: 93.28
+    emission_factor_kg_co2e_per_gj: 88.4
+    scope: "Scope 1"
+    source: "EPA 40 CFR Part 98 Table C-1"
+    uri: "https://www.ecfr.gov/current/title-40/chapter-I/subchapter-C/part-98"
+    standard: "EPA GHG Reporting Program"
+    last_updated: "2024-10-01"
+    data_quality: "Tier 1 - National Average"
+    uncertainty: "+/- 8%"
+    hcv_mj_per_kg: 29.3
+
+  coal_subbituminous:
+    name: "Coal - Sub-bituminous"
+    emission_factor_kg_co2e_per_kg: 1.92
+    emission_factor_kg_co2e_per_ton: 1920.0
+    emission_factor_kg_co2e_per_mmbtu: 97.09
+    scope: "Scope 1"
+    source: "EPA 40 CFR Part 98"
+    uri: "https://www.ecfr.gov/current/title-40/chapter-I/subchapter-C/part-98"
+    standard: "EPA GHG Reporting Program"
+    last_updated: "2024-10-01"
+    data_quality: "Tier 1"
+
+  coal_anthracite:
+    name: "Coal - Anthracite"
+    emission_factor_kg_co2e_per_kg: 2.52
+    emission_factor_kg_co2e_per_ton: 2520.0
+    emission_factor_kg_co2e_per_mmbtu: 103.69
+    scope: "Scope 1"
+    source: "EPA 40 CFR Part 98"
+    uri: "https://www.ecfr.gov/current/title-40/chapter-I/subchapter-C/part-98"
+    standard: "EPA GHG Reporting Program"
+    last_updated: "2024-10-01"
+
+  diesel:
+    name: "Diesel Fuel"
+    emission_factor_kg_co2e_per_liter: 2.68
+    emission_factor_kg_co2e_per_gallon: 10.21
+    emission_factor_kg_co2e_per_kg: 3.16
+    emission_factor_kg_co2e_per_mmbtu: 73.96
+    scope: "Scope 1"
+    source: "EPA GHG Emission Factors Hub"
+    uri: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    standard: "GHG Protocol"
+    last_updated: "2024-11-01"
+    data_quality: "Tier 1"
+    uncertainty: "+/- 4%"
+    density_kg_per_liter: 0.85
+
+  gasoline_motor:
+    name: "Motor Gasoline"
+    emission_factor_kg_co2e_per_liter: 2.31
+    emission_factor_kg_co2e_per_gallon: 8.78
+    emission_factor_kg_co2e_per_kg: 3.06
+    emission_factor_kg_co2e_per_mmbtu: 70.22
+    scope: "Scope 1"
+    source: "EPA GHG Emission Factors Hub"
+    uri: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    standard: "GHG Protocol"
+    last_updated: "2024-11-01"
+    data_quality: "Tier 1"
+
+  propane_lpg:
+    name: "Propane / Liquefied Petroleum Gas (LPG)"
+    emission_factor_kg_co2e_per_liter: 1.51
+    emission_factor_kg_co2e_per_gallon: 5.76
+    emission_factor_kg_co2e_per_kg: 2.98
+    emission_factor_kg_co2e_per_mmbtu: 61.71
+    scope: "Scope 1"
+    source: "EPA GHG Emission Factors Hub"
+    uri: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    standard: "GHG Protocol"
+    last_updated: "2024-11-01"
+
+  fuel_oil_no2:
+    name: "Fuel Oil No. 2 / Heating Oil"
+    emission_factor_kg_co2e_per_liter: 2.68
+    emission_factor_kg_co2e_per_gallon: 10.16
+    emission_factor_kg_co2e_per_kg: 3.16
+    emission_factor_kg_co2e_per_mmbtu: 73.96
+    scope: "Scope 1"
+    source: "EPA GHG Emission Factors Hub"
+    uri: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    standard: "GHG Protocol"
+    last_updated: "2024-11-01"
+
+  fuel_oil_no4:
+    name: "Fuel Oil No. 4 (Residual)"
+    emission_factor_kg_co2e_per_liter: 2.93
+    emission_factor_kg_co2e_per_gallon: 11.10
+    emission_factor_kg_co2e_per_kg: 3.19
+    emission_factor_kg_co2e_per_mmbtu: 75.10
+    scope: "Scope 1"
+    source: "EPA 40 CFR Part 98"
+    uri: "https://www.ecfr.gov/current/title-40/chapter-I/subchapter-C/part-98"
+    standard: "EPA GHG Reporting Program"
+    last_updated: "2024-10-01"
+
+  fuel_oil_no6:
+    name: "Fuel Oil No. 6 (Bunker C)"
+    emission_factor_kg_co2e_per_liter: 3.12
+    emission_factor_kg_co2e_per_gallon: 11.79
+    emission_factor_kg_co2e_per_kg: 3.22
+    emission_factor_kg_co2e_per_mmbtu: 75.10
+    scope: "Scope 1"
+    source: "EPA 40 CFR Part 98"
+    uri: "https://www.ecfr.gov/current/title-40/chapter-I/subchapter-C/part-98"
+    standard: "EPA GHG Reporting Program"
+    last_updated: "2024-10-01"
+
+  kerosene:
+    name: "Kerosene"
+    emission_factor_kg_co2e_per_liter: 2.54
+    emission_factor_kg_co2e_per_gallon: 9.62
+    emission_factor_kg_co2e_per_kg: 3.13
+    emission_factor_kg_co2e_per_mmbtu: 72.31
+    scope: "Scope 1"
+    source: "EPA GHG Emission Factors Hub"
+    uri: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    standard: "GHG Protocol"
+    last_updated: "2024-11-01"
+
+  jet_fuel:
+    name: "Jet Fuel (Aviation Kerosene)"
+    emission_factor_kg_co2e_per_liter: 2.56
+    emission_factor_kg_co2e_per_gallon: 9.69
+    emission_factor_kg_co2e_per_kg: 3.15
+    emission_factor_kg_co2e_per_mmbtu: 70.88
+    scope: "Scope 1"
+    source: "ICAO Carbon Emissions Calculator"
+    uri: "https://www.icao.int/environmental-protection/CarbonOffset/Pages/default.aspx"
+    standard: "ICAO CORSIA"
+    last_updated: "2024-08-01"
+    notes: "Includes radiative forcing for aviation"
+
+  ethanol_biofuel:
+    name: "Ethanol (E100 Biofuel)"
+    emission_factor_kg_co2e_per_liter: 1.51
+    emission_factor_kg_co2e_per_gallon: 5.71
+    emission_factor_kg_co2e_per_kg: 1.91
+    scope: "Scope 1"
+    source: "IPCC 2021 Guidelines - Bioenergy"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/index.html"
+    standard: "IPCC Guidelines"
+    last_updated: "2024-09-15"
+    notes: "Sugarcane-based, includes lifecycle emissions"
+    lifecycle_emissions_included: true
+
+  biodiesel_b100:
+    name: "Biodiesel (B100)"
+    emission_factor_kg_co2e_per_liter: 1.35
+    emission_factor_kg_co2e_per_gallon: 5.11
+    emission_factor_kg_co2e_per_kg: 1.54
+    scope: "Scope 1"
+    source: "EPA Renewable Fuel Standard"
+    uri: "https://www.epa.gov/renewable-fuel-standard-program"
+    standard: "GHG Protocol"
+    last_updated: "2024-07-15"
+    notes: "Soy-based, includes lifecycle LUC emissions"
+    lifecycle_emissions_included: true
+
+  hydrogen_grey:
+    name: "Hydrogen - Grey (Steam Methane Reforming)"
+    emission_factor_kg_co2e_per_kg: 10.5
+    emission_factor_kg_co2e_per_kwh: 0.315
+    scope: "Scope 1"
+    source: "IEA Hydrogen Report 2024"
+    uri: "https://www.iea.org/reports/global-hydrogen-review-2024"
+    standard: "ISO 14687"
+    last_updated: "2024-06-15"
+
+  hydrogen_blue:
+    name: "Hydrogen - Blue (SMR + CCS)"
+    emission_factor_kg_co2e_per_kg: 3.5
+    emission_factor_kg_co2e_per_kwh: 0.105
+    scope: "Scope 1"
+    source: "IEA Hydrogen Report 2024"
+    uri: "https://www.iea.org/reports/global-hydrogen-review-2024"
+    standard: "ISO 14687"
+    last_updated: "2024-06-15"
+    notes: "Assumes 85% CCS capture rate"
+
+  hydrogen_green:
+    name: "Hydrogen - Green (Renewable Electrolysis)"
+    emission_factor_kg_co2e_per_kg: 0.5
+    emission_factor_kg_co2e_per_kwh: 0.015
+    scope: "Scope 1"
+    source: "IEA Hydrogen Report 2024"
+    uri: "https://www.iea.org/reports/global-hydrogen-review-2024"
+    standard: "ISO 14687"
+    last_updated: "2024-06-15"
+    notes: "100% renewable electricity, includes minor upstream"
+
+# ====================
+# GRIDS - Scope 2 Emissions (Location-Based)
+# ====================
+grids:
+  # United States Regional Grids (eGRID Subregions)
+  US_NATIONAL:
+    name: "United States National Average"
+    emission_factor_kg_co2e_per_kwh: 0.385
+    emission_factor_kg_co2e_per_mwh: 385.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023"
+    uri: "https://www.epa.gov/egrid"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    renewable_share: 0.21
+    data_quality: "Tier 1 - National Average"
+
+  US_WECC_CA:
+    name: "WECC California (CAMX)"
+    emission_factor_kg_co2e_per_kwh: 0.234
+    emission_factor_kg_co2e_per_mwh: 234.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - CAMX Subregion"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    renewable_share: 0.58
+    region: "California"
+
+  US_WECC_NW:
+    name: "WECC Northwest (NWPP)"
+    emission_factor_kg_co2e_per_kwh: 0.306
+    emission_factor_kg_co2e_per_mwh: 306.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - NWPP Subregion"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    renewable_share: 0.49
+    region: "Pacific Northwest"
+
+  US_WECC_SW:
+    name: "WECC Southwest (AZNM)"
+    emission_factor_kg_co2e_per_kwh: 0.422
+    emission_factor_kg_co2e_per_mwh: 422.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - AZNM Subregion"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    region: "Arizona, New Mexico"
+
+  US_ERCOT:
+    name: "Texas ERCOT"
+    emission_factor_kg_co2e_per_kwh: 0.398
+    emission_factor_kg_co2e_per_mwh: 398.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - ERCT Subregion"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    renewable_share: 0.33
+    region: "Texas"
+
+  US_SPP:
+    name: "Southwest Power Pool (SPP)"
+    emission_factor_kg_co2e_per_kwh: 0.564
+    emission_factor_kg_co2e_per_mwh: 564.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - SPNO, SPSO Subregions"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    region: "Plains States"
+
+  US_MISO:
+    name: "Midcontinent ISO (MISO)"
+    emission_factor_kg_co2e_per_kwh: 0.531
+    emission_factor_kg_co2e_per_mwh: 531.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - MROW Subregion"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    region: "Midwest"
+
+  US_PJM:
+    name: "PJM Interconnection"
+    emission_factor_kg_co2e_per_kwh: 0.385
+    emission_factor_kg_co2e_per_mwh: 385.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - RFCE Subregion"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    renewable_share: 0.11
+    region: "Mid-Atlantic, Ohio"
+
+  US_NYISO:
+    name: "New York ISO (NYISO)"
+    emission_factor_kg_co2e_per_kwh: 0.257
+    emission_factor_kg_co2e_per_mwh: 257.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - NYCW, NYLI Subregions"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    renewable_share: 0.31
+    region: "New York State"
+
+  US_ISONE:
+    name: "ISO New England (ISONE)"
+    emission_factor_kg_co2e_per_kwh: 0.289
+    emission_factor_kg_co2e_per_mwh: 289.0
+    scope: "Scope 2 - Location-Based"
+    source: "EPA eGRID 2023 - NEWE Subregion"
+    uri: "https://www.epa.gov/egrid/download-data"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-11-15"
+    year: 2023
+    region: "New England"
+
+  # International Grids
+  UK:
+    name: "United Kingdom National Grid"
+    emission_factor_kg_co2e_per_kwh: 0.212
+    emission_factor_kg_co2e_per_mwh: 212.0
+    scope: "Scope 2 - Location-Based"
+    source: "UK DEFRA 2024 Emission Factors"
+    uri: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-06-15"
+    year: 2024
+    renewable_share: 0.43
+    region: "United Kingdom"
+
+  DE:
+    name: "Germany National Grid"
+    emission_factor_kg_co2e_per_kwh: 0.380
+    emission_factor_kg_co2e_per_mwh: 380.0
+    scope: "Scope 2 - Location-Based"
+    source: "German Environment Agency (UBA) 2024"
+    uri: "https://www.umweltbundesamt.de/en/topics/climate-energy/renewable-energies"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-08-01"
+    year: 2024
+    renewable_share: 0.52
+    region: "Germany"
+
+  FR:
+    name: "France National Grid"
+    emission_factor_kg_co2e_per_kwh: 0.052
+    emission_factor_kg_co2e_per_mwh: 52.0
+    scope: "Scope 2 - Location-Based"
+    source: "RTE (French TSO) 2024"
+    uri: "https://www.rte-france.com/en/eco2mix/co2-emissions"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-07-01"
+    year: 2024
+    renewable_share: 0.28
+    nuclear_share: 0.65
+    region: "France"
+    notes: "Low emissions due to nuclear dominance"
+
+  CN:
+    name: "China National Grid"
+    emission_factor_kg_co2e_per_kwh: 0.554
+    emission_factor_kg_co2e_per_mwh: 554.0
+    scope: "Scope 2 - Location-Based"
+    source: "China Ministry of Ecology and Environment (MEE) 2024"
+    uri: "https://www.mee.gov.cn/ywgz/ydqhbh/wsqtkz/202412/t20241209_1096158.shtml"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-12-09"
+    year: 2023
+    renewable_share: 0.36
+    region: "China National Average"
+
+  IN:
+    name: "India National Grid"
+    emission_factor_kg_co2e_per_kwh: 0.710
+    emission_factor_kg_co2e_per_mwh: 710.0
+    scope: "Scope 2 - Location-Based"
+    source: "India Central Electricity Authority (CEA) 2024"
+    uri: "https://cea.nic.in/baseline-carbon-dioxide-emissions-from-power-sector/?lang=en"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-08-30"
+    year: 2023
+    renewable_share: 0.23
+    region: "India National Average"
+
+  JP:
+    name: "Japan National Grid"
+    emission_factor_kg_co2e_per_kwh: 0.450
+    emission_factor_kg_co2e_per_mwh: 450.0
+    scope: "Scope 2 - Location-Based"
+    source: "Japan Ministry of Economy, Trade and Industry (METI) 2024"
+    uri: "https://www.meti.go.jp/english/policy/energy_environment/global_warming/index.html"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-10-01"
+    year: 2023
+    renewable_share: 0.22
+    region: "Japan"
+
+  BR:
+    name: "Brazil National Grid"
+    emission_factor_kg_co2e_per_kwh: 0.120
+    emission_factor_kg_co2e_per_mwh: 120.0
+    scope: "Scope 2 - Location-Based"
+    source: "Brazil Ministry of Science, Technology and Innovation"
+    uri: "https://www.gov.br/mcti/pt-br/acompanhe-o-mcti/sirene/emissoes/fatores-de-emissao"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-09-01"
+    year: 2023
+    renewable_share: 0.83
+    hydro_share: 0.62
+    region: "Brazil"
+    notes: "Low emissions due to hydro dominance"
+
+  KR:
+    name: "South Korea National Grid"
+    emission_factor_kg_co2e_per_kwh: 0.490
+    emission_factor_kg_co2e_per_mwh: 490.0
+    scope: "Scope 2 - Location-Based"
+    source: "Korea Power Exchange (KPX) 2024"
+    uri: "https://www.kpx.or.kr/eng/contents.do?key=299"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-07-15"
+    year: 2023
+    renewable_share: 0.08
+    region: "South Korea"
+
+  CA:
+    name: "Canada National Average"
+    emission_factor_kg_co2e_per_kwh: 0.130
+    emission_factor_kg_co2e_per_mwh: 130.0
+    scope: "Scope 2 - Location-Based"
+    source: "Environment and Climate Change Canada (ECCC) 2024"
+    uri: "https://www.canada.ca/en/environment-climate-change/services/climate-change/pricing-pollution-how-it-will-work/output-based-pricing-system/federal-greenhouse-gas-offset-system.html"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-06-01"
+    year: 2023
+    renewable_share: 0.68
+    hydro_share: 0.59
+    region: "Canada"
+    notes: "Low emissions due to hydro dominance"
+
+  AU:
+    name: "Australia National Grid (NEM)"
+    emission_factor_kg_co2e_per_kwh: 0.660
+    emission_factor_kg_co2e_per_mwh: 660.0
+    scope: "Scope 2 - Location-Based"
+    source: "Australian Government Department of Climate Change 2024"
+    uri: "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors-2024"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-08-01"
+    year: 2023
+    renewable_share: 0.37
+    region: "Australia (NEM)"
+
+  EU_AVERAGE:
+    name: "European Union Average"
+    emission_factor_kg_co2e_per_kwh: 0.230
+    emission_factor_kg_co2e_per_mwh: 230.0
+    scope: "Scope 2 - Location-Based"
+    source: "European Environment Agency (EEA) 2024"
+    uri: "https://www.eea.europa.eu/data-and-maps/daviz/co2-emission-intensity-13"
+    standard: "GHG Protocol Scope 2 Guidance"
+    last_updated: "2024-09-15"
+    year: 2023
+    renewable_share: 0.44
+    region: "EU-27"
+
+# ====================
+# INDUSTRIAL PROCESSES - Scope 1 & 3 Emissions
+# ====================
+processes:
+  # Thermal Processes
+  pasteurization:
+    name: "Milk Pasteurization (HTST)"
+    typical_temperature_c: 72
+    duration_seconds: 15
+    energy_intensity_kwh_per_kg: 0.080
+    thermal_energy_mj_per_kg: 0.288
+    scope: "Scope 1 or 2 (depending on energy source)"
+    source: "FAO - Energy Use in Dairy Processing"
+    uri: "https://www.fao.org/3/i3396e/i3396e.pdf"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-03-15"
+    process_type: "Thermal Treatment"
+
+  sterilization_uht:
+    name: "Ultra-High Temperature (UHT) Sterilization"
+    typical_temperature_c: 140
+    duration_seconds: 4
+    energy_intensity_kwh_per_kg: 0.120
+    thermal_energy_mj_per_kg: 0.432
+    scope: "Scope 1 or 2"
+    source: "FAO - Energy Use in Dairy Processing"
+    uri: "https://www.fao.org/3/i3396e/i3396e.pdf"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-03-15"
+    process_type: "Thermal Treatment"
+
+  boiling_water:
+    name: "Water Boiling (Industrial)"
+    typical_temperature_c: 100
+    energy_intensity_kwh_per_kg: 0.116
+    thermal_energy_mj_per_kg: 0.418
+    scope: "Scope 1 or 2"
+    source: "IPCC Guidelines - Industrial Processes"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/index.html"
+    standard: "IPCC Guidelines"
+    last_updated: "2024-09-15"
+    process_type: "Thermal Treatment"
+    specific_heat_capacity_kj_per_kg_k: 4.18
+
+  steam_generation:
+    name: "Steam Generation (Industrial Boiler)"
+    typical_temperature_c: 180
+    typical_pressure_bar: 10
+    efficiency_percent: 85
+    energy_input_mj_per_kg_steam: 2.95
+    scope: "Scope 1"
+    source: "US DOE Industrial Technologies Program"
+    uri: "https://www.energy.gov/eere/amo/advanced-manufacturing-office"
+    standard: "ASME PTC 4.1"
+    last_updated: "2024-05-01"
+    process_type: "Steam Generation"
+
+  # Cement and Concrete
+  cement_production:
+    name: "Portland Cement Clinker Production"
+    emission_factor_kg_co2e_per_kg_cement: 0.865
+    emission_factor_kg_co2e_per_ton_cement: 865.0
+    process_emissions_share: 0.60
+    energy_emissions_share: 0.40
+    scope: "Scope 1"
+    source: "IPCC 2021 Guidelines - Cement Production"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/3_Volume3/V3_2_Ch2_Mineral_Industry.pdf"
+    standard: "IPCC Guidelines"
+    last_updated: "2024-09-15"
+    process_type: "Chemical Process"
+    notes: "Includes calcination process emissions"
+
+  concrete_ready_mix:
+    name: "Ready-Mix Concrete (Average)"
+    emission_factor_kg_co2e_per_m3: 350.0
+    emission_factor_kg_co2e_per_kg: 0.150
+    cement_content_kg_per_m3: 350
+    scope: "Scope 3 - Upstream"
+    source: "NRMCA EPD for Concrete"
+    uri: "https://www.nrmca.org/sustainability/epd-program/"
+    standard: "ISO 14025 EPD"
+    last_updated: "2024-04-01"
+    process_type: "Construction Material"
+
+  # Steel and Metals
+  steel_blast_furnace:
+    name: "Steel Production - Blast Furnace (Primary)"
+    emission_factor_kg_co2e_per_kg_steel: 2.30
+    emission_factor_kg_co2e_per_ton_steel: 2300.0
+    scope: "Scope 1"
+    source: "World Steel Association LCA"
+    uri: "https://worldsteel.org/steel-topics/climate-change/steel-and-climate-change/"
+    standard: "ISO 14404-1"
+    last_updated: "2024-06-01"
+    process_type: "Metal Production"
+
+  steel_electric_arc:
+    name: "Steel Production - Electric Arc Furnace (Recycled)"
+    emission_factor_kg_co2e_per_kg_steel: 0.45
+    emission_factor_kg_co2e_per_ton_steel: 450.0
+    scope: "Scope 1 & 2"
+    source: "World Steel Association LCA"
+    uri: "https://worldsteel.org/steel-topics/climate-change/steel-and-climate-change/"
+    standard: "ISO 14404-2"
+    last_updated: "2024-06-01"
+    process_type: "Metal Production"
+    recycled_content_percent: 90
+
+  aluminum_primary:
+    name: "Aluminum Production - Primary Smelting"
+    emission_factor_kg_co2e_per_kg_aluminum: 12.5
+    emission_factor_kg_co2e_per_ton_aluminum: 12500.0
+    scope: "Scope 1 & 2"
+    source: "International Aluminium Institute (IAI) 2024"
+    uri: "https://international-aluminium.org/statistics/greenhouse-gas-emissions-data/"
+    standard: "GHG Protocol"
+    last_updated: "2024-07-01"
+    process_type: "Metal Production"
+
+  aluminum_secondary:
+    name: "Aluminum Production - Secondary (Recycled)"
+    emission_factor_kg_co2e_per_kg_aluminum: 0.60
+    emission_factor_kg_co2e_per_ton_aluminum: 600.0
+    scope: "Scope 1 & 2"
+    source: "International Aluminium Institute (IAI) 2024"
+    uri: "https://international-aluminium.org/statistics/greenhouse-gas-emissions-data/"
+    standard: "GHG Protocol"
+    last_updated: "2024-07-01"
+    process_type: "Metal Production"
+    recycled_content_percent: 95
+
+  # Refrigeration and HVAC
+  refrigeration_r134a_leakage:
+    name: "Refrigeration - HFC-134a Leakage"
+    emission_factor_kg_co2e_per_kg_refrigerant: 1430.0
+    typical_annual_leakage_rate_percent: 15
+    scope: "Scope 1"
+    source: "IPCC AR6 GWP Values"
+    uri: "https://www.ipcc.ch/report/ar6/wg1/"
+    standard: "IPCC AR6"
+    last_updated: "2024-09-15"
+    process_type: "Fugitive Emissions"
+    gwp_100_year: 1430
+
+  refrigeration_r410a_leakage:
+    name: "Refrigeration - R-410A Leakage"
+    emission_factor_kg_co2e_per_kg_refrigerant: 2088.0
+    typical_annual_leakage_rate_percent: 10
+    scope: "Scope 1"
+    source: "IPCC AR6 GWP Values"
+    uri: "https://www.ipcc.ch/report/ar6/wg1/"
+    standard: "IPCC AR6"
+    last_updated: "2024-09-15"
+    process_type: "Fugitive Emissions"
+    gwp_100_year: 2088
+
+  # Transportation
+  freight_truck_diesel:
+    name: "Freight Truck - Diesel (Heavy-Duty)"
+    emission_factor_kg_co2e_per_ton_km: 0.062
+    emission_factor_kg_co2e_per_km_per_ton: 0.062
+    fuel_economy_liters_per_100km: 32.0
+    scope: "Scope 3 - Transportation"
+    source: "EPA SmartWay Transport Partnership"
+    uri: "https://www.epa.gov/smartway/smartway-transport-partnership"
+    standard: "GHG Protocol Scope 3"
+    last_updated: "2024-08-01"
+    process_type: "Transportation"
+
+  ocean_freight_container:
+    name: "Ocean Freight - Container Ship"
+    emission_factor_kg_co2e_per_ton_km: 0.011
+    emission_factor_kg_co2e_per_teu_km: 0.015
+    scope: "Scope 3 - Transportation"
+    source: "International Maritime Organization (IMO) 2024"
+    uri: "https://www.imo.org/en/OurWork/Environment/Pages/Fourth-IMO-Greenhouse-Gas-Study-2020.aspx"
+    standard: "IMO GHG Protocol"
+    last_updated: "2024-05-15"
+    process_type: "Transportation"
+
+  air_freight:
+    name: "Air Freight - Long Haul"
+    emission_factor_kg_co2e_per_ton_km: 0.602
+    scope: "Scope 3 - Transportation"
+    source: "ICAO Carbon Emissions Calculator"
+    uri: "https://www.icao.int/environmental-protection/CarbonOffset/Pages/default.aspx"
+    standard: "ICAO CORSIA"
+    last_updated: "2024-08-01"
+    process_type: "Transportation"
+    notes: "Includes radiative forcing index"
+
+  # Waste Treatment
+  landfill_organic_waste:
+    name: "Landfill - Organic Waste Decomposition"
+    emission_factor_kg_co2e_per_kg_waste: 0.47
+    methane_generation_potential_m3_per_kg: 0.17
+    scope: "Scope 3 - Waste"
+    source: "IPCC 2021 Guidelines - Waste"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/5_Volume5/V5_3_Ch3_SWDS.pdf"
+    standard: "IPCC Guidelines"
+    last_updated: "2024-09-15"
+    process_type: "Waste Treatment"
+
+  wastewater_treatment:
+    name: "Wastewater Treatment - Aerobic"
+    emission_factor_kg_co2e_per_m3: 0.75
+    emission_factor_kg_co2e_per_kg_bod: 0.89
+    scope: "Scope 3 - Waste"
+    source: "IPCC 2021 Guidelines - Waste"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/5_Volume5/V5_6_Ch6_Wastewater.pdf"
+    standard: "IPCC Guidelines"
+    last_updated: "2024-09-15"
+    process_type: "Waste Treatment"
+
+  # Agriculture
+  fertilizer_nitrogen:
+    name: "Nitrogen Fertilizer Application"
+    emission_factor_kg_co2e_per_kg_n: 5.90
+    n2o_direct_emission_factor: 0.01
+    n2o_indirect_emission_factor: 0.0075
+    scope: "Scope 3 - Agriculture"
+    source: "IPCC 2021 Guidelines - Agriculture"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/4_Volume4/V4_11_Ch11_N2O&CO2.pdf"
+    standard: "IPCC Guidelines"
+    last_updated: "2024-09-15"
+    process_type: "Agriculture"
+
+  enteric_fermentation_cattle:
+    name: "Enteric Fermentation - Dairy Cattle"
+    emission_factor_kg_co2e_per_head_per_year: 2128.0
+    methane_emission_kg_per_head_per_year: 85.0
+    scope: "Scope 3 - Agriculture"
+    source: "IPCC 2021 Guidelines - Agriculture"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/4_Volume4/V4_10_Ch10_Livestock.pdf"
+    standard: "IPCC Guidelines"
+    last_updated: "2024-09-15"
+    process_type: "Agriculture"
+    gwp_methane: 25.0
+
+# ====================
+# DISTRICT ENERGY
+# ====================
+district_energy:
+  district_heating_us:
+    name: "District Heating - US Average"
+    emission_factor_kg_co2e_per_kwh: 0.450
+    emission_factor_kg_co2e_per_mj: 0.125
+    scope: "Scope 2"
+    source: "EPA GHG Emission Factors Hub"
+    uri: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+    standard: "GHG Protocol"
+    last_updated: "2024-11-01"
+
+  district_heating_eu:
+    name: "District Heating - EU Average"
+    emission_factor_kg_co2e_per_kwh: 0.280
+    emission_factor_kg_co2e_per_mj: 0.078
+    emission_factor_kg_co2e_per_gj: 78.0
+    scope: "Scope 2"
+    source: "European Environment Agency (EEA)"
+    uri: "https://www.eea.europa.eu/data-and-maps"
+    standard: "GHG Protocol"
+    last_updated: "2024-09-15"
+
+  district_cooling:
+    name: "District Cooling - Average"
+    emission_factor_kg_co2e_per_kwh: 0.050
+    emission_factor_kg_co2e_per_ton_hour: 0.175
+    scope: "Scope 2"
+    source: "International District Energy Association (IDEA)"
+    uri: "https://www.districtenergy.org/"
+    standard: "GHG Protocol"
+    last_updated: "2024-06-01"
+
+# ====================
+# RENEWABLE ENERGY GENERATION
+# ====================
+renewable_generation:
+  solar_pv:
+    name: "Solar Photovoltaic (Lifecycle)"
+    emission_factor_kg_co2e_per_kwh: 0.041
+    lifecycle_emissions_g_co2e_per_kwh: 41.0
+    scope: "Scope 3 - Upstream"
+    source: "IPCC Special Report on Renewable Energy (SRREN)"
+    uri: "https://www.ipcc.ch/report/renewable-energy-sources-and-climate-change-mitigation/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-03-15"
+    notes: "Includes manufacturing, installation, O&M, decommissioning"
+    lifecycle_included: true
+
+  wind_onshore:
+    name: "Wind Power - Onshore (Lifecycle)"
+    emission_factor_kg_co2e_per_kwh: 0.011
+    lifecycle_emissions_g_co2e_per_kwh: 11.0
+    scope: "Scope 3 - Upstream"
+    source: "IPCC SRREN"
+    uri: "https://www.ipcc.ch/report/renewable-energy-sources-and-climate-change-mitigation/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-03-15"
+    lifecycle_included: true
+
+  wind_offshore:
+    name: "Wind Power - Offshore (Lifecycle)"
+    emission_factor_kg_co2e_per_kwh: 0.012
+    lifecycle_emissions_g_co2e_per_kwh: 12.0
+    scope: "Scope 3 - Upstream"
+    source: "IPCC SRREN"
+    uri: "https://www.ipcc.ch/report/renewable-energy-sources-and-climate-change-mitigation/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-03-15"
+    lifecycle_included: true
+
+  hydro_reservoir:
+    name: "Hydropower - Reservoir (Lifecycle)"
+    emission_factor_kg_co2e_per_kwh: 0.024
+    lifecycle_emissions_g_co2e_per_kwh: 24.0
+    scope: "Scope 3 - Upstream"
+    source: "IPCC SRREN"
+    uri: "https://www.ipcc.ch/report/renewable-energy-sources-and-climate-change-mitigation/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-03-15"
+    lifecycle_included: true
+
+  nuclear:
+    name: "Nuclear Power (Lifecycle)"
+    emission_factor_kg_co2e_per_kwh: 0.012
+    lifecycle_emissions_g_co2e_per_kwh: 12.0
+    scope: "Scope 3 - Upstream"
+    source: "IPCC SRREN"
+    uri: "https://www.ipcc.ch/report/renewable-energy-sources-and-climate-change-mitigation/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-03-15"
+    lifecycle_included: true
+    notes: "Includes mining, enrichment, construction, waste management"
+
+# ====================
+# WATER USAGE
+# ====================
+water:
+  municipal_water_supply:
+    name: "Municipal Water Supply and Treatment"
+    emission_factor_kg_co2e_per_m3: 0.344
+    emission_factor_kg_co2e_per_gallon: 0.001302
+    scope: "Scope 3 - Upstream"
+    source: "EPA WaterSense"
+    uri: "https://www.epa.gov/watersense/about-watersense"
+    standard: "GHG Protocol Scope 3"
+    last_updated: "2024-05-15"
+
+  wastewater_discharge:
+    name: "Wastewater Discharge and Treatment"
+    emission_factor_kg_co2e_per_m3: 0.708
+    emission_factor_kg_co2e_per_gallon: 0.002680
+    scope: "Scope 3 - Downstream"
+    source: "EPA WaterSense"
+    uri: "https://www.epa.gov/watersense/about-watersense"
+    standard: "GHG Protocol Scope 3"
+    last_updated: "2024-05-15"
+
+# ====================
+# BUSINESS TRAVEL
+# ====================
+business_travel:
+  air_short_haul:
+    name: "Air Travel - Short Haul (<300 mi)"
+    emission_factor_kg_co2e_per_km: 0.254
+    emission_factor_kg_co2e_per_mile: 0.409
+    emission_factor_kg_co2e_per_pax_km: 0.254
+    scope: "Scope 3 - Business Travel"
+    source: "UK DEFRA 2024"
+    uri: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
+    standard: "GHG Protocol Scope 3"
+    last_updated: "2024-06-15"
+
+  air_long_haul:
+    name: "Air Travel - Long Haul (>3700 mi)"
+    emission_factor_kg_co2e_per_km: 0.150
+    emission_factor_kg_co2e_per_mile: 0.241
+    emission_factor_kg_co2e_per_pax_km: 0.150
+    scope: "Scope 3 - Business Travel"
+    source: "UK DEFRA 2024"
+    uri: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
+    standard: "GHG Protocol Scope 3"
+    last_updated: "2024-06-15"
+
+  rail_passenger:
+    name: "Rail Travel - Passenger"
+    emission_factor_kg_co2e_per_km: 0.041
+    emission_factor_kg_co2e_per_mile: 0.066
+    scope: "Scope 3 - Business Travel"
+    source: "UK DEFRA 2024"
+    uri: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
+    standard: "GHG Protocol Scope 3"
+    last_updated: "2024-06-15"
+
+  hotel_night:
+    name: "Hotel Accommodation - Per Night"
+    emission_factor_kg_co2e_per_night: 30.5
+    scope: "Scope 3 - Business Travel"
+    source: "UK DEFRA 2024"
+    uri: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
+    standard: "GHG Protocol Scope 3"
+    last_updated: "2024-06-15"
+
+# ====================
+# VALIDATION & USAGE NOTES
+# ====================
+validation:
+  uri_accessibility_check_required: true
+  last_uri_validation: "2025-01-15"
+  update_frequency: "Quarterly"
+  data_quality_tiers:
+    tier_1: "National or industry averages"
+    tier_2: "Technology or region-specific"
+    tier_3: "Facility or process-specific"
+
+usage_notes:
+  - "All emission factors include CO2, CH4, and N2O converted to CO2e using GWP100"
+  - "For market-based Scope 2, use supplier-specific emission factors or renewable energy certificates"
+  - "Update factors annually or when new standards are published"
+  - "Verify URI accessibility before audit submissions"
+  - "Use most geographically and technologically specific factor available"
+  - "Document data quality tier in reporting"
+  - "For lifecycle emissions, ensure consistent system boundaries"

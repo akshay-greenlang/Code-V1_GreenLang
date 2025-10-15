@@ -38,7 +38,7 @@ Week 1 (INTL-101) Foundation:
 
 from greenlang.intelligence.schemas.messages import ChatMessage, Role
 from greenlang.intelligence.schemas.tools import ToolDef, ToolCall, ToolChoice
-from greenlang.intelligence.schemas.responses import ChatResponse, Usage, FinishReason
+from greenlang.intelligence.schemas.responses import ChatResponse, Usage, FinishReason, ProviderInfo
 from greenlang.intelligence.runtime.budget import Budget, BudgetExceeded
 from greenlang.intelligence.runtime.session import ChatSession
 from greenlang.intelligence.providers.base import LLMProvider, LLMProviderConfig
@@ -69,6 +69,7 @@ __all__ = [
     "ChatResponse",
     "Usage",
     "FinishReason",
+    "ProviderInfo",
     # Budget
     "Budget",
     "BudgetExceeded",

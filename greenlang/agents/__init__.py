@@ -66,6 +66,14 @@ def __getattr__(name):
         from greenlang.agents.energy_balance_agent import EnergyBalanceAgent
 
         return EnergyBalanceAgent
+    elif name == "IndustrialProcessHeatAgent_AI":
+        from greenlang.agents.industrial_process_heat_agent_ai import IndustrialProcessHeatAgent_AI
+
+        return IndustrialProcessHeatAgent_AI
+    elif name == "BoilerReplacementAgent_AI":
+        from greenlang.agents.boiler_replacement_agent_ai import BoilerReplacementAgent_AI
+
+        return BoilerReplacementAgent_AI
     raise AttributeError(f"module 'greenlang.agents' has no attribute '{name}'")
 
 
@@ -86,4 +94,6 @@ __all__ = [
     "LoadProfileAgent",
     "FieldLayoutAgent",
     "EnergyBalanceAgent",
+    "IndustrialProcessHeatAgent_AI",
+    "BoilerReplacementAgent_AI",
 ]

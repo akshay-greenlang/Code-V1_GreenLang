@@ -470,8 +470,9 @@ class TestReportAgentAI:
         assert "9.0" in result or "9" in result
         assert "commercial_office" in result
 
+    @pytest.mark.asyncio
     @patch("greenlang.agents.report_agent_ai.ChatSession")
-    def test_execute_with_mocked_ai(self, mock_session_class, agent, valid_report_data):
+    async def test_execute_with_mocked_ai(self, mock_session_class, agent, valid_report_data):
         """Test execute() with mocked ChatSession to verify AI integration."""
         # Create mock response
         mock_response = Mock(spec=ChatResponse)
@@ -552,8 +553,13 @@ class TestReportAgentAI:
         mock_session.chat = AsyncMock(return_value=mock_response)
         mock_session_class.return_value = mock_session
 
-        # Run agent
-        result = agent.execute(valid_report_data)
+        # Run agent (handle both sync and async)
+        import inspect
+        result_coro = agent.execute(valid_report_data)
+        if inspect.iscoroutine(result_coro):
+            result = await result_coro
+        else:
+            result = result_coro
 
         # Verify success
         assert result.success is True

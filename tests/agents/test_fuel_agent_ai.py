@@ -142,8 +142,9 @@ class TestFuelAgentAI:
         assert "impact" in rec
         assert "feasibility" in rec
 
+    @pytest.mark.asyncio
     @patch("greenlang.agents.fuel_agent_ai.ChatSession")
-    def test_run_with_mocked_ai(self, mock_session_class, agent, valid_payload):
+    async def test_run_with_mocked_ai(self, mock_session_class, agent, valid_payload):
         """Test run() with mocked ChatSession to verify AI integration."""
         # Create mock response
         mock_response = Mock(spec=ChatResponse)
@@ -181,8 +182,15 @@ class TestFuelAgentAI:
         mock_session.chat = AsyncMock(return_value=mock_response)
         mock_session_class.return_value = mock_session
 
-        # Run agent
-        result = agent.run(valid_payload)
+        # Run agent (handle both sync and async)
+        import asyncio
+        import inspect
+
+        result_coro = agent.run(valid_payload)
+        if inspect.iscoroutine(result_coro):
+            result = await result_coro
+        else:
+            result = result_coro
 
         # Verify success
         assert result["success"] is True

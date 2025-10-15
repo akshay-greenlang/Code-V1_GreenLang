@@ -1,0 +1,288 @@
+# GreenLang Agent Specification v2.0
+# Template for all 84 AI-powered agents
+# Based on Tool-First Design Pattern (ZERO hallucinated numbers)
+
+agent_metadata:
+  agent_id: "domain/agent_name"  # e.g., "industrial/process_heat_agent"
+  agent_name: "AgentName_AI"     # e.g., "IndustrialProcessHeatAgent_AI"
+  version: "1.0.0"
+  domain: "Domain1_Industrial | Domain2_HVAC | Domain3_CrossCutting"
+  category: "Category Name"      # e.g., "Industrial_Process", "HVAC_Core", etc.
+  complexity: "Low | Medium | High"
+  priority: "P0_Critical | P1_High | P2_Medium"
+  base_agent: "None | ExistingAgentName"  # Inheritance from existing agent
+  status: "Spec_Needed | Spec_Complete | In_Development | Testing | Production"
+
+description:
+  purpose: |
+    Clear description of agent's primary purpose and role in the ecosystem.
+    Should explain what problem this agent solves and for whom.
+
+  strategic_context:
+    global_impact: "Impact statistics (e.g., CO2e/year, market size)"
+    opportunity: "Key opportunity this agent addresses"
+    market_size: "Addressable market size"
+    technology_maturity: "Current state of technology"
+
+  key_capabilities:
+    - "Capability 1: Description"
+    - "Capability 2: Description"
+    - "Capability 3: Description"
+
+  entry_point: true | false  # Is this a master coordinator/entry point?
+  dependencies:
+    - agent_id: "domain/other_agent"
+      relationship: "calls | coordinates | provides_data_to"
+
+tools:
+  # CRITICAL: All calculations MUST use deterministic tools
+  # NO hallucinated numbers allowed
+
+  tool_count: 0  # Total number of tools (4-12 typical)
+
+  tools_list:
+    - tool_id: "tool_1"
+      name: "calculate_something"
+      description: "Clear description of what this tool calculates"
+      category: "calculation | lookup | aggregation | analysis | optimization"
+      deterministic: true  # MUST be true for all numeric tools
+
+      parameters:
+        type: "object"
+        properties:
+          param1:
+            type: "number | string | boolean | array | object"
+            description: "Clear parameter description"
+            minimum: 0  # For numbers
+            maximum: 100
+            default: 50
+            enum: ["option1", "option2"]  # For strings with fixed values
+            required: true | false
+        required: ["param1"]  # List of required parameters
+
+      returns:
+        type: "object"
+        description: "Description of return value"
+        properties:
+          result:
+            type: "number"
+            description: "Primary result"
+            units: "kWh | kg | °C | etc."
+          metadata:
+            type: "object"
+            description: "Calculation metadata"
+
+      implementation:
+        physics_formula: "Q = m × cp × ΔT"  # If applicable
+        calculation_method: "Description of calculation approach"
+        data_source: "Where data comes from (database, API, calculation)"
+        accuracy: "Expected accuracy level"
+        validation: "How to validate results"
+
+      example:
+        input:
+          param1: 100
+        output:
+          result: 200
+          metadata:
+            formula_used: "Q = m × cp × ΔT"
+
+ai_integration:
+  # How AI (ChatSession) orchestrates the tools
+
+  temperature: 0.0  # MUST be 0.0 for deterministic results
+  seed: 42          # MUST be 42 for reproducibility
+
+  system_prompt: |
+    You are a [domain] expert for GreenLang.
+    You help [specific task] using authoritative tools.
+
+    CRITICAL RULES:
+    - Use provided tools for ALL calculations
+    - NEVER estimate or guess numbers
+    - Always explain analysis clearly
+    - Format numbers with proper units
+    - Provide actionable insights
+
+  user_prompt_template: |
+    [Operation description]:
+
+    Context:
+    - Field1: {param1}
+    - Field2: {param2}
+
+    Tasks:
+    1. Use [tool1] to [action1]
+    2. Use [tool2] to [action2]
+    3. [Additional tasks]
+
+    IMPORTANT:
+    - Use tools for ALL calculations
+    - Provide clear, actionable insights
+    - Format numbers clearly (e.g., "15,000 kg" not "15000.0")
+
+  tool_choice: "auto"  # Let AI decide which tools to use
+  max_iterations: 5    # Max AI reasoning loops
+  budget_usd: 0.50     # Max cost per query
+
+  provenance_tracking: true  # Always track AI decisions
+  ai_summary: true           # Generate human-readable explanations
+
+sub_agents:
+  # Optional: Sub-agents this agent coordinates
+  sub_agent_count: 0
+
+  sub_agents_list:
+    - sub_agent_id: "domain/sub_agent_name"
+      role: "Specific role in parent agent workflow"
+      tools_count: 3
+      invocation_pattern: "on_demand | continuous | scheduled"
+
+inputs:
+  # Agent input schema
+  input_schema:
+    type: "object"
+    properties:
+      field1:
+        type: "number"
+        description: "Field description"
+        units: "kWh"
+        required: true
+      field2:
+        type: "string"
+        description: "Field description"
+        enum: ["option1", "option2"]
+        default: "option1"
+    required: ["field1"]
+
+  example_input:
+    field1: 100
+    field2: "option1"
+
+outputs:
+  # Agent output schema
+  output_schema:
+    type: "object"
+    properties:
+      result:
+        type: "number"
+        description: "Primary result"
+        units: "kg CO2e"
+      explanation:
+        type: "string"
+        description: "AI-generated explanation"
+      provenance:
+        type: "object"
+        description: "Audit trail"
+        properties:
+          model: "string"
+          tools_used: "array"
+          cost_usd: "number"
+
+  example_output:
+    result: 2020.5
+    explanation: "Clear explanation of results"
+    provenance:
+      model: "gpt-4o"
+      tools_used: ["calculate_something"]
+      cost_usd: 0.08
+
+testing:
+  # Testing requirements
+
+  test_coverage_target: 0.80  # 80% minimum
+
+  test_categories:
+    - category: "unit_tests"
+      description: "Test individual tool implementations"
+      count: 10+
+
+    - category: "integration_tests"
+      description: "Test AI orchestration with tools"
+      count: 5+
+
+    - category: "determinism_tests"
+      description: "Verify temperature=0, seed=42 reproducibility"
+      count: 3+
+
+    - category: "boundary_tests"
+      description: "Test edge cases and error handling"
+      count: 5+
+
+  performance_requirements:
+    max_latency_ms: 5000  # 5 seconds max
+    max_cost_usd: 0.50    # $0.50 per query max
+    accuracy_target: 0.98  # 98% accuracy
+
+deployment:
+  # Deployment configuration
+
+  pack_id: "domain/agent_pack"
+  pack_version: "1.0.0"
+
+  dependencies:
+    python_packages:
+      - "pydantic>=2.0"
+      - "numpy>=1.24"
+
+    greenlang_modules:
+      - "greenlang.agents.base"
+      - "greenlang.intelligence"
+
+  resource_requirements:
+    memory_mb: 512
+    cpu_cores: 1
+    gpu_required: false
+
+  api_endpoints:
+    - endpoint: "/api/v1/agents/{agent_id}/execute"
+      method: "POST"
+      authentication: "required"
+
+documentation:
+  # Documentation requirements
+
+  readme: true
+  api_docs: true
+  examples: true
+  tutorials: true
+
+  example_use_cases:
+    - title: "Use Case 1"
+      description: "Clear description"
+      input_example: {}
+      output_example: {}
+
+    - title: "Use Case 2"
+      description: "Clear description"
+      input_example: {}
+      output_example: {}
+
+compliance:
+  # Regulatory and compliance requirements
+
+  zero_secrets: true  # No hardcoded secrets
+  sbom_required: true  # Software Bill of Materials
+  digital_signature: true  # Code signing
+
+  standards:
+    - "GHG Protocol Corporate Standard"
+    - "ISO 14064-1:2018"
+    - "TCFD Framework"
+
+metadata:
+  # Administrative metadata
+
+  created_date: "2025-10-13"
+  created_by: "Head of AI & Climate Intelligence"
+  last_modified: "2025-10-13"
+  review_status: "Draft | Review | Approved"
+  reviewers: []
+
+  change_log:
+    - version: "1.0.0"
+      date: "2025-10-13"
+      changes: "Initial specification"
+      author: "AI Lead"
+
+# END OF AGENTSPEC TEMPLATE v2.0

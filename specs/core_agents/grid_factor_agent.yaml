@@ -1,0 +1,1706 @@
+# GreenLang Agent Specification v2.0
+# Core Agent: GridFactorAgent
+# Regional electricity grid emission factors provider
+# Status: Production (P0 Critical)
+
+agent_metadata:
+  agent_id: "core/grid_factor_agent"
+  agent_name: "GridFactorAgent"
+  agent_number: "CORE-002"
+  version: "0.0.1"
+  domain: "Core_Foundation"
+  category: "Deterministic_Calculator"
+  complexity: "Low"
+  priority: "P0_Critical"
+  base_agent: "None"
+  status: "Production"
+  entry_point: false  # Used by other agents, not direct entry point
+
+  description_short: "Deterministic electricity grid emission factors provider for 12+ countries and 15+ US regions (NERC)"
+
+  tags:
+    - "grid_emissions"
+    - "electricity_factors"
+    - "regional_factors"
+    - "scope_2"
+    - "deterministic"
+    - "epa_egrid"
+    - "production_ready"
+
+description:
+  purpose: |
+    GridFactorAgent is a deterministic emission factors provider that delivers accurate,
+    region-specific electricity grid emission factors from authoritative sources including
+    EPA eGRID (US), IEA (international), UK National Grid ESO, and EU Electricity Maps.
+
+    This is a foundational P0 agent used by all electricity-related calculations in the
+    GreenLang ecosystem. It provides grid carbon intensity, renewable percentages, marginal
+    vs average factors, time-of-use factors (peak/off-peak), and grid generation mix breakdowns.
+
+    The agent operates as a pure data lookup engine with zero AI/LLM dependencies, ensuring
+    deterministic outputs for compliance, auditing, and regulatory reporting requirements.
+
+  strategic_context:
+    global_impact: "Electricity = 40% of global emissions (~15 Gt CO2e/year)"
+    opportunity: "Foundation for all Scope 2 emissions tracking and grid decarbonization strategies"
+    market_size: "$3T+ global electricity market requiring emissions tracking"
+    technology_maturity: "Production-ready data provider with 15+ years of authoritative sources"
+
+  key_capabilities:
+    - "Regional grid emission factors: 12+ countries (US, UK, EU, CA, AU, IN, CN, JP, BR, KR, DE)"
+    - "US sub-regional factors: 15+ NERC regions (WECC, ERCOT, NYISO, PJM, etc.)"
+    - "Grid generation mix: Coal, gas, nuclear, hydro, wind, solar, biomass percentages"
+    - "Renewable percentage by grid: 8% (South Korea) to 83% (Brazil)"
+    - "Time-of-use factors: Peak, off-peak, shoulder, midday solar patterns"
+    - "Marginal vs average emission factors: Dispatch-based analysis"
+    - "Grid comparison: Compare carbon intensity across regions"
+    - "Grid optimization recommendations: Best time for electricity consumption"
+    - "Multiple units: kWh, MWh, GWh support"
+    - "Historical data: 2020-2025 with future projections capability"
+    - "Uncertainty quantification: Data quality tiers (Tier 1/2/3)"
+    - "Performance tracking: Cache optimization for frequent lookups"
+
+  dependencies:
+    - agent_id: "core/emission_factors_database"
+      relationship: "uses_data_from"
+      data: "EPA eGRID, IEA, UK ESO, EU Electricity Maps grid factors by region, country, time"
+
+    - agent_id: "core/unit_converter"
+      relationship: "uses_utility_from"
+      data: "Unit conversion for energy units (kWh, MWh, GWh)"
+
+    - agent_id: "core/performance_tracker"
+      relationship: "uses_utility_from"
+      data: "Performance monitoring and cache hit rate tracking"
+
+  used_by_agents:
+    - "hvac/chiller_agent"
+    - "hvac/heat_pump_agent"
+    - "building/building_emissions_agent"
+    - "industrial/electric_motor_agent"
+    - "transport/ev_fleet_agent"
+    - "carbon/scope2_emissions_agent"
+    - "recommendation/grid_optimization_agent"
+
+tools:
+  # NOTE: GridFactorAgent is a DETERMINISTIC agent - it does NOT use AI/LLM
+  # All data retrieval is performed by pure Python functions with database lookups
+  # This section documents the lookup methods as "tools" for consistency
+
+  tool_count: 8
+
+  tools_list:
+    - tool_id: "tool_1"
+      name: "get_grid_factor"
+      description: "Retrieve electricity grid emission factor for specific country/region, fuel type, and unit"
+      category: "lookup"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          country:
+            type: "string"
+            description: "Country or region code"
+            enum:
+              - "US"
+              - "UK"
+              - "EU"
+              - "CA"
+              - "AU"
+              - "IN"
+              - "CN"
+              - "JP"
+              - "BR"
+              - "KR"
+              - "DE"
+              - "FR"
+              - "WECC"      # Western Electricity Coordinating Council (US West)
+              - "ERCOT"     # Electric Reliability Council of Texas
+              - "NYISO"     # New York Independent System Operator
+              - "PJM"       # PJM Interconnection (Mid-Atlantic)
+              - "ISO_NE"    # ISO New England
+              - "MISO"      # Midcontinent Independent System Operator
+              - "SPP"       # Southwest Power Pool
+              - "CAISO"     # California ISO
+              - "AESO"      # Alberta Electric System Operator (Canada)
+              - "IESO"      # Independent Electricity System Operator (Ontario)
+            required: true
+
+          fuel_type:
+            type: "string"
+            description: "Type of energy source (typically 'electricity' for grid)"
+            enum:
+              - "electricity"
+              - "electric"
+              - "grid"
+              - "grid_electricity"
+            default: "electricity"
+            required: true
+
+          unit:
+            type: "string"
+            description: "Unit of electricity measurement"
+            enum:
+              - "kWh"
+              - "MWh"
+              - "GWh"
+              - "TWh"
+            default: "kWh"
+            required: true
+
+          year:
+            type: "integer"
+            description: "Year for emission factor (historical or projected)"
+            minimum: 2020
+            maximum: 2030
+            default: 2025
+
+          month:
+            type: "integer"
+            description: "Month for seasonal variation (1-12)"
+            minimum: 1
+            maximum: 12
+            note: "Optional - some regions have seasonal grid mix variations"
+
+        required: ["country", "fuel_type", "unit"]
+
+      returns:
+        type: "object"
+        properties:
+          emission_factor:
+            type: "number"
+            units: "kg CO2e per unit"
+            description: "Grid carbon intensity"
+
+          unit:
+            type: "string"
+            description: "Unit of emission factor (e.g., kgCO2e/kWh)"
+
+          country:
+            type: "string"
+            description: "Country/region code"
+
+          fuel_type:
+            type: "string"
+            description: "Fuel type (electricity)"
+
+          source:
+            type: "string"
+            description: "Data source (EPA eGRID, IEA, UK ESO, etc.)"
+
+          version:
+            type: "string"
+            description: "Data version"
+
+          last_updated:
+            type: "string"
+            description: "Date of last data update"
+
+          grid_mix:
+            type: "object"
+            description: "Generation mix breakdown"
+            properties:
+              renewable:
+                type: "number"
+                description: "Renewable percentage (0-1)"
+              fossil:
+                type: "number"
+                description: "Fossil fuel percentage (0-1)"
+              nuclear:
+                type: "number"
+                description: "Nuclear percentage (0-1)"
+              coal:
+                type: "number"
+                description: "Coal percentage (0-1)"
+              gas:
+                type: "number"
+                description: "Natural gas percentage (0-1)"
+              hydro:
+                type: "number"
+                description: "Hydroelectric percentage (0-1)"
+              wind:
+                type: "number"
+                description: "Wind percentage (0-1)"
+              solar:
+                type: "number"
+                description: "Solar percentage (0-1)"
+
+          data_quality_tier:
+            type: "string"
+            enum: ["Tier_1", "Tier_2", "Tier_3"]
+            description: "IPCC data quality tier"
+
+          uncertainty_percent:
+            type: "number"
+            description: "Uncertainty range (± %)"
+
+      implementation:
+        calculation_method: "Database lookup with country/region mapping and unit conversion"
+        data_source: "EPA eGRID 2024, IEA World Energy Outlook 2024, UK National Grid ESO, EU Electricity Maps"
+        accuracy: "Exact retrieval (accuracy depends on source data: ±2-5%)"
+        cache_strategy: "LRU cache with 512 entry limit, 1-hour TTL for performance"
+        update_frequency: "Quarterly updates from EPA eGRID, annual from IEA"
+        standards:
+          - "EPA eGRID Database"
+          - "IEA Electricity Information"
+          - "GHG Protocol Scope 2 Guidance"
+          - "ISO 14064-1:2018"
+
+      example:
+        input:
+          country: "US"
+          fuel_type: "electricity"
+          unit: "kWh"
+          year: 2025
+        output:
+          emission_factor: 0.385
+          unit: "kgCO2e/kWh"
+          country: "US"
+          fuel_type: "electricity"
+          source: "EPA eGRID 2024"
+          version: "1.0.0"
+          last_updated: "2025-08-14"
+          grid_mix:
+            renewable: 0.21
+            fossil: 0.60
+            nuclear: 0.19
+            coal: 0.19
+            gas: 0.41
+            hydro: 0.06
+            wind: 0.10
+            solar: 0.05
+          data_quality_tier: "Tier_1"
+          uncertainty_percent: 3.0
+
+    - tool_id: "tool_2"
+      name: "get_grid_mix"
+      description: "Retrieve detailed grid generation mix breakdown by energy source"
+      category: "lookup"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          country:
+            type: "string"
+            description: "Country or region code"
+            required: true
+
+          year:
+            type: "integer"
+            description: "Year for grid mix data"
+            default: 2025
+
+          include_capacity:
+            type: "boolean"
+            description: "Include installed capacity (MW) in addition to generation (%)"
+            default: false
+
+        required: ["country"]
+
+      returns:
+        type: "object"
+        properties:
+          country:
+            type: "string"
+            description: "Country/region"
+
+          grid_mix_percentages:
+            type: "object"
+            description: "Generation mix by source (%)"
+            properties:
+              coal: "number"
+              natural_gas: "number"
+              nuclear: "number"
+              hydro: "number"
+              wind: "number"
+              solar: "number"
+              biomass: "number"
+              geothermal: "number"
+              oil: "number"
+              other: "number"
+
+          renewable_total:
+            type: "number"
+            description: "Total renewable percentage (0-1)"
+
+          low_carbon_total:
+            type: "number"
+            description: "Total low-carbon percentage (renewables + nuclear, 0-1)"
+
+          fossil_total:
+            type: "number"
+            description: "Total fossil fuel percentage (0-1)"
+
+          average_intensity:
+            type: "number"
+            units: "gCO2e/kWh"
+            description: "Weighted average grid intensity"
+
+          capacity_mw:
+            type: "object"
+            description: "Installed capacity by source (MW)"
+            note: "Only included if include_capacity=true"
+
+          source:
+            type: "string"
+            description: "Data source"
+
+          year:
+            type: "integer"
+            description: "Data year"
+
+      implementation:
+        calculation_method: "Database lookup with aggregation of generation sources"
+        data_source: "IEA Electricity Information, EIA-923, National energy agencies"
+        accuracy: "±2% for major sources, ±5% for minor sources"
+        update_frequency: "Annual updates"
+
+      example:
+        input:
+          country: "US"
+          year: 2025
+          include_capacity: true
+        output:
+          country: "US"
+          grid_mix_percentages:
+            coal: 19.0
+            natural_gas: 41.0
+            nuclear: 19.0
+            hydro: 6.0
+            wind: 10.0
+            solar: 5.0
+            biomass: 1.0
+            geothermal: 0.4
+            oil: 0.4
+            other: 0.2
+          renewable_total: 0.21
+          low_carbon_total: 0.40
+          fossil_total: 0.60
+          average_intensity: 385.0
+          capacity_mw:
+            coal: 200000
+            natural_gas: 550000
+            nuclear: 95000
+            hydro: 80000
+            wind: 140000
+            solar: 110000
+          source: "EPA eGRID 2024"
+          year: 2025
+
+    - tool_id: "tool_3"
+      name: "calculate_marginal_factor"
+      description: "Calculate marginal emission factor (emissions from next kWh) based on dispatch order"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          country:
+            type: "string"
+            description: "Country or region code"
+            required: true
+
+          time_of_day:
+            type: "integer"
+            description: "Hour of day (0-23) for dispatch analysis"
+            minimum: 0
+            maximum: 23
+            required: true
+
+          season:
+            type: "string"
+            description: "Season for load patterns"
+            enum: ["winter", "spring", "summer", "fall"]
+            default: "summer"
+
+          load_level:
+            type: "string"
+            description: "Grid load level"
+            enum: ["low", "medium", "high", "peak"]
+            default: "medium"
+
+        required: ["country", "time_of_day"]
+
+      returns:
+        type: "object"
+        properties:
+          marginal_factor:
+            type: "number"
+            units: "gCO2e/kWh"
+            description: "Marginal emission factor"
+
+          average_factor:
+            type: "number"
+            units: "gCO2e/kWh"
+            description: "Average emission factor for comparison"
+
+          marginal_source:
+            type: "string"
+            description: "Likely marginal generation source"
+            enum: ["coal", "natural_gas", "oil", "hydro", "renewable"]
+
+          dispatch_order:
+            type: "array"
+            items:
+              type: "string"
+            description: "Economic dispatch order (lowest to highest cost)"
+
+          is_peak_time:
+            type: "boolean"
+            description: "Whether this is peak demand time"
+
+          reduction_opportunity:
+            type: "string"
+            description: "Advice on timing load to reduce emissions"
+
+      implementation:
+        calculation_method: "Merit order dispatch analysis with historical patterns"
+        data_source: "EIA-930, ISO real-time generation data"
+        accuracy: "±10% (higher uncertainty due to dynamic dispatch)"
+        note: "Marginal factors are typically higher than average during peak hours"
+
+      dispatch_patterns:
+        baseload:
+          - "nuclear"
+          - "hydro_run_of_river"
+          - "geothermal"
+          - "coal_baseload"
+
+        intermediate:
+          - "coal_cycling"
+          - "natural_gas_combined_cycle"
+          - "biomass"
+
+        peaking:
+          - "natural_gas_combustion_turbine"
+          - "oil"
+          - "hydro_pumped_storage"
+          - "battery_storage"
+
+      example:
+        input:
+          country: "US"
+          time_of_day: 18  # 6 PM
+          season: "summer"
+          load_level: "peak"
+        output:
+          marginal_factor: 520.0
+          average_factor: 385.0
+          marginal_source: "natural_gas"
+          dispatch_order:
+            - "nuclear"
+            - "hydro"
+            - "coal"
+            - "natural_gas_combined_cycle"
+            - "natural_gas_combustion_turbine"  # Marginal
+          is_peak_time: true
+          reduction_opportunity: "Shift load to overnight (11 PM - 7 AM) to reduce emissions by 35%"
+
+    - tool_id: "tool_4"
+      name: "get_time_of_use_factor"
+      description: "Retrieve time-of-use grid emission factors (peak, off-peak, shoulder, midday)"
+      category: "lookup"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          country:
+            type: "string"
+            description: "Country or region code"
+            required: true
+
+          hour:
+            type: "integer"
+            description: "Hour of day (0-23)"
+            minimum: 0
+            maximum: 23
+            required: true
+
+          day_of_week:
+            type: "string"
+            description: "Day of week for weekday/weekend patterns"
+            enum: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+            default: "wednesday"
+
+          month:
+            type: "integer"
+            description: "Month (1-12) for seasonal solar patterns"
+            minimum: 1
+            maximum: 12
+            default: 6
+
+        required: ["country", "hour"]
+
+      returns:
+        type: "object"
+        properties:
+          base_intensity:
+            type: "number"
+            units: "gCO2e/kWh"
+            description: "Average grid intensity"
+
+          time_of_use_intensity:
+            type: "number"
+            units: "gCO2e/kWh"
+            description: "Intensity at specified time"
+
+          period:
+            type: "string"
+            enum: ["off_peak", "shoulder", "peak", "midday"]
+            description: "Time-of-use period"
+
+          peak_factor:
+            type: "number"
+            description: "Multiplier vs base (>1 = higher emissions, <1 = lower)"
+
+          solar_impact:
+            type: "number"
+            description: "Reduction from solar generation (gCO2e/kWh)"
+
+          wind_impact:
+            type: "number"
+            description: "Reduction from wind generation (gCO2e/kWh)"
+
+          recommendation:
+            type: "string"
+            description: "Advice on timing electricity use"
+
+      implementation:
+        calculation_method: "Hourly interpolation based on renewable generation patterns and demand curves"
+        data_source: "ISO real-time marginal emissions data, WattTime API patterns"
+        accuracy: "±8% (varies by renewable penetration)"
+
+      time_periods:
+        off_peak:
+          description: "Low demand, baseload generation dominant"
+          typical_hours: [0, 1, 2, 3, 4, 5, 22, 23]
+          typical_factor: 0.85  # 15% below average
+
+        shoulder:
+          description: "Medium demand, transitioning"
+          typical_hours: [6, 7, 9, 10, 11, 15, 16, 20, 21]
+          typical_factor: 1.0  # At average
+
+        peak:
+          description: "High demand, peaking units online"
+          typical_hours: [17, 18, 19]
+          typical_factor: 1.35  # 35% above average
+
+        midday:
+          description: "Solar generation peak (lower emissions in high-solar grids)"
+          typical_hours: [12, 13, 14]
+          typical_factor: 0.70  # 30% below average (solar-heavy grids)
+
+      example:
+        input:
+          country: "CAISO"  # California ISO (high solar)
+          hour: 13  # 1 PM
+          day_of_week: "wednesday"
+          month: 6  # June
+        output:
+          base_intensity: 250.0
+          time_of_use_intensity: 160.0
+          period: "midday"
+          peak_factor: 0.64
+          solar_impact: 90.0
+          wind_impact: 15.0
+          recommendation: "Excellent time for electricity use - solar generation at peak"
+
+    - tool_id: "tool_5"
+      name: "get_renewable_percentage"
+      description: "Get renewable energy percentage for specific grid"
+      category: "lookup"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          country:
+            type: "string"
+            description: "Country or region code"
+            required: true
+
+          year:
+            type: "integer"
+            description: "Year for renewable percentage"
+            default: 2025
+
+          include_nuclear:
+            type: "boolean"
+            description: "Include nuclear in 'clean energy' calculation"
+            default: false
+
+        required: ["country"]
+
+      returns:
+        type: "object"
+        properties:
+          renewable_percentage:
+            type: "number"
+            description: "Renewable percentage (0-100)"
+
+          renewable_fraction:
+            type: "number"
+            description: "Renewable fraction (0-1)"
+
+          clean_energy_percentage:
+            type: "number"
+            description: "Renewables + nuclear percentage (0-100)"
+
+          renewable_breakdown:
+            type: "object"
+            properties:
+              hydro: "number"
+              wind: "number"
+              solar: "number"
+              biomass: "number"
+              geothermal: "number"
+
+          ranking:
+            type: "string"
+            description: "Grid cleanliness ranking"
+            enum: ["very_clean", "clean", "moderate", "carbon_intensive", "very_carbon_intensive"]
+
+          comparison:
+            type: "object"
+            description: "Comparison to global averages"
+
+      implementation:
+        calculation_method: "Sum of renewable generation sources divided by total generation"
+        data_source: "IEA, EIA, national energy statistics"
+        accuracy: "±1%"
+
+      renewable_rankings:
+        very_clean: ">70% renewable (e.g., Brazil 83%, Canada 68%)"
+        clean: "40-70% renewable (e.g., UK 43%, EU 42%, Germany 46%)"
+        moderate: "20-40% renewable (e.g., Australia 32%, China 31%)"
+        carbon_intensive: "10-20% renewable (e.g., US 21%, India 23%)"
+        very_carbon_intensive: "<10% renewable (e.g., South Korea 8%)"
+
+      example:
+        input:
+          country: "BR"
+          year: 2025
+          include_nuclear: false
+        output:
+          renewable_percentage: 83.0
+          renewable_fraction: 0.83
+          clean_energy_percentage: 85.0
+          renewable_breakdown:
+            hydro: 61.0
+            wind: 12.0
+            solar: 7.0
+            biomass: 3.0
+            geothermal: 0.0
+          ranking: "very_clean"
+          comparison:
+            global_average: 29.0
+            rank: "Top 3 globally"
+
+    - tool_id: "tool_6"
+      name: "compare_grids"
+      description: "Compare emission factors and grid mix across multiple regions"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          countries:
+            type: "array"
+            items:
+              type: "string"
+            description: "List of country/region codes to compare"
+            minItems: 2
+            maxItems: 10
+            required: true
+
+          comparison_metrics:
+            type: "array"
+            items:
+              type: "string"
+            description: "Metrics to compare"
+            enum:
+              - "emission_factor"
+              - "renewable_percentage"
+              - "grid_mix"
+              - "cost"
+              - "reliability"
+            default: ["emission_factor", "renewable_percentage"]
+
+        required: ["countries"]
+
+      returns:
+        type: "object"
+        properties:
+          comparison_table:
+            type: "array"
+            items:
+              type: "object"
+            description: "Side-by-side comparison"
+
+          cleanest_grid:
+            type: "object"
+            description: "Grid with lowest emission factor"
+
+          dirtiest_grid:
+            type: "object"
+            description: "Grid with highest emission factor"
+
+          renewable_leader:
+            type: "object"
+            description: "Grid with highest renewable percentage"
+
+          improvement_opportunities:
+            type: "array"
+            items:
+              type: "object"
+            description: "Potential improvements for each grid"
+
+          regional_insights:
+            type: "string"
+            description: "Analysis of regional differences"
+
+      implementation:
+        calculation_method: "Aggregate data retrieval with ranking and analysis"
+        data_source: "Combined EPA eGRID, IEA, national sources"
+        accuracy: "±3%"
+
+      example:
+        input:
+          countries: ["US", "UK", "BR", "IN", "AU"]
+          comparison_metrics: ["emission_factor", "renewable_percentage"]
+        output:
+          comparison_table:
+            - country: "BR"
+              emission_factor: 120
+              renewable_percentage: 83
+              rank: 1
+            - country: "UK"
+              emission_factor: 212
+              renewable_percentage: 43
+              rank: 2
+            - country: "US"
+              emission_factor: 385
+              renewable_percentage: 21
+              rank: 3
+            - country: "AU"
+              emission_factor: 660
+              renewable_percentage: 32
+              rank: 4
+            - country: "IN"
+              emission_factor: 710
+              renewable_percentage: 23
+              rank: 5
+          cleanest_grid:
+            country: "BR"
+            emission_factor: 120
+            advantage: "83% hydro-based generation"
+          dirtiest_grid:
+            country: "IN"
+            emission_factor: 710
+            reason: "Coal-heavy generation (68%)"
+          renewable_leader:
+            country: "BR"
+            renewable_percentage: 83
+          improvement_opportunities:
+            - country: "IN"
+              potential_reduction: "50% reduction possible with renewable expansion"
+              target: "500 gCO2e/kWh by 2030"
+            - country: "AU"
+              potential_reduction: "45% reduction with coal phase-out"
+              target: "350 gCO2e/kWh by 2030"
+          regional_insights: "Brazil leads with hydro-dominance (120 gCO2e/kWh), while coal-heavy grids (India, Australia) have 5-6x higher intensity"
+
+    - tool_id: "tool_7"
+      name: "recommend_grid_strategy"
+      description: "Generate recommendations for optimal electricity usage timing and sourcing"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          country:
+            type: "string"
+            description: "Country or region code"
+            required: true
+
+          load_profile:
+            type: "string"
+            description: "Electricity load pattern"
+            enum: ["constant", "business_hours", "industrial_24_7", "residential", "data_center"]
+            default: "business_hours"
+
+          flexibility:
+            type: "string"
+            description: "Ability to shift load timing"
+            enum: ["high", "medium", "low", "none"]
+            default: "medium"
+
+          annual_consumption_kwh:
+            type: "number"
+            description: "Annual electricity consumption"
+            minimum: 0
+
+        required: ["country"]
+
+      returns:
+        type: "object"
+        properties:
+          recommendations:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                priority:
+                  type: "string"
+                  enum: ["critical", "high", "medium", "low"]
+                action:
+                  type: "string"
+                  description: "Recommended action"
+                impact:
+                  type: "string"
+                  description: "Expected emissions reduction"
+                potential_reduction_gco2_kwh:
+                  type: "number"
+                  description: "Reduction in grid intensity"
+                estimated_payback:
+                  type: "string"
+                  description: "Payback period"
+            description: "Ordered list of recommendations"
+
+          optimal_hours:
+            type: "array"
+            items:
+              type: "integer"
+            description: "Best hours for electricity consumption (0-23)"
+
+          worst_hours:
+            type: "array"
+            items:
+              type: "integer"
+            description: "Hours to avoid (highest emissions)"
+
+          load_shifting_potential:
+            type: "object"
+            properties:
+              percentage:
+                type: "number"
+                description: "Percentage of load that can be shifted"
+              annual_reduction_kg:
+                type: "number"
+                description: "Annual emission reduction potential"
+
+          renewable_procurement_options:
+            type: "array"
+            items:
+              type: "object"
+            description: "Options for renewable energy procurement"
+
+      implementation:
+        calculation_method: "Rule-based recommendation engine with time-of-use analysis"
+        data_source: "Combined grid factors, marginal emissions, renewable availability"
+        accuracy: "Impact estimates ±15%"
+
+      recommendation_hierarchy:
+        for_high_carbon_grids:
+          - priority: "critical"
+            action: "Procure renewable energy (PPA or RECs)"
+            reduction: "up to 100%"
+          - priority: "high"
+            action: "Install on-site solar + battery storage"
+            reduction: "30-80%"
+          - priority: "high"
+            action: "Shift load to off-peak and midday solar hours"
+            reduction: "15-35%"
+
+        for_medium_carbon_grids:
+          - priority: "high"
+            action: "Time load for maximum solar availability"
+            reduction: "20-40%"
+          - priority: "medium"
+            action: "Implement demand response programs"
+            reduction: "10-25%"
+          - priority: "medium"
+            action: "Increase on-site renewable percentage"
+            reduction: "variable"
+
+        for_clean_grids:
+          - priority: "medium"
+            action: "Focus on energy efficiency over sourcing"
+            reduction: "5-15%"
+          - priority: "low"
+            action: "Maximize use during hydro/wind availability"
+            reduction: "5-10%"
+
+      example:
+        input:
+          country: "US"
+          load_profile: "business_hours"
+          flexibility: "medium"
+          annual_consumption_kwh: 1000000
+        output:
+          recommendations:
+            - priority: "high"
+              action: "Shift 30% of load from evening peak (5-8 PM) to midday (11 AM-2 PM)"
+              impact: "15% emissions reduction"
+              potential_reduction_gco2_kwh: 58
+              estimated_payback: "immediate (no capital cost)"
+            - priority: "high"
+              action: "Procure 50% renewable energy through PPAs or RECs"
+              impact: "50% emissions reduction"
+              potential_reduction_gco2_kwh: 193
+              estimated_payback: "0-3 years"
+            - priority: "medium"
+              action: "Install 200 kW solar array to meet daytime load"
+              impact: "25% emissions reduction"
+              potential_reduction_gco2_kwh: 96
+              estimated_payback: "5-7 years"
+          optimal_hours: [1, 2, 3, 4, 5, 11, 12, 13, 14]
+          worst_hours: [17, 18, 19, 20]
+          load_shifting_potential:
+            percentage: 30
+            annual_reduction_kg: 58000
+          renewable_procurement_options:
+            - type: "Virtual PPA"
+              cost: "$40-50/MWh"
+              reduction: "100% of contracted volume"
+              term: "10-15 years"
+            - type: "Renewable Energy Certificates (RECs)"
+              cost: "$5-15/MWh"
+              reduction: "Market-based Scope 2"
+              term: "1 year"
+            - type: "On-site Solar + Storage"
+              cost: "$1.2M capital"
+              reduction: "25-40%"
+              term: "25 year asset life"
+
+    - tool_id: "tool_8"
+      name: "get_regional_nerc_factors"
+      description: "Get US sub-regional emission factors by NERC region"
+      category: "lookup"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          nerc_region:
+            type: "string"
+            description: "NERC region code"
+            enum:
+              - "WECC"      # Western Electricity Coordinating Council
+              - "ERCOT"     # Electric Reliability Council of Texas
+              - "MRO"       # Midwest Reliability Organization
+              - "NPCC"      # Northeast Power Coordinating Council
+              - "RFC"       # ReliabilityFirst Corporation
+              - "SERC"      # SERC Reliability Corporation
+              - "SPP"       # Southwest Power Pool
+              - "TRE"       # Texas Reliability Entity
+              - "FRCC"      # Florida Reliability Coordinating Council
+              - "NYISO"     # New York ISO
+              - "PJM"       # PJM Interconnection
+              - "CAISO"     # California ISO
+              - "ISO_NE"    # ISO New England
+              - "MISO"      # Midcontinent ISO
+            required: true
+
+          sub_region:
+            type: "string"
+            description: "Sub-region within NERC (e.g., CAMX, NWPP, RMPA for WECC)"
+            note: "Optional - provides more granular data"
+
+          year:
+            type: "integer"
+            description: "Year for emission factor"
+            default: 2025
+
+        required: ["nerc_region"]
+
+      returns:
+        type: "object"
+        properties:
+          nerc_region:
+            type: "string"
+            description: "NERC region code"
+
+          emission_factor:
+            type: "number"
+            units: "gCO2e/kWh"
+            description: "Regional emission factor"
+
+          us_average:
+            type: "number"
+            units: "gCO2e/kWh"
+            description: "US average for comparison"
+
+          relative_intensity:
+            type: "string"
+            enum: ["much_cleaner", "cleaner", "average", "dirtier", "much_dirtier"]
+            description: "Comparison to US average"
+
+          primary_generation:
+            type: "string"
+            description: "Dominant generation source"
+
+          renewable_percentage:
+            type: "number"
+            description: "Renewable percentage (0-100)"
+
+          states_covered:
+            type: "array"
+            items:
+              type: "string"
+            description: "US states in this NERC region"
+
+          source:
+            type: "string"
+            description: "EPA eGRID subregion data"
+
+      implementation:
+        calculation_method: "EPA eGRID subregion lookup with state mapping"
+        data_source: "EPA eGRID 2024 database"
+        accuracy: "±2% (Tier 1 data)"
+        update_frequency: "Annual from EPA"
+
+      nerc_regions_data:
+        WECC:
+          description: "Western US - diverse mix from coal (Wyoming) to hydro (Pacific NW) to solar (CA)"
+          typical_factor: 370
+          range: "180-550 gCO2e/kWh depending on sub-region"
+          states: ["CA", "OR", "WA", "NV", "ID", "MT", "WY", "UT", "AZ", "NM", "CO"]
+
+        ERCOT:
+          description: "Texas - gas-heavy with growing wind"
+          typical_factor: 420
+          range: "400-440 gCO2e/kWh"
+          states: ["TX (most of state)"]
+
+        MRO:
+          description: "Upper Midwest - coal and wind"
+          typical_factor: 480
+          range: "450-520 gCO2e/kWh"
+          states: ["ND", "SD", "NE", "MN", "IA", "WI (partial)", "MT (partial)"]
+
+        NPCC:
+          description: "Northeast - nuclear, hydro, gas"
+          typical_factor: 220
+          range: "180-280 gCO2e/kWh"
+          states: ["ME", "NH", "VT", "MA", "RI", "CT", "NY", "NJ (partial)", "PA (partial)"]
+
+      example:
+        input:
+          nerc_region: "CAISO"
+          sub_region: "null"
+          year: 2025
+        output:
+          nerc_region: "CAISO"
+          emission_factor: 240
+          us_average: 385
+          relative_intensity: "much_cleaner"
+          primary_generation: "Natural gas and solar"
+          renewable_percentage: 48
+          states_covered: ["California"]
+          source: "EPA eGRID 2024"
+
+ai_integration:
+  # CRITICAL: GridFactorAgent is a DETERMINISTIC agent
+  # It does NOT use AI/LLM for data retrieval
+  # All emission factors come from authoritative databases
+
+  ai_enabled: false
+
+  explanation: |
+    GridFactorAgent is intentionally designed as a DETERMINISTIC data provider without AI/LLM
+    integration. This design choice ensures:
+
+    1. REPRODUCIBILITY: Same input always produces identical output
+    2. AUDITABILITY: Data sources can be traced and verified
+    3. COMPLIANCE: Meets regulatory requirements for Scope 2 emissions reporting
+    4. PERFORMANCE: Sub-millisecond lookups without API calls
+    5. COST: Zero per-query cost (no LLM API fees)
+    6. RELIABILITY: No dependency on external AI services
+    7. AUTHORITY: Direct access to EPA eGRID, IEA, and other authoritative sources
+
+    For AI-enhanced grid analysis with natural language explanations,
+    see GridFactorAgentAI which wraps GridFactorAgent with ChatSession orchestration.
+
+  alternative_ai_agent: "core/grid_factor_agent_ai"
+
+  ai_wrapper_capabilities:
+    - "Natural language query processing for grid data"
+    - "Multi-region comparison with AI-generated insights"
+    - "Automated grid optimization recommendations"
+    - "Time-of-use strategy generation"
+    - "Explanation generation for stakeholders"
+    - "Scenario analysis (e.g., 'What if we add 50% solar?')"
+
+sub_agents:
+  # GridFactorAgent is a leaf agent with no sub-agents
+  sub_agent_count: 0
+  sub_agents_list: []
+
+  note: |
+    GridFactorAgent is used BY many other agents but does not coordinate sub-agents.
+    It serves as a foundational data provider in the agent hierarchy.
+
+inputs:
+  input_schema:
+    type: "object"
+    properties:
+      country:
+        type: "string"
+        description: "Country or region code"
+        enum:
+          - "US"
+          - "UK"
+          - "EU"
+          - "CA"
+          - "AU"
+          - "IN"
+          - "CN"
+          - "JP"
+          - "BR"
+          - "KR"
+          - "DE"
+          - "FR"
+          - "WECC"
+          - "ERCOT"
+          - "NYISO"
+          - "PJM"
+          - "ISO_NE"
+          - "MISO"
+          - "SPP"
+          - "CAISO"
+        required: true
+
+      fuel_type:
+        type: "string"
+        description: "Type of energy (typically 'electricity')"
+        enum: ["electricity", "electric", "grid", "grid_electricity"]
+        default: "electricity"
+        required: true
+
+      unit:
+        type: "string"
+        description: "Unit of electricity measurement"
+        enum: ["kWh", "MWh", "GWh", "TWh"]
+        default: "kWh"
+        required: true
+
+      year:
+        type: "integer"
+        description: "Year for emission factor"
+        minimum: 2020
+        maximum: 2030
+        default: 2025
+
+      month:
+        type: "integer"
+        description: "Month for seasonal variation (1-12)"
+        minimum: 1
+        maximum: 12
+
+    required: ["country", "fuel_type", "unit"]
+
+  example_inputs:
+    - name: "US National Grid Average"
+      description: "National average grid emission factor for United States"
+      input:
+        country: "US"
+        fuel_type: "electricity"
+        unit: "kWh"
+        year: 2025
+
+    - name: "California ISO (Clean Grid)"
+      description: "California Independent System Operator - high renewable"
+      input:
+        country: "CAISO"
+        fuel_type: "electricity"
+        unit: "kWh"
+        year: 2025
+
+    - name: "UK Grid"
+      description: "United Kingdom national grid"
+      input:
+        country: "UK"
+        fuel_type: "electricity"
+        unit: "kWh"
+        year: 2025
+
+    - name: "India Grid (Coal-Heavy)"
+      description: "India national grid with high coal percentage"
+      input:
+        country: "IN"
+        fuel_type: "electricity"
+        unit: "kWh"
+        year: 2025
+
+    - name: "Brazil Grid (Hydro-Dominant)"
+      description: "Brazil grid with 83% renewable (mostly hydro)"
+      input:
+        country: "BR"
+        fuel_type: "electricity"
+        unit: "MWh"
+        year: 2025
+
+outputs:
+  output_schema:
+    type: "object"
+    properties:
+      emission_factor:
+        type: "number"
+        description: "Grid carbon intensity"
+        units: "kg CO2e per unit"
+
+      unit:
+        type: "string"
+        description: "Unit of emission factor"
+
+      country:
+        type: "string"
+        description: "Country/region code"
+
+      fuel_type:
+        type: "string"
+        description: "Fuel type (electricity)"
+
+      source:
+        type: "string"
+        description: "Data source"
+
+      version:
+        type: "string"
+        description: "Data version"
+
+      last_updated:
+        type: "string"
+        description: "Date of last update"
+
+      grid_mix:
+        type: "object"
+        description: "Generation mix breakdown"
+        properties:
+          renewable: "number"
+          fossil: "number"
+          nuclear: "number"
+          coal: "number"
+          gas: "number"
+          hydro: "number"
+          wind: "number"
+          solar: "number"
+
+    required:
+      - "emission_factor"
+      - "unit"
+      - "country"
+      - "fuel_type"
+      - "source"
+
+  example_outputs:
+    - name: "US Grid Result"
+      input_ref: "US National Grid Average"
+      output:
+        emission_factor: 0.385
+        unit: "kgCO2e/kWh"
+        country: "US"
+        fuel_type: "electricity"
+        source: "EPA eGRID 2024"
+        version: "1.0.0"
+        last_updated: "2025-08-14"
+        grid_mix:
+          renewable: 0.21
+          fossil: 0.60
+          nuclear: 0.19
+          coal: 0.19
+          gas: 0.41
+          hydro: 0.06
+          wind: 0.10
+          solar: 0.05
+
+    - name: "California ISO Result (Clean)"
+      input_ref: "California ISO (Clean Grid)"
+      output:
+        emission_factor: 0.240
+        unit: "kgCO2e/kWh"
+        country: "CAISO"
+        fuel_type: "electricity"
+        source: "EPA eGRID 2024"
+        version: "1.0.0"
+        last_updated: "2025-08-14"
+        grid_mix:
+          renewable: 0.48
+          fossil: 0.42
+          nuclear: 0.10
+          coal: 0.00
+          gas: 0.42
+          hydro: 0.13
+          wind: 0.12
+          solar: 0.23
+
+    - name: "Brazil Result (Hydro-Dominant)"
+      input_ref: "Brazil Grid (Hydro-Dominant)"
+      output:
+        emission_factor: 0.120
+        unit: "kgCO2e/kWh"
+        country: "BR"
+        fuel_type: "electricity"
+        source: "IEA Electricity Information 2024"
+        version: "1.0.0"
+        last_updated: "2024-12-01"
+        grid_mix:
+          renewable: 0.83
+          fossil: 0.15
+          nuclear: 0.02
+          coal: 0.03
+          gas: 0.12
+          hydro: 0.61
+          wind: 0.12
+          solar: 0.07
+
+    - name: "India Result (Coal-Heavy)"
+      input_ref: "India Grid (Coal-Heavy)"
+      output:
+        emission_factor: 0.710
+        unit: "kgCO2e/kWh"
+        country: "IN"
+        fuel_type: "electricity"
+        source: "IEA + CEA India 2024"
+        version: "1.0.0"
+        last_updated: "2024-11-15"
+        grid_mix:
+          renewable: 0.23
+          fossil: 0.74
+          nuclear: 0.03
+          coal: 0.68
+          gas: 0.06
+          hydro: 0.10
+          wind: 0.08
+          solar: 0.05
+
+testing:
+  test_coverage_target: 0.85
+  current_coverage: 0.2024
+  coverage_goal: "85%+ (critical P0 agent)"
+
+  test_categories:
+    - category: "unit_tests"
+      description: "Test individual tool implementations and data lookups"
+      current_count: 5
+      target_count: 40
+      priority: "high"
+      test_cases:
+        - "test_get_grid_factor_us"
+        - "test_get_grid_factor_uk"
+        - "test_get_grid_factor_eu"
+        - "test_get_grid_factor_india"
+        - "test_get_grid_factor_brazil"
+        - "test_get_grid_factor_china"
+        - "test_get_grid_factor_canada"
+        - "test_get_grid_factor_australia"
+        - "test_get_grid_factor_japan"
+        - "test_get_grid_factor_korea"
+        - "test_get_grid_factor_germany"
+        - "test_get_grid_factor_france"
+        - "test_get_grid_mix_us"
+        - "test_get_grid_mix_renewable_heavy"
+        - "test_get_grid_mix_coal_heavy"
+        - "test_calculate_marginal_factor_peak"
+        - "test_calculate_marginal_factor_offpeak"
+        - "test_get_time_of_use_factor_morning"
+        - "test_get_time_of_use_factor_midday"
+        - "test_get_time_of_use_factor_evening"
+        - "test_get_time_of_use_factor_night"
+        - "test_get_renewable_percentage_clean_grid"
+        - "test_get_renewable_percentage_dirty_grid"
+        - "test_compare_grids_multiple"
+        - "test_recommend_grid_strategy_high_carbon"
+        - "test_recommend_grid_strategy_clean_grid"
+        - "test_get_regional_nerc_wecc"
+        - "test_get_regional_nerc_ercot"
+        - "test_get_regional_nerc_caiso"
+        - "test_get_regional_nerc_nyiso"
+        - "test_get_regional_nerc_pjm"
+        - "test_unit_conversion_kwh_to_mwh"
+        - "test_unit_conversion_kwh_to_gwh"
+        - "test_country_code_mapping"
+        - "test_cache_hit"
+        - "test_cache_miss"
+        - "test_available_countries_list"
+        - "test_available_fuel_types_list"
+        - "test_grid_mix_percentages_sum_to_100"
+        - "test_renewable_fossil_add_to_total"
+
+    - category: "integration_tests"
+      description: "Test full agent workflows and realistic scenarios"
+      current_count: 2
+      target_count: 15
+      priority: "high"
+      test_cases:
+        - "test_full_workflow_us_lookup"
+        - "test_full_workflow_with_grid_mix"
+        - "test_multi_region_comparison"
+        - "test_time_of_use_full_day"
+        - "test_marginal_vs_average_analysis"
+        - "test_renewable_percentage_with_nuclear"
+        - "test_grid_strategy_business_hours"
+        - "test_grid_strategy_24_7_industrial"
+        - "test_nerc_region_detailed"
+        - "test_seasonal_variation"
+        - "test_historical_data_2020_to_2025"
+        - "test_country_to_nerc_mapping"
+        - "test_grid_optimization_load_shifting"
+        - "test_renewable_procurement_recommendations"
+        - "test_complete_grid_analysis_report"
+
+    - category: "validation_tests"
+      description: "Test input validation and error handling"
+      current_count: 3
+      target_count: 15
+      priority: "high"
+      test_cases:
+        - "test_missing_country"
+        - "test_missing_fuel_type"
+        - "test_missing_unit"
+        - "test_invalid_country_code"
+        - "test_invalid_fuel_type"
+        - "test_invalid_unit"
+        - "test_invalid_year"
+        - "test_invalid_month"
+        - "test_invalid_hour"
+        - "test_unsupported_country_fallback"
+        - "test_malformed_payload"
+        - "test_type_validation"
+        - "test_country_case_insensitive"
+        - "test_country_synonym_mapping"
+        - "test_empty_payload"
+
+    - category: "boundary_tests"
+      description: "Test edge cases and boundary conditions"
+      current_count: 2
+      target_count: 12
+      priority: "medium"
+      test_cases:
+        - "test_all_supported_countries"
+        - "test_all_supported_units"
+        - "test_all_nerc_regions"
+        - "test_year_2020"
+        - "test_year_2030"
+        - "test_hour_0"
+        - "test_hour_23"
+        - "test_month_1_january"
+        - "test_month_12_december"
+        - "test_100_percent_renewable_grid"
+        - "test_0_percent_renewable_grid"
+        - "test_compare_10_grids_max"
+
+    - category: "determinism_tests"
+      description: "Verify deterministic behavior (same input = same output)"
+      current_count: 1
+      target_count: 8
+      priority: "high"
+      test_cases:
+        - "test_determinism_us_grid_factor"
+        - "test_determinism_grid_mix"
+        - "test_determinism_renewable_percentage"
+        - "test_determinism_marginal_factor"
+        - "test_determinism_time_of_use"
+        - "test_determinism_grid_comparison"
+        - "test_determinism_recommendations"
+        - "test_determinism_cache_consistency"
+
+    - category: "performance_tests"
+      description: "Test lookup speed and cache performance"
+      current_count: 1
+      target_count: 8
+      priority: "medium"
+      test_cases:
+        - "test_single_lookup_latency"
+        - "test_batch_lookup_latency"
+        - "test_cache_hit_performance"
+        - "test_cache_miss_performance"
+        - "test_memory_usage"
+        - "test_concurrent_lookups"
+        - "test_throughput_1000_lookups"
+        - "test_cache_hit_rate"
+
+    - category: "accuracy_tests"
+      description: "Validate emission factors against authoritative sources"
+      current_count: 1
+      target_count: 12
+      priority: "high"
+      test_cases:
+        - "test_accuracy_us_egrid_2024"
+        - "test_accuracy_uk_defra_2024"
+        - "test_accuracy_eu_average"
+        - "test_accuracy_iea_data"
+        - "test_accuracy_renewable_percentages"
+        - "test_accuracy_grid_mix_percentages"
+        - "test_accuracy_nerc_regions"
+        - "test_accuracy_marginal_factors"
+        - "test_accuracy_time_of_use_patterns"
+        - "test_accuracy_seasonal_variations"
+        - "test_accuracy_floating_point_precision"
+        - "test_accuracy_unit_conversions"
+
+  performance_requirements:
+    max_latency_single_ms: 10
+    max_latency_batch_100_ms: 250
+    max_memory_mb: 64
+    min_cache_hit_rate: 0.85
+    min_throughput_per_second: 2000
+    accuracy_tolerance_percent: 0.01
+
+  regression_tests:
+    enabled: true
+    baseline_version: "0.0.1"
+    comparison_threshold: 0.001
+    note: "Verify emission factors match previous versions within 0.1%"
+
+deployment:
+  pack_id: "core/grid_factor_pack"
+  pack_version: "0.0.1"
+  deployment_environment: "production"
+
+  dependencies:
+    python_version: ">=3.9"
+
+    python_packages:
+      - "pydantic>=2.0"
+      - "typing-extensions>=4.5"
+
+    greenlang_modules:
+      - "greenlang.types"
+      - "greenlang.agents.base"
+      - "greenlang.data.emission_factors"
+      - "greenlang.utils.unit_converter"
+      - "greenlang.utils.performance_tracker"
+
+    external_services:
+      - name: "None"
+        note: "GridFactorAgent has zero external dependencies (fully offline capable)"
+
+  resource_requirements:
+    memory_mb: 64
+    cpu_cores: 1
+    gpu_required: false
+    disk_space_mb: 20
+    network_required: false
+
+  scaling:
+    horizontal_scaling: true
+    max_instances: "unlimited"
+    load_balancing: "round_robin"
+    note: "Stateless agent suitable for horizontal scaling"
+
+  api_endpoints:
+    - endpoint: "/api/v1/agents/grid_factor/lookup"
+      method: "POST"
+      authentication: "required"
+      rate_limit: "2000 requests/minute"
+
+    - endpoint: "/api/v1/agents/grid_factor/compare"
+      method: "POST"
+      authentication: "required"
+      rate_limit: "500 requests/minute"
+
+    - endpoint: "/api/v1/agents/grid_factor/countries"
+      method: "GET"
+      authentication: "required"
+      rate_limit: "1000 requests/minute"
+
+  monitoring:
+    metrics:
+      - "lookup_count"
+      - "lookup_latency_ms"
+      - "cache_hit_rate"
+      - "error_rate"
+      - "throughput_per_second"
+      - "unique_countries_queried"
+
+    logging:
+      level: "INFO"
+      format: "JSON"
+      destination: "cloudwatch"
+
+    alerting:
+      - condition: "error_rate > 1%"
+        action: "page_on_call"
+      - condition: "latency_p99 > 50ms"
+        action: "email_team"
+      - condition: "cache_hit_rate < 70%"
+        action: "investigate"
+
+documentation:
+  readme: true
+  api_docs: true
+  examples: true
+  tutorials: true
+
+  example_use_cases:
+    - title: "Data Center Scope 2 Emissions"
+      description: "Calculate Scope 2 emissions for data center electricity consumption"
+      industry: "Technology"
+      input_example:
+        country: "US"
+        fuel_type: "electricity"
+        unit: "MWh"
+        year: 2025
+      output_summary: "385 kgCO2e/MWh US grid average"
+      emissions_calculation: "10,000 MWh × 385 kgCO2e/MWh = 3,850 tCO2e/year"
+
+    - title: "Manufacturing Plant Grid Comparison"
+      description: "Compare grid intensity across potential manufacturing locations"
+      industry: "Manufacturing"
+      regions: ["US", "UK", "BR", "IN", "DE"]
+      insight: "Brazil offers 83% lower emissions than India due to hydro-dominance"
+
+    - title: "EV Charging Station Optimization"
+      description: "Optimize EV charging timing based on grid carbon intensity"
+      industry: "Transportation"
+      strategy: "Shift charging to midday (solar peak) and overnight (off-peak)"
+      potential_reduction: "30-40% emissions reduction through time-of-use optimization"
+
+compliance:
+  zero_secrets: true
+  sbom_required: true
+  digital_signature: true
+
+  standards:
+    - name: "GHG Protocol Scope 2 Guidance"
+      version: "2015"
+      compliance_level: "Full"
+
+    - name: "EPA eGRID Database"
+      version: "2024"
+      compliance_level: "Full"
+
+    - name: "ISO 14064-1:2018"
+      compliance_level: "Full"
+
+    - name: "IEA Electricity Information"
+      version: "2024"
+      compliance_level: "Full"
+
+metadata:
+  created_date: "2025-10-13"
+  created_by: "Head of AI & Climate Intelligence"
+  last_modified: "2025-10-13"
+  review_status: "Production"
+  reviewers:
+    - "Chief AI & Climate Intelligence"
+    - "Senior Carbon Accounting Specialist"
+
+  change_log:
+    - version: "0.0.1"
+      date: "2025-10-13"
+      changes: "Initial comprehensive specification for GridFactorAgent (20.24% → 85%+ coverage target)"
+      author: "Head of AI & Climate Intelligence"
+
+# END OF GRIDFACTORAGENT SPECIFICATION v0.0.1
+# Production agent requiring test coverage expansion (20.24% → 85%+)
+# Foundational grid emission factors provider for GreenLang ecosystem

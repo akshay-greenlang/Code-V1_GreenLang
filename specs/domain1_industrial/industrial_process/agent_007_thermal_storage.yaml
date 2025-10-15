@@ -1,0 +1,1288 @@
+# GreenLang Agent Specification v2.0
+# Agent #7: ThermalStorageAgent_AI
+# Thermal energy storage for load shifting, solar integration, and demand response
+
+agent_metadata:
+  agent_id: "industrial/thermal_storage_agent"
+  agent_name: "ThermalStorageAgent_AI"
+  agent_number: 7
+  version: "1.0.0"
+  domain: "Domain1_Industrial"
+  category: "Industrial_Process"
+  complexity: "Medium"
+  priority: "P1_High"
+  base_agent: "None"
+  status: "Spec_Complete"
+  entry_point: false
+
+description:
+  purpose: |
+    Comprehensive thermal energy storage (TES) analysis and design agent for industrial
+    facilities. Evaluates sensible heat storage (hot water, concrete), latent heat storage
+    (phase change materials), and thermochemical storage for load shifting, solar thermal
+    integration, and demand response applications. Provides detailed sizing, technology
+    selection, charge/discharge optimization, and economic analysis.
+
+  strategic_context:
+    global_impact: "Thermal storage enables 20-40% solar fraction increase for solar thermal systems, critical for 24/7 industrial operations"
+    opportunity: "Load shifting to off-peak hours saves 30-50% on electricity costs for thermal loads"
+    market_size: "$8B thermal storage market, 20% CAGR driven by solar integration and demand response"
+    technology_maturity: "Mature sensible storage (hot water tanks), emerging latent/thermochemical storage"
+
+  key_capabilities:
+    - "Storage sizing calculation based on load profiles and duration requirements (Q = m × cp × ΔT for sensible heat)"
+    - "Technology selection (sensible, latent, thermochemical) based on temperature range and economics"
+    - "Charge/discharge cycle optimization for round-trip efficiency maximization"
+    - "Solar thermal integration analysis for 24/7 process heat availability"
+    - "Demand response and time-of-use optimization for electricity cost savings"
+    - "Economic analysis (CAPEX, OPEX, payback) and lifecycle performance modeling"
+
+  dependencies:
+    - agent_id: "agents/industrial_process_heat_agent_ai"
+      relationship: "receives_data_from"
+      data: "Process heat demand profiles and temperature requirements"
+
+    - agent_id: "agents/demand_response_agent_ai"
+      relationship: "coordinates_with"
+      data: "Time-of-use pricing and demand response signals"
+
+    - agent_id: "agents/project_finance_agent_ai"
+      relationship: "provides_data_to"
+      data: "Storage system CAPEX/OPEX for financial modeling"
+
+tools:
+  tool_count: 6
+
+  tools_list:
+    - tool_id: "tool_1"
+      name: "calculate_storage_capacity"
+      description: "Calculate required thermal storage capacity based on load profile and duration"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          peak_thermal_load_kw:
+            type: "number"
+            description: "Peak thermal power requirement"
+            units: "kW"
+            minimum: 10
+            required: true
+
+          average_thermal_load_kw:
+            type: "number"
+            description: "Average thermal power during discharge period"
+            units: "kW"
+            required: true
+
+          storage_duration_hours:
+            type: "number"
+            description: "Required storage duration"
+            units: "hours"
+            minimum: 0.5
+            maximum: 168
+            required: true
+            note: "Typical range: 4-12 hours for solar, 8-24 hours for load shifting"
+
+          operating_temperature_c:
+            type: "number"
+            description: "Process operating temperature"
+            units: "°C"
+            minimum: 30
+            maximum: 400
+            required: true
+
+          return_temperature_c:
+            type: "number"
+            description: "Return temperature to storage"
+            units: "°C"
+            required: true
+
+          round_trip_efficiency:
+            type: "number"
+            description: "Expected round-trip efficiency (charge/discharge/losses)"
+            minimum: 0.5
+            maximum: 0.98
+            default: 0.85
+            note: "0.85-0.95 for well-insulated hot water, 0.75-0.85 for PCM"
+
+          load_profile:
+            type: "string"
+            description: "Load pattern for storage sizing"
+            enum: ["constant", "solar_thermal_integration", "load_shifting", "demand_response"]
+            default: "solar_thermal_integration"
+
+        required: ["peak_thermal_load_kw", "average_thermal_load_kw", "storage_duration_hours", "operating_temperature_c", "return_temperature_c"]
+
+      returns:
+        type: "object"
+        properties:
+          storage_capacity_kwh:
+            type: "number"
+            description: "Required storage capacity"
+            units: "kWh_thermal"
+
+          storage_capacity_mmbtu:
+            type: "number"
+            description: "Storage capacity in MMBtu"
+            units: "MMBtu"
+
+          effective_capacity_kwh:
+            type: "number"
+            description: "Usable capacity after losses"
+            units: "kWh_thermal"
+
+          temperature_delta_k:
+            type: "number"
+            description: "Temperature difference for sensible storage"
+            units: "K"
+
+          mass_storage_medium_kg:
+            type: "number"
+            description: "Approximate mass of storage medium (for sensible storage)"
+            units: "kg"
+            note: "Assumes water as default medium"
+
+          volume_storage_medium_m3:
+            type: "number"
+            description: "Approximate volume of storage medium"
+            units: "m³"
+
+          daily_charge_discharge_cycles:
+            type: "number"
+            description: "Expected daily cycles"
+
+          sizing_notes:
+            type: "array"
+            items:
+              type: "string"
+
+        description: "Thermal storage capacity requirements"
+
+      implementation:
+        physics_formula: |
+          Sensible Heat Storage:
+          Q = m × cp × ΔT
+
+          Where:
+            Q = Storage capacity (kWh or Btu)
+            m = Mass of storage medium (kg or lb)
+            cp = Specific heat capacity (kJ/kg·K or Btu/lb·°F)
+            ΔT = Temperature difference (K or °F)
+
+          For water: cp = 4.18 kJ/kg·K = 1.0 Btu/lb·°F
+
+          Storage energy = average_load × duration × (1 / efficiency)
+          Mass required = Q / (cp × ΔT)
+          Volume = mass / density
+
+        calculation_method: "Thermodynamic heat capacity calculation with loss factors"
+        data_source: "Thermophysical properties database, engineering handbooks"
+        accuracy: "±5% for sizing (actual performance depends on insulation quality)"
+        validation: "Compare with installed systems (NREL CSP database, industrial case studies)"
+        standards: ["ASHRAE_Handbook_HVAC_Applications_Ch51", "IEA_ECES_Annex_30"]
+
+      example:
+        input:
+          peak_thermal_load_kw: 500
+          average_thermal_load_kw: 400
+          storage_duration_hours: 6
+          operating_temperature_c: 90
+          return_temperature_c: 50
+          round_trip_efficiency: 0.90
+          load_profile: "solar_thermal_integration"
+        output:
+          storage_capacity_kwh: 2667
+          storage_capacity_mmbtu: 9.1
+          effective_capacity_kwh: 2400
+          temperature_delta_k: 40
+          mass_storage_medium_kg: 57400
+          volume_storage_medium_m3: 57.4
+          daily_charge_discharge_cycles: 1
+          sizing_notes:
+            - "6 hours storage suitable for bridging afternoon-to-evening solar gap"
+            - "40K temperature delta appropriate for hot water storage"
+            - "Consider stratified tank for improved efficiency"
+
+    - tool_id: "tool_2"
+      name: "select_storage_technology"
+      description: "Recommend optimal storage technology based on temperature, duration, and economics"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          operating_temperature_c:
+            type: "number"
+            description: "Process operating temperature"
+            units: "°C"
+            required: true
+
+          storage_duration_hours:
+            type: "number"
+            description: "Storage duration"
+            units: "hours"
+            required: true
+
+          storage_capacity_kwh:
+            type: "number"
+            description: "Required storage capacity"
+            units: "kWh_thermal"
+            required: true
+
+          application:
+            type: "string"
+            description: "Primary application"
+            enum: ["solar_thermal", "load_shifting", "demand_response", "backup", "waste_heat_recovery"]
+            required: true
+
+          space_constraints:
+            type: "string"
+            description: "Available space for storage"
+            enum: ["abundant", "moderate", "limited"]
+            default: "moderate"
+
+          budget_constraint:
+            type: "string"
+            description: "Budget level"
+            enum: ["low", "medium", "high"]
+            default: "medium"
+
+        required: ["operating_temperature_c", "storage_duration_hours", "storage_capacity_kwh", "application"]
+
+      returns:
+        type: "object"
+        properties:
+          recommended_technology:
+            type: "string"
+            description: "Primary technology recommendation"
+            enum: ["hot_water_tank", "pressurized_hot_water", "molten_salt", "concrete_thermal_mass", "phase_change_material", "thermochemical", "steam_accumulator"]
+
+          technology_rationale:
+            type: "string"
+            description: "Explanation for technology selection"
+
+          alternative_technologies:
+            type: "array"
+            description: "Alternative technologies to consider"
+            items:
+              technology: "string"
+              pros: "array"
+              cons: "array"
+
+          technology_specifications:
+            type: "object"
+            properties:
+              storage_medium: "string"
+              operating_temperature_range_c: "string"
+              energy_density_kwh_m3: "number"
+              round_trip_efficiency: "number"
+              typical_lifetime_years: "number"
+              capex_per_kwh_usd: "number"
+
+          design_considerations:
+            type: "array"
+            items:
+              type: "string"
+
+        description: "Technology selection and specifications"
+
+      implementation:
+        calculation_method: |
+          Technology Selection Decision Tree:
+
+          Temperature-based selection:
+          - < 100°C: Hot water (atmospheric or low pressure)
+          - 100-180°C: Pressurized hot water or steam accumulator
+          - 180-400°C: Molten salt or concrete thermal mass
+          - > 400°C: Thermochemical storage or high-temp PCM
+
+          Duration-based refinement:
+          - < 4 hours: Steam accumulator (fast response)
+          - 4-12 hours: Hot water or PCM (solar integration)
+          - 12-24 hours: Concrete thermal mass (diurnal storage)
+          - > 24 hours: Seasonal storage (borehole, aquifer)
+
+          Economics-based refinement:
+          - Low cost/m³ space: Hot water tanks (simple, proven)
+          - High cost/m³ space: PCM or molten salt (3-5× energy density)
+          - Very high temp: Molten salt or thermochemical
+
+        data_source: "IEA ECES Annex 30, IRENA Thermal Storage Report, vendor specifications"
+        accuracy: "Qualitative technology selection with ±20% cost estimates"
+        validation: "Cross-reference with deployed systems in similar applications"
+        standards: ["IEA_ECES", "IRENA_Thermal_Storage", "ASHRAE_Handbook"]
+
+      example:
+        input:
+          operating_temperature_c: 90
+          storage_duration_hours: 6
+          storage_capacity_kwh: 2667
+          application: "solar_thermal"
+          space_constraints: "moderate"
+          budget_constraint: "medium"
+        output:
+          recommended_technology: "hot_water_tank"
+          technology_rationale: "Hot water tank optimal for 90°C, 6-hour storage: mature technology, low cost ($15-30/kWh), high round-trip efficiency (90-95%), excellent reliability"
+          alternative_technologies:
+            - technology: "phase_change_material"
+              pros: ["3× energy density", "Isothermal discharge", "Smaller footprint"]
+              cons: ["3-5× higher cost", "Limited cycle life", "Heat transfer challenges"]
+          technology_specifications:
+            storage_medium: "Pressurized hot water"
+            operating_temperature_range_c: "60-95°C"
+            energy_density_kwh_m3: 46
+            round_trip_efficiency: 0.92
+            typical_lifetime_years: 25
+            capex_per_kwh_usd: 22
+          design_considerations:
+            - "Use stratified tank for improved efficiency (5-10% gain)"
+            - "Insulate to R-30 minimum (3 inches polyurethane)"
+            - "Consider stainless steel for corrosion resistance"
+            - "Include temperature sensors at multiple heights"
+
+    - tool_id: "tool_3"
+      name: "optimize_charge_discharge"
+      description: "Optimize charge/discharge cycles for maximum efficiency and economics"
+      category: "optimization"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          storage_capacity_kwh:
+            type: "number"
+            description: "Storage capacity"
+            units: "kWh_thermal"
+            required: true
+
+          charge_source:
+            type: "string"
+            description: "Heat source for charging"
+            enum: ["solar_thermal", "electric_heater", "heat_pump", "waste_heat", "grid_electric", "combined"]
+            required: true
+
+          charge_power_kw:
+            type: "number"
+            description: "Maximum charge power"
+            units: "kW"
+            required: true
+
+          discharge_power_kw:
+            type: "number"
+            description: "Maximum discharge power"
+            units: "kW"
+            required: true
+
+          time_of_use_pricing:
+            type: "array"
+            description: "Hourly electricity prices for optimization"
+            items:
+              type: "object"
+              properties:
+                hour: "number"
+                price_usd_per_kwh: "number"
+
+          solar_availability_hours:
+            type: "array"
+            description: "Hours with solar resource availability"
+            items: "number"
+            note: "Array of 24 hourly values (0-1 for solar fraction)"
+
+          process_demand_profile:
+            type: "array"
+            description: "Hourly thermal demand"
+            items:
+              hour: "number"
+              demand_kw: "number"
+
+        required: ["storage_capacity_kwh", "charge_source", "charge_power_kw", "discharge_power_kw"]
+
+      returns:
+        type: "object"
+        properties:
+          optimal_charge_schedule:
+            type: "array"
+            description: "Hour-by-hour charge schedule"
+            items:
+              hour: "number"
+              charge_kw: "number"
+              energy_source: "string"
+
+          optimal_discharge_schedule:
+            type: "array"
+            description: "Hour-by-hour discharge schedule"
+            items:
+              hour: "number"
+              discharge_kw: "number"
+              state_of_charge_percent: "number"
+
+          daily_energy_throughput_kwh:
+            type: "number"
+            description: "Total daily energy cycled"
+            units: "kWh/day"
+
+          average_round_trip_efficiency:
+            type: "number"
+            description: "Average daily efficiency"
+
+          cost_savings_usd_per_day:
+            type: "number"
+            description: "Daily cost savings from optimization"
+            units: "USD/day"
+
+          annual_cost_savings_usd:
+            type: "number"
+            description: "Projected annual savings"
+            units: "USD/year"
+
+          solar_fraction:
+            type: "number"
+            description: "Fraction of energy from solar (if applicable)"
+            note: "Only relevant for solar_thermal charge source"
+
+          optimization_strategy:
+            type: "string"
+            description: "Explanation of optimization approach"
+
+        description: "Optimized charge/discharge schedule"
+
+      implementation:
+        calculation_method: |
+          Linear Programming Optimization:
+
+          Objective: Minimize daily energy cost OR maximize solar utilization
+
+          For load shifting (electric):
+          Minimize: Σ (charge_power_t × price_t × Δt)
+          Subject to:
+            - 0 ≤ SOC_t ≤ capacity
+            - charge_rate ≤ max_charge_power
+            - discharge_rate ≤ max_discharge_power
+            - SOC_t+1 = SOC_t + (charge_t - discharge_t) × efficiency
+
+          For solar thermal:
+          Maximize: Solar energy stored = Σ (solar_available_t × charge_t)
+          Subject to same constraints
+
+          Greedy heuristic (simplified):
+          1. Charge during low-cost or high-solar hours
+          2. Discharge during high-cost or no-solar hours
+          3. Respect power and capacity limits
+
+        data_source: "Utility rate schedules, solar resource data (NSRDB), process load profiles"
+        accuracy: "±5% for cost savings estimates"
+        validation: "Compare with actual metered data after deployment"
+        standards: ["IEEE_1547_Grid_Integration", "ASHRAE_Guideline_14_MV"]
+
+      example:
+        input:
+          storage_capacity_kwh: 2667
+          charge_source: "solar_thermal"
+          charge_power_kw: 600
+          discharge_power_kw: 500
+          solar_availability_hours: [0,0,0,0,0,0,0.2,0.6,0.9,1.0,1.0,1.0,1.0,0.9,0.7,0.4,0.1,0,0,0,0,0,0,0]
+          process_demand_profile:
+            - {hour: 0, demand_kw: 300}
+            - {hour: 8, demand_kw: 450}
+            - {hour: 16, demand_kw: 400}
+        output:
+          daily_energy_throughput_kwh: 4800
+          average_round_trip_efficiency: 0.88
+          cost_savings_usd_per_day: 145
+          annual_cost_savings_usd: 52925
+          solar_fraction: 0.72
+          optimization_strategy: "Charge during peak solar hours (9am-3pm), discharge evenings/nights to maintain 24/7 process operation. Storage enables 72% solar fraction vs 40% without storage."
+
+    - tool_id: "tool_4"
+      name: "calculate_thermal_losses"
+      description: "Calculate standby thermal losses and insulation requirements for storage system"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          storage_volume_m3:
+            type: "number"
+            description: "Storage volume"
+            units: "m³"
+            required: true
+
+          storage_temperature_c:
+            type: "number"
+            description: "Average storage temperature"
+            units: "°C"
+            required: true
+
+          ambient_temperature_c:
+            type: "number"
+            description: "Ambient temperature around storage"
+            units: "°C"
+            default: 20
+
+          insulation_type:
+            type: "string"
+            description: "Insulation material"
+            enum: ["none", "fiberglass_2inch", "fiberglass_4inch", "polyurethane_3inch", "polyurethane_6inch", "vacuum_insulated"]
+            required: true
+
+          geometry:
+            type: "string"
+            description: "Storage geometry"
+            enum: ["cylindrical_vertical", "cylindrical_horizontal", "rectangular", "spherical"]
+            default: "cylindrical_vertical"
+
+          insulation_condition:
+            type: "string"
+            description: "Insulation condition"
+            enum: ["excellent", "good", "fair", "poor"]
+            default: "good"
+
+        required: ["storage_volume_m3", "storage_temperature_c", "insulation_type"]
+
+      returns:
+        type: "object"
+        properties:
+          surface_area_m2:
+            type: "number"
+            description: "Total surface area"
+            units: "m²"
+
+          u_value_w_m2k:
+            type: "number"
+            description: "Overall heat transfer coefficient"
+            units: "W/m²·K"
+
+          heat_loss_rate_kw:
+            type: "number"
+            description: "Continuous heat loss rate"
+            units: "kW"
+
+          daily_energy_loss_kwh:
+            type: "number"
+            description: "Daily energy loss"
+            units: "kWh/day"
+
+          storage_efficiency_percent:
+            type: "number"
+            description: "Standby efficiency over 24 hours"
+            units: "%"
+            note: "Percentage of energy retained after 24 hours"
+
+          temperature_decay_per_hour_k:
+            type: "number"
+            description: "Temperature decrease per hour"
+            units: "K/hr"
+
+          annual_standby_loss_mwh:
+            type: "number"
+            description: "Annual standby energy loss"
+            units: "MWh/year"
+
+          insulation_upgrade_recommendations:
+            type: "array"
+            items:
+              upgrade: "string"
+              additional_cost_usd: "number"
+              loss_reduction_percent: "number"
+              payback_years: "number"
+
+        description: "Thermal loss analysis and insulation recommendations"
+
+      implementation:
+        physics_formula: |
+          Heat Transfer:
+          Q_loss = U × A × ΔT
+
+          Where:
+            Q_loss = Heat loss rate (W or kW)
+            U = Overall heat transfer coefficient (W/m²·K)
+            A = Surface area (m²)
+            ΔT = Temperature difference (K)
+
+          U-value calculation (composite layers):
+          1/U = 1/h_inside + Σ(thickness_i / k_i) + 1/h_outside
+
+          Where:
+            h = Convection coefficient (inside/outside)
+            k = Thermal conductivity of insulation
+            thickness = Insulation thickness
+
+          Temperature decay:
+          T(t) = T_amb + (T_initial - T_amb) × exp(-t / τ)
+          Where τ = (m × cp) / (U × A) = thermal time constant
+
+        calculation_method: "Transient heat transfer with composite insulation layers"
+        data_source: "ASHRAE Fundamentals Chapter 26 (Heat Transfer), manufacturer insulation data"
+        accuracy: "±10% for heat loss estimates"
+        validation: "Temperature logging over 24-hour no-charge period"
+        standards: ["ASHRAE_Fundamentals_Ch26", "ASTM_C680_Insulation"]
+
+      example:
+        input:
+          storage_volume_m3: 60
+          storage_temperature_c: 90
+          ambient_temperature_c: 20
+          insulation_type: "polyurethane_3inch"
+          geometry: "cylindrical_vertical"
+          insulation_condition: "good"
+        output:
+          surface_area_m2: 94.2
+          u_value_w_m2k: 0.32
+          heat_loss_rate_kw: 2.11
+          daily_energy_loss_kwh: 50.6
+          storage_efficiency_percent: 94.3
+          temperature_decay_per_hour_k: 0.15
+          annual_standby_loss_mwh: 18.5
+          insulation_upgrade_recommendations:
+            - upgrade: "Upgrade to 6-inch polyurethane"
+              additional_cost_usd: 3500
+              loss_reduction_percent: 45
+              payback_years: 2.8
+
+    - tool_id: "tool_5"
+      name: "integrate_with_solar"
+      description: "Design solar thermal + storage system for maximum solar fraction"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          process_thermal_load_kw:
+            type: "number"
+            description: "Average process thermal load"
+            units: "kW"
+            required: true
+
+          process_temperature_c:
+            type: "number"
+            description: "Required process temperature"
+            units: "°C"
+            required: true
+
+          latitude:
+            type: "number"
+            description: "Site latitude"
+            minimum: -90
+            maximum: 90
+            required: true
+
+          annual_irradiance_kwh_m2:
+            type: "number"
+            description: "Annual solar irradiance"
+            units: "kWh/m²/year"
+            required: true
+
+          load_profile:
+            type: "string"
+            description: "Process operating schedule"
+            enum: ["continuous_24x7", "daytime_only", "evening_only", "batch"]
+            required: true
+
+          collector_type:
+            type: "string"
+            description: "Solar collector type"
+            enum: ["flat_plate", "evacuated_tube", "parabolic_trough"]
+            required: true
+
+          available_roof_area_m2:
+            type: "number"
+            description: "Available area for collectors"
+            units: "m²"
+
+          storage_hours_target:
+            type: "number"
+            description: "Target storage duration"
+            units: "hours"
+            default: 6
+            minimum: 2
+            maximum: 48
+
+        required: ["process_thermal_load_kw", "process_temperature_c", "latitude", "annual_irradiance_kwh_m2", "load_profile", "collector_type"]
+
+      returns:
+        type: "object"
+        properties:
+          collector_area_m2:
+            type: "number"
+            description: "Required collector area"
+            units: "m²"
+
+          storage_capacity_kwh:
+            type: "number"
+            description: "Required storage capacity"
+            units: "kWh_thermal"
+
+          solar_fraction_no_storage:
+            type: "number"
+            description: "Solar fraction without storage"
+
+          solar_fraction_with_storage:
+            type: "number"
+            description: "Solar fraction with storage"
+
+          solar_fraction_improvement_percent:
+            type: "number"
+            description: "Improvement from adding storage"
+            units: "%"
+
+          backup_capacity_kw:
+            type: "number"
+            description: "Required backup heating capacity"
+            units: "kW"
+
+          annual_solar_energy_delivered_mwh:
+            type: "number"
+            description: "Annual energy from solar"
+            units: "MWh/year"
+
+          annual_backup_energy_mwh:
+            type: "number"
+            description: "Annual backup energy required"
+            units: "MWh/year"
+
+          system_capex_usd:
+            type: "number"
+            description: "Estimated system capital cost"
+            units: "USD"
+            breakdown:
+              collectors: "number"
+              storage: "number"
+              piping_controls: "number"
+              installation: "number"
+
+          lcoh_usd_per_kwh:
+            type: "number"
+            description: "Levelized cost of heat"
+            units: "USD/kWh_thermal"
+
+          design_recommendations:
+            type: "array"
+            items:
+              type: "string"
+
+        description: "Solar + storage system design for maximum solar fraction"
+
+      implementation:
+        calculation_method: |
+          Solar Fraction Calculation (modified f-Chart method):
+
+          Without storage:
+          SF_no_storage = f(collector_area, load, irradiance, temp)
+          Typical: 30-50% for continuous processes
+
+          With storage:
+          SF_with_storage = SF_no_storage + storage_boost
+          Where storage_boost = f(storage_hours, load_profile)
+
+          Storage hours optimization:
+          - 4 hours: +15-20% solar fraction (bridge afternoon to evening)
+          - 8 hours: +20-30% solar fraction (overnight storage)
+          - 12+ hours: +30-40% solar fraction (diurnal storage)
+
+          Collector sizing:
+          A_collector = Load_avg / (Irradiance_avg × η_collector × availability)
+
+        data_source: "f-Chart method, NREL SAM (System Advisor Model), TRNSYS simulations"
+        accuracy: "±10% for solar fraction estimates (highly dependent on weather)"
+        validation: "Compare with monitored systems (NREL SolarPACES database)"
+        standards: ["ASHRAE_93_Collector_Testing", "ISO_9806_Collector_Performance"]
+
+      example:
+        input:
+          process_thermal_load_kw: 400
+          process_temperature_c: 90
+          latitude: 35.0
+          annual_irradiance_kwh_m2: 1850
+          load_profile: "continuous_24x7"
+          collector_type: "flat_plate"
+          storage_hours_target: 8
+        output:
+          collector_area_m2: 650
+          storage_capacity_kwh: 3200
+          solar_fraction_no_storage: 0.42
+          solar_fraction_with_storage: 0.68
+          solar_fraction_improvement_percent: 62
+          backup_capacity_kw: 420
+          annual_solar_energy_delivered_mwh: 2385
+          annual_backup_energy_mwh: 1121
+          system_capex_usd: 487000
+          lcoh_usd_per_kwh: 0.048
+          design_recommendations:
+            - "8-hour storage enables 68% solar fraction for 24/7 operation"
+            - "Stratified hot water tank recommended for 90°C application"
+            - "Backup gas boiler for reliability and cold weather"
+            - "Glycol system for freeze protection (if T_ambient < 0°C)"
+
+    - tool_id: "tool_6"
+      name: "calculate_economics"
+      description: "Comprehensive economic analysis of thermal storage system"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          storage_capacity_kwh:
+            type: "number"
+            description: "Storage capacity"
+            units: "kWh_thermal"
+            required: true
+
+          technology:
+            type: "string"
+            description: "Storage technology"
+            enum: ["hot_water_tank", "pressurized_hot_water", "molten_salt", "concrete", "pcm", "thermochemical"]
+            required: true
+
+          capex_per_kwh_usd:
+            type: "number"
+            description: "Capital cost per kWh (if known)"
+            units: "USD/kWh_thermal"
+            note: "If not provided, will use default for technology"
+
+          annual_energy_savings_kwh:
+            type: "number"
+            description: "Annual energy savings from storage"
+            units: "kWh/year"
+            required: true
+
+          energy_cost_usd_per_kwh:
+            type: "number"
+            description: "Cost of displaced energy"
+            units: "USD/kWh"
+            required: true
+
+          demand_charge_savings_usd_per_month:
+            type: "number"
+            description: "Monthly demand charge reduction"
+            units: "USD/month"
+            default: 0
+
+          opex_percent_of_capex:
+            type: "number"
+            description: "Annual O&M as % of CAPEX"
+            default: 0.015
+            note: "1.5% typical for thermal storage"
+
+          system_lifetime_years:
+            type: "number"
+            description: "Expected system lifetime"
+            units: "years"
+            default: 25
+
+          discount_rate:
+            type: "number"
+            description: "Discount rate for NPV"
+            default: 0.06
+
+          incentives_usd:
+            type: "number"
+            description: "Federal/state/utility incentives"
+            units: "USD"
+            default: 0
+
+        required: ["storage_capacity_kwh", "technology", "annual_energy_savings_kwh", "energy_cost_usd_per_kwh"]
+
+      returns:
+        type: "object"
+        properties:
+          capex_usd:
+            type: "number"
+            description: "Total capital cost"
+            units: "USD"
+
+          capex_per_kwh_usd:
+            type: "number"
+            description: "Specific capital cost"
+            units: "USD/kWh_thermal"
+
+          annual_opex_usd:
+            type: "number"
+            description: "Annual O&M costs"
+            units: "USD/year"
+
+          annual_savings_usd:
+            type: "number"
+            description: "Total annual savings"
+            units: "USD/year"
+            breakdown:
+              energy_savings: "number"
+              demand_charge_savings: "number"
+
+          net_annual_cashflow_usd:
+            type: "number"
+            description: "Annual cashflow after O&M"
+            units: "USD/year"
+
+          simple_payback_years:
+            type: "number"
+            description: "Simple payback period"
+            units: "years"
+
+          npv_usd:
+            type: "number"
+            description: "Net present value over lifetime"
+            units: "USD"
+
+          irr:
+            type: "number"
+            description: "Internal rate of return"
+            units: "decimal"
+
+          lcoe_storage_usd_per_kwh:
+            type: "number"
+            description: "Levelized cost of storage"
+            units: "USD/kWh"
+
+          financial_rating:
+            type: "string"
+            enum: ["Excellent (<3yr payback)", "Good (3-5yr)", "Fair (5-8yr)", "Poor (>8yr)"]
+
+        description: "Comprehensive financial analysis"
+
+      implementation:
+        calculation_method: |
+          Capital Cost Estimation (if not provided):
+          Technology-specific $/kWh_thermal:
+          - Hot water tank: $15-30/kWh_th
+          - Pressurized hot water: $30-50/kWh_th
+          - Molten salt: $30-60/kWh_th
+          - Concrete thermal mass: $8-15/kWh_th
+          - PCM: $50-120/kWh_th
+          - Thermochemical: $80-150/kWh_th
+
+          Financial Metrics:
+          Simple Payback = CAPEX / Annual_Net_Savings
+          NPV = Σ[Cashflow_t / (1+r)^t] - CAPEX
+          IRR = r where NPV = 0
+          LCOE_storage = (CAPEX × CRF + Annual_OPEX) / Annual_Energy_Throughput
+
+        data_source: "NREL cost database, IRENA thermal storage reports, vendor quotes"
+        accuracy: "±20% for CAPEX estimates (highly variable by site)"
+        validation: "Compare with actual installed costs from case studies"
+        standards: ["NREL_Cost_Database", "IRENA_Cost_Reports"]
+
+      example:
+        input:
+          storage_capacity_kwh: 2667
+          technology: "hot_water_tank"
+          annual_energy_savings_kwh: 1750000
+          energy_cost_usd_per_kwh: 0.08
+          demand_charge_savings_usd_per_month: 800
+          system_lifetime_years: 25
+          discount_rate: 0.06
+          incentives_usd: 20000
+        output:
+          capex_usd: 58674
+          capex_per_kwh_usd: 22
+          annual_opex_usd: 880
+          annual_savings_usd: 149600
+          net_annual_cashflow_usd: 148720
+          simple_payback_years: 0.39
+          npv_usd: 1871340
+          irr: 2.53
+          lcoe_storage_usd_per_kwh: 0.005
+          financial_rating: "Excellent (<3yr payback)"
+
+ai_integration:
+  temperature: 0.0
+  seed: 42
+  tool_choice: "auto"
+  max_iterations: 5
+  budget_usd: 0.10
+  provenance_tracking: true
+  ai_summary: true
+
+  system_prompt: |
+    You are a thermal energy storage expert for GreenLang. You help industrial
+    facilities design and optimize thermal storage systems for solar integration,
+    load shifting, and demand response applications.
+
+    Your expertise includes:
+    - Sensible, latent, and thermochemical thermal storage technologies
+    - Storage sizing for solar thermal integration (doubling solar fractions)
+    - Charge/discharge optimization for time-of-use savings
+    - Economic analysis and technology selection
+
+    CRITICAL RULES:
+    - Use provided tools for ALL calculations
+    - NEVER estimate or guess numbers
+    - Always explain storage benefits quantitatively (% solar fraction increase, $ savings)
+    - Cite IEA ECES, IRENA, and ASHRAE standards
+    - Provide conservative performance estimates
+    - Consider round-trip efficiency in all calculations
+
+  user_prompt_template: |
+    Analyze thermal storage requirements and design optimal system:
+
+    Application:
+    - Primary Use: {application} (solar integration, load shifting, demand response)
+    - Process Load: {thermal_load_kw} kW average, {peak_load_kw} kW peak
+    - Temperature: {temperature_c}°C
+    - Operating Profile: {load_profile}
+
+    Site Information:
+    - Location: {location} (latitude {latitude})
+    - Annual Solar: {irradiance} kWh/m²/year (if solar application)
+    - Available Space: {space_constraints}
+
+    Economic Parameters:
+    - Energy Cost: ${energy_cost}/kWh
+    - Demand Charges: ${demand_charge}/kW/month (if applicable)
+    - Budget: {budget_level}
+
+    Tasks:
+    1. Use calculate_storage_capacity to size storage for target duration
+    2. Use select_storage_technology to recommend optimal technology
+    3. Use optimize_charge_discharge to develop operating strategy
+    4. Use calculate_thermal_losses to assess insulation requirements
+    5. If solar application, use integrate_with_solar to design solar+storage system
+    6. Use calculate_economics for comprehensive financial analysis
+    7. Provide detailed report with:
+       - Technology recommendation with rationale
+       - System sizing (capacity, volume, insulation)
+       - Operating strategy (charge/discharge schedule)
+       - Performance metrics (solar fraction, efficiency, losses)
+       - Financial analysis (CAPEX, savings, payback, IRR)
+       - Implementation roadmap
+
+    IMPORTANT:
+    - Use tools for ALL calculations
+    - Quantify benefits (e.g., "Storage increases solar fraction from 40% to 68%")
+    - Consider both technical and economic optimization
+    - Format numbers clearly with units
+
+sub_agents:
+  sub_agent_count: 0
+
+inputs:
+  input_schema:
+    type: "object"
+    properties:
+      application:
+        type: "string"
+        enum: ["solar_thermal", "load_shifting", "demand_response", "backup", "waste_heat_recovery"]
+        required: true
+
+      thermal_load_kw:
+        type: "number"
+        units: "kW"
+        required: true
+
+      temperature_c:
+        type: "number"
+        units: "°C"
+        required: true
+
+      storage_hours:
+        type: "number"
+        units: "hours"
+        required: true
+
+      load_profile:
+        type: "string"
+        enum: ["continuous_24x7", "daytime_only", "evening_only", "batch"]
+        required: true
+
+      energy_cost_usd_per_kwh:
+        type: "number"
+        units: "USD/kWh"
+        required: true
+
+    required: ["application", "thermal_load_kw", "temperature_c", "storage_hours", "load_profile", "energy_cost_usd_per_kwh"]
+
+  example_input:
+    application: "solar_thermal"
+    thermal_load_kw: 400
+    temperature_c: 90
+    storage_hours: 8
+    load_profile: "continuous_24x7"
+    energy_cost_usd_per_kwh: 0.08
+    latitude: 35.0
+    annual_irradiance_kwh_m2: 1850
+
+outputs:
+  output_schema:
+    type: "object"
+    properties:
+      recommended_technology:
+        type: "string"
+
+      storage_capacity_kwh:
+        type: "number"
+        units: "kWh_thermal"
+
+      solar_fraction_with_storage:
+        type: "number"
+        description: "Fraction of energy from solar (if applicable)"
+
+      annual_savings_usd:
+        type: "number"
+        units: "USD/year"
+
+      capex_usd:
+        type: "number"
+        units: "USD"
+
+      simple_payback_years:
+        type: "number"
+        units: "years"
+
+      ai_explanation:
+        type: "string"
+
+      provenance:
+        type: "object"
+
+  example_output:
+    recommended_technology: "hot_water_tank"
+    storage_capacity_kwh: 3200
+    solar_fraction_with_storage: 0.68
+    annual_savings_usd: 149600
+    capex_usd: 58674
+    simple_payback_years: 0.39
+    ai_explanation: "8-hour hot water storage enables 68% solar fraction (vs 42% without storage), with excellent 0.39-year payback"
+    provenance:
+      model: "gpt-4o"
+      tools_used: ["calculate_storage_capacity", "select_storage_technology", "integrate_with_solar", "calculate_economics"]
+      cost_usd: 0.09
+      deterministic: true
+
+testing:
+  test_coverage_target: 0.88
+
+  test_categories:
+    - category: "unit_tests"
+      description: "Test individual tool implementations"
+      count: 22
+
+    - category: "integration_tests"
+      description: "Test AI orchestration with tools"
+      count: 7
+
+    - category: "determinism_tests"
+      description: "Verify temperature=0, seed=42 reproducibility"
+      count: 3
+
+    - category: "boundary_tests"
+      description: "Test edge cases (extreme temperatures, long durations)"
+      count: 5
+
+    - category: "performance_tests"
+      description: "Verify latency and cost targets"
+      count: 3
+
+  performance_requirements:
+    max_latency_ms: 3000
+    max_cost_usd: 0.10
+    accuracy_target: 0.92
+
+deployment:
+  pack_id: "industrial/thermal_storage_pack"
+  pack_version: "1.0.0"
+
+  dependencies:
+    python_packages:
+      - "pydantic>=2.0"
+      - "numpy>=1.24"
+      - "scipy>=1.11"
+
+    greenlang_modules:
+      - "greenlang.agents.base"
+      - "greenlang.intelligence"
+
+  resource_requirements:
+    memory_mb: 512
+    cpu_cores: 1
+    gpu_required: false
+
+  api_endpoints:
+    - endpoint: "/api/v1/agents/industrial/thermal_storage/execute"
+      method: "POST"
+      authentication: "required"
+
+documentation:
+  readme: true
+  api_docs: true
+  examples: true
+  tutorials: true
+
+  example_use_cases:
+    - title: "Solar Thermal + Storage for 24/7 Food Processing"
+      description: "Design solar+storage system to double solar fraction"
+      input_example:
+        application: "solar_thermal"
+        thermal_load_kw: 400
+        temperature_c: 90
+        storage_hours: 8
+      output_summary: "68% solar fraction achieved (vs 42% without storage), 0.39-year payback"
+
+    - title: "Load Shifting for Electric Process Heating"
+      description: "Shift electric heating to off-peak hours"
+      input_example:
+        application: "load_shifting"
+        thermal_load_kw: 300
+        storage_hours: 10
+      output_summary: "45% reduction in energy costs through time-of-use optimization"
+
+    - title: "Waste Heat Storage for Batch Processes"
+      description: "Capture waste heat for reuse in next batch"
+      input_example:
+        application: "waste_heat_recovery"
+        thermal_load_kw: 200
+        storage_hours: 4
+      output_summary: "30% reduction in natural gas consumption, 1.8-year payback"
+
+compliance:
+  zero_secrets: true
+  sbom_required: true
+  digital_signature: true
+
+  standards:
+    - "ASHRAE_Handbook_HVAC_Applications_Ch51"
+    - "IEA_ECES_Annex_30_Thermal_Storage"
+    - "IRENA_Thermal_Storage_Guidelines"
+    - "ISO_9806_Solar_Collector_Performance"
+
+  certifications:
+    - "LEED_EA_Renewable_Energy_Storage"
+    - "ISO_50001_EnMS"
+
+business_impact:
+  market_opportunity:
+    addressable_market_usd: 8000000000
+    market_segment: "Industrial thermal storage for solar integration and demand response"
+    target_customers: "Food/beverage, chemicals, pharmaceuticals with continuous thermal loads"
+    growth_rate: "20% CAGR (2024-2030)"
+
+  carbon_impact:
+    addressable_emissions_gt_co2e: 0.8
+    realistic_reduction_2030_gt: 0.16
+    note: "Storage enables 20-40% increase in solar fraction, critical for industrial decarbonization"
+
+  economic_value:
+    typical_payback_years: "0.5-4 years depending on application"
+    irr_range: "25-100%+ for optimal applications"
+    demand_charge_savings: "$5,000-50,000/year typical"
+
+metadata:
+  created_date: "2025-10-13"
+  created_by: "Head of AI & Climate Intelligence"
+  last_modified: "2025-10-13"
+  review_status: "Approved"
+  reviewers: ["AI Lead"]
+
+  change_log:
+    - version: "1.0.0"
+      date: "2025-10-13"
+      changes: "Initial specification - production ready for Agent Factory generation"
+      author: "Chief AI & Climate Intelligence"
+
+# END OF AGENT #7 SPECIFICATION
+# Production Ready for Agent Factory Generation
+# Next: Agent #8 - ProcessSchedulingAgent_AI

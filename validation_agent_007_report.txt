@@ -1,0 +1,16 @@
+================================================================================
+Validation Report: agent_007_thermal_storage.yaml
+================================================================================
+Status: ✅ PASS
+Errors: 0
+Warnings: 1
+Info: 0
+--------------------------------------------------------------------------------
+
+🟡 WARNINGS:
+⚠️  WARNING: [ai_integration] system_prompt
+   system_prompt should emphasize: use tools, never guess, deterministic
+
+
+✨ All validation checks passed!
+================================================================================

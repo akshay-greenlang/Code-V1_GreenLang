@@ -1,0 +1,723 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.ai/schemas/agentspec_v2.json",
+  "title": "GreenLang AgentSpec V2.0",
+  "description": "JSON Schema for GreenLang Agent Specifications V2.0 - Tool-First Design Pattern",
+  "type": "object",
+  "required": [
+    "agent_metadata",
+    "description",
+    "tools",
+    "ai_integration",
+    "inputs",
+    "outputs",
+    "testing",
+    "deployment",
+    "documentation",
+    "compliance",
+    "metadata"
+  ],
+  "properties": {
+    "agent_metadata": {
+      "type": "object",
+      "description": "Agent identification and classification metadata",
+      "required": [
+        "agent_id",
+        "agent_name",
+        "version",
+        "domain",
+        "category",
+        "complexity",
+        "priority",
+        "base_agent",
+        "status"
+      ],
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "pattern": "^[a-z_]+/[a-z_]+$",
+          "description": "Unique agent identifier (format: domain/agent_name)"
+        },
+        "agent_name": {
+          "type": "string",
+          "description": "Human-readable agent name (PascalCase with _AI suffix)"
+        },
+        "agent_number": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 84,
+          "description": "Agent number in the 84-agent ecosystem"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version (e.g., 1.0.0)"
+        },
+        "domain": {
+          "type": "string",
+          "enum": [
+            "Domain1_Industrial",
+            "Domain2_HVAC",
+            "Domain3_CrossCutting"
+          ],
+          "description": "Primary domain classification"
+        },
+        "category": {
+          "type": "string",
+          "description": "Sub-category within domain"
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["Low", "Medium", "High"],
+          "description": "Implementation complexity level"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["P0_Critical", "P1_High", "P2_Medium"],
+          "description": "Development priority"
+        },
+        "base_agent": {
+          "type": "string",
+          "description": "Base agent for inheritance (or 'None')"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Spec_Needed",
+            "Spec_Complete",
+            "In_Development",
+            "Testing",
+            "Production"
+          ],
+          "description": "Current development status"
+        },
+        "entry_point": {
+          "type": "boolean",
+          "description": "Is this a master coordinator/entry point?"
+        }
+      }
+    },
+    "description": {
+      "type": "object",
+      "description": "Agent purpose and capabilities",
+      "required": ["purpose", "strategic_context", "key_capabilities"],
+      "properties": {
+        "purpose": {
+          "type": "string",
+          "minLength": 50,
+          "description": "Clear description of agent's purpose"
+        },
+        "strategic_context": {
+          "type": "object",
+          "required": [
+            "global_impact",
+            "opportunity",
+            "market_size",
+            "technology_maturity"
+          ],
+          "properties": {
+            "global_impact": {
+              "type": "string",
+              "description": "Impact statistics (CO2e/year, etc.)"
+            },
+            "opportunity": {
+              "type": "string",
+              "description": "Key opportunity addressed"
+            },
+            "market_size": {
+              "type": "string",
+              "description": "Addressable market size"
+            },
+            "technology_maturity": {
+              "type": "string",
+              "description": "Current state of technology"
+            }
+          }
+        },
+        "key_capabilities": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "string"
+          },
+          "description": "List of key agent capabilities"
+        },
+        "entry_point": {
+          "type": "boolean",
+          "description": "Is this a master coordinator?"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["agent_id", "relationship"],
+            "properties": {
+              "agent_id": {
+                "type": "string"
+              },
+              "relationship": {
+                "type": "string",
+                "enum": [
+                  "calls",
+                  "coordinates",
+                  "provides_data_to",
+                  "receives_data_from"
+                ]
+              },
+              "data": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "tools": {
+      "type": "object",
+      "description": "Tool definitions (CRITICAL for deterministic AI)",
+      "required": ["tool_count", "tools_list"],
+      "properties": {
+        "tool_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20,
+          "description": "Total number of tools"
+        },
+        "tools_list": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/tool"
+          }
+        }
+      }
+    },
+    "ai_integration": {
+      "type": "object",
+      "description": "AI model integration settings",
+      "required": [
+        "temperature",
+        "seed",
+        "system_prompt",
+        "user_prompt_template",
+        "tool_choice",
+        "max_iterations",
+        "budget_usd",
+        "provenance_tracking",
+        "ai_summary"
+      ],
+      "properties": {
+        "temperature": {
+          "type": "number",
+          "const": 0.0,
+          "description": "MUST be 0.0 for deterministic results"
+        },
+        "seed": {
+          "type": "integer",
+          "const": 42,
+          "description": "MUST be 42 for reproducibility"
+        },
+        "system_prompt": {
+          "type": "string",
+          "minLength": 50,
+          "description": "System prompt for AI model"
+        },
+        "user_prompt_template": {
+          "type": "string",
+          "minLength": 50,
+          "description": "Template for user prompts"
+        },
+        "tool_choice": {
+          "type": "string",
+          "enum": ["auto", "required", "none"],
+          "description": "Tool usage strategy"
+        },
+        "max_iterations": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Maximum AI reasoning loops"
+        },
+        "budget_usd": {
+          "type": "number",
+          "minimum": 0.01,
+          "maximum": 1.0,
+          "description": "Maximum cost per query in USD"
+        },
+        "provenance_tracking": {
+          "type": "boolean",
+          "const": true,
+          "description": "MUST be true for audit trail"
+        },
+        "ai_summary": {
+          "type": "boolean",
+          "description": "Generate human-readable summaries"
+        }
+      }
+    },
+    "sub_agents": {
+      "type": "object",
+      "description": "Sub-agents coordinated by this agent",
+      "properties": {
+        "sub_agent_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sub_agents_list": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["sub_agent_id", "role", "tools_count", "invocation_pattern"],
+            "properties": {
+              "sub_agent_id": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              },
+              "tools_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "tools": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "invocation_pattern": {
+                "type": "string",
+                "enum": ["on_demand", "continuous", "scheduled"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "description": "Agent input schema",
+      "required": ["input_schema"],
+      "properties": {
+        "input_schema": {
+          "$ref": "#/definitions/schema"
+        },
+        "example_input": {
+          "type": "object"
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "description": "Agent output schema",
+      "required": ["output_schema"],
+      "properties": {
+        "output_schema": {
+          "$ref": "#/definitions/schema"
+        },
+        "example_output": {
+          "type": "object"
+        }
+      }
+    },
+    "testing": {
+      "type": "object",
+      "description": "Testing requirements and targets",
+      "required": ["test_coverage_target", "test_categories"],
+      "properties": {
+        "test_coverage_target": {
+          "type": "number",
+          "minimum": 0.8,
+          "maximum": 1.0,
+          "description": "Minimum test coverage (0.80 = 80%)"
+        },
+        "test_categories": {
+          "type": "array",
+          "minItems": 4,
+          "items": {
+            "type": "object",
+            "required": ["category", "description", "count"],
+            "properties": {
+              "category": {
+                "type": "string",
+                "enum": [
+                  "unit_tests",
+                  "integration_tests",
+                  "determinism_tests",
+                  "boundary_tests",
+                  "performance_tests"
+                ]
+              },
+              "description": {
+                "type": "string"
+              },
+              "count": {
+                "oneOf": [
+                  {"type": "integer", "minimum": 1},
+                  {"type": "string", "pattern": "^\\d+\\+$"}
+                ]
+              }
+            }
+          }
+        },
+        "performance_requirements": {
+          "type": "object",
+          "properties": {
+            "max_latency_ms": {
+              "type": "integer",
+              "description": "Maximum latency in milliseconds"
+            },
+            "max_cost_usd": {
+              "type": "number",
+              "description": "Maximum cost per query"
+            },
+            "accuracy_target": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1,
+              "description": "Target accuracy (0-1)"
+            }
+          }
+        }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "description": "Deployment configuration",
+      "properties": {
+        "pack_id": {
+          "type": "string"
+        },
+        "pack_version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "dependencies": {
+          "type": "object",
+          "properties": {
+            "python_packages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "greenlang_modules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "resource_requirements": {
+          "type": "object",
+          "properties": {
+            "memory_mb": {
+              "type": "integer",
+              "minimum": 128
+            },
+            "cpu_cores": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "gpu_required": {
+              "type": "boolean"
+            }
+          }
+        },
+        "api_endpoints": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "endpoint": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string",
+                "enum": ["GET", "POST", "PUT", "DELETE", "PATCH"]
+              },
+              "authentication": {
+                "type": "string",
+                "enum": ["required", "optional", "none"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "documentation": {
+      "type": "object",
+      "description": "Documentation requirements",
+      "properties": {
+        "readme": {
+          "type": "boolean"
+        },
+        "api_docs": {
+          "type": "boolean"
+        },
+        "examples": {
+          "type": "boolean"
+        },
+        "tutorials": {
+          "type": "boolean"
+        },
+        "example_use_cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["title", "description"],
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "input_example": {
+                "type": "object"
+              },
+              "output_example": {
+                "type": "object"
+              },
+              "output_summary": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "description": "Compliance and security requirements",
+      "required": ["zero_secrets"],
+      "properties": {
+        "zero_secrets": {
+          "type": "boolean",
+          "const": true,
+          "description": "MUST be true (no hardcoded secrets)"
+        },
+        "sbom_required": {
+          "type": "boolean",
+          "description": "Software Bill of Materials required"
+        },
+        "digital_signature": {
+          "type": "boolean",
+          "description": "Code signing required"
+        },
+        "standards": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Applicable compliance standards"
+        },
+        "certifications": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Required certifications"
+        }
+      }
+    },
+    "business_impact": {
+      "type": "object",
+      "description": "Business and environmental impact metrics",
+      "properties": {
+        "market_opportunity": {
+          "type": "object"
+        },
+        "carbon_impact": {
+          "type": "object"
+        },
+        "economic_value": {
+          "type": "object"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Administrative metadata",
+      "properties": {
+        "created_date": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Creation date (YYYY-MM-DD)"
+        },
+        "created_by": {
+          "type": "string"
+        },
+        "last_modified": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+          "description": "Last modification date (YYYY-MM-DD)"
+        },
+        "review_status": {
+          "type": "string",
+          "enum": ["Draft", "Review", "Approved"]
+        },
+        "reviewers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "change_log": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["version", "date", "changes", "author"],
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "date": {
+                "type": "string"
+              },
+              "changes": {
+                "type": "string"
+              },
+              "author": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "tool": {
+      "type": "object",
+      "description": "Individual tool definition",
+      "required": [
+        "tool_id",
+        "name",
+        "description",
+        "category",
+        "deterministic",
+        "parameters",
+        "returns",
+        "implementation"
+      ],
+      "properties": {
+        "tool_id": {
+          "type": "string",
+          "description": "Unique tool identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Tool function name"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 20,
+          "description": "Clear tool description"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["calculation", "lookup", "aggregation", "analysis", "optimization"],
+          "description": "Tool category"
+        },
+        "deterministic": {
+          "type": "boolean",
+          "const": true,
+          "description": "MUST be true for all tools"
+        },
+        "parameters": {
+          "type": "object",
+          "required": ["type", "properties"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "object"
+            },
+            "properties": {
+              "type": "object"
+            },
+            "required": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "returns": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "properties": {
+              "type": "object"
+            }
+          }
+        },
+        "implementation": {
+          "type": "object",
+          "properties": {
+            "physics_formula": {
+              "type": "string"
+            },
+            "calculation_method": {
+              "type": "string"
+            },
+            "data_source": {
+              "type": "string"
+            },
+            "accuracy": {
+              "type": "string"
+            },
+            "validation": {
+              "type": "string"
+            },
+            "standards": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "example": {
+          "type": "object",
+          "properties": {
+            "input": {
+              "type": "object"
+            },
+            "output": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "schema": {
+      "type": "object",
+      "description": "JSON Schema definition for inputs/outputs",
+      "required": ["type", "properties"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "object"
+        },
+        "properties": {
+          "type": "object"
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

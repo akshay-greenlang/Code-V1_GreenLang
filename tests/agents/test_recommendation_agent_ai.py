@@ -510,8 +510,9 @@ class TestRecommendationAgentAI:
         summary = agent.get_performance_summary()
         assert summary["ai_metrics"]["tool_call_count"] > 0
 
+    @pytest.mark.asyncio
     @patch("greenlang.agents.recommendation_agent_ai.ChatSession")
-    def test_execute_with_mocked_ai(self, mock_session_class, agent, valid_building_data):
+    async def test_execute_with_mocked_ai(self, mock_session_class, agent, valid_building_data):
         """Test execute() with mocked ChatSession to verify AI integration."""
         # Create mock response
         mock_response = Mock(spec=ChatResponse)
@@ -592,8 +593,13 @@ class TestRecommendationAgentAI:
         mock_session.chat = AsyncMock(return_value=mock_response)
         mock_session_class.return_value = mock_session
 
-        # Run agent
-        result = agent.execute(valid_building_data)
+        # Run agent (handle both sync and async)
+        import inspect
+        result_coro = agent.execute(valid_building_data)
+        if inspect.iscoroutine(result_coro):
+            result = await result_coro
+        else:
+            result = result_coro
 
         # Verify success
         assert result.success is True

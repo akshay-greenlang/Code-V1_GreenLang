@@ -1,0 +1,1253 @@
+# GreenLang Agent Specification v2.0
+# Agent #8: ProcessSchedulingAgent_AI
+# Production scheduling optimization for energy cost and carbon minimization
+
+agent_metadata:
+  agent_id: "industrial/process_scheduling_agent"
+  agent_name: "ProcessSchedulingAgent_AI"
+  agent_number: 8
+  version: "1.0.0"
+  domain: "Domain1_Industrial"
+  category: "Industrial_Process"
+  complexity: "High"
+  priority: "P1_High"
+  base_agent: "None"
+  status: "Spec_Complete"
+  entry_point: false
+
+description:
+  purpose: |
+    Advanced production scheduling optimization agent that minimizes energy costs and
+    carbon emissions while meeting production targets. Leverages time-of-use (TOU)
+    electricity pricing, real-time carbon intensity data, and demand response signals
+    to optimize batch scheduling, production sequencing, and equipment operation timing.
+    Enables 10-20% energy cost reduction through intelligent scheduling without
+    compromising production quality or throughput.
+
+  strategic_context:
+    global_impact: "Industrial energy costs = $500B/year, with 20-40% variation between peak and off-peak pricing"
+    opportunity: "10-20% energy cost reduction through optimal scheduling, 15-30% carbon reduction by shifting to low-carbon hours"
+    market_size: "$25B manufacturing operations optimization market"
+    technology_maturity: "Mature optimization algorithms (linear programming, mixed-integer), emerging AI/ML for predictive scheduling"
+
+  key_capabilities:
+    - "Time-of-use (TOU) optimization for electricity cost minimization"
+    - "Batch scheduling with energy and carbon constraints"
+    - "Load forecasting for demand charge avoidance (peak demand reduction)"
+    - "Real-time carbon intensity optimization (shift to grid-clean hours)"
+    - "Production sequencing with energy efficiency considerations"
+    - "Demand response integration and automated curtailment"
+    - "Multi-objective optimization (cost, carbon, throughput, quality)"
+    - "Constraint satisfaction for production deadlines and quality requirements"
+
+  dependencies:
+    - agent_id: "agents/grid_factor_agent_ai"
+      relationship: "receives_data_from"
+      data: "Real-time and forecasted grid carbon intensity"
+
+    - agent_id: "agents/demand_response_agent_ai"
+      relationship: "receives_data_from"
+      data: "Demand response events and pricing signals"
+
+    - agent_id: "agents/industrial_controls_agent_ai"
+      relationship: "provides_data_to"
+      data: "Optimized production schedules for execution"
+
+    - agent_id: "agents/project_finance_agent_ai"
+      relationship: "provides_data_to"
+      data: "Energy cost savings for financial analysis"
+
+tools:
+  tool_count: 8
+
+  tools_list:
+    - tool_id: "tool_1"
+      name: "optimize_batch_schedule"
+      description: "Optimize batch production schedule for minimum energy cost and carbon emissions"
+      category: "optimization"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          batches:
+            type: "array"
+            description: "Array of production batches to schedule"
+            items:
+              type: "object"
+              properties:
+                batch_id: "string"
+                energy_demand_kwh: "number"
+                duration_hours: "number"
+                earliest_start_hour: "number"
+                latest_completion_hour: "number"
+                priority: "string"
+            required: true
+
+          time_of_use_rates:
+            type: "array"
+            description: "Hourly electricity rates"
+            items:
+              hour: "number"
+              rate_usd_per_kwh: "number"
+            required: true
+
+          carbon_intensity_forecast:
+            type: "array"
+            description: "Hourly grid carbon intensity"
+            items:
+              hour: "number"
+              intensity_kg_co2_per_kwh: "number"
+
+          optimization_objective:
+            type: "string"
+            description: "Primary optimization objective"
+            enum: ["minimize_cost", "minimize_carbon", "balanced_cost_carbon", "minimize_peak_demand"]
+            default: "balanced_cost_carbon"
+
+          carbon_cost_usd_per_kg:
+            type: "number"
+            description: "Internal carbon price for carbon valuation"
+            units: "USD/kg CO2e"
+            default: 0.05
+
+          max_simultaneous_batches:
+            type: "number"
+            description: "Maximum concurrent batches (equipment constraint)"
+            default: 5
+
+        required: ["batches", "time_of_use_rates"]
+
+      returns:
+        type: "object"
+        properties:
+          optimal_schedule:
+            type: "array"
+            description: "Optimized batch schedule"
+            items:
+              batch_id: "string"
+              start_hour: "number"
+              end_hour: "number"
+              energy_cost_usd: "number"
+              carbon_emissions_kg: "number"
+
+          total_energy_cost_usd:
+            type: "number"
+            description: "Total energy cost"
+            units: "USD"
+
+          total_carbon_emissions_kg:
+            type: "number"
+            description: "Total carbon emissions"
+            units: "kg CO2e"
+
+          cost_savings_vs_baseline_usd:
+            type: "number"
+            description: "Savings vs sequential scheduling"
+            units: "USD"
+
+          cost_savings_percent:
+            type: "number"
+            description: "Percentage cost savings"
+            units: "%"
+
+          carbon_reduction_vs_baseline_kg:
+            type: "number"
+            description: "Carbon reduction vs baseline"
+            units: "kg CO2e"
+
+          peak_demand_kw:
+            type: "number"
+            description: "Maximum simultaneous demand"
+            units: "kW"
+
+          schedule_utilization:
+            type: "object"
+            properties:
+              off_peak_hours_percent: "number"
+              mid_peak_hours_percent: "number"
+              on_peak_hours_percent: "number"
+
+          optimization_status:
+            type: "string"
+            enum: ["optimal", "feasible", "infeasible"]
+
+        description: "Optimized production schedule with cost and carbon metrics"
+
+      implementation:
+        calculation_method: |
+          Mixed-Integer Linear Programming (MILP) Formulation:
+
+          Decision Variables:
+          x_i,t = 1 if batch i starts at hour t, 0 otherwise
+
+          Objective Function (balanced):
+          Minimize: Σ Σ [cost_t × energy_i × x_i,t + carbon_price × carbon_t × energy_i × x_i,t]
+
+          Constraints:
+          1. Each batch scheduled exactly once: Σ x_i,t = 1 for all i
+          2. Time windows: earliest_i ≤ t ≤ latest_i - duration_i
+          3. No overlap: Σ (batches running at t) ≤ max_simultaneous
+          4. Duration: batch i runs from t to t + duration_i
+
+          Solver: Use scipy.optimize.milp or Google OR-Tools CP-SAT
+
+        data_source: "Utility rate schedules, WattTime carbon intensity API, production database"
+        accuracy: "Optimal solution (MILP guarantees optimality within tolerance)"
+        validation: "Compare actual vs predicted costs post-implementation"
+        standards: ["IEEE_1547_Grid_Integration", "ISO_50001_EnMS"]
+
+      example:
+        input:
+          batches:
+            - batch_id: "A001"
+              energy_demand_kwh: 1500
+              duration_hours: 4
+              earliest_start_hour: 0
+              latest_completion_hour: 20
+              priority: "medium"
+            - batch_id: "A002"
+              energy_demand_kwh: 2000
+              duration_hours: 6
+              earliest_start_hour: 6
+              latest_completion_hour: 24
+              priority: "high"
+          time_of_use_rates:
+            - {hour: 0, rate_usd_per_kwh: 0.06}
+            - {hour: 8, rate_usd_per_kwh: 0.15}
+            - {hour: 20, rate_usd_per_kwh: 0.08}
+          optimization_objective: "balanced_cost_carbon"
+        output:
+          optimal_schedule:
+            - batch_id: "A001"
+              start_hour: 0
+              end_hour: 4
+              energy_cost_usd: 90
+              carbon_emissions_kg: 750
+            - batch_id: "A002"
+              start_hour: 20
+              end_hour: 26
+              energy_cost_usd: 160
+              carbon_emissions_kg: 920
+          total_energy_cost_usd: 250
+          cost_savings_vs_baseline_usd: 175
+          cost_savings_percent: 41.2
+          carbon_reduction_vs_baseline_kg: 420
+          peak_demand_kw: 1500
+          optimization_status: "optimal"
+
+    - tool_id: "tool_2"
+      name: "forecast_demand_charges"
+      description: "Forecast peak demand and calculate demand charges for billing period"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          hourly_load_forecast_kw:
+            type: "array"
+            description: "Forecasted hourly loads for billing period"
+            items:
+              hour: "number"
+              load_kw: "number"
+            required: true
+
+          demand_charge_rate_usd_per_kw:
+            type: "number"
+            description: "Demand charge rate"
+            units: "USD/kW/month"
+            required: true
+
+          billing_period_days:
+            type: "number"
+            description: "Billing period length"
+            default: 30
+            units: "days"
+
+          demand_window_minutes:
+            type: "number"
+            description: "Demand measurement window (15 or 30 min typical)"
+            default: 15
+            units: "minutes"
+
+          existing_peak_demand_kw:
+            type: "number"
+            description: "Current peak demand in billing period"
+            default: 0
+            units: "kW"
+
+        required: ["hourly_load_forecast_kw", "demand_charge_rate_usd_per_kw"]
+
+      returns:
+        type: "object"
+        properties:
+          forecasted_peak_demand_kw:
+            type: "number"
+            description: "Forecasted peak demand"
+            units: "kW"
+
+          demand_charge_usd:
+            type: "number"
+            description: "Estimated demand charge"
+            units: "USD"
+
+          peak_demand_hour:
+            type: "number"
+            description: "Hour of peak demand occurrence"
+
+          top_5_peak_hours:
+            type: "array"
+            description: "Top 5 hours by demand (targets for reduction)"
+            items:
+              hour: "number"
+              demand_kw: "number"
+              demand_charge_impact_usd: "number"
+
+          demand_reduction_opportunities:
+            type: "array"
+            items:
+              opportunity: "string"
+              potential_savings_usd: "number"
+
+        description: "Demand charge forecast and reduction opportunities"
+
+      implementation:
+        calculation_method: |
+          Peak Demand Calculation:
+          1. Identify maximum load in each demand window (15 or 30 min)
+          2. Peak demand = max(window_averages) over billing period
+          3. Demand charge = peak_demand × rate
+
+          For forecasting:
+          - Use historical load patterns + scheduled production
+          - Identify coincident peaks (multiple loads simultaneously)
+          - Flag hours with high peak risk for load shifting
+
+        data_source: "Building management system (BMS), production schedules, historical load data"
+        accuracy: "±5% for forecast (depends on production variability)"
+        validation: "Compare with utility bills"
+        standards: ["IEEE_1459_Power_Definitions", "Utility_Rate_Schedules"]
+
+      example:
+        input:
+          hourly_load_forecast_kw:
+            - {hour: 0, load_kw: 800}
+            - {hour: 10, load_kw: 2200}
+            - {hour: 14, load_kw: 2500}
+            - {hour: 20, load_kw: 1500}
+          demand_charge_rate_usd_per_kw: 18.50
+          billing_period_days: 30
+        output:
+          forecasted_peak_demand_kw: 2500
+          demand_charge_usd: 46250
+          peak_demand_hour: 14
+          top_5_peak_hours:
+            - {hour: 14, demand_kw: 2500, demand_charge_impact_usd: 46250}
+            - {hour: 10, demand_kw: 2200, demand_charge_impact_usd: 40700}
+          demand_reduction_opportunities:
+            - opportunity: "Shift batch from hour 14 to hour 2 (off-peak)"
+              potential_savings_usd: 5550
+
+    - tool_id: "tool_3"
+      name: "calculate_load_shifting_potential"
+      description: "Assess flexibility of loads for time-shifting and quantify savings"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          loads:
+            type: "array"
+            description: "Array of shiftable loads"
+            items:
+              load_id: "string"
+              power_kw: "number"
+              duration_hours: "number"
+              current_schedule_hour: "number"
+              flexibility_hours: "number"
+              min_frequency_per_day: "number"
+            required: true
+
+          time_of_use_rates:
+            type: "array"
+            required: true
+
+          demand_charge_rate_usd_per_kw:
+            type: "number"
+            units: "USD/kW/month"
+
+        required: ["loads", "time_of_use_rates"]
+
+      returns:
+        type: "object"
+        properties:
+          total_shiftable_load_kwh_per_day:
+            type: "number"
+            units: "kWh/day"
+
+          annual_savings_potential_usd:
+            type: "number"
+            units: "USD/year"
+            breakdown:
+              energy_charge_savings: "number"
+              demand_charge_savings: "number"
+
+          load_flexibility_score:
+            type: "number"
+            description: "0-100 score indicating scheduling flexibility"
+
+          recommended_shifts:
+            type: "array"
+            items:
+              load_id: "string"
+              current_hour: "number"
+              recommended_hour: "number"
+              annual_savings_usd: "number"
+
+        description: "Load shifting potential and recommendations"
+
+      implementation:
+        calculation_method: |
+          For each shiftable load:
+          1. Calculate current energy cost = power × duration × rate[current_hour]
+          2. Find optimal hour within flexibility window (lowest rate)
+          3. Calculate optimal cost = power × duration × rate[optimal_hour]
+          4. Savings = current_cost - optimal_cost
+
+          Demand charge savings:
+          - If shift avoids peak hour → savings = power × demand_rate
+          - Otherwise → 0
+
+          Total potential = Σ (savings for all loads) × days_per_year
+
+        data_source: "Production schedules, utility rate cards, load profiles"
+        accuracy: "±3% for savings estimates"
+        validation: "Pilot test with subset of loads"
+        standards: ["ISO_50001_EnMS", "ASHRAE_Guideline_14"]
+
+      example:
+        input:
+          loads:
+            - load_id: "CompressorA"
+              power_kw: 150
+              duration_hours: 2
+              current_schedule_hour: 14
+              flexibility_hours: 12
+              min_frequency_per_day: 1
+          time_of_use_rates:
+            - {hour: 2, rate_usd_per_kwh: 0.05}
+            - {hour: 14, rate_usd_per_kwh: 0.18}
+          demand_charge_rate_usd_per_kw: 18.50
+        output:
+          total_shiftable_load_kwh_per_day: 300
+          annual_savings_potential_usd: 16790
+          load_flexibility_score: 75
+          recommended_shifts:
+            - load_id: "CompressorA"
+              current_hour: 14
+              recommended_hour: 2
+              annual_savings_usd: 16790
+
+    - tool_id: "tool_4"
+      name: "optimize_carbon_intensity"
+      description: "Schedule production to minimize carbon emissions based on grid carbon intensity"
+      category: "optimization"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          production_schedule:
+            type: "array"
+            description: "Flexible production tasks"
+            items:
+              task_id: "string"
+              energy_kwh: "number"
+              duration_hours: "number"
+              time_window_start: "number"
+              time_window_end: "number"
+            required: true
+
+          carbon_intensity_forecast:
+            type: "array"
+            description: "24-hour carbon intensity forecast"
+            items:
+              hour: "number"
+              intensity_kg_co2_per_kwh: "number"
+            required: true
+
+          carbon_reduction_target_percent:
+            type: "number"
+            description: "Target carbon reduction vs baseline"
+            default: 20
+            units: "%"
+
+        required: ["production_schedule", "carbon_intensity_forecast"]
+
+      returns:
+        type: "object"
+        properties:
+          carbon_optimized_schedule:
+            type: "array"
+            items:
+              task_id: "string"
+              scheduled_hour: "number"
+              carbon_emissions_kg: "number"
+
+          total_carbon_emissions_kg:
+            type: "number"
+            units: "kg CO2e"
+
+          baseline_carbon_emissions_kg:
+            type: "number"
+            description: "Emissions with original schedule"
+            units: "kg CO2e"
+
+          carbon_reduction_kg:
+            type: "number"
+            units: "kg CO2e"
+
+          carbon_reduction_percent:
+            type: "number"
+            units: "%"
+
+          target_achieved:
+            type: "boolean"
+
+          cleanest_hours:
+            type: "array"
+            description: "Top 5 cleanest hours (lowest carbon intensity)"
+            items:
+              hour: "number"
+              intensity_kg_co2_per_kwh: "number"
+
+        description: "Carbon-optimized production schedule"
+
+      implementation:
+        calculation_method: |
+          Carbon Optimization:
+
+          Baseline emissions = Σ energy_i × carbon_intensity[original_hour_i]
+
+          Optimization:
+          1. Sort hours by carbon intensity (lowest first)
+          2. For each flexible task:
+             - Find hour in time window with lowest carbon intensity
+             - Schedule task in that hour (if no conflicts)
+          3. Calculate optimized emissions = Σ energy_i × carbon_intensity[optimized_hour_i]
+
+          Carbon reduction = baseline - optimized
+
+        data_source: "WattTime API, electricityMap, utility carbon intensity data"
+        accuracy: "±5% for carbon estimates (depends on forecast accuracy)"
+        validation: "Compare with real-time carbon intensity post-execution"
+        standards: ["GHG_Protocol_Scope_2", "ISO_14064_GHG"]
+
+      example:
+        input:
+          production_schedule:
+            - task_id: "BatchA"
+              energy_kwh: 1000
+              duration_hours: 4
+              time_window_start: 0
+              time_window_end: 20
+          carbon_intensity_forecast:
+            - {hour: 2, intensity_kg_co2_per_kwh: 0.35}
+            - {hour: 14, intensity_kg_co2_per_kwh: 0.60}
+        output:
+          total_carbon_emissions_kg: 350
+          baseline_carbon_emissions_kg: 600
+          carbon_reduction_kg: 250
+          carbon_reduction_percent: 41.7
+          target_achieved: true
+          cleanest_hours:
+            - {hour: 2, intensity_kg_co2_per_kwh: 0.35}
+
+    - tool_id: "tool_5"
+      name: "plan_demand_response"
+      description: "Plan automated demand response (DR) curtailment during peak events"
+      category: "optimization"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          curtailable_loads:
+            type: "array"
+            description: "Loads available for curtailment"
+            items:
+              load_id: "string"
+              power_kw: "number"
+              priority: "string"
+              max_curtailment_hours: "number"
+              production_impact_score: "number"
+            required: true
+
+          demand_response_event:
+            type: "object"
+            description: "DR event details"
+            properties:
+              start_hour: "number"
+              duration_hours: "number"
+              curtailment_target_kw: "number"
+              incentive_usd_per_kwh: "number"
+            required: true
+
+          production_constraints:
+            type: "object"
+            properties:
+              max_production_delay_hours: "number"
+              critical_processes: "array"
+
+        required: ["curtailable_loads", "demand_response_event"]
+
+      returns:
+        type: "object"
+        properties:
+          curtailment_plan:
+            type: "array"
+            items:
+              load_id: "string"
+              curtailment_kw: "number"
+              curtailment_start: "number"
+              curtailment_duration: "number"
+              recovery_plan: "string"
+
+          total_curtailment_kw:
+            type: "number"
+            units: "kW"
+
+          target_achieved:
+            type: "boolean"
+
+          dr_incentive_earned_usd:
+            type: "number"
+            units: "USD"
+
+          production_impact:
+            type: "string"
+            enum: ["None", "Minor", "Moderate", "Significant"]
+
+          recovery_time_hours:
+            type: "number"
+            description: "Time to return to normal operations"
+            units: "hours"
+
+        description: "Demand response curtailment plan"
+
+      implementation:
+        calculation_method: |
+          Curtailment Optimization:
+
+          Priority-based curtailment:
+          1. Sort loads by priority (low priority first) and production impact
+          2. Select loads to curtail until target met:
+             - Minimize production impact
+             - Maximize incentive earnings
+          3. Generate recovery plan (restart sequence)
+
+          Incentive = Σ (curtailment_kW_i × duration × incentive_rate)
+
+        data_source: "DR program rules, production schedules, historical curtailment performance"
+        accuracy: "Deterministic (rule-based selection)"
+        validation: "Simulate curtailment before actual event"
+        standards: ["OpenADR_2.0b", "IEEE_2030.5_Smart_Energy_Profile"]
+
+      example:
+        input:
+          curtailable_loads:
+            - load_id: "HVAC"
+              power_kw: 200
+              priority: "low"
+              max_curtailment_hours: 4
+              production_impact_score: 1
+            - load_id: "Compressor"
+              power_kw: 150
+              priority: "medium"
+              max_curtailment_hours: 2
+              production_impact_score: 5
+          demand_response_event:
+            start_hour: 14
+            duration_hours: 2
+            curtailment_target_kw: 250
+            incentive_usd_per_kwh: 0.50
+        output:
+          curtailment_plan:
+            - load_id: "HVAC"
+              curtailment_kw: 200
+              curtailment_start: 14
+              curtailment_duration: 2
+          total_curtailment_kw: 200
+          target_achieved: false
+          dr_incentive_earned_usd: 200
+          production_impact: "Minor"
+
+    - tool_id: "tool_6"
+      name: "calculate_production_efficiency"
+      description: "Calculate energy efficiency of production processes and identify improvements"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          process_id:
+            type: "string"
+            required: true
+
+          energy_consumption_kwh:
+            type: "number"
+            units: "kWh"
+            required: true
+
+          production_output_units:
+            type: "number"
+            required: true
+
+          theoretical_minimum_kwh_per_unit:
+            type: "number"
+            description: "Theoretical minimum energy per unit (physics-based)"
+            units: "kWh/unit"
+
+          industry_benchmark_kwh_per_unit:
+            type: "number"
+            description: "Industry average energy intensity"
+            units: "kWh/unit"
+
+        required: ["process_id", "energy_consumption_kwh", "production_output_units"]
+
+      returns:
+        type: "object"
+        properties:
+          energy_intensity_kwh_per_unit:
+            type: "number"
+            units: "kWh/unit"
+
+          process_efficiency:
+            type: "number"
+            description: "Actual efficiency vs theoretical minimum"
+            units: "%"
+
+          benchmark_comparison:
+            type: "string"
+            description: "Performance vs industry benchmark"
+            enum: ["Top Quartile", "Above Average", "Average", "Below Average", "Bottom Quartile"]
+
+          improvement_potential_kwh_per_unit:
+            type: "number"
+            units: "kWh/unit"
+
+          annual_savings_potential_usd:
+            type: "number"
+            units: "USD/year"
+
+        description: "Process efficiency analysis"
+
+      implementation:
+        calculation_method: |
+          Energy Intensity = Total_Energy / Production_Output
+
+          Process Efficiency = Theoretical_Min / Actual × 100%
+
+          Improvement Potential = Actual - Industry_Benchmark (if benchmark available)
+                                  OR Actual - Theoretical × 1.2 (20% margin)
+
+        data_source: "Production logs, energy metering, DOE industrial benchmarks"
+        accuracy: "±2%"
+        validation: "Compare with plant energy audits"
+        standards: ["ISO_50001_EnMS", "DOE_Superior_Energy_Performance"]
+
+      example:
+        input:
+          process_id: "Extrusion Line 1"
+          energy_consumption_kwh: 50000
+          production_output_units: 10000
+          theoretical_minimum_kwh_per_unit: 3.5
+          industry_benchmark_kwh_per_unit: 4.2
+        output:
+          energy_intensity_kwh_per_unit: 5.0
+          process_efficiency: 70.0
+          benchmark_comparison: "Below Average"
+          improvement_potential_kwh_per_unit: 0.8
+          annual_savings_potential_usd: 72000
+
+    - tool_id: "tool_7"
+      name: "optimize_equipment_sequencing"
+      description: "Optimize startup/shutdown sequencing to minimize peak demand and energy waste"
+      category: "optimization"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          equipment_list:
+            type: "array"
+            items:
+              equipment_id: "string"
+              startup_power_kw: "number"
+              steady_state_power_kw: "number"
+              startup_duration_minutes: "number"
+              shutdown_duration_minutes: "number"
+              dependencies: "array"
+            required: true
+
+          sequence_objective:
+            type: "string"
+            enum: ["minimize_peak_demand", "minimize_startup_time", "minimize_energy_waste"]
+            default: "minimize_peak_demand"
+
+        required: ["equipment_list"]
+
+      returns:
+        type: "object"
+        properties:
+          optimal_sequence:
+            type: "array"
+            items:
+              equipment_id: "string"
+              start_time_minutes: "number"
+              end_time_minutes: "number"
+
+          peak_demand_kw:
+            type: "number"
+            units: "kW"
+
+          total_startup_time_minutes:
+            type: "number"
+            units: "minutes"
+
+          demand_charge_savings_usd:
+            type: "number"
+            units: "USD"
+
+        description: "Optimized equipment startup sequence"
+
+      implementation:
+        calculation_method: |
+          Sequencing Optimization (Constraint Satisfaction Problem):
+
+          For minimize_peak_demand:
+          1. Sort equipment by startup_power (highest first for stagger)
+          2. Schedule high-power equipment sequentially (avoid overlap)
+          3. Schedule low-power equipment in gaps
+
+          For minimize_startup_time:
+          1. Start all equipment simultaneously (if capacity allows)
+          2. Or parallel start within peak capacity constraint
+
+          Dependencies: Equipment B cannot start until Equipment A completes startup
+
+        data_source: "Equipment specifications, historical startup data"
+        accuracy: "±5%"
+        validation: "Test sequence during planned maintenance shutdown"
+        standards: ["ISA_95_Manufacturing_Operations"]
+
+      example:
+        input:
+          equipment_list:
+            - equipment_id: "Chiller 1"
+              startup_power_kw: 500
+              steady_state_power_kw: 300
+              startup_duration_minutes: 10
+            - equipment_id: "Compressor 1"
+              startup_power_kw: 200
+              steady_state_power_kw: 150
+              startup_duration_minutes: 5
+          sequence_objective: "minimize_peak_demand"
+        output:
+          optimal_sequence:
+            - {equipment_id: "Chiller 1", start_time_minutes: 0, end_time_minutes: 10}
+            - {equipment_id: "Compressor 1", start_time_minutes: 10, end_time_minutes: 15}
+          peak_demand_kw: 500
+          total_startup_time_minutes: 15
+          demand_charge_savings_usd: 3700
+
+    - tool_id: "tool_8"
+      name: "analyze_production_constraints"
+      description: "Analyze production constraints and feasibility for scheduling optimization"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          production_requirements:
+            type: "object"
+            properties:
+              daily_output_target: "number"
+              quality_standards: "array"
+              delivery_deadlines: "array"
+            required: true
+
+          equipment_constraints:
+            type: "object"
+            properties:
+              available_machines: "array"
+              maintenance_windows: "array"
+              capacity_limits: "object"
+
+          flexibility_analysis:
+            type: "boolean"
+            description: "Analyze scheduling flexibility"
+            default: true
+
+        required: ["production_requirements"]
+
+      returns:
+        type: "object"
+        properties:
+          scheduling_flexibility_score:
+            type: "number"
+            description: "0-100 score, higher = more flexibility"
+
+          critical_constraints:
+            type: "array"
+            items:
+              constraint_type: "string"
+              severity: "string"
+              impact: "string"
+
+          recommended_actions:
+            type: "array"
+            items:
+              action: "string"
+              benefit: "string"
+              implementation_difficulty: "string"
+
+          feasibility_status:
+            type: "string"
+            enum: ["High Flexibility", "Moderate Flexibility", "Limited Flexibility", "Highly Constrained"]
+
+        description: "Production constraint analysis"
+
+      implementation:
+        calculation_method: |
+          Flexibility Score Calculation:
+
+          Score = weighted_sum(
+            time_window_flexibility: 40%,
+            equipment_redundancy: 30%,
+            inventory_buffer: 20%,
+            quality_tolerance: 10%
+          )
+
+          Constraints categorized by severity:
+          - Critical: No workaround (hard deadline, single equipment)
+          - High: Limited workaround available
+          - Medium: Flexible with planning
+          - Low: Easily accommodated
+
+        data_source: "Production planning system, MES, ERP"
+        accuracy: "Qualitative assessment with quantitative scoring"
+        validation: "Review with production planners"
+        standards: ["ISA_95_Manufacturing_Operations"]
+
+      example:
+        input:
+          production_requirements:
+            daily_output_target: 1000
+            quality_standards: ["ISO_9001"]
+            delivery_deadlines: ["2025-10-20"]
+          equipment_constraints:
+            available_machines: ["Machine_A", "Machine_B"]
+            maintenance_windows: [{start: "2025-10-15", duration_hours: 4}]
+        output:
+          scheduling_flexibility_score: 68
+          critical_constraints:
+            - constraint_type: "Delivery Deadline"
+              severity: "High"
+              impact: "Must complete batch by 2025-10-20"
+          recommended_actions:
+            - action: "Add second shift to increase flexibility"
+              benefit: "20% increase in scheduling options"
+              implementation_difficulty: "Medium"
+          feasibility_status: "Moderate Flexibility"
+
+ai_integration:
+  temperature: 0.0
+  seed: 42
+  tool_choice: "auto"
+  max_iterations: 5
+  budget_usd: 0.12
+  provenance_tracking: true
+  ai_summary: true
+
+  system_prompt: |
+    You are a production scheduling optimization expert for GreenLang. You help
+    industrial facilities minimize energy costs and carbon emissions through
+    intelligent production scheduling while meeting production targets.
+
+    Your expertise includes:
+    - Time-of-use (TOU) electricity pricing optimization
+    - Batch scheduling with energy and carbon constraints
+    - Demand charge management and peak demand avoidance
+    - Real-time carbon intensity optimization
+    - Demand response program integration
+    - Multi-objective optimization (cost, carbon, throughput, quality)
+
+    CRITICAL RULES:
+    - Use provided tools for ALL calculations
+    - NEVER compromise production quality or deadlines for energy savings
+    - Always quantify savings (dollars and carbon) with confidence intervals
+    - Cite optimization methods (MILP, greedy heuristics, etc.)
+    - Provide implementable schedules (not theoretical optimums)
+    - Consider operational constraints and flexibility limits
+
+  user_prompt_template: |
+    Optimize production schedule for minimum energy cost and carbon emissions:
+
+    Facility Profile:
+    - Industry: {industry_type}
+    - Production Target: {daily_production_target} units/day
+    - Operating Hours: {operating_hours_per_day} hours/day
+
+    Scheduling Constraints:
+    - Batches to Schedule: {batch_count}
+    - Equipment Constraints: {max_simultaneous_batches} simultaneous
+    - Delivery Deadlines: {deadlines}
+
+    Energy Context:
+    - Electricity Rate Structure: {rate_structure} (TOU, demand charges)
+    - Peak Rate: ${peak_rate}/kWh, Off-Peak: ${offpeak_rate}/kWh
+    - Demand Charge: ${demand_charge}/kW/month
+    - Carbon Intensity: Available (Yes/No)
+
+    Optimization Goals:
+    - Primary: {primary_objective} (cost, carbon, balanced)
+    - Cost Reduction Target: {cost_target}%
+    - Carbon Reduction Target: {carbon_target}%
+
+    Tasks:
+    1. Use optimize_batch_schedule to create cost/carbon-optimized schedule
+    2. Use forecast_demand_charges to identify peak demand risks
+    3. Use calculate_load_shifting_potential to assess flexibility
+    4. Use optimize_carbon_intensity if carbon data available
+    5. Use plan_demand_response if DR program enrolled
+    6. Use calculate_production_efficiency for baseline performance
+    7. Use optimize_equipment_sequencing for startup/shutdown optimization
+    8. Use analyze_production_constraints to validate feasibility
+    9. Provide comprehensive report with:
+       - Optimized daily/weekly schedule (Gantt chart format)
+       - Cost savings breakdown (energy charges, demand charges)
+       - Carbon reduction achieved
+       - Implementation instructions (when to start each batch)
+       - Risk assessment (deadline risks, quality impacts)
+       - ROI analysis
+
+    IMPORTANT:
+    - Use tools for ALL calculations
+    - Ensure production targets and deadlines are met
+    - Provide actionable schedules (specific start times)
+    - Format with clear tables and timelines
+
+sub_agents:
+  sub_agent_count: 0
+
+inputs:
+  input_schema:
+    type: "object"
+    properties:
+      industry_type:
+        type: "string"
+        required: true
+
+      daily_production_target:
+        type: "number"
+        required: true
+
+      batches:
+        type: "array"
+        required: true
+
+      time_of_use_rates:
+        type: "array"
+        required: true
+
+      optimization_objective:
+        type: "string"
+        enum: ["minimize_cost", "minimize_carbon", "balanced_cost_carbon"]
+        default: "balanced_cost_carbon"
+
+    required: ["industry_type", "daily_production_target", "batches", "time_of_use_rates"]
+
+  example_input:
+    industry_type: "Chemical Manufacturing"
+    daily_production_target: 10000
+    batches:
+      - {batch_id: "A001", energy_demand_kwh: 1500, duration_hours: 4}
+      - {batch_id: "A002", energy_demand_kwh: 2000, duration_hours: 6}
+    time_of_use_rates:
+      - {hour: 0, rate_usd_per_kwh: 0.06}
+      - {hour: 8, rate_usd_per_kwh: 0.15}
+    optimization_objective: "balanced_cost_carbon"
+
+outputs:
+  output_schema:
+    type: "object"
+    properties:
+      optimal_schedule:
+        type: "array"
+
+      total_energy_cost_usd:
+        type: "number"
+        units: "USD"
+
+      cost_savings_percent:
+        type: "number"
+        units: "%"
+
+      carbon_reduction_percent:
+        type: "number"
+        units: "%"
+
+      peak_demand_kw:
+        type: "number"
+        units: "kW"
+
+      ai_explanation:
+        type: "string"
+
+      provenance:
+        type: "object"
+
+  example_output:
+    optimal_schedule:
+      - {batch_id: "A001", start_hour: 0, end_hour: 4}
+      - {batch_id: "A002", start_hour: 20, end_hour: 26}
+    total_energy_cost_usd: 250
+    cost_savings_percent: 41.2
+    carbon_reduction_percent: 35.8
+    peak_demand_kw: 1500
+    ai_explanation: "Optimized schedule shifts 70% of production to off-peak hours, achieving 41% cost savings and 36% carbon reduction"
+    provenance:
+      model: "gpt-4o"
+      tools_used: ["optimize_batch_schedule", "forecast_demand_charges", "optimize_carbon_intensity"]
+      cost_usd: 0.11
+      deterministic: true
+
+testing:
+  test_coverage_target: 0.90
+
+  test_categories:
+    - category: "unit_tests"
+      description: "Test individual tool implementations"
+      count: 28
+
+    - category: "integration_tests"
+      description: "Test AI orchestration with tools"
+      count: 8
+
+    - category: "determinism_tests"
+      description: "Verify temperature=0, seed=42 reproducibility"
+      count: 3
+
+    - category: "optimization_tests"
+      description: "Verify MILP solver convergence and optimality"
+      count: 6
+
+    - category: "constraint_tests"
+      description: "Test production constraint satisfaction"
+      count: 5
+
+    - category: "boundary_tests"
+      description: "Test edge cases and boundary conditions"
+      count: 4
+
+  performance_requirements:
+    max_latency_ms: 5000
+    max_cost_usd: 0.12
+    accuracy_target: 0.95
+
+deployment:
+  pack_id: "industrial/process_scheduling_pack"
+  pack_version: "1.0.0"
+
+  dependencies:
+    python_packages:
+      - "pydantic>=2.0"
+      - "numpy>=1.24"
+      - "scipy>=1.11"
+      - "ortools>=9.5"
+
+    greenlang_modules:
+      - "greenlang.agents.base"
+      - "greenlang.intelligence"
+
+  resource_requirements:
+    memory_mb: 1024
+    cpu_cores: 2
+    gpu_required: false
+
+  api_endpoints:
+    - endpoint: "/api/v1/agents/industrial/process_scheduling/execute"
+      method: "POST"
+      authentication: "required"
+
+documentation:
+  readme: true
+  api_docs: true
+  examples: true
+  tutorials: true
+
+  example_use_cases:
+    - title: "Chemical Plant Batch Scheduling Optimization"
+      description: "Optimize 12 daily batches for TOU cost minimization"
+      output_summary: "41% energy cost reduction, 0.39-year payback on implementation"
+
+    - title: "Food Processing Carbon Intensity Optimization"
+      description: "Shift production to low-carbon grid hours"
+      output_summary: "36% carbon reduction with minimal cost impact"
+
+    - title: "Manufacturing Demand Response Integration"
+      description: "Plan automated curtailment for DR events"
+      output_summary: "$45,000/year DR incentive earnings with minor production impact"
+
+compliance:
+  zero_secrets: true
+  sbom_required: true
+  digital_signature: true
+
+  standards:
+    - "IEEE_1547_Grid_Integration"
+    - "ISO_50001_EnMS"
+    - "ISA_95_Manufacturing_Operations"
+    - "OpenADR_2.0b_Demand_Response"
+
+  certifications:
+    - "ISO_50001_EnMS"
+    - "ENERGY_STAR_Industrial_Energy_Management"
+
+business_impact:
+  market_opportunity:
+    addressable_market_usd: 25000000000
+    market_segment: "Manufacturing operations optimization and energy management"
+    target_customers: "Energy-intensive manufacturers (chemicals, food, metals, etc.)"
+
+  carbon_impact:
+    addressable_emissions_gt_co2e: 1.5
+    realistic_reduction_2030_gt: 0.3
+    note: "20% reduction through optimized scheduling across addressable market"
+
+  economic_value:
+    typical_savings_percent: "10-20%"
+    typical_payback_months: "3-12"
+    demand_charge_savings: "$20,000-200,000/year typical"
+
+metadata:
+  created_date: "2025-10-13"
+  created_by: "Head of AI & Climate Intelligence"
+  last_modified: "2025-10-13"
+  review_status: "Approved"
+  reviewers: ["AI Lead"]
+
+  change_log:
+    - version: "1.0.0"
+      date: "2025-10-13"
+      changes: "Initial specification - production ready for Agent Factory generation"
+      author: "Chief AI & Climate Intelligence"
+
+# END OF AGENT #8 SPECIFICATION
+# Production Ready for Agent Factory Generation
+# Next: Agent #9 - IndustrialControlsAgent_AI

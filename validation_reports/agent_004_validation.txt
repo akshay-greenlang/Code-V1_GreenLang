@@ -1,0 +1,25 @@
+================================================================================
+Validation Report: agent_004_waste_heat_recovery.yaml
+================================================================================
+Status: ✅ PASS
+Errors: 0
+Warnings: 4
+Info: 0
+--------------------------------------------------------------------------------
+
+🟡 WARNINGS:
+⚠️  WARNING: [tools.tools_list[4]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[6]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[7]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [ai_integration] system_prompt
+   system_prompt should emphasize: use tools, never guess, deterministic
+
+
+✨ All validation checks passed!
+================================================================================

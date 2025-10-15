@@ -1,0 +1,132 @@
+alerts:
+  - name: "HighLatency"
+    description: "P95 latency exceeds acceptable threshold"
+    condition: "p95_latency_ms > 2500"
+    severity: "warning"
+    action: "page_oncall"
+    cooldown_minutes: 15
+
+  - name: "CriticalLatency"
+    description: "P95 latency critically high"
+    condition: "p95_latency_ms > 5000"
+    severity: "critical"
+    action: "page_oncall"
+    cooldown_minutes: 5
+
+  - name: "HighErrorRate"
+    description: "Error rate exceeds 1% threshold"
+    condition: "error_rate_1h > 0.01"
+    severity: "critical"
+    action: "page_oncall"
+    cooldown_minutes: 5
+
+  - name: "ModerateErrorRate"
+    description: "Error rate elevated but below critical"
+    condition: "error_rate_1h > 0.005"
+    severity: "warning"
+    action: "slack_alert"
+    cooldown_minutes: 30
+
+  - name: "HighCost"
+    description: "Average cost per query exceeds budget"
+    condition: "avg_cost_per_query > 0.08"
+    severity: "warning"
+    action: "slack_alert"
+    cooldown_minutes: 60
+
+  - name: "BudgetExhaustion"
+    description: "Budget exceeded errors increasing"
+    condition: "budget_exceeded_count_1h > 5"
+    severity: "warning"
+    action: "slack_alert"
+    cooldown_minutes: 30
+
+  - name: "LowSuccessRate"
+    description: "Success rate below acceptable threshold"
+    condition: "success_rate_1h < 0.98"
+    severity: "warning"
+    action: "page_oncall"
+    cooldown_minutes: 15
+
+  - name: "CriticalSuccessRate"
+    description: "Success rate critically low"
+    condition: "success_rate_1h < 0.95"
+    severity: "critical"
+    action: "page_oncall"
+    cooldown_minutes: 5
+
+  - name: "HighToolCallCount"
+    description: "Excessive tool calls may indicate inefficiency"
+    condition: "avg_tool_calls_per_query > 12"
+    severity: "info"
+    action: "slack_alert"
+    cooldown_minutes: 120
+
+  - name: "HealthCheckFailure"
+    description: "Agent health check failing"
+    condition: "health_check_status != 'healthy'"
+    severity: "critical"
+    action: "page_oncall"
+    cooldown_minutes: 2
+
+dashboards:
+  - name: "IndustrialProcessHeatAgent Overview"
+    metrics:
+      - latency_p50_ms
+      - latency_p95_ms
+      - latency_p99_ms
+      - error_rate_1h
+      - success_rate_1h
+      - avg_cost_per_query
+      - avg_tool_calls_per_query
+      - requests_per_minute
+
+  - name: "IndustrialProcessHeatAgent Performance"
+    metrics:
+      - heat_demand_calculation_time_ms
+      - solar_fraction_calculation_time_ms
+      - emissions_calculation_time_ms
+      - tool_execution_time_ms
+      - ai_call_time_ms
+
+  - name: "IndustrialProcessHeatAgent Business Metrics"
+    metrics:
+      - queries_by_industry_type
+      - queries_by_process_type
+      - avg_solar_fraction
+      - avg_decarbonization_percentage
+      - avg_collector_area_m2
+
+logging:
+  level: "INFO"
+  structured: true
+  retention_days: 90
+
+  log_fields:
+    - timestamp
+    - agent_id
+    - request_id
+    - user_id
+    - industry_type
+    - process_type
+    - latency_ms
+    - cost_usd
+    - tool_calls
+    - success
+    - error_type
+
+  sample_rate:
+    success: 0.1  # Sample 10% of successful requests
+    error: 1.0    # Log 100% of errors
+
+tracing:
+  enabled: true
+  sample_rate: 0.1
+  export_to: "jaeger"
+
+metrics_export:
+  enabled: true
+  interval_seconds: 60
+  destinations:
+    - prometheus
+    - cloudwatch

@@ -412,10 +412,16 @@ class RecommendationAgent(BaseAgent):
                     min_savings += total_emissions * (avg_percentage * 0.5 / 100)
                     max_savings += total_emissions * (avg_percentage / 100)
 
+        # Calculate percentage range (handle zero emissions)
+        if total_emissions > 0:
+            percentage_range = f"{round(min_savings/total_emissions*100, 1)}-{round(max_savings/total_emissions*100, 1)}%"
+        else:
+            percentage_range = "0.0-0.0%"
+
         return {
             "minimum_kg_co2e": round(min_savings, 1),
             "maximum_kg_co2e": round(max_savings, 1),
-            "percentage_range": f"{round(min_savings/total_emissions*100, 1)}-{round(max_savings/total_emissions*100, 1)}%",
+            "percentage_range": percentage_range,
         }
 
     def _group_recommendations(self, recommendations: List[Dict]) -> Dict:

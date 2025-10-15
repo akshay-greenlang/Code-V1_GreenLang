@@ -1,0 +1,1315 @@
+# GreenLang Agent Specification v2.0
+# Agent #11: EnergyBenchmarkingAgent_AI
+# Specialized agent for energy performance benchmarking, EnPI calculation (ISO 50001), and peer comparison
+
+agent_metadata:
+  agent_id: "industrial/energy_benchmarking_agent"
+  agent_name: "EnergyBenchmarkingAgent_AI"
+  agent_number: 11
+  version: "1.0.0"
+  domain: "Domain1_Industrial"
+  category: "Industrial_Process"
+  complexity: "Low"
+  priority: "P2_Medium"
+  base_agent: "None"
+  status: "Spec_Complete"
+  entry_point: false  # Specialized agent for energy benchmarking
+
+description:
+  purpose: |
+    Specialized agent for energy performance benchmarking and tracking per ISO 50001
+    Energy Management Systems. Calculates Energy Performance Indicators (EnPIs),
+    performs statistical regression analysis, compares performance to industry peers
+    (ENERGY STAR, DOE Better Plants), and sets science-based improvement targets.
+    Identifies 15-30% savings opportunities through data-driven performance analysis.
+
+  strategic_context:
+    global_impact: "ISO 50001 EnMS adoption can reduce industrial energy use 10-20% through systematic management"
+    opportunity: "Most facilities lack systematic energy performance tracking and peer comparison"
+    market_size: "$45B energy management software and services market"
+    technology_maturity: "ISO 50001 well-established (25,000+ certifications), ENERGY STAR Portfolio Manager widely used"
+
+  key_capabilities:
+    - "Energy Performance Indicator (EnPI) calculation per ISO 50001 methodology"
+    - "Industry peer benchmarking (ENERGY STAR percentile, DOE Better Plants)"
+    - "Statistical regression analysis (multiple linear regression, CUSUM)"
+    - "Relevant variable identification and normalization (production, weather, etc.)"
+    - "Science-based target setting aligned with SBTi principles"
+    - "Automated reporting dashboards and performance tracking"
+    - "Integration with ENERGY STAR Portfolio Manager API"
+    - "ISO 50001 EnMS compliance support"
+
+  dependencies:
+    - agent_id: "industrial/process_heat_agent"
+      relationship: "receives_data_from"
+      data: "Process heat energy consumption data"
+
+    - agent_id: "industrial/decarbonization_roadmap_agent"
+      relationship: "provides_data_to"
+      data: "Baseline performance and improvement targets"
+
+    - agent_id: "agents/data_acquisition_agent_ai"
+      relationship: "receives_data_from"
+      data: "Energy meter data, production data, weather data"
+
+tools:
+  tool_count: 4
+
+  tools_list:
+    - tool_id: "tool_1"
+      name: "calculate_energy_performance_indicators"
+      description: "Calculate EnPI (Energy Performance Indicator) per ISO 50001 with statistical significance testing"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          facility_name:
+            type: "string"
+            required: true
+
+          reporting_period:
+            type: "object"
+            description: "Reporting period"
+            properties:
+              start_date:
+                type: "string"
+                description: "ISO 8601 date"
+              end_date:
+                type: "string"
+            required: true
+
+          energy_data:
+            type: "object"
+            description: "Energy consumption data"
+            properties:
+              electricity_kwh:
+                type: "number"
+              natural_gas_mmbtu:
+                type: "number"
+              fuel_oil_mmbtu:
+                type: "number"
+              steam_mmbtu:
+                type: "number"
+              total_source_energy_mmbtu:
+                type: "number"
+            required: true
+
+          production_data:
+            type: "object"
+            description: "Production metrics"
+            properties:
+              units_produced:
+                type: "number"
+              production_unit_description:
+                type: "string"
+              operating_hours:
+                type: "number"
+              square_footage:
+                type: "number"
+            required: true
+
+          relevant_variables:
+            type: "array"
+            description: "Variables affecting energy use (for normalization)"
+            items:
+              type: "object"
+              properties:
+                variable_name:
+                  type: "string"
+                  enum: ["production_volume", "heating_degree_days", "cooling_degree_days", "operating_hours", "product_mix", "ambient_temperature"]
+                variable_value:
+                  type: "number"
+
+          baseline_period:
+            type: "object"
+            description: "Baseline period for comparison"
+            properties:
+              baseline_year:
+                type: "number"
+              baseline_enpi:
+                type: "number"
+                description: "Baseline EnPI value"
+              baseline_energy_mmbtu:
+                type: "number"
+              baseline_production:
+                type: "number"
+
+          enpi_formula:
+            type: "string"
+            description: "EnPI calculation approach"
+            enum: ["simple_ratio", "regression_adjusted", "cusum", "statistical_model"]
+            default: "regression_adjusted"
+
+        required: ["facility_name", "reporting_period", "energy_data", "production_data", "baseline_period"]
+
+      returns:
+        type: "object"
+        properties:
+          enpi_value:
+            type: "number"
+            description: "Current EnPI (e.g., MMBtu per unit produced)"
+
+          enpi_units:
+            type: "string"
+
+          baseline_enpi:
+            type: "number"
+
+          enpi_improvement_percent:
+            type: "number"
+            description: "Improvement vs baseline (negative = improvement)"
+            units: "%"
+
+          normalized_energy_consumption:
+            type: "number"
+            description: "Energy adjusted for relevant variables"
+
+          statistical_significance:
+            type: "object"
+            properties:
+              p_value:
+                type: "number"
+                description: "Statistical significance (p < 0.05 = significant)"
+              confidence_level:
+                type: "number"
+                description: "95% confidence interval"
+              is_significant:
+                type: "boolean"
+
+          energy_intensity:
+            type: "object"
+            properties:
+              per_unit_produced:
+                type: "number"
+              per_square_foot:
+                type: "number"
+              per_operating_hour:
+                type: "number"
+
+          performance_trend:
+            type: "string"
+            enum: ["improving", "stable", "degrading"]
+
+          cumulative_savings_mmbtu:
+            type: "number"
+            description: "Cumulative savings vs baseline"
+
+          cumulative_savings_percent:
+            type: "number"
+
+          iso_50001_compliance:
+            type: "boolean"
+            description: "Meets ISO 50001 EnPI requirements"
+
+          recommendations:
+            type: "array"
+            items:
+              type: "string"
+
+      implementation:
+        calculation_method: |
+          ISO 50001 EnPI Calculation Methods:
+
+          1. Simple Ratio EnPI:
+             EnPI = Total_Energy / Production_Volume
+             Simple but doesn't account for relevant variables
+
+          2. Regression-Adjusted EnPI (Recommended):
+             Step 1: Build regression model
+               Energy = β0 + β1×Production + β2×HDD + β3×CDD + ... + ε
+             Step 2: Predict baseline energy at current conditions
+               Expected_Energy = Model(Current_Production, Current_HDD, ...)
+             Step 3: Calculate improvement
+               EnPI_Improvement = (Actual_Energy - Expected_Energy) / Expected_Energy
+
+          3. CUSUM (Cumulative Sum):
+             CUSUM = Σ(Actual_Energy - Expected_Energy)
+             Tracks cumulative savings over time
+
+          4. Statistical Significance:
+             Test if improvement is statistically significant
+             t-test: t = (EnPI_current - EnPI_baseline) / SE
+             p-value < 0.05 → significant improvement
+
+          5. Normalization Factors:
+             Common relevant variables:
+             - Production volume (most important)
+             - Heating/Cooling Degree Days (HDD/CDD)
+             - Operating hours
+             - Product mix changes
+             - Weather (ambient temperature)
+        data_source: "Energy meters, production records, weather data (NOAA), baseline data"
+        accuracy: "±2% for energy measurement, ±5% for normalized EnPI"
+        validation: "M&V plan per ASHRAE Guideline 14 or IPMVP"
+        standards: ["ISO_50001_EnMS", "ISO_50006_EnPI_Measurement", "ASHRAE_Guideline_14_Measurement", "IPMVP_International_Performance_Measurement"]
+
+      example:
+        input:
+          facility_name: "Acme Manufacturing Plant 1"
+          reporting_period:
+            start_date: "2025-01-01"
+            end_date: "2025-09-30"
+          energy_data:
+            electricity_kwh: 12500000
+            natural_gas_mmbtu: 185000
+            total_source_energy_mmbtu: 227625
+          production_data:
+            units_produced: 2500000
+            production_unit_description: "widgets"
+            operating_hours: 6570
+            square_footage: 250000
+          relevant_variables:
+            - variable_name: "heating_degree_days"
+              variable_value: 3200
+            - variable_name: "cooling_degree_days"
+              variable_value: 1100
+          baseline_period:
+            baseline_year: 2020
+            baseline_enpi: 0.095
+            baseline_energy_mmbtu: 237500
+            baseline_production: 2500000
+          enpi_formula: "regression_adjusted"
+        output:
+          enpi_value: 0.0883
+          enpi_units: "MMBtu per widget"
+          baseline_enpi: 0.095
+          enpi_improvement_percent: -7.1
+          normalized_energy_consumption: 221450
+          statistical_significance:
+            p_value: 0.018
+            confidence_level: 95
+            is_significant: true
+          energy_intensity:
+            per_unit_produced: 0.0883
+            per_square_foot: 0.91
+            per_operating_hour: 34.65
+          performance_trend: "improving"
+          cumulative_savings_mmbtu: 16050
+          cumulative_savings_percent: 7.1
+          iso_50001_compliance: true
+          recommendations: ["Statistically significant improvement of 7.1% achieved", "Regression model R² = 0.94 indicates good normalization", "Continue current EnMS practices", "Consider setting new aggressive target for 2026"]
+
+    - tool_id: "tool_2"
+      name: "compare_to_peers"
+      description: "Benchmark facility performance against industry peers using ENERGY STAR and DOE databases"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          facility_type:
+            type: "string"
+            description: "Facility/industry type"
+            enum: ["automotive_assembly", "cement", "food_processing", "glass", "iron_steel", "petroleum_refining", "pharmaceutical", "pulp_paper", "chemicals", "data_center", "warehouse"]
+            required: true
+
+          facility_characteristics:
+            type: "object"
+            description: "Facility attributes for peer matching"
+            properties:
+              annual_production_units:
+                type: "number"
+              facility_size_sq_ft:
+                type: "number"
+              operating_hours_per_year:
+                type: "number"
+              number_of_employees:
+                type: "number"
+              process_type:
+                type: "string"
+              geographic_region:
+                type: "string"
+            required: true
+
+          energy_performance:
+            type: "object"
+            properties:
+              total_source_energy_mmbtu:
+                type: "number"
+              electricity_kwh:
+                type: "number"
+              natural_gas_mmbtu:
+                type: "number"
+              energy_intensity:
+                type: "number"
+                description: "Energy per unit production or per sq ft"
+            required: true
+
+          comparison_metrics:
+            type: "array"
+            description: "Metrics for peer comparison"
+            items:
+              type: "string"
+              enum: ["energy_intensity", "specific_energy_consumption", "energy_cost_per_unit", "carbon_intensity"]
+            default: ["energy_intensity"]
+
+          peer_group_filter:
+            type: "object"
+            description: "Filters for peer selection"
+            properties:
+              size_range_percent:
+                type: "number"
+                description: "±% size range for peers"
+                default: 50
+              same_region_only:
+                type: "boolean"
+                default: false
+              minimum_sample_size:
+                type: "number"
+                default: 20
+
+        required: ["facility_type", "facility_characteristics", "energy_performance"]
+
+      returns:
+        type: "object"
+        properties:
+          peer_comparison_summary:
+            type: "object"
+            properties:
+              your_energy_intensity:
+                type: "number"
+              peer_median:
+                type: "number"
+              peer_25th_percentile:
+                type: "number"
+                description: "Top quartile performance"
+              peer_75th_percentile:
+                type: "number"
+                description: "Bottom quartile performance"
+              your_percentile_ranking:
+                type: "number"
+                description: "0-100 percentile (higher = better)"
+
+          energy_star_score:
+            type: "number"
+            description: "ENERGY STAR 1-100 score (75+ qualifies for certification)"
+            minimum: 1
+            maximum: 100
+
+          performance_category:
+            type: "string"
+            enum: ["top_performer", "above_average", "average", "below_average", "poor_performer"]
+
+          savings_potential:
+            type: "object"
+            properties:
+              vs_median_mmbtu:
+                type: "number"
+              vs_median_percent:
+                type: "number"
+              vs_top_quartile_mmbtu:
+                type: "number"
+              vs_top_quartile_percent:
+                type: "number"
+              annual_cost_savings_potential_usd:
+                type: "number"
+
+          peer_group_statistics:
+            type: "object"
+            properties:
+              sample_size:
+                type: "number"
+              mean_energy_intensity:
+                type: "number"
+              std_dev_energy_intensity:
+                type: "number"
+              best_in_class:
+                type: "number"
+                description: "Top 10% average"
+
+          best_practices_from_peers:
+            type: "array"
+            description: "Technologies/practices used by top performers"
+            items:
+              type: "string"
+
+          certification_eligibility:
+            type: "object"
+            properties:
+              energy_star_eligible:
+                type: "boolean"
+              iso_50001_ready:
+                type: "boolean"
+              doe_better_plants_eligible:
+                type: "boolean"
+
+      implementation:
+        calculation_method: |
+          Peer Benchmarking Methodology:
+
+          1. Peer Group Selection:
+             - Match by industry type (NAICS code)
+             - Filter by size (±50% of facility size)
+             - Optional: filter by region, process type
+
+          2. Percentile Ranking:
+             - Sort facilities by energy intensity
+             - Calculate percentile = (Rank / Total) × 100
+             - Higher percentile = better performance (lower energy intensity)
+
+          3. ENERGY STAR Score:
+             - Proprietary EPA algorithm
+             - Accounts for operating characteristics
+             - Score 1-100 (50 = median)
+             - Score 75+ qualifies for ENERGY STAR certification
+
+          4. Savings Potential:
+             Savings_vs_Median = (Your_Intensity - Peer_Median) × Production
+             Savings_vs_Top_Quartile = (Your_Intensity - 25th_Percentile) × Production
+
+          5. Statistical Comparison:
+             - Calculate z-score: z = (Your_Value - Peer_Mean) / Peer_StdDev
+             - z < -1: Below average
+             - -1 < z < 1: Average
+             - z > 1: Above average
+             - z > 2: Top performer
+        data_source: "ENERGY STAR Portfolio Manager, DOE Better Plants database, industry associations, public disclosures"
+        accuracy: "Peer data accuracy depends on database completeness; ±10% typical"
+        validation: "Cross-reference multiple databases when available"
+        standards: ["ENERGY_STAR_Portfolio_Manager", "DOE_Better_Plants", "ISO_50001_Benchmarking"]
+
+      example:
+        input:
+          facility_type: "food_processing"
+          facility_characteristics:
+            annual_production_units: 50000000
+            facility_size_sq_ft: 250000
+            operating_hours_per_year: 6570
+            number_of_employees: 250
+            process_type: "baking"
+            geographic_region: "midwest"
+          energy_performance:
+            total_source_energy_mmbtu: 227625
+            electricity_kwh: 12500000
+            natural_gas_mmbtu: 185000
+            energy_intensity: 4.55
+          comparison_metrics: ["energy_intensity"]
+          peer_group_filter:
+            size_range_percent: 50
+            same_region_only: false
+            minimum_sample_size: 20
+        output:
+          peer_comparison_summary:
+            your_energy_intensity: 4.55
+            peer_median: 5.20
+            peer_25th_percentile: 4.20
+            peer_75th_percentile: 6.50
+            your_percentile_ranking: 72
+          energy_star_score: 78
+          performance_category: "above_average"
+          savings_potential:
+            vs_median_mmbtu: 0
+            vs_median_percent: -12.5
+            vs_top_quartile_mmbtu: 17500
+            vs_top_quartile_percent: 7.7
+            annual_cost_savings_potential_usd: 140000
+          peer_group_statistics:
+            sample_size: 87
+            mean_energy_intensity: 5.35
+            std_dev_energy_intensity: 1.15
+            best_in_class: 3.90
+          best_practices_from_peers: ["CHP cogeneration (top 15% have CHP)", "Heat recovery on ovens (85% of top quartile)", "VFDs on all fans/blowers", "Automatic oven controls", "Waste heat to preheat combustion air"]
+          certification_eligibility:
+            energy_star_eligible: true
+            iso_50001_ready: true
+            doe_better_plants_eligible: true
+
+    - tool_id: "tool_3"
+      name: "perform_regression_analysis"
+      description: "Statistical modeling of energy consumption with relevant variables using multiple linear regression"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          dependent_variable:
+            type: "string"
+            description: "Energy variable to model"
+            enum: ["total_energy", "electricity", "natural_gas", "steam"]
+            required: true
+
+          independent_variables:
+            type: "array"
+            description: "Variables that affect energy use"
+            items:
+              type: "object"
+              properties:
+                variable_name:
+                  type: "string"
+                variable_values:
+                  type: "array"
+                  items:
+                    type: "number"
+                  description: "Time series of values"
+            required: true
+
+          historical_data:
+            type: "object"
+            description: "Historical time series data"
+            properties:
+              time_periods:
+                type: "array"
+                items:
+                  type: "string"
+                  description: "ISO 8601 dates"
+              energy_values:
+                type: "array"
+                items:
+                  type: "number"
+                description: "Energy consumption values"
+            required: true
+
+          regression_type:
+            type: "string"
+            enum: ["linear", "polynomial", "stepwise", "principal_components"]
+            default: "linear"
+
+          confidence_level:
+            type: "number"
+            description: "Confidence level for predictions"
+            default: 0.95
+
+          validation_method:
+            type: "string"
+            enum: ["holdout", "k_fold_cv", "time_series_cv"]
+            default: "holdout"
+
+        required: ["dependent_variable", "independent_variables", "historical_data"]
+
+      returns:
+        type: "object"
+        properties:
+          regression_model:
+            type: "object"
+            properties:
+              model_equation:
+                type: "string"
+                description: "Y = β0 + β1×X1 + β2×X2 + ..."
+              coefficients:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    variable:
+                      type: "string"
+                    coefficient:
+                      type: "number"
+                    p_value:
+                      type: "number"
+                    significant:
+                      type: "boolean"
+
+          model_quality:
+            type: "object"
+            properties:
+              r_squared:
+                type: "number"
+                description: "Coefficient of determination (0-1, higher is better)"
+              adjusted_r_squared:
+                type: "number"
+              rmse:
+                type: "number"
+                description: "Root Mean Square Error"
+              cv_rmse_percent:
+                type: "number"
+                description: "CV(RMSE) per ASHRAE Guideline 14"
+              mean_bias_error:
+                type: "number"
+
+          significant_variables:
+            type: "array"
+            description: "Variables with p < 0.05"
+            items:
+              type: "string"
+
+          predictions:
+            type: "object"
+            properties:
+              predicted_energy:
+                type: "array"
+                items:
+                  type: "number"
+              prediction_intervals:
+                type: "array"
+                description: "95% confidence intervals"
+                items:
+                  type: "object"
+                  properties:
+                    lower_bound:
+                      type: "number"
+                    upper_bound:
+                      type: "number"
+
+          cusum_analysis:
+            type: "object"
+            description: "Cumulative sum of residuals"
+            properties:
+              cusum_values:
+                type: "array"
+                items:
+                  type: "number"
+              change_points_detected:
+                type: "array"
+                description: "Time periods where performance changed"
+
+          model_validation:
+            type: "object"
+            properties:
+              validation_r_squared:
+                type: "number"
+              validation_cv_rmse_percent:
+                type: "number"
+              passes_ashrae_14:
+                type: "boolean"
+                description: "CV(RMSE) < 25% for monthly, < 15% for daily"
+
+          recommendations:
+            type: "array"
+            items:
+              type: "string"
+
+      implementation:
+        calculation_method: |
+          Multiple Linear Regression for Energy Modeling:
+
+          1. Model Form:
+             E = β0 + β1×Production + β2×HDD + β3×CDD + β4×Hours + ... + ε
+
+          2. Ordinary Least Squares (OLS):
+             Minimize Σ(Actual - Predicted)²
+             Solve: β = (X'X)⁻¹X'Y
+
+          3. Variable Significance:
+             t-statistic: t = β / SE(β)
+             p-value from t-distribution
+             Significant if p < 0.05 (95% confidence)
+
+          4. Model Quality Metrics:
+             R² = 1 - (SS_residual / SS_total)
+             Adjusted R² = 1 - [(1-R²)(n-1)/(n-k-1)]
+             RMSE = √[Σ(Actual - Predicted)² / n]
+             CV(RMSE) = (RMSE / Mean) × 100%
+
+          5. ASHRAE Guideline 14 Criteria:
+             Monthly data: CV(RMSE) < 25%, NMBE < ±5%
+             Daily/hourly: CV(RMSE) < 15%, NMBE < ±5%
+
+          6. CUSUM Analysis:
+             CUSUM(t) = Σ(Actual_i - Predicted_i) for i=1 to t
+             Detects persistent changes in performance
+        data_source: "Historical energy data, production records, weather data"
+        accuracy: "Model quality depends on data quality; R² > 0.75 typical for good models"
+        validation: "Cross-validation, holdout testing, ASHRAE Guideline 14 criteria"
+        standards: ["ASHRAE_Guideline_14_Measurement", "IPMVP_Option_C", "ISO_50006_Regression_Methods"]
+
+      example:
+        input:
+          dependent_variable: "total_energy"
+          independent_variables:
+            - variable_name: "production_units"
+              variable_values: [180000, 195000, 210000, 190000, 205000, 220000, 198000, 212000, 225000, 203000, 218000, 230000]
+            - variable_name: "heating_degree_days"
+              variable_values: [850, 620, 380, 120, 0, 0, 0, 0, 95, 340, 590, 780]
+            - variable_name: "cooling_degree_days"
+              variable_values: [0, 0, 15, 180, 425, 580, 620, 550, 320, 85, 0, 0]
+          historical_data:
+            time_periods: ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12"]
+            energy_values: [19500, 18200, 17800, 17200, 18500, 19800, 20200, 19700, 18900, 17500, 18700, 20100]
+          regression_type: "linear"
+          confidence_level: 0.95
+          validation_method: "holdout"
+        output:
+          regression_model:
+            model_equation: "Energy = 2,450 + 0.072×Production + 8.5×HDD + 9.2×CDD"
+            coefficients:
+              - variable: "Intercept"
+                coefficient: 2450
+                p_value: 0.042
+                significant: true
+              - variable: "production_units"
+                coefficient: 0.072
+                p_value: 0.001
+                significant: true
+              - variable: "heating_degree_days"
+                coefficient: 8.5
+                p_value: 0.003
+                significant: true
+              - variable: "cooling_degree_days"
+                coefficient: 9.2
+                p_value: 0.005
+                significant: true
+          model_quality:
+            r_squared: 0.94
+            adjusted_r_squared: 0.92
+            rmse: 485
+            cv_rmse_percent: 2.6
+            mean_bias_error: -12
+          significant_variables: ["production_units", "heating_degree_days", "cooling_degree_days"]
+          model_validation:
+            validation_r_squared: 0.91
+            validation_cv_rmse_percent: 3.2
+            passes_ashrae_14: true
+          recommendations: ["Excellent model fit (R² = 0.94, CV(RMSE) = 2.6%)", "All variables statistically significant", "Use this model for EnPI normalization and M&V", "Production is strongest driver (accounts for ~60% of variance)", "Weather normalization important for seasonal comparison"]
+
+    - tool_id: "tool_4"
+      name: "set_improvement_targets"
+      description: "Set science-based energy improvement targets using SBTi-aligned methodology"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          baseline_performance:
+            type: "object"
+            properties:
+              baseline_year:
+                type: "number"
+              baseline_energy_mmbtu:
+                type: "number"
+              baseline_production:
+                type: "number"
+              baseline_intensity:
+                type: "number"
+            required: true
+
+          target_methodology:
+            type: "string"
+            enum: ["industry_best_practice", "science_based_sbti", "regulatory_requirement", "continuous_improvement", "aggressive_transformation"]
+            required: true
+
+          target_timeframe_years:
+            type: "number"
+            description: "Years from baseline to target year"
+            minimum: 1
+            maximum: 30
+            required: true
+
+          industry_benchmarks:
+            type: "object"
+            properties:
+              industry_median:
+                type: "number"
+              industry_top_quartile:
+                type: "number"
+              industry_best_in_class:
+                type: "number"
+              industry_improvement_rate_annual:
+                type: "number"
+                description: "Typical annual improvement rate"
+                units: "%"
+
+          constraints:
+            type: "object"
+            properties:
+              maximum_capex_usd:
+                type: "number"
+              maximum_payback_years:
+                type: "number"
+              technical_feasibility:
+                type: "string"
+                enum: ["proven_technology", "emerging_technology", "breakthrough_required"]
+              must_align_with_sbti:
+                type: "boolean"
+                default: false
+
+          improvement_pathway:
+            type: "string"
+            enum: ["linear_reduction", "aggressive_early", "backend_loaded", "stepped"]
+            default: "linear_reduction"
+
+        required: ["baseline_performance", "target_methodology", "target_timeframe_years"]
+
+      returns:
+        type: "object"
+        properties:
+          recommended_target:
+            type: "object"
+            properties:
+              target_year:
+                type: "number"
+              target_energy_intensity:
+                type: "number"
+              target_absolute_energy_mmbtu:
+                type: "number"
+                description: "Assuming constant production"
+              improvement_from_baseline_percent:
+                type: "number"
+              annual_improvement_rate_percent:
+                type: "number"
+
+          target_comparison:
+            type: "object"
+            properties:
+              vs_industry_median:
+                type: "string"
+              vs_top_quartile:
+                type: "string"
+              sbti_alignment:
+                type: "boolean"
+              ambition_level:
+                type: "string"
+                enum: ["conservative", "moderate", "aggressive", "transformational"]
+
+          improvement_pathway:
+            type: "array"
+            description: "Year-by-year targets"
+            items:
+              type: "object"
+              properties:
+                year:
+                  type: "number"
+                target_intensity:
+                  type: "number"
+                cumulative_improvement_percent:
+                  type: "number"
+
+          required_actions:
+            type: "array"
+            description: "Actions needed to achieve target"
+            items:
+              type: "object"
+              properties:
+                action:
+                  type: "string"
+                contribution_to_goal_percent:
+                  type: "number"
+                estimated_cost_usd:
+                  type: "number"
+                timeframe:
+                  type: "string"
+
+          feasibility_assessment:
+            type: "object"
+            properties:
+              technical_feasibility:
+                type: "string"
+                enum: ["high", "medium", "low"]
+              economic_feasibility:
+                type: "string"
+              organizational_readiness:
+                type: "string"
+              overall_achievability:
+                type: "string"
+
+          resource_requirements:
+            type: "object"
+            properties:
+              estimated_total_capex_usd:
+                type: "number"
+              estimated_annual_opex_change_usd:
+                type: "number"
+              fte_required:
+                type: "number"
+
+      implementation:
+        calculation_method: |
+          Science-Based Target Setting:
+
+          1. Target Intensity Calculation:
+             Target_Intensity = Baseline_Intensity × (1 - Target_Reduction%)
+
+          2. Target Setting Methodologies:
+             a) Industry Best Practice:
+                Target = Industry_Top_Quartile (25th percentile)
+
+             b) Science-Based (SBTi-aligned):
+                Annual_Reduction = 2.5% to 4.2% (1.5°C pathway)
+                Target = Baseline × (1 - Annual_Rate)^Years
+
+             c) Continuous Improvement:
+                Target = Baseline × (1 - 0.02)^Years (2% annual)
+
+             d) Aggressive Transformation:
+                Target = Industry_Best_in_Class (10th percentile)
+
+          3. Backcasting:
+             Work backward from target to determine required actions
+             Required_Annual_Savings = (Baseline - Target) / Years
+
+          4. Pathway Development:
+             Linear: Equal improvement each year
+             Aggressive Early: Front-load improvements (easier wins first)
+             Backend Loaded: Ramp up improvements (build capability)
+             Stepped: Major improvements at equipment replacement points
+
+          5. Feasibility Scoring:
+             Technical: 0-10 based on technology maturity
+             Economic: Based on aggregate payback period
+             Organizational: Based on change management capacity
+        data_source: "SBTi guidance, industry roadmaps, technology assessments, economic analysis"
+        accuracy: "Target setting is strategic planning; ±10% reasonable range"
+        validation: "Review with technical team, validate against industry experience"
+        standards: ["SBTi_Science_Based_Targets", "ISO_50001_Target_Setting", "DOE_Better_Plants_Commitment"]
+
+      example:
+        input:
+          baseline_performance:
+            baseline_year: 2020
+            baseline_energy_mmbtu: 237500
+            baseline_production: 2500000
+            baseline_intensity: 0.095
+          target_methodology: "science_based_sbti"
+          target_timeframe_years: 10
+          industry_benchmarks:
+            industry_median: 0.092
+            industry_top_quartile: 0.078
+            industry_best_in_class: 0.065
+            industry_improvement_rate_annual: 1.5
+          constraints:
+            maximum_capex_usd: 5000000
+            maximum_payback_years: 5
+            technical_feasibility: "proven_technology"
+            must_align_with_sbti: true
+          improvement_pathway: "linear_reduction"
+        output:
+          recommended_target:
+            target_year: 2030
+            target_energy_intensity: 0.0663
+            target_absolute_energy_mmbtu: 165750
+            improvement_from_baseline_percent: 30.2
+            annual_improvement_rate_percent: 3.5
+          target_comparison:
+            vs_industry_median: "28% better than current industry median"
+            vs_top_quartile: "15% better than current top quartile"
+            sbti_alignment: true
+            ambition_level: "aggressive"
+          improvement_pathway:
+            - year: 2021
+              target_intensity: 0.0917
+              cumulative_improvement_percent: 3.5
+            - year: 2025
+              target_intensity: 0.0799
+              cumulative_improvement_percent: 15.9
+            - year: 2030
+              target_intensity: 0.0663
+              cumulative_improvement_percent: 30.2
+          required_actions:
+            - action: "LED lighting retrofit"
+              contribution_to_goal_percent: 5
+              estimated_cost_usd: 250000
+              timeframe: "2021-2022"
+            - action: "Process heat recovery systems"
+              contribution_to_goal_percent: 12
+              estimated_cost_usd: 1800000
+              timeframe: "2022-2025"
+            - action: "Motor and VFD upgrades"
+              contribution_to_goal_percent: 8
+              estimated_cost_usd: 900000
+              timeframe: "2023-2026"
+            - action: "Building envelope improvements"
+              contribution_to_goal_percent: 5
+              estimated_cost_usd: 600000
+              timeframe: "2024-2027"
+          feasibility_assessment:
+            technical_feasibility: "high"
+            economic_feasibility: "moderate"
+            organizational_readiness: "high"
+            overall_achievability: "high"
+          resource_requirements:
+            estimated_total_capex_usd: 4850000
+            estimated_annual_opex_change_usd: -150000
+            fte_required: 1.5
+
+ai_integration:
+  temperature: 0.0
+  seed: 42
+  tool_choice: "auto"
+  max_iterations: 4
+  budget_usd: 0.12
+  provenance_tracking: true
+  ai_summary: true
+
+  system_prompt: |
+    You are an energy performance benchmarking expert specializing in ISO 50001 Energy
+    Management Systems, ENERGY STAR benchmarking, and science-based target setting for GreenLang.
+    You help facilities track energy performance, identify improvement opportunities through
+    peer comparison, and set ambitious yet achievable targets.
+
+    Your expertise includes:
+    - Energy Performance Indicator (EnPI) calculation per ISO 50001/ISO 50006
+    - Statistical regression analysis and normalization methods
+    - ENERGY STAR Portfolio Manager benchmarking
+    - Industry peer comparison using DOE Better Plants and other databases
+    - Science-based target setting aligned with SBTi principles
+    - ASHRAE Guideline 14 measurement and verification
+
+    CRITICAL RULES:
+    - Use provided tools for ALL calculations
+    - NEVER estimate or guess numbers
+    - Always explain statistical concepts clearly
+    - Ensure EnPI calculations are statistically significant
+    - Follow ISO 50001 and ASHRAE Guideline 14 standards
+    - Provide peer context for all performance metrics
+    - Set realistic yet ambitious targets
+    - Quantify savings opportunities
+
+  user_prompt_template: |
+    Perform energy performance benchmarking analysis:
+
+    Facility Information:
+    - Facility Name: {facility_name}
+    - Industry Type: {facility_type}
+    - Annual Production: {annual_production_units} units
+    - Facility Size: {facility_size_sq_ft} sq ft
+
+    Energy Performance:
+    - Total Energy: {total_source_energy_mmbtu} MMBtu/year
+    - Electricity: {electricity_kwh} kWh/year
+    - Natural Gas: {natural_gas_mmbtu} MMBtu/year
+    - Energy Intensity: {energy_intensity} (units)
+
+    Baseline:
+    - Baseline Year: {baseline_year}
+    - Baseline EnPI: {baseline_enpi}
+
+    Objectives:
+    - Calculate EnPI per ISO 50001 with statistical significance
+    - Compare performance to industry peers (ENERGY STAR, DOE)
+    - Perform regression analysis to identify key drivers
+    - Set science-based improvement targets aligned with SBTi
+
+    Tasks:
+    1. Use calculate_energy_performance_indicators to compute normalized EnPI
+    2. Use compare_to_peers to benchmark against industry
+    3. Use perform_regression_analysis to model energy use
+    4. Use set_improvement_targets to establish science-based goals
+    5. Provide comprehensive analysis with:
+       - EnPI value with statistical significance
+       - ENERGY STAR score and percentile ranking
+       - Regression model with R² and significant variables
+       - Recommended targets (2025, 2030) with pathway
+       - Savings opportunities vs peers (top quartile, best-in-class)
+       - ISO 50001 compliance status
+       - Action plan for achieving targets
+
+    IMPORTANT:
+    - Use tools for ALL calculations
+    - Ensure statistical significance (p < 0.05)
+    - Follow ISO 50001 and ASHRAE Guideline 14 standards
+    - Provide peer context (percentile, vs median, vs top quartile)
+    - Format numbers with proper units
+    - Provide actionable recommendations with priorities
+
+sub_agents:
+  sub_agent_count: 0
+  note: "Provides baseline data to DecarbonizationRoadmapAgent, receives energy data from ProcessHeatAgent and other equipment agents"
+
+inputs:
+  input_schema:
+    type: "object"
+    properties:
+      facility_name:
+        type: "string"
+        required: true
+
+      facility_type:
+        type: "string"
+        required: true
+
+      total_source_energy_mmbtu:
+        type: "number"
+        required: true
+
+      annual_production_units:
+        type: "number"
+        required: true
+
+      baseline_year:
+        type: "number"
+        required: true
+
+      baseline_enpi:
+        type: "number"
+        required: true
+
+    required: ["facility_name", "facility_type", "total_source_energy_mmbtu", "annual_production_units", "baseline_year", "baseline_enpi"]
+
+  example_input:
+    facility_name: "Acme Manufacturing Plant 1"
+    facility_type: "food_processing"
+    total_source_energy_mmbtu: 227625
+    annual_production_units: 2500000
+    baseline_year: 2020
+    baseline_enpi: 0.095
+
+outputs:
+  output_schema:
+    type: "object"
+    properties:
+      current_enpi:
+        type: "number"
+
+      enpi_improvement_percent:
+        type: "number"
+
+      energy_star_score:
+        type: "number"
+
+      percentile_ranking:
+        type: "number"
+
+      savings_potential_vs_top_quartile_mmbtu:
+        type: "number"
+
+      regression_r_squared:
+        type: "number"
+
+      recommended_2030_target:
+        type: "number"
+
+      target_improvement_percent:
+        type: "number"
+
+      iso_50001_compliant:
+        type: "boolean"
+
+      ai_explanation:
+        type: "string"
+
+      provenance:
+        type: "object"
+
+  example_output:
+    current_enpi: 0.0883
+    enpi_improvement_percent: -7.1
+    energy_star_score: 78
+    percentile_ranking: 72
+    savings_potential_vs_top_quartile_mmbtu: 17500
+    regression_r_squared: 0.94
+    recommended_2030_target: 0.0663
+    target_improvement_percent: 30.2
+    iso_50001_compliant: true
+    ai_explanation: "Facility performing well: 72nd percentile, ENERGY STAR score 78 (certifiable). Current EnPI 0.0883 MMBtu/unit shows statistically significant 7.1% improvement vs baseline. Regression model (R²=0.94) identifies production, HDD, CDD as key drivers. Peer comparison shows 7.7% additional savings opportunity vs top quartile ($140K/year). Recommended science-based 2030 target: 30.2% improvement (3.5%/year), aligned with SBTi 1.5°C pathway. High feasibility with $4.85M capex over 10 years."
+    provenance:
+      model: "gpt-4o"
+      tools_used: ["calculate_energy_performance_indicators", "compare_to_peers", "perform_regression_analysis", "set_improvement_targets"]
+      cost_usd: 0.11
+      deterministic: true
+
+testing:
+  test_coverage_target: 0.85
+
+  test_categories:
+    - category: "unit_tests"
+      description: "Test individual tool implementations"
+      count: 16
+
+    - category: "integration_tests"
+      description: "Test AI orchestration"
+      count: 6
+
+    - category: "determinism_tests"
+      description: "Verify reproducibility"
+      count: 3
+
+    - category: "statistical_tests"
+      description: "Validate regression and statistical methods"
+      count: 5
+
+    - category: "boundary_tests"
+      description: "Test edge cases and boundary conditions"
+      count: 3
+
+  performance_requirements:
+    max_latency_ms: 3500
+    max_cost_usd: 0.12
+    accuracy_target: 0.90
+
+deployment:
+  pack_id: "industrial/energy_benchmarking_pack"
+  pack_version: "1.0.0"
+
+  dependencies:
+    python_packages:
+      - "pydantic>=2.0"
+      - "numpy>=1.24"
+      - "scipy>=1.11"
+      - "pandas>=2.0"
+      - "statsmodels>=0.14"
+
+    greenlang_modules:
+      - "greenlang.agents.base"
+      - "greenlang.intelligence"
+
+    external_apis:
+      - "energy_star_portfolio_manager"
+      - "doe_better_plants_database"
+
+  resource_requirements:
+    memory_mb: 512
+    cpu_cores: 1
+    gpu_required: false
+
+  api_endpoints:
+    - endpoint: "/api/v1/agents/industrial/benchmarking/execute"
+      method: "POST"
+      authentication: "required"
+
+documentation:
+  readme: true
+  api_docs: true
+  examples: true
+  tutorials: true
+
+  example_use_cases:
+    - title: "ISO 50001 EnPI Calculation"
+      description: "Calculate normalized EnPI with statistical significance"
+      output_summary: "EnPI 0.0883, 7.1% improvement, p=0.018 (significant)"
+
+    - title: "ENERGY STAR Benchmarking"
+      description: "Benchmark food processing facility against peers"
+      output_summary: "Score 78 (certifiable), 72nd percentile, $140K savings opportunity"
+
+    - title: "Science-Based Target Setting"
+      description: "Set 2030 target aligned with SBTi 1.5°C pathway"
+      output_summary: "30.2% improvement target (3.5%/year), $4.85M capex, high feasibility"
+
+compliance:
+  zero_secrets: true
+  sbom_required: true
+  digital_signature: true
+
+  standards:
+    - "ISO_50001_EnMS"
+    - "ISO_50006_EnPI_Measurement"
+    - "ASHRAE_Guideline_14_Measurement"
+    - "IPMVP_International_Performance_Measurement"
+    - "ANSI_ASHRAE_IES_100_Energy_Efficiency"
+    - "ENERGY_STAR_Portfolio_Manager"
+    - "SBTi_Science_Based_Targets"
+
+business_impact:
+  market_opportunity:
+    addressable_market_usd: 45000000000
+    market_segment: "Energy management software and services for industrial facilities"
+    target_customers: "Manufacturing, process industries, large commercial facilities"
+
+  carbon_impact:
+    addressable_emissions_gt_co2e: 0.3
+    realistic_reduction_2030_gt: 0.03
+    note: "10% adoption × 10% improvement × 3 Gt industrial energy emissions"
+
+  economic_value:
+    typical_savings_range: "15-30% energy savings identification through benchmarking"
+    value_proposition: "Identify savings opportunities, track progress, demonstrate leadership"
+
+metadata:
+  created_date: "2025-10-13"
+  created_by: "Head of AI & Climate Intelligence"
+  last_modified: "2025-10-13"
+  review_status: "Approved"
+  reviewers: ["AI Lead", "Energy Engineer"]
+
+  change_log:
+    - version: "1.0.0"
+      date: "2025-10-13"
+      changes: "Initial specification - production ready for Agent Factory generation"
+      author: "Chief AI & Climate Intelligence"
+
+# END OF AGENT #11 SPECIFICATION
+# Production Ready for Agent Factory Generation

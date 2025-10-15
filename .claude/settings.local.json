@@ -333,7 +333,8 @@
       "Bash(../../test-v030-local/Scripts/python.exe -m pytest tests/test_agent.py::TestTestBoilerGolden::test_example_input -v)",
       "Bash(.gl.bat init --help)",
       "Bash(bandit:*)",
-      "Bash(if not exist scripts mkdir scripts)"
+      "Bash(if not exist scripts mkdir scripts)",
+      "Bash(del testsagentstest_industrial_process_heat_agent_ai_async_fixed.py)"
     ],
     "deny": []
   }

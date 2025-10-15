@@ -1,0 +1,59 @@
+pack_id: "industrial/boiler_replacement_agent"
+pack_version: "1.0.0"
+name: "Boiler Replacement Analysis Pack"
+description: "Master coordinator for industrial boiler replacement analysis, technology comparison, and decarbonization with IRA 2022 incentives"
+
+agents:
+  - agent_id: "industrial/boiler_replacement_agent"
+    class: "BoilerReplacementAgent_AI"
+    module: "greenlang.agents.boiler_replacement_agent_ai"
+
+dependencies:
+  python_packages:
+    - "pydantic>=2.0,<3.0"
+    - "numpy>=1.24,<2.0"
+    - "scipy>=1.11,<2.0"
+  greenlang_modules:
+    - "greenlang.agents.base"
+    - "greenlang.intelligence"
+    - "greenlang.agents.fuel_agent_ai"
+    - "greenlang.agents.grid_factor_agent_ai"
+
+resource_requirements:
+  memory_mb: 768
+  cpu_cores: 2
+  gpu_required: false
+
+api_endpoints:
+  - endpoint: "/api/v1/agents/industrial/boiler_replacement/execute"
+    method: "POST"
+    authentication: "required"
+    rate_limit: "100 req/min"
+  - endpoint: "/api/v1/agents/industrial/boiler_replacement/health"
+    method: "GET"
+    authentication: "optional"
+    rate_limit: "1000 req/min"
+
+standards_compliance:
+  - "ASME PTC 4.1 - Boiler Efficiency Testing"
+  - "ASHRAE Handbook - HVAC Systems and Equipment"
+  - "AHRI 540 - Performance Rating of Heat Pumps"
+  - "ISO 13612 - Heat Pumps"
+  - "ASHRAE 93 - Solar Collector Testing"
+  - "ISO 9806 - Solar Thermal Collectors"
+  - "DOE Steam Best Practices"
+  - "GHG Protocol Corporate Standard"
+  - "ISO 14064 - GHG Quantification"
+  - "NIST Handbook 135 - Life Cycle Cost Analysis"
+  - "FEMP Energy Analysis"
+
+tags:
+  - "industrial"
+  - "boiler"
+  - "replacement"
+  - "solar_thermal"
+  - "heat_pump"
+  - "financial_analysis"
+  - "ira_2022"
+  - "decarbonization"
+  - "retrofit"

@@ -1,0 +1,856 @@
+# GreenLang Agent Specification v2.0
+# Agent #1: IndustrialProcessHeatAgent_AI
+# Master coordinator for industrial process heat analysis and solar thermal decarbonization
+
+agent_metadata:
+  agent_id: "industrial/process_heat_agent"
+  agent_name: "IndustrialProcessHeatAgent_AI"
+  agent_number: 1
+  version: "1.0.0"
+  domain: "Domain1_Industrial"
+  category: "Industrial_Process"
+  complexity: "High"
+  priority: "P0_Critical"
+  base_agent: "None"
+  status: "Spec_Complete"
+  entry_point: true  # Master coordinator for Domain 1
+
+description:
+  purpose: |
+    Master coordinator for industrial process heat analysis and solar thermal
+    decarbonization pathway identification. This agent serves as the entry point
+    for all industrial heat assessments, coordinating sub-agents for detailed
+    system design, optimization, and implementation planning.
+
+  strategic_context:
+    global_impact: "Industrial process heat = 5.5 Gt CO2e/year (10% of global emissions)"
+    opportunity: "70% of industrial heat < 400°C (addressable by solar thermal)"
+    market_size: "$180B global industrial heat market"
+    technology_maturity: "Solar thermal systems 30-year track record, 40-80% efficiency"
+
+  key_capabilities:
+    - "Precise heat demand calculation using thermodynamic principles (Q = m × cp × ΔT + m × L_v)"
+    - "Solar thermal fraction estimation based on temperature, load profile, and solar resource"
+    - "Hybrid system design (solar + backup fuel) with optimal sizing"
+    - "Baseline emissions calculation and decarbonization potential assessment"
+    - "Technology recommendation (flat plate, evacuated tube, concentrating solar)"
+    - "Economic analysis (LCOH, payback, IRR) and implementation roadmap"
+    - "Risk assessment (technical, financial, operational) with mitigation strategies"
+
+  dependencies:
+    - agent_id: "agents/fuel_agent_ai"
+      relationship: "receives_data_from"
+      data: "Current fuel consumption and emissions baseline"
+
+    - agent_id: "agents/grid_factor_agent_ai"
+      relationship: "receives_data_from"
+      data: "Grid carbon intensity for electric backup systems"
+
+    - agent_id: "agents/recommendation_agent_ai"
+      relationship: "provides_data_to"
+      data: "Technology recommendations and implementation roadmap"
+
+    - agent_id: "agents/project_finance_agent_ai"
+      relationship: "provides_data_to"
+      data: "CAPEX/OPEX estimates for financial analysis"
+
+    - agent_id: "agents/report_agent_ai"
+      relationship: "provides_data_to"
+      data: "Process heat assessment summary for reporting"
+
+tools:
+  tool_count: 7
+
+  tools_list:
+    - tool_id: "tool_1"
+      name: "calculate_process_heat_demand"
+      description: "Calculate exact heat requirements by process type, production rate, and temperature"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          process_type:
+            type: "string"
+            description: "Type of industrial process"
+            enum: ["drying", "pasteurization", "sterilization", "evaporation", "distillation", "washing", "preheating", "curing", "metal_treating"]
+            required: true
+
+          production_rate:
+            type: "number"
+            description: "Production rate in kg/hr or units/hr"
+            minimum: 0
+            required: true
+
+          temperature_requirement:
+            type: "number"
+            description: "Required process temperature in °C"
+            minimum: 20
+            maximum: 600
+            required: true
+
+          inlet_temperature:
+            type: "number"
+            description: "Inlet material temperature in °C"
+            default: 20
+
+          specific_heat:
+            type: "number"
+            description: "Specific heat capacity in kJ/(kg·K)"
+            default: 4.18
+            note: "Default is water"
+
+          latent_heat:
+            type: "number"
+            description: "Latent heat if phase change involved (kJ/kg)"
+            default: 0
+
+          process_efficiency:
+            type: "number"
+            description: "Process efficiency factor (0-1)"
+            minimum: 0.3
+            maximum: 1.0
+            default: 0.75
+
+        required: ["process_type", "production_rate", "temperature_requirement"]
+
+      returns:
+        type: "object"
+        properties:
+          heat_demand_kw:
+            type: "number"
+            units: "kW"
+            description: "Total heat demand"
+
+          sensible_heat_kw:
+            type: "number"
+            units: "kW"
+            description: "Sensible heat component"
+
+          latent_heat_kw:
+            type: "number"
+            units: "kW"
+            description: "Latent heat component"
+
+          annual_energy_mwh:
+            type: "number"
+            units: "MWh/year"
+            description: "Annual energy consumption"
+
+          process_efficiency:
+            type: "number"
+            description: "Process efficiency used"
+
+          calculation_method:
+            type: "string"
+            value: "Q = m × cp × ΔT + m × L_v"
+
+          assumptions:
+            type: "object"
+            properties:
+              operating_hours_per_year: "number"
+              inlet_temperature_c: "number"
+              outlet_temperature_c: "number"
+
+      implementation:
+        physics_formula: "Q = m × cp × ΔT + m × L_v (for phase change), Power = Q / (efficiency × time)"
+        calculation_method: "Thermodynamic heat balance calculation"
+        data_source: "User input + thermodynamic properties database"
+        accuracy: "±0.1% for calculations"
+        validation: "Compare with ASHRAE Industrial Handbook values"
+        standards: ["ASHRAE_Handbook_Industrial", "ISO_50001"]
+
+      example:
+        input:
+          process_type: "pasteurization"
+          production_rate: 1000
+          temperature_requirement: 72
+          inlet_temperature: 20
+          specific_heat: 4.18
+          latent_heat: 0
+          process_efficiency: 0.75
+        output:
+          heat_demand_kw: 76.93
+          sensible_heat_kw: 57.70
+          latent_heat_kw: 0
+          annual_energy_mwh: 673.98
+          process_efficiency: 0.75
+          calculation_method: "Q = m × cp × ΔT + m × L_v"
+
+    - tool_id: "tool_2"
+      name: "calculate_temperature_requirements"
+      description: "Determine minimum, maximum, and optimal temperatures for process"
+      category: "lookup"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          process_type:
+            type: "string"
+            description: "Type of industrial process"
+            required: true
+
+          product_type:
+            type: "string"
+            description: "Specific product being processed"
+
+          quality_requirements:
+            type: "string"
+            description: "Quality standard level"
+            enum: ["standard", "premium", "pharmaceutical_grade"]
+            default: "standard"
+
+        required: ["process_type"]
+
+      returns:
+        type: "object"
+        properties:
+          min_temperature_c:
+            type: "number"
+            units: "°C"
+          max_temperature_c:
+            type: "number"
+            units: "°C"
+          optimal_temperature_c:
+            type: "number"
+            units: "°C"
+          tolerance_plus_minus_c:
+            type: "number"
+            units: "°C"
+
+      implementation:
+        calculation_method: "Database lookup based on process type and quality standards"
+        data_source: "FDA CFR, USDA FSIS, EU regulations, industry best practices"
+        accuracy: "±1°C"
+        validation: "Cross-reference with regulatory requirements"
+
+    - tool_id: "tool_3"
+      name: "calculate_energy_intensity"
+      description: "Calculate energy intensity in kWh per unit of production"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          heat_demand_kw:
+            type: "number"
+            description: "Heat demand in kW"
+            required: true
+
+          production_rate:
+            type: "number"
+            description: "Production rate"
+            required: true
+
+          operating_hours_per_year:
+            type: "number"
+            description: "Annual operating hours"
+            default: 8760
+
+        required: ["heat_demand_kw", "production_rate"]
+
+      returns:
+        type: "object"
+        properties:
+          energy_intensity_kwh_per_unit:
+            type: "number"
+            units: "kWh/unit"
+          annual_energy_mwh:
+            type: "number"
+            units: "MWh/year"
+
+      implementation:
+        calculation_method: "Energy intensity = (heat_demand × operating_hours) / (production_rate × operating_hours)"
+        accuracy: "±0.1%"
+
+    - tool_id: "tool_4"
+      name: "estimate_solar_thermal_fraction"
+      description: "Estimate percentage of heat demand addressable by solar thermal"
+      category: "analysis"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          process_temperature:
+            type: "number"
+            description: "Process temperature in °C"
+            units: "°C"
+            required: true
+
+          load_profile:
+            type: "string"
+            description: "Process operating schedule"
+            enum: ["continuous_24x7", "daytime_only", "seasonal", "batch"]
+            required: true
+
+          latitude:
+            type: "number"
+            description: "Site latitude"
+            minimum: -90
+            maximum: 90
+            required: true
+
+          annual_irradiance:
+            type: "number"
+            description: "Annual solar irradiance kWh/m²/year"
+            units: "kWh/m²/year"
+
+          storage_hours:
+            type: "number"
+            description: "Thermal storage capacity in hours"
+            default: 4
+
+        required: ["process_temperature", "load_profile", "latitude"]
+
+      returns:
+        type: "object"
+        properties:
+          solar_fraction:
+            type: "number"
+            description: "Percentage of heat demand met by solar"
+            minimum: 0
+            maximum: 1
+
+          collector_area_m2:
+            type: "number"
+            units: "m²"
+            description: "Required collector area"
+
+          storage_volume_m3:
+            type: "number"
+            units: "m³"
+            description: "Required storage volume"
+
+      implementation:
+        calculation_method: "Solar fraction calculation based on f-Chart method, adjusted for industrial applications"
+        data_source: "NSRDB solar data, ASHRAE solar calculation methods"
+        accuracy: "±5% for solar fraction estimate"
+        validation: "Compare with published solar thermal industrial case studies"
+
+    - tool_id: "tool_5"
+      name: "calculate_backup_fuel_requirements"
+      description: "Size backup gas/electric system for hybrid solar-conventional"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          peak_heat_demand_kw:
+            type: "number"
+            description: "Peak heat demand in kW"
+            units: "kW"
+            required: true
+
+          solar_fraction:
+            type: "number"
+            description: "Solar fraction 0-1"
+            minimum: 0
+            maximum: 1
+            required: true
+
+          backup_type:
+            type: "string"
+            description: "Type of backup system"
+            enum: ["natural_gas", "electric_resistance", "electric_heat_pump", "biogas"]
+            required: true
+
+          coincidence_factor:
+            type: "number"
+            description: "Probability of simultaneous max demand"
+            default: 0.85
+
+        required: ["peak_heat_demand_kw", "solar_fraction", "backup_type"]
+
+      returns:
+        type: "object"
+        properties:
+          backup_capacity_kw:
+            type: "number"
+            units: "kW"
+
+          annual_backup_energy_mwh:
+            type: "number"
+            units: "MWh/year"
+
+          backup_efficiency:
+            type: "number"
+
+      implementation:
+        calculation_method: "Backup capacity = peak_demand × (1 - solar_fraction) × coincidence_factor"
+        accuracy: "±2%"
+
+    - tool_id: "tool_6"
+      name: "estimate_emissions_baseline"
+      description: "Calculate current CO2e emissions from fossil fuel process heat"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          annual_heat_demand_mwh:
+            type: "number"
+            description: "Annual heat demand"
+            units: "MWh/year"
+            required: true
+
+          current_fuel_type:
+            type: "string"
+            description: "Current fuel type"
+            enum: ["natural_gas", "fuel_oil", "propane", "coal", "electricity_grid"]
+            required: true
+
+          fuel_efficiency:
+            type: "number"
+            description: "Boiler/heater efficiency"
+            default: 0.80
+
+          grid_region:
+            type: "string"
+            description: "Grid region for electricity emissions factor"
+
+        required: ["annual_heat_demand_mwh", "current_fuel_type"]
+
+      returns:
+        type: "object"
+        properties:
+          annual_emissions_kg_co2e:
+            type: "number"
+            units: "kg CO2e/year"
+
+          emissions_intensity_kg_per_mwh:
+            type: "number"
+            units: "kg CO2e/MWh"
+
+      implementation:
+        calculation_method: "Emissions = (heat_demand / efficiency) × emission_factor"
+        data_source: "EPA emission factors, IPCC GHG Protocol"
+        accuracy: "±2%"
+        standards: ["GHG_Protocol", "ISO_14064"]
+
+    - tool_id: "tool_7"
+      name: "calculate_decarbonization_potential"
+      description: "Calculate maximum achievable CO2e reduction with solar thermal"
+      category: "calculation"
+      deterministic: true
+
+      parameters:
+        type: "object"
+        properties:
+          baseline_emissions_kg_co2e:
+            type: "number"
+            description: "Current annual emissions"
+            units: "kg CO2e/year"
+            required: true
+
+          solar_fraction:
+            type: "number"
+            description: "Solar fraction 0-1"
+            required: true
+
+          solar_system_emissions_factor:
+            type: "number"
+            description: "Lifecycle emissions of solar system"
+            units: "kg CO2e/MWh"
+            default: 15
+            note: "Very low for solar thermal"
+
+          backup_fuel_type:
+            type: "string"
+            description: "Backup fuel type"
+
+          backup_efficiency:
+            type: "number"
+            description: "Backup system efficiency"
+            default: 0.90
+
+        required: ["baseline_emissions_kg_co2e", "solar_fraction"]
+
+      returns:
+        type: "object"
+        properties:
+          max_reduction_kg_co2e:
+            type: "number"
+            units: "kg CO2e/year"
+            description: "Maximum annual CO2e reduction"
+
+          reduction_percentage:
+            type: "number"
+            description: "Percentage reduction vs baseline"
+
+          residual_emissions_kg_co2e:
+            type: "number"
+            units: "kg CO2e/year"
+            description: "Remaining emissions after solar"
+
+      implementation:
+        calculation_method: "Reduction = baseline × solar_fraction - solar_lifecycle_emissions"
+        accuracy: "±2%"
+        validation: "Lifecycle assessment per ISO 14040/14044"
+
+ai_integration:
+  temperature: 0.0
+  seed: 42
+  tool_choice: "auto"
+  max_iterations: 5
+  budget_usd: 0.10
+  provenance_tracking: true
+  ai_summary: true
+
+  system_prompt: |
+    You are an industrial energy expert specializing in process heat analysis and
+    solar thermal integration for GreenLang. You help industrial facilities identify
+    decarbonization opportunities through rigorous engineering analysis.
+
+    Your expertise includes:
+    - Industrial process heat requirements across 20+ industries
+    - Solar thermal technology selection (flat plate, evacuated tube, concentrating)
+    - Hybrid system design (solar + backup fuel)
+    - Economic analysis (LCOH, payback, IRR)
+    - Implementation planning and risk assessment
+
+    CRITICAL RULES:
+    - Use provided tools for ALL calculations
+    - NEVER estimate or guess numbers
+    - Always explain analysis clearly with proper units
+    - Cite engineering standards (ASHRAE, ASME, ISO)
+    - Provide conservative estimates (under-promise, over-deliver)
+    - Identify potential barriers and mitigation strategies
+
+  user_prompt_template: |
+    Analyze industrial process heat requirements and solar thermal decarbonization potential:
+
+    Facility Profile:
+    - Industry: {industry_type}
+    - Process: {process_type}
+    - Production Rate: {production_rate} {unit}
+    - Operating Hours: {hours_per_day} hours/day, {days_per_week} days/week
+    - Current Fuel: {current_fuel_type}
+
+    Location:
+    - Site: {city}, {state_country}
+    - Latitude: {latitude}°
+    - Annual Solar Irradiance: {irradiance} kWh/m²/year
+
+    Requirements:
+    - Process Temperature: {temperature_requirement}°C
+    - Heat Demand: {estimated_demand} kW (if known)
+    - Quality Standards: {quality_requirements}
+
+    Tasks:
+    1. Use calculate_process_heat_demand to determine exact heat requirements
+    2. Use calculate_temperature_requirements to validate process temperatures
+    3. Use estimate_solar_thermal_fraction to assess solar opportunity
+    4. Use calculate_backup_fuel_requirements to size hybrid system
+    5. Use estimate_emissions_baseline for current emissions
+    6. Use calculate_decarbonization_potential for CO2e reduction
+    7. Provide comprehensive analysis with:
+       - Technology recommendation (which solar thermal system)
+       - System sizing (collector area, storage volume)
+       - Financial metrics (CAPEX estimate, payback period)
+       - Implementation roadmap (Phase 1/2/3)
+       - Risk assessment (technical, financial, operational risks)
+
+    IMPORTANT:
+    - Use tools for ALL calculations
+    - Provide clear, actionable insights
+    - Format numbers with proper units
+    - Include conservative safety factors
+
+sub_agents:
+  sub_agent_count: 3
+
+  sub_agents_list:
+    - sub_agent_id: "industrial/solar_thermal_integration_agent"
+      role: "Assess solar thermal system integration feasibility and detailed design"
+      tools_count: 3
+      tools: ["system_sizing", "collector_selection", "storage_sizing"]
+      invocation_pattern: "on_demand"
+
+    - sub_agent_id: "industrial/backup_system_agent"
+      role: "Size and optimize backup heating system"
+      tools_count: 4
+      tools: ["backup_sizing", "fuel_selection", "hybrid_control", "reliability_analysis"]
+      invocation_pattern: "on_demand"
+
+    - sub_agent_id: "industrial/process_optimization_agent"
+      role: "Identify process efficiency improvements before solar sizing"
+      tools_count: 5
+      tools: ["pinch_analysis", "heat_recovery", "waste_heat_identification", "load_shifting", "batch_optimization"]
+      invocation_pattern: "on_demand"
+
+inputs:
+  input_schema:
+    type: "object"
+    properties:
+      industry_type:
+        type: "string"
+        description: "Industry sector"
+        required: true
+
+      process_type:
+        type: "string"
+        description: "Specific industrial process"
+        enum: ["drying", "pasteurization", "sterilization", "evaporation", "distillation", "washing", "preheating", "curing", "metal_treating"]
+        required: true
+
+      production_rate:
+        type: "number"
+        description: "Production rate in kg/hr"
+        units: "kg/hr"
+        required: true
+
+      temperature_requirement:
+        type: "number"
+        description: "Required process temperature"
+        units: "°C"
+        required: true
+
+      current_fuel_type:
+        type: "string"
+        enum: ["natural_gas", "fuel_oil", "propane", "coal", "electricity_grid"]
+        required: true
+
+      latitude:
+        type: "number"
+        description: "Site latitude"
+        required: true
+
+      annual_irradiance:
+        type: "number"
+        description: "Annual solar irradiance"
+        units: "kWh/m²/year"
+
+      operating_hours_per_day:
+        type: "number"
+        default: 24
+
+      days_per_week:
+        type: "number"
+        default: 7
+
+    required: ["industry_type", "process_type", "production_rate", "temperature_requirement", "current_fuel_type", "latitude"]
+
+  example_input:
+    industry_type: "Food & Beverage"
+    process_type: "pasteurization"
+    production_rate: 1000
+    temperature_requirement: 72
+    current_fuel_type: "natural_gas"
+    latitude: 35.0
+    annual_irradiance: 1800
+    operating_hours_per_day: 16
+    days_per_week: 5
+
+outputs:
+  output_schema:
+    type: "object"
+    properties:
+      heat_demand_kw:
+        type: "number"
+        units: "kW"
+
+      annual_energy_mwh:
+        type: "number"
+        units: "MWh/year"
+
+      solar_fraction:
+        type: "number"
+        description: "Percentage of heat from solar"
+
+      collector_area_m2:
+        type: "number"
+        units: "m²"
+
+      baseline_emissions_kg_co2e:
+        type: "number"
+        units: "kg CO2e/year"
+
+      reduction_potential_kg_co2e:
+        type: "number"
+        units: "kg CO2e/year"
+
+      reduction_percentage:
+        type: "number"
+
+      technology_recommendation:
+        type: "string"
+        description: "Recommended solar thermal technology"
+
+      implementation_roadmap:
+        type: "array"
+        items:
+          phase: "string"
+          duration: "string"
+          activities: "array"
+
+      ai_explanation:
+        type: "string"
+        description: "AI-generated analysis and recommendations"
+
+      provenance:
+        type: "object"
+        properties:
+          model: "string"
+          tools_used: "array"
+          cost_usd: "number"
+          deterministic: "boolean"
+
+  example_output:
+    heat_demand_kw: 76.93
+    annual_energy_mwh: 539.18
+    solar_fraction: 0.65
+    collector_area_m2: 450
+    baseline_emissions_kg_co2e: 102400
+    reduction_potential_kg_co2e: 65560
+    reduction_percentage: 64
+    technology_recommendation: "Flat plate collectors with 4-hour thermal storage"
+    ai_explanation: "Comprehensive analysis with conservative estimates"
+    provenance:
+      model: "gpt-4o"
+      tools_used: ["calculate_process_heat_demand", "estimate_solar_thermal_fraction", "estimate_emissions_baseline", "calculate_decarbonization_potential"]
+      cost_usd: 0.08
+      deterministic: true
+
+testing:
+  test_coverage_target: 0.95
+
+  test_categories:
+    - category: "unit_tests"
+      description: "Test individual tool implementations"
+      count: 25
+
+    - category: "integration_tests"
+      description: "Test AI orchestration with tools"
+      count: 8
+
+    - category: "determinism_tests"
+      description: "Verify temperature=0, seed=42 reproducibility"
+      count: 3
+
+    - category: "boundary_tests"
+      description: "Test edge cases (min/max temperatures, zero production, etc.)"
+      count: 5
+
+    - category: "performance_tests"
+      description: "Verify latency and cost targets"
+      count: 3
+
+  performance_requirements:
+    max_latency_ms: 3000
+    max_cost_usd: 0.10
+    accuracy_target: 0.99
+
+deployment:
+  pack_id: "industrial/process_heat_pack"
+  pack_version: "1.0.0"
+
+  dependencies:
+    python_packages:
+      - "pydantic>=2.0"
+      - "numpy>=1.24"
+      - "scipy>=1.11"
+
+    greenlang_modules:
+      - "greenlang.agents.base"
+      - "greenlang.intelligence"
+      - "greenlang.agents.fuel_agent_ai"
+      - "greenlang.agents.grid_factor_agent_ai"
+
+  resource_requirements:
+    memory_mb: 512
+    cpu_cores: 1
+    gpu_required: false
+
+  api_endpoints:
+    - endpoint: "/api/v1/agents/industrial/process_heat/execute"
+      method: "POST"
+      authentication: "required"
+
+documentation:
+  readme: true
+  api_docs: true
+  examples: true
+  tutorials: true
+
+  example_use_cases:
+    - title: "Food & Beverage Pasteurization Analysis"
+      description: "Analyze solar thermal integration for milk pasteurization plant"
+      input_example:
+        industry_type: "Food & Beverage"
+        process_type: "pasteurization"
+        production_rate: 1000
+        temperature_requirement: 72
+      output_summary: "65% solar fraction achievable with flat plate collectors"
+
+    - title: "Textile Drying Process Decarbonization"
+      description: "Assess solar thermal for textile drying operation"
+      input_example:
+        industry_type: "Textile"
+        process_type: "drying"
+        production_rate: 500
+        temperature_requirement: 120
+      output_summary: "55% solar fraction with evacuated tube collectors"
+
+    - title: "Chemical Preheating Process"
+      description: "Evaluate solar integration for chemical feedstock preheating"
+      input_example:
+        industry_type: "Chemical"
+        process_type: "preheating"
+        production_rate: 2000
+        temperature_requirement: 180
+      output_summary: "40% solar fraction with parabolic trough collectors"
+
+compliance:
+  zero_secrets: true
+  sbom_required: true
+  digital_signature: true
+
+  standards:
+    - "ASHRAE_Handbook_Industrial"
+    - "ISO_50001_EnMS"
+    - "ASME_BPE_Bioprocessing"
+    - "GHG_Protocol_Corporate_Standard"
+    - "ISO_14064_GHG_Quantification"
+
+  certifications:
+    - "LEED_EA_Renewable_Energy"
+    - "ISO_14064_Verification"
+
+business_impact:
+  market_opportunity:
+    addressable_market_usd: 180000000000
+    market_segment: "Industrial facilities with process heat < 400°C"
+    target_customers: "Food/beverage, textiles, chemicals, pharmaceuticals"
+
+  carbon_impact:
+    addressable_emissions_gt_co2e: 3.8
+    realistic_reduction_2030_gt: 0.38
+    note: "10% penetration × 3.8 Gt = 380 Mt CO2e/year reduction"
+
+  economic_value:
+    cost_savings_per_kwh_usd: 0.03
+    typical_payback_years: "5-10"
+    irr_range: "8-15%"
+
+metadata:
+  created_date: "2025-10-13"
+  created_by: "Head of AI & Climate Intelligence"
+  last_modified: "2025-10-13"
+  review_status: "Approved"
+  reviewers: ["AI Lead"]
+
+  change_log:
+    - version: "1.0.0"
+      date: "2025-10-13"
+      changes: "Initial specification - production ready for Agent Factory generation"
+      author: "Chief AI & Climate Intelligence"
+
+# END OF AGENT #1 SPECIFICATION
+# Production Ready for Agent Factory Generation
+# Next: Agent #2 - BoilerReplacementAgent_AI

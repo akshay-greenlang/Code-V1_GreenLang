@@ -1,0 +1,34 @@
+================================================================================
+Validation Report: agent_003_industrial_heat_pump.yaml
+================================================================================
+Status: ✅ PASS
+Errors: 0
+Warnings: 7
+Info: 0
+--------------------------------------------------------------------------------
+
+🟡 WARNINGS:
+⚠️  WARNING: [tools.tools_list[1]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[2]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[3]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[4]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[5]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [tools.tools_list[7]] implementation.data_source
+   Recommended field 'data_source' is missing from implementation
+
+⚠️  WARNING: [ai_integration] system_prompt
+   system_prompt should emphasize: use tools, never guess, deterministic
+
+
+✨ All validation checks passed!
+================================================================================

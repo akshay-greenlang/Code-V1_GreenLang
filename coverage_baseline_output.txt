@@ -1,0 +1,61 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Scripts\pytest.exe\__main__.py", line 6, in <module>
+    sys.exit(console_main())
+             ~~~~~~~~~~~~^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\config\__init__.py", line 201, in console_main
+    code = main()
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\config\__init__.py", line 175, in main
+    ret: ExitCode | int = config.hook.pytest_cmdline_main(config=config)
+                          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\pluggy\_hooks.py", line 512, in __call__
+    return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\pluggy\_manager.py", line 120, in _hookexec
+    return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\pluggy\_callers.py", line 167, in _multicall
+    raise exception
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\pluggy\_callers.py", line 121, in _multicall
+    res = hook_impl.function(*args)
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\main.py", line 336, in pytest_cmdline_main
+    return wrap_session(config, _main)
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\main.py", line 331, in wrap_session
+    config._ensure_unconfigure()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\config\__init__.py", line 1131, in _ensure_unconfigure
+    self._cleanup_stack.close()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Python313\Lib\contextlib.py", line 627, in close
+    self.__exit__(None, None, None)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\contextlib.py", line 619, in __exit__
+    raise exc
+  File "C:\Python313\Lib\contextlib.py", line 604, in __exit__
+    if cb(*exc_details):
+       ~~^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\contextlib.py", line 482, in _exit_wrapper
+    callback(*args, **kwds)
+    ~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\capture.py", line 778, in stop_global_capturing
+    self._global_capturing.pop_outerr_to_orig()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\capture.py", line 659, in pop_outerr_to_orig
+    out, err = self.readouterr()
+               ~~~~~~~~~~~~~~~^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\capture.py", line 706, in readouterr
+    out = self.out.snap() if self.out else ""
+          ~~~~~~~~~~~~~^^
+  File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\test-v030-local\Lib\site-packages\_pytest\capture.py", line 591, in snap
+    self.tmpfile.seek(0)
+    ~~~~~~~~~~~~~~~~~^^^
+ValueError: I/O operation on closed file.
+============================= test session starts =============================
+platform win32 -- Python 3.13.5, pytest-8.4.2, pluggy-1.6.0
+rootdir: C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang
+configfile: pytest.ini
+plugins: anyio-4.11.0, hypothesis-6.140.2, cov-7.0.0
+collected 410 items
+
+============================ 12 warnings in 8.42s =============================
