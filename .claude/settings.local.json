@@ -334,7 +334,9 @@
       "Bash(.gl.bat init --help)",
       "Bash(bandit:*)",
       "Bash(if not exist scripts mkdir scripts)",
-      "Bash(del testsagentstest_industrial_process_heat_agent_ai_async_fixed.py)"
+      "Bash(del testsagentstest_industrial_process_heat_agent_ai_async_fixed.py)",
+      "Bash(xargs:*)",
+      "Bash(git ls-tree:*)"
     ],
     "deny": []
   }
