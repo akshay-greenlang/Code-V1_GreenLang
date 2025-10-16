@@ -336,7 +336,14 @@
       "Bash(if not exist scripts mkdir scripts)",
       "Bash(del testsagentstest_industrial_process_heat_agent_ai_async_fixed.py)",
       "Bash(xargs:*)",
-      "Bash(git ls-tree:*)"
+      "Bash(git ls-tree:*)",
+      "Bash(python3:*)",
+      "Bash(do echo \"=== $dir ===\")",
+      "Bash(paste:*)",
+      "Bash(bc)",
+      "Bash(py count_lines.py)",
+      "Bash(do echo \"Checking $file...\")",
+      "Bash(head:*)"
     ],
     "deny": []
   }

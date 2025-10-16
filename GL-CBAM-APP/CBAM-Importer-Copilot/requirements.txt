@@ -1,0 +1,121 @@
+# ============================================================================
+# CBAM IMPORTER COPILOT - PYTHON DEPENDENCIES
+# ============================================================================
+#
+# Core dependencies for the CBAM Importer Copilot pack.
+#
+# Installation:
+#   pip install -r requirements.txt
+#
+# Version: 1.0.0
+# Python: >=3.9
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# CORE DEPENDENCIES (Required for runtime)
+# ----------------------------------------------------------------------------
+
+# Data Processing & Analysis
+pandas>=2.0.0
+# - Used by: All 3 agents
+# - Purpose: Data ingestion, transformation, aggregation
+# - Why this version: Modern API, improved performance, better type hints
+
+# Data Validation & Modeling
+pydantic>=2.0.0
+# - Used by: All 3 agents
+# - Purpose: Data validation, serialization, type safety
+# - Why this version: Pydantic v2 has 20× better performance
+
+# JSON Schema Validation
+jsonschema>=4.0.0
+# - Used by: Agent 1 (ShipmentIntakeAgent)
+# - Purpose: Validate input shipments against JSON Schema
+# - Why this version: Full Draft 7 support, better error messages
+
+# YAML Parsing
+PyYAML>=6.0
+# - Used by: All agents
+# - Purpose: Load CBAM rules, supplier profiles, configuration
+# - Why this version: Security fixes, Python 3.9+ compatibility
+
+# Excel File Support
+openpyxl>=3.1.0
+# - Used by: Agent 1 (ShipmentIntakeAgent)
+# - Purpose: Read Excel shipment files (.xlsx)
+# - Why this version: Latest stable, good performance
+
+# ----------------------------------------------------------------------------
+# OPTIONAL DEPENDENCIES (Recommended for development)
+# ----------------------------------------------------------------------------
+
+# Testing Framework
+pytest>=7.4.0
+# - Purpose: Unit tests, integration tests, end-to-end tests
+# - Phase: Will be used in Phase 9 (Validation & Testing)
+
+# Test Coverage
+pytest-cov>=4.1.0
+# - Purpose: Code coverage reporting
+# - Target: 80% coverage
+
+# Code Quality - Linting
+ruff>=0.1.0
+# - Purpose: Fast Python linter (replaces flake8, black, isort)
+# - Why: 10-100× faster than alternatives
+
+# Type Checking
+mypy>=1.5.0
+# - Purpose: Static type checking
+# - Why: Catch type errors before runtime
+
+# Security Scanning
+bandit>=1.7.5
+# - Purpose: Find common security issues
+# - Why: CBAM data is sensitive, security is critical
+
+# Dependency Vulnerability Scanning
+pip-audit>=2.6.0
+# - Purpose: Check for known vulnerabilities in dependencies
+# - Why: Compliance and security best practices
+
+# Performance Profiling
+memory-profiler>=0.61.0
+# - Purpose: Memory usage profiling
+# - Why: Ensure we stay under 500 MB for 100K shipments
+
+# ----------------------------------------------------------------------------
+# DOCUMENTATION DEPENDENCIES (Optional)
+# ----------------------------------------------------------------------------
+
+# Markdown to PDF (for reports)
+# markdown>=3.4.0
+# - Purpose: Convert Markdown summaries to PDF (optional feature)
+# - Status: Not yet implemented
+
+# ----------------------------------------------------------------------------
+# NOTES
+# ----------------------------------------------------------------------------
+
+# GreenLang Integration:
+# If using GreenLang CLI (gl cbam report), install GreenLang:
+#   pip install greenlang-cli>=0.3.0
+
+# Platform Compatibility:
+# - All dependencies are cross-platform (Windows, macOS, Linux)
+# - Pure Python implementations (no C extensions required)
+# - Tested on Python 3.9, 3.10, 3.11, 3.12
+
+# Installation Verification:
+#   python -c "import pandas, pydantic, jsonschema, yaml, openpyxl; print('✓ All dependencies installed')"
+
+# Minimal Installation (runtime only):
+#   pip install pandas>=2.0.0 pydantic>=2.0.0 jsonschema>=4.0.0 PyYAML>=6.0 openpyxl>=3.1.0
+
+# Full Installation (development):
+#   pip install -r requirements.txt
+
+# ============================================================================
+# END OF REQUIREMENTS
+# ============================================================================

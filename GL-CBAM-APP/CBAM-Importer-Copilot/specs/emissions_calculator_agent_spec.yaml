@@ -1,0 +1,524 @@
+# AGENT SPECIFICATION: EmissionsCalculatorAgent_AI
+# Version: 1.0.0
+# Purpose: Calculate embedded emissions for CBAM-covered goods with ZERO hallucination guarantee
+# Last Updated: 2025-10-15
+
+agent_metadata:
+  agent_name: "EmissionsCalculatorAgent_AI"
+  agent_id: "cbam-emissions-calculator-v1"
+  version: "1.0.0"
+  agent_type: "calculator"
+  category: "cbam"
+  description: "Calculates embedded CO2 emissions for each shipment using default emission factors or supplier-provided actual data. 100% deterministic, zero hallucinated numbers."
+
+  created_by: "GreenLang CBAM Team"
+  created_date: "2025-10-15"
+
+  tags:
+    - "cbam"
+    - "emissions-calculation"
+    - "carbon-accounting"
+    - "deterministic"
+    - "zero-hallucination"
+
+# Mission and Scope
+mission:
+  primary_objective: "Calculate embedded emissions for every CBAM shipment with 100% accuracy using deterministic tools (NO LLM for calculations)"
+
+  in_scope:
+    - "Calculate direct (Scope 1) emissions per shipment"
+    - "Calculate indirect (Scope 2) emissions per shipment"
+    - "Apply EU default emission factors when actual data unavailable"
+    - "Apply supplier actual emission factors when available"
+    - "Handle complex goods with precursor materials"
+    - "Validate emissions calculations (sanity checks)"
+    - "Track calculation method used (default vs actual)"
+    - "Output detailed emissions breakdown for each shipment"
+
+  out_of_scope:
+    - "Data validation (handled by ShipmentIntakeAgent_AI)"
+    - "Report packaging (handled by ReportingPackagerAgent_AI)"
+    - "Estimating or guessing emission factors (must use database values)"
+    - "Modifying emission factors based on context"
+    - "Carbon pricing or cost calculations"
+    - "Scope 3 emissions (not required in transitional period)"
+
+  success_criteria:
+    - "100% calculation accuracy (no rounding errors beyond 3 decimals)"
+    - "ZERO hallucinated emission factors or numbers"
+    - "All calculations traceable and reproducible"
+    - "Processing time <3ms per shipment"
+    - "Support for all 5 CBAM product groups"
+    - "Correct handling of complex goods up to 20% cap"
+    - "Validation catches impossible values (negative, extreme)"
+
+# CRITICAL: Zero Hallucination Guarantee
+zero_hallucination_guarantee:
+  principle: "NEVER generate, estimate, or hallucinate any numeric value. ALL numbers must come from deterministic tools."
+
+  prohibited_actions:
+    - "❌ Using LLM to generate emission factors"
+    - "❌ Estimating emission factors based on 'similar' products"
+    - "❌ Guessing emission factors from product descriptions"
+    - "❌ Interpolating emission factors between known values"
+    - "❌ Applying 'reasonable assumptions' to calculations"
+    - "❌ Using LLM for any arithmetic operations"
+
+  required_actions:
+    - "✅ Look up emission factors from emission_factors.py database"
+    - "✅ Use Python arithmetic for all calculations"
+    - "✅ Validate all numbers against database before use"
+    - "✅ Fail explicitly if emission factor not found (don't guess)"
+    - "✅ Log data source for every emission factor used"
+    - "✅ Round results deterministically (Python round(), 3 decimals)"
+
+  enforcement:
+    - "All calculations must be unit tested with known inputs/outputs"
+    - "Every emission factor must have audit trail to database"
+    - "Code review must verify NO LLM calls in calculation path"
+    - "Integration tests compare against pre-calculated expected results"
+
+# Inputs and Outputs
+interfaces:
+  inputs:
+    primary_input:
+      name: "validated_shipments"
+      description: "Validated and enriched shipments from ShipmentIntakeAgent_AI"
+      format: "JSON"
+      schema_reference: "../schemas/shipment.schema.json"
+      required_enrichment:
+        - "product_group must be populated"
+        - "net_mass_kg must be positive"
+        - "CN code must be valid"
+
+    reference_data:
+      emission_factors_db:
+        description: "Emission factors database (default values + supplier actuals)"
+        path: "../data/emission_factors.py"
+        format: "Python module"
+        required: true
+        functions:
+          - "get_emission_factor_by_cn_code(cn_code: str) -> List[dict]"
+          - "get_emission_factor_by_product_key(key: str) -> dict"
+          - "get_all_product_groups() -> List[str]"
+
+      suppliers_db:
+        description: "Supplier profiles with actual emissions data"
+        path: "../examples/demo_suppliers.yaml"
+        format: "YAML"
+        required: false
+        used_when: "Shipment has supplier_id and has_actual_emissions='YES'"
+
+      cbam_rules:
+        description: "Validation rules and constants"
+        path: "../rules/cbam_rules.yaml"
+        format: "YAML"
+        required: true
+        used_for:
+          - "Emissions sanity check ranges"
+          - "Complex goods threshold (20% cap)"
+          - "Rounding precision"
+
+  outputs:
+    primary_output:
+      name: "shipments_with_emissions"
+      description: "Shipments with detailed emissions calculations"
+      format: "JSON"
+      structure: |
+        {
+          "metadata": {
+            "calculated_at": "ISO8601 timestamp",
+            "total_shipments": int,
+            "calculation_methods": {
+              "default_values": int,
+              "actual_data": int,
+              "complex_goods": int
+            },
+            "total_emissions_tco2": float
+          },
+          "shipments": [
+            {
+              // Original shipment fields
+              "emissions_calculation": {
+                "calculation_method": "default_values|actual_data|complex_goods",
+                "emission_factor_source": "EU Default|Supplier EPD",
+                "emission_factor_direct_tco2_per_ton": float,
+                "emission_factor_indirect_tco2_per_ton": float,
+                "emission_factor_total_tco2_per_ton": float,
+                "direct_emissions_tco2": float,
+                "indirect_emissions_tco2": float,
+                "total_emissions_tco2": float,
+                "calculation_formula": "total = mass_tonnes × emission_factor",
+                "data_quality": "high|medium|low",
+                "complex_goods_components": [...],  // If applicable
+                "validation_status": "valid|warning|error",
+                "notes": "..."
+              }
+            }
+          ],
+          "validation_warnings": [...]
+        }
+
+# Core Responsibilities
+responsibilities:
+  1_emission_factor_selection:
+    description: "Select appropriate emission factor for each shipment"
+    logic:
+      step_1:
+        action: "Check if shipment has supplier_id and has_actual_emissions='YES'"
+        if_true: "Use supplier actual emissions data (priority 1)"
+        if_false: "Proceed to step 2"
+
+      step_2:
+        action: "Look up default emission factor by CN code"
+        data_source: "../data/emission_factors.py::get_emission_factor_by_cn_code()"
+        if_found: "Use EU default emission factor (priority 2)"
+        if_not_found: "Error E005 - No emission factor available"
+
+      step_3:
+        action: "Handle complex goods if applicable"
+        condition: "If good contains precursor CBAM materials"
+        method: "Sum emissions from precursor materials + direct process emissions"
+        validation: "Check 20% complex goods cap not exceeded"
+
+    error_handling:
+      - "No emission factor found: Return error E005 with CN code"
+      - "Supplier not found but referenced: Warning W005, fall back to defaults"
+      - "Multiple emission factors for CN code: Use most specific match or flag ambiguity"
+
+  2_emissions_calculation:
+    description: "Perform deterministic emissions calculations"
+
+    method_default_values:
+      description: "Calculate using EU Commission default emission factors"
+      formula: |
+        mass_tonnes = net_mass_kg / 1000
+        direct_emissions_tco2 = mass_tonnes × default_direct_tco2_per_ton
+        indirect_emissions_tco2 = mass_tonnes × default_indirect_tco2_per_ton
+        total_emissions_tco2 = direct_emissions_tco2 + indirect_emissions_tco2
+
+      rounding: "Round to 3 decimal places using Python round()"
+      validation:
+        - "All values must be >= 0"
+        - "Total must equal direct + indirect (within 0.001 tolerance)"
+
+      example: |
+        Shipment: 12,450 kg of hot-rolled steel (CN 72031000) from China
+        Emission factor: 2.000 tCO2/ton (1.850 direct + 0.150 indirect)
+
+        Calculation:
+        mass_tonnes = 12450 / 1000 = 12.450 tonnes
+        direct = 12.450 × 1.850 = 23.033 tCO2
+        indirect = 12.450 × 0.150 = 1.868 tCO2
+        total = 23.033 + 1.868 = 24.901 tCO2
+
+    method_actual_data:
+      description: "Calculate using supplier-provided actual emissions data"
+      formula: |
+        mass_tonnes = net_mass_kg / 1000
+        direct_emissions_tco2 = mass_tonnes × supplier_direct_tco2_per_ton
+        indirect_emissions_tco2 = mass_tonnes × supplier_indirect_tco2_per_ton
+        total_emissions_tco2 = direct_emissions_tco2 + indirect_emissions_tco2
+
+      data_source: "Supplier record: actual_emissions_data.{direct|indirect|total}_emissions_tco2_per_ton"
+      rounding: "Round to 3 decimal places"
+      validation:
+        - "Supplier actual emissions data must be complete"
+        - "Data quality must be high|medium|low (not missing)"
+        - "Reporting year should be within 2 years (warning if older)"
+
+      quality_tracking:
+        - "Log supplier data quality (high/medium/low)"
+        - "Log reporting year"
+        - "Log certifications if present"
+
+    method_complex_goods:
+      description: "Calculate for goods made from CBAM precursor materials"
+      applicability: "Goods that incorporate other CBAM-covered materials as inputs"
+      formula: |
+        total_emissions_tco2 = Σ(precursor_i.mass_kg/1000 × precursor_i.emission_factor) + direct_process_emissions
+
+      example: |
+        Product: Steel bar made from pig iron
+        Components:
+          - Pig iron: 1000 kg × 1.900 tCO2/ton = 1.900 tCO2
+          - Direct process (EAF): 0.100 tCO2
+        Total: 1.900 + 0.100 = 2.000 tCO2
+
+      constraints:
+        - "All precursor materials must be identifiable CBAM goods with known emission factors"
+        - "Quarterly complex goods (by mass) cannot exceed 20% of total imports"
+        - "Must document precursor materials in output"
+
+      validation:
+        - "Check 20% threshold: complex_goods_mass / total_quarterly_mass <= 0.20"
+        - "Error E006 if threshold exceeded"
+
+  3_calculation_validation:
+    description: "Validate calculated emissions for sanity and correctness"
+
+    validation_checks:
+      non_negative:
+        check: "All emissions values >= 0"
+        error_code: "E005"
+        message: "Negative emissions calculated (data or formula error)"
+
+      sum_integrity:
+        check: "total == direct + indirect (within 0.001 rounding tolerance)"
+        error_code: "E005"
+        message: "Emissions sum mismatch"
+
+      reasonable_range:
+        check: "Emission factor is within expected range for product group"
+        ranges:
+          cement: {min: 0.3, max: 2.5}
+          steel: {min: 0.3, max: 5.0}
+          aluminum: {min: 0.2, max: 25.0}
+          fertilizers: {min: 0.5, max: 5.0}
+          hydrogen: {min: 0.0, max: 20.0}
+        severity: "warning"
+        error_code: "W002"
+        message: "Emission factor {value} outside typical range for {product_group}"
+
+      mass_check:
+        check: "Calculated emissions proportional to mass"
+        logic: "If mass doubles, emissions should roughly double"
+        severity: "warning"
+        trigger: "Emissions per tonne differs by >50% from emission factor"
+
+  4_complex_goods_management:
+    description: "Manage complex goods threshold and tracking"
+
+    quarterly_tracking:
+      action: "Track cumulative complex goods mass for the quarter"
+      formula: "complex_goods_pct = (Σ complex_goods_mass_kg) / (Σ total_mass_kg)"
+      threshold: 0.20  # 20% per CBAM rules
+
+    threshold_check:
+      when: "After each complex good calculation"
+      check: "complex_goods_pct <= 0.20"
+      if_exceeded:
+        action: "Return error E006"
+        message: "Complex goods exceed 20% threshold ({pct:.1%} of quarterly imports)"
+        recommendation: "Obtain actual emission factors for some complex goods to reduce estimation"
+
+    documentation:
+      requirement: "Document all precursor materials used in complex goods"
+      output: |
+        "complex_goods_components": [
+          {
+            "material_cn_code": "72011000",
+            "material_name": "Pig iron",
+            "mass_kg": 1000,
+            "emission_factor_tco2_per_ton": 1.900,
+            "emissions_tco2": 1.900
+          },
+          ...
+        ]
+
+# Tools and Functions (100% Deterministic)
+tools_required:
+  deterministic_tools_only:
+    emission_factor_lookup:
+      purpose: "Retrieve emission factors from database"
+      implementation: "Python function (NO LLM)"
+      function: "get_emission_factor_by_cn_code(cn_code: str) -> List[dict]"
+      data_source: "../data/emission_factors.py"
+      must_return:
+        - "direct_emissions_tco2_per_ton"
+        - "indirect_emissions_tco2_per_ton"
+        - "total_emissions_tco2_per_ton"
+        - "source (citation)"
+        - "data_quality"
+
+    supplier_emissions_lookup:
+      purpose: "Retrieve supplier actual emissions"
+      implementation: "Python function reading YAML (NO LLM)"
+      function: "get_supplier_emissions(supplier_id: str) -> dict | None"
+      data_source: "../examples/demo_suppliers.yaml"
+      must_return:
+        - "actual_emissions_data object"
+        - "data_quality"
+        - "reporting_year"
+
+    arithmetic_calculator:
+      purpose: "Perform all numeric calculations"
+      implementation: "Python built-in operators and math library"
+      operations:
+        - "Division: mass_kg / 1000 → mass_tonnes"
+        - "Multiplication: mass_tonnes × emission_factor → emissions"
+        - "Addition: direct + indirect → total"
+        - "Rounding: round(value, 3)"
+        - "Summation: sum(emissions_list)"
+
+      never_use_llm_for:
+        - "Any arithmetic operation"
+        - "Unit conversions"
+        - "Rounding"
+        - "Comparisons"
+
+    validation_checker:
+      purpose: "Validate emissions calculations"
+      implementation: "Python conditional logic (NO LLM)"
+      checks:
+        - "value >= 0"
+        - "abs(total - (direct + indirect)) < 0.001"
+        - "min_range <= emission_factor <= max_range"
+
+  no_llm_usage:
+    prohibited:
+      - "❌ Generating emission factors"
+      - "❌ Estimating missing emission factors"
+      - "❌ Performing calculations"
+      - "❌ Deciding which emission factor to use based on description"
+      - "❌ Validating numeric ranges"
+      - "❌ Rounding numbers"
+
+    allowed_only:
+      - "✅ Generating human-readable calculation summaries"
+      - "✅ Creating explanation text for reports"
+      - "✅ Translating error codes to user-friendly messages"
+
+# Performance Requirements
+performance:
+  throughput:
+    target: "1000 shipments per 3 seconds (333 per second)"
+    acceptable: "1000 shipments per 10 seconds (100 per second)"
+
+  latency:
+    target: "<3ms per shipment"
+    acceptable: "<10ms per shipment"
+
+  memory:
+    target: "<100MB for 100,000 shipments"
+    acceptable: "<500MB for 100,000 shipments"
+
+  accuracy:
+    target: "100% calculation accuracy (bit-perfect reproducibility)"
+    tolerance: "±0.001 tCO2 due to floating point rounding"
+
+# Testing Requirements
+testing:
+  unit_tests:
+    coverage_target: "100% (all calculation paths)"
+
+    critical_test_cases:
+      - "Simple shipment with default emission factor"
+      - "Shipment with supplier actual emissions"
+      - "Complex good with multiple precursors"
+      - "Edge case: mass = 0.001 kg (minimum)"
+      - "Edge case: mass = 1,000,000 kg (very large)"
+      - "Error case: CN code not in database"
+      - "Error case: supplier_id not found"
+      - "Error case: 20% complex goods threshold exceeded"
+      - "Validation: negative emissions caught"
+      - "Validation: sum mismatch caught"
+
+    example_test_case: |
+      def test_default_emission_calculation():
+          shipment = {
+              "cn_code": "72031000",  # Hot-rolled steel
+              "net_mass_kg": 12450,
+              "product_group": "steel"
+          }
+
+          expected = {
+              "emission_factor_total_tco2_per_ton": 2.000,
+              "mass_tonnes": 12.450,
+              "direct_emissions_tco2": 23.033,
+              "indirect_emissions_tco2": 1.868,
+              "total_emissions_tco2": 24.901
+          }
+
+          result = calculator.calculate_emissions(shipment)
+
+          assert result["total_emissions_tco2"] == expected["total_emissions_tco2"]
+          assert result["calculation_method"] == "default_values"
+
+  integration_tests:
+    - "Process demo_shipments.csv and verify all emissions calculated"
+    - "Compare actual vs default calculations for same product"
+    - "Verify complex goods threshold enforcement"
+    - "Verify supplier data preferred over defaults when available"
+
+  property_based_tests:
+    - "Emissions always non-negative"
+    - "Total always equals direct + indirect (within rounding)"
+    - "Emissions scale linearly with mass"
+    - "Calculations are deterministic (same input → same output)"
+
+# Example Usage
+example_usage:
+  python_sdk:
+    code: |
+      from greenlang.cbam import EmissionsCalculatorAgent
+
+      calculator = EmissionsCalculatorAgent(
+          emission_factors_db="../data/emission_factors.py",
+          suppliers_db="../examples/demo_suppliers.yaml",
+          cbam_rules="../rules/cbam_rules.yaml"
+      )
+
+      # Calculate emissions for validated shipments
+      result = calculator.calculate(validated_shipments)
+
+      # Check for errors
+      if result["validation_warnings"]:
+          for warning in result["validation_warnings"]:
+              print(f"Warning: {warning['message']}")
+
+      # Get summary
+      print(f"Total emissions: {result['metadata']['total_emissions_tco2']:.3f} tCO2")
+
+# Dependencies
+dependencies:
+  python_version: ">=3.9"
+
+  required_packages:
+    - "pyyaml>=6.0"       # YAML parsing
+    - "pydantic>=2.0.0"   # Data validation
+
+  required_files:
+    - "../data/emission_factors.py"
+    - "../rules/cbam_rules.yaml"
+
+  optional_files:
+    - "../examples/demo_suppliers.yaml"
+
+# Observability
+observability:
+  logging:
+    log_levels:
+      - "DEBUG: Each shipment calculation details"
+      - "INFO: Summary statistics, calculation method counts"
+      - "WARNING: Emission factors out of range, old supplier data"
+      - "ERROR: Missing emission factors, validation failures"
+
+  metrics:
+    - "shipments_calculated_total"
+    - "calculation_method_counts (default|actual|complex)"
+    - "total_emissions_tco2"
+    - "emissions_by_product_group"
+    - "calculation_errors_count"
+    - "calculation_time_ms"
+
+  audit_trail:
+    requirement: "Every emission factor used must be traceable to source"
+    fields:
+      - "shipment_id"
+      - "calculation_method"
+      - "emission_factor_source (database, supplier, etc.)"
+      - "emission_factor_value"
+      - "data_quality"
+      - "calculation_timestamp"
+
+# Change Log
+changelog:
+  - version: "1.0.0"
+    date: "2025-10-15"
+    changes:
+      - "Initial specification"
+      - "Zero hallucination guarantee defined"
+      - "Deterministic calculation methods specified"
+      - "Complex goods handling defined"
+      - "Test cases documented"

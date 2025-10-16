@@ -1,0 +1,521 @@
+# AGENT SPECIFICATION: ShipmentIntakeAgent_AI
+# Version: 1.0.0
+# Purpose: Data Ingestion, Validation, and Enrichment for CBAM Shipments
+# Last Updated: 2025-10-15
+
+agent_metadata:
+  agent_name: "ShipmentIntakeAgent_AI"
+  agent_id: "cbam-shipment-intake-v1"
+  version: "1.0.0"
+  agent_type: "data_processor"
+  category: "cbam"
+  description: "Ingests raw shipment data, validates against CBAM requirements, enriches with CN code mappings, and prepares for emissions calculation."
+
+  created_by: "GreenLang CBAM Team"
+  created_date: "2025-10-15"
+
+  tags:
+    - "cbam"
+    - "data-intake"
+    - "validation"
+    - "customs"
+    - "eu-regulation"
+
+# Mission and Scope
+mission:
+  primary_objective: "Transform raw import data into validated, enriched shipment records ready for emissions calculation"
+
+  in_scope:
+    - "Read shipment data from CSV, JSON, Excel, or database"
+    - "Validate each shipment record against CBAM requirements"
+    - "Enrich shipments with CN code metadata (product group, descriptions)"
+    - "Link shipments to supplier records when actual emissions data available"
+    - "Flag data quality issues and missing information"
+    - "Output validated shipment records in standard format"
+
+  out_of_scope:
+    - "Emissions calculations (handled by EmissionsCalculatorAgent_AI)"
+    - "Report packaging (handled by ReportingPackagerAgent_AI)"
+    - "Modifying or correcting invalid data (reports issues only)"
+    - "Directly accessing EU CBAM Registry"
+
+  success_criteria:
+    - "100% of valid shipments successfully processed"
+    - "All validation errors clearly identified with error codes"
+    - "CN code enrichment accurate for all recognized codes"
+    - "Processing time <1 second per 1000 shipments"
+    - "Zero false positives (valid data marked invalid)"
+    - "Zero false negatives (invalid data marked valid)"
+
+# Inputs and Outputs
+interfaces:
+  inputs:
+    primary_input:
+      name: "raw_shipments"
+      description: "Raw shipment data from importer's systems"
+      formats: ["CSV", "JSON", "XLSX", "TSV", "Parquet"]
+      schema_reference: "../schemas/shipment.schema.json"
+      required_fields:
+        - "shipment_id"
+        - "import_date"
+        - "quarter"
+        - "cn_code"
+        - "origin_iso"
+        - "net_mass_kg"
+      optional_fields:
+        - "product_description"
+        - "supplier_id"
+        - "customs_declaration_number"
+        - "invoice_number"
+        - "notes"
+      example_path: "../examples/demo_shipments.csv"
+
+    reference_data:
+      cn_codes_db:
+        description: "CN code mappings to product groups"
+        path: "../data/cn_codes.json"
+        format: "JSON"
+        required: true
+
+      suppliers_db:
+        description: "Supplier profiles with actual emissions data"
+        path: "../examples/demo_suppliers.yaml"
+        format: "YAML"
+        required: false
+        note: "Only needed if shipments reference supplier_id"
+
+      cbam_rules:
+        description: "CBAM validation rules and business logic"
+        path: "../rules/cbam_rules.yaml"
+        format: "YAML"
+        required: true
+
+  outputs:
+    primary_output:
+      name: "validated_shipments"
+      description: "Validated and enriched shipment records"
+      format: "JSON"
+      schema_reference: "../schemas/shipment.schema.json"
+      structure: |
+        {
+          "metadata": {
+            "processed_at": "ISO8601 timestamp",
+            "input_file": "path",
+            "total_records": int,
+            "valid_records": int,
+            "invalid_records": int,
+            "warnings": int
+          },
+          "shipments": [
+            {
+              // Shipment schema fields
+              "_enrichment": {
+                "product_group": "cement|steel|aluminum|fertilizers|hydrogen",
+                "product_description": "Human-readable description",
+                "supplier_found": true|false,
+                "validation_status": "valid|invalid|warning"
+              }
+            }
+          ],
+          "validation_errors": [
+            {
+              "shipment_id": "...",
+              "error_code": "E001",
+              "severity": "error|warning",
+              "message": "...",
+              "field": "..."
+            }
+          ]
+        }
+
+    secondary_outputs:
+      validation_report:
+        description: "Summary of validation results"
+        format: "JSON"
+        fields:
+          - "total_shipments"
+          - "valid_count"
+          - "error_count"
+          - "warning_count"
+          - "errors_by_type"
+          - "processing_time_ms"
+
+      rejected_records:
+        description: "Shipments that failed validation (for manual review)"
+        format: "CSV"
+        optional: true
+
+# Core Responsibilities
+responsibilities:
+  1_data_ingestion:
+    description: "Read shipment data from various sources"
+    steps:
+      - "Detect input file format (CSV, JSON, Excel)"
+      - "Parse file with appropriate parser"
+      - "Handle encoding issues (UTF-8, Latin-1, etc.)"
+      - "Convert to internal shipment objects"
+    error_handling:
+      - "File not found: Return error E001 with path"
+      - "Parse error: Return error E010 with line number"
+      - "Encoding error: Attempt common encodings, return error if all fail"
+
+  2_schema_validation:
+    description: "Validate each shipment against JSON schema"
+    validation_checks:
+      required_fields:
+        - "Verify all required fields present"
+        - "Verify no required fields are null or empty strings"
+        - "Error code: E001 if missing"
+
+      data_types:
+        - "shipment_id: string, 1-100 chars"
+        - "import_date: valid ISO8601 date (YYYY-MM-DD)"
+        - "quarter: matches pattern ^20[2-9][0-9]Q[1-4]$"
+        - "cn_code: exactly 8 digits"
+        - "origin_iso: exactly 2 uppercase letters"
+        - "net_mass_kg: positive number (>0)"
+        - "Error code: E003 for invalid formats"
+
+      value_ranges:
+        - "net_mass_kg must be > 0 (error E004)"
+        - "import_date should be within quarter (warning W001)"
+        - "quarter should be in transitional period 2023Q4-2025Q4 (error E003)"
+
+  3_business_validation:
+    description: "Apply CBAM-specific business rules"
+    rules:
+      valid_cn_code:
+        check: "CN code exists in cn_codes.json"
+        error_code: "E002"
+        severity: "error"
+        message: "CN code {cn_code} not recognized as CBAM-covered good"
+
+      valid_origin_country:
+        check: "origin_iso is valid ISO 3166-1 alpha-2 code"
+        error_code: "E009"
+        severity: "error"
+        message: "Invalid origin country code: {origin_iso}"
+
+      eu_importer_country:
+        check: "If present, importer_country must be EU27 member state"
+        error_code: "E009"
+        severity: "error"
+        message: "Importer country {importer_country} is not an EU member state"
+        eu_codes: ["AT", "BE", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IE", "IT", "LV", "LT", "LU", "MT", "NL", "PL", "PT", "RO", "SK", "SI", "ES", "SE"]
+
+      import_date_in_quarter:
+        check: "import_date falls within quarter date range"
+        error_code: "W001"
+        severity: "warning"
+        message: "Import date {import_date} is outside quarter {quarter} (expected {quarter_start} to {quarter_end})"
+
+  4_data_enrichment:
+    description: "Add metadata to help downstream agents"
+    enrichment_steps:
+      cn_code_lookup:
+        action: "Look up CN code in cn_codes.json"
+        add_fields:
+          - "product_group: cement|steel|aluminum|fertilizers|hydrogen"
+          - "product_description: Human-readable product name"
+          - "cbam_category: Category from Annex I"
+        fallback: "If CN code not found, leave enrichment fields empty and flag error E002"
+
+      supplier_lookup:
+        action: "If has_actual_emissions='YES' and supplier_id provided, verify supplier exists"
+        check: "Supplier record found in suppliers database"
+        add_fields:
+          - "_enrichment.supplier_found: true|false"
+          - "_enrichment.supplier_name: Company name from supplier record"
+        error_handling:
+          - "Supplier not found: warning W005"
+          - "Supplier product group mismatch: error E007"
+
+      mass_conversion:
+        action: "Add net_mass_tonnes for convenience"
+        formula: "net_mass_tonnes = net_mass_kg / 1000"
+        precision: 3  # Round to 3 decimal places
+
+  5_quality_flagging:
+    description: "Flag data quality issues for user attention"
+    quality_checks:
+      completeness:
+        - "Flag shipments with many optional fields missing (info I002)"
+        - "Flag shipments without product_description (warning W004)"
+
+      consistency:
+        - "Flag if CN code product group doesn't match supplier's product groups (error E007)"
+        - "Flag if mass is unusually large or small for product type (warning W002)"
+
+      data_freshness:
+        - "If supplier actual emissions data is >2 years old, flag warning W003"
+
+# Tools and Functions
+tools_required:
+  deterministic_tools:
+    file_reader:
+      purpose: "Read CSV, JSON, Excel files"
+      libraries: ["pandas", "openpyxl", "pyyaml"]
+      must_handle:
+        - "Various encodings"
+        - "Different date formats"
+        - "Missing values"
+
+    json_schema_validator:
+      purpose: "Validate shipments against JSON schema"
+      library: "jsonschema"
+      schema_path: "../schemas/shipment.schema.json"
+
+    cn_code_lookup:
+      purpose: "Fetch product group and description for CN code"
+      data_source: "../data/cn_codes.json"
+      function_signature: "get_cn_code_info(cn_code: str) -> dict | None"
+
+    supplier_lookup:
+      purpose: "Verify supplier exists and retrieve info"
+      data_source: "../examples/demo_suppliers.yaml"
+      function_signature: "get_supplier(supplier_id: str) -> dict | None"
+
+    date_validator:
+      purpose: "Validate and parse dates"
+      function_signature: "validate_date(date_str: str, quarter: str) -> bool"
+
+    country_code_validator:
+      purpose: "Validate ISO country codes and check if EU member"
+      data: "ISO 3166-1 alpha-2 codes + EU27 list"
+      functions:
+        - "is_valid_country_code(code: str) -> bool"
+        - "is_eu_member(code: str) -> bool"
+
+  no_llm_for:
+    - "Data validation (use schema validation)"
+    - "CN code lookups (use deterministic lookup)"
+    - "Date parsing (use datetime library)"
+    - "Numeric calculations (use Python math)"
+    - "File I/O (use pandas/standard library)"
+
+  llm_usage:
+    allowed_for:
+      - "Interpreting ambiguous product descriptions (if needed for enrichment)"
+      - "Generating user-friendly error messages"
+      - "Summarizing validation results in natural language"
+
+    not_allowed_for:
+      - "Determining if CN code is valid (must use lookup table)"
+      - "Calculating masses or conversions"
+      - "Deciding if data passes validation"
+
+# Performance Requirements
+performance:
+  throughput:
+    target: "1000 shipments per second"
+    acceptable: "500 shipments per second"
+    measurement: "Time from start to output written"
+
+  latency:
+    target: "<100ms for 100 shipments"
+    acceptable: "<500ms for 100 shipments"
+
+  memory:
+    target: "<500MB for 100,000 shipments"
+    acceptable: "<2GB for 100,000 shipments"
+
+  scalability:
+    batch_processing: "Support batches of 1M+ shipments"
+    streaming: "Support streaming input (process records as they arrive)"
+
+# Error Handling
+error_handling:
+  philosophy: "Fail gracefully, report clearly, never silently skip errors"
+
+  error_categories:
+    fatal_errors:
+      description: "Errors that prevent any processing"
+      examples:
+        - "Input file not found"
+        - "Input file cannot be parsed"
+        - "Reference data (CN codes, rules) missing"
+      action: "Stop processing, return error immediately"
+
+    record_errors:
+      description: "Errors in individual shipment records"
+      examples:
+        - "Missing required field"
+        - "Invalid CN code"
+        - "Negative mass"
+      action: "Mark record as invalid, continue processing others"
+
+    warnings:
+      description: "Issues that don't prevent processing but need attention"
+      examples:
+        - "Import date outside quarter"
+        - "Supplier data old"
+        - "Optional fields missing"
+      action: "Process record normally, flag warning"
+
+  error_reporting:
+    format: |
+      {
+        "shipment_id": "...",
+        "error_code": "E001",
+        "severity": "error|warning|info",
+        "message": "Human-readable description",
+        "field": "Field name that caused error",
+        "value": "Problematic value (if applicable)",
+        "suggestion": "How to fix (if applicable)"
+      }
+
+# Testing Requirements
+testing:
+  unit_tests:
+    coverage_target: "90%"
+    critical_paths:
+      - "Schema validation logic"
+      - "CN code enrichment"
+      - "Supplier lookup"
+      - "Date validation"
+      - "Error handling"
+
+    test_cases:
+      - "Valid shipment (all fields) -> passes validation"
+      - "Missing required field -> error E001"
+      - "Invalid CN code -> error E002"
+      - "Negative mass -> error E004"
+      - "Date outside quarter -> warning W001"
+      - "Supplier not found -> warning W005"
+      - "Malformed input file -> fatal error"
+      - "Empty input file -> valid output with 0 shipments"
+
+  integration_tests:
+    - "Process demo_shipments.csv successfully"
+    - "Enrich with cn_codes.json correctly"
+    - "Link to demo_suppliers.yaml when supplier_id present"
+    - "Generate validation report with correct counts"
+
+  performance_tests:
+    - "Process 10,000 shipments in <10 seconds"
+    - "Process 100,000 shipments in <100 seconds"
+    - "Memory usage stays under 2GB for 100K shipments"
+
+# Example Usage
+example_usage:
+  cli:
+    command: "gl cbam intake --input shipments.csv --output validated.json --suppliers suppliers.yaml"
+    options:
+      - "--input: Path to input shipments file (CSV/JSON/Excel)"
+      - "--output: Path for validated shipments output (JSON)"
+      - "--suppliers: Path to suppliers database (optional)"
+      - "--errors-output: Path for rejected records CSV (optional)"
+      - "--report: Generate validation report (default: true)"
+      - "--strict: Fail on warnings (default: false)"
+
+  python_sdk:
+    code: |
+      from greenlang.cbam import ShipmentIntakeAgent
+
+      agent = ShipmentIntakeAgent()
+
+      result = agent.process(
+          input_file="shipments.csv",
+          cn_codes_db="cn_codes.json",
+          suppliers_db="suppliers.yaml",
+          cbam_rules="cbam_rules.yaml"
+      )
+
+      print(f"Processed: {result['metadata']['total_records']}")
+      print(f"Valid: {result['metadata']['valid_records']}")
+      print(f"Errors: {result['metadata']['invalid_records']}")
+
+      # Write validated shipments
+      agent.write_output(result, "validated_shipments.json")
+
+      # Get validation report
+      report = agent.get_validation_report(result)
+
+# Dependencies
+dependencies:
+  python_version: ">=3.9"
+
+  required_packages:
+    - "pandas>=2.0.0"           # Data manipulation
+    - "jsonschema>=4.0.0"       # Schema validation
+    - "pyyaml>=6.0"             # YAML parsing
+    - "openpyxl>=3.0.0"         # Excel support
+    - "pydantic>=2.0.0"         # Data models
+    - "python-dateutil>=2.8.0"  # Date parsing
+
+  reference_data:
+    - "../data/cn_codes.json"
+    - "../rules/cbam_rules.yaml"
+
+  optional_data:
+    - "../examples/demo_suppliers.yaml"
+
+# Observability
+observability:
+  logging:
+    log_levels:
+      - "DEBUG: File I/O, record-by-record processing"
+      - "INFO: Start, end, summary statistics"
+      - "WARNING: Data quality issues, missing optional fields"
+      - "ERROR: Validation failures, invalid records"
+
+    log_format: "Structured JSON logs with timestamp, level, agent_name, message, context"
+
+  metrics:
+    - "shipments_processed_total"
+    - "shipments_valid_count"
+    - "shipments_invalid_count"
+    - "validation_errors_by_code"
+    - "processing_time_seconds"
+    - "cn_code_enrichment_success_rate"
+    - "supplier_lookup_success_rate"
+
+  tracing:
+    - "Trace each shipment through validation pipeline"
+    - "Record which validation rules were checked"
+    - "Log execution time for each processing step"
+
+# Agent Metadata for GreenLang Pack
+pack_metadata:
+  agent_class: "ShipmentIntakeAgent_AI"
+  entry_point: "greenlang.agents.cbam.ShipmentIntakeAgent"
+  agent_type: "processor"
+
+  inputs_spec:
+    shipments_file:
+      type: "file"
+      formats: ["csv", "json", "xlsx"]
+      required: true
+    cn_codes_db:
+      type: "file"
+      formats: ["json"]
+      required: true
+    suppliers_db:
+      type: "file"
+      formats: ["yaml", "json"]
+      required: false
+
+  outputs_spec:
+    validated_shipments:
+      type: "file"
+      format: "json"
+    validation_report:
+      type: "file"
+      format: "json"
+
+  resource_requirements:
+    cpu: "1 core"
+    memory: "2GB"
+    storage: "100MB"
+    gpu: false
+
+# Change Log
+changelog:
+  - version: "1.0.0"
+    date: "2025-10-15"
+    changes:
+      - "Initial specification"
+      - "Defined core responsibilities"
+      - "Specified input/output contracts"
+      - "Added validation rules"
+      - "Performance requirements defined"

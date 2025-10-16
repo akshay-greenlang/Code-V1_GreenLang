@@ -1,0 +1,697 @@
+metadata:
+  generated_at: '2025-10-15T14:30:00'
+  count: 20
+  disclaimer: Synthetic data for demo purposes only
+  version: 1.0.0-demo
+
+suppliers:
+  - supplier_id: SUP-0001
+    company_name: Baosteel Group
+    country_iso: CN
+    country_name: China
+    address:
+      city: Shanghai
+      postal_code: '200000'
+      country: China
+    contact:
+      person: Zhang Wang
+      email: exports@baosteelgroupexample.com
+      phone: +86-21-123456
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72031000'
+      - '72081000'
+    production_capacity_tons_per_year: 850000
+    certifications:
+      - ISO 14001
+      - ISO 14064
+      - EPD Program
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 1.813
+      indirect_emissions_tco2_per_ton: 0.148
+      total_emissions_tco2_per_ton: 1.961
+      data_quality: high
+      data_completeness_pct: 98
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2023
+      certifications:
+        - ISO 14064
+        - EPD Verified
+        - Third-party audited
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: High quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0002
+    company_name: Angang Steel
+    country_iso: CN
+    country_name: China
+    address:
+      city: Beijing
+      postal_code: '100000'
+      country: China
+    contact:
+      person: Rajesh Kumar
+      email: exports@angangsteelexample.com
+      phone: +86-10-234567
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72031000'
+      - '72044900'
+      - '72011000'
+    production_capacity_tons_per_year: 720000
+    certifications:
+      - ISO 14001
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 2.035
+      indirect_emissions_tco2_per_ton: 0.172
+      total_emissions_tco2_per_ton: 2.207
+      data_quality: medium
+      data_completeness_pct: 82
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2022
+      certifications:
+        - EPD Self-declared
+        - Internal audit
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: Medium quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0003
+    company_name: China National Building Material
+    country_iso: CN
+    country_name: China
+    address:
+      city: Beijing
+      postal_code: '100001'
+      country: China
+    contact:
+      person: Viktor Novak
+      email: exports@chinanationalbuildingmaterialexample.com
+      phone: +86-10-345678
+    product_groups:
+      - cement
+    cn_codes_produced:
+      - '25232900'
+      - '25231000'
+    production_capacity_tons_per_year: 380000
+    certifications: []
+    actual_emissions_available: false
+    actual_emissions_data: null
+    notes: No actual emissions data available. EU importer will use default values.
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0004
+    company_name: Chalco (Aluminum Corp of China)
+    country_iso: CN
+    country_name: China
+    address:
+      city: Shanghai
+      postal_code: '200001'
+      country: China
+    contact:
+      person: Zhang Petrov
+      email: exports@chalcoaluminumcorpofchinaexample.com
+      phone: +86-21-456789
+    product_groups:
+      - aluminum
+    cn_codes_produced:
+      - '76011000'
+      - '76012000'
+    production_capacity_tons_per_year: 165000
+    certifications:
+      - ISO 14001
+      - ISO 14064
+      - EPD Program
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 1.768
+      indirect_emissions_tco2_per_ton: 10.234
+      total_emissions_tco2_per_ton: 12.002
+      data_quality: high
+      data_completeness_pct: 97
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2023
+      certifications:
+        - ISO 14064
+        - EPD Verified
+        - Third-party audited
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: High quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0005
+    company_name: Shandong Iron & Steel
+    country_iso: CN
+    country_name: China
+    address:
+      city: Shanghai
+      postal_code: '200002'
+      country: China
+    contact:
+      person: Mehmet Kumar
+      email: exports@shandongironsteelexample.com
+      phone: +86-21-567890
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72031000'
+      - '72082500'
+    production_capacity_tons_per_year: 680000
+    certifications: []
+    actual_emissions_available: false
+    actual_emissions_data: null
+    notes: No actual emissions data available. EU importer will use default values.
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0006
+    company_name: Severstal
+    country_iso: RU
+    country_name: Russia
+    address:
+      city: Moscow
+      postal_code: '10000'
+      country: Russia
+    contact:
+      person: Ivan Yilmaz
+      email: exports@severstalexample.com
+      phone: +7-495-123456
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72031000'
+      - '72011000'
+    production_capacity_tons_per_year: 790000
+    certifications:
+      - ISO 14001
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 1.912
+      indirect_emissions_tco2_per_ton: 0.161
+      total_emissions_tco2_per_ton: 2.073
+      data_quality: medium
+      data_completeness_pct: 88
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2022
+      certifications:
+        - EPD Self-declared
+        - Internal audit
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: Medium quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0007
+    company_name: Rusal
+    country_iso: RU
+    country_name: Russia
+    address:
+      city: Moscow
+      postal_code: '10001'
+      country: Russia
+    contact:
+      person: Rajesh Novak
+      email: exports@rusalexample.com
+      phone: +7-495-234567
+    product_groups:
+      - aluminum
+    cn_codes_produced:
+      - '76011000'
+      - '76012000'
+    production_capacity_tons_per_year: 142000
+    certifications:
+      - ISO 14001
+      - ISO 14064
+      - EPD Program
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 1.649
+      indirect_emissions_tco2_per_ton: 9.506
+      total_emissions_tco2_per_ton: 11.155
+      data_quality: high
+      data_completeness_pct: 99
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2023
+      certifications:
+        - ISO 14064
+        - EPD Verified
+        - Third-party audited
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: High quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0008
+    company_name: PhosAgro
+    country_iso: RU
+    country_name: Russia
+    address:
+      city: Moscow
+      postal_code: '10002'
+      country: Russia
+    contact:
+      person: Viktor Wang
+      email: exports@phosagroexample.com
+      phone: +7-495-345678
+    product_groups:
+      - fertilizers
+    cn_codes_produced:
+      - '28141000'
+      - '31021000'
+    production_capacity_tons_per_year: 245000
+    certifications: []
+    actual_emissions_available: false
+    actual_emissions_data: null
+    notes: No actual emissions data available. EU importer will use default values.
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0009
+    company_name: NLMK (Novolipetsk Steel)
+    country_iso: RU
+    country_name: Russia
+    address:
+      city: Moscow
+      postal_code: '10003'
+      country: Russia
+    contact:
+      person: Zhang Petrov
+      email: exports@nlmknovolipetsksteelexample.com
+      phone: +7-495-456789
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72081000'
+      - '72044900'
+    production_capacity_tons_per_year: 630000
+    certifications:
+      - ISO 14001
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 2.128
+      indirect_emissions_tco2_per_ton: 0.139
+      total_emissions_tco2_per_ton: 2.267
+      data_quality: medium
+      data_completeness_pct: 79
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2022
+      certifications:
+        - EPD Self-declared
+        - Internal audit
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: Medium quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0010
+    company_name: Tata Steel
+    country_iso: IN
+    country_name: India
+    address:
+      city: Mumbai
+      postal_code: '400001'
+      country: India
+    contact:
+      person: Ivan Kumar
+      email: exports@tatasteelexample.com
+      phone: +91-22-123456
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72031000'
+      - '72081000'
+      - '72011000'
+    production_capacity_tons_per_year: 920000
+    certifications:
+      - ISO 14001
+      - ISO 14064
+      - EPD Program
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 1.887
+      indirect_emissions_tco2_per_ton: 0.155
+      total_emissions_tco2_per_ton: 2.042
+      data_quality: high
+      data_completeness_pct: 96
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2023
+      certifications:
+        - ISO 14064
+        - EPD Verified
+        - Third-party audited
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: High quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0011
+    company_name: JSW Steel
+    country_iso: IN
+    country_name: India
+    address:
+      city: Mumbai
+      postal_code: '400002'
+      country: India
+    contact:
+      person: Mehmet Yilmaz
+      email: exports@jswsteelexample.com
+      phone: +91-22-234567
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72031000'
+      - '72082500'
+    production_capacity_tons_per_year: 740000
+    certifications:
+      - ISO 14001
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 1.975
+      indirect_emissions_tco2_per_ton: 0.168
+      total_emissions_tco2_per_ton: 2.143
+      data_quality: medium
+      data_completeness_pct: 84
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2022
+      certifications:
+        - EPD Self-declared
+        - Internal audit
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: Medium quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0012
+    company_name: UltraTech Cement
+    country_iso: IN
+    country_name: India
+    address:
+      city: Mumbai
+      postal_code: '400003'
+      country: India
+    contact:
+      person: Viktor Petrov
+      email: exports@ultratechcementexample.com
+      phone: +91-22-345678
+    product_groups:
+      - cement
+    cn_codes_produced:
+      - '25232900'
+      - '25231000'
+    production_capacity_tons_per_year: 410000
+    certifications: []
+    actual_emissions_available: false
+    actual_emissions_data: null
+    notes: No actual emissions data available. EU importer will use default values.
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0013
+    company_name: Hindalco Industries
+    country_iso: IN
+    country_name: India
+    address:
+      city: Mumbai
+      postal_code: '400004'
+      country: India
+    contact:
+      person: Rajesh Novak
+      email: exports@hindalcoindustriesexample.com
+      phone: +91-22-456789
+    product_groups:
+      - aluminum
+    cn_codes_produced:
+      - '76011000'
+      - '76020000'
+    production_capacity_tons_per_year: 128000
+    certifications:
+      - ISO 14001
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 1.887
+      indirect_emissions_tco2_per_ton: 10.486
+      total_emissions_tco2_per_ton: 12.373
+      data_quality: medium
+      data_completeness_pct: 81
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2022
+      certifications:
+        - EPD Self-declared
+        - Internal audit
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: Medium quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0014
+    company_name: Erdemir (Ereğli Demir Çelik)
+    country_iso: TR
+    country_name: Turkey
+    address:
+      city: Istanbul
+      postal_code: '34000'
+      country: Turkey
+    contact:
+      person: Zhang Wang
+      email: exports@erdemirereglidemir\xe7elikexample.com
+      phone: +90-212-123456
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72031000'
+      - '72081000'
+    production_capacity_tons_per_year: 580000
+    certifications:
+      - ISO 14001
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 2.091
+      indirect_emissions_tco2_per_ton: 0.145
+      total_emissions_tco2_per_ton: 2.236
+      data_quality: medium
+      data_completeness_pct: 86
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2022
+      certifications:
+        - EPD Self-declared
+        - Internal audit
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: Medium quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0015
+    company_name: Oyak Cement
+    country_iso: TR
+    country_name: Turkey
+    address:
+      city: Istanbul
+      postal_code: '34001'
+      country: Turkey
+    contact:
+      person: Ivan Yilmaz
+      email: exports@oyakcementexample.com
+      phone: +90-212-234567
+    product_groups:
+      - cement
+    cn_codes_produced:
+      - '25232900'
+      - '25239000'
+    production_capacity_tons_per_year: 320000
+    certifications: []
+    actual_emissions_available: false
+    actual_emissions_data: null
+    notes: No actual emissions data available. EU importer will use default values.
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0016
+    company_name: Assan Alüminyum
+    country_iso: TR
+    country_name: Turkey
+    address:
+      city: Istanbul
+      postal_code: '34002'
+      country: Turkey
+    contact:
+      person: Mehmet Kumar
+      email: exports@assanalüminyumexample.com
+      phone: +90-212-345678
+    product_groups:
+      - aluminum
+    cn_codes_produced:
+      - '76012000'
+      - '76041000'
+    production_capacity_tons_per_year: 95000
+    certifications: []
+    actual_emissions_available: false
+    actual_emissions_data: null
+    notes: No actual emissions data available. EU importer will use default values.
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0017
+    company_name: Metinvest
+    country_iso: UA
+    country_name: Ukraine
+    address:
+      city: Kiev
+      postal_code: '01000'
+      country: Ukraine
+    contact:
+      person: Viktor Petrov
+      email: exports@metinvestexample.com
+      phone: +380-44-123456
+    product_groups:
+      - steel
+    cn_codes_produced:
+      - '72031000'
+      - '72044900'
+    production_capacity_tons_per_year: 520000
+    certifications: []
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 2.294
+      indirect_emissions_tco2_per_ton: 0.183
+      total_emissions_tco2_per_ton: 2.477
+      data_quality: low
+      data_completeness_pct: 67
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2022
+      certifications:
+        - Estimated based on industry averages
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: Low quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0018
+    company_name: OPZ (Odessa Port Plant)
+    country_iso: UA
+    country_name: Ukraine
+    address:
+      city: Kiev
+      postal_code: '01001'
+      country: Ukraine
+    contact:
+      person: Rajesh Novak
+      email: exports@opzodessaportplantexample.com
+      phone: +380-44-234567
+    product_groups:
+      - fertilizers
+    cn_codes_produced:
+      - '28141000'
+      - '31023000'
+    production_capacity_tons_per_year: 180000
+    certifications: []
+    actual_emissions_available: false
+    actual_emissions_data: null
+    notes: No actual emissions data available. EU importer will use default values.
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0019
+    company_name: Aluminij Mostar
+    country_iso: BA
+    country_name: Bosnia & Herzegovina
+    address:
+      city: Beijing
+      postal_code: '88000'
+      country: Bosnia & Herzegovina
+    contact:
+      person: Zhang Wang
+      email: exports@aluminijmostarexample.com
+      phone: +387-36-123456
+    product_groups:
+      - aluminum
+    cn_codes_produced:
+      - '76011000'
+    production_capacity_tons_per_year: 75000
+    certifications: []
+    actual_emissions_available: false
+    actual_emissions_data: null
+    notes: No actual emissions data available. EU importer will use default values.
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile
+
+  - supplier_id: SUP-0020
+    company_name: Impol Seval
+    country_iso: RS
+    country_name: Serbia
+    address:
+      city: Beijing
+      postal_code: '11000'
+      country: Serbia
+    contact:
+      person: Ivan Yilmaz
+      email: exports@impolsevalexample.com
+      phone: +381-11-123456
+    product_groups:
+      - aluminum
+    cn_codes_produced:
+      - '76012000'
+      - '76020000'
+    production_capacity_tons_per_year: 88000
+    certifications:
+      - ISO 14001
+    actual_emissions_available: true
+    actual_emissions_data:
+      direct_emissions_tco2_per_ton: 1.615
+      indirect_emissions_tco2_per_ton: 9.212
+      total_emissions_tco2_per_ton: 10.827
+      data_quality: medium
+      data_completeness_pct: 77
+      methodology: Cradle-to-gate LCA per CBAM guidelines
+      reporting_year: 2022
+      certifications:
+        - EPD Self-declared
+        - Internal audit
+      boundary: Cradle-to-gate (raw materials extraction through factory gate)
+      scope_1_included: true
+      scope_2_included: true
+      scope_3_included: false
+      notes: Medium quality actual emissions data from supplier EPD
+    last_updated: '2025-10-15'
+    data_source: Demo data - synthetic supplier profile

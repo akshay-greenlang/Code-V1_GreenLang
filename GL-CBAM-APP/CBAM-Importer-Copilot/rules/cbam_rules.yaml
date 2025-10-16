@@ -1,0 +1,405 @@
+# CBAM TRANSITIONAL REGISTRY RULES SPECIFICATION
+# Version: 1.0.0-demo
+# Based on: EU Regulation (EU) 2023/956 - CBAM Transitional Period
+# Last Updated: 2025-10-15
+
+metadata:
+  regulation_reference: "EU Regulation (EU) 2023/956"
+  regulation_url: "https://eur-lex.europa.eu/eli/reg/2023/956/oj"
+  transitional_period: "2023-10-01 to 2025-12-31"
+  reporting_frequency: "Quarterly"
+  first_report_due: "2024-01-31"
+  disclaimer: "This is a demo specification. For actual CBAM filings, consult official EU guidance."
+
+# Product groups covered by CBAM
+product_groups:
+  - id: "cement"
+    name: "Cement"
+    annex_reference: "Annex I, Section 1"
+    cn_codes:
+      - "25231000"  # Cement clinker
+      - "25232100"  # White cement
+      - "25232900"  # Portland cement (grey)
+      - "25239000"  # Other hydraulic cements
+
+  - id: "steel"
+    name: "Iron and Steel"
+    annex_reference: "Annex I, Section 2"
+    cn_codes:
+      - "72011000"  # Non-alloy pig iron (≤0.5% P)
+      - "72012000"  # Non-alloy pig iron (>0.5% P)
+      - "72015000"  # Alloy pig iron
+      - "72021100"  # Ferro-manganese
+      - "72031000"  # Flat-rolled products (hot-rolled)
+      - "72044100"  # Cast iron scrap
+      - "72044900"  # Other ferrous scrap
+      - "72081000"  # Hot-rolled coils
+      - "72082500"  # Flat-rolled (≥4.75mm)
+      - "72083600"  # Flat-rolled (<3mm)
+
+  - id: "aluminum"
+    name: "Aluminium"
+    annex_reference: "Annex I, Section 3"
+    cn_codes:
+      - "76011000"  # Unwrought aluminum (not alloyed)
+      - "76012000"  # Aluminum alloys (unwrought)
+      - "76020000"  # Aluminum waste and scrap
+      - "76041000"  # Aluminum bars/rods (not alloyed)
+      - "76042100"  # Aluminum hollow profiles (alloys)
+
+  - id: "fertilizers"
+    name: "Fertilisers"
+    annex_reference: "Annex I, Section 4"
+    cn_codes:
+      - "28080000"  # Nitric acid
+      - "28141000"  # Anhydrous ammonia
+      - "28142000"  # Ammonia (aqueous solution)
+      - "31021000"  # Urea
+      - "31022100"  # Ammonium sulphate
+      - "31023000"  # Ammonium nitrate
+      - "31024000"  # Ammonium nitrate mixtures
+      - "31025000"  # Sodium nitrate
+      - "31026000"  # Calcium/ammonium nitrate mixtures
+
+  - id: "hydrogen"
+    name: "Hydrogen"
+    annex_reference: "Annex I, Section 5"
+    cn_codes:
+      - "28041000"  # Hydrogen
+      - "27160000"  # Electrical energy (for electrolysis)
+
+# Emissions calculation methods
+calculation_methods:
+  default_values:
+    description: "Use EU Commission default emission factors when actual data unavailable"
+    priority: 1
+    data_source: "EU CBAM Annex IV - Default Values"
+    when_to_use: "Supplier has not provided actual emissions data"
+    scope_1_included: true
+    scope_2_included: true
+    scope_3_included: false
+
+  actual_data:
+    description: "Use supplier-provided actual emissions data (verified)"
+    priority: 2
+    data_source: "Supplier EPD or verified emissions report"
+    when_to_use: "Supplier has provided verified actual emissions data"
+    requirements:
+      - "Data must cover production process (cradle-to-gate)"
+      - "Scope 1 (direct) emissions must be included"
+      - "Scope 2 (indirect/electricity) emissions must be included"
+      - "Data should be from reporting year or previous year"
+      - "Third-party verification preferred but not mandatory in transitional period"
+    scope_1_included: true
+    scope_2_included: true
+    scope_3_included: false
+
+  complex_goods:
+    description: "For goods containing precursor materials, sum emissions from components"
+    priority: 3
+    when_to_use: "Good is manufactured from other CBAM-covered materials"
+    calculation_formula: "Total Emissions = Σ(Precursor_Mass_i × Emission_Factor_i) + Direct_Process_Emissions"
+    limitations:
+      - "Maximum 20% of quarterly imports can use estimation for complex goods"
+      - "Precursor materials must be identifiable and quantifiable"
+
+  estimation:
+    description: "Estimation based on industry averages (limited use)"
+    priority: 4
+    when_to_use: "As last resort when no other method applicable"
+    limitations:
+      - "Should constitute minority of reports"
+      - "Must document reason for estimation"
+      - "Must transition to actual or default values in future quarters"
+
+# Validation rules
+validation_rules:
+  # Data completeness checks
+  - rule_id: "VAL-001"
+    rule_name: "Required Fields Present"
+    severity: "error"
+    description: "All mandatory fields must be populated"
+    check: "Verify all 'required' fields from schemas are present and non-empty"
+    applies_to: ["shipments", "suppliers", "report"]
+
+  - rule_id: "VAL-002"
+    rule_name: "Valid CN Codes"
+    severity: "error"
+    description: "All CN codes must be valid 8-digit codes from CBAM Annex I"
+    check: "CN code exists in product_groups.cn_codes list"
+    applies_to: ["shipments"]
+
+  - rule_id: "VAL-003"
+    rule_name: "Valid Reporting Quarter"
+    severity: "error"
+    description: "Quarter must be valid format YYYYQN and within transitional period"
+    check: "Quarter matches pattern ^20[2-9][0-9]Q[1-4]$ and date is 2023-10-01 to 2025-12-31"
+    applies_to: ["report"]
+
+  - rule_id: "VAL-004"
+    rule_name: "Positive Mass"
+    severity: "error"
+    description: "Net mass must be positive (>0)"
+    check: "net_mass_kg > 0"
+    applies_to: ["shipments"]
+
+  - rule_id: "VAL-005"
+    rule_name: "Import Date in Quarter"
+    severity: "warning"
+    description: "Import date should fall within the reporting quarter"
+    check: "import_date is between quarter start and end dates"
+    applies_to: ["shipments"]
+
+  # Emissions calculation validation
+  - rule_id: "VAL-010"
+    rule_name: "Emissions Non-Negative"
+    severity: "error"
+    description: "All emissions values must be non-negative"
+    check: "direct_emissions_tco2 >= 0 AND indirect_emissions_tco2 >= 0 AND total_emissions_tco2 >= 0"
+    applies_to: ["emissions"]
+
+  - rule_id: "VAL-011"
+    rule_name: "Emissions Total Matches Sum"
+    severity: "error"
+    description: "Total emissions must equal direct + indirect"
+    check: "abs(total_emissions_tco2 - (direct_emissions_tco2 + indirect_emissions_tco2)) < 0.001"
+    applies_to: ["emissions"]
+    tolerance: 0.001  # Allow for rounding
+
+  - rule_id: "VAL-012"
+    rule_name: "Reasonable Emission Factors"
+    severity: "warning"
+    description: "Emission factors should be within expected ranges for product type"
+    check: "Emission factor is within ±200% of typical range for product group"
+    applies_to: ["emissions"]
+    ranges:
+      cement: {min: 0.3, max: 2.5}
+      steel: {min: 0.3, max: 5.0}
+      aluminum: {min: 0.2, max: 25.0}
+      fertilizers: {min: 0.5, max: 5.0}
+      hydrogen: {min: 0.0, max: 20.0}
+
+  # Complex goods checks
+  - rule_id: "VAL-020"
+    rule_name: "Complex Goods 20% Cap"
+    severity: "error"
+    description: "Complex goods using estimation cannot exceed 20% of quarterly imports by mass"
+    check: "(complex_goods_mass / total_import_mass) <= 0.20"
+    applies_to: ["report"]
+    threshold: 0.20
+    reference: "CBAM Article 7(5)"
+
+  - rule_id: "VAL-021"
+    rule_name: "Precursor Materials Identified"
+    severity: "error"
+    description: "Complex goods must list all precursor CBAM materials"
+    check: "If calculation_method='complex_goods', complex_goods_components array must be populated"
+    applies_to: ["emissions"]
+
+  - rule_id: "VAL-022"
+    rule_name: "Precursor Mass Fractions Sum"
+    severity: "warning"
+    description: "For complex goods, precursor mass fractions should sum to ≤1.0"
+    check: "Σ(mass_fraction) <= 1.0"
+    applies_to: ["complex_goods"]
+
+  # Supplier data validation
+  - rule_id: "VAL-030"
+    rule_name: "Supplier Data Completeness"
+    severity: "warning"
+    description: "When using actual emissions, supplier data should be complete"
+    check: "If has_actual_emissions='YES', supplier_id must reference valid supplier with actual_emissions_data"
+    applies_to: ["shipments", "suppliers"]
+
+  - rule_id: "VAL-031"
+    rule_name: "Supplier Data Vintage"
+    severity: "info"
+    description: "Supplier emissions data should be recent (within 2 years)"
+    check: "reporting_year >= (current_year - 2)"
+    applies_to: ["suppliers"]
+
+  - rule_id: "VAL-032"
+    rule_name: "Product Group Match"
+    severity: "error"
+    description: "Supplier's product groups must match shipment CN code"
+    check: "Shipment CN code is in supplier's cn_codes_produced list"
+    applies_to: ["shipments", "suppliers"]
+
+  # Report-level validation
+  - rule_id: "VAL-040"
+    rule_name: "Report Completeness"
+    severity: "error"
+    description: "Report must include all required sections"
+    check: "All required sections present: metadata, declaration, goods_summary, detailed_goods, emissions_summary, validation"
+    applies_to: ["report"]
+
+  - rule_id: "VAL-041"
+    rule_name: "Summary Totals Match Details"
+    severity: "error"
+    description: "Summary totals must match sum of detailed goods"
+    check: "goods_summary.total_mass_tonnes == Σ(detailed_goods.net_mass_tonnes)"
+    applies_to: ["report"]
+    tolerance: 0.001
+
+  - rule_id: "VAL-042"
+    rule_name: "Emissions Summary Matches Details"
+    severity: "error"
+    description: "Emissions summary must match sum of detailed emissions"
+    check: "emissions_summary.total_embedded_emissions_tco2 == Σ(detailed_goods.emissions_calculation.total_emissions_tco2)"
+    applies_to: ["report"]
+    tolerance: 0.01
+
+  # Importer declaration validation
+  - rule_id: "VAL-050"
+    rule_name: "Valid EORI Format"
+    severity: "error"
+    description: "EORI number must follow ISO format (2-letter country code + alphanumeric)"
+    check: "importer_eori matches pattern ^[A-Z]{2}[A-Z0-9]{1,15}$"
+    applies_to: ["declaration"]
+
+  - rule_id: "VAL-051"
+    rule_name: "EU Member State"
+    severity: "error"
+    description: "Importer country must be an EU member state"
+    check: "importer_country in [EU27 country codes]"
+    applies_to: ["declaration"]
+    eu_member_states:
+      - "AT" # Austria
+      - "BE" # Belgium
+      - "BG" # Bulgaria
+      - "HR" # Croatia
+      - "CY" # Cyprus
+      - "CZ" # Czechia
+      - "DK" # Denmark
+      - "EE" # Estonia
+      - "FI" # Finland
+      - "FR" # France
+      - "DE" # Germany
+      - "GR" # Greece
+      - "HU" # Hungary
+      - "IE" # Ireland
+      - "IT" # Italy
+      - "LV" # Latvia
+      - "LT" # Lithuania
+      - "LU" # Luxembourg
+      - "MT" # Malta
+      - "NL" # Netherlands
+      - "PL" # Poland
+      - "PT" # Portugal
+      - "RO" # Romania
+      - "SK" # Slovakia
+      - "SI" # Slovenia
+      - "ES" # Spain
+      - "SE" # Sweden
+
+# Business logic rules
+business_rules:
+  reporting_deadlines:
+    Q4_2023: "2024-01-31"
+    Q1_2024: "2024-04-30"
+    Q2_2024: "2024-07-31"
+    Q3_2024: "2024-10-31"
+    Q4_2024: "2025-01-31"
+    Q1_2025: "2025-04-30"
+    Q2_2025: "2025-07-31"
+    Q3_2025: "2025-10-31"
+    Q4_2025: "2026-01-31"
+    deadline_format: "Last day of month following end of quarter"
+
+  emissions_scope:
+    scope_1:
+      name: "Direct Emissions"
+      description: "On-site fossil fuel combustion and process emissions"
+      mandatory: true
+      examples:
+        - "Coal combustion in blast furnace (steel)"
+        - "Limestone calcination (cement)"
+        - "Natural gas for heat (all sectors)"
+
+    scope_2:
+      name: "Indirect Emissions (Electricity)"
+      description: "Emissions from purchased electricity consumption"
+      mandatory: true
+      calculation: "Electricity_kWh × Grid_Carbon_Intensity_kgCO2_per_kWh / 1000"
+      examples:
+        - "Electricity for electric arc furnace (steel)"
+        - "Electricity for grinding (cement)"
+        - "Electricity for smelting (aluminum)"
+
+    scope_3:
+      name: "Upstream/Downstream Emissions"
+      description: "Upstream mining, transport, downstream processing"
+      mandatory: false
+      note: "Not required in transitional period, may be required post-2025"
+
+  data_hierarchy:
+    description: "Preference order for emissions data sources"
+    priority_order:
+      - priority: 1
+        source: "Supplier-provided verified actual data"
+        quality: "high"
+      - priority: 2
+        source: "Supplier-provided unverified actual data"
+        quality: "medium"
+      - priority: 3
+        source: "EU Commission default values"
+        quality: "medium"
+      - priority: 4
+        source: "Estimated based on industry averages"
+        quality: "low"
+
+  transitional_period_flexibilities:
+    - "Third-party verification not mandatory (voluntary)"
+    - "Complex goods estimation allowed up to 20% cap"
+    - "Reasonable efforts standard for data collection"
+    - "No financial liability for CBAM certificates (reporting only)"
+
+# Constants and thresholds
+constants:
+  complex_goods_threshold: 0.20  # 20% cap
+  rounding_precision: 3  # Round emissions to 3 decimal places
+  mass_unit: "tonnes"
+  emissions_unit: "tCO2e"
+  min_reportable_mass_kg: 0.001  # Minimum mass to report (1 gram)
+
+  # Default grid carbon intensities (if supplier data unavailable)
+  # Values in kgCO2/kWh
+  grid_carbon_intensity_defaults:
+    EU_average: 0.300
+    CN: 0.600  # China
+    RU: 0.450  # Russia
+    IN: 0.700  # India
+    TR: 0.450  # Turkey
+    UA: 0.400  # Ukraine
+    global_average: 0.500
+
+# Error codes
+error_codes:
+  E001: "Missing required field"
+  E002: "Invalid CN code"
+  E003: "Invalid date format"
+  E004: "Negative or zero mass"
+  E005: "Emissions calculation error"
+  E006: "Complex goods threshold exceeded"
+  E007: "Supplier not found"
+  E008: "Invalid EORI number"
+  E009: "Country not in EU"
+  E010: "Schema validation failed"
+
+  W001: "Import date outside quarter"
+  W002: "Emission factor outside typical range"
+  W003: "Supplier data older than 2 years"
+  W004: "Using default values (actual data preferred)"
+  W005: "Incomplete supplier data"
+
+  I001: "Report generated successfully"
+  I002: "Validation passed with warnings"
+  I003: "Using estimation for complex goods"
+
+# References
+references:
+  primary_regulation: "Regulation (EU) 2023/956 of 10 May 2023"
+  implementing_regulation: "Commission Implementing Regulation (EU) 2023/1773"
+  official_guidance: "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en"
+  transitional_registry: "https://ec.europa.eu/taxation_customs/dds2/cbam/cbam_home.jsp"
+  faq: "https://taxation-customs.ec.europa.eu/system/files/2023-12/FAQ%20-%20CBAM%20transitional%20phase.pdf"

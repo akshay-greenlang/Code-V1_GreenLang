@@ -1,0 +1,558 @@
+# AGENT SPECIFICATION: ReportingPackagerAgent_AI
+# Version: 1.0.0
+# Purpose: Package emissions data into final EU CBAM Transitional Registry report format
+# Last Updated: 2025-10-15
+
+agent_metadata:
+  agent_name: "ReportingPackagerAgent_AI"
+  agent_id: "cbam-reporting-packager-v1"
+  version: "1.0.0"
+  agent_type: "report_generator"
+  category: "cbam"
+  description: "Aggregates shipment emissions, performs final validations, and generates EU CBAM Transitional Registry report in required format."
+
+  created_by: "GreenLang CBAM Team"
+  created_date: "2025-10-15"
+
+  tags:
+    - "cbam"
+    - "reporting"
+    - "eu-registry"
+    - "compliance"
+    - "validation"
+
+# Mission and Scope
+mission:
+  primary_objective: "Generate submission-ready CBAM Transitional Registry report with all required sections, validations, and documentation"
+
+  in_scope:
+    - "Aggregate emissions across all shipments"
+    - "Generate report metadata and declarations"
+    - "Create goods summary (by product group, origin country)"
+    - "Create emissions summary (totals, breakdowns)"
+    - "Perform final CBAM compliance validations"
+    - "Check complex goods 20% threshold"
+    - "Generate validation report with errors/warnings"
+    - "Add provenance and audit trail"
+    - "Output report in JSON format matching registry schema"
+    - "Generate human-readable summary for importer"
+
+  out_of_scope:
+    - "Direct submission to EU CBAM Registry (user must submit)"
+    - "Data validation (handled by ShipmentIntakeAgent_AI)"
+    - "Emissions calculations (handled by EmissionsCalculatorAgent_AI)"
+    - "Modifying or correcting data (reports only)"
+    - "Financial CBAM certificate calculations (transitional period is reporting-only)"
+
+  success_criteria:
+    - "Report passes all CBAM validation rules"
+    - "100% completeness (all required sections present)"
+    - "Summary totals match detailed goods (within rounding tolerance)"
+    - "Complex goods check performed correctly"
+    - "Validation errors clearly identified"
+    - "Report generation time <1 second for 10,000 shipments"
+    - "Output JSON validates against registry_output.schema.json"
+
+# Inputs and Outputs
+interfaces:
+  inputs:
+    primary_input:
+      name: "shipments_with_emissions"
+      description: "Shipments with calculated emissions from EmissionsCalculatorAgent_AI"
+      format: "JSON"
+      required_fields:
+        - "shipment_id"
+        - "import_date"
+        - "quarter"
+        - "cn_code"
+        - "product_group"
+        - "origin_iso"
+        - "net_mass_kg"
+        - "emissions_calculation object"
+
+    reference_data:
+      cbam_rules:
+        description: "CBAM validation rules"
+        path: "../rules/cbam_rules.yaml"
+        format: "YAML"
+        required: true
+
+      importer_info:
+        description: "EU importer declaration information"
+        format: "JSON or manual input"
+        required_fields:
+          - "importer_name"
+          - "importer_country"
+          - "importer_eori"
+          - "declarant_name"
+          - "declarant_position"
+
+  outputs:
+    primary_output:
+      name: "cbam_transitional_report"
+      description: "Complete CBAM Transitional Registry report"
+      format: "JSON"
+      schema_reference: "../schemas/registry_output.schema.json"
+      sections:
+        - "report_metadata"
+        - "importer_declaration"
+        - "goods_summary"
+        - "detailed_goods"
+        - "emissions_summary"
+        - "validation_results"
+        - "provenance"
+        - "attachments (optional)"
+
+    secondary_outputs:
+      human_readable_summary:
+        description: "PDF or Markdown summary for management review"
+        format: "PDF or Markdown"
+        sections:
+          - "Executive summary"
+          - "Total emissions by product group"
+          - "Top origin countries"
+          - "Validation status"
+          - "Next steps (submission deadline, etc.)"
+
+      submission_checklist:
+        description: "Checklist for EU registry submission"
+        format: "Markdown"
+        items:
+          - "Report passes all validation checks"
+          - "Importer EORI number verified"
+          - "Supporting documents attached (if any)"
+          - "Submission deadline noted"
+
+# Core Responsibilities
+responsibilities:
+  1_report_metadata_generation:
+    description: "Generate report header and metadata"
+    fields:
+      report_id:
+        format: "CBAM-{QUARTER}-REPORT-{SEQUENCE}"
+        example: "CBAM-2025Q4-REPORT-001"
+
+      quarter:
+        source: "From input shipments (must be consistent across all)"
+        validation: "All shipments must have same quarter"
+
+      reporting_period:
+        calculation: |
+          Q1: Jan 1 - Mar 31
+          Q2: Apr 1 - Jun 30
+          Q3: Jul 1 - Sep 30
+          Q4: Oct 1 - Dec 31
+
+      generated_at:
+        value: "Current timestamp (ISO8601)"
+
+      generated_by:
+        value: "GreenLang CBAM Importer Copilot v{VERSION}"
+
+  2_importer_declaration:
+    description: "Package importer information and declaration"
+    required_fields:
+      - "importer_name: Legal name of EU entity"
+      - "importer_country: EU member state (2-letter code)"
+      - "importer_eori: EORI number (validated format)"
+      - "declaration_date: Date of declaration"
+      - "declarant_name: Person making declaration"
+      - "declarant_position: Role/title"
+
+    validations:
+      - "EORI format: ^[A-Z]{2}[A-Z0-9]{1,15}$"
+      - "Importer country must be EU27 member"
+      - "Declaration date must be valid date"
+
+  3_goods_summary:
+    description: "Aggregate statistics across all shipments"
+
+    totals:
+      total_shipments:
+        calculation: "Count of shipments"
+      total_mass_tonnes:
+        calculation: "Σ(net_mass_kg / 1000)"
+        rounding: 3
+
+    by_product_group:
+      fields:
+        - "product_group: cement|steel|aluminum|fertilizers|hydrogen"
+        - "shipment_count: Count"
+        - "total_mass_tonnes: Sum"
+        - "cn_codes: List of unique CN codes"
+      calculation: "GROUP BY product_group"
+
+    by_origin_country:
+      fields:
+        - "country_iso: 2-letter code"
+        - "country_name: Full name"
+        - "shipment_count: Count"
+        - "total_mass_tonnes: Sum"
+      calculation: "GROUP BY origin_iso"
+      ordering: "Descending by total_mass_tonnes (show top origins first)"
+
+  4_detailed_goods_listing:
+    description: "Include full list of all shipments with emissions"
+    content: "Array of all shipments with emissions_calculation objects"
+    ordering: "By import_date ascending, then shipment_id"
+
+  5_emissions_summary:
+    description: "Aggregate emissions across all shipments"
+
+    totals:
+      total_direct_emissions_tco2:
+        calculation: "Σ(direct_emissions_tco2)"
+        rounding: 2  # 2 decimal places for totals
+
+      total_indirect_emissions_tco2:
+        calculation: "Σ(indirect_emissions_tco2)"
+        rounding: 2
+
+      total_embedded_emissions_tco2:
+        calculation: "Σ(total_emissions_tco2)"
+        rounding: 2
+        validation: "Must equal direct + indirect (within 0.01 tolerance)"
+
+    by_product_group:
+      calculation: "GROUP BY product_group, SUM emissions"
+      fields:
+        - "product_group"
+        - "total_emissions_tco2"
+        - "percentage_of_total: (group_emissions / total_emissions) × 100"
+
+    by_origin_country:
+      calculation: "GROUP BY origin_iso, SUM emissions"
+      ordering: "Descending by total_emissions_tco2"
+
+    emissions_intensity:
+      calculation: "total_embedded_emissions_tco2 / total_mass_tonnes"
+      unit: "tCO2e per tonne"
+      description: "Average emissions intensity across all goods"
+
+    calculation_methods_breakdown:
+      fields:
+        - "default_values_count: Shipments using EU defaults"
+        - "actual_data_count: Shipments using supplier actuals"
+        - "complex_goods_count: Complex goods calculations"
+        - "estimation_count: Estimations used"
+
+  6_validation_execution:
+    description: "Run all CBAM validation rules from cbam_rules.yaml"
+
+    validation_categories:
+      data_completeness:
+        rules: ["VAL-001", "VAL-002", "VAL-003", "VAL-004", "VAL-005"]
+        description: "Check all required fields present and valid"
+
+      emissions_validation:
+        rules: ["VAL-010", "VAL-011", "VAL-012"]
+        description: "Validate emissions calculations"
+
+      complex_goods:
+        rules: ["VAL-020", "VAL-021", "VAL-022"]
+        description: "Check complex goods threshold and documentation"
+
+      supplier_data:
+        rules: ["VAL-030", "VAL-031", "VAL-032"]
+        description: "Validate supplier data quality"
+
+      report_level:
+        rules: ["VAL-040", "VAL-041", "VAL-042"]
+        description: "Validate report structure and summary totals"
+
+      importer_declaration:
+        rules: ["VAL-050", "VAL-051"]
+        description: "Validate EORI and EU membership"
+
+    validation_results:
+      structure: |
+        {
+          "is_valid": bool,  // true if no errors (warnings OK)
+          "validation_timestamp": "ISO8601",
+          "rules_checked": [
+            {
+              "rule_id": "VAL-001",
+              "rule_name": "Required Fields Present",
+              "status": "pass|fail|warning",
+              "message": "...",
+              "affected_shipments": ["..."]
+            },
+            ...
+          ],
+          "errors": [/* blocking issues */],
+          "warnings": [/* non-blocking issues */],
+          "complex_goods_check": {
+            "complex_goods_count": int,
+            "total_shipments_count": int,
+            "complex_goods_percentage": float,
+            "threshold_percentage": 20.0,
+            "within_threshold": bool
+          }
+        }
+
+    critical_validations:
+      summary_totals_match:
+        rule_id: "VAL-041"
+        check: "goods_summary.total_mass_tonnes == Σ(detailed_goods.net_mass_tonnes)"
+        tolerance: 0.001
+        severity: "error"
+
+      emissions_totals_match:
+        rule_id: "VAL-042"
+        check: "emissions_summary.total_embedded_emissions_tco2 == Σ(detailed_goods.emissions_calculation.total_emissions_tco2)"
+        tolerance: 0.01
+        severity: "error"
+
+      complex_goods_20pct:
+        rule_id: "VAL-020"
+        check: "(complex_goods_mass / total_mass) <= 0.20"
+        severity: "error"
+        message: "Complex goods exceed 20% threshold"
+
+  7_provenance_and_audit_trail:
+    description: "Document how this report was generated"
+
+    fields:
+      input_files:
+        description: "List of input files with hashes"
+        structure: |
+          [
+            {
+              "file_path": "...",
+              "file_hash_sha256": "...",
+              "record_count": int
+            }
+          ]
+
+      emission_factors_version:
+        value: "Version of emission factors database used"
+        example: "1.0.0-demo (IEA 2018, WSA 2023, IAI 2023)"
+
+      agents_used:
+        description: "Pipeline of agents that processed this data"
+        structure: |
+          [
+            {
+              "agent_name": "ShipmentIntakeAgent_AI",
+              "agent_version": "1.0.0",
+              "execution_time_ms": float
+            },
+            {
+              "agent_name": "EmissionsCalculatorAgent_AI",
+              "agent_version": "1.0.0",
+              "execution_time_ms": float
+            },
+            {
+              "agent_name": "ReportingPackagerAgent_AI",
+              "agent_version": "1.0.0",
+              "execution_time_ms": float
+            }
+          ]
+
+      processing_log:
+        description: "Key processing steps with timestamps"
+        example: |
+          [
+            {"step": "Data ingestion", "timestamp": "...", "status": "success"},
+            {"step": "Validation", "timestamp": "...", "status": "success"},
+            {"step": "Emissions calculation", "timestamp": "...", "status": "success"},
+            {"step": "Report generation", "timestamp": "...", "status": "success"}
+          ]
+
+  8_output_formatting:
+    description: "Format and write final report files"
+
+    primary_output:
+      format: "JSON"
+      filename: "CBAM_{QUARTER}_{IMPORTER}_{TIMESTAMP}.json"
+      schema_validation: "Validate against registry_output.schema.json before writing"
+      pretty_print: true  # Indent 2 spaces
+
+    human_readable_summary:
+      format: "Markdown or PDF"
+      filename: "CBAM_{QUARTER}_{IMPORTER}_Summary.{md|pdf}"
+      sections:
+        executive_summary: |
+          # CBAM Transitional Registry Report
+          ## Quarter: {QUARTER}
+          ## Importer: {IMPORTER_NAME}
+          ## Generated: {TIMESTAMP}
+
+          **Total Imported Goods:** {TOTAL_MASS} tonnes
+          **Total Embedded Emissions:** {TOTAL_EMISSIONS} tCO2e
+          **Average Emissions Intensity:** {INTENSITY} tCO2e/tonne
+
+          **Validation Status:** {"✅ PASS" if valid else "❌ FAIL"}
+
+        breakdown_by_product:
+          table: "Product Group | Mass (tonnes) | Emissions (tCO2e) | Pct of Total"
+
+        breakdown_by_origin:
+          table: "Origin Country | Mass (tonnes) | Emissions (tCO2e) | Pct of Total"
+
+        validation_summary:
+          content: "List of errors and warnings"
+
+        next_steps:
+          content: |
+            - Review this report for accuracy
+            - Submit to EU CBAM Transitional Registry by {DEADLINE}
+            - Retain supporting documents for audit
+
+# Tools and Functions
+tools_required:
+  aggregation_tools:
+    pandas_groupby:
+      purpose: "Aggregate shipments by product group, origin country"
+      operations:
+        - "groupby('product_group').sum()"
+        - "groupby('origin_iso').agg({'net_mass_kg': 'sum', 'emissions': 'sum'})"
+
+    summation:
+      purpose: "Sum emissions across all shipments"
+      function: "sum(shipments[i].emissions_calculation.total_emissions_tco2 for i in range(len(shipments)))"
+
+  validation_tools:
+    rule_checker:
+      purpose: "Execute validation rules from cbam_rules.yaml"
+      implementation: "Python functions for each validation rule"
+
+    schema_validator:
+      purpose: "Validate output JSON against schema"
+      library: "jsonschema"
+      schema: "../schemas/registry_output.schema.json"
+
+  formatting_tools:
+    json_writer:
+      purpose: "Write JSON with pretty printing"
+      function: "json.dump(data, f, indent=2)"
+
+    markdown_generator:
+      purpose: "Generate human-readable summary"
+      library: "Python-Markdown or manual string formatting"
+
+    pdf_generator:
+      purpose: "Convert Markdown to PDF (optional)"
+      library: "weasyprint or reportlab"
+
+  deterministic_operations:
+    - "All aggregations use Python/pandas (NO LLM)"
+    - "All calculations use deterministic arithmetic"
+    - "All validations use explicit conditional logic"
+
+  llm_usage_allowed:
+    - "Generating executive summary text"
+    - "Creating user-friendly error messages"
+    - "Translating validation codes to natural language"
+    - "Formatting recommendations"
+
+# Performance Requirements
+performance:
+  throughput:
+    target: "Generate report for 10,000 shipments in <1 second"
+    acceptable: "Generate report for 10,000 shipments in <5 seconds"
+
+  latency:
+    target: "<100ms for 1,000 shipments"
+    acceptable: "<500ms for 1,000 shipments"
+
+  memory:
+    target: "<200MB for 100,000 shipments"
+    acceptable: "<1GB for 100,000 shipments"
+
+# Testing Requirements
+testing:
+  unit_tests:
+    coverage_target: "90%"
+
+    test_cases:
+      - "Aggregate emissions correctly across shipments"
+      - "Group by product group correctly"
+      - "Group by origin country correctly"
+      - "Calculate percentages correctly"
+      - "Validate summary totals match details"
+      - "Complex goods 20% check works"
+      - "EORI validation works"
+      - "EU member state check works"
+      - "Output JSON validates against schema"
+
+  integration_tests:
+    - "Process full demo dataset end-to-end"
+    - "Generate valid report that passes all validation rules"
+    - "Output JSON validates against registry_output.schema.json"
+    - "Human-readable summary generated successfully"
+
+# Example Usage
+example_usage:
+  python_sdk:
+    code: |
+      from greenlang.cbam import ReportingPackagerAgent
+
+      packager = ReportingPackagerAgent(
+          cbam_rules="../rules/cbam_rules.yaml"
+      )
+
+      # Package report
+      report = packager.package_report(
+          shipments_with_emissions=calculated_shipments,
+          importer_info={
+              "importer_name": "Acme Steel EU BV",
+              "importer_country": "NL",
+              "importer_eori": "NL123456789012",
+              "declarant_name": "John Smith",
+              "declarant_position": "Compliance Officer"
+          }
+      )
+
+      # Check validation
+      if report["validation_results"]["is_valid"]:
+          print("✅ Report valid and ready for submission")
+      else:
+          print("❌ Report has errors:")
+          for error in report["validation_results"]["errors"]:
+              print(f"  - {error['message']}")
+
+      # Write outputs
+      packager.write_report(report, "CBAM_2025Q4_AcmeSteel.json")
+      packager.write_summary(report, "CBAM_2025Q4_AcmeSteel_Summary.md")
+
+# Dependencies
+dependencies:
+  python_version: ">=3.9"
+
+  required_packages:
+    - "pandas>=2.0.0"
+    - "jsonschema>=4.0.0"
+    - "pyyaml>=6.0"
+    - "pydantic>=2.0.0"
+
+  optional_packages:
+    - "markdown>=3.0 (for Markdown summary)"
+    - "weasyprint>=60.0 (for PDF generation)"
+
+# Observability
+observability:
+  logging:
+    log_levels:
+      - "DEBUG: Detailed aggregation steps"
+      - "INFO: Report generation start/end, summary stats"
+      - "WARNING: Validation warnings, data quality issues"
+      - "ERROR: Validation errors, schema validation failures"
+
+  metrics:
+    - "reports_generated_total"
+    - "reports_valid_count"
+    - "reports_invalid_count"
+    - "validation_errors_by_rule"
+    - "report_generation_time_ms"
+    - "total_emissions_reported_tco2"
+
+# Change Log
+changelog:
+  - version: "1.0.0"
+    date: "2025-10-15"
+    changes:
+      - "Initial specification"
+      - "All core responsibilities defined"
+      - "Validation rules integrated"
+      - "Output formats specified"
