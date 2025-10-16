@@ -343,7 +343,8 @@
       "Bash(bc)",
       "Bash(py count_lines.py)",
       "Bash(do echo \"Checking $file...\")",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(if not exist \"GL-CBAM-APP\\CBAM-Refactored\\tests\" mkdir \"GL-CBAM-APP\\CBAM-Refactored\\tests\")"
     ],
     "deny": []
   }
