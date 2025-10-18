@@ -1,0 +1,60 @@
+{
+  "factors": {
+    "electricity": {
+      "US": {
+        "value": 0.429,
+        "unit": "kgCO2e/kWh",
+        "source": "EPA eGRID 2023",
+        "year": 2023
+      },
+      "CA": {
+        "value": 0.12,
+        "unit": "kgCO2e/kWh",
+        "source": "Environment Canada",
+        "year": 2023
+      },
+      "UK": {
+        "value": 0.233,
+        "unit": "kgCO2e/kWh",
+        "source": "DEFRA 2023",
+        "year": 2023
+      }
+    },
+    "natural_gas": {
+      "US": {
+        "value": 5.3,
+        "unit": "kgCO2e/therm",
+        "source": "EPA",
+        "year": 2023
+      },
+      "CA": {
+        "value": 5.3,
+        "unit": "kgCO2e/therm",
+        "source": "Environment Canada",
+        "year": 2023
+      },
+      "UK": {
+        "value": 5.4,
+        "unit": "kgCO2e/therm",
+        "source": "DEFRA 2023",
+        "year": 2023
+      }
+    },
+    "diesel": {
+      "US": {
+        "value": 10.21,
+        "unit": "kgCO2e/gallon",
+        "source": "EPA",
+        "year": 2023
+      }
+    }
+  },
+  "units": {
+    "conversions": {
+      "MWh_to_kWh": 1000,
+      "GJ_to_kWh": 277.78,
+      "BTU_to_kWh": 0.000293071,
+      "sqm_to_sqft": 10.7639
+    }
+  }
+}

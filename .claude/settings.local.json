@@ -344,7 +344,8 @@
       "Bash(py count_lines.py)",
       "Bash(do echo \"Checking $file...\")",
       "Bash(head:*)",
-      "Bash(if not exist \"GL-CBAM-APP\\CBAM-Refactored\\tests\" mkdir \"GL-CBAM-APP\\CBAM-Refactored\\tests\")"
+      "Bash(if not exist \"GL-CBAM-APP\\CBAM-Refactored\\tests\" mkdir \"GL-CBAM-APP\\CBAM-Refactored\\tests\")",
+      "Bash(/c/Users/aksha/AppData/Local/Microsoft/WindowsApps/python3 -m pytest:*)"
     ],
     "deny": []
   }

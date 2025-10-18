@@ -1,0 +1,11 @@
+timestamp,building_id,meter_type,consumption,unit
+2025-01-01,B001,electricity,4200,kWh
+2025-01-01,B001,gas,85,therms
+2025-01-02,B001,electricity,4350,kWh
+2025-01-02,B001,gas,90,therms
+2025-01-03,B001,electricity,4100,kWh
+2025-01-03,B001,gas,82,therms
+2025-01-01,B002,electricity,2500,kWh
+2025-01-01,B002,gas,165,therms
+2025-01-02,B002,electricity,2600,kWh
+2025-01-02,B002,gas,170,therms

@@ -1,0 +1,77 @@
+GreenLang Examples Gallery - File Index
+========================================
+
+EXAMPLE PROGRAMS (10 files)
+----------------------------
+01_simple_agent.py              - Basic agent creation and emissions calculations
+02_data_processor.py            - CSV batch processor with error handling
+03_calculator_cached.py         - Calculator with caching and determinism
+04_multi_format_reporter.py     - Multi-format report generator
+05_provenance_tracking.py       - Complete provenance and audit trail
+06_validation_framework.py      - Schema and business rules validation
+07_unit_converter.py            - Unit conversion calculator
+08_parallel_processing.py       - Parallel batch processing
+09_custom_decorators.py         - Custom decorators (@cached, @timed, etc.)
+10_complete_pipeline.py         - Multi-agent pipeline (intake→calc→report)
+
+SAMPLE DATA (4 files)
+---------------------
+data/sample_buildings.csv       - 5 sample buildings with energy data
+data/sample_energy.csv          - Time-series energy consumption data
+data/emission_factors.json      - Emission factors for US, UK, CA
+data/calculation_inputs.json    - Structured input data example
+
+DOCUMENTATION (4 files)
+-----------------------
+QUICK_START.md                  - Quick start guide and reference
+gallery_README.md               - Comprehensive documentation
+EXAMPLES_SUMMARY.md             - Creation summary and statistics
+INDEX.txt                       - This file
+
+QUICK COMMANDS
+--------------
+# Run a single example
+python examples/01_simple_agent.py
+
+# Run all examples
+for i in {01..10}; do python examples/${i}_*.py; done
+
+# View documentation
+cat examples/QUICK_START.md
+cat examples/gallery_README.md
+
+KEY FEATURES
+------------
+✓ 10+ working examples covering all core concepts
+✓ Sample data included - ready to run
+✓ Comprehensive documentation
+✓ Best practices demonstrated
+✓ Production-ready code patterns
+
+LEARNING PATH
+-------------
+1. Start with QUICK_START.md
+2. Run 01_simple_agent.py
+3. Run 02_data_processor.py
+4. Run 10_complete_pipeline.py
+5. Read gallery_README.md
+6. Modify examples for your use case
+
+OUTPUT DIRECTORIES (created on first run)
+------------------------------------------
+out/                            - Generated output files
+out/reports/                    - Multi-format reports
+out/ledger/                     - Audit trail and ledger
+out/pipeline_reports/           - Pipeline execution reports
+
+TOTAL STATISTICS
+----------------
+Example files: 10
+Sample data files: 4
+Documentation files: 4
+Total lines of code: ~3,500
+Package size: ~85 KB
+
+Created: October 17, 2025
+Version: 1.0.0
+Status: Complete ✓

@@ -1,0 +1,831 @@
+# ============================================================================
+# Calculation Input Validation Rules
+# ============================================================================
+# This file defines validation rules for carbon calculation inputs.
+# Ensures that all calculation parameters are valid before processing.
+#
+# Usage:
+#   from greenlang.validation.rules import RulesEngine, Rule
+#   import yaml
+#
+#   with open('calculation_validation.yaml') as f:
+#       config = yaml.safe_load(f)
+#
+#   engine = RulesEngine()
+#   for rule_dict in config['rules']:
+#       rule = Rule(**rule_dict)
+#       engine.add_rule(rule)
+#
+#   result = engine.validate(calculation_inputs)
+# ============================================================================
+
+metadata:
+  name: "Calculation Input Validation Rules"
+  version: "1.0.0"
+  description: "Validation rules for carbon emissions calculation inputs"
+  author: "GreenLang Validation Framework"
+  last_updated: "2025-01-15"
+  applicable_to:
+    - "Scope 1 calculations"
+    - "Scope 2 calculations"
+    - "Scope 3 calculations"
+    - "Carbon footprint analysis"
+    - "Energy modeling"
+
+# ============================================================================
+# SECTION 1: Numeric Value Validation
+# ============================================================================
+# Ensure all numeric inputs are valid and within acceptable ranges
+# Operators: >, >=, <, <=, !=
+# ============================================================================
+
+rules:
+  # ----- Energy Consumption Values -----
+  - name: "energy_consumption_positive"
+    field: "energy_consumption"
+    operator: ">"
+    value: 0
+    severity: "error"
+    message: "Energy consumption must be greater than zero for calculations"
+    enabled: true
+
+  - name: "energy_consumption_max_limit"
+    field: "energy_consumption"
+    operator: "<="
+    value: 1000000000
+    severity: "error"
+    message: "Energy consumption exceeds maximum limit of 1 billion units"
+    enabled: true
+
+  - name: "energy_consumption_not_zero"
+    field: "energy_consumption"
+    operator: "!="
+    value: 0
+    severity: "error"
+    message: "Energy consumption cannot be exactly zero"
+    enabled: true
+
+  # ----- Emission Factors -----
+  - name: "emission_factor_positive"
+    field: "emission_factor"
+    operator: ">"
+    value: 0
+    severity: "error"
+    message: "Emission factor must be positive for carbon calculations"
+    enabled: true
+
+  - name: "emission_factor_reasonable_max"
+    field: "emission_factor"
+    operator: "<="
+    value: 1000
+    severity: "warning"
+    message: "Emission factor exceeds typical maximum (1000 kg CO2e/unit)"
+    enabled: true
+
+  - name: "emission_factor_not_zero"
+    field: "emission_factor"
+    operator: "!="
+    value: 0
+    severity: "warning"
+    message: "Emission factor is zero - results will be zero emissions"
+    enabled: true
+
+  # ----- Activity Data Ranges -----
+  - name: "activity_data_non_negative"
+    field: "activity_data"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Activity data cannot be negative"
+    enabled: true
+
+  - name: "fuel_quantity_positive"
+    field: "fuel_quantity"
+    operator: ">"
+    value: 0
+    severity: "error"
+    message: "Fuel quantity must be greater than zero"
+    enabled: true
+    condition: "exists:fuel_quantity"
+
+  - name: "distance_traveled_positive"
+    field: "distance_traveled"
+    operator: ">"
+    value: 0
+    severity: "error"
+    message: "Distance traveled must be positive for transportation calculations"
+    enabled: true
+    condition: "exists:distance_traveled"
+
+  # ----- Conversion Factors -----
+  - name: "conversion_factor_positive"
+    field: "conversion_factor"
+    operator: ">"
+    value: 0
+    severity: "error"
+    message: "Conversion factor must be positive"
+    enabled: true
+    condition: "exists:conversion_factor"
+
+  - name: "conversion_factor_not_one"
+    field: "conversion_factor"
+    operator: "!="
+    value: 1.0
+    severity: "info"
+    message: "Conversion factor is 1.0 - no conversion will be applied"
+    enabled: true
+    condition: "exists:conversion_factor"
+
+  # ----- Uncertainty Ranges -----
+  - name: "uncertainty_min_bound"
+    field: "uncertainty_percentage"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Uncertainty percentage cannot be negative"
+    enabled: true
+    condition: "exists:uncertainty_percentage"
+
+  - name: "uncertainty_max_bound"
+    field: "uncertainty_percentage"
+    operator: "<="
+    value: 100
+    severity: "warning"
+    message: "Uncertainty percentage exceeds 100% (extremely uncertain)"
+    enabled: true
+    condition: "exists:uncertainty_percentage"
+
+  - name: "confidence_level_min"
+    field: "confidence_level"
+    operator: ">="
+    value: 0.5
+    severity: "warning"
+    message: "Confidence level below 50% - data quality may be insufficient"
+    enabled: true
+    condition: "exists:confidence_level"
+
+  - name: "confidence_level_max"
+    field: "confidence_level"
+    operator: "<="
+    value: 1.0
+    severity: "error"
+    message: "Confidence level cannot exceed 1.0 (100%)"
+    enabled: true
+    condition: "exists:confidence_level"
+
+  # ============================================================================
+  # SECTION 2: Unit Validation
+  # ============================================================================
+  # Ensure units are valid and consistent
+  # Operators: in, not_in, ==
+  # ============================================================================
+
+  # ----- Energy Units -----
+  - name: "energy_unit_valid"
+    field: "energy_unit"
+    operator: "in"
+    value:
+      - "kWh"
+      - "MWh"
+      - "GWh"
+      - "TWh"
+      - "kJ"
+      - "MJ"
+      - "GJ"
+      - "TJ"
+      - "BTU"
+      - "MMBtu"
+      - "therms"
+    severity: "error"
+    message: "Energy unit must be a recognized energy unit"
+    enabled: true
+
+  # ----- Mass Units (for fuel) -----
+  - name: "fuel_mass_unit_valid"
+    field: "fuel_unit"
+    operator: "in"
+    value:
+      - "kg"
+      - "tonnes"
+      - "metric_tons"
+      - "lb"
+      - "short_tons"
+      - "long_tons"
+      - "g"
+      - "mg"
+    severity: "error"
+    message: "Fuel mass unit must be a recognized mass unit"
+    enabled: true
+    condition: "exists:fuel_unit"
+
+  # ----- Volume Units (for liquids/gas) -----
+  - name: "volume_unit_valid"
+    field: "volume_unit"
+    operator: "in"
+    value:
+      - "m3"
+      - "L"
+      - "mL"
+      - "gallons"
+      - "ft3"
+      - "barrels"
+      - "liters"
+    severity: "error"
+    message: "Volume unit must be a recognized volume unit"
+    enabled: true
+    condition: "exists:volume_unit"
+
+  # ----- Distance Units -----
+  - name: "distance_unit_valid"
+    field: "distance_unit"
+    operator: "in"
+    value:
+      - "km"
+      - "m"
+      - "miles"
+      - "ft"
+      - "nautical_miles"
+    severity: "error"
+    message: "Distance unit must be a recognized distance unit"
+    enabled: true
+    condition: "exists:distance_unit"
+
+  # ----- Emission Units -----
+  - name: "emission_unit_valid"
+    field: "emission_unit"
+    operator: "in"
+    value:
+      - "kg_co2e"
+      - "tonnes_co2e"
+      - "metric_tons_co2e"
+      - "lb_co2e"
+      - "g_co2e"
+    severity: "error"
+    message: "Emission unit must be a recognized CO2e unit"
+    enabled: true
+    condition: "exists:emission_unit"
+
+  # ----- Invalid Unit Check -----
+  - name: "no_invalid_units"
+    field: "energy_unit"
+    operator: "not_in"
+    value:
+      - "invalid"
+      - "unknown"
+      - "n/a"
+      - "null"
+      - ""
+      - "TBD"
+    severity: "error"
+    message: "Energy unit contains invalid or placeholder value"
+    enabled: true
+
+  # ============================================================================
+  # SECTION 3: Calculation Method Validation
+  # ============================================================================
+  # Validate calculation methodology and approach
+  # Operators: in, ==, !=, not_null
+  # ============================================================================
+
+  # ----- Calculation Method -----
+  - name: "calculation_method_required"
+    field: "calculation_method"
+    operator: "not_null"
+    severity: "error"
+    message: "Calculation method must be specified"
+    enabled: true
+
+  - name: "calculation_method_valid"
+    field: "calculation_method"
+    operator: "in"
+    value:
+      - "activity_based"
+      - "spend_based"
+      - "hybrid"
+      - "supplier_specific"
+      - "average_data"
+      - "distance_based"
+      - "fuel_based"
+      - "site_specific"
+    severity: "error"
+    message: "Calculation method must be a recognized methodology"
+    enabled: true
+
+  # ----- Scope Required -----
+  - name: "emission_scope_required"
+    field: "emission_scope"
+    operator: "not_null"
+    severity: "error"
+    message: "Emission scope must be specified (Scope 1, 2, or 3)"
+    enabled: true
+
+  - name: "emission_scope_valid"
+    field: "emission_scope"
+    operator: "in"
+    value:
+      - "scope_1"
+      - "scope_2"
+      - "scope_3"
+      - "Scope 1"
+      - "Scope 2"
+      - "Scope 3"
+    severity: "error"
+    message: "Emission scope must be Scope 1, 2, or 3"
+    enabled: true
+
+  # ----- Allocation Method (when applicable) -----
+  - name: "allocation_method_valid"
+    field: "allocation_method"
+    operator: "in"
+    value:
+      - "physical"
+      - "economic"
+      - "mass_based"
+      - "revenue_based"
+      - "employee_based"
+      - "floor_area_based"
+      - "none"
+    severity: "warning"
+    message: "Allocation method should be a recognized approach"
+    enabled: true
+    condition: "exists:allocation_method"
+
+  # ----- Data Quality Tier -----
+  - name: "data_quality_tier_valid"
+    field: "data_quality_tier"
+    operator: "in"
+    value:
+      - "tier_1"
+      - "tier_2"
+      - "tier_3"
+      - "tier_4"
+      - "tier_5"
+      - 1
+      - 2
+      - 3
+      - 4
+      - 5
+    severity: "warning"
+    message: "Data quality tier should be 1-5 (WBCSD/WRI standard)"
+    enabled: true
+    condition: "exists:data_quality_tier"
+
+  # ============================================================================
+  # SECTION 4: Precision and Accuracy Requirements
+  # ============================================================================
+  # Validate precision requirements for calculations
+  # Operators: >=, <=, !=
+  # ============================================================================
+
+  # ----- Decimal Precision -----
+  - name: "precision_digits_minimum"
+    field: "precision_decimal_places"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Precision decimal places cannot be negative"
+    enabled: true
+    condition: "exists:precision_decimal_places"
+
+  - name: "precision_digits_maximum"
+    field: "precision_decimal_places"
+    operator: "<="
+    value: 10
+    severity: "warning"
+    message: "Precision beyond 10 decimal places may exceed data accuracy"
+    enabled: true
+    condition: "exists:precision_decimal_places"
+
+  # ----- Rounding Method -----
+  - name: "rounding_method_valid"
+    field: "rounding_method"
+    operator: "in"
+    value:
+      - "round"
+      - "floor"
+      - "ceiling"
+      - "truncate"
+      - "round_half_up"
+      - "round_half_even"
+    severity: "warning"
+    message: "Rounding method should be a standard rounding approach"
+    enabled: true
+    condition: "exists:rounding_method"
+
+  # ============================================================================
+  # SECTION 5: Business Logic Rules
+  # ============================================================================
+  # Domain-specific validation for carbon accounting
+  # Operators: >, <, >=, <=, in, not_null
+  # ============================================================================
+
+  # ----- Global Warming Potential (GWP) -----
+  - name: "gwp_timeframe_valid"
+    field: "gwp_timeframe"
+    operator: "in"
+    value:
+      - 20
+      - 100
+      - 500
+    severity: "warning"
+    message: "GWP timeframe should be 20, 100, or 500 years (IPCC standard)"
+    enabled: true
+    condition: "exists:gwp_timeframe"
+
+  - name: "gwp_value_positive"
+    field: "gwp_value"
+    operator: ">"
+    value: 0
+    severity: "error"
+    message: "Global Warming Potential must be positive"
+    enabled: true
+    condition: "exists:gwp_value"
+
+  # ----- Grid Electricity Factor Validation -----
+  - name: "grid_factor_range_min"
+    field: "grid_emission_factor"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Grid emission factor cannot be negative"
+    enabled: true
+    condition: "exists:grid_emission_factor"
+
+  - name: "grid_factor_range_max"
+    field: "grid_emission_factor"
+    operator: "<="
+    value: 2.0
+    severity: "warning"
+    message: "Grid emission factor exceeds 2.0 kg CO2e/kWh (verify accuracy)"
+    enabled: true
+    condition: "exists:grid_emission_factor"
+
+  # ----- Renewable Energy Percentage -----
+  - name: "renewable_percent_min"
+    field: "renewable_percentage"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Renewable percentage cannot be negative"
+    enabled: true
+    condition: "exists:renewable_percentage"
+
+  - name: "renewable_percent_max"
+    field: "renewable_percentage"
+    operator: "<="
+    value: 100
+    severity: "error"
+    message: "Renewable percentage cannot exceed 100%"
+    enabled: true
+    condition: "exists:renewable_percentage"
+
+  # ----- Sequestration Rate Validation -----
+  - name: "sequestration_rate_valid"
+    field: "carbon_sequestration_rate"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Carbon sequestration rate cannot be negative"
+    enabled: true
+    condition: "exists:carbon_sequestration_rate"
+
+  # ----- Offset Credits Validation -----
+  - name: "offset_credits_non_negative"
+    field: "offset_credits_tonnes"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Offset credits cannot be negative"
+    enabled: true
+    condition: "exists:offset_credits_tonnes"
+
+  - name: "offset_vintage_year_valid"
+    field: "offset_vintage_year"
+    operator: ">="
+    value: 2000
+    severity: "warning"
+    message: "Offset vintage year should be 2000 or later"
+    enabled: true
+    condition: "exists:offset_vintage_year"
+
+  # ----- Biogenic Carbon -----
+  - name: "biogenic_carbon_non_negative"
+    field: "biogenic_carbon_tonnes"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Biogenic carbon emissions cannot be negative"
+    enabled: true
+    condition: "exists:biogenic_carbon_tonnes"
+
+  # ============================================================================
+  # SECTION 6: Fuel-Specific Validation
+  # ============================================================================
+  # Validate fuel types and related parameters
+  # Operators: in, not_in, >, >=
+  # ============================================================================
+
+  # ----- Fuel Type -----
+  - name: "fuel_type_valid"
+    field: "fuel_type"
+    operator: "in"
+    value:
+      - "natural_gas"
+      - "diesel"
+      - "gasoline"
+      - "propane"
+      - "fuel_oil"
+      - "coal"
+      - "biomass"
+      - "biogas"
+      - "hydrogen"
+      - "lng"
+      - "lpg"
+      - "kerosene"
+      - "jet_fuel"
+    severity: "error"
+    message: "Fuel type must be a recognized fuel"
+    enabled: true
+    condition: "exists:fuel_type"
+
+  - name: "fuel_not_deprecated"
+    field: "fuel_type"
+    operator: "not_in"
+    value:
+      - "cfc"
+      - "cfc_11"
+      - "cfc_12"
+      - "halon"
+    severity: "warning"
+    message: "Fuel type is deprecated or banned substance"
+    enabled: true
+    condition: "exists:fuel_type"
+
+  # ----- Heating Value (for fuel combustion) -----
+  - name: "heating_value_positive"
+    field: "heating_value"
+    operator: ">"
+    value: 0
+    severity: "error"
+    message: "Heating value must be positive"
+    enabled: true
+    condition: "exists:heating_value"
+
+  - name: "heating_value_type_valid"
+    field: "heating_value_type"
+    operator: "in"
+    value:
+      - "higher_heating_value"
+      - "lower_heating_value"
+      - "HHV"
+      - "LHV"
+      - "gross"
+      - "net"
+    severity: "warning"
+    message: "Heating value type should be HHV or LHV"
+    enabled: true
+    condition: "exists:heating_value_type"
+
+  # ============================================================================
+  # SECTION 7: Time Period Validation
+  # ============================================================================
+  # Validate temporal aspects of calculations
+  # Operators: >=, <=, regex, not_null
+  # ============================================================================
+
+  # ----- Reporting Period -----
+  - name: "reporting_period_start_required"
+    field: "reporting_period_start"
+    operator: "not_null"
+    severity: "error"
+    message: "Reporting period start date is required"
+    enabled: true
+
+  - name: "reporting_period_end_required"
+    field: "reporting_period_end"
+    operator: "not_null"
+    severity: "error"
+    message: "Reporting period end date is required"
+    enabled: true
+
+  - name: "reporting_year_valid_min"
+    field: "reporting_year"
+    operator: ">="
+    value: 1990
+    severity: "warning"
+    message: "Reporting year before 1990 (pre-baseline year)"
+    enabled: true
+    condition: "exists:reporting_year"
+
+  - name: "reporting_year_valid_max"
+    field: "reporting_year"
+    operator: "<="
+    value: 2030
+    severity: "warning"
+    message: "Reporting year is in the future"
+    enabled: true
+    condition: "exists:reporting_year"
+
+  # ----- Date Format Validation -----
+  - name: "start_date_format"
+    field: "reporting_period_start"
+    operator: "regex"
+    value: "^\\d{4}-\\d{2}-\\d{2}$"
+    severity: "error"
+    message: "Reporting period start must be in YYYY-MM-DD format"
+    enabled: true
+
+  - name: "end_date_format"
+    field: "reporting_period_end"
+    operator: "regex"
+    value: "^\\d{4}-\\d{2}-\\d{2}$"
+    severity: "error"
+    message: "Reporting period end must be in YYYY-MM-DD format"
+    enabled: true
+
+  # ============================================================================
+  # SECTION 8: Reference and Source Data Validation
+  # ============================================================================
+  # Validate reference data and sources
+  # Operators: not_null, in, regex, contains
+  # ============================================================================
+
+  # ----- Emission Factor Source -----
+  - name: "factor_source_required"
+    field: "emission_factor_source"
+    operator: "not_null"
+    severity: "warning"
+    message: "Emission factor source should be documented for traceability"
+    enabled: true
+
+  - name: "factor_source_valid"
+    field: "emission_factor_source"
+    operator: "in"
+    value:
+      - "EPA"
+      - "DEFRA"
+      - "IEA"
+      - "IPCC"
+      - "EIA"
+      - "GHG_Protocol"
+      - "ISO_14064"
+      - "Custom"
+      - "Supplier_Specific"
+      - "Database"
+    severity: "info"
+    message: "Using recognized emission factor source"
+    enabled: true
+    condition: "exists:emission_factor_source"
+
+  # ----- Standard/Protocol Compliance -----
+  - name: "standard_compliance_valid"
+    field: "compliance_standard"
+    operator: "in"
+    value:
+      - "GHG_Protocol"
+      - "ISO_14064"
+      - "ISO_14067"
+      - "PAS_2050"
+      - "CDP"
+      - "SBTi"
+      - "TCFD"
+      - "GRI"
+    severity: "info"
+    message: "Following recognized reporting standard"
+    enabled: true
+    condition: "exists:compliance_standard"
+
+  # ----- Database Version -----
+  - name: "database_version_format"
+    field: "emission_factor_database_version"
+    operator: "regex"
+    value: "^\\d{4}(\\.\\d+)?$"
+    severity: "warning"
+    message: "Database version should include year (e.g., 2024 or 2024.1)"
+    enabled: true
+    condition: "exists:emission_factor_database_version"
+
+  # ----- Location/Region for Factors -----
+  - name: "factor_region_required"
+    field: "emission_factor_region"
+    operator: "not_null"
+    severity: "warning"
+    message: "Region-specific emission factor recommended for accuracy"
+    enabled: true
+    condition: "exists:emission_factor"
+
+  # ============================================================================
+  # SECTION 9: Null/Missing Value Validation
+  # ============================================================================
+  # Ensure critical fields are not null
+  # Operators: not_null, is_null
+  # ============================================================================
+
+  - name: "calculation_id_required"
+    field: "calculation_id"
+    operator: "not_null"
+    severity: "error"
+    message: "Calculation ID is required for traceability"
+    enabled: true
+
+  - name: "facility_id_required"
+    field: "facility_id"
+    operator: "not_null"
+    severity: "error"
+    message: "Facility ID is required to link calculation to location"
+    enabled: true
+
+  - name: "baseline_year_check"
+    field: "baseline_year"
+    operator: "is_null"
+    severity: "info"
+    message: "No baseline year specified for comparison"
+    enabled: true
+
+# ============================================================================
+# Rule Sets for Different Calculation Scenarios
+# ============================================================================
+
+rule_sets:
+  # Scope 1 - Direct Emissions
+  - name: "scope_1_validation"
+    description: "Validation for Scope 1 direct emissions calculations"
+    enabled: true
+    rules:
+      - fuel_type_valid
+      - fuel_quantity_positive
+      - emission_factor_positive
+      - calculation_method_valid
+      - emission_scope_required
+      - heating_value_positive
+      - reporting_period_start_required
+      - reporting_period_end_required
+
+  # Scope 2 - Electricity Emissions
+  - name: "scope_2_validation"
+    description: "Validation for Scope 2 purchased electricity calculations"
+    enabled: true
+    rules:
+      - energy_consumption_positive
+      - energy_unit_valid
+      - grid_factor_range_min
+      - grid_factor_range_max
+      - emission_scope_required
+      - renewable_percent_min
+      - renewable_percent_max
+      - factor_region_required
+
+  # Scope 3 - Indirect Emissions
+  - name: "scope_3_validation"
+    description: "Validation for Scope 3 value chain calculations"
+    enabled: true
+    rules:
+      - activity_data_non_negative
+      - emission_factor_positive
+      - calculation_method_valid
+      - emission_scope_required
+      - data_quality_tier_valid
+      - allocation_method_valid
+
+  # High Precision Requirements
+  - name: "precision_validation"
+    description: "Strict precision validation for audited calculations"
+    enabled: true
+    rules:
+      - precision_digits_minimum
+      - precision_digits_maximum
+      - confidence_level_min
+      - uncertainty_min_bound
+      - factor_source_required
+      - database_version_format
+
+  # Quick Validation
+  - name: "quick_validation"
+    description: "Essential validations for rapid calculations"
+    enabled: true
+    rules:
+      - energy_consumption_positive
+      - emission_factor_positive
+      - calculation_method_required
+      - emission_scope_required
+      - energy_unit_valid
+
+# ============================================================================
+# Configuration
+# ============================================================================
+
+config:
+  stop_on_error: false
+  max_errors: 50
+  include_values_in_errors: true
+  verbose_logging: false
+
+  # Calculation-specific settings
+  enforce_unit_consistency: true
+  require_source_documentation: true
+  minimum_data_quality_tier: 3
+
+  # Precision settings
+  default_decimal_places: 2
+  max_decimal_places: 6
+  default_rounding_method: "round_half_up"
