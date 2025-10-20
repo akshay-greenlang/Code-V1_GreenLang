@@ -1,0 +1,156 @@
+{
+  "company_id": "550e8400-e29b-41d4-a716-446655440000",
+  "legal_name": "Acme Manufacturing EU B.V.",
+  "commercial_name": "Acme EU",
+  "lei_code": "549300ABC123DEF456GH",
+  "country": "NL",
+  "registered_address": {
+    "street": "Industrieweg 42",
+    "city": "Amsterdam",
+    "postal_code": "1043 AB",
+    "country": "NL"
+  },
+  "sector": {
+    "nace_code": "25.11",
+    "nace_description": "Manufacture of metal structures and parts of structures",
+    "industry": "Manufacturing",
+    "sub_industry": "Industrial Metals & Equipment"
+  },
+  "company_size": {
+    "employee_count": 1250,
+    "employee_count_fte": 1250,
+    "size_category": "Large",
+    "revenue_eur": 450000000,
+    "total_assets_eur": 280000000
+  },
+  "reporting_period": {
+    "fiscal_year": 2024,
+    "start_date": "2024-01-01",
+    "end_date": "2024-12-31",
+    "reporting_framework": "CSRD",
+    "first_year_csrd": true
+  },
+  "csrd_applicability": {
+    "csrd_applicable": true,
+    "phase": "Phase 1",
+    "reason": "Large company, >500 employees, previously subject to NFRD",
+    "first_report_due": "2025-04-30"
+  },
+  "stock_listing": {
+    "listed": true,
+    "exchange": "Euronext Amsterdam",
+    "ticker": "ACME.AS",
+    "isin": "NL0000123456"
+  },
+  "subsidiaries": [
+    {
+      "subsidiary_id": "sub-001",
+      "name": "Acme Manufacturing GmbH",
+      "country": "DE",
+      "ownership_percentage": 100,
+      "consolidation_method": "full",
+      "employees": 320,
+      "revenue_eur": 95000000
+    },
+    {
+      "subsidiary_id": "sub-002",
+      "name": "Acme France SAS",
+      "country": "FR",
+      "ownership_percentage": 75,
+      "consolidation_method": "full",
+      "employees": 180,
+      "revenue_eur": 62000000
+    },
+    {
+      "subsidiary_id": "sub-003",
+      "name": "Acme España S.L.",
+      "country": "ES",
+      "ownership_percentage": 100,
+      "consolidation_method": "full",
+      "employees": 140,
+      "revenue_eur": 48000000
+    }
+  ],
+  "operations": {
+    "number_of_facilities": 8,
+    "countries_of_operation": ["NL", "DE", "FR", "ES", "BE"],
+    "value_chain": {
+      "upstream": "Steel suppliers, component manufacturers",
+      "operations": "Metal fabrication, welding, assembly",
+      "downstream": "Construction companies, infrastructure projects"
+    }
+  },
+  "sustainability_governance": {
+    "sustainability_committee": true,
+    "sustainability_officer": {
+      "name": "Jane Smith",
+      "title": "Chief Sustainability Officer",
+      "email": "jane.smith@acme-eu.com",
+      "phone": "+31 20 123 4567"
+    },
+    "board_oversight": true,
+    "esrs_working_group": true
+  },
+  "previous_reporting": {
+    "nfrd_reporting": true,
+    "nfrd_since": 2020,
+    "gri_reporting": true,
+    "gri_version": "GRI 2021",
+    "tcfd_reporting": true,
+    "sasb_reporting": false,
+    "cdp_reporting": true,
+    "cdp_score_climate": "A-"
+  },
+  "external_assurance": {
+    "assurance_required": true,
+    "assurance_level": "limited",
+    "auditor": "KPMG Netherlands",
+    "auditor_contact": "assurance@kpmg.nl"
+  },
+  "contact": {
+    "primary_contact": {
+      "name": "Jane Smith",
+      "title": "Chief Sustainability Officer",
+      "email": "jane.smith@acme-eu.com",
+      "phone": "+31 20 123 4567"
+    },
+    "technical_contact": {
+      "name": "Robert van der Berg",
+      "title": "ESG Data Manager",
+      "email": "robert.vandenberg@acme-eu.com",
+      "phone": "+31 20 123 4568"
+    },
+    "legal_contact": {
+      "name": "Maria de Vries",
+      "title": "General Counsel",
+      "email": "maria.devries@acme-eu.com",
+      "phone": "+31 20 123 4569"
+    }
+  },
+  "data_sources": {
+    "erp_system": "SAP S/4HANA",
+    "hris_system": "Workday",
+    "energy_management": "Schneider Electric EcoStruxure",
+    "environmental_system": "Enablon",
+    "ghg_accounting": "SimaPro + GHG Protocol tools"
+  },
+  "materiality_assessment": {
+    "last_assessment_date": "2024-09-30",
+    "methodology": "ESRS 1 Double Materiality",
+    "stakeholders_consulted": [
+      "Employees",
+      "Investors",
+      "Customers",
+      "Suppliers",
+      "Local communities",
+      "NGOs"
+    ],
+    "next_assessment_due": "2027-09-30"
+  },
+  "metadata": {
+    "created_date": "2024-10-01T10:00:00Z",
+    "last_updated": "2024-12-15T15:30:00Z",
+    "version": "1.2",
+    "data_quality_score": 0.95
+  }
+}

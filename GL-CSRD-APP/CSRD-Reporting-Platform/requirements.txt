@@ -1,0 +1,244 @@
+# ============================================================================
+# CSRD/ESRS DIGITAL REPORTING PLATFORM - PYTHON DEPENDENCIES
+# ============================================================================
+#
+# Installation: pip install -r requirements.txt
+#
+# Python Version: >=3.11
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# CORE DATA PROCESSING
+# ----------------------------------------------------------------------------
+
+# Data manipulation and analysis
+pandas>=2.1.0                 # DataFrames, data processing
+numpy>=1.26.0                 # Numerical computing
+scipy>=1.11.0                 # Scientific computing, statistics
+
+# Data validation and models
+pydantic>=2.5.0               # Data validation using Python type hints
+jsonschema>=4.20.0            # JSON Schema validation
+pydantic-settings>=2.1.0      # Settings management with Pydantic
+
+# ----------------------------------------------------------------------------
+# FILE FORMAT SUPPORT
+# ----------------------------------------------------------------------------
+
+# Excel support
+openpyxl>=3.1.0               # Read/write Excel 2010 xlsx/xlsm files
+xlrd>=2.0.0                   # Read Excel .xls files (legacy)
+
+# YAML support
+pyyaml>=6.0                   # YAML parser and emitter
+ruamel.yaml>=0.18.0           # YAML parser with round-trip support
+
+# XML/XBRL support
+lxml>=5.0.0                   # XML and HTML processing
+arelle>=2.20.0                # XBRL processor (ESEF compliance)
+python-xbrl>=1.1.0            # XBRL parsing utilities
+
+# CSV/TSV support (built-in with pandas)
+
+# Parquet support
+pyarrow>=14.0.0               # Apache Arrow, Parquet support
+fastparquet>=2024.2.0         # Alternative Parquet implementation
+
+# ----------------------------------------------------------------------------
+# AI/ML & LLM INTEGRATION
+# ----------------------------------------------------------------------------
+
+# LLM orchestration
+langchain>=0.1.0              # LLM application framework
+langchain-community>=0.0.10   # Community integrations
+langchain-openai>=0.0.5       # OpenAI integration
+langchain-anthropic>=0.1.0    # Anthropic Claude integration
+
+# LLM APIs
+openai>=1.10.0                # OpenAI GPT-4 API client
+anthropic>=0.18.0             # Anthropic Claude API client
+
+# Vector databases (RAG)
+pinecone-client>=3.0.0        # Pinecone vector database client
+weaviate-client>=4.4.0        # Weaviate vector database (alternative)
+
+# Embeddings
+sentence-transformers>=2.3.0  # Sentence embeddings for semantic search
+tiktoken>=0.6.0               # OpenAI tokenizer
+
+# ----------------------------------------------------------------------------
+# WEB FRAMEWORK & API
+# ----------------------------------------------------------------------------
+
+# API framework
+fastapi>=0.109.0              # Modern, fast web framework
+uvicorn[standard]>=0.27.0     # ASGI server
+pydantic[email]>=2.5.0        # Email validation for FastAPI
+
+# HTTP client
+httpx>=0.26.0                 # Async HTTP client
+requests>=2.31.0              # HTTP library
+aiohttp>=3.9.0                # Async HTTP client/server
+
+# CORS and middleware
+python-multipart>=0.0.6       # Multipart form data parsing
+python-jose[cryptography]>=3.3.0  # JWT tokens
+
+# ----------------------------------------------------------------------------
+# DATABASE
+# ----------------------------------------------------------------------------
+
+# ORM and database toolkit
+sqlalchemy>=2.0.0             # SQL toolkit and ORM
+alembic>=1.13.0               # Database migrations
+psycopg2-binary>=2.9.0        # PostgreSQL adapter
+asyncpg>=0.29.0               # Async PostgreSQL adapter
+
+# Redis (caching)
+redis>=5.0.0                  # Redis client
+hiredis>=2.3.0                # Redis C parser for performance
+
+# ----------------------------------------------------------------------------
+# REPORTING & VISUALIZATION
+# ----------------------------------------------------------------------------
+
+# PDF generation
+reportlab>=4.0.0              # PDF generation library
+pypdf>=4.0.0                  # PDF utilities
+weasyprint>=60.0              # HTML/CSS to PDF converter
+
+# Charts and visualizations
+matplotlib>=3.8.0             # Plotting library
+seaborn>=0.13.0               # Statistical data visualization
+plotly>=5.18.0                # Interactive visualizations
+
+# Markdown
+markdown>=3.5.0               # Markdown to HTML converter
+python-markdown-math>=0.8     # Math support for Markdown
+
+# ----------------------------------------------------------------------------
+# DATE/TIME HANDLING
+# ----------------------------------------------------------------------------
+
+python-dateutil>=2.8.0        # Extensions to datetime module
+pytz>=2024.1                  # Timezone definitions
+
+# ----------------------------------------------------------------------------
+# TESTING
+# ----------------------------------------------------------------------------
+
+pytest>=8.0.0                 # Testing framework
+pytest-cov>=4.1.0             # Coverage plugin for pytest
+pytest-asyncio>=0.23.0        # Async support for pytest
+pytest-mock>=3.12.0           # Mock plugin
+httpx-mock>=0.14.0            # Mock httpx requests in tests
+
+# ----------------------------------------------------------------------------
+# CODE QUALITY
+# ----------------------------------------------------------------------------
+
+# Linting and formatting
+ruff>=0.2.0                   # Fast Python linter (replaces flake8, black, isort)
+mypy>=1.8.0                   # Static type checker
+
+# Security scanning
+bandit>=1.7.0                 # Security issue scanner
+safety>=3.0.0                 # Dependency vulnerability scanner
+
+# HTML sanitization (SECURITY)
+bleach>=6.0.0                 # HTML sanitization to prevent XSS/injection
+markupsafe>=2.1.0             # Safe HTML escaping for templates
+
+# ----------------------------------------------------------------------------
+# LOGGING & MONITORING
+# ----------------------------------------------------------------------------
+
+# Structured logging
+structlog>=24.1.0             # Structured logging
+python-json-logger>=2.0.0     # JSON log formatter
+
+# Application monitoring
+sentry-sdk>=1.40.0            # Error tracking and monitoring
+
+# ----------------------------------------------------------------------------
+# SECURITY & ENCRYPTION
+# ----------------------------------------------------------------------------
+
+# Data encryption
+cryptography>=41.0.0          # Cryptographic recipes and primitives (Fernet, AES)
+
+# ----------------------------------------------------------------------------
+# UTILITIES
+# ----------------------------------------------------------------------------
+
+# Progress bars
+tqdm>=4.66.0                  # Progress bar for loops
+rich>=13.7.0                  # Rich text and formatting in terminal
+
+# CLI
+click>=8.1.0                  # Command-line interface creation
+typer>=0.9.0                  # Modern CLI framework (built on Click)
+
+# Configuration
+python-dotenv>=1.0.0          # Load environment variables from .env
+dynaconf>=3.2.0               # Configuration management
+
+# File utilities
+pathlib>=1.0.0                # Object-oriented filesystem paths
+watchdog>=4.0.0               # Filesystem event monitoring
+
+# ----------------------------------------------------------------------------
+# GREENHOUSE GAS ACCOUNTING
+# ----------------------------------------------------------------------------
+
+# Note: Custom emission factors database included in data/emission_factors.json
+# GHG Protocol tools implemented in agents/calculator_agent.py
+
+# ----------------------------------------------------------------------------
+# OPTIONAL: JUPYTER NOTEBOOK SUPPORT
+# ----------------------------------------------------------------------------
+
+# Uncomment if you want to use Jupyter notebooks for analysis
+# jupyter>=1.0.0
+# jupyterlab>=4.0.0
+# ipykernel>=6.29.0
+
+# ----------------------------------------------------------------------------
+# DEVELOPMENT DEPENDENCIES
+# ----------------------------------------------------------------------------
+
+# Uncomment for development environment
+# ipython>=8.20.0             # Enhanced Python shell
+# ipdb>=0.13.0                # IPython debugger
+# pre-commit>=3.6.0           # Git pre-commit hooks
+# sphinx>=7.2.0               # Documentation generator
+# sphinx-rtd-theme>=2.0.0     # ReadTheDocs theme for Sphinx
+
+# ----------------------------------------------------------------------------
+# GREENLANG FRAMEWORK (when available)
+# ----------------------------------------------------------------------------
+
+# greenlang>=0.3.0            # GreenLang framework (install from GitHub or PyPI when released)
+
+# ============================================================================
+# INSTALLATION NOTES
+# ============================================================================
+#
+# 1. Create virtual environment:
+#    python3.11 -m venv venv
+#    source venv/bin/activate  # On Windows: venv\Scripts\activate
+#
+# 2. Upgrade pip:
+#    pip install --upgrade pip
+#
+# 3. Install dependencies:
+#    pip install -r requirements.txt
+#
+# 4. For development with all optional dependencies:
+#    pip install -r requirements.txt -r requirements-dev.txt
+#
+# 5. Verify installation:
+#    python -c "import pandas, fastapi, langchain, arelle; print('All imports successful')"
+#
+# ============================================================================

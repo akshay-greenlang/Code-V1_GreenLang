@@ -1,0 +1,218 @@
+# ============================================================================
+# CSRD REPORTING PLATFORM - GIT IGNORE
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# CRITICAL: NEVER COMMIT SECRETS OR ENCRYPTION KEYS
+# ----------------------------------------------------------------------------
+
+# Environment variables (contains encryption keys and API keys)
+.env
+.env.local
+.env.*.local
+*.env
+
+# Encryption keys
+*.key
+*.pem
+keys/
+secrets/
+
+# ----------------------------------------------------------------------------
+# PYTHON
+# ----------------------------------------------------------------------------
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# ----------------------------------------------------------------------------
+# IDE / EDITOR
+# ----------------------------------------------------------------------------
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ----------------------------------------------------------------------------
+# DATA FILES
+# ----------------------------------------------------------------------------
+
+# Sensitive data files
+data/sensitive/
+data/encrypted/
+data/production/
+
+# Large data files
+*.csv
+*.xlsx
+*.parquet
+!data/examples/*.csv
+!data/examples/*.xlsx
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# ----------------------------------------------------------------------------
+# OUTPUT / GENERATED FILES
+# ----------------------------------------------------------------------------
+
+# Generated reports
+output/
+reports/
+exports/
+*.pdf
+*.xbrl
+*.html
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# ----------------------------------------------------------------------------
+# BACKUP FILES
+# ----------------------------------------------------------------------------
+
+*.bak
+*.backup
+*.old
+*.tmp
+*~
+
+# ----------------------------------------------------------------------------
+# SYSTEM FILES
+# ----------------------------------------------------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ----------------------------------------------------------------------------
+# SECURITY
+# ----------------------------------------------------------------------------
+
+# Never commit these files
+credentials.json
+service-account.json
+*.credentials
+*.secrets
+.aws/
+.azure/
+.gcp/
+
+# ----------------------------------------------------------------------------
+# TEMPORARY FILES
+# ----------------------------------------------------------------------------
+
+# Temporary directories
+tmp/
+temp/
+.tmp/
+
+# ----------------------------------------------------------------------------
+# DOCUMENTATION BUILD
+# ----------------------------------------------------------------------------
+
+# Sphinx documentation
+docs/_build/
+docs/_static/
+docs/_templates/
+
+# ----------------------------------------------------------------------------
+# PACKAGE MANAGER
+# ----------------------------------------------------------------------------
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ----------------------------------------------------------------------------
+# ALLOW THESE FILES
+# ----------------------------------------------------------------------------
+
+# Keep example and template files
+!.env.example
+!data/examples/
+!docs/
+
+# ============================================================================
+# END OF .gitignore
+# ============================================================================

@@ -1,0 +1,356 @@
+# ============================================================================
+# DATA QUALITY VALIDATION RULES
+# ============================================================================
+#
+# Rules to assess completeness, accuracy, consistency, and timeliness of ESG data
+#
+# Version: 1.0.0
+# Total Rules: 50+
+# ============================================================================
+
+metadata:
+  title: "ESG Data Quality Validation Rules"
+  version: "1.0.0"
+  total_rules: 52
+  last_updated: "2025-10-18"
+  quality_dimensions: ["completeness", "accuracy", "consistency", "timeliness", "validity"]
+
+# ============================================================================
+# COMPLETENESS RULES
+# ============================================================================
+
+completeness_rules:
+  - rule_id: "DQ-C001"
+    rule_name: "Mandatory Fields Present"
+    dimension: "completeness"
+    severity: "critical"
+    description: "All mandatory fields must have values"
+    validation:
+      check: "required_fields ALL IS NOT NULL"
+      error_message: "Missing mandatory field: {field_name}"
+
+  - rule_id: "DQ-C002"
+    rule_name: "Minimum Data Points Coverage"
+    dimension: "completeness"
+    severity: "major"
+    description: "At least 80% of expected data points should be present"
+    validation:
+      check: "(COUNT(data_points WITH value) / COUNT(expected_data_points)) >= 0.80"
+      error_message: "Data completeness below 80% threshold"
+      threshold: 0.80
+
+  - rule_id: "DQ-C003"
+    rule_name: "Time Series Completeness"
+    dimension: "completeness"
+    severity: "major"
+    description: "No gaps in time series data"
+    validation:
+      check: "COUNT(months_with_data) == 12 OR gaps_explained == true"
+      error_message: "Missing months in annual data: {missing_months}"
+
+  - rule_id: "DQ-C004"
+    rule_name: "Geographic Coverage"
+    dimension: "completeness"
+    severity: "minor"
+    description: "All operating regions should have data"
+    validation:
+      check: "ALL(operating_regions) IN data_regions"
+      error_message: "Missing data for region: {region}"
+
+# ============================================================================
+# ACCURACY RULES
+# ============================================================================
+
+accuracy_rules:
+  - rule_id: "DQ-A001"
+    rule_name: "Values Within Expected Range"
+    dimension: "accuracy"
+    severity: "major"
+    description: "Numeric values should be within reasonable ranges"
+    validation:
+      check: "value >= expected_min AND value <= expected_max"
+      error_message: "Value {value} outside expected range [{expected_min}, {expected_max}]"
+      parameters:
+        - metric_specific_ranges
+
+  - rule_id: "DQ-A002"
+    rule_name: "Percentage Values Valid"
+    dimension: "accuracy"
+    severity: "critical"
+    description: "Percentages must be between 0 and 100"
+    validation:
+      check: "IF unit == 'percentage' THEN value >= 0 AND value <= 100"
+      error_message: "Invalid percentage value: {value}%"
+
+  - rule_id: "DQ-A003"
+    rule_name: "No Negative Values for Non-Negative Metrics"
+    dimension: "accuracy"
+    severity: "major"
+    description: "Certain metrics cannot be negative (emissions, energy, employees, etc.)"
+    validation:
+      check: "IF metric_type == 'non_negative' THEN value >= 0"
+      error_message: "Negative value not allowed for {metric_code}: {value}"
+      non_negative_metrics:
+        - "GHG emissions"
+        - "Energy consumption"
+        - "Employee count"
+        - "Water consumption"
+        - "Waste generated"
+
+  - rule_id: "DQ-A004"
+    rule_name: "Outlier Detection"
+    dimension: "accuracy"
+    severity: "warning"
+    description: "Flag statistical outliers for review"
+    validation:
+      check: "value WITHIN (mean ± 3*std_dev) OR outlier_explained == true"
+      error_message: "Statistical outlier detected: {metric_code} = {value} (mean={mean}, std_dev={std_dev})"
+
+  - rule_id: "DQ-A005"
+    rule_name: "Year-over-Year Change Reasonable"
+    dimension: "accuracy"
+    severity: "warning"
+    description: "Flag large YoY changes for review"
+    validation:
+      check: "ABS((current_year - prior_year) / prior_year) < 0.50 OR change_explained == true"
+      error_message: "Large YoY change detected: {yoy_change}% for {metric_code}"
+      threshold: 0.50  # 50% change
+
+# ============================================================================
+# CONSISTENCY RULES
+# ============================================================================
+
+consistency_rules:
+  - rule_id: "DQ-CS001"
+    rule_name: "Internal Calculation Consistency"
+    dimension: "consistency"
+    severity: "critical"
+    description: "Calculated totals must match sums of components"
+    validation:
+      check: "total == SUM(components)"
+      error_message: "Calculation mismatch: {total} != SUM({components})"
+      tolerance: 0.01  # 1% tolerance for rounding
+      examples:
+        - "Total GHG = Scope1 + Scope2 + Scope3"
+        - "Total Waste = Hazardous + Non-hazardous"
+        - "Total Energy = Renewable + Non-renewable"
+
+  - rule_id: "DQ-CS002"
+    rule_name: "Cross-Metric Consistency"
+    dimension: "consistency"
+    severity: "major"
+    description: "Related metrics should be consistent"
+    validation:
+      check: "IF energy_consumption > 0 THEN scope2_emissions > 0 OR renewable_energy == 100%"
+      error_message: "Inconsistency: Energy consumed but no Scope 2 emissions reported"
+
+  - rule_id: "DQ-CS003"
+    rule_name: "Unit Consistency"
+    dimension: "consistency"
+    severity: "critical"
+    description: "Units must be consistent with metric definition"
+    validation:
+      check: "metric.unit == expected_unit[metric_code]"
+      error_message: "Unit mismatch for {metric_code}: expected {expected_unit}, got {actual_unit}"
+      unit_mapping:
+        "E1-1": "tCO2e"
+        "E1-5": "MWh"
+        "E3-1": "m3"
+        "E5-1": "tonnes"
+        "S1-1": "count"
+
+  - rule_id: "DQ-CS004"
+    rule_name: "Reporting Boundary Consistency"
+    dimension: "consistency"
+    severity: "major"
+    description: "All metrics should use same reporting boundary"
+    validation:
+      check: "ALL(metrics).reporting_boundary == declared_boundary"
+      error_message: "Inconsistent reporting boundaries across metrics"
+
+  - rule_id: "DQ-CS005"
+    rule_name: "Time Period Consistency"
+    dimension: "consistency"
+    severity: "critical"
+    description: "All metrics should cover the same reporting period"
+    validation:
+      check: "ALL(metrics).reporting_period == declared_period"
+      error_message: "Inconsistent reporting periods: {metric_code} period {period} != {declared_period}"
+
+# ============================================================================
+# TIMELINESS RULES
+# ============================================================================
+
+timeliness_rules:
+  - rule_id: "DQ-T001"
+    rule_name: "Data Currency"
+    dimension: "timeliness"
+    severity: "warning"
+    description: "Data should not be more than 18 months old"
+    validation:
+      check: "MONTHS_BETWEEN(current_date, data_date) <= 18"
+      error_message: "Data is {months} months old - may be outdated"
+
+  - rule_id: "DQ-T002"
+    rule_name: "Reporting Deadline Compliance"
+    dimension: "timeliness"
+    severity: "major"
+    description: "Report submitted within required timeline"
+    validation:
+      check: "submission_date <= reporting_deadline"
+      error_message: "Late submission: {submission_date} > {reporting_deadline}"
+
+# ============================================================================
+# VALIDITY RULES
+# ============================================================================
+
+validity_rules:
+  - rule_id: "DQ-V001"
+    rule_name: "Data Type Validation"
+    dimension: "validity"
+    severity: "critical"
+    description: "Values must match expected data types"
+    validation:
+      check: "TYPEOF(value) == expected_type"
+      error_message: "Type mismatch: expected {expected_type}, got {actual_type}"
+
+  - rule_id: "DQ-V002"
+    rule_name: "Enum Value Validation"
+    dimension: "validity"
+    severity: "critical"
+    description: "Categorical values must be from allowed list"
+    validation:
+      check: "value IN allowed_values"
+      error_message: "Invalid value '{value}' for {field}. Allowed: {allowed_values}"
+      examples:
+        - "ESRS standard: [E1, E2, E3, E4, E5, S1, S2, S3, S4, G1]"
+        - "Gender: [male, female, other, not_disclosed]"
+
+  - rule_id: "DQ-V003"
+    rule_name: "Country Code Validation"
+    dimension: "validity"
+    severity: "major"
+    description: "Country codes must be valid ISO 3166-1 alpha-2"
+    validation:
+      check: "country_code IN iso_3166_1_alpha2_list AND LENGTH(country_code) == 2"
+      error_message: "Invalid country code: {country_code}"
+
+  - rule_id: "DQ-V004"
+    rule_name: "Date Format Validation"
+    dimension: "validity"
+    severity: "critical"
+    description: "Dates must be in ISO 8601 format"
+    validation:
+      check: "date MATCHES 'YYYY-MM-DD' OR datetime MATCHES 'YYYY-MM-DDTHH:MM:SSZ'"
+      error_message: "Invalid date format: {date}"
+
+  - rule_id: "DQ-V005"
+    rule_name: "LEI Code Validation"
+    dimension: "validity"
+    severity: "major"
+    description: "Legal Entity Identifier must be valid 20-character code"
+    validation:
+      check: "LENGTH(lei_code) == 20 AND lei_code MATCHES '^[A-Z0-9]{20}$'"
+      error_message: "Invalid LEI code: {lei_code}"
+
+# ============================================================================
+# SOURCE QUALITY RULES
+# ============================================================================
+
+source_quality_rules:
+  - rule_id: "DQ-SQ001"
+    rule_name: "Data Source Documented"
+    dimension: "traceability"
+    severity: "major"
+    description: "Source of data must be documented"
+    validation:
+      check: "data_point.source EXISTS AND data_point.source.system IS NOT NULL"
+      error_message: "Data source not documented for {metric_code}"
+
+  - rule_id: "DQ-SQ002"
+    rule_name: "Primary Data Preferred"
+    dimension: "quality"
+    severity: "warning"
+    description: "Primary data preferred over estimated/proxy data"
+    validation:
+      check: "data_quality.accuracy_level IN ['high', 'medium'] OR estimation_disclosed == true"
+      error_message: "Low accuracy data without disclosure: {metric_code}"
+
+  - rule_id: "DQ-SQ003"
+    rule_name: "Estimation Method Disclosed"
+    dimension: "transparency"
+    severity: "major"
+    description: "If data is estimated, method must be disclosed"
+    validation:
+      check: "IF data_quality.accuracy_level == 'estimated' THEN data_quality.estimation_method IS NOT NULL"
+      error_message: "Estimation method not disclosed for {metric_code}"
+
+# ============================================================================
+# AGGREGATION QUALITY RULES
+# ============================================================================
+
+aggregation_rules:
+  - rule_id: "DQ-AG001"
+    rule_name: "No Double Counting"
+    dimension: "accuracy"
+    severity: "critical"
+    description: "Ensure no double counting in aggregations"
+    validation:
+      check: "COUNT(DISTINCT entity_ids IN aggregation) == COUNT(entity_ids)"
+      error_message: "Potential double counting detected in {metric_code}"
+
+  - rule_id: "DQ-AG002"
+    rule_name: "Consolidation Method Consistent"
+    dimension: "consistency"
+    severity: "major"
+    description: "Same consolidation approach used across all metrics"
+    validation:
+      check: "consolidation_method == declared_consolidation_method"
+      error_message: "Inconsistent consolidation method for {metric_code}"
+
+# ============================================================================
+# QUALITY SCORING
+# ============================================================================
+
+quality_scoring:
+  dimensions:
+    completeness:
+      weight: 0.30
+      score_calculation: "COUNT(present_values) / COUNT(expected_values) * 100"
+
+    accuracy:
+      weight: 0.25
+      score_calculation: "COUNT(accurate_values) / COUNT(total_values) * 100"
+
+    consistency:
+      weight: 0.20
+      score_calculation: "COUNT(consistent_values) / COUNT(total_values) * 100"
+
+    timeliness:
+      weight: 0.15
+      score_calculation: "COUNT(current_values) / COUNT(total_values) * 100"
+
+    validity:
+      weight: 0.10
+      score_calculation: "COUNT(valid_values) / COUNT(total_values) * 100"
+
+  overall_score:
+    formula: "SUM(dimension_score[i] * dimension_weight[i]) for all dimensions"
+    interpretation:
+      - "90-100: Excellent data quality"
+      - "75-89: Good data quality"
+      - "60-74: Acceptable data quality"
+      - "50-59: Poor data quality - improvement needed"
+      - "<50: Unacceptable data quality - major issues"
+
+# ============================================================================
+# EXECUTION NOTES
+# ============================================================================
+
+execution_notes:
+  - "Run data quality checks before compliance validation"
+  - "Critical issues prevent report submission"
+  - "Major issues generate warnings but allow progression"
+  - "Warning-level issues are flagged for user review"
+  - "All quality issues should be documented in audit trail"
+  - "Quality scores should be included in final report metadata"

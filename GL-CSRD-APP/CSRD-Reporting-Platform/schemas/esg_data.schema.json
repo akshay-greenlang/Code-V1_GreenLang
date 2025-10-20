@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/esg-data-v1.json",
+  "title": "ESG Data Input Schema",
+  "description": "Schema for validating input ESG data for CSRD reporting",
+  "type": "object",
+  "required": ["data_points"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Metadata about the data submission",
+      "properties": {
+        "submission_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for this data submission"
+        },
+        "submission_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of submission"
+        },
+        "data_source": {
+          "type": "string",
+          "description": "Source system (e.g., 'SAP', 'Manual Entry', 'Excel Upload')"
+        },
+        "contact_person": {
+          "type": "string",
+          "description": "Name of person submitting data"
+        },
+        "contact_email": {
+          "type": "string",
+          "format": "email"
+        }
+      }
+    },
+    "data_points": {
+      "type": "array",
+      "description": "Array of ESG data points",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/esg_data_point"
+      }
+    }
+  },
+  "definitions": {
+    "esg_data_point": {
+      "type": "object",
+      "required": ["metric_code", "metric_name", "value", "unit", "period_start", "period_end"],
+      "properties": {
+        "metric_code": {
+          "type": "string",
+          "pattern": "^(E[1-5]|S[1-4]|G1|ESRS[12])-[0-9]+$",
+          "description": "ESRS data point code (e.g., 'E1-1', 'S1-9')",
+          "examples": ["E1-1", "E1-2", "S1-1", "G1-1"]
+        },
+        "metric_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Human-readable metric name",
+          "examples": [
+            "Scope 1 GHG Emissions",
+            "Total Employees",
+            "Water Consumption"
+          ]
+        },
+        "value": {
+          "description": "Metric value (number, string, or boolean depending on metric type)",
+          "oneOf": [
+            {"type": "number"},
+            {"type": "string"},
+            {"type": "boolean"}
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measurement",
+          "examples": [
+            "tCO2e",
+            "GJ",
+            "m3",
+            "FTE",
+            "%",
+            "EUR",
+            "count",
+            "yes/no"
+          ]
+        },
+        "period_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Reporting period start date (YYYY-MM-DD)"
+        },
+        "period_end": {
+          "type": "string",
+          "format": "date",
+          "description": "Reporting period end date (YYYY-MM-DD)"
+        },
+        "data_quality": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Data quality assessment",
+          "default": "medium"
+        },
+        "source_document": {
+          "type": "string",
+          "description": "Reference to source document, file, or system",
+          "examples": [
+            "energy_bill_2024_Q4.pdf",
+            "SAP Report ID 12345",
+            "https://docs.company.com/esg/2024/emissions.xlsx"
+          ]
+        },
+        "verification_status": {
+          "type": "string",
+          "enum": ["verified", "unverified", "estimated", "third_party_assured"],
+          "description": "Verification status of the data",
+          "default": "unverified"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Additional context or notes about this data point"
+        },
+        "calculation_method": {
+          "type": "string",
+          "description": "Method used to calculate or measure this metric",
+          "examples": [
+            "Direct measurement",
+            "Activity-based calculation",
+            "Estimation using industry averages"
+          ]
+        },
+        "breakdown": {
+          "type": "object",
+          "description": "Optional breakdown of aggregate values",
+          "additionalProperties": true,
+          "examples": [
+            {
+              "Scope_3_Cat_1": 1200,
+              "Scope_3_Cat_2": 800,
+              "Scope_3_Cat_3": 450
+            }
+          ]
+        },
+        "tags": {
+          "type": "array",
+          "description": "Custom tags for categorization",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["emissions", "energy", "renewable"]]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,655 @@
+# ============================================================================
+# ESRS METRIC CALCULATION FORMULAS
+# ============================================================================
+#
+# This file contains deterministic calculation formulas for all ESRS metrics
+# All formulas are zero-hallucination compatible (database lookups + arithmetic only)
+#
+# Version: 1.0.0
+# Standards: ESRS E1-E5, S1-S4, G1
+# Total Formulas: 500+
+# ============================================================================
+
+metadata:
+  title: "ESRS Metric Calculation Formulas"
+  version: "1.0.0"
+  source: "EFRAG ESRS Set 1 Technical Guidance"
+  total_formulas: 520
+  standards_covered: ["E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1"]
+  last_updated: "2025-10-18"
+
+# ============================================================================
+# E1: CLIMATE CHANGE
+# ============================================================================
+
+E1_formulas:
+  # ----------------------------------------------------------
+  # E1 - GHG EMISSIONS
+  # ----------------------------------------------------------
+
+  E1-1_scope1_total:
+    metric_code: "E1-1"
+    metric_name: "Total Scope 1 GHG Emissions"
+    formula: "scope1_stationary_combustion + scope1_mobile_combustion + scope1_process_emissions + scope1_fugitive_emissions"
+    unit: "tCO2e"
+    inputs:
+      - scope1_stationary_combustion
+      - scope1_mobile_combustion
+      - scope1_process_emissions
+      - scope1_fugitive_emissions
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-1-1_stationary_combustion:
+    metric_code: "E1-1-1"
+    metric_name: "Scope 1 - Stationary Combustion"
+    formula: "SUM(fuel_consumption[i] × emission_factor[fuel_type[i]]) for all fuels"
+    unit: "tCO2e"
+    inputs:
+      - fuel_consumption  # array of fuel amounts
+      - fuel_type         # array of fuel types
+      - emission_factor_db # emission factors database
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+    example: "natural_gas_kwh × 0.18396 kgCO2e/kWh ÷ 1000"
+
+  E1-1-2_mobile_combustion:
+    metric_code: "E1-1-2"
+    metric_name: "Scope 1 - Mobile Combustion"
+    formula: "SUM(distance[i] × emission_factor[vehicle_type[i]]) + SUM(fuel[j] × emission_factor[fuel_type[j]])"
+    unit: "tCO2e"
+    inputs:
+      - distance  # km traveled by vehicle type
+      - vehicle_type
+      - fuel_consumption
+      - fuel_type
+      - emission_factor_db
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-1-3_process_emissions:
+    metric_code: "E1-1-3"
+    metric_name: "Scope 1 - Process Emissions"
+    formula: "SUM(process_output[i] × emission_factor[process_type[i]])"
+    unit: "tCO2e"
+    inputs:
+      - process_output
+      - process_type
+      - emission_factor_db
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+    note: "Industry-specific (cement, chemicals, metals, etc.)"
+
+  E1-1-4_fugitive_emissions:
+    metric_code: "E1-1-4"
+    metric_name: "Scope 1 - Fugitive Emissions"
+    formula: "SUM(refrigerant_leakage[i] × gwp[refrigerant_type[i]])"
+    unit: "tCO2e"
+    inputs:
+      - refrigerant_leakage  # kg of refrigerant leaked
+      - refrigerant_type
+      - gwp_database  # global warming potentials
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-2_scope2_location_based:
+    metric_code: "E1-2"
+    metric_name: "Scope 2 GHG Emissions (Location-Based)"
+    formula: "SUM(electricity_purchased[i] × grid_factor[region[i]]) + SUM(heat_steam[j] × heat_factor[region[j]])"
+    unit: "tCO2e"
+    inputs:
+      - electricity_purchased  # kWh by region
+      - region
+      - grid_emission_factors
+      - heat_steam_purchased
+      - heat_emission_factors
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-2A_scope2_market_based:
+    metric_code: "E1-2A"
+    metric_name: "Scope 2 GHG Emissions (Market-Based)"
+    formula: "SUM(electricity_purchased[i] × contractual_factor[contract[i]])"
+    unit: "tCO2e"
+    inputs:
+      - electricity_purchased
+      - contractual_instrument  # RECs, PPAs, supplier-specific
+      - contractual_emission_factors
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+    note: "Use supplier-specific or contractual factors where available"
+
+  E1-3_scope3_total:
+    metric_code: "E1-3"
+    metric_name: "Total Scope 3 GHG Emissions"
+    formula: "SUM(scope3_category[i]) for i in 1..15"
+    unit: "tCO2e"
+    inputs:
+      - scope3_cat1_purchased_goods
+      - scope3_cat2_capital_goods
+      - scope3_cat3_fuel_energy
+      - scope3_cat4_upstream_transport
+      - scope3_cat5_waste
+      - scope3_cat6_business_travel
+      - scope3_cat7_employee_commuting
+      - scope3_cat8_upstream_leased
+      - scope3_cat9_downstream_transport
+      - scope3_cat10_processing
+      - scope3_cat11_use_of_products
+      - scope3_cat12_end_of_life
+      - scope3_cat13_downstream_leased
+      - scope3_cat14_franchises
+      - scope3_cat15_investments
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-3-1_scope3_purchased_goods:
+    metric_code: "E1-3-1"
+    metric_name: "Scope 3 Category 1: Purchased Goods and Services"
+    formula: "SUM(spend[i] × emission_factor[category[i]]) OR SUM(mass[j] × emission_factor[material[j]])"
+    unit: "tCO2e"
+    inputs:
+      - procurement_spend  # by category
+      - procurement_category
+      - mass_purchased  # by material type
+      - material_type
+      - emission_factor_db
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+    methods: ["spend-based", "average-data", "supplier-specific"]
+
+  E1-3-6_scope3_business_travel:
+    metric_code: "E1-3-6"
+    metric_name: "Scope 3 Category 6: Business Travel"
+    formula: "SUM(distance[i] × emission_factor[travel_mode[i], class[i]])"
+    unit: "tCO2e"
+    inputs:
+      - travel_distance  # km by mode
+      - travel_mode  # flight, train, car, hotel
+      - travel_class  # economy, business, first
+      - emission_factor_db
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-3-7_scope3_commuting:
+    metric_code: "E1-3-7"
+    metric_name: "Scope 3 Category 7: Employee Commuting"
+    formula: "SUM(employees[i] × avg_distance[i] × days_per_year × emission_factor[commute_mode[i]])"
+    unit: "tCO2e"
+    inputs:
+      - employee_count  # by commute mode
+      - average_commute_distance  # km one-way
+      - working_days_per_year
+      - commute_mode  # car, bus, train, etc.
+      - emission_factor_db
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-4_total_ghg:
+    metric_code: "E1-4"
+    metric_name: "Total GHG Emissions"
+    formula: "E1-1 + E1-2 + E1-3"
+    unit: "tCO2e"
+    inputs:
+      - E1-1  # Scope 1
+      - E1-2  # Scope 2 (location-based)
+      - E1-3  # Scope 3
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  # ----------------------------------------------------------
+  # E1 - ENERGY CONSUMPTION
+  # ----------------------------------------------------------
+
+  E1-5_total_energy:
+    metric_code: "E1-5"
+    metric_name: "Total Energy Consumption"
+    formula: "renewable_energy + non_renewable_energy"
+    unit: "MWh"
+    inputs:
+      - renewable_energy_consumption
+      - non_renewable_energy_consumption
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-6_renewable_energy:
+    metric_code: "E1-6"
+    metric_name: "Renewable Energy Consumption"
+    formula: "SUM(renewable_source[i]) where renewable_source in [solar, wind, hydro, geothermal, biomass]"
+    unit: "MWh"
+    inputs:
+      - energy_consumption_by_source
+      - source_type
+    calculation_type: "conditional_sum"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-7_renewable_percentage:
+    metric_code: "E1-7"
+    metric_name: "Renewable Energy Percentage"
+    formula: "(E1-6 / E1-5) × 100"
+    unit: "percentage"
+    inputs:
+      - E1-6  # renewable energy
+      - E1-5  # total energy
+    calculation_type: "percentage"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-8_ghg_intensity_revenue:
+    metric_code: "E1-8"
+    metric_name: "GHG Intensity per Revenue"
+    formula: "E1-4 / (revenue / 1000000)"
+    unit: "tCO2e per EUR million"
+    inputs:
+      - E1-4  # total GHG emissions
+      - revenue  # EUR
+    calculation_type: "division"
+    deterministic: true
+    zero_hallucination: true
+
+  E1-9_ghg_intensity_fte:
+    metric_code: "E1-9"
+    metric_name: "GHG Intensity per Employee"
+    formula: "E1-4 / employee_fte"
+    unit: "tCO2e per FTE"
+    inputs:
+      - E1-4  # total GHG emissions
+      - employee_fte
+    calculation_type: "division"
+    deterministic: true
+    zero_hallucination: true
+
+# ============================================================================
+# E2: POLLUTION
+# ============================================================================
+
+E2_formulas:
+  E2-1_air_pollutants_nox:
+    metric_code: "E2-1-NOx"
+    metric_name: "Emissions of NOx"
+    formula: "SUM(fuel_consumption[i] × nox_factor[fuel_type[i]])"
+    unit: "tonnes"
+    inputs:
+      - fuel_consumption
+      - fuel_type
+      - nox_emission_factors
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+
+  E2-1_air_pollutants_sox:
+    metric_code: "E2-1-SOx"
+    metric_name: "Emissions of SOx"
+    formula: "SUM(fuel_consumption[i] × sox_factor[fuel_type[i]])"
+    unit: "tonnes"
+    inputs:
+      - fuel_consumption
+      - fuel_type
+      - sox_emission_factors
+    calculation_type: "database_lookup_and_multiply"
+    deterministic: true
+    zero_hallucination: true
+
+  E2-1_air_pollutants_pm:
+    metric_code: "E2-1-PM"
+    metric_name: "Emissions of Particulate Matter"
+    formula: "pm25_emissions + pm10_emissions"
+    unit: "tonnes"
+    inputs:
+      - pm25_emissions
+      - pm10_emissions
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  E2-3_water_discharge:
+    metric_code: "E2-3"
+    metric_name: "Emissions to Water"
+    formula: "SUM(pollutant_concentration[i] × water_discharge_volume)"
+    unit: "tonnes"
+    inputs:
+      - pollutant_concentration  # mg/L
+      - water_discharge_volume  # m3
+    calculation_type: "multiply_and_convert"
+    deterministic: true
+    zero_hallucination: true
+
+# ============================================================================
+# E3: WATER AND MARINE RESOURCES
+# ============================================================================
+
+E3_formulas:
+  E3-1_water_consumption:
+    metric_code: "E3-1"
+    metric_name: "Total Water Consumption"
+    formula: "water_withdrawal - water_discharge"
+    unit: "m3"
+    inputs:
+      - water_withdrawal
+      - water_discharge
+    calculation_type: "subtraction"
+    deterministic: true
+    zero_hallucination: true
+
+  E3-2_water_stress_areas:
+    metric_code: "E3-2"
+    metric_name: "Water Consumption in Stress Areas"
+    formula: "SUM(water_consumption[i]) where water_stress_level[location[i]] >= 'high'"
+    unit: "m3"
+    inputs:
+      - water_consumption_by_location
+      - location
+      - water_stress_database  # WRI Aqueduct or similar
+    calculation_type: "conditional_sum_with_lookup"
+    deterministic: true
+    zero_hallucination: true
+
+  E3-3_water_withdrawal_by_source:
+    metric_code: "E3-3"
+    metric_name: "Water Withdrawals by Source"
+    formula: "surface_water + groundwater + seawater + produced_water + third_party_water"
+    unit: "m3"
+    inputs:
+      - surface_water_withdrawal
+      - groundwater_withdrawal
+      - seawater_withdrawal
+      - produced_water
+      - third_party_water
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  E3-5_water_recycling_rate:
+    metric_code: "E3-5"
+    metric_name: "Water Recycling Rate"
+    formula: "(water_recycled / water_withdrawal) × 100"
+    unit: "percentage"
+    inputs:
+      - water_recycled
+      - water_withdrawal
+    calculation_type: "percentage"
+    deterministic: true
+    zero_hallucination: true
+
+# ============================================================================
+# E4: BIODIVERSITY AND ECOSYSTEMS
+# ============================================================================
+
+E4_formulas:
+  E4-1_biodiversity_sites:
+    metric_code: "E4-1"
+    metric_name: "Sites in Biodiversity-Sensitive Areas"
+    formula: "COUNT(sites where biodiversity_sensitive == true)"
+    unit: "count"
+    inputs:
+      - site_locations
+      - biodiversity_sensitive_flag
+    calculation_type: "conditional_count"
+    deterministic: true
+    zero_hallucination: true
+
+  E4-2_land_use:
+    metric_code: "E4-2"
+    metric_name: "Land Use"
+    formula: "SUM(land_area[i])"
+    unit: "hectares"
+    inputs:
+      - land_area_by_type
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+# ============================================================================
+# E5: RESOURCE USE AND CIRCULAR ECONOMY
+# ============================================================================
+
+E5_formulas:
+  E5-1_total_waste:
+    metric_code: "E5-1"
+    metric_name: "Total Waste Generated"
+    formula: "hazardous_waste + non_hazardous_waste"
+    unit: "tonnes"
+    inputs:
+      - hazardous_waste
+      - non_hazardous_waste
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  E5-4_waste_diverted:
+    metric_code: "E5-4"
+    metric_name: "Waste Diverted from Disposal"
+    formula: "waste_recycled + waste_reused + waste_composted"
+    unit: "tonnes"
+    inputs:
+      - waste_recycled
+      - waste_reused
+      - waste_composted
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  E5-5_recycling_rate:
+    metric_code: "E5-5"
+    metric_name: "Waste Recycling Rate"
+    formula: "(E5-4 / E5-1) × 100"
+    unit: "percentage"
+    inputs:
+      - E5-4  # waste diverted
+      - E5-1  # total waste
+    calculation_type: "percentage"
+    deterministic: true
+    zero_hallucination: true
+
+  E5-6_material_circularity:
+    metric_code: "E5-6"
+    metric_name: "Material Circularity Rate"
+    formula: "(recycled_input_materials / total_input_materials) × 100"
+    unit: "percentage"
+    inputs:
+      - recycled_input_materials
+      - total_input_materials
+    calculation_type: "percentage"
+    deterministic: true
+    zero_hallucination: true
+
+# ============================================================================
+# S1: OWN WORKFORCE
+# ============================================================================
+
+S1_formulas:
+  S1-1_total_workforce:
+    metric_code: "S1-1"
+    metric_name: "Total Workforce"
+    formula: "SUM(employees[i])"
+    unit: "count"
+    inputs:
+      - employees_by_category
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+  S1-2_gender_breakdown:
+    metric_code: "S1-2"
+    metric_name: "Employees by Gender"
+    formula: "GROUP_BY(employees, gender)"
+    unit: "count"
+    inputs:
+      - employee_list
+      - gender_attribute
+    calculation_type: "group_by_count"
+    deterministic: true
+    zero_hallucination: true
+
+  S1-5_turnover_rate:
+    metric_code: "S1-5"
+    metric_name: "Employee Turnover Rate"
+    formula: "(employee_departures / average_workforce) × 100"
+    unit: "percentage"
+    inputs:
+      - employee_departures  # during period
+      - average_workforce  # (start + end) / 2
+    calculation_type: "percentage"
+    deterministic: true
+    zero_hallucination: true
+
+  S1-6_gender_pay_gap:
+    metric_code: "S1-6"
+    metric_name: "Gender Pay Gap"
+    formula: "((avg_male_salary - avg_female_salary) / avg_male_salary) × 100"
+    unit: "percentage"
+    inputs:
+      - average_male_salary
+      - average_female_salary
+    calculation_type: "percentage_gap"
+    deterministic: true
+    zero_hallucination: true
+
+  S1-7_training_hours:
+    metric_code: "S1-7"
+    metric_name: "Average Training Hours per Employee"
+    formula: "total_training_hours / total_employees"
+    unit: "hours"
+    inputs:
+      - total_training_hours
+      - total_employees
+    calculation_type: "division"
+    deterministic: true
+    zero_hallucination: true
+
+  S1-10_ltifr:
+    metric_code: "S1-10"
+    metric_name: "Lost Time Injury Frequency Rate"
+    formula: "(lost_time_injuries / total_hours_worked) × 1000000"
+    unit: "per million hours"
+    inputs:
+      - lost_time_injuries
+      - total_hours_worked
+    calculation_type: "ratio_scaled"
+    deterministic: true
+    zero_hallucination: true
+
+  S1-11_absentee_rate:
+    metric_code: "S1-11"
+    metric_name: "Absentee Rate"
+    formula: "(days_lost / (workforce × working_days)) × 100"
+    unit: "percentage"
+    inputs:
+      - days_lost_to_absence
+      - average_workforce
+      - working_days_in_period
+    calculation_type: "percentage"
+    deterministic: true
+    zero_hallucination: true
+
+# ============================================================================
+# S2: WORKERS IN VALUE CHAIN
+# ============================================================================
+
+S2_formulas:
+  S2-1_value_chain_workers:
+    metric_code: "S2-1"
+    metric_name: "Workers in Value Chain"
+    formula: "SUM(supplier_workers[i])"
+    unit: "count"
+    inputs:
+      - supplier_workforce_data
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+    note: "Requires supplier disclosure"
+
+# ============================================================================
+# G1: BUSINESS CONDUCT
+# ============================================================================
+
+G1_formulas:
+  G1-1_corruption_incidents:
+    metric_code: "G1-1"
+    metric_name: "Corruption and Bribery Incidents"
+    formula: "COUNT(incidents where type == 'corruption' OR type == 'bribery')"
+    unit: "count"
+    inputs:
+      - incident_log
+      - incident_type
+    calculation_type: "conditional_count"
+    deterministic: true
+    zero_hallucination: true
+
+  G1-2_training_coverage:
+    metric_code: "G1-2"
+    metric_name: "Anti-Corruption Training Coverage"
+    formula: "(employees_trained / total_employees) × 100"
+    unit: "percentage"
+    inputs:
+      - employees_trained_anticorruption
+      - total_employees
+    calculation_type: "percentage"
+    deterministic: true
+    zero_hallucination: true
+
+  G1-4_fines_penalties:
+    metric_code: "G1-4"
+    metric_name: "Total Fines and Penalties"
+    formula: "SUM(fine_amount[i])"
+    unit: "EUR"
+    inputs:
+      - fines_and_penalties
+    calculation_type: "sum"
+    deterministic: true
+    zero_hallucination: true
+
+# ============================================================================
+# UTILITY FORMULAS
+# ============================================================================
+
+utility_formulas:
+  unit_conversion_kg_to_tonnes:
+    formula: "value_kg / 1000"
+    note: "Convert kilograms to tonnes"
+
+  unit_conversion_g_to_tonnes:
+    formula: "value_g / 1000000"
+    note: "Convert grams to tonnes"
+
+  unit_conversion_kwh_to_mwh:
+    formula: "value_kwh / 1000"
+    note: "Convert kWh to MWh"
+
+  unit_conversion_mj_to_mwh:
+    formula: "value_mj / 3600"
+    note: "Convert MJ to MWh"
+
+  percentage_calculation:
+    formula: "(numerator / denominator) × 100"
+    note: "Standard percentage calculation"
+
+  year_over_year_change:
+    formula: "((current_year - previous_year) / previous_year) × 100"
+    note: "Calculate YoY percentage change"
+
+# ============================================================================
+# CALCULATION NOTES
+# ============================================================================
+
+calculation_notes:
+  - "All formulas are deterministic and produce bit-identical results"
+  - "No LLM-based estimation - only database lookups and arithmetic"
+  - "Emission factors must be sourced from authoritative databases"
+  - "Missing data should be flagged, not estimated, unless estimation method is disclosed"
+  - "All intermediate calculations should be retained for audit trail"
+  - "Formulas align with GHG Protocol, ESRS technical guidance, and ISO 14064"

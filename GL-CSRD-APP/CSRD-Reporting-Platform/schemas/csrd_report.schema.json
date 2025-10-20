@@ -1,0 +1,463 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/csrd_report.schema.json",
+  "title": "CSRD Report Output Schema",
+  "description": "Schema for complete CSRD sustainability report output",
+  "type": "object",
+  "required": ["report_metadata", "company_info", "calculated_metrics", "compliance_status"],
+  "properties": {
+    "report_metadata": {
+      "type": "object",
+      "required": ["report_id", "report_type", "reporting_period", "generation_date"],
+      "properties": {
+        "report_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique report identifier"
+        },
+        "report_type": {
+          "type": "string",
+          "enum": ["annual_csrd", "quarterly_update", "preliminary_draft"],
+          "description": "Type of CSRD report"
+        },
+        "reporting_period": {
+          "type": "object",
+          "required": ["start_date", "end_date"],
+          "properties": {
+            "start_date": {"type": "string", "format": "date"},
+            "end_date": {"type": "string", "format": "date"},
+            "fiscal_year": {"type": "integer"}
+          }
+        },
+        "generation_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this report was generated"
+        },
+        "platform_version": {
+          "type": "string",
+          "description": "GreenLang platform version",
+          "example": "1.0.0"
+        },
+        "report_version": {
+          "type": "string",
+          "description": "Version of this report",
+          "example": "v1.0"
+        },
+        "report_status": {
+          "type": "string",
+          "enum": ["draft", "under_review", "approved", "published", "submitted"],
+          "description": "Current status of report"
+        }
+      }
+    },
+    "company_info": {
+      "type": "object",
+      "required": ["legal_name", "country", "lei_code"],
+      "properties": {
+        "legal_name": {"type": "string"},
+        "lei_code": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{20}$"
+        },
+        "country": {"type": "string", "pattern": "^[A-Z]{2}$"},
+        "sector": {"type": "string"},
+        "industry_code": {"type": "string"},
+        "reporting_boundary": {
+          "type": "string",
+          "description": "Description of reporting boundary"
+        }
+      }
+    },
+    "materiality_assessment": {
+      "type": "object",
+      "description": "Reference to materiality assessment",
+      "properties": {
+        "assessment_id": {"type": "string"},
+        "material_topics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "topic": {"type": "string"},
+              "esrs_standard": {"type": "string"},
+              "double_material": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "calculated_metrics": {
+      "type": "object",
+      "description": "All calculated ESRS metrics",
+      "properties": {
+        "summary": {
+          "type": "object",
+          "properties": {
+            "total_metrics": {"type": "integer"},
+            "metrics_by_standard": {
+              "type": "object",
+              "additionalProperties": {"type": "integer"}
+            },
+            "calculation_time_ms": {"type": "number"}
+          }
+        },
+        "metrics_by_standard": {
+          "type": "object",
+          "properties": {
+            "E1": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "E2": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "E3": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "E4": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "E5": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "S1": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "S2": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "S3": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "S4": {
+              "$ref": "#/definitions/esrs_metrics"
+            },
+            "G1": {
+              "$ref": "#/definitions/esrs_metrics"
+            }
+          }
+        }
+      }
+    },
+    "xbrl_tagging": {
+      "type": "object",
+      "description": "XBRL digital tagging information",
+      "properties": {
+        "taxonomy_version": {
+          "type": "string",
+          "description": "ESRS XBRL taxonomy version",
+          "example": "v1.0"
+        },
+        "total_tags": {
+          "type": "integer",
+          "description": "Total number of XBRL tags applied"
+        },
+        "tagged_elements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "element_id": {"type": "string"},
+              "xbrl_tag": {"type": "string"},
+              "value": {"type": ["number", "string", "boolean"]},
+              "unit": {"type": "string"},
+              "context": {"type": "string"}
+            }
+          }
+        },
+        "validation_status": {
+          "type": "string",
+          "enum": ["valid", "invalid", "warnings"],
+          "description": "XBRL validation result"
+        },
+        "validation_errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "error_code": {"type": "string"},
+              "message": {"type": "string"},
+              "severity": {"type": "string", "enum": ["error", "warning"]}
+            }
+          }
+        }
+      }
+    },
+    "narrative_sections": {
+      "type": "object",
+      "description": "Narrative disclosure sections (AI-generated, requires review)",
+      "properties": {
+        "general_information": {
+          "type": "object",
+          "properties": {
+            "basis_of_preparation": {"type": "string"},
+            "governance": {"type": "string"},
+            "strategy": {"type": "string"},
+            "impact_risk_opportunity_management": {"type": "string"}
+          }
+        },
+        "topic_specific_narratives": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "esrs_standard": {"type": "string"},
+              "disclosure_requirements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "requirement_code": {"type": "string"},
+                    "requirement_title": {"type": "string"},
+                    "narrative_text": {"type": "string"},
+                    "ai_generated": {"type": "boolean"},
+                    "review_status": {"type": "string", "enum": ["pending", "reviewed", "approved"]}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "compliance_status": {
+      "type": "object",
+      "required": ["overall_status", "validation_results"],
+      "properties": {
+        "overall_status": {
+          "type": "string",
+          "enum": ["PASS", "FAIL", "WARNING"],
+          "description": "Overall compliance status"
+        },
+        "validation_results": {
+          "type": "object",
+          "properties": {
+            "total_rules_checked": {"type": "integer"},
+            "rules_passed": {"type": "integer"},
+            "rules_failed": {"type": "integer"},
+            "warnings": {"type": "integer"}
+          }
+        },
+        "compliance_by_standard": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "status": {"type": "string", "enum": ["PASS", "FAIL", "WARNING"]},
+              "completeness_percentage": {"type": "number", "minimum": 0, "maximum": 100},
+              "missing_disclosures": {
+                "type": "array",
+                "items": {"type": "string"}
+              }
+            }
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "error_code": {"type": "string"},
+              "severity": {"type": "string", "enum": ["critical", "major", "minor"]},
+              "message": {"type": "string"},
+              "esrs_standard": {"type": "string"},
+              "recommendation": {"type": "string"}
+            }
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "warning_code": {"type": "string"},
+              "message": {"type": "string"},
+              "esrs_standard": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "data_quality": {
+      "type": "object",
+      "properties": {
+        "overall_quality_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Overall data quality score (0-100)"
+        },
+        "completeness": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Data completeness percentage"
+        },
+        "accuracy_assessment": {
+          "type": "string",
+          "enum": ["high", "medium", "low"],
+          "description": "Overall accuracy level"
+        },
+        "data_gaps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric_code": {"type": "string"},
+              "gap_description": {"type": "string"},
+              "impact": {"type": "string", "enum": ["high", "medium", "low"]}
+            }
+          }
+        }
+      }
+    },
+    "audit_trail": {
+      "type": "object",
+      "description": "Complete audit trail and provenance",
+      "properties": {
+        "calculation_provenance": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "metric_code": {"type": "string"},
+              "formula": {"type": "string"},
+              "inputs": {"type": "object"},
+              "output": {"type": ["number", "string"]},
+              "timestamp": {"type": "string", "format": "date-time"},
+              "data_sources": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "data_lineage": {
+          "type": "object",
+          "description": "Complete data lineage from source to report"
+        },
+        "processing_log": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "timestamp": {"type": "string", "format": "date-time"},
+              "agent": {"type": "string"},
+              "action": {"type": "string"},
+              "status": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "description": "Generated report files",
+      "properties": {
+        "esef_package": {
+          "type": "object",
+          "properties": {
+            "file_path": {"type": "string"},
+            "file_size_bytes": {"type": "integer"},
+            "checksum": {"type": "string"}
+          }
+        },
+        "ixbrl_report": {
+          "type": "object",
+          "properties": {
+            "file_path": {"type": "string"},
+            "file_size_bytes": {"type": "integer"}
+          }
+        },
+        "pdf_report": {
+          "type": "object",
+          "properties": {
+            "file_path": {"type": "string"},
+            "file_size_bytes": {"type": "integer"},
+            "page_count": {"type": "integer"}
+          }
+        },
+        "audit_package": {
+          "type": "object",
+          "properties": {
+            "file_path": {"type": "string"},
+            "file_size_bytes": {"type": "integer"}
+          }
+        }
+      }
+    },
+    "certifications": {
+      "type": "object",
+      "properties": {
+        "external_assurance": {
+          "type": "object",
+          "properties": {
+            "assurance_provided": {"type": "boolean"},
+            "assurance_level": {"type": "string", "enum": ["limited", "reasonable"]},
+            "assurance_provider": {"type": "string"},
+            "assurance_date": {"type": "string", "format": "date"},
+            "assurance_report_reference": {"type": "string"}
+          }
+        },
+        "digital_signature": {
+          "type": "object",
+          "properties": {
+            "signed": {"type": "boolean"},
+            "signer": {"type": "string"},
+            "signature_date": {"type": "string", "format": "date-time"},
+            "signature_file": {"type": "string"}
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "esrs_metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["metric_code", "value", "unit"],
+        "properties": {
+          "metric_code": {
+            "type": "string",
+            "description": "ESRS metric code",
+            "example": "E1-1"
+          },
+          "metric_name": {
+            "type": "string",
+            "description": "Human-readable metric name"
+          },
+          "value": {
+            "description": "Calculated metric value",
+            "oneOf": [
+              {"type": "number"},
+              {"type": "string"},
+              {"type": "boolean"}
+            ]
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measurement"
+          },
+          "calculation_method": {
+            "type": "string",
+            "description": "Method used to calculate"
+          },
+          "formula": {
+            "type": "string",
+            "description": "Mathematical formula applied"
+          },
+          "data_quality": {
+            "type": "string",
+            "enum": ["measured", "calculated", "estimated"]
+          },
+          "disclosure_requirement": {
+            "type": "string",
+            "description": "ESRS disclosure requirement code"
+          },
+          "xbrl_tag": {
+            "type": "string",
+            "description": "XBRL taxonomy tag"
+          }
+        }
+      }
+    }
+  }
+}

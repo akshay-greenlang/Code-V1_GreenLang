@@ -1,0 +1,456 @@
+{
+  "assessment_id": "mat-2024-001",
+  "assessment_date": "2024-09-30",
+  "assessment_period": {
+    "start_date": "2024-06-01",
+    "end_date": "2024-09-30"
+  },
+  "methodology": "ESRS 1 Double Materiality Assessment",
+  "company_id": "550e8400-e29b-41d4-a716-446655440000",
+  "company_name": "Acme Manufacturing EU B.V.",
+
+  "stakeholder_engagement": {
+    "consultation_period": {
+      "start": "2024-06-01",
+      "end": "2024-08-31"
+    },
+    "stakeholder_groups": [
+      {
+        "group": "Employees",
+        "participants": 125,
+        "method": "Surveys + Focus groups",
+        "key_concerns": ["Work safety", "Career development", "Climate action"]
+      },
+      {
+        "group": "Investors",
+        "participants": 15,
+        "method": "Interviews",
+        "key_concerns": ["Climate transition risks", "Regulatory compliance", "Supply chain resilience"]
+      },
+      {
+        "group": "Customers",
+        "participants": 45,
+        "method": "Surveys",
+        "key_concerns": ["Product carbon footprint", "Circular design", "Ethical sourcing"]
+      },
+      {
+        "group": "Suppliers",
+        "participants": 30,
+        "method": "Workshops",
+        "key_concerns": ["Fair payment terms", "Collaboration on emissions reduction"]
+      },
+      {
+        "group": "Local Communities",
+        "participants": 20,
+        "method": "Town halls",
+        "key_concerns": ["Air quality", "Noise", "Local employment"]
+      },
+      {
+        "group": "NGOs",
+        "participants": 5,
+        "method": "Expert interviews",
+        "key_concerns": ["Biodiversity impact", "Water usage", "Climate commitments"]
+      }
+    ],
+    "total_participants": 240
+  },
+
+  "material_topics": [
+    {
+      "topic_id": 1,
+      "topic": "Climate Change",
+      "esrs_standard": "E1",
+      "description": "GHG emissions, energy consumption, climate transition plans",
+
+      "impact_materiality": {
+        "actual_impacts": true,
+        "potential_impacts": true,
+        "severity": 5,
+        "severity_rationale": "High GHG emissions (20,900 tCO2e Scope 1+2+3), significant contribution to climate change",
+        "scope": 4,
+        "scope_rationale": "Affects global climate, operations in 5 countries",
+        "irremediability": 3,
+        "irremediability_rationale": "GHG emissions are partially irremediable but can be reduced through mitigation",
+        "score": 4.0,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": true,
+        "opportunities": true,
+        "magnitude": 4,
+        "magnitude_rationale": "Carbon pricing could add €2-5M annual costs; green products offer €10M+ revenue opportunity",
+        "likelihood": 5,
+        "likelihood_rationale": "EU ETS expansion is certain; customer demand for low-carbon products is increasing",
+        "timeframe": "medium",
+        "timeframe_rationale": "Regulatory changes by 2030, customer shifts within 3-5 years",
+        "score": 4.5,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "double_material": true,
+      "disclosure_required": true,
+      "disclosure_notes": "Full ESRS E1 disclosure required"
+    },
+
+    {
+      "topic_id": 2,
+      "topic": "Pollution",
+      "esrs_standard": "E2",
+      "description": "Air, water, soil pollution from manufacturing operations",
+
+      "impact_materiality": {
+        "actual_impacts": true,
+        "potential_impacts": true,
+        "severity": 3,
+        "severity_rationale": "NOx and SOx emissions affect local air quality",
+        "scope": 2,
+        "scope_rationale": "Localized impact around manufacturing sites",
+        "irremediability": 2,
+        "irremediability_rationale": "Air pollution disperses and is partially remediable",
+        "score": 2.3,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": true,
+        "opportunities": false,
+        "magnitude": 2,
+        "magnitude_rationale": "Potential fines up to €500K if emissions limits exceeded",
+        "likelihood": 2,
+        "likelihood_rationale": "Compliance systems in place, low probability of violations",
+        "timeframe": "short",
+        "score": 2.0,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "double_material": false,
+      "disclosure_required": false,
+      "disclosure_notes": "Not material under double materiality, but monitored for compliance"
+    },
+
+    {
+      "topic_id": 3,
+      "topic": "Water and Marine Resources",
+      "esrs_standard": "E3",
+      "description": "Water consumption and discharge",
+
+      "impact_materiality": {
+        "actual_impacts": true,
+        "potential_impacts": false,
+        "severity": 2,
+        "severity_rationale": "Moderate water consumption (125,000 m3/year), no operations in water-stressed areas",
+        "scope": 1,
+        "scope_rationale": "Localized impact, municipal water supply",
+        "irremediability": 1,
+        "score": 1.3,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": false,
+        "opportunities": false,
+        "magnitude": 1,
+        "likelihood": 1,
+        "timeframe": "long",
+        "score": 1.0,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "double_material": false,
+      "disclosure_required": false,
+      "disclosure_notes": "Not material, minimal disclosure"
+    },
+
+    {
+      "topic_id": 4,
+      "topic": "Biodiversity and Ecosystems",
+      "esrs_standard": "E4",
+      "description": "Impact on biodiversity-sensitive areas",
+
+      "impact_materiality": {
+        "actual_impacts": false,
+        "potential_impacts": false,
+        "severity": 1,
+        "severity_rationale": "No operations in or near protected areas",
+        "scope": 1,
+        "irremediability": 1,
+        "score": 1.0,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": false,
+        "opportunities": false,
+        "magnitude": 1,
+        "likelihood": 1,
+        "timeframe": "long",
+        "score": 1.0,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "double_material": false,
+      "disclosure_required": false,
+      "disclosure_notes": "Not material, no significant impact"
+    },
+
+    {
+      "topic_id": 5,
+      "topic": "Resource Use and Circular Economy",
+      "esrs_standard": "E5",
+      "description": "Waste generation, recycling, circular design",
+
+      "impact_materiality": {
+        "actual_impacts": true,
+        "potential_impacts": true,
+        "severity": 3,
+        "severity_rationale": "3,500 tonnes waste/year, 30% sent to landfill",
+        "scope": 2,
+        "irremediability": 2,
+        "score": 2.3,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": true,
+        "opportunities": true,
+        "magnitude": 3,
+        "magnitude_rationale": "Circular design could reduce material costs by €2M/year",
+        "likelihood": 4,
+        "timeframe": "medium",
+        "score": 3.5,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "double_material": true,
+      "disclosure_required": true,
+      "disclosure_notes": "Material due to financial opportunity, ESRS E5 disclosure required"
+    },
+
+    {
+      "topic_id": 6,
+      "topic": "Own Workforce",
+      "esrs_standard": "S1",
+      "description": "Employee well-being, diversity, health & safety",
+
+      "impact_materiality": {
+        "actual_impacts": true,
+        "potential_impacts": true,
+        "severity": 4,
+        "severity_rationale": "Work-related injuries affect employee health and livelihoods",
+        "scope": 3,
+        "scope_rationale": "Affects 1,250 employees across 5 countries",
+        "irremediability": 3,
+        "score": 3.3,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": true,
+        "opportunities": true,
+        "magnitude": 3,
+        "magnitude_rationale": "High injury rates could increase insurance costs and absenteeism; strong safety culture improves productivity",
+        "likelihood": 4,
+        "timeframe": "short",
+        "score": 3.5,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "double_material": true,
+      "disclosure_required": true,
+      "disclosure_notes": "Full ESRS S1 disclosure required"
+    },
+
+    {
+      "topic_id": 7,
+      "topic": "Workers in the Value Chain",
+      "esrs_standard": "S2",
+      "description": "Supplier working conditions, human rights",
+
+      "impact_materiality": {
+        "actual_impacts": false,
+        "potential_impacts": true,
+        "severity": 4,
+        "severity_rationale": "Potential for labor rights violations in upstream supply chain (steel suppliers)",
+        "scope": 3,
+        "irremediability": 3,
+        "score": 3.3,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": true,
+        "opportunities": false,
+        "magnitude": 2,
+        "magnitude_rationale": "Reputation risk if supplier violations exposed",
+        "likelihood": 3,
+        "timeframe": "medium",
+        "score": 2.5,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "double_material": true,
+      "disclosure_required": true,
+      "disclosure_notes": "Material due to impact, ESRS S2 disclosure required"
+    },
+
+    {
+      "topic_id": 8,
+      "topic": "Affected Communities",
+      "esrs_standard": "S3",
+      "description": "Community engagement, local employment, grievances",
+
+      "impact_materiality": {
+        "actual_impacts": true,
+        "potential_impacts": true,
+        "severity": 2,
+        "severity_rationale": "Noise and traffic from operations affect local communities",
+        "scope": 2,
+        "irremediability": 2,
+        "score": 2.0,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": false,
+        "opportunities": true,
+        "magnitude": 2,
+        "likelihood": 2,
+        "timeframe": "long",
+        "score": 2.0,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "double_material": false,
+      "disclosure_required": false,
+      "disclosure_notes": "Not material under double materiality"
+    },
+
+    {
+      "topic_id": 9,
+      "topic": "Consumers and End-Users",
+      "esrs_standard": "S4",
+      "description": "Product safety, data privacy, customer satisfaction",
+
+      "impact_materiality": {
+        "actual_impacts": false,
+        "potential_impacts": true,
+        "severity": 3,
+        "severity_rationale": "Product safety incidents could harm end-users (construction workers)",
+        "scope": 2,
+        "irremediability": 3,
+        "score": 2.7,
+        "material": false,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": true,
+        "opportunities": false,
+        "magnitude": 4,
+        "magnitude_rationale": "Product recalls could cost €5M+, reputation damage",
+        "likelihood": 2,
+        "timeframe": "short",
+        "score": 3.0,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "double_material": true,
+      "disclosure_required": true,
+      "disclosure_notes": "Material due to financial risk, ESRS S4 disclosure required"
+    },
+
+    {
+      "topic_id": 10,
+      "topic": "Business Conduct",
+      "esrs_standard": "G1",
+      "description": "Anti-corruption, board diversity, ethics",
+
+      "impact_materiality": {
+        "actual_impacts": false,
+        "potential_impacts": true,
+        "severity": 4,
+        "severity_rationale": "Corruption would harm stakeholders and undermine rule of law",
+        "scope": 2,
+        "irremediability": 4,
+        "score": 3.3,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "financial_materiality": {
+        "risks": true,
+        "opportunities": false,
+        "magnitude": 5,
+        "magnitude_rationale": "Corruption violations could result in massive fines (up to 5% revenue = €22.5M) and debarment",
+        "likelihood": 1,
+        "likelihood_rationale": "Strong compliance program, low probability",
+        "timeframe": "short",
+        "score": 3.0,
+        "material": true,
+        "threshold": 3.0
+      },
+
+      "double_material": true,
+      "disclosure_required": true,
+      "disclosure_notes": "Full ESRS G1 disclosure required"
+    }
+  ],
+
+  "summary": {
+    "total_topics_assessed": 10,
+    "impact_material_topics": 5,
+    "financial_material_topics": 6,
+    "double_material_topics": 7,
+    "disclosure_required_topics": 7,
+    "material_esrs_standards": ["E1", "E5", "S1", "S2", "S4", "G1"],
+    "non_material_esrs_standards": ["E2", "E3", "E4", "S3"]
+  },
+
+  "materiality_matrix_data": {
+    "x_axis": "Financial Materiality Score",
+    "y_axis": "Impact Materiality Score",
+    "threshold": 3.0,
+    "quadrants": {
+      "high_high": ["Climate Change", "Own Workforce", "Business Conduct"],
+      "high_low": ["Circular Economy", "Consumers"],
+      "low_high": ["Value Chain Workers"],
+      "low_low": ["Pollution", "Water", "Biodiversity", "Communities"]
+    }
+  },
+
+  "next_steps": {
+    "full_disclosure_required": ["E1", "E5", "S1", "S2", "S4", "G1"],
+    "minimal_disclosure": ["E2", "E3", "E4", "S3"],
+    "monitoring_plan": "Review materiality assessment annually or when significant changes occur",
+    "approval_status": "Approved by Board on 2024-10-15",
+    "approver": "Board Sustainability Committee"
+  },
+
+  "metadata": {
+    "version": "1.0",
+    "created_date": "2024-09-30T16:00:00Z",
+    "last_updated": "2024-10-15T09:30:00Z",
+    "conducted_by": "Jane Smith (CSO) + External Consultant (KPMG)",
+    "reviewed_by": "Board Sustainability Committee",
+    "approved_by": "Board of Directors",
+    "next_assessment_due": "2027-09-30"
+  }
+}
