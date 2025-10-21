@@ -170,14 +170,16 @@ def doctor(
     console.print("\n[green]Environment check completed![/green]")
 
 
-# Add sub-applications for pack, init, and rag commands
+# Add sub-applications for pack, init, rag, and generate commands
 from .cmd_pack_new import app as pack_app
 from .cmd_init import app as init_app
 from .rag_commands import app as rag_app
+from .cmd_generate import app as generate_app
 
 app.add_typer(pack_app, name="pack", help="Pack management commands")
 app.add_typer(init_app, name="init", help="Initialize new projects, packs, and agents")
 app.add_typer(rag_app, name="rag", help="RAG (Retrieval-Augmented Generation) commands")
+app.add_typer(generate_app, name="generate", help="Generate agents using LLM-powered code generation")
 
 
 # Add run command

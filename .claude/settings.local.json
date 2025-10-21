@@ -1,14 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(dir \"C:\\Users\\aksha\\Code-V1_GreenLang\\GL-CSRD-APP\\CSRD-Reporting-Platform\" /B)",
-      "Bash(findstr /E \".txt .yml .yaml .json .env .ini .cfg .conf\")",
-      "Bash(awk '{print $NF}')",
-      "Bash(cat \"/c/Users/aksha/Code-V1_GreenLang/GL-CSRD-APP/AI_EXPERT_ANALYSIS.md\")",
-      "Bash(cat \"/c/Users/aksha/Code-V1_GreenLang/GL-Oct_25_Update.md\")",
-      "Bash(cat /c/Users/aksha/Code-V1_GreenLang/requirements.txt)",
-      "Bash(xargs ls -lh)",
-      "Bash(cat \"/c/Users/aksha/Code-V1_GreenLang/GL-CSRD-APP/CSRD-Reporting-Platform/requirements.txt\")"
+      "Bash(dir:*)",
+      "Bash(find:*)",
+      "Bash(awk:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []

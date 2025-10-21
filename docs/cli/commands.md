@@ -43,6 +43,183 @@ Options:
   --minimal         Create minimal structure
 ```
 
+### `gl generate` - LLM-Powered Agent Generation
+
+Generate GreenLang agents from AgentSpec specifications using LLM-powered code generation.
+
+```bash
+# Generate agent from spec file
+gl generate agent specs/boiler-efficiency.yaml
+
+# Generate with custom output directory
+gl generate agent specs/my-agent.yaml --output ./custom-output
+
+# Generate with higher budget for complex agents
+gl generate agent specs/complex-agent.yaml --budget 10.0
+
+# Generate without tests (faster development iteration)
+gl generate agent specs/draft-agent.yaml --skip-tests --skip-docs
+
+# Generate with custom refinement attempts
+gl generate agent specs/my-agent.yaml --max-attempts 5
+
+# Generate with verbose output
+gl generate agent specs/my-agent.yaml --verbose
+
+Options:
+  --output DIR          Output directory (default: ./generated/<agent-id>)
+  --budget AMOUNT       Max cost in USD per agent (default: $5.00, range: $0.10-$50.00)
+  --max-attempts NUM    Max refinement attempts (default: 3, range: 1-10)
+  --skip-tests         Skip test generation
+  --skip-docs          Skip documentation generation
+  --skip-demo          Skip demo script generation
+  --skip-validation    Skip code validation (not recommended)
+  --reference-agents   Path to reference agents directory
+  --verbose, -v        Show detailed generation logs
+```
+
+#### Generation Process
+
+The agent generation process includes:
+
+1. **Tool Generation** - Deterministic calculation implementations
+2. **Agent Class** - AI orchestration and workflow
+3. **Test Suite** - Unit and integration tests
+4. **Documentation** - README, API reference
+5. **Demo Script** - Interactive examples
+6. **Validation** - Syntax, type, lint, and test validation
+7. **Refinement** - Iterative improvement (up to max-attempts)
+
+#### Performance Targets
+
+- **Duration**: ~10 minutes per agent (vs 2 weeks manual)
+- **Cost**: ~$5 per agent (default budget)
+- **Quality**: Comprehensive validation with iterative refinement
+
+#### AgentSpec Requirements
+
+The spec file must be valid AgentSpec v2 format (YAML or JSON):
+
+```yaml
+schema_version: "2.0.0"
+id: "custom/boiler-efficiency"
+name: "Boiler Efficiency Agent"
+version: "1.0.0"
+summary: "Calculate emissions from boiler efficiency data"
+tags: ["compute", "emissions", "boiler"]
+
+compute:
+  entrypoint: "python://boiler_efficiency.agent:compute"
+  deterministic: true
+  timeout_s: 30
+
+  inputs:
+    fuel_volume:
+      dtype: "float64"
+      unit: "m^3"
+      required: true
+      ge: 0.0
+
+  outputs:
+    co2e_kg:
+      dtype: "float64"
+      unit: "kgCO2e"
+
+provenance:
+  pin_ef: true
+  gwp_set: "AR6GWP100"
+  record: ["inputs", "outputs", "factors", "timestamp"]
+```
+
+#### Generated Files Structure
+
+```
+generated/<agent-id>/
+├── agent.py              # Main agent implementation
+├── tests/
+│   └── test_agent.py    # Test suite
+├── README.md            # Documentation
+├── demo.py              # Demo script
+├── pack.yaml            # AgentSpec copy
+└── provenance.json      # Generation provenance
+```
+
+#### Validation Gates
+
+Generated code must pass:
+
+1. **Syntax Check** - Valid Python syntax
+2. **Type Check** - Mypy type validation
+3. **Lint Check** - Ruff linting
+4. **Test Check** - Pytest execution
+5. **Determinism Check** - `temperature=0`, `seed=42` markers
+
+#### Budget Management
+
+The `--budget` option controls LLM costs:
+
+- **Low budget** ($0.10-$2.00): Simple agents, basic patterns
+- **Medium budget** ($2.00-$5.00): Standard agents (default)
+- **High budget** ($5.00-$20.00): Complex agents, multiple refinements
+- **Premium budget** ($20.00-$50.00): Very complex agents, experimental
+
+Budget is consumed across:
+- Tool generation
+- Agent class generation
+- Test generation
+- Documentation generation
+- Refinement iterations
+
+#### Troubleshooting
+
+If generation fails:
+
+```bash
+# Increase budget
+gl generate agent spec.yaml --budget 10.0
+
+# Increase refinement attempts
+gl generate agent spec.yaml --max-attempts 5
+
+# Skip validation for debugging
+gl generate agent spec.yaml --skip-validation --verbose
+
+# Simplify spec and retry
+# - Reduce number of inputs/outputs
+# - Simplify tool requirements
+# - Remove optional sections
+```
+
+Common error messages:
+
+- **"Budget exceeded"**: Increase `--budget` or simplify spec
+- **"Validation failed after N attempts"**: Increase `--max-attempts` or review spec
+- **"Syntax errors in generated code"**: Bug in factory, report issue
+- **"Test failures"**: Review test requirements in spec
+
+#### Examples
+
+```bash
+# Example 1: Simple compute agent
+gl generate agent specs/fuel-emissions.yaml
+
+# Example 2: AI agent with tools
+gl generate agent specs/climate-advisor.yaml --budget 8.0
+
+# Example 3: Quick iteration without tests
+gl generate agent specs/draft.yaml --skip-tests --skip-docs
+
+# Example 4: Production-ready with full validation
+gl generate agent specs/prod-agent.yaml \
+  --budget 15.0 \
+  --max-attempts 5 \
+  --output ./agents/prod
+
+# Example 5: Custom reference agents
+gl generate agent specs/custom.yaml \
+  --reference-agents ./my-reference-agents
+```
+
 ### `gl run` - Execute Pipelines
 
 Run GreenLang pipelines with security enforcement.
