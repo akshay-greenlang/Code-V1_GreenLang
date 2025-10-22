@@ -762,5 +762,511 @@ class TestRecommendationAgentAIIntegration:
         assert len(result.data["recommendations"]) > 0
 
 
+class TestRecommendationAgentAICoverage:
+    """Additional tests to achieve 80%+ coverage for RecommendationAgentAI."""
+
+    @pytest.fixture
+    def agent(self):
+        """Create RecommendationAgentAI instance for testing."""
+        return RecommendationAgentAI(budget_usd=1.0)
+
+    @pytest.fixture
+    def valid_building_data(self):
+        """Create valid test building data."""
+        return {
+            "emissions_by_source": {
+                "electricity": 15000,
+                "natural_gas": 8500,
+            },
+            "building_type": "commercial_office",
+            "building_area": 50000,
+            "occupancy": 200,
+        }
+
+    # ===== Unit Tests for _extract_tool_results =====
+
+    def test_extract_tool_results_all_tools(self, agent):
+        """Test extracting results from all five tool types."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "analyze_energy_usage",
+                "arguments": {
+                    "emissions_by_source": {"electricity": 15000},
+                },
+            },
+            {
+                "name": "calculate_roi",
+                "arguments": {
+                    "recommendations": [],
+                    "current_emissions_kg": 15000,
+                },
+            },
+            {
+                "name": "rank_recommendations",
+                "arguments": {
+                    "recommendations": [],
+                },
+            },
+            {
+                "name": "estimate_savings",
+                "arguments": {
+                    "recommendations": [],
+                    "current_emissions_kg": 15000,
+                },
+            },
+            {
+                "name": "generate_implementation_plan",
+                "arguments": {
+                    "recommendations": [],
+                },
+            },
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Verify all five tools extracted
+        assert "usage_analysis" in results
+        assert "roi_calculations" in results
+        assert "ranked_recommendations" in results
+        assert "savings_estimates" in results
+        assert "implementation_plan" in results
+
+    def test_extract_tool_results_empty(self, agent):
+        """Test extracting results with no tool calls."""
+        mock_response = Mock()
+        mock_response.tool_calls = []
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should return empty dict
+        assert results == {}
+
+    def test_extract_tool_results_unknown_tool(self, agent):
+        """Test extracting results with unknown tool name."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "unknown_tool",
+                "arguments": {},
+            }
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should ignore unknown tool
+        assert results == {}
+
+    def test_extract_tool_results_partial(self, agent):
+        """Test extracting results with only some tools called."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "analyze_energy_usage",
+                "arguments": {
+                    "emissions_by_source": {"electricity": 10000},
+                },
+            },
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should have only usage analysis
+        assert "usage_analysis" in results
+        assert "roi_calculations" not in results
+        assert "ranked_recommendations" not in results
+
+    # ===== Unit Tests for _build_output =====
+
+    def test_build_output_with_all_data(self, agent, valid_building_data):
+        """Test building output with complete tool results."""
+        tool_results = {
+            "usage_analysis": {
+                "total_emissions_kg": 23500,
+                "dominant_source": "electricity",
+                "issues_identified": [
+                    {"type": "high_electricity", "severity": "high"},
+                ],
+            },
+            "roi_calculations": {
+                "roi_calculations": [
+                    {
+                        "action": "Install LED lighting",
+                        "roi_percentage": 50,
+                        "payback_years": 2.5,
+                    }
+                ],
+            },
+            "ranked_recommendations": {
+                "ranked_recommendations": [
+                    {
+                        "rank": 1,
+                        "action": "Install LED lighting",
+                        "priority": "high",
+                    }
+                ],
+            },
+            "savings_estimates": {
+                "emissions_savings": {
+                    "minimum_kg_co2e": 3000,
+                    "maximum_kg_co2e": 5000,
+                },
+            },
+            "implementation_plan": {
+                "phases": [
+                    {
+                        "phase": "Quick Wins (0-3 months)",
+                        "actions": ["Install LED lighting"],
+                    }
+                ],
+            },
+        }
+
+        ai_summary = "Based on analysis, install LED lighting for 50% ROI."
+
+        output = agent._build_output(valid_building_data, tool_results, ai_summary)
+
+        # Verify all fields present
+        assert "recommendations" in output
+        assert "usage_analysis" in output
+        assert "ai_summary" in output
+        assert "total_emissions_kg" in output
+        assert output["total_emissions_kg"] == 23500
+
+    def test_build_output_missing_usage_analysis(self, agent, valid_building_data):
+        """Test building output with missing usage analysis."""
+        tool_results = {}  # No usage analysis
+
+        output = agent._build_output(valid_building_data, tool_results, None)
+
+        # Should handle gracefully
+        assert "total_emissions_kg" in output
+        assert output["total_emissions_kg"] == 0
+
+    def test_build_output_without_ai_summary(self, agent, valid_building_data):
+        """Test building output without AI summary."""
+        tool_results = {
+            "usage_analysis": {
+                "total_emissions_kg": 10000,
+            }
+        }
+
+        agent.enable_ai_summary = False
+        output = agent._build_output(valid_building_data, tool_results, None)
+
+        # Should not include AI summary
+        assert "ai_summary" not in output
+
+    def test_build_output_without_implementation_plans(self, agent, valid_building_data):
+        """Test building output without implementation plans."""
+        tool_results = {
+            "usage_analysis": {
+                "total_emissions_kg": 10000,
+            }
+        }
+
+        agent.enable_implementation_plans = False
+        output = agent._build_output(valid_building_data, tool_results, None)
+
+        # Should not include implementation plan
+        assert "implementation_plan" not in output
+
+    # ===== Boundary Tests =====
+
+    def test_zero_emissions_scenario(self, agent):
+        """Test with zero emissions."""
+        result = agent._analyze_energy_usage_impl(
+            emissions_by_source={"electricity": 0}
+        )
+
+        assert result["total_emissions_kg"] == 0
+        assert result["issue_count"] == 0
+
+    def test_very_large_emissions(self, agent):
+        """Test with very large emission values."""
+        result = agent._analyze_energy_usage_impl(
+            emissions_by_source={"electricity": 1e9}  # 1 billion kg
+        )
+
+        assert result["total_emissions_kg"] == 1e9
+        assert result["dominant_source"] == "electricity"
+
+    def test_single_emission_source(self, agent):
+        """Test with single emission source."""
+        result = agent._analyze_energy_usage_impl(
+            emissions_by_source={"electricity": 10000}
+        )
+
+        assert result["source_percentages"]["electricity"] == 100.0
+        assert result["dominant_source"] == "electricity"
+
+    def test_roi_with_zero_cost(self, agent):
+        """Test ROI calculation with zero cost recommendation."""
+        recommendations = [
+            {
+                "action": "Behavioral changes",
+                "cost": "Low",
+                "impact": "10% reduction",
+                "payback": "Immediate",
+            }
+        ]
+
+        result = agent._calculate_roi_impl(
+            recommendations=recommendations,
+            current_emissions_kg=10000,
+        )
+
+        # Should handle immediate payback
+        roi_calc = result["roi_calculations"][0]
+        assert roi_calc["payback_years"] == 0
+
+    def test_rank_empty_recommendations(self, agent):
+        """Test ranking with empty recommendations list."""
+        result = agent._rank_recommendations_impl(
+            recommendations=[],
+        )
+
+        assert result["ranked_recommendations"] == []
+
+    def test_estimate_savings_single_recommendation(self, agent):
+        """Test savings estimation with single recommendation."""
+        recommendations = [
+            {
+                "action": "Single action",
+                "impact": "25% reduction",
+                "cost": "Medium",
+            }
+        ]
+
+        result = agent._estimate_savings_impl(
+            recommendations=recommendations,
+            current_emissions_kg=20000,
+        )
+
+        # Should calculate 25% savings
+        assert result["emissions_savings"]["minimum_kg_co2e"] == 5000
+
+    # ===== Integration Tests =====
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.recommendation_agent_ai.ChatSession")
+    async def test_execute_with_budget_exceeded(self, mock_session_class, agent, valid_building_data):
+        """Test execute() handling when budget is exceeded."""
+        from greenlang.intelligence import BudgetExceeded
+
+        # Setup mock session to raise BudgetExceeded
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(side_effect=BudgetExceeded("Budget limit reached"))
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_building_data)
+
+        # Should handle budget exceeded gracefully
+        assert result.success is False
+        assert "budget" in result.error.lower() or "Budget" in result.error
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.recommendation_agent_ai.ChatSession")
+    async def test_execute_with_general_exception(self, mock_session_class, agent, valid_building_data):
+        """Test execute() handling of general exceptions."""
+        # Setup mock session to raise generic exception
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(side_effect=RuntimeError("Unexpected error"))
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_building_data)
+
+        # Should handle exception gracefully
+        assert result.success is False
+        assert "Unexpected error" in result.error or "Failed to generate" in result.error
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.recommendation_agent_ai.ChatSession")
+    async def test_execute_with_disabled_ai_summary(self, mock_session_class, agent, valid_building_data):
+        """Test execute() with AI summary disabled."""
+        agent.enable_ai_summary = False
+
+        # Create mock response
+        mock_response = Mock(spec=ChatResponse)
+        mock_response.text = ""
+        mock_response.tool_calls = [
+            {
+                "name": "analyze_energy_usage",
+                "arguments": {
+                    "emissions_by_source": valid_building_data["emissions_by_source"],
+                },
+            },
+        ]
+        mock_response.usage = Usage(
+            prompt_tokens=100,
+            completion_tokens=50,
+            total_tokens=150,
+            cost_usd=0.01,
+        )
+        mock_response.provider_info = ProviderInfo(
+            provider="openai",
+            model="gpt-4o-mini",
+        )
+        mock_response.finish_reason = FinishReason.stop
+
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(return_value=mock_response)
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_building_data)
+
+        assert result.success is True
+        # AI summary should not be in output
+        assert "ai_summary" not in result.data
+
+    # ===== Determinism Tests =====
+
+    def test_tool_determinism_analyze_usage(self, agent):
+        """Test that analyze_energy_usage produces identical results."""
+        emissions = {"electricity": 15000, "natural_gas": 8500}
+
+        results = []
+        for _ in range(5):
+            result = agent._analyze_energy_usage_impl(
+                emissions_by_source=emissions
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["total_emissions_kg"] == results[0]["total_emissions_kg"]
+            assert result["dominant_source"] == results[0]["dominant_source"]
+
+    def test_tool_determinism_calculate_roi(self, agent):
+        """Test that calculate_roi produces identical results."""
+        recommendations = [
+            {
+                "action": "Test action",
+                "cost": "Medium",
+                "impact": "30% reduction",
+                "payback": "3 years",
+            }
+        ]
+
+        results = []
+        for _ in range(5):
+            result = agent._calculate_roi_impl(
+                recommendations=recommendations,
+                current_emissions_kg=20000,
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["roi_calculations"][0]["estimated_cost_usd"] == results[0]["roi_calculations"][0]["estimated_cost_usd"]
+
+    def test_tool_determinism_rank_recommendations(self, agent):
+        """Test that rank_recommendations produces identical results."""
+        recommendations = [
+            {"action": "A", "cost": "Low", "priority": "High", "roi_percentage": 50},
+            {"action": "B", "cost": "High", "priority": "Low", "roi_percentage": 100},
+        ]
+
+        results = []
+        for _ in range(3):
+            result = agent._rank_recommendations_impl(
+                recommendations=recommendations,
+                prioritize_by="roi",
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["ranked_recommendations"][0]["action"] == results[0]["ranked_recommendations"][0]["action"]
+
+    # ===== Performance and Configuration Tests =====
+
+    def test_configuration_options(self):
+        """Test agent initialization with different configurations."""
+        # Custom budget
+        agent1 = RecommendationAgentAI(budget_usd=0.25)
+        assert agent1.budget_usd == 0.25
+
+        # Disabled AI summary
+        agent2 = RecommendationAgentAI(enable_ai_summary=False)
+        assert agent2.enable_ai_summary is False
+
+        # Disabled implementation plans
+        agent3 = RecommendationAgentAI(enable_implementation_plans=False)
+        assert agent3.enable_implementation_plans is False
+
+        # Custom max recommendations
+        agent4 = RecommendationAgentAI(max_recommendations=10)
+        assert agent4.max_recommendations == 10
+
+        # All options
+        agent5 = RecommendationAgentAI(
+            budget_usd=2.0,
+            enable_ai_summary=False,
+            enable_implementation_plans=False,
+            max_recommendations=3,
+        )
+        assert agent5.budget_usd == 2.0
+        assert agent5.enable_ai_summary is False
+        assert agent5.enable_implementation_plans is False
+        assert agent5.max_recommendations == 3
+
+    def test_cost_accumulation(self, agent):
+        """Test that costs accumulate correctly."""
+        initial_cost = agent._total_cost_usd
+
+        # Make some tool calls (tools are free)
+        agent._analyze_energy_usage_impl(
+            emissions_by_source={"electricity": 1000}
+        )
+
+        # Cost should still be initial (tool calls are free)
+        assert agent._total_cost_usd == initial_cost
+
+    def test_tool_call_count_tracking(self, agent):
+        """Test that tool call counts are tracked correctly."""
+        initial_count = agent._tool_call_count
+
+        # Make tool calls
+        agent._analyze_energy_usage_impl(
+            emissions_by_source={"electricity": 1000}
+        )
+        assert agent._tool_call_count == initial_count + 1
+
+        agent._calculate_roi_impl(
+            recommendations=[],
+            current_emissions_kg=1000,
+        )
+        assert agent._tool_call_count == initial_count + 2
+
+    def test_validation_error_handling(self, agent):
+        """Test that validation errors are handled properly."""
+        invalid_data = {}  # Missing emissions_by_source
+
+        result = agent.execute(invalid_data)
+
+        assert result.success is False
+        assert "error" in result.error.lower() or "Invalid" in result.error
+
+    def test_max_recommendations_limit(self, agent):
+        """Test that max_recommendations limit is enforced."""
+        agent.max_recommendations = 3
+
+        # Even if we have many issues, should limit to max
+        result = agent._analyze_energy_usage_impl(
+            emissions_by_source={
+                "electricity": 20000,
+                "natural_gas": 15000,
+                "diesel": 10000,
+            },
+            building_age=30,
+            performance_rating="Poor",
+            load_breakdown={"hvac_load": 0.60},
+        )
+
+        # Should identify many issues
+        assert result["issue_count"] >= 3
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

@@ -817,5 +817,506 @@ class TestReportAgentAIIntegration:
         assert result.data["framework"] == "SASB"
 
 
+class TestReportAgentAICoverage:
+    """Additional tests to achieve 80%+ coverage for ReportAgentAI."""
+
+    @pytest.fixture
+    def agent(self):
+        """Create ReportAgentAI instance for testing."""
+        return ReportAgentAI(budget_usd=2.0)
+
+    @pytest.fixture
+    def valid_report_data(self):
+        """Create valid test report data."""
+        return {
+            "framework": "TCFD",
+            "carbon_data": {
+                "total_co2e_tons": 45.5,
+                "emissions_breakdown": [
+                    {"source": "electricity", "co2e_tons": 25.0, "percentage": 54.95},
+                    {"source": "natural_gas", "co2e_tons": 15.0, "percentage": 32.97},
+                ],
+            },
+        }
+
+    # ===== Unit Tests for _extract_tool_results =====
+
+    def test_extract_tool_results_all_tools(self, agent):
+        """Test extracting results from all tool types."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "fetch_emissions_data",
+                "arguments": {
+                    "data_source": "carbon_data",
+                },
+            },
+            {
+                "name": "calculate_trends",
+                "arguments": {
+                    "current_total": 45.5,
+                    "previous_total": 50.0,
+                },
+            },
+            {
+                "name": "check_compliance",
+                "arguments": {
+                    "framework": "TCFD",
+                    "sections": ["governance", "strategy"],
+                },
+            },
+            {
+                "name": "generate_executive_summary",
+                "arguments": {
+                    "total_emissions": 45.5,
+                    "trend": "decreasing",
+                },
+            },
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Verify all tools extracted
+        assert "emissions_data" in results
+        assert "trends" in results
+        assert "compliance" in results
+        assert "executive_summary" in results
+
+    def test_extract_tool_results_empty(self, agent):
+        """Test extracting results with no tool calls."""
+        mock_response = Mock()
+        mock_response.tool_calls = []
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should return empty dict
+        assert results == {}
+
+    def test_extract_tool_results_unknown_tool(self, agent):
+        """Test extracting results with unknown tool name."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "unknown_tool",
+                "arguments": {},
+            }
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should ignore unknown tool
+        assert results == {}
+
+    def test_extract_tool_results_partial(self, agent):
+        """Test extracting results with only some tools called."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "fetch_emissions_data",
+                "arguments": {
+                    "data_source": "carbon_data",
+                },
+            },
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should have only emissions data
+        assert "emissions_data" in results
+        assert "trends" not in results
+        assert "compliance" not in results
+
+    # ===== Unit Tests for _build_output =====
+
+    def test_build_output_with_all_data(self, agent, valid_report_data):
+        """Test building output with complete tool results."""
+        tool_results = {
+            "emissions_data": {
+                "total_co2e_tons": 45.5,
+                "emissions_breakdown": [
+                    {"source": "electricity", "co2e_tons": 25.0},
+                ],
+            },
+            "trends": {
+                "trend_direction": "decreasing",
+                "year_over_year_change_percent": -9.0,
+                "year_over_year_change_tons": -4.5,
+            },
+            "compliance": {
+                "framework": "TCFD",
+                "compliance_score": 95,
+                "missing_sections": [],
+                "compliant": True,
+            },
+            "executive_summary": {
+                "summary": "Total emissions decreased by 9% year-over-year.",
+            },
+        }
+
+        ai_narrative = "The organization's carbon footprint shows improvement."
+
+        output = agent._build_output(valid_report_data, tool_results, ai_narrative)
+
+        # Verify all fields present
+        assert "report" in output
+        assert "framework" in output
+        assert "total_co2e_tons" in output
+        assert output["total_co2e_tons"] == 45.5
+        assert "ai_narrative" in output
+        assert "compliance_score" in output
+        assert output["compliance_score"] == 95
+
+    def test_build_output_missing_emissions_data(self, agent, valid_report_data):
+        """Test building output with missing emissions data."""
+        tool_results = {}  # No emissions data
+
+        output = agent._build_output(valid_report_data, tool_results, None)
+
+        # Should handle gracefully
+        assert "total_co2e_tons" in output
+        assert output["total_co2e_tons"] == 0
+
+    def test_build_output_without_ai_narrative(self, agent, valid_report_data):
+        """Test building output without AI narrative."""
+        tool_results = {
+            "emissions_data": {
+                "total_co2e_tons": 45.5,
+            }
+        }
+
+        agent.enable_ai_narrative = False
+        output = agent._build_output(valid_report_data, tool_results, None)
+
+        # Should not include AI narrative
+        assert "ai_narrative" not in output
+
+    def test_build_output_without_executive_summary(self, agent, valid_report_data):
+        """Test building output without executive summary."""
+        tool_results = {
+            "emissions_data": {
+                "total_co2e_tons": 45.5,
+            }
+        }
+
+        agent.enable_executive_summary = False
+        output = agent._build_output(valid_report_data, tool_results, None)
+
+        # Should not include executive summary
+        assert "executive_summary" not in output
+
+    def test_build_output_without_compliance_check(self, agent, valid_report_data):
+        """Test building output without compliance check."""
+        tool_results = {
+            "emissions_data": {
+                "total_co2e_tons": 45.5,
+            }
+        }
+
+        agent.enable_compliance_check = False
+        output = agent._build_output(valid_report_data, tool_results, None)
+
+        # Should not include compliance score
+        assert "compliance_score" not in output
+
+    # ===== Boundary Tests =====
+
+    def test_zero_emissions_report(self, agent):
+        """Test report with zero emissions."""
+        result = agent._fetch_emissions_data_impl(
+            data_source={"total_co2e_tons": 0, "emissions_breakdown": []}
+        )
+
+        assert result["total_co2e_tons"] == 0
+
+    def test_very_large_emissions_report(self, agent):
+        """Test report with very large emission values."""
+        result = agent._fetch_emissions_data_impl(
+            data_source={"total_co2e_tons": 1e6, "emissions_breakdown": []}
+        )
+
+        assert result["total_co2e_tons"] == 1e6
+
+    def test_single_emission_source_report(self, agent):
+        """Test report with single emission source."""
+        result = agent._fetch_emissions_data_impl(
+            data_source={
+                "total_co2e_tons": 20.0,
+                "emissions_breakdown": [
+                    {"source": "electricity", "co2e_tons": 20.0, "percentage": 100.0}
+                ],
+            }
+        )
+
+        assert len(result["emissions_breakdown"]) == 1
+
+    def test_trend_calculation_no_change(self, agent):
+        """Test trend calculation with no change."""
+        result = agent._calculate_trends_impl(
+            current_total=50.0,
+            previous_total=50.0,
+        )
+
+        assert result["year_over_year_change_percent"] == 0.0
+        assert result["trend_direction"] == "stable"
+
+    def test_trend_calculation_increase(self, agent):
+        """Test trend calculation with increase."""
+        result = agent._calculate_trends_impl(
+            current_total=60.0,
+            previous_total=50.0,
+        )
+
+        assert result["year_over_year_change_percent"] == 20.0
+        assert result["trend_direction"] == "increasing"
+
+    def test_trend_calculation_decrease(self, agent):
+        """Test trend calculation with decrease."""
+        result = agent._calculate_trends_impl(
+            current_total=40.0,
+            previous_total=50.0,
+        )
+
+        assert result["year_over_year_change_percent"] == -20.0
+        assert result["trend_direction"] == "decreasing"
+
+    def test_compliance_check_all_frameworks(self, agent):
+        """Test compliance checking for all supported frameworks."""
+        frameworks = ["TCFD", "CDP", "GRI", "SASB"]
+
+        for framework in frameworks:
+            result = agent._check_compliance_impl(
+                framework=framework,
+                sections=["all"],
+            )
+
+            assert "framework" in result
+            assert result["framework"] == framework
+            assert "compliance_score" in result
+
+    def test_compliance_check_missing_sections(self, agent):
+        """Test compliance check identifies missing sections."""
+        result = agent._check_compliance_impl(
+            framework="TCFD",
+            sections=["governance"],  # Only partial sections
+        )
+
+        # Should identify missing sections
+        assert "missing_sections" in result
+        assert len(result["missing_sections"]) > 0
+
+    # ===== Integration Tests =====
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.report_agent_ai.ChatSession")
+    async def test_execute_with_budget_exceeded(self, mock_session_class, agent, valid_report_data):
+        """Test execute() handling when budget is exceeded."""
+        from greenlang.intelligence import BudgetExceeded
+
+        # Setup mock session to raise BudgetExceeded
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(side_effect=BudgetExceeded("Budget limit reached"))
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_report_data)
+
+        # Should handle budget exceeded gracefully
+        assert result.success is False
+        assert "budget" in result.error.lower() or "Budget" in result.error
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.report_agent_ai.ChatSession")
+    async def test_execute_with_general_exception(self, mock_session_class, agent, valid_report_data):
+        """Test execute() handling of general exceptions."""
+        # Setup mock session to raise generic exception
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(side_effect=RuntimeError("Unexpected error"))
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_report_data)
+
+        # Should handle exception gracefully
+        assert result.success is False
+        assert "Unexpected error" in result.error or "Failed to generate" in result.error
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.report_agent_ai.ChatSession")
+    async def test_execute_with_disabled_ai_narrative(self, mock_session_class, agent, valid_report_data):
+        """Test execute() with AI narrative disabled."""
+        agent.enable_ai_narrative = False
+
+        # Create mock response
+        mock_response = Mock(spec=ChatResponse)
+        mock_response.text = ""
+        mock_response.tool_calls = [
+            {
+                "name": "fetch_emissions_data",
+                "arguments": {
+                    "data_source": valid_report_data["carbon_data"],
+                },
+            },
+        ]
+        mock_response.usage = Usage(
+            prompt_tokens=100,
+            completion_tokens=50,
+            total_tokens=150,
+            cost_usd=0.01,
+        )
+        mock_response.provider_info = ProviderInfo(
+            provider="openai",
+            model="gpt-4o-mini",
+        )
+        mock_response.finish_reason = FinishReason.stop
+
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(return_value=mock_response)
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_report_data)
+
+        assert result.success is True
+        # AI narrative should not be in output
+        assert "ai_narrative" not in result.data
+
+    # ===== Determinism Tests =====
+
+    def test_tool_determinism_fetch_emissions(self, agent):
+        """Test that fetch_emissions_data produces identical results."""
+        data_source = {
+            "total_co2e_tons": 45.5,
+            "emissions_breakdown": [
+                {"source": "electricity", "co2e_tons": 25.0},
+            ],
+        }
+
+        results = []
+        for _ in range(5):
+            result = agent._fetch_emissions_data_impl(
+                data_source=data_source
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["total_co2e_tons"] == results[0]["total_co2e_tons"]
+
+    def test_tool_determinism_calculate_trends(self, agent):
+        """Test that calculate_trends produces identical results."""
+        results = []
+        for _ in range(5):
+            result = agent._calculate_trends_impl(
+                current_total=45.5,
+                previous_total=50.0,
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["year_over_year_change_percent"] == results[0]["year_over_year_change_percent"]
+            assert result["trend_direction"] == results[0]["trend_direction"]
+
+    def test_tool_determinism_check_compliance(self, agent):
+        """Test that check_compliance produces identical results."""
+        results = []
+        for _ in range(3):
+            result = agent._check_compliance_impl(
+                framework="TCFD",
+                sections=["governance", "strategy"],
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["compliance_score"] == results[0]["compliance_score"]
+            assert result["framework"] == results[0]["framework"]
+
+    # ===== Performance and Configuration Tests =====
+
+    def test_configuration_options(self):
+        """Test agent initialization with different configurations."""
+        # Custom budget
+        agent1 = ReportAgentAI(budget_usd=1.0)
+        assert agent1.budget_usd == 1.0
+
+        # Disabled AI narrative
+        agent2 = ReportAgentAI(enable_ai_narrative=False)
+        assert agent2.enable_ai_narrative is False
+
+        # Disabled executive summary
+        agent3 = ReportAgentAI(enable_executive_summary=False)
+        assert agent3.enable_executive_summary is False
+
+        # Disabled compliance check
+        agent4 = ReportAgentAI(enable_compliance_check=False)
+        assert agent4.enable_compliance_check is False
+
+        # All options
+        agent5 = ReportAgentAI(
+            budget_usd=3.0,
+            enable_ai_narrative=False,
+            enable_executive_summary=False,
+            enable_compliance_check=False,
+        )
+        assert agent5.budget_usd == 3.0
+        assert agent5.enable_ai_narrative is False
+        assert agent5.enable_executive_summary is False
+        assert agent5.enable_compliance_check is False
+
+    def test_cost_accumulation(self, agent):
+        """Test that costs accumulate correctly."""
+        initial_cost = agent._total_cost_usd
+
+        # Make some tool calls (tools are free)
+        agent._fetch_emissions_data_impl(
+            data_source={"total_co2e_tons": 10.0}
+        )
+
+        # Cost should still be initial (tool calls are free)
+        assert agent._total_cost_usd == initial_cost
+
+    def test_tool_call_count_tracking(self, agent):
+        """Test that tool call counts are tracked correctly."""
+        initial_count = agent._tool_call_count
+
+        # Make tool calls
+        agent._fetch_emissions_data_impl(
+            data_source={"total_co2e_tons": 10.0}
+        )
+        assert agent._tool_call_count == initial_count + 1
+
+        agent._calculate_trends_impl(
+            current_total=45.5,
+            previous_total=50.0,
+        )
+        assert agent._tool_call_count == initial_count + 2
+
+    def test_validation_error_handling(self, agent):
+        """Test that validation errors are handled properly."""
+        invalid_data = {}  # Missing carbon_data
+
+        result = agent.execute(invalid_data)
+
+        assert result.success is False
+        assert "error" in result.error.lower() or "Invalid" in result.error
+
+    def test_framework_variations(self, agent):
+        """Test report generation for all framework variations."""
+        frameworks = ["TCFD", "CDP", "GRI", "SASB"]
+
+        for framework in frameworks:
+            data = {
+                "framework": framework,
+                "carbon_data": {
+                    "total_co2e_tons": 50.0,
+                    "emissions_breakdown": [
+                        {"source": "electricity", "co2e_tons": 50.0},
+                    ],
+                },
+            }
+
+            # Should work for all frameworks
+            # Note: Actual execution might vary, testing API compatibility
+            assert agent.validate_input(data) is True
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
