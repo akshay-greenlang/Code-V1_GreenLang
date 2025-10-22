@@ -74,6 +74,10 @@ def __getattr__(name):
         from greenlang.agents.boiler_replacement_agent_ai import BoilerReplacementAgent_AI
 
         return BoilerReplacementAgent_AI
+    elif name == "DecarbonizationRoadmapAgentAI":
+        from greenlang.agents.decarbonization_roadmap_agent_ai import DecarbonizationRoadmapAgentAI
+
+        return DecarbonizationRoadmapAgentAI
     raise AttributeError(f"module 'greenlang.agents' has no attribute '{name}'")
 
 
@@ -96,4 +100,5 @@ __all__ = [
     "EnergyBalanceAgent",
     "IndustrialProcessHeatAgent_AI",
     "BoilerReplacementAgent_AI",
+    "DecarbonizationRoadmapAgentAI",
 ]
