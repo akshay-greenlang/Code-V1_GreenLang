@@ -1312,6 +1312,118 @@ class TestPerformance:
 
 
 # ============================================================================
+# VALIDATION AND ERROR HANDLING TESTS (6 tests) - Cover Missing Lines
+# ============================================================================
+
+
+class TestValidationAndErrorHandling:
+    """Test validation failures and error handling in run() method."""
+
+    def test_run_with_invalid_input_missing_fields(self, agent):
+        """Test run() with missing required fields triggers validation error."""
+        invalid_payload = {
+            "boiler_type": "firetube",
+            "fuel_type": "natural_gas",
+            # Missing required fields
+        }
+
+        result = agent.run(invalid_payload)
+
+        # Should fail validation
+        assert result["success"] is False
+        assert "error" in result
+        assert result["error"]["type"] == "ValidationError"
+        assert "Invalid input payload" in result["error"]["message"]
+
+    def test_run_with_negative_capacity(self, agent):
+        """Test run() with negative rated_capacity_kw."""
+        invalid_payload = {
+            "boiler_type": "firetube",
+            "fuel_type": "natural_gas",
+            "rated_capacity_kw": -1500,  # Invalid negative
+            "age_years": 10,
+            "stack_temperature_c": 200,
+            "average_load_factor": 0.65,
+            "annual_operating_hours": 6000,
+            "latitude": 35.0,
+        }
+
+        result = agent.run(invalid_payload)
+
+        # Should fail validation
+        assert result["success"] is False
+        assert result["error"]["type"] == "ValidationError"
+
+    def test_run_with_negative_age(self, agent):
+        """Test run() with negative age_years."""
+        invalid_payload = {
+            "boiler_type": "firetube",
+            "fuel_type": "natural_gas",
+            "rated_capacity_kw": 1500,
+            "age_years": -5,  # Invalid negative
+            "stack_temperature_c": 200,
+            "average_load_factor": 0.65,
+            "annual_operating_hours": 6000,
+            "latitude": 35.0,
+        }
+
+        result = agent.run(invalid_payload)
+
+        # Should fail validation
+        assert result["success"] is False
+        assert result["error"]["type"] == "ValidationError"
+
+    def test_run_with_invalid_load_factor(self, agent):
+        """Test run() with average_load_factor outside 0-1 range."""
+        invalid_payload = {
+            "boiler_type": "firetube",
+            "fuel_type": "natural_gas",
+            "rated_capacity_kw": 1500,
+            "age_years": 10,
+            "stack_temperature_c": 200,
+            "average_load_factor": 1.5,  # Invalid (> 1.0)
+            "annual_operating_hours": 6000,
+            "latitude": 35.0,
+        }
+
+        result = agent.run(invalid_payload)
+
+        # Should fail validation
+        assert result["success"] is False
+        assert result["error"]["type"] == "ValidationError"
+
+    def test_health_check_success(self, agent):
+        """Test health_check() returns healthy status."""
+        result = agent.health_check()
+
+        # Should return healthy status
+        assert "status" in result
+        assert result["status"] in ["healthy", "unhealthy"]
+        assert "version" in result
+        assert result["version"] == agent.version
+        assert "agent_id" in result
+        assert result["agent_id"] == agent.agent_id
+
+        # If healthy, should have metrics
+        if result["status"] == "healthy":
+            assert "metrics" in result
+            assert "test_execution" in result
+            assert result["test_execution"]["status"] == "pass"
+
+    def test_health_check_with_mock_exception(self, agent):
+        """Test health_check() handles exceptions gracefully."""
+        # Mock the _calculate_boiler_efficiency_impl to raise an exception
+        with patch.object(agent, '_calculate_boiler_efficiency_impl', side_effect=Exception("Mock error")):
+            result = agent.health_check()
+
+            # Should return unhealthy status
+            assert result["status"] == "unhealthy"
+            assert "error" in result
+            assert "Mock error" in result["error"]
+            assert "timestamp" in result
+
+
+# ============================================================================
 # Test Summary and Execution
 # ============================================================================
 

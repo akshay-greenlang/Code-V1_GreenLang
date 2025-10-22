@@ -123,6 +123,18 @@ security = [
   "cryptography>=41.0.0",
   "PyJWT>=2.8.0",
 ]
+sbom = [
+  "sigstore>=3.0.0",
+  "cyclonedx-bom>=4.0.0",
+  "cryptography>=41.0.0",
+]
+supply-chain = [
+  "sigstore>=3.0.0",
+  "cyclonedx-bom>=4.0.0",
+  "cryptography>=41.0.0",
+  "pip-audit>=2.6.0",
+  "safety>=3.0.0",
+]
 test = [
   "pytest>=7.4.0",
   "pytest-cov>=4.1.0",

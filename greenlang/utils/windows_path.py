@@ -8,6 +8,8 @@ to ensure the 'gl' command is available after pip installation.
 import os
 import sys
 import subprocess
+import json
+from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -16,6 +18,9 @@ if sys.platform == "win32":
     import winreg
 else:
     winreg = None
+
+# Backup directory
+BACKUP_DIR = Path.home() / ".greenlang" / "backup"
 
 
 def get_python_scripts_directories() -> List[Path]:
@@ -136,6 +141,9 @@ def add_to_user_path(directory: Path) -> bool:
     if is_in_path(directory):
         return True
 
+    # Backup current PATH before modifying
+    backup_user_path()
+
     current_path = get_user_path()
 
     # Handle empty PATH
@@ -146,6 +154,184 @@ def add_to_user_path(directory: Path) -> bool:
         new_path = f"{directory}{os.pathsep}{current_path}"
 
     return set_user_path(new_path)
+
+
+def remove_from_user_path(directory: Path) -> bool:
+    """
+    Remove a directory from the user PATH.
+
+    Args:
+        directory: Directory to remove from PATH
+
+    Returns:
+        True if successful or not in PATH, False otherwise
+    """
+    if not is_in_path(directory):
+        return True
+
+    # Backup current PATH before modifying
+    backup_user_path()
+
+    current_path = get_user_path()
+    if not current_path:
+        return True
+
+    # Split PATH and remove the specified directory
+    path_entries = current_path.split(os.pathsep)
+    directory_str = str(directory)
+
+    # Remove all instances (case-insensitive on Windows)
+    new_entries = [
+        entry for entry in path_entries
+        if Path(entry).resolve() != directory.resolve()
+    ]
+
+    # Reconstruct PATH
+    new_path = os.pathsep.join(new_entries)
+
+    return set_user_path(new_path)
+
+
+def backup_user_path() -> Optional[Path]:
+    """
+    Backup the current user PATH to a JSON file.
+
+    Returns:
+        Path to the backup file if successful, None otherwise
+    """
+    if sys.platform != "win32":
+        return None
+
+    try:
+        # Ensure backup directory exists
+        BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+
+        current_path = get_user_path()
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_file = BACKUP_DIR / f"path_{timestamp}.json"
+
+        backup_data = {
+            "timestamp": datetime.now().isoformat(),
+            "path": current_path,
+            "entries": current_path.split(os.pathsep) if current_path else []
+        }
+
+        with open(backup_file, 'w') as f:
+            json.dump(backup_data, f, indent=2)
+
+        # Keep only the last 10 backups
+        cleanup_old_backups(max_backups=10)
+
+        return backup_file
+
+    except (OSError, PermissionError, IOError):
+        return None
+
+
+def cleanup_old_backups(max_backups: int = 10) -> None:
+    """
+    Keep only the most recent PATH backups.
+
+    Args:
+        max_backups: Maximum number of backups to keep
+    """
+    try:
+        if not BACKUP_DIR.exists():
+            return
+
+        backup_files = sorted(
+            BACKUP_DIR.glob("path_*.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True
+        )
+
+        # Remove old backups beyond max_backups
+        for backup_file in backup_files[max_backups:]:
+            backup_file.unlink()
+
+    except (OSError, PermissionError):
+        pass
+
+
+def list_path_backups() -> List[dict]:
+    """
+    List all available PATH backups.
+
+    Returns:
+        List of backup metadata dictionaries
+    """
+    backups = []
+
+    try:
+        if not BACKUP_DIR.exists():
+            return backups
+
+        for backup_file in sorted(BACKUP_DIR.glob("path_*.json"), reverse=True):
+            try:
+                with open(backup_file, 'r') as f:
+                    data = json.load(f)
+                    backups.append({
+                        "file": str(backup_file),
+                        "timestamp": data.get("timestamp"),
+                        "entries_count": len(data.get("entries", []))
+                    })
+            except (json.JSONDecodeError, IOError):
+                continue
+
+    except OSError:
+        pass
+
+    return backups
+
+
+def restore_path_from_backup(backup_file: Optional[Path] = None) -> Tuple[bool, str]:
+    """
+    Restore user PATH from a backup file.
+
+    Args:
+        backup_file: Path to backup file. If None, uses most recent backup.
+
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    if sys.platform != "win32":
+        return False, "This function is only for Windows systems"
+
+    try:
+        # If no backup file specified, use the most recent one
+        if backup_file is None:
+            backups = list_path_backups()
+            if not backups:
+                return False, "No PATH backups found"
+            backup_file = Path(backups[0]["file"])
+
+        if not backup_file.exists():
+            return False, f"Backup file not found: {backup_file}"
+
+        # Load backup
+        with open(backup_file, 'r') as f:
+            backup_data = json.load(f)
+
+        old_path = backup_data.get("path", "")
+
+        # Restore PATH
+        if set_user_path(old_path):
+            return True, f"Successfully restored PATH from backup: {backup_file.name}"
+        else:
+            return False, "Failed to restore PATH from backup"
+
+    except (json.JSONDecodeError, IOError, OSError) as e:
+        return False, f"Error restoring backup: {str(e)}"
+
+
+def revert_windows_path() -> Tuple[bool, str]:
+    """
+    Revert Windows PATH to the most recent backup.
+
+    Returns:
+        Tuple of (success: bool, message: str)
+    """
+    return restore_path_from_backup()
 
 
 def find_gl_executable() -> Optional[Path]:

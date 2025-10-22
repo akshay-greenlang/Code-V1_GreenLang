@@ -64,6 +64,8 @@ def version():
 @app.command()
 def doctor(
     setup_path: bool = typer.Option(False, "--setup-path", help="Setup Windows PATH automatically"),
+    revert_path: bool = typer.Option(False, "--revert-path", help="Revert Windows PATH to last backup"),
+    list_backups: bool = typer.Option(False, "--list-backups", help="List available PATH backups"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed diagnostics")
 ):
     """Check GreenLang installation and environment"""
@@ -105,7 +107,70 @@ def doctor(
         console.print("\n[bold]Windows PATH Diagnostics[/bold]")
 
         try:
-            from ..utils.windows_path import diagnose_path_issues, setup_windows_path
+            from ..utils.windows_path import (
+                diagnose_path_issues,
+                setup_windows_path,
+                revert_windows_path,
+                list_path_backups
+            )
+
+            # Handle list-backups option
+            if list_backups:
+                console.print("\n[bold]Available PATH Backups:[/bold]")
+                backups = list_path_backups()
+
+                if not backups:
+                    console.print("[yellow][WARN][/yellow] No PATH backups found")
+                    console.print("[blue][INFO][/blue] Backups are created automatically when PATH is modified")
+                else:
+                    from rich.table import Table
+                    table = Table(show_header=True, header_style="bold magenta")
+                    table.add_column("Timestamp", style="cyan")
+                    table.add_column("Entries Count", justify="right", style="green")
+                    table.add_column("File", style="yellow")
+
+                    for backup in backups:
+                        timestamp = backup["timestamp"].split('T')[0] + ' ' + backup["timestamp"].split('T')[1][:8]
+                        table.add_row(
+                            timestamp,
+                            str(backup["entries_count"]),
+                            Path(backup["file"]).name
+                        )
+
+                    console.print(table)
+                    console.print(f"\n[blue][INFO][/blue] Backup location: {Path.home() / '.greenlang' / 'backup'}")
+                    console.print("[blue][INFO][/blue] To restore: gl doctor --revert-path")
+
+                return
+
+            # Handle revert-path option
+            if revert_path:
+                console.print("\n[bold]Reverting Windows PATH...[/bold]")
+
+                # Show available backups first
+                backups = list_path_backups()
+                if not backups:
+                    console.print("[red][FAIL][/red] No PATH backups found")
+                    console.print("[blue][INFO][/blue] Backups are created automatically when PATH is modified")
+                    return
+
+                console.print(f"[blue][INFO][/blue] Will restore from most recent backup: {backups[0]['timestamp']}")
+
+                # Confirm with user
+                from rich.prompt import Confirm
+                if not Confirm.ask("Are you sure you want to revert PATH to the backup?"):
+                    console.print("[yellow][WARN][/yellow] Operation cancelled")
+                    return
+
+                success, message = revert_windows_path()
+
+                if success:
+                    console.print(f"[green][OK][/green] {message}")
+                    console.print("[blue][INFO][/blue] Please restart your command prompt for changes to take effect")
+                else:
+                    console.print(f"[red][FAIL][/red] {message}")
+
+                return
 
             # Run diagnostics
             diagnosis = diagnose_path_issues()
@@ -133,6 +198,13 @@ def doctor(
                 if len(diagnosis["path_entries"]) > 10:
                     console.print(f"  ... and {len(diagnosis['path_entries']) - 10} more")
 
+                # Show backup info
+                backups = list_path_backups()
+                if backups:
+                    console.print(f"\n[blue][INFO][/blue] PATH backups available: {len(backups)}")
+                    console.print(f"[blue][INFO][/blue] Most recent: {backups[0]['timestamp']}")
+                    console.print("[blue][INFO][/blue] Use --list-backups to see all backups")
+
             # Handle setup-path option
             if setup_path:
                 console.print("\n[bold]Setting up Windows PATH...[/bold]")
@@ -140,6 +212,8 @@ def doctor(
 
                 if success:
                     console.print(f"[green][OK][/green] {message}")
+                    console.print("[blue][INFO][/blue] A backup of your previous PATH has been saved")
+                    console.print("[blue][INFO][/blue] Use --revert-path to restore if needed")
                 else:
                     console.print(f"[red][FAIL][/red] {message}")
 
@@ -170,14 +244,16 @@ def doctor(
     console.print("\n[green]Environment check completed![/green]")
 
 
-# Add sub-applications for pack, init, and rag commands
+# Add sub-applications for pack, init, rag, and sbom commands
 from .cmd_pack_new import app as pack_app
 from .cmd_init import app as init_app
 from .rag_commands import app as rag_app
+from .cmd_sbom import app as sbom_app
 
 app.add_typer(pack_app, name="pack", help="Pack management commands")
 app.add_typer(init_app, name="init", help="Initialize new projects, packs, and agents")
 app.add_typer(rag_app, name="rag", help="RAG (Retrieval-Augmented Generation) commands")
+app.add_typer(sbom_app, name="sbom", help="SBOM generation and verification")
 
 
 # Add run command

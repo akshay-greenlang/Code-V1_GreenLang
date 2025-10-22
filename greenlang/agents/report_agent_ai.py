@@ -47,6 +47,7 @@ import asyncio
 import logging
 
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from templates.agent_monitoring import OperationalMonitoringMixin
 from greenlang.agents.report_agent import ReportAgent
 from greenlang.intelligence import (
     ChatSession,
@@ -61,7 +62,7 @@ from greenlang.intelligence.schemas.tools import ToolDef
 logger = logging.getLogger(__name__)
 
 
-class ReportAgentAI(BaseAgent):
+class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
     """AI-powered emissions report generation agent using ChatSession.
 
     This agent enhances the original ReportAgent with AI orchestration while
@@ -132,6 +133,7 @@ class ReportAgentAI(BaseAgent):
                 version="0.1.0",
             )
         super().__init__(config)
+        self.setup_monitoring(agent_name="report_agent_ai_agent")
 
         # Initialize original report agent for tool implementations
         self.report_agent = ReportAgent()
@@ -767,42 +769,43 @@ class ReportAgentAI(BaseAgent):
         Returns:
             AgentResult with formatted report and AI insights
         """
-        start_time = datetime.now()
+        with self.track_execution(input_data) as tracker:
+            start_time = datetime.now()
 
-        # Validate input
-        if not self.validate_input(input_data):
-            return AgentResult(
-                success=False,
-                error="Invalid input: 'carbon_data' with emissions required",
-            )
+            # Validate input
+            if not self.validate_input(input_data):
+                return AgentResult(
+                    success=False,
+                    error="Invalid input: 'carbon_data' with emissions required",
+                )
 
-        try:
-            # Run async report generation
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
             try:
-                result = loop.run_until_complete(self._execute_async(input_data))
-            finally:
-                loop.close()
+                # Run async report generation
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    result = loop.run_until_complete(self._execute_async(input_data))
+                finally:
+                    loop.close()
 
-            # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+                # Calculate duration
+                duration = (datetime.now() - start_time).total_seconds()
 
-            # Add performance metadata
-            if result.success:
-                result.metadata["calculation_time_ms"] = duration * 1000
-                result.metadata["ai_calls"] = self._ai_call_count
-                result.metadata["tool_calls"] = self._tool_call_count
-                result.metadata["total_cost_usd"] = self._total_cost_usd
+                # Add performance metadata
+                if result.success:
+                    result.metadata["calculation_time_ms"] = duration * 1000
+                    result.metadata["ai_calls"] = self._ai_call_count
+                    result.metadata["tool_calls"] = self._tool_call_count
+                    result.metadata["total_cost_usd"] = self._total_cost_usd
 
-            return result
+                return result
 
-        except Exception as e:
-            self.logger.error(f"Error in AI report generation: {e}")
-            return AgentResult(
-                success=False,
-                error=f"Failed to generate report: {str(e)}",
-            )
+            except Exception as e:
+                self.logger.error(f"Error in AI report generation: {e}")
+                return AgentResult(
+                    success=False,
+                    error=f"Failed to generate report: {str(e)}",
+                )
 
     async def _execute_async(self, input_data: Dict[str, Any]) -> AgentResult:
         """Async execution with ChatSession.
