@@ -1,0 +1,164 @@
+# ============================================================================
+# CBAM IMPORTER COPILOT - CONFIGURATION TEMPLATE
+# ============================================================================
+#
+# This file stores your CBAM importer information so you don't have to
+# repeat it for every report generation.
+#
+# Usage:
+#   1. Copy this file to your project root as .cbam.yaml
+#   2. Fill in your company's information below
+#   3. Run: gl cbam report --input shipments.csv
+#
+# The CLI will automatically load this config and use your defaults.
+#
+# Version: 1.0.0
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# EU IMPORTER INFORMATION (Required)
+# ----------------------------------------------------------------------------
+
+importer:
+  # Legal name of your EU importing company
+  name: "Your Company Legal Name"
+
+  # EU country code (2 letters)
+  # Valid values: AT, BE, BG, HR, CY, CZ, DK, EE, FI, FR, DE, GR, HU, IE,
+  #               IT, LV, LT, LU, MT, NL, PL, PT, RO, SK, SI, ES, SE
+  country: "NL"
+
+  # EORI number (Economic Operators Registration and Identification)
+  # Format: Country code + up to 15 alphanumeric characters
+  # Example: NL123456789012
+  eori: "NL000000000000"
+
+# ----------------------------------------------------------------------------
+# DECLARANT INFORMATION (Required)
+# ----------------------------------------------------------------------------
+
+declarant:
+  # Full name of person making the declaration
+  name: "John Smith"
+
+  # Position/title of the declarant
+  position: "Compliance Officer"
+
+# ----------------------------------------------------------------------------
+# DEFAULT FILE PATHS (Optional)
+# ----------------------------------------------------------------------------
+
+paths:
+  # Path to CN codes JSON file
+  cn_codes: "data/cn_codes.json"
+
+  # Path to CBAM validation rules YAML
+  rules: "rules/cbam_rules.yaml"
+
+  # Path to supplier profiles YAML (optional)
+  suppliers: "examples/demo_suppliers.yaml"
+
+  # Default output directory for reports
+  output_dir: "output"
+
+# ----------------------------------------------------------------------------
+# REPORTING PREFERENCES (Optional)
+# ----------------------------------------------------------------------------
+
+preferences:
+  # Automatically generate Markdown summary
+  auto_summary: true
+
+  # Save intermediate outputs for debugging
+  save_intermediate: false
+
+  # Report format version
+  format_version: "1.0"
+
+  # Default quarter (leave empty to auto-detect from shipment dates)
+  # Format: YYYYQN (e.g., 2025Q4)
+  default_quarter: null
+
+# ----------------------------------------------------------------------------
+# ADVANCED SETTINGS (Optional)
+# ----------------------------------------------------------------------------
+
+advanced:
+  # Validation strictness
+  # - strict: Fail on any validation error
+  # - lenient: Allow some errors with warnings
+  validation_mode: "strict"
+
+  # Performance settings
+  batch_size: 1000  # Shipments per batch
+  parallel_processing: false  # Enable parallel agent execution
+
+  # Logging
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  log_file: null  # Path to log file (null = console only)
+
+# ============================================================================
+# EXAMPLE CONFIGURATIONS
+# ============================================================================
+
+# Example 1: Steel Importer in Netherlands
+# -----------------------------------------
+# importer:
+#   name: "Acme Steel EU BV"
+#   country: "NL"
+#   eori: "NL123456789012"
+# declarant:
+#   name: "John Smith"
+#   position: "Compliance Officer"
+
+# Example 2: Aluminum Importer in Germany
+# ----------------------------------------
+# importer:
+#   name: "Deutsche Aluminium GmbH"
+#   country: "DE"
+#   eori: "DE987654321098"
+# declarant:
+#   name: "Maria Schmidt"
+#   position: "Head of Compliance"
+
+# Example 3: Cement Importer in France
+# -------------------------------------
+# importer:
+#   name: "Ciments de France SA"
+#   country: "FR"
+#   eori: "FR555666777888"
+# declarant:
+#   name: "Pierre Dubois"
+#   position: "Directeur Conformité"
+
+# ============================================================================
+# NOTES
+# ============================================================================
+
+# Command-line overrides:
+#   Any value can be overridden via command-line arguments:
+#   gl cbam report --input data.csv --importer-name "Different Company"
+
+# Environment variables:
+#   You can also set via environment variables:
+#   export CBAM_IMPORTER_NAME="My Company"
+#   export CBAM_IMPORTER_COUNTRY="NL"
+#   export CBAM_IMPORTER_EORI="NL123456789012"
+#   export CBAM_DECLARANT_NAME="John Smith"
+#   export CBAM_DECLARANT_POSITION="Compliance Officer"
+
+# Multi-tenant support:
+#   For multiple importers, create separate config files:
+#   .cbam-company1.yaml, .cbam-company2.yaml
+#   Then use: gl cbam report --config .cbam-company1.yaml
+
+# Security:
+#   - This file contains company information but NO sensitive data
+#   - EORI numbers are public registry information
+#   - Safe to commit to version control
+#   - Do NOT store API keys or passwords in this file
+
+# ============================================================================
+# END OF CONFIGURATION
+# ============================================================================

@@ -1,0 +1,347 @@
+# ============================================================================
+# CSRD REPORTING PLATFORM - ALERT RULES
+# ============================================================================
+#
+# Defines alerting rules for critical metrics and SLOs
+#
+# Severity Levels:
+# - critical: Immediate action required (page on-call)
+# - warning: Investigation required (create ticket)
+# - info: Awareness only (log)
+#
+# Version: 1.0
+# Date: 2025-10-20
+#
+# ============================================================================
+
+groups:
+  # ==========================================================================
+  # API PERFORMANCE ALERTS
+  # ==========================================================================
+  - name: csrd_api_performance
+    interval: 30s
+    rules:
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High API latency detected"
+          description: "API p95 latency is {{ $value }}s (threshold: 0.2s) for {{ $labels.instance }}"
+
+      - alert: CriticalAPILatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 1.0
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "CRITICAL: API latency exceeds 1 second"
+          description: "API p95 latency is {{ $value }}s for {{ $labels.instance }} - immediate investigation required"
+
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: api
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}"
+
+      - alert: CriticalErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.10
+        for: 2m
+        labels:
+          severity: critical
+          component: api
+        annotations:
+          summary: "CRITICAL: Error rate exceeds 10%"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.instance }}"
+
+      - alert: LowThroughput
+        expr: rate(http_requests_total[5m]) < 1
+        for: 10m
+        labels:
+          severity: info
+          component: api
+        annotations:
+          summary: "Low API throughput"
+          description: "API receiving < 1 req/sec for {{ $labels.instance }} - possible issue or low traffic"
+
+  # ==========================================================================
+  # AGENT HEALTH ALERTS
+  # ==========================================================================
+  - name: csrd_agent_health
+    interval: 30s
+    rules:
+      - alert: AgentExecutionFailure
+        expr: rate(agent_execution_failures_total[5m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+          component: agent
+        annotations:
+          summary: "Agent execution failures detected"
+          description: "Agent {{ $labels.agent_name }} is experiencing failures: {{ $value }} failures/sec"
+
+      - alert: AgentExecutionSlow
+        expr: agent_execution_duration_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+          component: agent
+        annotations:
+          summary: "Agent execution taking too long"
+          description: "Agent {{ $labels.agent_name }} execution time: {{ $value }}s (threshold: 300s)"
+
+      - alert: AgentMemoryHigh
+        expr: agent_memory_usage_bytes > 4 * 1024 * 1024 * 1024
+        for: 5m
+        labels:
+          severity: warning
+          component: agent
+        annotations:
+          summary: "Agent memory usage high"
+          description: "Agent {{ $labels.agent_name }} using {{ $value | humanize }}B of memory"
+
+      - alert: XBRLGenerationFailed
+        expr: increase(xbrl_generation_failures_total[10m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: reporting_agent
+        annotations:
+          summary: "XBRL generation failures detected"
+          description: "XBRL generation has failed {{ $value }} times in the last 10 minutes"
+
+      - alert: MaterialityAssessmentFailed
+        expr: increase(materiality_assessment_failures_total[10m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: materiality_agent
+        annotations:
+          summary: "Materiality assessment failures"
+          description: "Materiality assessment has failed {{ $value }} times in the last 10 minutes"
+
+  # ==========================================================================
+  # DATA VALIDATION ALERTS
+  # ==========================================================================
+  - name: csrd_data_validation
+    interval: 30s
+    rules:
+      - alert: HighValidationErrorRate
+        expr: rate(data_validation_errors_total[5m]) / rate(data_records_processed_total[5m]) > 0.10
+        for: 5m
+        labels:
+          severity: warning
+          component: intake_agent
+        annotations:
+          summary: "High data validation error rate"
+          description: "Validation error rate: {{ $value | humanizePercentage }}"
+
+      - alert: DataImportStalled
+        expr: increase(data_records_processed_total[10m]) == 0
+        for: 15m
+        labels:
+          severity: warning
+          component: intake_agent
+        annotations:
+          summary: "Data import appears stalled"
+          description: "No data records processed in the last 15 minutes"
+
+  # ==========================================================================
+  # DATABASE ALERTS
+  # ==========================================================================
+  - name: csrd_database
+    interval: 30s
+    rules:
+      - alert: DatabaseConnectionsHigh
+        expr: pg_stat_activity_count > 80
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "High number of database connections"
+          description: "Current connections: {{ $value }} (threshold: 80)"
+
+      - alert: DatabaseSlowQueries
+        expr: rate(pg_stat_statements_mean_time_seconds[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Mean query time: {{ $value }}s"
+
+      - alert: DatabaseDown
+        expr: up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "CRITICAL: Database is down"
+          description: "PostgreSQL database is not responding"
+
+  # ==========================================================================
+  # SYSTEM RESOURCE ALERTS
+  # ==========================================================================
+  - name: csrd_system_resources
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+
+      - alert: CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 5m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "CRITICAL: CPU usage exceeds 95%"
+          description: "CPU usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 10m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+
+      - alert: CriticalMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "CRITICAL: Memory usage exceeds 95%"
+          description: "Memory usage is {{ $value | humanize }}% on {{ $labels.instance }}"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: warning
+          component: infrastructure
+        annotations:
+          summary: "Low disk space"
+          description: "Only {{ $value | humanize }}% disk space remaining on {{ $labels.instance }}"
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 5
+        for: 2m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "CRITICAL: Disk space critically low"
+          description: "Only {{ $value | humanize }}% disk space remaining on {{ $labels.instance }}"
+
+  # ==========================================================================
+  # LLM API COST ALERTS
+  # ==========================================================================
+  - name: csrd_llm_costs
+    interval: 60s
+    rules:
+      - alert: HighLLMCosts
+        expr: sum(increase(llm_api_cost_usd[1h])) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: materiality_agent
+        annotations:
+          summary: "High LLM API costs"
+          description: "LLM API costs: ${{ $value | humanize }} in the last hour (threshold: $10/hour)"
+
+      - alert: CriticalLLMCosts
+        expr: sum(increase(llm_api_cost_usd[1h])) > 50
+        for: 1m
+        labels:
+          severity: critical
+          component: materiality_agent
+        annotations:
+          summary: "CRITICAL: LLM API costs exceeding budget"
+          description: "LLM API costs: ${{ $value | humanize }} in the last hour (threshold: $50/hour)"
+
+  # ==========================================================================
+  # SECURITY ALERTS
+  # ==========================================================================
+  - name: csrd_security
+    interval: 30s
+    rules:
+      - alert: AuthenticationFailures
+        expr: rate(authentication_failures_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Authentication failures: {{ $value }}/sec - possible brute force attack"
+
+      - alert: EncryptionFailures
+        expr: increase(encryption_failures_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "CRITICAL: Encryption failures detected"
+          description: "Encryption failures detected: {{ $value }} in the last 5 minutes"
+
+  # ==========================================================================
+  # SERVICE AVAILABILITY ALERTS
+  # ==========================================================================
+  - name: csrd_service_availability
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: infrastructure
+        annotations:
+          summary: "CRITICAL: Service is down"
+          description: "Service {{ $labels.job }} on {{ $labels.instance }} is not responding"
+
+      - alert: HealthCheckFailing
+        expr: health_check_status == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: health
+        annotations:
+          summary: "CRITICAL: Health check failing"
+          description: "Health check failing for {{ $labels.service }} on {{ $labels.instance }}"
+
+# ============================================================================
+# ALERTING BEST PRACTICES
+# ============================================================================
+#
+# 1. Alert on symptoms, not causes
+# 2. Include actionable information in annotations
+# 3. Use appropriate severity levels
+# 4. Set reasonable thresholds and durations
+# 5. Test alerts in staging before production
+# 6. Review and tune alerts regularly
+#
+# ============================================================================

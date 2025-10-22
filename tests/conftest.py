@@ -453,17 +453,9 @@ def anyio_backend():
     return "asyncio"
 
 
-@pytest.fixture(scope="function")
-def event_loop():
-    """Create an instance of the default event loop for each test case."""
-    policy = asyncio.get_event_loop_policy()
-    loop = policy.new_event_loop()
-    asyncio.set_event_loop(loop)
-    yield loop
-    try:
-        loop.close()
-    except Exception:
-        pass
+# NOTE: Removed custom event_loop fixture to avoid conflict with pytest-asyncio
+# pytest-asyncio now manages event loops automatically with asyncio_mode = auto
+# in pytest.ini. This fixes event loop conflicts on Windows and across all platforms.
 
 
 @pytest.fixture(autouse=True)
@@ -521,7 +513,7 @@ def mock_chat_response():
 
 
 @pytest.fixture
-def mock_chat_session(mock_chat_response, event_loop):
+def mock_chat_session(mock_chat_response):
     """Create a mock ChatSession with async support for testing AI agents.
 
     This fixture provides:
@@ -529,6 +521,9 @@ def mock_chat_session(mock_chat_response, event_loop):
     - Tool call tracking
     - Deterministic responses (temperature=0, seed=42)
     - Response customization per test
+
+    NOTE: No longer depends on custom event_loop fixture.
+    pytest-asyncio manages event loops automatically.
     """
     from unittest.mock import Mock, AsyncMock
 
@@ -612,3 +607,223 @@ def tool_call_tracker():
             self.calls = []
 
     return ToolCallTracker()
+
+
+# ============================================================================
+# Test Data Fixtures Library - Reusable Test Data for All Agent Tests
+# ============================================================================
+
+
+@pytest.fixture
+def sample_fuel_payload():
+    """Reusable fuel agent test data."""
+    return {
+        "fuel_type": "natural_gas",
+        "amount": 1000.0,
+        "unit": "therms",
+        "country": "US",
+    }
+
+
+@pytest.fixture
+def sample_carbon_payload():
+    """Reusable carbon agent test data."""
+    return {
+        "emissions_by_source": {
+            "electricity": 15000.0,
+            "natural_gas": 8500.0,
+            "diesel": 3200.0,
+        },
+        "building_area_sqft": 50000.0,
+        "occupancy": 200,
+    }
+
+
+@pytest.fixture
+def sample_grid_payload():
+    """Reusable grid factor agent test data."""
+    return {
+        "region": "US-CA",
+        "country": "US",
+        "year": 2024,
+        "hour": 12,
+    }
+
+
+@pytest.fixture
+def sample_recommendation_payload():
+    """Reusable recommendation agent test data."""
+    return {
+        "emissions_by_source": {
+            "electricity": 15000.0,
+            "natural_gas": 8500.0,
+            "diesel": 3200.0,
+        },
+        "building_type": "commercial_office",
+        "building_area": 50000.0,
+        "occupancy": 200,
+        "building_age": 20,
+        "performance_rating": "Below Average",
+        "load_breakdown": {
+            "hvac_load": 0.45,
+            "lighting_load": 0.25,
+            "plug_load": 0.30,
+        },
+    }
+
+
+@pytest.fixture
+def sample_report_payload():
+    """Reusable report agent test data."""
+    return {
+        "framework": "TCFD",
+        "format": "markdown",
+        "carbon_data": {
+            "total_co2e_tons": 45.5,
+            "total_co2e_kg": 45500.0,
+            "emissions_breakdown": [
+                {"source": "electricity", "co2e_tons": 25.0, "percentage": 54.95},
+                {"source": "natural_gas", "co2e_tons": 15.0, "percentage": 32.97},
+                {"source": "diesel", "co2e_tons": 5.5, "percentage": 12.09},
+            ],
+            "carbon_intensity": {
+                "per_sqft": 0.455,
+                "per_person": 227.5,
+            },
+        },
+        "building_data": {
+            "building_area_sqft": 100000.0,
+            "occupancy": 200,
+            "building_type": "commercial_office",
+        },
+    }
+
+
+@pytest.fixture
+def sample_forecast_payload():
+    """Reusable SARIMA forecast agent test data."""
+    return {
+        "data": [100.0, 105.0, 110.0, 115.0, 120.0, 125.0, 130.0, 135.0] * 12,  # 96 data points
+        "periods_ahead": 12,
+        "seasonal_period": 12,
+        "confidence_level": 0.95,
+    }
+
+
+@pytest.fixture
+def sample_anomaly_payload():
+    """Reusable Isolation Forest anomaly agent test data."""
+    return {
+        "data": {
+            "energy_kwh": [100.0, 105.0, 110.0, 500.0, 115.0, 120.0, 125.0, 130.0] * 10,
+            "temperature_f": [72.0, 73.0, 74.0, 95.0, 75.0, 76.0, 77.0, 78.0] * 10,
+        },
+        "contamination": 0.1,
+        "n_estimators": 100,
+    }
+
+
+@pytest.fixture
+def sample_tool_calls():
+    """Reusable tool call structures for mocking ChatResponse."""
+    from greenlang.intelligence.schemas.tools import ToolCall
+
+    return {
+        "fuel_calculation": [
+            ToolCall(
+                id="call_1",
+                type="function",
+                function={
+                    "name": "calculate_emissions",
+                    "arguments": '{"fuel_type": "natural_gas", "amount": 1000, "unit": "therms"}',
+                },
+            )
+        ],
+        "carbon_aggregation": [
+            ToolCall(
+                id="call_1",
+                type="function",
+                function={
+                    "name": "aggregate_carbon",
+                    "arguments": '{"sources": {"electricity": 15000, "natural_gas": 8500}}',
+                },
+            )
+        ],
+        "grid_lookup": [
+            ToolCall(
+                id="call_1",
+                type="function",
+                function={
+                    "name": "lookup_grid_factor",
+                    "arguments": '{"region": "US-CA", "hour": 12}',
+                },
+            )
+        ],
+    }
+
+
+@pytest.fixture
+def agent_test_helpers():
+    """Helper functions for agent testing."""
+    class AgentTestHelpers:
+        @staticmethod
+        def assert_successful_response(result):
+            """Assert that agent returned successful response."""
+            assert result is not None
+            assert result.success is True
+            assert result.data is not None
+            assert result.error is None
+
+        @staticmethod
+        def assert_failed_response(result, error_type=None):
+            """Assert that agent returned failed response."""
+            assert result is not None
+            assert result.success is False
+            assert result.error is not None
+            if error_type:
+                assert error_type in result.error.lower()
+
+        @staticmethod
+        def assert_deterministic(func, *args, runs=5, **kwargs):
+            """Assert that function produces identical results across multiple runs."""
+            results = []
+            for _ in range(runs):
+                results.append(func(*args, **kwargs))
+
+            # All results should be equal
+            for i in range(1, len(results)):
+                assert results[i] == results[0], f"Run {i+1} produced different result than run 1"
+
+        @staticmethod
+        def create_mock_response_with_tools(mock_chat_response, tool_calls, text="Mock response"):
+            """Create a mock ChatResponse with specific tool calls."""
+            return mock_chat_response(text=text, tool_calls=tool_calls)
+
+    return AgentTestHelpers()
+
+
+# ============================================================================
+# Coverage and Pytest Configuration Helpers
+# ============================================================================
+
+
+@pytest.fixture
+def coverage_config():
+    """Provide coverage configuration for tests."""
+    return {
+        "branch": True,
+        "source": ["greenlang"],
+        "omit": [
+            "*/tests/*",
+            "*/__main__.py",
+            "*/conftest.py",
+        ],
+        "fail_under": 85,
+    }
+
+
+# Configure hypothesis for property-based testing
+settings.register_profile("ci", max_examples=10, deadline=5000, derandomize=True)
+settings.register_profile("dev", max_examples=100, deadline=10000)
+settings.register_profile("fast", max_examples=5, deadline=1000)
+settings.load_profile(os.getenv("HYPOTHESIS_PROFILE", "fast"))

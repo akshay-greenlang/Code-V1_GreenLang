@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/company_profile.schema.json",
+  "title": "Company Profile Schema",
+  "description": "Company metadata and context for CSRD reporting",
+  "type": "object",
+  "required": ["company_info", "reporting_scope"],
+  "properties": {
+    "company_info": {
+      "type": "object",
+      "required": ["legal_name", "country", "sector"],
+      "properties": {
+        "legal_name": {
+          "type": "string",
+          "description": "Legal company name",
+          "example": "Acme Manufacturing GmbH"
+        },
+        "trade_name": {
+          "type": "string",
+          "description": "Trading or brand name"
+        },
+        "lei_code": {
+          "type": "string",
+          "pattern": "^[A-Z0-9]{20}$",
+          "description": "Legal Entity Identifier (20 characters)",
+          "example": "549300XQFX7VBQX2LQ84"
+        },
+        "company_id": {
+          "type": "string",
+          "description": "Internal company identifier"
+        },
+        "registration_number": {
+          "type": "string",
+          "description": "Commercial register number"
+        },
+        "tax_id": {
+          "type": "string",
+          "description": "Tax identification number"
+        },
+        "headquarters": {
+          "type": "object",
+          "properties": {
+            "address": {"type": "string"},
+            "city": {"type": "string"},
+            "postal_code": {"type": "string"},
+            "country": {
+              "type": "string",
+              "pattern": "^[A-Z]{2}$",
+              "description": "ISO 3166-1 alpha-2 country code"
+            }
+          }
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "description": "Country of incorporation (ISO 3166-1 alpha-2)"
+        },
+        "website": {
+          "type": "string",
+          "format": "uri"
+        },
+        "contact": {
+          "type": "object",
+          "properties": {
+            "sustainability_officer": {"type": "string"},
+            "email": {"type": "string", "format": "email"},
+            "phone": {"type": "string"}
+          }
+        }
+      }
+    },
+    "business_profile": {
+      "type": "object",
+      "properties": {
+        "sector": {
+          "type": "string",
+          "description": "Primary business sector",
+          "examples": ["Manufacturing", "Financial Services", "Energy"]
+        },
+        "industry_code": {
+          "type": "string",
+          "description": "NACE or SIC code",
+          "example": "C25.40"
+        },
+        "business_model": {
+          "type": "string",
+          "description": "Brief description of business model"
+        },
+        "products_services": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Main products and services"
+        },
+        "value_chain": {
+          "type": "object",
+          "properties": {
+            "upstream": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Key suppliers and upstream activities"
+            },
+            "own_operations": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Own operational activities"
+            },
+            "downstream": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Distribution, use, end-of-life"
+            }
+          }
+        }
+      }
+    },
+    "reporting_scope": {
+      "type": "object",
+      "required": ["reporting_year", "consolidation_method"],
+      "properties": {
+        "reporting_year": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2100,
+          "example": 2024
+        },
+        "fiscal_year": {
+          "type": "object",
+          "properties": {
+            "start_date": {"type": "string", "format": "date"},
+            "end_date": {"type": "string", "format": "date"}
+          }
+        },
+        "consolidation_method": {
+          "type": "string",
+          "enum": ["full_consolidation", "equity_method", "operational_control", "financial_control"],
+          "description": "Consolidation approach for group reporting"
+        },
+        "entities_included": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "entity_name": {"type": "string"},
+              "country": {"type": "string"},
+              "ownership_percentage": {"type": "number", "minimum": 0, "maximum": 100}
+            }
+          }
+        },
+        "exclusions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "entity_name": {"type": "string"},
+              "reason": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "company_size": {
+      "type": "object",
+      "properties": {
+        "employees": {
+          "type": "object",
+          "properties": {
+            "total_headcount": {"type": "integer", "minimum": 0},
+            "fte_count": {"type": "number", "minimum": 0},
+            "breakdown_by_region": {
+              "type": "object",
+              "additionalProperties": {"type": "integer"}
+            },
+            "breakdown_by_gender": {
+              "type": "object",
+              "properties": {
+                "male": {"type": "integer"},
+                "female": {"type": "integer"},
+                "other": {"type": "integer"}
+              }
+            }
+          }
+        },
+        "revenue": {
+          "type": "object",
+          "properties": {
+            "total_revenue": {"type": "number", "minimum": 0},
+            "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+            "revenue_by_segment": {
+              "type": "object",
+              "additionalProperties": {"type": "number"}
+            }
+          }
+        },
+        "total_assets": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total balance sheet assets"
+        },
+        "market_cap": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Market capitalization (if listed)"
+        }
+      }
+    },
+    "csrd_applicability": {
+      "type": "object",
+      "properties": {
+        "subject_to_csrd": {
+          "type": "boolean",
+          "description": "Is company subject to CSRD?"
+        },
+        "csrd_category": {
+          "type": "string",
+          "enum": [
+            "large_public_interest",
+            "large_non_listed",
+            "listed_sme",
+            "non_eu_subsidiary"
+          ],
+          "description": "CSRD applicability category"
+        },
+        "first_reporting_year": {
+          "type": "integer",
+          "description": "First year CSRD applies"
+        },
+        "requires_assurance": {
+          "type": "boolean",
+          "description": "External assurance required?"
+        },
+        "assurance_provider": {
+          "type": "string",
+          "description": "Name of assurance provider"
+        }
+      }
+    },
+    "sustainability_context": {
+      "type": "object",
+      "properties": {
+        "sustainability_strategy": {
+          "type": "string",
+          "description": "High-level sustainability strategy"
+        },
+        "climate_commitments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "commitment_type": {
+                "type": "string",
+                "examples": ["net_zero", "sbti", "re100", "ep100"]
+              },
+              "target_year": {"type": "integer"},
+              "description": {"type": "string"}
+            }
+          }
+        },
+        "certifications": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "examples": ["ISO 14001", "ISO 50001", "B Corp", "EMAS"]
+          }
+        }
+      }
+    }
+  }
+}

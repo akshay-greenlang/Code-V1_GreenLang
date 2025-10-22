@@ -1,0 +1,27 @@
+{
+  "building": {
+    "id": "BLDG-2025-001",
+    "name": "Corporate Headquarters",
+    "location": "San Francisco, CA",
+    "area_sqm": 5000,
+    "occupancy": 250,
+    "type": "office"
+  },
+  "energy_consumption": {
+    "electricity": {
+      "value": 50000,
+      "unit": "kWh",
+      "period": "annual"
+    },
+    "natural_gas": {
+      "value": 1000,
+      "unit": "therms",
+      "period": "annual"
+    }
+  },
+  "metadata": {
+    "reporting_year": 2025,
+    "reporting_standard": "GHG Protocol",
+    "scope": "Scope 1 and 2"
+  }
+}

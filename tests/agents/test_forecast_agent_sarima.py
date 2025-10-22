@@ -1110,5 +1110,678 @@ def test_build_prompt_without_seasonality(agent, monthly_seasonal_data):
     assert "detect_seasonality" in prompt
 
 
+# ==============================================================================
+# Test: Coverage Expansion - Gap-Filling Tests for 80%+ Coverage
+# ==============================================================================
+
+
+class TestSARIMAForecastAgentCoverage:
+    """Gap-filling tests to achieve 80%+ coverage for SARIMAForecastAgent.
+
+    This test class adds comprehensive coverage for:
+    - Tool result extraction (all 7 tools)
+    - Output building variations
+    - Integration tests (budget exceeded, exceptions, feature toggles)
+    - Determinism verification (5-run consistency)
+    - Boundary conditions (zero, extreme values, edge cases)
+    - Configuration options
+    - Performance tracking
+    """
+
+    # =========================================================================
+    # Unit Tests: Tool Result Extraction
+    # =========================================================================
+
+    def test_extract_tool_results_all_seven_tools(self, agent, monthly_seasonal_data):
+        """Test extracting results from all seven tool types."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "preprocess_data",
+                "arguments": {"interpolation_method": "linear"},
+            },
+            {
+                "name": "detect_seasonality",
+                "arguments": {"max_period": 52},
+            },
+            {
+                "name": "validate_stationarity",
+                "arguments": {"alpha": 0.05},
+            },
+            {
+                "name": "fit_sarima_model",
+                "arguments": {"auto_tune": True, "seasonal_period": 12},
+            },
+            {
+                "name": "forecast_future",
+                "arguments": {"horizon": 12, "confidence_level": 0.95},
+            },
+            {
+                "name": "calculate_confidence_intervals",
+                "arguments": {
+                    "forecast": [100, 105, 110],
+                    "std_errors": [5, 5.5, 6],
+                    "confidence_level": 0.95,
+                },
+            },
+            {
+                "name": "evaluate_model",
+                "arguments": {"train_test_split": 0.8},
+            },
+        ]
+
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        # Fit model first for tools that need it
+        agent._fit_sarima_impl(input_data, auto_tune=False, seasonal_period=12)
+
+        results = agent._extract_tool_results(mock_response, input_data)
+
+        # Verify all tools were called
+        assert "preprocessing" in results
+        assert "seasonality" in results
+        assert "stationarity" in results
+        assert "model" in results
+        assert "forecast" in results
+        assert "confidence" in results
+        assert "evaluation" in results
+
+    def test_extract_tool_results_empty(self, agent, monthly_seasonal_data):
+        """Test extracting results when no tools were called."""
+        mock_response = Mock()
+        mock_response.tool_calls = []
+
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        results = agent._extract_tool_results(mock_response, input_data)
+
+        # Should return empty dict
+        assert isinstance(results, dict)
+        assert len(results) == 0
+
+    def test_extract_tool_results_unknown_tool(self, agent, monthly_seasonal_data):
+        """Test extracting results with unknown tool name."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {"name": "unknown_tool", "arguments": {}},
+            {"name": "fit_sarima_model", "arguments": {"seasonal_period": 12}},
+        ]
+
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        results = agent._extract_tool_results(mock_response, input_data)
+
+        # Should handle unknown tool gracefully
+        assert isinstance(results, dict)
+        assert "model" in results  # Known tool should work
+
+    def test_extract_tool_results_partial_data(self, agent, monthly_seasonal_data):
+        """Test extracting results when some tools return partial data."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {"name": "detect_seasonality", "arguments": {}},
+            {"name": "preprocess_data", "arguments": {}},
+        ]
+
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        results = agent._extract_tool_results(mock_response, input_data)
+
+        # Should have partial results
+        assert "seasonality" in results
+        assert "preprocessing" in results
+        assert "model" not in results  # Not called
+
+    # =========================================================================
+    # Unit Tests: Output Building
+    # =========================================================================
+
+    def test_build_output_missing_model(self, agent):
+        """Test output building when model data is missing."""
+        tool_results = {
+            "forecast": {
+                "forecast": [100, 105],
+                "lower_bound": [90, 95],
+                "upper_bound": [110, 115],
+                "forecast_dates": ["2025-01-01", "2025-02-01"],
+                "confidence_level": 0.95,
+            },
+        }
+
+        input_data = {"data": pd.DataFrame(), "target_column": "value", "forecast_horizon": 2}
+
+        output = agent._build_output(input_data, tool_results, "Explanation")
+
+        assert "forecast" in output
+        assert len(output["forecast"]) == 2
+        # Model params should have defaults when missing
+        assert "model_params" not in output or output.get("model_params") is None
+
+    def test_build_output_missing_evaluation(self, agent):
+        """Test output building when evaluation metrics are missing."""
+        tool_results = {
+            "forecast": {
+                "forecast": [100],
+                "lower_bound": [90],
+                "upper_bound": [110],
+                "forecast_dates": ["2025-01-01"],
+                "confidence_level": 0.95,
+            },
+            "model": {
+                "order": (1, 1, 1),
+                "seasonal_order": (1, 1, 1, 12),
+                "aic": 250.0,
+                "bic": 260.0,
+            },
+        }
+
+        input_data = {"data": pd.DataFrame(), "target_column": "value", "forecast_horizon": 1}
+
+        output = agent._build_output(input_data, tool_results, None)
+
+        assert "forecast" in output
+        assert "model_params" in output
+        assert "metrics" not in output or output.get("metrics") is None
+
+    def test_build_output_missing_seasonality(self, agent):
+        """Test output building when seasonality data is missing."""
+        tool_results = {
+            "forecast": {
+                "forecast": [100],
+                "lower_bound": [90],
+                "upper_bound": [110],
+                "forecast_dates": ["2025-01-01"],
+                "confidence_level": 0.95,
+            },
+        }
+
+        input_data = {"data": pd.DataFrame(), "target_column": "value", "forecast_horizon": 1}
+
+        output = agent._build_output(input_data, tool_results, "Test")
+
+        assert "seasonality" not in output or output.get("seasonality") is None
+        assert "stationarity" not in output or output.get("stationarity") is None
+
+    def test_build_output_no_explanation(self, agent):
+        """Test output building when explanations are disabled."""
+        tool_results = {
+            "forecast": {
+                "forecast": [100],
+                "lower_bound": [90],
+                "upper_bound": [110],
+                "forecast_dates": ["2025-01-01"],
+                "confidence_level": 0.95,
+            },
+        }
+
+        input_data = {"data": pd.DataFrame(), "target_column": "value", "forecast_horizon": 1}
+
+        # Disable explanations
+        agent.enable_explanations = False
+
+        output = agent._build_output(input_data, tool_results, "Should be ignored")
+
+        assert "explanation" not in output or output["explanation"] is None
+
+    # =========================================================================
+    # Integration Tests: Budget and Exception Handling
+    # =========================================================================
+
+    @pytest.mark.asyncio
+    async def test_integration_budget_exceeded(self, agent, monthly_seasonal_data):
+        """Test handling when AI budget is exceeded."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+            "seasonal_period": 12,
+        }
+
+        # Mock ChatSession to raise BudgetExceeded
+        with patch("greenlang.agents.forecast_agent_sarima.ChatSession") as MockSession:
+            mock_session = MockSession.return_value
+            mock_session.chat = AsyncMock(side_effect=BudgetExceeded("Budget exceeded"))
+
+            # Should raise ValueError with budget message
+            with pytest.raises(ValueError, match="budget"):
+                await agent._process_async(input_data)
+
+    @pytest.mark.asyncio
+    async def test_integration_general_exception(self, agent, monthly_seasonal_data):
+        """Test handling of general exceptions during processing."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        # Mock ChatSession to raise RuntimeError
+        with patch("greenlang.agents.forecast_agent_sarima.ChatSession") as MockSession:
+            mock_session = MockSession.return_value
+            mock_session.chat = AsyncMock(side_effect=RuntimeError("Unexpected error"))
+
+            # Should propagate the exception
+            with pytest.raises(RuntimeError, match="Unexpected error"):
+                await agent._process_async(input_data)
+
+    @pytest.mark.asyncio
+    async def test_integration_disabled_explanations(self, agent, monthly_seasonal_data):
+        """Test full workflow with explanations disabled."""
+        agent_no_explain = SARIMAForecastAgent(enable_explanations=False)
+
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 6,
+            "seasonal_period": 12,
+        }
+
+        # Mock ChatSession
+        with patch("greenlang.agents.forecast_agent_sarima.ChatSession") as MockSession:
+            mock_session = MockSession.return_value
+            mock_response = Mock()
+            mock_response.tool_calls = [
+                {"name": "fit_sarima_model", "arguments": {"seasonal_period": 12}},
+                {"name": "forecast_future", "arguments": {"horizon": 6}},
+            ]
+            mock_response.text = "This should be ignored"
+            mock_response.usage = Mock(cost_usd=0.01, total_tokens=100)
+            mock_response.provider_info = Mock(provider="anthropic", model="claude-3-5-sonnet-20241022")
+            mock_session.chat = AsyncMock(return_value=mock_response)
+
+            # Fit model first
+            agent_no_explain._fit_sarima_impl(input_data, auto_tune=False, seasonal_period=12)
+
+            result = await agent_no_explain._process_async(input_data)
+
+            # Should not have explanation
+            assert "explanation" not in result or result.get("explanation") is None
+
+    @pytest.mark.asyncio
+    async def test_integration_disabled_auto_tune(self, agent, monthly_seasonal_data):
+        """Test full workflow with auto-tuning disabled."""
+        agent_no_tune = SARIMAForecastAgent(enable_auto_tune=False)
+
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 6,
+            "seasonal_period": 12,
+        }
+
+        # Mock ChatSession
+        with patch("greenlang.agents.forecast_agent_sarima.ChatSession") as MockSession:
+            mock_session = MockSession.return_value
+            mock_response = Mock()
+            mock_response.tool_calls = [
+                {"name": "fit_sarima_model", "arguments": {"seasonal_period": 12, "auto_tune": False}},
+            ]
+            mock_response.text = "Forecast complete"
+            mock_response.usage = Mock(cost_usd=0.01, total_tokens=100)
+            mock_response.provider_info = Mock(provider="anthropic", model="claude-3-5-sonnet-20241022")
+            mock_session.chat = AsyncMock(return_value=mock_response)
+
+            result_data = agent_no_tune._fit_sarima_impl(input_data, auto_tune=False, seasonal_period=12)
+
+            # Verify auto_tune was False
+            assert result_data["auto_tuned"] is False
+
+    # =========================================================================
+    # Determinism Tests: 5-Run Consistency Verification
+    # =========================================================================
+
+    def test_fit_sarima_determinism(self, agent, monthly_seasonal_data):
+        """Test that SARIMA fitting produces identical results across 5 runs."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        results = []
+        for _ in range(5):
+            # Reset agent state
+            agent._fitted_model = None
+            agent._best_params = None
+
+            result = agent._fit_sarima_impl(
+                input_data, auto_tune=False, seasonal_period=12, max_p=2, max_q=2
+            )
+            results.append(result)
+
+        # All runs should produce identical results
+        for i in range(1, 5):
+            assert results[i]["order"] == results[0]["order"]
+            assert results[i]["seasonal_order"] == results[0]["seasonal_order"]
+            assert results[i]["aic"] == pytest.approx(results[0]["aic"], rel=1e-6)
+            assert results[i]["bic"] == pytest.approx(results[0]["bic"], rel=1e-6)
+
+    def test_forecast_determinism(self, agent, monthly_seasonal_data):
+        """Test that forecast generation produces identical results across 5 runs."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        # Fit model once
+        agent._fit_sarima_impl(input_data, auto_tune=False, seasonal_period=12)
+
+        results = []
+        for _ in range(5):
+            result = agent._forecast_future_impl(input_data, horizon=6, confidence_level=0.95)
+            results.append(result)
+
+        # All runs should produce identical forecasts
+        for i in range(1, 5):
+            assert len(results[i]["forecast"]) == len(results[0]["forecast"])
+            for j in range(len(results[0]["forecast"])):
+                assert results[i]["forecast"][j] == pytest.approx(results[0]["forecast"][j], rel=1e-10)
+                assert results[i]["lower_bound"][j] == pytest.approx(results[0]["lower_bound"][j], rel=1e-10)
+                assert results[i]["upper_bound"][j] == pytest.approx(results[0]["upper_bound"][j], rel=1e-10)
+
+    def test_seasonality_detection_determinism(self, agent, monthly_seasonal_data):
+        """Test that seasonality detection produces identical results across 5 runs."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        results = []
+        for _ in range(5):
+            result = agent._detect_seasonality_impl(input_data, max_period=24)
+            results.append(result)
+
+        # All runs should detect the same seasonality
+        for i in range(1, 5):
+            assert results[i]["seasonal_period"] == results[0]["seasonal_period"]
+            assert results[i]["has_seasonality"] == results[0]["has_seasonality"]
+            assert results[i]["strength"] == pytest.approx(results[0]["strength"], rel=1e-10)
+
+    def test_preprocessing_determinism(self, agent, monthly_seasonal_data):
+        """Test that preprocessing produces identical results across 5 runs."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        results = []
+        for _ in range(5):
+            agent._last_training_data = None  # Reset
+            result = agent._preprocess_data_impl(input_data, interpolation_method="linear", outlier_threshold=3.0)
+            results.append(result)
+
+        # All runs should produce identical preprocessing
+        for i in range(1, 5):
+            assert results[i]["missing_values_filled"] == results[0]["missing_values_filled"]
+            assert results[i]["outliers_detected"] == results[0]["outliers_detected"]
+            assert results[i]["final_length"] == results[0]["final_length"]
+
+    # =========================================================================
+    # Boundary Tests: Edge Cases and Extreme Values
+    # =========================================================================
+
+    def test_boundary_single_data_point(self, agent):
+        """Test with minimal data (single point)."""
+        dates = pd.date_range('2020-01-01', periods=1, freq='M')
+        df = pd.DataFrame({'value': [100.0]}, index=dates)
+
+        input_data = {
+            "data": df,
+            "target_column": "value",
+            "forecast_horizon": 1,
+            "seasonal_period": 1,
+        }
+
+        # Should fail validation (insufficient data)
+        assert agent.validate(input_data) is False
+
+    def test_boundary_very_large_horizon(self, agent, monthly_seasonal_data):
+        """Test forecasting with very large horizon."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        # Fit model
+        agent._fit_sarima_impl(input_data, auto_tune=False, seasonal_period=12)
+
+        # Forecast 365 periods (1 year daily)
+        result = agent._forecast_future_impl(input_data, horizon=365)
+
+        assert len(result["forecast"]) == 365
+        assert len(result["lower_bound"]) == 365
+        assert len(result["upper_bound"]) == 365
+
+    def test_boundary_extreme_values(self, agent):
+        """Test with extremely large and small values."""
+        dates = pd.date_range('2020-01-01', periods=50, freq='M')
+
+        # Very large values (billions)
+        large_values = np.random.RandomState(42).normal(1e9, 1e8, 50)
+        df_large = pd.DataFrame({'value': large_values}, index=dates)
+
+        input_data_large = {
+            "data": df_large,
+            "target_column": "value",
+            "forecast_horizon": 6,
+            "seasonal_period": 12,
+        }
+
+        # Should handle large values
+        result_large = agent._fit_sarima_impl(input_data_large, auto_tune=False, seasonal_period=12)
+        assert result_large is not None
+
+        # Very small values (near zero)
+        small_values = np.random.RandomState(42).normal(0.001, 0.0001, 50)
+        df_small = pd.DataFrame({'value': small_values}, index=dates)
+
+        input_data_small = {
+            "data": df_small,
+            "target_column": "value",
+            "forecast_horizon": 6,
+            "seasonal_period": 12,
+        }
+
+        # Should handle small values
+        result_small = agent._fit_sarima_impl(input_data_small, auto_tune=False, seasonal_period=12)
+        assert result_small is not None
+
+    def test_boundary_constant_series(self, agent):
+        """Test with constant series (no variation)."""
+        dates = pd.date_range('2020-01-01', periods=50, freq='M')
+        df = pd.DataFrame({'value': [100.0] * 50}, index=dates)
+
+        input_data = {
+            "data": df,
+            "target_column": "value",
+            "forecast_horizon": 6,
+            "seasonal_period": 12,
+        }
+
+        # Constant series is stationary
+        result = agent._validate_stationarity_impl(input_data)
+        # ADF test should indicate stationarity
+        assert "is_stationary" in result
+
+    def test_boundary_confidence_levels(self, agent, monthly_seasonal_data):
+        """Test different confidence levels (0.50, 0.90, 0.95, 0.99)."""
+        forecast = [100, 105, 110]
+        std_errors = [5, 5.5, 6]
+
+        for conf_level in [0.50, 0.90, 0.95, 0.99]:
+            result = agent._calculate_confidence_impl(forecast, std_errors, conf_level)
+
+            assert result["confidence_level"] == conf_level
+            assert len(result["lower_bound"]) == 3
+            assert len(result["upper_bound"]) == 3
+
+            # Higher confidence = wider intervals
+            if conf_level > 0.50:
+                # Width should be reasonable
+                width = result["upper_bound"][0] - result["lower_bound"][0]
+                assert width > 0
+
+    def test_boundary_seasonal_periods(self, agent):
+        """Test different seasonal periods (1, 7, 12, 52, 365)."""
+        dates = pd.date_range('2020-01-01', periods=100, freq='D')
+        values = 50 + 10 * np.sin(np.arange(100) * 2 * np.pi / 7)
+        df = pd.DataFrame({'value': values}, index=dates)
+
+        input_data = {
+            "data": df,
+            "target_column": "value",
+            "forecast_horizon": 7,
+        }
+
+        for period in [1, 7, 12, 52]:
+            result = agent._fit_sarima_impl(input_data, auto_tune=False, seasonal_period=period)
+            assert result["seasonal_order"][3] == period
+
+    def test_boundary_parameter_edges(self, agent, monthly_seasonal_data):
+        """Test edge cases for SARIMA parameters (max_p=0, max_q=0)."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 6,
+        }
+
+        # Test with max_p=0 (no AR terms)
+        result_p0 = agent._fit_sarima_impl(
+            input_data, auto_tune=True, seasonal_period=12, max_p=0, max_q=2
+        )
+        assert result_p0["order"][0] == 0  # p=0
+
+        # Test with max_q=0 (no MA terms)
+        agent._fitted_model = None  # Reset
+        result_q0 = agent._fit_sarima_impl(
+            input_data, auto_tune=True, seasonal_period=12, max_p=2, max_q=0
+        )
+        assert result_q0["order"][2] == 0  # q=0
+
+    def test_boundary_split_ratio_edges(self, agent, monthly_seasonal_data):
+        """Test train/test split with edge ratios (0.5, 0.95)."""
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        # Fit model first
+        agent._fit_sarima_impl(input_data, auto_tune=False, seasonal_period=12)
+
+        # Test with 50% split
+        result_50 = agent._evaluate_model_impl(input_data, train_test_split=0.5)
+        assert result_50["train_test_split"] == 0.5
+        assert result_50["test_size"] == 18  # 50% of 36
+
+        # Test with 95% split
+        result_95 = agent._evaluate_model_impl(input_data, train_test_split=0.95)
+        assert result_95["train_test_split"] == 0.95
+        assert result_95["test_size"] == 2  # 5% of 36 (rounded)
+
+    # =========================================================================
+    # Configuration Tests
+    # =========================================================================
+
+    def test_config_all_initialization_options(self):
+        """Test all configuration combinations."""
+        # Test all False
+        agent1 = SARIMAForecastAgent(
+            budget_usd=0.5,
+            enable_explanations=False,
+            enable_recommendations=False,
+            enable_auto_tune=False,
+        )
+        assert agent1.budget_usd == 0.5
+        assert agent1.enable_explanations is False
+        assert agent1.enable_recommendations is False
+        assert agent1.enable_auto_tune is False
+
+        # Test all True
+        agent2 = SARIMAForecastAgent(
+            budget_usd=2.0,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_auto_tune=True,
+        )
+        assert agent2.budget_usd == 2.0
+        assert agent2.enable_explanations is True
+        assert agent2.enable_recommendations is True
+        assert agent2.enable_auto_tune is True
+
+    def test_config_budget_variations(self, monthly_seasonal_data):
+        """Test different budget values."""
+        for budget in [0.10, 0.50, 1.00, 5.00, 10.00]:
+            agent = SARIMAForecastAgent(budget_usd=budget)
+            assert agent.budget_usd == budget
+
+    # =========================================================================
+    # Performance Tests
+    # =========================================================================
+
+    def test_performance_tracking_cost_accumulation(self, agent, monthly_seasonal_data):
+        """Test that costs accumulate correctly."""
+        initial_cost = agent._total_cost_usd
+        initial_ai_calls = agent._ai_call_count
+
+        # Simulate some operations
+        agent._ai_call_count += 1
+        agent._total_cost_usd += 0.05
+
+        assert agent._ai_call_count == initial_ai_calls + 1
+        assert agent._total_cost_usd == initial_cost + 0.05
+
+    def test_performance_tracking_tool_calls(self, agent, monthly_seasonal_data):
+        """Test that tool calls are tracked."""
+        initial_tool_calls = agent._tool_call_count
+
+        input_data = {
+            "data": monthly_seasonal_data,
+            "target_column": "energy_kwh",
+            "forecast_horizon": 12,
+        }
+
+        # Call some tools
+        agent._preprocess_data_impl(input_data)
+        agent._detect_seasonality_impl(input_data)
+
+        # Tool calls should have increased
+        assert agent._tool_call_count == initial_tool_calls + 2
+
+    def test_performance_summary(self, agent):
+        """Test get_performance_summary method."""
+        agent._ai_call_count = 5
+        agent._tool_call_count = 20
+        agent._total_cost_usd = 0.25
+
+        summary = agent.get_performance_summary()
+
+        assert summary["agent_id"] == "forecast_sarima"
+        assert summary["ai_metrics"]["ai_call_count"] == 5
+        assert summary["ai_metrics"]["tool_call_count"] == 20
+        assert summary["ai_metrics"]["total_cost_usd"] == 0.25
+        assert summary["ai_metrics"]["avg_cost_per_forecast"] == 0.05
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

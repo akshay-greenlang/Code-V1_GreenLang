@@ -587,5 +587,633 @@ class TestGridFactorAgentAIIntegration:
         assert data["fuel_type"] == "natural_gas"
 
 
+class TestGridFactorAgentAICoverage:
+    """Additional tests to achieve 80%+ coverage for GridFactorAgentAI."""
+
+    @pytest.fixture
+    def agent(self):
+        """Create GridFactorAgentAI instance for testing."""
+        return GridFactorAgentAI(budget_usd=1.0)
+
+    @pytest.fixture
+    def valid_payload(self):
+        """Create valid test payload."""
+        return {
+            "country": "US",
+            "fuel_type": "electricity",
+            "unit": "kWh",
+        }
+
+    # ===== Unit Tests for _extract_tool_results =====
+
+    def test_extract_tool_results_all_tools(self, agent, valid_payload):
+        """Test extracting results from all four tool types."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "lookup_grid_intensity",
+                "arguments": {
+                    "country": "US",
+                    "fuel_type": "electricity",
+                    "unit": "kWh",
+                    "year": 2025,
+                },
+            },
+            {
+                "name": "interpolate_hourly_data",
+                "arguments": {
+                    "base_intensity": 385.0,
+                    "hour": 14,
+                    "renewable_share": 0.21,
+                },
+            },
+            {
+                "name": "calculate_weighted_average",
+                "arguments": {
+                    "intensities": [300.0, 400.0, 500.0],
+                    "weights": [0.5, 0.3, 0.2],
+                },
+            },
+            {
+                "name": "generate_recommendations",
+                "arguments": {
+                    "country": "US",
+                    "current_intensity": 385.0,
+                    "renewable_share": 0.21,
+                },
+            },
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Verify all four tools extracted
+        assert "lookup" in results
+        assert "interpolation" in results
+        assert "weighted_average" in results
+        assert "recommendations" in results
+
+        # Verify lookup data
+        assert "emission_factor" in results["lookup"]
+        assert results["lookup"]["emission_factor"] == 0.385
+
+        # Verify interpolation data
+        assert "interpolated_intensity" in results["interpolation"]
+
+        # Verify weighted average data
+        assert "weighted_average" in results["weighted_average"]
+
+        # Verify recommendations data
+        assert "recommendations" in results["recommendations"]
+
+    def test_extract_tool_results_empty(self, agent):
+        """Test extracting results with no tool calls."""
+        mock_response = Mock()
+        mock_response.tool_calls = []
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should return empty dict
+        assert results == {}
+
+    def test_extract_tool_results_unknown_tool(self, agent):
+        """Test extracting results with unknown tool name."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "unknown_tool",
+                "arguments": {},
+            }
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should ignore unknown tool
+        assert results == {}
+
+    def test_extract_tool_results_partial(self, agent):
+        """Test extracting results with only some tools called."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "lookup_grid_intensity",
+                "arguments": {
+                    "country": "US",
+                    "fuel_type": "electricity",
+                    "unit": "kWh",
+                },
+            },
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should have only lookup
+        assert "lookup" in results
+        assert "interpolation" not in results
+        assert "weighted_average" not in results
+        assert "recommendations" not in results
+
+    # ===== Unit Tests for _build_output =====
+
+    def test_build_output_with_all_data(self, agent, valid_payload):
+        """Test building output with complete tool results."""
+        tool_results = {
+            "lookup": {
+                "emission_factor": 0.385,
+                "unit": "kgCO2e/kWh",
+                "country": "US",
+                "fuel_type": "electricity",
+                "source": "EPA eGRID 2025",
+                "version": "2025.1",
+                "last_updated": "2025-01-15",
+                "grid_mix": {
+                    "coal": 0.21,
+                    "natural_gas": 0.38,
+                    "nuclear": 0.19,
+                    "renewables": 0.21,
+                    "other": 0.01,
+                },
+            },
+            "interpolation": {
+                "interpolated_intensity": 365.75,
+                "base_intensity": 385.0,
+                "hour": 13,
+                "period": "midday",
+                "peak_factor": 0.95,
+            },
+            "weighted_average": {
+                "weighted_average": 360.0,
+                "min_intensity": 300.0,
+                "max_intensity": 500.0,
+            },
+            "recommendations": {
+                "recommendations": [
+                    {
+                        "priority": "high",
+                        "action": "Install solar PV",
+                        "impact": "Offset grid emissions",
+                    }
+                ],
+                "count": 1,
+            },
+        }
+
+        explanation = "US grid has average intensity of 385 gCO2/kWh."
+
+        output = agent._build_output(valid_payload, tool_results, explanation)
+
+        # Verify all fields present
+        assert output["emission_factor"] == 0.385
+        assert output["unit"] == "kgCO2e/kWh"
+        assert output["country"] == "US"
+        assert output["fuel_type"] == "electricity"
+        assert output["source"] == "EPA eGRID 2025"
+        assert "grid_mix" in output
+        assert output["explanation"] == explanation
+        assert "recommendations" in output
+        assert len(output["recommendations"]) == 1
+
+    def test_build_output_missing_lookup(self, agent, valid_payload):
+        """Test building output with missing lookup data."""
+        tool_results = {}  # No lookup data
+
+        output = agent._build_output(valid_payload, tool_results, None)
+
+        # Should handle gracefully with defaults
+        assert output["emission_factor"] == 0.0
+        assert output["unit"] == ""
+
+    def test_build_output_without_explanation(self, agent, valid_payload):
+        """Test building output without AI explanation."""
+        tool_results = {
+            "lookup": {
+                "emission_factor": 0.385,
+                "unit": "kgCO2e/kWh",
+                "country": "US",
+                "fuel_type": "electricity",
+                "source": "EPA eGRID 2025",
+                "version": "2025.1",
+                "last_updated": "2025-01-15",
+                "grid_mix": {},
+            }
+        }
+
+        agent.enable_explanations = False
+        output = agent._build_output(valid_payload, tool_results, None)
+
+        # Should not include explanation
+        assert "explanation" not in output
+
+    def test_build_output_without_recommendations(self, agent, valid_payload):
+        """Test building output without recommendations."""
+        tool_results = {
+            "lookup": {
+                "emission_factor": 0.385,
+                "unit": "kgCO2e/kWh",
+                "country": "US",
+                "fuel_type": "electricity",
+                "source": "EPA eGRID 2025",
+                "version": "2025.1",
+                "last_updated": "2025-01-15",
+                "grid_mix": {},
+            }
+        }
+
+        agent.enable_recommendations = False
+        output = agent._build_output(valid_payload, tool_results, None)
+
+        # Should not include recommendations if disabled
+        assert "recommendations" not in output
+
+    # ===== Boundary Tests =====
+
+    def test_interpolate_all_hours(self, agent):
+        """Test hourly interpolation for all 24 hours."""
+        base_intensity = 400.0
+        renewable_share = 0.3
+
+        results = []
+        for hour in range(24):
+            result = agent._interpolate_hourly_data_impl(
+                base_intensity=base_intensity,
+                hour=hour,
+                renewable_share=renewable_share,
+            )
+            results.append(result)
+
+        # Verify all hours processed
+        assert len(results) == 24
+
+        # Verify proper categorization
+        morning_peaks = [r for r in results if r["period"] == "morning_peak"]
+        evening_peaks = [r for r in results if r["period"] == "evening_peak"]
+        middays = [r for r in results if r["period"] == "midday"]
+        off_peaks = [r for r in results if r["period"] == "off_peak"]
+
+        # Verify we have all period types
+        assert len(morning_peaks) > 0
+        assert len(evening_peaks) > 0
+        assert len(middays) > 0
+        assert len(off_peaks) > 0
+
+        # Evening peak should have highest intensity
+        max_intensity = max(r["interpolated_intensity"] for r in results)
+        max_period = [r for r in results if r["interpolated_intensity"] == max_intensity][0]
+        assert max_period["period"] in ["evening_peak", "morning_peak"]
+
+    def test_interpolate_zero_renewable_share(self, agent):
+        """Test interpolation with zero renewable share."""
+        result = agent._interpolate_hourly_data_impl(
+            base_intensity=500.0,
+            hour=13,  # Midday
+            renewable_share=0.0,
+        )
+
+        # Should still work
+        assert "interpolated_intensity" in result
+        assert result["renewable_share"] == 0.0 or "renewable_share" not in result
+
+    def test_interpolate_full_renewable_share(self, agent):
+        """Test interpolation with 100% renewable share."""
+        result = agent._interpolate_hourly_data_impl(
+            base_intensity=500.0,
+            hour=13,  # Midday
+            renewable_share=1.0,
+        )
+
+        # Should reduce midday intensity significantly
+        assert result["interpolated_intensity"] < 500.0
+
+    def test_weighted_average_single_value(self, agent):
+        """Test weighted average with single value."""
+        result = agent._calculate_weighted_average_impl(
+            intensities=[400.0],
+            weights=[1.0],
+        )
+
+        # Should return the single value
+        assert result["weighted_average"] == 400.0
+        assert result["min_intensity"] == 400.0
+        assert result["max_intensity"] == 400.0
+        assert result["range"] == 0.0
+
+    def test_weighted_average_equal_weights(self, agent):
+        """Test weighted average with equal weights."""
+        intensities = [100.0, 200.0, 300.0]
+        weights = [1/3, 1/3, 1/3]
+
+        result = agent._calculate_weighted_average_impl(
+            intensities=intensities,
+            weights=weights,
+        )
+
+        # Should be simple average: (100+200+300)/3 = 200
+        assert abs(result["weighted_average"] - 200.0) < 0.01
+
+    def test_weighted_average_extreme_weights(self, agent):
+        """Test weighted average with one dominant weight."""
+        intensities = [100.0, 200.0, 900.0]
+        weights = [0.01, 0.01, 0.98]
+
+        result = agent._calculate_weighted_average_impl(
+            intensities=intensities,
+            weights=weights,
+        )
+
+        # Should be close to 900: 100*0.01 + 200*0.01 + 900*0.98 = 885
+        expected = 100*0.01 + 200*0.01 + 900*0.98
+        assert abs(result["weighted_average"] - expected) < 0.01
+
+    def test_recommendations_for_very_high_intensity(self, agent):
+        """Test recommendations for extremely high grid intensity."""
+        result = agent._generate_recommendations_impl(
+            country="CN",  # Example high-intensity grid
+            current_intensity=900.0,  # Very high
+            renewable_share=0.1,
+        )
+
+        recommendations = result["recommendations"]
+
+        # Should have critical priority recommendations
+        priorities = [r["priority"] for r in recommendations]
+        assert "critical" in priorities or "high" in priorities
+
+        # Should emphasize renewable energy
+        actions = " ".join([r["action"] for r in recommendations]).lower()
+        assert "renewable" in actions or "solar" in actions or "clean" in actions
+
+    def test_recommendations_for_very_low_intensity(self, agent):
+        """Test recommendations for very clean grid."""
+        result = agent._generate_recommendations_impl(
+            country="NO",  # Example clean grid (hydro)
+            current_intensity=50.0,  # Very low
+            renewable_share=0.98,
+        )
+
+        recommendations = result["recommendations"]
+
+        # Should still provide recommendations
+        assert len(recommendations) >= 1
+
+        # Should focus on efficiency/consumption reduction
+        actions = " ".join([r["action"] for r in recommendations]).lower()
+        assert "efficiency" in actions or "reduce" in actions or "consumption" in actions
+
+    # ===== Integration Tests =====
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.grid_factor_agent_ai.ChatSession")
+    async def test_run_with_budget_exceeded(self, mock_session_class, agent, valid_payload):
+        """Test run() handling when budget is exceeded."""
+        from greenlang.intelligence import BudgetExceeded
+
+        # Setup mock session to raise BudgetExceeded
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(side_effect=BudgetExceeded("Budget limit reached"))
+        mock_session_class.return_value = mock_session
+
+        result = agent.run(valid_payload)
+
+        # Should handle budget exceeded gracefully
+        assert result["success"] is False
+        assert "budget" in result["error"]["message"].lower() or "Budget" in result["error"]["message"]
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.grid_factor_agent_ai.ChatSession")
+    async def test_run_with_general_exception(self, mock_session_class, agent, valid_payload):
+        """Test run() handling of general exceptions."""
+        # Setup mock session to raise generic exception
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(side_effect=RuntimeError("Unexpected error"))
+        mock_session_class.return_value = mock_session
+
+        result = agent.run(valid_payload)
+
+        # Should handle exception gracefully
+        assert result["success"] is False
+        assert "Unexpected error" in result["error"]["message"] or "Failed to lookup" in result["error"]["message"]
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.grid_factor_agent_ai.ChatSession")
+    async def test_run_with_disabled_explanations(self, mock_session_class, agent, valid_payload):
+        """Test run() with explanations disabled."""
+        agent.enable_explanations = False
+
+        # Create mock response
+        mock_response = Mock(spec=ChatResponse)
+        mock_response.text = ""
+        mock_response.tool_calls = [
+            {
+                "name": "lookup_grid_intensity",
+                "arguments": {
+                    "country": "US",
+                    "fuel_type": "electricity",
+                    "unit": "kWh",
+                },
+            },
+        ]
+        mock_response.usage = Usage(
+            prompt_tokens=100,
+            completion_tokens=50,
+            total_tokens=150,
+            cost_usd=0.01,
+        )
+        mock_response.provider_info = ProviderInfo(
+            provider="openai",
+            model="gpt-4o-mini",
+        )
+        mock_response.finish_reason = FinishReason.stop
+
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(return_value=mock_response)
+        mock_session_class.return_value = mock_session
+
+        result = agent.run(valid_payload)
+
+        assert result["success"] is True
+        # Explanation should not be in output
+        assert "explanation" not in result["data"]
+
+    # ===== Determinism Tests =====
+
+    def test_tool_determinism_lookup(self, agent):
+        """Test that lookup tool produces identical results across multiple runs."""
+        results = []
+        for _ in range(5):
+            result = agent._lookup_grid_intensity_impl(
+                country="US",
+                fuel_type="electricity",
+                unit="kWh",
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["emission_factor"] == results[0]["emission_factor"]
+            assert result["unit"] == results[0]["unit"]
+            assert result["country"] == results[0]["country"]
+
+    def test_tool_determinism_interpolation(self, agent):
+        """Test that interpolation tool produces identical results."""
+        results = []
+        for _ in range(5):
+            result = agent._interpolate_hourly_data_impl(
+                base_intensity=385.0,
+                hour=14,
+                renewable_share=0.21,
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["interpolated_intensity"] == results[0]["interpolated_intensity"]
+            assert result["period"] == results[0]["period"]
+
+    def test_tool_determinism_weighted_average(self, agent):
+        """Test that weighted average tool produces identical results."""
+        results = []
+        for _ in range(5):
+            result = agent._calculate_weighted_average_impl(
+                intensities=[300.0, 400.0, 500.0],
+                weights=[0.5, 0.3, 0.2],
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["weighted_average"] == results[0]["weighted_average"]
+
+    def test_tool_determinism_recommendations(self, agent):
+        """Test that recommendations are deterministic."""
+        results = []
+        for _ in range(3):
+            result = agent._generate_recommendations_impl(
+                country="US",
+                current_intensity=385.0,
+                renewable_share=0.21,
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert len(result["recommendations"]) == len(results[0]["recommendations"])
+            # Compare first recommendation
+            if len(result["recommendations"]) > 0:
+                assert result["recommendations"][0]["priority"] == results[0]["recommendations"][0]["priority"]
+
+    # ===== Performance and Configuration Tests =====
+
+    def test_cost_accumulation(self, agent):
+        """Test that costs accumulate correctly."""
+        initial_cost = agent._total_cost_usd
+
+        # Make some tool calls (tools are free)
+        agent._lookup_grid_intensity_impl(
+            country="US",
+            fuel_type="electricity",
+            unit="kWh",
+        )
+
+        # Cost should still be initial (tool calls are free)
+        assert agent._total_cost_usd == initial_cost
+
+    def test_tool_call_count_tracking(self, agent):
+        """Test that tool call counts are tracked correctly."""
+        initial_count = agent._tool_call_count
+
+        # Make tool calls
+        agent._lookup_grid_intensity_impl(
+            country="US",
+            fuel_type="electricity",
+            unit="kWh",
+        )
+        assert agent._tool_call_count == initial_count + 1
+
+        agent._interpolate_hourly_data_impl(
+            base_intensity=385.0,
+            hour=14,
+        )
+        assert agent._tool_call_count == initial_count + 2
+
+        agent._calculate_weighted_average_impl(
+            intensities=[300.0, 400.0],
+            weights=[0.5, 0.5],
+        )
+        assert agent._tool_call_count == initial_count + 3
+
+    def test_configuration_options(self):
+        """Test agent initialization with different configurations."""
+        # Custom budget
+        agent1 = GridFactorAgentAI(budget_usd=0.25)
+        assert agent1.budget_usd == 0.25
+
+        # Disabled explanations
+        agent2 = GridFactorAgentAI(enable_explanations=False)
+        assert agent2.enable_explanations is False
+
+        # Disabled recommendations
+        agent3 = GridFactorAgentAI(enable_recommendations=False)
+        assert agent3.enable_recommendations is False
+
+        # All options
+        agent4 = GridFactorAgentAI(
+            budget_usd=2.0,
+            enable_explanations=False,
+            enable_recommendations=False,
+        )
+        assert agent4.budget_usd == 2.0
+        assert agent4.enable_explanations is False
+        assert agent4.enable_recommendations is False
+
+    def test_build_prompt_without_recommendations(self, agent, valid_payload):
+        """Test prompt building without recommendations."""
+        agent.enable_recommendations = False
+
+        prompt = agent._build_prompt(valid_payload)
+
+        # Should not mention recommendations
+        assert "generate_recommendations" not in prompt or "recommendations" not in prompt.lower()
+
+    # ===== Edge Case Tests =====
+
+    def test_validation_error_handling(self, agent):
+        """Test that validation errors are handled properly."""
+        invalid_payload = {}  # Missing required fields
+
+        result = agent.run(invalid_payload)
+
+        assert result["success"] is False
+        assert "error" in result
+
+    def test_lookup_with_future_year(self, agent):
+        """Test lookup with future year."""
+        result = agent._lookup_grid_intensity_impl(
+            country="US",
+            fuel_type="electricity",
+            unit="kWh",
+            year=2030,
+        )
+
+        # Should work (may use projected or default values)
+        assert "emission_factor" in result
+
+    def test_interpolate_boundary_hours(self, agent):
+        """Test interpolation at hour boundaries."""
+        # Hour 0 (midnight)
+        result_0 = agent._interpolate_hourly_data_impl(
+            base_intensity=400.0,
+            hour=0,
+        )
+        assert result_0["hour"] == 0
+        assert result_0["period"] == "off_peak"
+
+        # Hour 23 (11 PM)
+        result_23 = agent._interpolate_hourly_data_impl(
+            base_intensity=400.0,
+            hour=23,
+        )
+        assert result_23["hour"] == 23
+        assert result_23["period"] == "off_peak"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

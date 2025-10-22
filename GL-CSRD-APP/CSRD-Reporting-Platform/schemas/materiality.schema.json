@@ -1,0 +1,390 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/materiality.schema.json",
+  "title": "Double Materiality Assessment Schema",
+  "description": "Schema for ESRS double materiality assessment results",
+  "type": "object",
+  "required": ["assessment_metadata", "material_topics", "methodology"],
+  "properties": {
+    "assessment_metadata": {
+      "type": "object",
+      "required": ["assessment_id", "assessment_date", "reporting_period"],
+      "properties": {
+        "assessment_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Unique identifier for this assessment"
+        },
+        "assessment_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date assessment was completed"
+        },
+        "reporting_period": {
+          "type": "object",
+          "required": ["year"],
+          "properties": {
+            "year": {"type": "integer"},
+            "start_date": {"type": "string", "format": "date"},
+            "end_date": {"type": "string", "format": "date"}
+          }
+        },
+        "company_id": {
+          "type": "string",
+          "description": "Company identifier"
+        },
+        "version": {
+          "type": "string",
+          "description": "Assessment version",
+          "example": "v1.0"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["draft", "under_review", "approved", "final"],
+          "description": "Assessment status"
+        },
+        "approved_by": {
+          "type": "string",
+          "description": "Name of approver"
+        },
+        "approval_date": {
+          "type": "string",
+          "format": "date"
+        }
+      }
+    },
+    "methodology": {
+      "type": "object",
+      "required": ["framework", "materiality_thresholds"],
+      "properties": {
+        "framework": {
+          "type": "string",
+          "enum": ["ESRS_1_Double_Materiality"],
+          "description": "Assessment framework used",
+          "default": "ESRS_1_Double_Materiality"
+        },
+        "materiality_thresholds": {
+          "type": "object",
+          "required": ["impact_threshold", "financial_threshold"],
+          "properties": {
+            "impact_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10,
+              "description": "Threshold score for impact materiality (0-10 scale)"
+            },
+            "financial_threshold": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10,
+              "description": "Threshold score for financial materiality (0-10 scale)"
+            },
+            "double_materiality_rule": {
+              "type": "string",
+              "enum": ["either_or", "both_required"],
+              "description": "Rule for determining double materiality",
+              "default": "either_or"
+            }
+          }
+        },
+        "scoring_methodology": {
+          "type": "object",
+          "properties": {
+            "impact_scoring": {
+              "type": "string",
+              "description": "How impact materiality is scored",
+              "default": "severity × scope × irremediability"
+            },
+            "financial_scoring": {
+              "type": "string",
+              "description": "How financial materiality is scored",
+              "default": "magnitude × likelihood"
+            }
+          }
+        },
+        "stakeholder_engagement": {
+          "type": "object",
+          "properties": {
+            "approach": {
+              "type": "string",
+              "description": "Stakeholder engagement approach"
+            },
+            "stakeholder_groups": {
+              "type": "array",
+              "items": {"type": "string"},
+              "examples": [["employees", "investors", "customers", "suppliers", "communities", "ngos"]]
+            },
+            "engagement_methods": {
+              "type": "array",
+              "items": {"type": "string"},
+              "examples": [["surveys", "interviews", "workshops", "focus_groups"]]
+            },
+            "participants_count": {
+              "type": "integer",
+              "description": "Number of stakeholders engaged"
+            }
+          }
+        }
+      }
+    },
+    "material_topics": {
+      "type": "array",
+      "description": "List of assessed sustainability topics",
+      "items": {
+        "type": "object",
+        "required": ["topic_id", "topic_name", "esrs_standard", "impact_materiality", "financial_materiality"],
+        "properties": {
+          "topic_id": {
+            "type": "string",
+            "description": "Unique topic identifier",
+            "example": "E1_climate_change"
+          },
+          "topic_name": {
+            "type": "string",
+            "description": "Name of sustainability topic",
+            "example": "Climate Change"
+          },
+          "esrs_standard": {
+            "type": "string",
+            "enum": ["E1", "E2", "E3", "E4", "E5", "S1", "S2", "S3", "S4", "G1"],
+            "description": "Related ESRS standard"
+          },
+          "topic_description": {
+            "type": "string",
+            "description": "Description of the topic"
+          },
+          "impact_materiality": {
+            "type": "object",
+            "required": ["score", "is_material"],
+            "properties": {
+              "score": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Impact materiality score (0-10)"
+              },
+              "is_material": {
+                "type": "boolean",
+                "description": "Is this topic material from impact perspective?"
+              },
+              "severity": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Severity of impact"
+              },
+              "scope": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Scope/scale of impact"
+              },
+              "irremediability": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "How difficult to remediate"
+              },
+              "impact_type": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["actual_negative", "potential_negative", "actual_positive", "potential_positive"]
+                }
+              },
+              "affected_stakeholders": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Stakeholder groups affected"
+              },
+              "time_horizon": {
+                "type": "string",
+                "enum": ["short_term", "medium_term", "long_term"],
+                "description": "When impacts occur"
+              },
+              "value_chain_stage": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["upstream", "own_operations", "downstream"]
+                }
+              },
+              "rationale": {
+                "type": "string",
+                "description": "Explanation for the assessment"
+              }
+            }
+          },
+          "financial_materiality": {
+            "type": "object",
+            "required": ["score", "is_material"],
+            "properties": {
+              "score": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Financial materiality score (0-10)"
+              },
+              "is_material": {
+                "type": "boolean",
+                "description": "Is this topic material from financial perspective?"
+              },
+              "magnitude": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Magnitude of financial effect"
+              },
+              "likelihood": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Likelihood of occurrence"
+              },
+              "effect_type": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["risk", "opportunity"]
+                }
+              },
+              "financial_impact_areas": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["revenue", "costs", "assets", "liabilities", "capital", "access_to_finance"]
+                }
+              },
+              "time_horizon": {
+                "type": "string",
+                "enum": ["short_term", "medium_term", "long_term"]
+              },
+              "estimated_financial_impact": {
+                "type": "object",
+                "properties": {
+                  "min_value": {"type": "number"},
+                  "max_value": {"type": "number"},
+                  "currency": {"type": "string", "pattern": "^[A-Z]{3}$"}
+                }
+              },
+              "rationale": {
+                "type": "string",
+                "description": "Explanation for the assessment"
+              }
+            }
+          },
+          "double_material": {
+            "type": "boolean",
+            "description": "Is this topic material from either or both perspectives?"
+          },
+          "materiality_conclusion": {
+            "type": "string",
+            "enum": ["material", "not_material", "borderline"],
+            "description": "Overall materiality conclusion"
+          },
+          "disclosure_requirements": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "ESRS disclosure requirements triggered by this topic"
+          },
+          "data_sources": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Sources used for assessment"
+          },
+          "review_status": {
+            "type": "string",
+            "enum": ["pending_review", "reviewed", "approved"],
+            "description": "Review status of this assessment"
+          },
+          "reviewer_comments": {
+            "type": "string",
+            "description": "Comments from human reviewer"
+          }
+        }
+      }
+    },
+    "materiality_matrix": {
+      "type": "object",
+      "description": "Visual representation data",
+      "properties": {
+        "chart_data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "topic_id": {"type": "string"},
+              "x_financial": {"type": "number"},
+              "y_impact": {"type": "number"},
+              "label": {"type": "string"}
+            }
+          }
+        },
+        "quadrants": {
+          "type": "object",
+          "properties": {
+            "high_impact_high_financial": {
+              "type": "array",
+              "items": {"type": "string"},
+              "description": "Topics in top-right quadrant"
+            },
+            "high_impact_low_financial": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "low_impact_high_financial": {
+              "type": "array",
+              "items": {"type": "string"}
+            },
+            "low_impact_low_financial": {
+              "type": "array",
+              "items": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "summary_statistics": {
+      "type": "object",
+      "properties": {
+        "total_topics_assessed": {
+          "type": "integer",
+          "description": "Total number of topics assessed"
+        },
+        "material_topics_count": {
+          "type": "integer",
+          "description": "Number of material topics"
+        },
+        "material_from_impact": {
+          "type": "integer",
+          "description": "Topics material from impact perspective"
+        },
+        "material_from_financial": {
+          "type": "integer",
+          "description": "Topics material from financial perspective"
+        },
+        "double_material_count": {
+          "type": "integer",
+          "description": "Topics material from both perspectives"
+        },
+        "esrs_standards_triggered": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "ESRS standards triggered by material topics"
+        }
+      }
+    },
+    "limitations_assumptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Limitations and assumptions of this assessment"
+    },
+    "next_review_date": {
+      "type": "string",
+      "format": "date",
+      "description": "When this assessment should be reviewed next"
+    }
+  }
+}

@@ -1,0 +1,509 @@
+{
+  "metadata": {
+    "title": "GHG Protocol Emission Factors Database",
+    "version": "1.0.0",
+    "sources": [
+      "GHG Protocol",
+      "IEA (International Energy Agency)",
+      "IPCC (Intergovernmental Panel on Climate Change)",
+      "DEFRA/BEIS UK Government Conversion Factors",
+      "EPA (US Environmental Protection Agency)"
+    ],
+    "last_updated": "2025-10-18",
+    "base_year": 2024,
+    "units": "kgCO2e per unit",
+    "description": "Comprehensive database of emission factors for Scope 1, 2, and 3 GHG calculations"
+  },
+  "scope_1_stationary_combustion": {
+    "natural_gas": {
+      "factor": 0.18396,
+      "unit": "kgCO2e/kWh",
+      "ghg_breakdown": {
+        "CO2": 0.18396,
+        "CH4": 0.00003,
+        "N2O": 0.00004
+      },
+      "source": "GHG Protocol",
+      "confidence": "high"
+    },
+    "coal_bituminous": {
+      "factor": 0.34224,
+      "unit": "kgCO2e/kWh",
+      "ghg_breakdown": {
+        "CO2": 0.34100,
+        "CH4": 0.00024,
+        "N2O": 0.00100
+      },
+      "source": "IPCC",
+      "confidence": "high"
+    },
+    "coal_anthracite": {
+      "factor": 0.35424,
+      "unit": "kgCO2e/kWh",
+      "source": "IPCC",
+      "confidence": "high"
+    },
+    "diesel": {
+      "factor": 2.68,
+      "unit": "kgCO2e/liter",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "gasoline": {
+      "factor": 2.31,
+      "unit": "kgCO2e/liter",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "fuel_oil_heavy": {
+      "factor": 3.17,
+      "unit": "kgCO2e/liter",
+      "source": "GHG Protocol",
+      "confidence": "medium"
+    },
+    "lpg": {
+      "factor": 1.51,
+      "unit": "kgCO2e/liter",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "biomass": {
+      "factor": 0.0,
+      "unit": "kgCO2e/kg",
+      "note": "Biogenic emissions reported separately",
+      "source": "GHG Protocol",
+      "confidence": "high"
+    }
+  },
+  "scope_1_mobile_combustion": {
+    "passenger_car_gasoline": {
+      "factor": 0.192,
+      "unit": "kgCO2e/km",
+      "vehicle_type": "Average passenger car",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "passenger_car_diesel": {
+      "factor": 0.171,
+      "unit": "kgCO2e/km",
+      "vehicle_type": "Average passenger car",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "passenger_car_hybrid": {
+      "factor": 0.109,
+      "unit": "kgCO2e/km",
+      "vehicle_type": "Average hybrid car",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "passenger_car_electric": {
+      "factor": 0.053,
+      "unit": "kgCO2e/km",
+      "note": "Includes electricity generation emissions (grid average)",
+      "source": "IEA",
+      "confidence": "medium"
+    },
+    "van_diesel": {
+      "factor": 0.251,
+      "unit": "kgCO2e/km",
+      "vehicle_type": "Light commercial vehicle",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "truck_hgv_diesel": {
+      "factor": 0.987,
+      "unit": "kgCO2e/km",
+      "vehicle_type": "Heavy goods vehicle (>17 tonnes)",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "motorcycle": {
+      "factor": 0.113,
+      "unit": "kgCO2e/km",
+      "source": "DEFRA",
+      "confidence": "medium"
+    }
+  },
+  "scope_1_fugitive_emissions": {
+    "refrigerant_r134a": {
+      "factor": 1430,
+      "unit": "kgCO2e/kg",
+      "gwp": 1430,
+      "substance": "HFC-134a",
+      "source": "IPCC AR5",
+      "confidence": "high"
+    },
+    "refrigerant_r410a": {
+      "factor": 2088,
+      "unit": "kgCO2e/kg",
+      "gwp": 2088,
+      "substance": "HFC-410A",
+      "source": "IPCC AR5",
+      "confidence": "high"
+    },
+    "methane_leakage": {
+      "factor": 25,
+      "unit": "kgCO2e/kg",
+      "gwp": 25,
+      "substance": "CH4",
+      "source": "IPCC AR5",
+      "confidence": "high"
+    },
+    "sf6": {
+      "factor": 22800,
+      "unit": "kgCO2e/kg",
+      "gwp": 22800,
+      "substance": "SF6 (electrical equipment)",
+      "source": "IPCC AR5",
+      "confidence": "high"
+    }
+  },
+  "scope_2_electricity": {
+    "grid_average_global": {
+      "factor": 0.475,
+      "unit": "kgCO2e/kWh",
+      "region": "Global average",
+      "source": "IEA 2024",
+      "confidence": "medium"
+    },
+    "grid_germany": {
+      "factor": 0.420,
+      "unit": "kgCO2e/kWh",
+      "region": "Germany",
+      "year": 2024,
+      "source": "IEA",
+      "confidence": "high"
+    },
+    "grid_france": {
+      "factor": 0.057,
+      "unit": "kgCO2e/kWh",
+      "region": "France (nuclear-heavy)",
+      "year": 2024,
+      "source": "IEA",
+      "confidence": "high"
+    },
+    "grid_poland": {
+      "factor": 0.766,
+      "unit": "kgCO2e/kWh",
+      "region": "Poland (coal-heavy)",
+      "year": 2024,
+      "source": "IEA",
+      "confidence": "high"
+    },
+    "grid_uk": {
+      "factor": 0.233,
+      "unit": "kgCO2e/kWh",
+      "region": "United Kingdom",
+      "year": 2024,
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "grid_usa": {
+      "factor": 0.417,
+      "unit": "kgCO2e/kWh",
+      "region": "United States (average)",
+      "year": 2024,
+      "source": "EPA",
+      "confidence": "high"
+    },
+    "grid_china": {
+      "factor": 0.581,
+      "unit": "kgCO2e/kWh",
+      "region": "China",
+      "year": 2024,
+      "source": "IEA",
+      "confidence": "medium"
+    },
+    "grid_india": {
+      "factor": 0.708,
+      "unit": "kgCO2e/kWh",
+      "region": "India",
+      "year": 2024,
+      "source": "IEA",
+      "confidence": "medium"
+    },
+    "grid_nordic": {
+      "factor": 0.023,
+      "unit": "kgCO2e/kWh",
+      "region": "Nordic countries (hydro/nuclear)",
+      "year": 2024,
+      "source": "IEA",
+      "confidence": "high"
+    },
+    "renewable_energy_certificate": {
+      "factor": 0.0,
+      "unit": "kgCO2e/kWh",
+      "note": "Market-based method with renewable energy certificates",
+      "source": "GHG Protocol Scope 2 Guidance",
+      "confidence": "high"
+    }
+  },
+  "scope_2_heat_steam": {
+    "district_heating": {
+      "factor": 0.210,
+      "unit": "kgCO2e/kWh",
+      "region": "European average",
+      "source": "GHG Protocol",
+      "confidence": "medium"
+    },
+    "steam_generation": {
+      "factor": 0.185,
+      "unit": "kgCO2e/kWh",
+      "source": "GHG Protocol",
+      "confidence": "medium"
+    }
+  },
+  "scope_3_business_travel": {
+    "flight_short_haul": {
+      "factor": 0.158,
+      "unit": "kgCO2e/passenger-km",
+      "distance": "<500 km",
+      "class": "Economy",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "flight_medium_haul": {
+      "factor": 0.113,
+      "unit": "kgCO2e/passenger-km",
+      "distance": "500-3700 km",
+      "class": "Economy",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "flight_long_haul": {
+      "factor": 0.103,
+      "unit": "kgCO2e/passenger-km",
+      "distance": ">3700 km",
+      "class": "Economy",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "flight_business_class_multiplier": {
+      "factor": 1.54,
+      "unit": "multiplier",
+      "note": "Multiply economy class factor by this",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "train_national": {
+      "factor": 0.041,
+      "unit": "kgCO2e/passenger-km",
+      "region": "European average",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "taxi": {
+      "factor": 0.154,
+      "unit": "kgCO2e/km",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "hotel_night": {
+      "factor": 5.36,
+      "unit": "kgCO2e/night",
+      "source": "DEFRA",
+      "confidence": "low"
+    }
+  },
+  "scope_3_employee_commuting": {
+    "car_average": {
+      "factor": 0.171,
+      "unit": "kgCO2e/km",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "public_transport_bus": {
+      "factor": 0.103,
+      "unit": "kgCO2e/passenger-km",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "public_transport_metro": {
+      "factor": 0.034,
+      "unit": "kgCO2e/passenger-km",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "bicycle_walking": {
+      "factor": 0.0,
+      "unit": "kgCO2e/km",
+      "source": "GHG Protocol",
+      "confidence": "high"
+    },
+    "work_from_home": {
+      "factor": 0.527,
+      "unit": "kgCO2e/day",
+      "note": "Includes heating, electricity, etc.",
+      "source": "DEFRA",
+      "confidence": "low"
+    }
+  },
+  "scope_3_freight_transport": {
+    "truck_road_freight": {
+      "factor": 0.102,
+      "unit": "kgCO2e/tonne-km",
+      "mode": "Road freight (average)",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "train_freight": {
+      "factor": 0.025,
+      "unit": "kgCO2e/tonne-km",
+      "mode": "Rail freight",
+      "source": "DEFRA",
+      "confidence": "high"
+    },
+    "ship_container": {
+      "factor": 0.012,
+      "unit": "kgCO2e/tonne-km",
+      "mode": "Container ship",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "ship_bulk_carrier": {
+      "factor": 0.008,
+      "unit": "kgCO2e/tonne-km",
+      "mode": "Bulk carrier",
+      "source": "GHG Protocol",
+      "confidence": "medium"
+    },
+    "air_freight": {
+      "factor": 1.13,
+      "unit": "kgCO2e/tonne-km",
+      "mode": "Air freight",
+      "source": "DEFRA",
+      "confidence": "medium"
+    }
+  },
+  "scope_3_purchased_goods": {
+    "steel": {
+      "factor": 1850,
+      "unit": "kgCO2e/tonne",
+      "material": "Steel (primary)",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "steel_recycled": {
+      "factor": 620,
+      "unit": "kgCO2e/tonne",
+      "material": "Steel (recycled)",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "aluminum": {
+      "factor": 8500,
+      "unit": "kgCO2e/tonne",
+      "material": "Aluminum (primary)",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "aluminum_recycled": {
+      "factor": 580,
+      "unit": "kgCO2e/tonne",
+      "material": "Aluminum (recycled)",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "concrete": {
+      "factor": 135,
+      "unit": "kgCO2e/tonne",
+      "material": "Concrete",
+      "source": "IPCC",
+      "confidence": "medium"
+    },
+    "plastic_pet": {
+      "factor": 2100,
+      "unit": "kgCO2e/tonne",
+      "material": "PET plastic",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "paper": {
+      "factor": 800,
+      "unit": "kgCO2e/tonne",
+      "material": "Paper",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "cardboard": {
+      "factor": 668,
+      "unit": "kgCO2e/tonne",
+      "material": "Cardboard",
+      "source": "DEFRA",
+      "confidence": "medium"
+    }
+  },
+  "scope_3_waste": {
+    "landfill_general": {
+      "factor": 467,
+      "unit": "kgCO2e/tonne",
+      "disposal_method": "Landfill",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "incineration": {
+      "factor": 21,
+      "unit": "kgCO2e/tonne",
+      "disposal_method": "Incineration",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "recycling": {
+      "factor": 21,
+      "unit": "kgCO2e/tonne",
+      "disposal_method": "Recycling",
+      "source": "DEFRA",
+      "confidence": "medium"
+    },
+    "composting": {
+      "factor": 8.8,
+      "unit": "kgCO2e/tonne",
+      "disposal_method": "Composting",
+      "source": "DEFRA",
+      "confidence": "low"
+    }
+  },
+  "biogenic_emissions": {
+    "biomass_combustion": {
+      "factor": 1940,
+      "unit": "kgCO2/tonne",
+      "note": "Biogenic CO2 - reported separately, not included in Scope 1/2/3 totals",
+      "source": "GHG Protocol",
+      "confidence": "high"
+    }
+  },
+  "global_warming_potentials": {
+    "CO2": {
+      "gwp_100_year": 1,
+      "chemical_formula": "CO2",
+      "source": "IPCC AR5"
+    },
+    "CH4": {
+      "gwp_100_year": 25,
+      "chemical_formula": "CH4",
+      "source": "IPCC AR5"
+    },
+    "N2O": {
+      "gwp_100_year": 298,
+      "chemical_formula": "N2O",
+      "source": "IPCC AR5"
+    },
+    "HFC-134a": {
+      "gwp_100_year": 1430,
+      "chemical_formula": "CH2FCF3",
+      "source": "IPCC AR5"
+    },
+    "SF6": {
+      "gwp_100_year": 22800,
+      "chemical_formula": "SF6",
+      "source": "IPCC AR5"
+    }
+  },
+  "notes": {
+    "methodology": "All emission factors based on GHG Protocol Corporate Accounting and Reporting Standard",
+    "updates": "Emission factors should be updated annually as new data becomes available",
+    "uncertainty": "Confidence levels: high (<10% uncertainty), medium (10-30%), low (>30%)",
+    "regional_variation": "Grid electricity factors vary significantly by region - use country-specific factors when available"
+  }
+}

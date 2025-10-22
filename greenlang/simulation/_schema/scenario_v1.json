@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://greenlang.io/specs/scenariospec_v1.json",
+  "title": "GreenLang ScenarioSpec v1",
+  "description": "Scenario specification for deterministic and stochastic climate modeling workflows",
+  "type": "object",
+  "required": ["schema_version", "name", "seed", "parameters"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "ScenarioSpec schema version (MUST be '1.0.0')"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 3,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]*$",
+      "description": "Scenario name identifier"
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of scenario purpose"
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 18446744073709551615,
+      "description": "Master seed for deterministic RNG (0 to 2^64-1)"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["replay", "live"],
+      "default": "replay",
+      "description": "Execution mode: replay (deterministic) or live (non-deterministic)"
+    },
+    "parameters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/ParameterSpec"
+      },
+      "description": "Parameter specifications (sweep or distribution)"
+    },
+    "monte_carlo": {
+      "anyOf": [
+        {"$ref": "#/$defs/MonteCarloSpec"},
+        {"type": "null"}
+      ],
+      "description": "Monte Carlo configuration (required if any distribution parameters)"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional metadata (owner, tags, etc.)"
+    }
+  },
+  "$defs": {
+    "ParameterSpec": {
+      "type": "object",
+      "required": ["id", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z_][a-zA-Z0-9_]*$",
+          "description": "Parameter identifier (valid Python identifier)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["sweep", "distribution"],
+          "description": "Parameter type: sweep (deterministic grid) or distribution (stochastic)"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {"type": "number"},
+              {"type": "integer"},
+              {"type": "string"}
+            ]
+          },
+          "description": "Discrete values for sweep parameters"
+        },
+        "distribution": {
+          "anyOf": [
+            {"$ref": "#/$defs/DistributionSpec"},
+            {"type": "null"}
+          ],
+          "description": "Distribution specification for stochastic parameters"
+        }
+      }
+    },
+    "DistributionSpec": {
+      "type": "object",
+      "required": ["kind"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["uniform", "normal", "lognormal", "triangular"],
+          "description": "Distribution type"
+        },
+        "low": {
+          "type": "number",
+          "description": "Lower bound (uniform, triangular)"
+        },
+        "high": {
+          "type": "number",
+          "description": "Upper bound (uniform, triangular)"
+        },
+        "mean": {
+          "type": "number",
+          "description": "Mean (normal, lognormal)"
+        },
+        "std": {
+          "type": "number",
+          "description": "Standard deviation (normal)"
+        },
+        "sigma": {
+          "type": "number",
+          "description": "Log-space std (lognormal)"
+        },
+        "mode": {
+          "type": "number",
+          "description": "Mode (triangular)"
+        }
+      }
+    },
+    "MonteCarloSpec": {
+      "type": "object",
+      "required": ["trials"],
+      "additionalProperties": false,
+      "properties": {
+        "trials": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000000,
+          "description": "Number of Monte Carlo trials (1 to 10 million)"
+        },
+        "seed_strategy": {
+          "type": "string",
+          "enum": ["derive-by-path", "sequence", "fixed"],
+          "default": "derive-by-path",
+          "description": "Seed derivation strategy for substreams"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+shipment_id,import_date,quarter,cn_code,product_group,product_description,origin_iso,origin_country,importer_name,importer_country,net_mass_kg,port_of_entry,importer_reference,has_actual_emissions,supplier_id,notes
+DEMO-2025Q4-00001,2025-10-15,2025Q4,72031000,steel,Hot-rolled flat steel,CN,China,Acme Steel EU BV,NL,12450,Rotterdam,IMP-2025-782341,NO,,Demo data - synthetic
+DEMO-2025Q4-00002,2025-11-03,2025Q4,25232900,cement,Grey portland cement,CN,China,Mediterranean Cement SA,FR,19800,Le Havre,IMP-2025-634829,YES,SUP-0001,Demo data - with supplier actuals
+DEMO-2025Q4-00003,2025-10-22,2025Q4,72081000,steel,Hot-rolled steel coils,RU,Russia,EuroSteel GmbH,DE,14230,Hamburg,IMP-2025-523991,NO,,Demo data - synthetic
+DEMO-2025Q4-00004,2025-11-18,2025Q4,76011000,aluminum,Unwrought aluminum (primary),RU,Russia,Nordic Aluminum AB,SE,5420,Rotterdam,IMP-2025-891256,YES,SUP-0007,Demo data - with supplier actuals
+DEMO-2025Q4-00005,2025-10-08,2025Q4,72031000,steel,Hot-rolled flat steel,IN,India,Acme Steel EU BV,NL,11890,Antwerp,IMP-2025-347812,YES,SUP-0010,Demo data - with supplier actuals
+DEMO-2025Q4-00006,2025-12-01,2025Q4,25232900,cement,Grey portland cement,TR,Turkey,Mediterranean Cement SA,FR,21340,Barcelona,IMP-2025-678234,NO,,Demo data - synthetic
+DEMO-2025Q4-00007,2025-11-12,2025Q4,72044900,steel,Steel scrap,CN,China,Baltic Metals OÜ,EE,8750,Hamburg,IMP-2025-912456,NO,,Demo data - synthetic
+DEMO-2025Q4-00008,2025-10-29,2025Q4,28141000,fertilizers,Anhydrous ammonia,RU,Russia,Iberia Fertilizers SL,ES,15680,Barcelona,IMP-2025-234567,NO,,Demo data - synthetic
+DEMO-2025Q4-00009,2025-11-25,2025Q4,76012000,aluminum,Aluminum alloys unwrought,CN,China,Nordic Aluminum AB,SE,4230,Rotterdam,IMP-2025-567891,NO,,Demo data - synthetic
+DEMO-2025Q4-00010,2025-12-08,2025Q4,72081000,steel,Hot-rolled steel coils,IN,India,EuroSteel GmbH,DE,16540,Hamburg,IMP-2025-789123,YES,SUP-0011,Demo data - with supplier actuals
+DEMO-2025Q4-00011,2025-10-19,2025Q4,25231000,cement,Cement clinker,TR,Turkey,Mediterranean Cement SA,FR,24560,Le Havre,IMP-2025-345678,NO,,Demo data - synthetic
+DEMO-2025Q4-00012,2025-11-07,2025Q4,72031000,steel,Hot-rolled flat steel,CN,China,Danube Steel AG,AT,13200,Genoa,IMP-2025-456789,NO,,Demo data - synthetic
+DEMO-2025Q4-00013,2025-12-14,2025Q4,31021000,fertilizers,Urea,RU,Russia,Iberia Fertilizers SL,ES,18900,Barcelona,IMP-2025-678912,NO,,Demo data - synthetic
+DEMO-2025Q4-00014,2025-10-31,2025Q4,76011000,aluminum,Unwrought aluminum (primary),IN,India,Adriatic Industries Srl,IT,6780,Genoa,IMP-2025-891234,YES,SUP-0013,Demo data - with supplier actuals
+DEMO-2025Q4-00015,2025-11-20,2025Q4,72081000,steel,Hot-rolled steel coils,UA,Ukraine,EuroSteel GmbH,DE,15340,Hamburg,IMP-2025-123456,NO,,Demo data - synthetic
+DEMO-2025Q4-00016,2025-12-03,2025Q4,25232900,cement,Grey portland cement,CN,China,Balkan Cement DOO,HR,20450,Piraeus,IMP-2025-234567,NO,,Demo data - synthetic
+DEMO-2025Q4-00017,2025-10-12,2025Q4,28041000,hydrogen,Hydrogen,CN,China,Celtic Materials Ltd,IE,1250,Rotterdam,IMP-2025-345678,YES,SUP-0005,Demo data - with supplier actuals
+DEMO-2025Q4-00018,2025-11-28,2025Q4,72031000,steel,Hot-rolled flat steel,RU,Russia,Acme Steel EU BV,NL,12980,Rotterdam,IMP-2025-456789,NO,,Demo data - synthetic
+DEMO-2025Q4-00019,2025-12-16,2025Q4,76012000,aluminum,Aluminum alloys unwrought,TR,Turkey,Nordic Aluminum AB,SE,5120,Antwerp,IMP-2025-567891,NO,,Demo data - synthetic
+DEMO-2025Q4-00020,2025-10-25,2025Q4,72044900,steel,Steel scrap,IN,India,Baltic Metals OÜ,EE,9430,Hamburg,IMP-2025-678912,YES,SUP-0011,Demo data - with supplier actuals

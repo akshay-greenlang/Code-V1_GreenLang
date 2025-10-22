@@ -1,0 +1,567 @@
+# ============================================================================
+# Data Import Validation Rules
+# ============================================================================
+# This file defines comprehensive validation rules for validating imported
+# data from CSV/JSON sources. It demonstrates all 12 rule operators and
+# various validation patterns.
+#
+# Usage:
+#   from greenlang.validation.rules import RulesEngine, Rule
+#   import yaml
+#
+#   with open('data_import_validation.yaml') as f:
+#       config = yaml.safe_load(f)
+#
+#   engine = RulesEngine()
+#   for rule_dict in config['rules']:
+#       rule = Rule(**rule_dict)
+#       engine.add_rule(rule)
+#
+#   result = engine.validate(your_data)
+# ============================================================================
+
+# Metadata about this validation rule set
+metadata:
+  name: "Data Import Validation Rules"
+  version: "1.0.0"
+  description: "Comprehensive validation rules for CSV/JSON data imports"
+  author: "GreenLang Validation Framework"
+  last_updated: "2025-01-15"
+  applicable_to:
+    - "CSV imports"
+    - "JSON data ingestion"
+    - "API data validation"
+    - "Bulk data uploads"
+
+# ============================================================================
+# SECTION 1: Required Field Validation
+# ============================================================================
+# These rules ensure that mandatory fields are present and not null
+# Operator used: not_null
+# ============================================================================
+
+rules:
+  # ----- Building Identification -----
+  - name: "building_id_required"
+    field: "building_id"
+    operator: "not_null"
+    severity: "error"
+    message: "Building ID is required and cannot be null"
+    enabled: true
+
+  - name: "facility_name_required"
+    field: "facility_name"
+    operator: "not_null"
+    severity: "error"
+    message: "Facility name must be provided"
+    enabled: true
+
+  - name: "location_required"
+    field: "location.city"
+    operator: "not_null"
+    severity: "warning"
+    message: "City location is recommended for accurate analysis"
+    enabled: true
+
+  # ----- Energy Data Fields -----
+  - name: "energy_data_required"
+    field: "energy_data"
+    operator: "not_null"
+    severity: "error"
+    message: "Energy data object is required"
+    enabled: true
+
+  - name: "electricity_value_required"
+    field: "energy_data.electricity_kwh"
+    operator: "not_null"
+    severity: "error"
+    message: "Electricity consumption value is required"
+    enabled: true
+    condition: "exists:energy_data"
+
+  # ============================================================================
+  # SECTION 2: Data Type and Format Validation
+  # ============================================================================
+  # These rules validate that data conforms to expected formats
+  # Operators used: regex, contains
+  # ============================================================================
+
+  # ----- Email Format Validation -----
+  - name: "contact_email_format"
+    field: "contact_email"
+    operator: "regex"
+    value: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+    severity: "error"
+    message: "Contact email must be in valid email format"
+    enabled: true
+    condition: "exists:contact_email"
+
+  # ----- Date Format Validation -----
+  - name: "reporting_date_format"
+    field: "reporting_date"
+    operator: "regex"
+    value: "^\\d{4}-\\d{2}-\\d{2}$"
+    severity: "error"
+    message: "Reporting date must be in YYYY-MM-DD format"
+    enabled: true
+
+  # ----- Building ID Format -----
+  - name: "building_id_format"
+    field: "building_id"
+    operator: "regex"
+    value: "^[A-Z]{2,3}-\\d{4,6}$"
+    severity: "warning"
+    message: "Building ID should follow format: XX-#### (e.g., NYC-001234)"
+    enabled: true
+
+  # ----- Phone Number Format (if provided) -----
+  - name: "phone_number_format"
+    field: "contact_phone"
+    operator: "regex"
+    value: "^\\+?[1-9]\\d{1,14}$"
+    severity: "warning"
+    message: "Phone number should be in international format (E.164)"
+    enabled: true
+    condition: "exists:contact_phone"
+
+  # ----- String Contains Validation -----
+  - name: "facility_type_contains_keyword"
+    field: "facility_type"
+    operator: "contains"
+    value: "Building"
+    severity: "info"
+    message: "Facility type contains 'Building' keyword"
+    enabled: true
+    condition: "exists:facility_type"
+
+  # ============================================================================
+  # SECTION 3: Enumeration Validation
+  # ============================================================================
+  # Validate that fields contain only allowed values
+  # Operators used: in, not_in
+  # ============================================================================
+
+  # ----- Building Type Enumeration -----
+  - name: "building_type_valid"
+    field: "building_type"
+    operator: "in"
+    value:
+      - "Office"
+      - "Retail"
+      - "Industrial"
+      - "Warehouse"
+      - "Mixed-Use"
+      - "Residential"
+      - "Healthcare"
+      - "Educational"
+      - "Hospitality"
+      - "Data Center"
+    severity: "error"
+    message: "Building type must be one of the predefined categories"
+    enabled: true
+
+  # ----- Energy Unit Validation -----
+  - name: "electricity_unit_valid"
+    field: "energy_data.electricity_unit"
+    operator: "in"
+    value:
+      - "kWh"
+      - "MWh"
+      - "GWh"
+    severity: "error"
+    message: "Electricity unit must be kWh, MWh, or GWh"
+    enabled: true
+    condition: "exists:energy_data.electricity_unit"
+
+  - name: "gas_unit_valid"
+    field: "energy_data.gas_unit"
+    operator: "in"
+    value:
+      - "therms"
+      - "m3"
+      - "MMBtu"
+      - "GJ"
+    severity: "error"
+    message: "Gas unit must be therms, m3, MMBtu, or GJ"
+    enabled: true
+    condition: "exists:energy_data.gas_unit"
+
+  # ----- Country Code Validation -----
+  - name: "country_code_valid"
+    field: "location.country_code"
+    operator: "in"
+    value:
+      - "US"
+      - "CA"
+      - "GB"
+      - "DE"
+      - "FR"
+      - "AU"
+      - "JP"
+      - "CN"
+      - "IN"
+      - "BR"
+    severity: "warning"
+    message: "Country code should be a supported ISO 3166-1 alpha-2 code"
+    enabled: true
+    condition: "exists:location.country_code"
+
+  # ----- Data Quality Status (should not be invalid) -----
+  - name: "data_quality_not_invalid"
+    field: "data_quality_status"
+    operator: "not_in"
+    value:
+      - "rejected"
+      - "invalid"
+      - "corrupted"
+      - "failed"
+    severity: "error"
+    message: "Data quality status indicates invalid data"
+    enabled: true
+    condition: "exists:data_quality_status"
+
+  # ============================================================================
+  # SECTION 4: Numeric Range Validation
+  # ============================================================================
+  # Validate that numeric values fall within acceptable ranges
+  # Operators used: >, >=, <, <=, ==, !=
+  # ============================================================================
+
+  # ----- Building Area Constraints -----
+  - name: "building_area_positive"
+    field: "building_area_sqft"
+    operator: ">="
+    value: 100
+    severity: "error"
+    message: "Building area must be at least 100 square feet"
+    enabled: true
+
+  - name: "building_area_reasonable_max"
+    field: "building_area_sqft"
+    operator: "<="
+    value: 50000000
+    severity: "error"
+    message: "Building area exceeds maximum of 50M sqft (verify data accuracy)"
+    enabled: true
+
+  - name: "building_area_not_zero"
+    field: "building_area_sqft"
+    operator: "!="
+    value: 0
+    severity: "error"
+    message: "Building area cannot be exactly zero"
+    enabled: true
+
+  # ----- Energy Consumption Ranges -----
+  - name: "electricity_positive"
+    field: "energy_data.electricity_kwh"
+    operator: ">"
+    value: 0
+    severity: "error"
+    message: "Electricity consumption must be greater than zero"
+    enabled: true
+
+  - name: "electricity_max_threshold"
+    field: "energy_data.electricity_kwh"
+    operator: "<="
+    value: 100000000
+    severity: "error"
+    message: "Electricity consumption exceeds 100M kWh (verify data accuracy)"
+    enabled: true
+
+  - name: "gas_consumption_positive"
+    field: "energy_data.gas_therms"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Gas consumption cannot be negative"
+    enabled: true
+
+  - name: "gas_consumption_max"
+    field: "energy_data.gas_therms"
+    operator: "<"
+    value: 10000000
+    severity: "warning"
+    message: "Gas consumption is unusually high (>10M therms)"
+    enabled: true
+    condition: "exists:energy_data.gas_therms"
+
+  # ----- Employee Count Validation -----
+  - name: "employee_count_positive"
+    field: "employee_count"
+    operator: ">"
+    value: 0
+    severity: "warning"
+    message: "Employee count should be greater than zero for occupied buildings"
+    enabled: true
+    condition: "exists:employee_count"
+
+  - name: "employee_count_max"
+    field: "employee_count"
+    operator: "<="
+    value: 100000
+    severity: "warning"
+    message: "Employee count exceeds 100K (verify data accuracy)"
+    enabled: true
+    condition: "exists:employee_count"
+
+  # ----- Year Validation -----
+  - name: "reporting_year_min"
+    field: "reporting_year"
+    operator: ">="
+    value: 2000
+    severity: "error"
+    message: "Reporting year must be 2000 or later"
+    enabled: true
+
+  - name: "reporting_year_not_future"
+    field: "reporting_year"
+    operator: "<="
+    value: 2025
+    severity: "error"
+    message: "Reporting year cannot be in the future"
+    enabled: true
+
+  # ----- Percentage Validations -----
+  - name: "renewable_percentage_min"
+    field: "renewable_energy_percentage"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Renewable energy percentage cannot be negative"
+    enabled: true
+    condition: "exists:renewable_energy_percentage"
+
+  - name: "renewable_percentage_max"
+    field: "renewable_energy_percentage"
+    operator: "<="
+    value: 100
+    severity: "error"
+    message: "Renewable energy percentage cannot exceed 100%"
+    enabled: true
+    condition: "exists:renewable_energy_percentage"
+
+  # ============================================================================
+  # SECTION 5: Data Completeness Validation
+  # ============================================================================
+  # Check for completeness of optional but recommended fields
+  # Operators used: not_null, is_null
+  # ============================================================================
+
+  - name: "address_recommended"
+    field: "location.street_address"
+    operator: "not_null"
+    severity: "info"
+    message: "Street address is recommended for location accuracy"
+    enabled: true
+
+  - name: "postal_code_recommended"
+    field: "location.postal_code"
+    operator: "not_null"
+    severity: "info"
+    message: "Postal code is recommended for regional analysis"
+    enabled: true
+
+  - name: "building_year_recommended"
+    field: "building_year_built"
+    operator: "not_null"
+    severity: "info"
+    message: "Building year built is useful for age-based analysis"
+    enabled: true
+
+  - name: "certification_level_check"
+    field: "green_certification_level"
+    operator: "is_null"
+    severity: "info"
+    message: "No green certification level provided"
+    enabled: true
+
+  # ============================================================================
+  # SECTION 6: Cross-Field Business Logic Validation
+  # ============================================================================
+  # More complex validations that require understanding of business context
+  # ============================================================================
+
+  # ----- Data Quality Indicators -----
+  - name: "completeness_score_min"
+    field: "metadata.completeness_score"
+    operator: ">="
+    value: 0.8
+    severity: "warning"
+    message: "Data completeness score below 80% threshold"
+    enabled: true
+    condition: "exists:metadata.completeness_score"
+
+  - name: "confidence_score_acceptable"
+    field: "metadata.confidence_score"
+    operator: ">="
+    value: 0.7
+    severity: "warning"
+    message: "Data confidence score below acceptable threshold (70%)"
+    enabled: true
+    condition: "exists:metadata.confidence_score"
+
+  # ----- Tenant Type Validation -----
+  - name: "occupancy_type_valid"
+    field: "occupancy_type"
+    operator: "in"
+    value:
+      - "Single-tenant"
+      - "Multi-tenant"
+      - "Owner-occupied"
+      - "Vacant"
+      - "Mixed"
+    severity: "warning"
+    message: "Occupancy type should be one of the standard categories"
+    enabled: true
+    condition: "exists:occupancy_type"
+
+  # ----- Missing Critical Metadata -----
+  - name: "data_source_provided"
+    field: "metadata.data_source"
+    operator: "not_null"
+    severity: "info"
+    message: "Data source not specified (recommended for traceability)"
+    enabled: true
+
+  - name: "import_timestamp_provided"
+    field: "metadata.import_timestamp"
+    operator: "not_null"
+    severity: "info"
+    message: "Import timestamp not recorded"
+    enabled: true
+
+  # ============================================================================
+  # SECTION 7: String Length and Content Validation
+  # ============================================================================
+  # Validate string field constraints
+  # ============================================================================
+
+  - name: "building_name_not_empty"
+    field: "facility_name"
+    operator: "!="
+    value: ""
+    severity: "error"
+    message: "Facility name cannot be an empty string"
+    enabled: true
+
+  - name: "notes_length_check"
+    field: "notes"
+    operator: "regex"
+    value: "^.{0,1000}$"
+    severity: "warning"
+    message: "Notes field exceeds recommended 1000 character limit"
+    enabled: true
+    condition: "exists:notes"
+
+  # ============================================================================
+  # SECTION 8: Conditional Validation Rules
+  # ============================================================================
+  # Rules that only apply under certain conditions
+  # ============================================================================
+
+  - name: "renewable_data_when_percentage_exists"
+    field: "energy_data.renewable_kwh"
+    operator: "not_null"
+    severity: "warning"
+    message: "Renewable kWh should be provided when renewable percentage is specified"
+    enabled: true
+    condition: "exists:renewable_energy_percentage"
+
+  - name: "certification_date_when_certified"
+    field: "green_certification_date"
+    operator: "not_null"
+    severity: "info"
+    message: "Certification date recommended when certification level is provided"
+    enabled: true
+    condition: "exists:green_certification_level"
+
+# ============================================================================
+# Rule Sets: Organized groups of rules for different validation scenarios
+# ============================================================================
+
+rule_sets:
+  # Minimal validation for quick imports
+  - name: "quick_validation"
+    description: "Essential validations only - for rapid data import"
+    enabled: true
+    rules:
+      - building_id_required
+      - facility_name_required
+      - energy_data_required
+      - electricity_value_required
+      - building_area_positive
+      - electricity_positive
+
+  # Standard validation for normal imports
+  - name: "standard_validation"
+    description: "Comprehensive validation for production data imports"
+    enabled: true
+    rules:
+      - building_id_required
+      - facility_name_required
+      - energy_data_required
+      - electricity_value_required
+      - contact_email_format
+      - reporting_date_format
+      - building_type_valid
+      - electricity_unit_valid
+      - building_area_positive
+      - building_area_reasonable_max
+      - electricity_positive
+      - electricity_max_threshold
+      - reporting_year_min
+      - reporting_year_not_future
+
+  # Strict validation with all rules
+  - name: "strict_validation"
+    description: "All validation rules including warnings and info"
+    enabled: true
+    rules: "all"  # Special keyword to include all rules
+
+  # Format-only validation
+  - name: "format_validation"
+    description: "Validate only data formats and types"
+    enabled: true
+    rules:
+      - contact_email_format
+      - reporting_date_format
+      - building_id_format
+      - phone_number_format
+
+  # Range-only validation
+  - name: "range_validation"
+    description: "Validate only numeric ranges"
+    enabled: true
+    rules:
+      - building_area_positive
+      - building_area_reasonable_max
+      - electricity_positive
+      - electricity_max_threshold
+      - gas_consumption_positive
+      - renewable_percentage_min
+      - renewable_percentage_max
+
+# ============================================================================
+# Configuration Options
+# ============================================================================
+
+config:
+  # Stop validation on first error
+  stop_on_error: false
+
+  # Maximum number of errors to collect before stopping
+  max_errors: 100
+
+  # Include field values in error messages
+  include_values_in_errors: true
+
+  # Log validation progress
+  verbose_logging: false
+
+  # Custom error message templates
+  error_templates:
+    required_field: "Required field '{field}' is missing or null"
+    invalid_format: "Field '{field}' has invalid format: expected {expected}, got {value}"
+    out_of_range: "Field '{field}' value {value} is outside valid range"
+    invalid_enum: "Field '{field}' value '{value}' is not in allowed values: {expected}"

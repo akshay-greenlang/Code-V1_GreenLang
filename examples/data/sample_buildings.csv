@@ -1,0 +1,6 @@
+building_id,name,area_sqm,electricity_kwh,gas_therms,location
+B001,Office Tower A,5000,50000,1000,San Francisco
+B002,Warehouse B,8000,30000,2000,Los Angeles
+B003,Retail Store C,3000,25000,500,New York
+B004,Data Center D,2000,120000,100,Austin
+B005,Manufacturing E,10000,75000,3000,Chicago

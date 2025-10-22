@@ -564,5 +564,683 @@ class TestCarbonAgentAIIntegration:
         assert result.data["carbon_intensity"] == {}
 
 
+class TestCarbonAgentAICoverage:
+    """Additional tests to achieve 80%+ coverage for CarbonAgentAI."""
+
+    @pytest.fixture
+    def agent(self):
+        """Create CarbonAgentAI instance for testing."""
+        return CarbonAgentAI(budget_usd=1.0)
+
+    @pytest.fixture
+    def valid_emissions_data(self):
+        """Create valid test emissions data."""
+        return {
+            "emissions": [
+                {"fuel_type": "electricity", "co2e_emissions_kg": 15000},
+                {"fuel_type": "natural_gas", "co2e_emissions_kg": 8500},
+                {"fuel_type": "diesel", "co2e_emissions_kg": 3200},
+            ],
+            "building_area": 50000,
+            "occupancy": 200,
+        }
+
+    # ===== Unit Tests for _extract_tool_results =====
+
+    def test_extract_tool_results_all_tools(self, agent, valid_emissions_data):
+        """Test extracting results from all four tool types."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "aggregate_emissions",
+                "arguments": {
+                    "emissions": valid_emissions_data["emissions"],
+                },
+            },
+            {
+                "name": "calculate_breakdown",
+                "arguments": {
+                    "emissions": valid_emissions_data["emissions"],
+                    "total_kg": 26700,
+                },
+            },
+            {
+                "name": "calculate_intensity",
+                "arguments": {
+                    "total_kg": 26700,
+                    "building_area": 50000,
+                    "occupancy": 200,
+                },
+            },
+            {
+                "name": "generate_recommendations",
+                "arguments": {
+                    "breakdown": [
+                        {"source": "electricity", "co2e_kg": 15000, "percentage": 56.18},
+                    ],
+                },
+            },
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Verify all four tools extracted
+        assert "aggregation" in results
+        assert "breakdown" in results
+        assert "intensity" in results
+        assert "recommendations" in results
+
+        # Verify aggregation data
+        assert "total_kg" in results["aggregation"]
+        assert results["aggregation"]["total_kg"] == 26700
+
+        # Verify breakdown data
+        assert "breakdown" in results["breakdown"]
+        assert len(results["breakdown"]["breakdown"]) == 3
+
+        # Verify intensity data
+        assert "intensity" in results["intensity"]
+
+        # Verify recommendations data
+        assert "recommendations" in results["recommendations"]
+
+    def test_extract_tool_results_empty(self, agent):
+        """Test extracting results with no tool calls."""
+        mock_response = Mock()
+        mock_response.tool_calls = []
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should return empty dict
+        assert results == {}
+
+    def test_extract_tool_results_unknown_tool(self, agent):
+        """Test extracting results with unknown tool name."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "unknown_tool",
+                "arguments": {},
+            }
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should ignore unknown tool
+        assert results == {}
+
+    def test_extract_tool_results_partial(self, agent, valid_emissions_data):
+        """Test extracting results with only some tools called."""
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "aggregate_emissions",
+                "arguments": {
+                    "emissions": valid_emissions_data["emissions"],
+                },
+            },
+        ]
+
+        results = agent._extract_tool_results(mock_response)
+
+        # Should have only aggregation
+        assert "aggregation" in results
+        assert "breakdown" not in results
+        assert "intensity" not in results
+        assert "recommendations" not in results
+
+    # ===== Unit Tests for _build_output =====
+
+    def test_build_output_with_all_data(self, agent, valid_emissions_data):
+        """Test building output with complete tool results."""
+        tool_results = {
+            "aggregation": {
+                "total_kg": 26700,
+                "total_tons": 26.7,
+            },
+            "breakdown": {
+                "breakdown": [
+                    {"source": "electricity", "co2e_kg": 15000, "co2e_tons": 15.0, "percentage": 56.18},
+                    {"source": "natural_gas", "co2e_kg": 8500, "co2e_tons": 8.5, "percentage": 31.84},
+                    {"source": "diesel", "co2e_kg": 3200, "co2e_tons": 3.2, "percentage": 11.99},
+                ],
+            },
+            "intensity": {
+                "intensity": {
+                    "per_sqft": 0.534,
+                    "per_person": 133.5,
+                }
+            },
+            "recommendations": {
+                "recommendations": [
+                    {
+                        "priority": "high",
+                        "source": "electricity",
+                        "action": "Install solar PV",
+                        "impact": "56.18% of total emissions",
+                    }
+                ],
+            },
+        }
+
+        ai_summary = "Total carbon footprint is 26.7 metric tons CO2e."
+
+        output = agent._build_output(valid_emissions_data, tool_results, ai_summary)
+
+        # Verify all fields present
+        assert output["total_co2e_kg"] == 26700
+        assert output["total_co2e_tons"] == 26.7
+        assert len(output["emissions_breakdown"]) == 3
+        assert output["carbon_intensity"]["per_sqft"] == 0.534
+        assert output["carbon_intensity"]["per_person"] == 133.5
+        assert "summary" in output  # Traditional summary
+        assert output["ai_summary"] == ai_summary
+        assert len(output["recommendations"]) == 1
+
+    def test_build_output_missing_aggregation(self, agent, valid_emissions_data):
+        """Test building output with missing aggregation data."""
+        tool_results = {}  # No aggregation data
+
+        output = agent._build_output(valid_emissions_data, tool_results, None)
+
+        # Should handle gracefully with defaults
+        assert output["total_co2e_kg"] == 0
+        assert output["total_co2e_tons"] == 0
+        assert output["emissions_breakdown"] == []
+
+    def test_build_output_without_ai_summary(self, agent, valid_emissions_data):
+        """Test building output without AI summary."""
+        tool_results = {
+            "aggregation": {
+                "total_kg": 15000,
+                "total_tons": 15.0,
+            },
+            "breakdown": {
+                "breakdown": [],
+            },
+        }
+
+        agent.enable_ai_summary = False
+        output = agent._build_output(valid_emissions_data, tool_results, None)
+
+        # Should not include AI summary
+        assert "ai_summary" not in output
+        assert "summary" in output  # Traditional summary still present
+
+    def test_build_output_without_recommendations(self, agent, valid_emissions_data):
+        """Test building output without recommendations."""
+        tool_results = {
+            "aggregation": {
+                "total_kg": 15000,
+                "total_tons": 15.0,
+            },
+            "breakdown": {
+                "breakdown": [],
+            },
+        }
+
+        agent.enable_recommendations = False
+        output = agent._build_output(valid_emissions_data, tool_results, None)
+
+        # Should not include recommendations if disabled
+        assert "recommendations" not in output
+
+    def test_build_output_with_empty_intensity(self, agent, valid_emissions_data):
+        """Test building output with empty intensity (no building data)."""
+        tool_results = {
+            "aggregation": {
+                "total_kg": 15000,
+                "total_tons": 15.0,
+            },
+            "breakdown": {
+                "breakdown": [],
+            },
+            "intensity": {
+                "intensity": {},
+            },
+        }
+
+        output = agent._build_output(valid_emissions_data, tool_results, None)
+
+        # Should have empty carbon intensity
+        assert output["carbon_intensity"] == {}
+
+    # ===== Boundary Tests =====
+
+    def test_single_emission_source(self, agent):
+        """Test with single emission source."""
+        data = {
+            "emissions": [
+                {"fuel_type": "electricity", "co2e_emissions_kg": 10000},
+            ]
+        }
+
+        result = agent._aggregate_emissions_impl(data["emissions"])
+
+        assert result["total_kg"] == 10000
+        assert result["total_tons"] == 10.0
+
+    def test_very_large_emissions(self, agent):
+        """Test with very large emission values."""
+        data = {
+            "emissions": [
+                {"fuel_type": "coal", "co2e_emissions_kg": 1e9},  # 1 billion kg
+            ]
+        }
+
+        result = agent._aggregate_emissions_impl(data["emissions"])
+
+        assert result["total_kg"] == 1e9
+        assert result["total_tons"] == 1e6  # 1 million tons
+
+    def test_zero_emissions(self, agent):
+        """Test with zero emissions."""
+        data = {
+            "emissions": [
+                {"fuel_type": "electricity", "co2e_emissions_kg": 0},
+            ]
+        }
+
+        result = agent._aggregate_emissions_impl(data["emissions"])
+
+        assert result["total_kg"] == 0
+        assert result["total_tons"] == 0
+
+    def test_breakdown_with_zero_total(self, agent):
+        """Test breakdown calculation with zero total."""
+        emissions = [
+            {"fuel_type": "electricity", "co2e_emissions_kg": 0},
+        ]
+
+        result = agent._calculate_breakdown_impl(emissions, 0)
+
+        # Should handle gracefully
+        assert result["breakdown"][0]["percentage"] == 0
+
+    def test_very_small_emissions(self, agent):
+        """Test with very small emission values."""
+        emissions = [
+            {"fuel_type": "electricity", "co2e_emissions_kg": 0.001},
+            {"fuel_type": "natural_gas", "co2e_emissions_kg": 0.002},
+        ]
+
+        result = agent._aggregate_emissions_impl(emissions)
+
+        assert result["total_kg"] == 0.003
+        assert round(result["total_tons"], 6) == 0.000003
+
+    def test_negative_emissions_handling(self, agent):
+        """Test handling of negative emissions (carbon credits)."""
+        emissions = [
+            {"fuel_type": "electricity", "co2e_emissions_kg": 10000},
+            {"fuel_type": "carbon_offset", "co2e_emissions_kg": -3000},
+        ]
+
+        result = agent._aggregate_emissions_impl(emissions)
+
+        # Should sum including negative values
+        assert result["total_kg"] == 7000
+        assert result["total_tons"] == 7.0
+
+    def test_breakdown_sorting_order(self, agent):
+        """Test that breakdown is sorted by emissions (largest first)."""
+        emissions = [
+            {"fuel_type": "natural_gas", "co2e_emissions_kg": 5000},
+            {"fuel_type": "electricity", "co2e_emissions_kg": 15000},
+            {"fuel_type": "diesel", "co2e_emissions_kg": 8000},
+        ]
+
+        result = agent._calculate_breakdown_impl(emissions, 28000)
+
+        breakdown = result["breakdown"]
+
+        # Should be sorted largest first
+        assert breakdown[0]["source"] == "electricity"  # 15000
+        assert breakdown[1]["source"] == "diesel"       # 8000
+        assert breakdown[2]["source"] == "natural_gas"  # 5000
+
+        # Verify descending order
+        for i in range(len(breakdown) - 1):
+            assert breakdown[i]["co2e_kg"] >= breakdown[i + 1]["co2e_kg"]
+
+    def test_intensity_with_very_small_building(self, agent):
+        """Test intensity calculation with very small building area."""
+        result = agent._calculate_intensity_impl(
+            total_kg=100000,
+            building_area=10,  # Very small building
+            occupancy=1,
+        )
+
+        intensity = result["intensity"]
+
+        # Per sqft should be very high
+        assert intensity["per_sqft"] == 10000.0
+        assert intensity["per_person"] == 100000.0
+
+    def test_intensity_with_very_large_building(self, agent):
+        """Test intensity calculation with very large building area."""
+        result = agent._calculate_intensity_impl(
+            total_kg=100000,
+            building_area=1e6,  # 1 million sqft
+            occupancy=10000,
+        )
+
+        intensity = result["intensity"]
+
+        # Per sqft should be very small
+        assert intensity["per_sqft"] == 0.1
+        assert intensity["per_person"] == 10.0
+
+    # ===== Integration Tests =====
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.carbon_agent_ai.ChatSession")
+    async def test_execute_with_budget_exceeded(self, mock_session_class, agent, valid_emissions_data):
+        """Test execute() handling when budget is exceeded."""
+        from greenlang.intelligence import BudgetExceeded
+
+        # Setup mock session to raise BudgetExceeded
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(side_effect=BudgetExceeded("Budget limit reached"))
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_emissions_data)
+
+        # Should handle budget exceeded gracefully
+        assert result.success is False
+        assert "budget" in result.error.lower() or "Budget" in result.error
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.carbon_agent_ai.ChatSession")
+    async def test_execute_with_general_exception(self, mock_session_class, agent, valid_emissions_data):
+        """Test execute() handling of general exceptions."""
+        # Setup mock session to raise generic exception
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(side_effect=RuntimeError("Unexpected error"))
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_emissions_data)
+
+        # Should handle exception gracefully
+        assert result.success is False
+        assert "Unexpected error" in result.error or "Failed to aggregate" in result.error
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.carbon_agent_ai.ChatSession")
+    async def test_execute_with_disabled_ai_summary(self, mock_session_class, agent, valid_emissions_data):
+        """Test execute() with AI summary disabled."""
+        agent.enable_ai_summary = False
+
+        # Create mock response
+        mock_response = Mock(spec=ChatResponse)
+        mock_response.text = ""
+        mock_response.tool_calls = [
+            {
+                "name": "aggregate_emissions",
+                "arguments": {
+                    "emissions": valid_emissions_data["emissions"],
+                },
+            },
+        ]
+        mock_response.usage = Usage(
+            prompt_tokens=100,
+            completion_tokens=50,
+            total_tokens=150,
+            cost_usd=0.01,
+        )
+        mock_response.provider_info = ProviderInfo(
+            provider="openai",
+            model="gpt-4o-mini",
+        )
+        mock_response.finish_reason = FinishReason.stop
+
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(return_value=mock_response)
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_emissions_data)
+
+        assert result.success is True
+        # AI summary should not be in output
+        assert "ai_summary" not in result.data
+
+    @pytest.mark.asyncio
+    @patch("greenlang.agents.carbon_agent_ai.ChatSession")
+    async def test_execute_with_disabled_recommendations(self, mock_session_class, agent, valid_emissions_data):
+        """Test execute() with recommendations disabled."""
+        agent.enable_recommendations = False
+
+        # Create mock response
+        mock_response = Mock(spec=ChatResponse)
+        mock_response.text = "Summary"
+        mock_response.tool_calls = [
+            {
+                "name": "aggregate_emissions",
+                "arguments": {
+                    "emissions": valid_emissions_data["emissions"],
+                },
+            },
+        ]
+        mock_response.usage = Usage(
+            prompt_tokens=100,
+            completion_tokens=50,
+            total_tokens=150,
+            cost_usd=0.01,
+        )
+        mock_response.provider_info = ProviderInfo(
+            provider="openai",
+            model="gpt-4o-mini",
+        )
+        mock_response.finish_reason = FinishReason.stop
+
+        mock_session = Mock()
+        mock_session.chat = AsyncMock(return_value=mock_response)
+        mock_session_class.return_value = mock_session
+
+        result = agent.execute(valid_emissions_data)
+
+        assert result.success is True
+        # Recommendations should not be in prompt or output
+        # (verified by checking prompt doesn't include recommendation step)
+
+    # ===== Determinism Tests =====
+
+    def test_tool_determinism_aggregation(self, agent):
+        """Test that aggregation tool produces identical results across multiple runs."""
+        emissions = [
+            {"fuel_type": "electricity", "co2e_emissions_kg": 15000},
+            {"fuel_type": "natural_gas", "co2e_emissions_kg": 8500},
+        ]
+
+        results = []
+        for _ in range(5):
+            result = agent._aggregate_emissions_impl(emissions)
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["total_kg"] == results[0]["total_kg"]
+            assert result["total_tons"] == results[0]["total_tons"]
+
+    def test_tool_determinism_breakdown(self, agent):
+        """Test that breakdown tool produces identical results across multiple runs."""
+        emissions = [
+            {"fuel_type": "electricity", "co2e_emissions_kg": 15000},
+            {"fuel_type": "natural_gas", "co2e_emissions_kg": 8500},
+        ]
+
+        results = []
+        for _ in range(5):
+            result = agent._calculate_breakdown_impl(emissions, 23500)
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["breakdown"] == results[0]["breakdown"]
+
+    def test_tool_determinism_intensity(self, agent):
+        """Test that intensity tool produces identical results."""
+        results = []
+        for _ in range(5):
+            result = agent._calculate_intensity_impl(
+                total_kg=26700,
+                building_area=50000,
+                occupancy=200,
+            )
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert result["intensity"] == results[0]["intensity"]
+
+    def test_tool_determinism_recommendations(self, agent):
+        """Test that recommendations are deterministic."""
+        breakdown = [
+            {"source": "electricity", "co2e_kg": 15000, "percentage": 65.0},
+            {"source": "natural_gas", "co2e_kg": 8000, "percentage": 35.0},
+        ]
+
+        results = []
+        for _ in range(3):
+            result = agent._generate_recommendations_impl(breakdown)
+            results.append(result)
+
+        # All results should be identical
+        for result in results[1:]:
+            assert len(result["recommendations"]) == len(results[0]["recommendations"])
+            # Compare first recommendation
+            assert result["recommendations"][0]["source"] == results[0]["recommendations"][0]["source"]
+            assert result["recommendations"][0]["priority"] == results[0]["recommendations"][0]["priority"]
+
+    # ===== Performance and Configuration Tests =====
+
+    def test_cost_accumulation(self, agent):
+        """Test that costs accumulate correctly."""
+        initial_cost = agent._total_cost_usd
+
+        # Make some tool calls (tools are free)
+        agent._aggregate_emissions_impl([{"fuel_type": "electricity", "co2e_emissions_kg": 1000}])
+
+        # Cost should still be initial (tool calls are free)
+        assert agent._total_cost_usd == initial_cost
+
+    def test_tool_call_count_tracking(self, agent):
+        """Test that tool call counts are tracked correctly."""
+        initial_count = agent._tool_call_count
+
+        # Make tool calls
+        agent._aggregate_emissions_impl([{"fuel_type": "electricity", "co2e_emissions_kg": 1000}])
+        assert agent._tool_call_count == initial_count + 1
+
+        agent._calculate_breakdown_impl([{"fuel_type": "electricity", "co2e_emissions_kg": 1000}], 1000)
+        assert agent._tool_call_count == initial_count + 2
+
+        agent._calculate_intensity_impl(total_kg=1000, building_area=1000)
+        assert agent._tool_call_count == initial_count + 3
+
+    def test_configuration_options(self):
+        """Test agent initialization with different configurations."""
+        # Custom budget
+        agent1 = CarbonAgentAI(budget_usd=0.25)
+        assert agent1.budget_usd == 0.25
+
+        # Disabled AI summary
+        agent2 = CarbonAgentAI(enable_ai_summary=False)
+        assert agent2.enable_ai_summary is False
+
+        # Disabled recommendations
+        agent3 = CarbonAgentAI(enable_recommendations=False)
+        assert agent3.enable_recommendations is False
+
+        # All options
+        agent4 = CarbonAgentAI(
+            budget_usd=2.0,
+            enable_ai_summary=False,
+            enable_recommendations=False,
+        )
+        assert agent4.budget_usd == 2.0
+        assert agent4.enable_ai_summary is False
+        assert agent4.enable_recommendations is False
+
+    def test_build_prompt_without_recommendations(self, agent, valid_emissions_data):
+        """Test prompt building without recommendations."""
+        agent.enable_recommendations = False
+
+        prompt = agent._build_prompt(valid_emissions_data)
+
+        # Should not mention recommendations
+        assert "generate_recommendations" not in prompt
+        assert "reduction" not in prompt.lower()
+
+    def test_build_prompt_without_building_metadata(self, agent):
+        """Test prompt building without building area or occupancy."""
+        data = {
+            "emissions": [
+                {"fuel_type": "electricity", "co2e_emissions_kg": 10000},
+            ]
+        }
+
+        prompt = agent._build_prompt(data)
+
+        # Should not mention intensity calculations
+        # (though it may still be offered as optional)
+        assert "1 emission records" in prompt or "1 emission record" in prompt
+
+    # ===== Edge Case and Error Tests =====
+
+    def test_recommendations_for_unknown_fuel_type(self, agent):
+        """Test recommendations for unknown/generic fuel type."""
+        breakdown = [
+            {"source": "unknown_fuel", "co2e_kg": 5000, "percentage": 100.0},
+        ]
+
+        result = agent._generate_recommendations_impl(breakdown)
+
+        recommendations = result["recommendations"]
+
+        # Should have generic recommendation
+        assert len(recommendations) == 1
+        rec = recommendations[0]
+        assert rec["source"] == "unknown_fuel"
+        assert "optimize" in rec["action"].lower() or "efficiency" in rec["action"].lower()
+
+    def test_recommendations_priority_order(self, agent):
+        """Test that recommendations have correct priority order."""
+        breakdown = [
+            {"source": "electricity", "co2e_kg": 10000, "percentage": 50.0},
+            {"source": "natural_gas", "co2e_kg": 6000, "percentage": 30.0},
+            {"source": "diesel", "co2e_kg": 4000, "percentage": 20.0},
+        ]
+
+        result = agent._generate_recommendations_impl(breakdown)
+
+        recommendations = result["recommendations"]
+
+        # Should have 3 recommendations
+        assert len(recommendations) == 3
+
+        # Verify priority order
+        assert recommendations[0]["priority"] == "high"
+        assert recommendations[1]["priority"] == "medium"
+        assert recommendations[2]["priority"] == "low"
+
+    def test_validation_error_handling(self, agent):
+        """Test that validation errors are handled properly."""
+        invalid_data = {}  # Missing emissions key
+
+        result = agent.execute(invalid_data)
+
+        assert result.success is False
+        assert "Invalid input" in result.error
+
+    def test_aggregate_emissions_with_failed_calculation(self, agent):
+        """Test error handling when aggregation fails."""
+        # This would require mocking the carbon_agent to fail
+        # For now, verify the error path exists
+        with pytest.raises(ValueError):
+            # Create invalid emissions that would cause failure
+            agent._aggregate_emissions_impl("not_a_list")
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

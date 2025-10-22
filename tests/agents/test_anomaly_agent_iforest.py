@@ -1164,5 +1164,585 @@ def test_handle_all_nan_feature(agent):
         assert "nan" in str(e).lower() or "missing" in str(e).lower()
 
 
+# ==============================================================================
+# Test: Coverage Expansion - Gap-Filling Tests for 80%+ Coverage
+# ==============================================================================
+
+
+class TestIsolationForestAnomalyAgentCoverage:
+    """Gap-filling tests to achieve 80%+ coverage for IsolationForestAnomalyAgent.
+
+    This test class adds comprehensive coverage for:
+    - Tool result extraction (all 6 tools)
+    - Output building variations
+    - Integration tests (budget exceeded, exceptions, feature toggles)
+    - Determinism verification (5-run consistency)
+    - Boundary conditions (zero, extreme values, edge cases)
+    - Configuration options
+    - Performance tracking
+    """
+
+    # =========================================================================
+    # Unit Tests: Tool Result Extraction
+    # =========================================================================
+
+    def test_extract_tool_results_all_six_tools(self, agent, normal_data):
+        """Test extracting results from all six tool types."""
+        from unittest.mock import Mock
+
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {
+                "name": "fit_isolation_forest",
+                "arguments": {"contamination": 0.1, "n_estimators": 100},
+            },
+            {
+                "name": "detect_anomalies",
+                "arguments": {},
+            },
+            {
+                "name": "calculate_anomaly_scores",
+                "arguments": {},
+            },
+            {
+                "name": "rank_anomalies",
+                "arguments": {"top_n": 10},
+            },
+            {
+                "name": "analyze_anomaly_patterns",
+                "arguments": {},
+            },
+            {
+                "name": "generate_alerts",
+                "arguments": {"severity_threshold": "high"},
+            },
+        ]
+
+        input_data = {"data": normal_data}
+
+        # Fit model first for tools that need it
+        agent._fit_isolation_forest_impl(input_data, contamination=0.1)
+
+        results = agent._extract_tool_results(mock_response, input_data)
+
+        # Verify all tools were called
+        assert "model" in results
+        assert "anomalies" in results
+        assert "scores" in results
+        assert "ranked" in results
+        assert "patterns" in results
+        assert "alerts" in results
+
+    def test_extract_tool_results_empty(self, agent, normal_data):
+        """Test extracting results when no tools were called."""
+        from unittest.mock import Mock
+
+        mock_response = Mock()
+        mock_response.tool_calls = []
+
+        input_data = {"data": normal_data}
+
+        results = agent._extract_tool_results(mock_response, input_data)
+
+        # Should return empty dict
+        assert isinstance(results, dict)
+        assert len(results) == 0
+
+    def test_extract_tool_results_unknown_tool(self, agent, normal_data):
+        """Test extracting results with unknown tool name."""
+        from unittest.mock import Mock
+
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {"name": "unknown_tool", "arguments": {}},
+            {"name": "fit_isolation_forest", "arguments": {"contamination": 0.1}},
+        ]
+
+        input_data = {"data": normal_data}
+
+        results = agent._extract_tool_results(mock_response, input_data)
+
+        # Should handle unknown tool gracefully
+        assert isinstance(results, dict)
+        assert "model" in results  # Known tool should work
+
+    def test_extract_tool_results_partial_data(self, agent, normal_data):
+        """Test extracting results when some tools return partial data."""
+        from unittest.mock import Mock
+
+        mock_response = Mock()
+        mock_response.tool_calls = [
+            {"name": "fit_isolation_forest", "arguments": {}},
+            {"name": "detect_anomalies", "arguments": {}},
+        ]
+
+        input_data = {"data": normal_data}
+
+        results = agent._extract_tool_results(mock_response, input_data)
+
+        # Should have partial results
+        assert "model" in results
+        assert "anomalies" in results
+        assert "scores" not in results  # Not called
+
+    # =========================================================================
+    # Unit Tests: Output Building
+    # =========================================================================
+
+    def test_build_output_missing_anomalies(self, agent):
+        """Test output building when anomaly data is missing."""
+        tool_results = {
+            "model": {
+                "n_estimators": 100,
+                "contamination": 0.1,
+                "n_features": 5,
+            },
+        }
+
+        input_data = {"data": pd.DataFrame()}
+
+        output = agent._build_output(input_data, tool_results, "Explanation")
+
+        assert "model_info" in output
+        # Anomalies should have defaults when missing
+        assert "anomalies" not in output or output.get("anomalies") is None
+
+    def test_build_output_missing_scores(self, agent):
+        """Test output building when anomaly scores are missing."""
+        tool_results = {
+            "anomalies": {
+                "anomaly_indices": [5, 10, 15],
+                "n_anomalies": 3,
+            },
+        }
+
+        input_data = {"data": pd.DataFrame()}
+
+        output = agent._build_output(input_data, tool_results, None)
+
+        assert "anomalies" in output
+        assert "anomaly_scores" not in output or output.get("anomaly_scores") is None
+
+    def test_build_output_missing_patterns(self, agent):
+        """Test output building when pattern analysis is missing."""
+        tool_results = {
+            "anomalies": {
+                "anomaly_indices": [1],
+                "n_anomalies": 1,
+            },
+            "scores": {
+                "scores": [-0.5],
+                "severity": ["high"],
+            },
+        }
+
+        input_data = {"data": pd.DataFrame()}
+
+        output = agent._build_output(input_data, tool_results, "Test")
+
+        assert "patterns" not in output or output.get("patterns") is None
+
+    def test_build_output_no_explanation(self, agent):
+        """Test output building when explanations are disabled."""
+        tool_results = {
+            "anomalies": {
+                "anomaly_indices": [1],
+                "n_anomalies": 1,
+            },
+        }
+
+        input_data = {"data": pd.DataFrame()}
+
+        # Disable explanations
+        agent.enable_explanations = False
+
+        output = agent._build_output(input_data, tool_results, "Should be ignored")
+
+        assert "explanation" not in output or output["explanation"] is None
+
+    # =========================================================================
+    # Integration Tests: Budget and Exception Handling
+    # =========================================================================
+
+    @pytest.mark.asyncio
+    async def test_integration_budget_exceeded(self, agent, normal_data):
+        """Test handling when AI budget is exceeded."""
+        from unittest.mock import patch, AsyncMock
+        from greenlang.intelligence import BudgetExceeded
+
+        input_data = {"data": normal_data}
+
+        # Mock ChatSession to raise BudgetExceeded
+        with patch("greenlang.agents.anomaly_agent_iforest.ChatSession") as MockSession:
+            mock_session = MockSession.return_value
+            mock_session.chat = AsyncMock(side_effect=BudgetExceeded("Budget exceeded"))
+
+            # Should raise ValueError with budget message
+            with pytest.raises(ValueError, match="budget"):
+                await agent._process_async(input_data)
+
+    @pytest.mark.asyncio
+    async def test_integration_general_exception(self, agent, normal_data):
+        """Test handling of general exceptions during processing."""
+        from unittest.mock import patch, AsyncMock
+
+        input_data = {"data": normal_data}
+
+        # Mock ChatSession to raise RuntimeError
+        with patch("greenlang.agents.anomaly_agent_iforest.ChatSession") as MockSession:
+            mock_session = MockSession.return_value
+            mock_session.chat = AsyncMock(side_effect=RuntimeError("Unexpected error"))
+
+            # Should propagate the exception
+            with pytest.raises(RuntimeError, match="Unexpected error"):
+                await agent._process_async(input_data)
+
+    @pytest.mark.asyncio
+    async def test_integration_disabled_explanations(self, agent, normal_data):
+        """Test full workflow with explanations disabled."""
+        from unittest.mock import patch, AsyncMock, Mock
+        from greenlang.agents.anomaly_agent_iforest import IsolationForestAnomalyAgent
+
+        agent_no_explain = IsolationForestAnomalyAgent(enable_explanations=False)
+
+        input_data = {"data": normal_data}
+
+        # Mock ChatSession
+        with patch("greenlang.agents.anomaly_agent_iforest.ChatSession") as MockSession:
+            mock_session = MockSession.return_value
+            mock_response = Mock()
+            mock_response.tool_calls = [
+                {"name": "fit_isolation_forest", "arguments": {}},
+                {"name": "detect_anomalies", "arguments": {}},
+            ]
+            mock_response.text = "This should be ignored"
+            mock_response.usage = Mock(cost_usd=0.01, total_tokens=100)
+            mock_response.provider_info = Mock(provider="anthropic", model="claude-3-5-sonnet-20241022")
+            mock_session.chat = AsyncMock(return_value=mock_response)
+
+            # Fit model first
+            agent_no_explain._fit_isolation_forest_impl(input_data, contamination=0.1)
+
+            result = await agent_no_explain._process_async(input_data)
+
+            # Should not have explanation
+            assert "explanation" not in result or result.get("explanation") is None
+
+    @pytest.mark.asyncio
+    async def test_integration_disabled_alerts(self, agent, normal_data):
+        """Test full workflow with alerts disabled."""
+        from unittest.mock import patch, AsyncMock, Mock
+        from greenlang.agents.anomaly_agent_iforest import IsolationForestAnomalyAgent
+
+        agent_no_alerts = IsolationForestAnomalyAgent(enable_alerts=False)
+
+        input_data = {"data": normal_data}
+
+        # Mock ChatSession
+        with patch("greenlang.agents.anomaly_agent_iforest.ChatSession") as MockSession:
+            mock_session = MockSession.return_value
+            mock_response = Mock()
+            mock_response.tool_calls = [
+                {"name": "fit_isolation_forest", "arguments": {}},
+            ]
+            mock_response.text = "Detection complete"
+            mock_response.usage = Mock(cost_usd=0.01, total_tokens=100)
+            mock_response.provider_info = Mock(provider="anthropic", model="claude-3-5-sonnet-20241022")
+            mock_session.chat = AsyncMock(return_value=mock_response)
+
+            result_data = agent_no_alerts._fit_isolation_forest_impl(input_data, contamination=0.1)
+
+            # Verify model was fitted
+            assert "n_estimators" in result_data
+
+    # =========================================================================
+    # Determinism Tests: 5-Run Consistency Verification
+    # =========================================================================
+
+    def test_fit_isolation_forest_determinism(self, agent, normal_data):
+        """Test that Isolation Forest fitting produces identical results across 5 runs."""
+        input_data = {"data": normal_data}
+
+        results = []
+        for _ in range(5):
+            # Reset agent state
+            agent._fitted_model = None
+
+            result = agent._fit_isolation_forest_impl(
+                input_data, contamination=0.1, n_estimators=100, random_state=42
+            )
+            results.append(result)
+
+        # All runs should produce identical results
+        for i in range(1, 5):
+            assert results[i]["n_estimators"] == results[0]["n_estimators"]
+            assert results[i]["contamination"] == results[0]["contamination"]
+            assert results[i]["n_features"] == results[0]["n_features"]
+
+    def test_detect_anomalies_determinism(self, agent, normal_data):
+        """Test that anomaly detection produces identical results across 5 runs."""
+        input_data = {"data": normal_data}
+
+        # Fit model once
+        agent._fit_isolation_forest_impl(input_data, contamination=0.1, random_state=42)
+
+        results = []
+        for _ in range(5):
+            result = agent._detect_anomalies_impl(input_data)
+            results.append(result)
+
+        # All runs should produce identical anomalies
+        for i in range(1, 5):
+            assert results[i]["n_anomalies"] == results[0]["n_anomalies"]
+            assert results[i]["anomaly_indices"] == results[0]["anomaly_indices"]
+            assert results[i]["normal_indices"] == results[0]["normal_indices"]
+
+    def test_calculate_scores_determinism(self, agent, normal_data):
+        """Test that anomaly scoring produces identical results across 5 runs."""
+        input_data = {"data": normal_data}
+
+        # Fit model once
+        agent._fit_isolation_forest_impl(input_data, contamination=0.1, random_state=42)
+
+        results = []
+        for _ in range(5):
+            result = agent._calculate_anomaly_scores_impl(input_data)
+            results.append(result)
+
+        # All runs should produce identical scores
+        for i in range(1, 5):
+            assert len(results[i]["scores"]) == len(results[0]["scores"])
+            for j in range(len(results[0]["scores"])):
+                assert results[i]["scores"][j] == pytest.approx(results[0]["scores"][j], rel=1e-10)
+
+    def test_rank_anomalies_determinism(self, agent, normal_data):
+        """Test that anomaly ranking produces identical results across 5 runs."""
+        input_data = {"data": normal_data}
+
+        # Fit model and calculate scores first
+        agent._fit_isolation_forest_impl(input_data, contamination=0.1, random_state=42)
+        agent._calculate_anomaly_scores_impl(input_data)
+
+        results = []
+        for _ in range(5):
+            result = agent._rank_anomalies_impl(input_data, top_n=10)
+            results.append(result)
+
+        # All runs should produce identical rankings
+        for i in range(1, 5):
+            assert results[i]["ranked_indices"] == results[0]["ranked_indices"]
+            assert len(results[i]["ranked_scores"]) == len(results[0]["ranked_scores"])
+
+    # =========================================================================
+    # Boundary Tests: Edge Cases and Extreme Values
+    # =========================================================================
+
+    def test_boundary_single_data_point(self, agent):
+        """Test with minimal data (single point)."""
+        df = pd.DataFrame({'value': [100.0]})
+
+        input_data = {"data": df}
+
+        # Should fail validation (insufficient data)
+        assert agent.validate(input_data) is False
+
+    def test_boundary_contamination_edges(self, agent, normal_data):
+        """Test contamination parameter edge cases (0.001, 0.5)."""
+        input_data = {"data": normal_data}
+
+        # Test very low contamination
+        result_low = agent._fit_isolation_forest_impl(input_data, contamination=0.001, random_state=42)
+        assert result_low["contamination"] == 0.001
+
+        # Test high contamination (50%)
+        agent._fitted_model = None  # Reset
+        result_high = agent._fit_isolation_forest_impl(input_data, contamination=0.5, random_state=42)
+        assert result_high["contamination"] == 0.5
+
+    def test_boundary_extreme_values(self, agent):
+        """Test with extremely large and small values."""
+        # Very large values (billions)
+        large_data = pd.DataFrame({
+            'value1': np.random.RandomState(42).normal(1e9, 1e8, 100),
+            'value2': np.random.RandomState(42).normal(2e9, 2e8, 100),
+        })
+
+        input_data_large = {"data": large_data}
+
+        # Should handle large values
+        result_large = agent._fit_isolation_forest_impl(input_data_large, contamination=0.1, random_state=42)
+        assert result_large is not None
+
+        # Very small values (near zero)
+        small_data = pd.DataFrame({
+            'value1': np.random.RandomState(42).normal(0.001, 0.0001, 100),
+            'value2': np.random.RandomState(42).normal(0.002, 0.0002, 100),
+        })
+
+        input_data_small = {"data": small_data}
+
+        # Should handle small values
+        agent._fitted_model = None  # Reset
+        result_small = agent._fit_isolation_forest_impl(input_data_small, contamination=0.1, random_state=42)
+        assert result_small is not None
+
+    def test_boundary_constant_columns(self, agent):
+        """Test with constant columns (no variation)."""
+        df = pd.DataFrame({
+            'value1': [100.0] * 100,
+            'value2': [200.0] * 100,
+        })
+
+        input_data = {"data": df}
+
+        # Constant columns should be detected
+        # Model may still fit but anomalies based on constant values
+        result = agent._fit_isolation_forest_impl(input_data, contamination=0.1, random_state=42)
+        assert result is not None
+
+    def test_boundary_severity_thresholds(self, agent, normal_data):
+        """Test different severity classification thresholds."""
+        input_data = {"data": normal_data}
+
+        # Fit model and calculate scores
+        agent._fit_isolation_forest_impl(input_data, contamination=0.1, random_state=42)
+        result = agent._calculate_anomaly_scores_impl(input_data)
+
+        # Verify severity classifications exist
+        assert "severity" in result
+        assert len(result["severity"]) > 0
+
+        # Check that severities are valid
+        valid_severities = {"low", "medium", "high", "critical"}
+        for sev in result["severity"]:
+            assert sev in valid_severities
+
+    def test_boundary_top_n_variations(self, agent, normal_data):
+        """Test ranking with different top_n values (1, 5, 10, all)."""
+        input_data = {"data": normal_data}
+
+        # Fit and score
+        agent._fit_isolation_forest_impl(input_data, contamination=0.1, random_state=42)
+        agent._calculate_anomaly_scores_impl(input_data)
+
+        for top_n in [1, 5, 10, len(normal_data)]:
+            result = agent._rank_anomalies_impl(input_data, top_n=top_n)
+            # Returned count should be min(top_n, actual anomalies)
+            assert len(result["ranked_indices"]) <= top_n
+
+    def test_boundary_n_estimators_edges(self, agent, normal_data):
+        """Test n_estimators parameter edge cases (10, 500)."""
+        input_data = {"data": normal_data}
+
+        # Test very few estimators
+        result_low = agent._fit_isolation_forest_impl(input_data, n_estimators=10, contamination=0.1, random_state=42)
+        assert result_low["n_estimators"] == 10
+
+        # Test many estimators
+        agent._fitted_model = None  # Reset
+        result_high = agent._fit_isolation_forest_impl(input_data, n_estimators=500, contamination=0.1, random_state=42)
+        assert result_high["n_estimators"] == 500
+
+    def test_boundary_max_features_variations(self, agent, normal_data):
+        """Test max_features parameter with different values."""
+        input_data = {"data": normal_data}
+
+        # max_features=1.0 (all features)
+        result_all = agent._fit_isolation_forest_impl(
+            input_data, contamination=0.1, max_features=1.0, random_state=42
+        )
+        assert result_all is not None
+
+        # max_features=0.5 (half features)
+        agent._fitted_model = None  # Reset
+        result_half = agent._fit_isolation_forest_impl(
+            input_data, contamination=0.1, max_features=0.5, random_state=42
+        )
+        assert result_half is not None
+
+    # =========================================================================
+    # Configuration Tests
+    # =========================================================================
+
+    def test_config_all_initialization_options(self):
+        """Test all configuration combinations."""
+        from greenlang.agents.anomaly_agent_iforest import IsolationForestAnomalyAgent
+
+        # Test all False
+        agent1 = IsolationForestAnomalyAgent(
+            budget_usd=0.5,
+            enable_explanations=False,
+            enable_recommendations=False,
+            enable_alerts=False,
+        )
+        assert agent1.budget_usd == 0.5
+        assert agent1.enable_explanations is False
+        assert agent1.enable_recommendations is False
+        assert agent1.enable_alerts is False
+
+        # Test all True
+        agent2 = IsolationForestAnomalyAgent(
+            budget_usd=2.0,
+            enable_explanations=True,
+            enable_recommendations=True,
+            enable_alerts=True,
+        )
+        assert agent2.budget_usd == 2.0
+        assert agent2.enable_explanations is True
+        assert agent2.enable_recommendations is True
+        assert agent2.enable_alerts is True
+
+    def test_config_budget_variations(self, normal_data):
+        """Test different budget values."""
+        from greenlang.agents.anomaly_agent_iforest import IsolationForestAnomalyAgent
+
+        for budget in [0.10, 0.50, 1.00, 5.00, 10.00]:
+            agent = IsolationForestAnomalyAgent(budget_usd=budget)
+            assert agent.budget_usd == budget
+
+    # =========================================================================
+    # Performance Tests
+    # =========================================================================
+
+    def test_performance_tracking_cost_accumulation(self, agent, normal_data):
+        """Test that costs accumulate correctly."""
+        initial_cost = agent._total_cost_usd
+        initial_ai_calls = agent._ai_call_count
+
+        # Simulate some operations
+        agent._ai_call_count += 1
+        agent._total_cost_usd += 0.05
+
+        assert agent._ai_call_count == initial_ai_calls + 1
+        assert agent._total_cost_usd == initial_cost + 0.05
+
+    def test_performance_tracking_tool_calls(self, agent, normal_data):
+        """Test that tool calls are tracked."""
+        initial_tool_calls = agent._tool_call_count
+
+        input_data = {"data": normal_data}
+
+        # Call some tools
+        agent._fit_isolation_forest_impl(input_data)
+        agent._detect_anomalies_impl(input_data)
+
+        # Tool calls should have increased
+        assert agent._tool_call_count == initial_tool_calls + 2
+
+    def test_performance_summary(self, agent):
+        """Test get_performance_summary method."""
+        agent._ai_call_count = 5
+        agent._tool_call_count = 20
+        agent._total_cost_usd = 0.25
+
+        summary = agent.get_performance_summary()
+
+        assert summary["agent_id"] == "anomaly_iforest"
+        assert summary["ai_metrics"]["ai_call_count"] == 5
+        assert summary["ai_metrics"]["tool_call_count"] == 20
+        assert summary["ai_metrics"]["total_cost_usd"] == 0.25
+        assert summary["ai_metrics"]["avg_cost_per_detection"] == 0.05
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

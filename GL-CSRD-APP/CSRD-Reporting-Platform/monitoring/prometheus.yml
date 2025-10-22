@@ -1,0 +1,145 @@
+# ============================================================================
+# CSRD REPORTING PLATFORM - PROMETHEUS CONFIGURATION
+# ============================================================================
+#
+# This configuration file defines the Prometheus monitoring setup for
+# the CSRD Reporting Platform including scrape targets, alerting rules,
+# and service discovery.
+#
+# Version: 1.0
+# Date: 2025-10-20
+#
+# ============================================================================
+
+global:
+  # How frequently to scrape targets by default
+  scrape_interval: 15s
+
+  # How long until a scrape request times out
+  scrape_timeout: 10s
+
+  # How frequently to evaluate rules
+  evaluation_interval: 15s
+
+  # Attach these labels to any time series or alerts
+  external_labels:
+    cluster: 'csrd-production'
+    environment: 'production'
+    project: 'csrd-reporting-platform'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - 'alerts/*.yml'
+
+# Scrape configuration
+scrape_configs:
+  # ===========================
+  # CSRD API ENDPOINTS
+  # ===========================
+  - job_name: 'csrd-api'
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets:
+          - 'csrd-api:8000'
+        labels:
+          service: 'csrd-api'
+          tier: 'backend'
+
+  # ===========================
+  # CSRD AGENTS
+  # ===========================
+  - job_name: 'csrd-agents'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+    static_configs:
+      - targets:
+          - 'intake-agent:8001'
+          - 'calculator-agent:8002'
+          - 'aggregator-agent:8003'
+          - 'materiality-agent:8004'
+          - 'audit-agent:8005'
+          - 'reporting-agent:8006'
+        labels:
+          service: 'csrd-agents'
+          tier: 'agent'
+
+  # ===========================
+  # DATABASE
+  # ===========================
+  - job_name: 'postgresql'
+    static_configs:
+      - targets:
+          - 'postgres-exporter:9187'
+        labels:
+          service: 'postgresql'
+          tier: 'database'
+
+  # ===========================
+  # REDIS CACHE
+  # ===========================
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+          - 'redis-exporter:9121'
+        labels:
+          service: 'redis'
+          tier: 'cache'
+
+  # ===========================
+  # NODE EXPORTER (System Metrics)
+  # ===========================
+  - job_name: 'node'
+    static_configs:
+      - targets:
+          - 'node-exporter:9100'
+        labels:
+          service: 'node-exporter'
+          tier: 'infrastructure'
+
+  # ===========================
+  # PROMETHEUS SELF-MONITORING
+  # ===========================
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+        labels:
+          service: 'prometheus'
+          tier: 'monitoring'
+
+  # ===========================
+  # GRAFANA
+  # ===========================
+  - job_name: 'grafana'
+    static_configs:
+      - targets:
+          - 'grafana:3000'
+        labels:
+          service: 'grafana'
+          tier: 'monitoring'
+
+# ============================================================================
+# REMOTE WRITE (Optional - for long-term storage)
+# ============================================================================
+# remote_write:
+#   - url: 'https://prometheus-remote-storage.example.com/write'
+#     basic_auth:
+#       username: 'csrd-platform'
+#       password: 'secure-password'
+
+# ============================================================================
+# REMOTE READ (Optional - for long-term storage)
+# ============================================================================
+# remote_read:
+#   - url: 'https://prometheus-remote-storage.example.com/read'
+#     basic_auth:
+#       username: 'csrd-platform'
+#       password: 'secure-password'

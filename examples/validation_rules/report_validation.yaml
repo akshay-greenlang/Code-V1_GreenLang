@@ -1,0 +1,807 @@
+# ============================================================================
+# Report Output Validation Rules
+# ============================================================================
+# This file defines validation rules for carbon emissions reports and outputs.
+# Ensures report completeness, accuracy, and compliance with standards.
+#
+# Usage:
+#   from greenlang.validation.rules import RulesEngine, Rule
+#   import yaml
+#
+#   with open('report_validation.yaml') as f:
+#       config = yaml.safe_load(f)
+#
+#   engine = RulesEngine()
+#   for rule_dict in config['rules']:
+#       rule = Rule(**rule_dict)
+#       engine.add_rule(rule)
+#
+#   result = engine.validate(report_data)
+# ============================================================================
+
+metadata:
+  name: "Report Output Validation Rules"
+  version: "1.0.0"
+  description: "Validation rules for carbon emissions reports and disclosures"
+  author: "GreenLang Validation Framework"
+  last_updated: "2025-01-15"
+  applicable_to:
+    - "GHG Inventory Reports"
+    - "Carbon Disclosure Reports"
+    - "Sustainability Reports"
+    - "CDP Submissions"
+    - "TCFD Disclosures"
+    - "Annual Carbon Footprint Reports"
+
+# ============================================================================
+# SECTION 1: Required Report Sections
+# ============================================================================
+# Ensure all mandatory sections are present in the report
+# Operators: not_null, !=
+# ============================================================================
+
+rules:
+  # ----- Core Report Metadata -----
+  - name: "report_title_required"
+    field: "report_metadata.title"
+    operator: "not_null"
+    severity: "error"
+    message: "Report title is required"
+    enabled: true
+
+  - name: "report_title_not_empty"
+    field: "report_metadata.title"
+    operator: "!="
+    value: ""
+    severity: "error"
+    message: "Report title cannot be empty string"
+    enabled: true
+
+  - name: "report_version_required"
+    field: "report_metadata.version"
+    operator: "not_null"
+    severity: "error"
+    message: "Report version must be specified"
+    enabled: true
+
+  - name: "report_date_required"
+    field: "report_metadata.report_date"
+    operator: "not_null"
+    severity: "error"
+    message: "Report date is required"
+    enabled: true
+
+  - name: "organization_name_required"
+    field: "organization.name"
+    operator: "not_null"
+    severity: "error"
+    message: "Organization name must be included in report"
+    enabled: true
+
+  # ----- Executive Summary -----
+  - name: "executive_summary_required"
+    field: "executive_summary"
+    operator: "not_null"
+    severity: "warning"
+    message: "Executive summary section is recommended"
+    enabled: true
+
+  - name: "executive_summary_not_empty"
+    field: "executive_summary"
+    operator: "!="
+    value: ""
+    severity: "warning"
+    message: "Executive summary should contain content"
+    enabled: true
+    condition: "exists:executive_summary"
+
+  # ----- Emissions Data -----
+  - name: "emissions_data_required"
+    field: "emissions_data"
+    operator: "not_null"
+    severity: "error"
+    message: "Emissions data section is required"
+    enabled: true
+
+  - name: "scope_1_emissions_required"
+    field: "emissions_data.scope_1_total"
+    operator: "not_null"
+    severity: "error"
+    message: "Scope 1 emissions total must be reported"
+    enabled: true
+
+  - name: "scope_2_emissions_required"
+    field: "emissions_data.scope_2_total"
+    operator: "not_null"
+    severity: "error"
+    message: "Scope 2 emissions total must be reported"
+    enabled: true
+
+  - name: "scope_3_emissions_check"
+    field: "emissions_data.scope_3_total"
+    operator: "not_null"
+    severity: "warning"
+    message: "Scope 3 emissions recommended for comprehensive reporting"
+    enabled: true
+
+  # ----- Methodology Section -----
+  - name: "methodology_required"
+    field: "methodology"
+    operator: "not_null"
+    severity: "error"
+    message: "Methodology section is required for transparency"
+    enabled: true
+
+  - name: "calculation_approach_required"
+    field: "methodology.calculation_approach"
+    operator: "not_null"
+    severity: "error"
+    message: "Calculation approach must be documented"
+    enabled: true
+
+  - name: "emission_factors_source_required"
+    field: "methodology.emission_factors_source"
+    operator: "not_null"
+    severity: "warning"
+    message: "Emission factors source should be documented"
+    enabled: true
+
+  # ============================================================================
+  # SECTION 2: Data Quality Validation
+  # ============================================================================
+  # Validate quality and completeness of reported data
+  # Operators: >=, <=, >, <, in
+  # ============================================================================
+
+  # ----- Completeness Scores -----
+  - name: "data_completeness_minimum"
+    field: "data_quality.completeness_score"
+    operator: ">="
+    value: 0.85
+    severity: "warning"
+    message: "Data completeness below 85% threshold"
+    enabled: true
+    condition: "exists:data_quality.completeness_score"
+
+  - name: "data_completeness_bounds"
+    field: "data_quality.completeness_score"
+    operator: "<="
+    value: 1.0
+    severity: "error"
+    message: "Data completeness score cannot exceed 100%"
+    enabled: true
+    condition: "exists:data_quality.completeness_score"
+
+  # ----- Accuracy Scores -----
+  - name: "accuracy_score_minimum"
+    field: "data_quality.accuracy_score"
+    operator: ">="
+    value: 0.80
+    severity: "warning"
+    message: "Data accuracy score below 80% threshold"
+    enabled: true
+    condition: "exists:data_quality.accuracy_score"
+
+  - name: "accuracy_score_bounds"
+    field: "data_quality.accuracy_score"
+    operator: "<="
+    value: 1.0
+    severity: "error"
+    message: "Accuracy score cannot exceed 100%"
+    enabled: true
+    condition: "exists:data_quality.accuracy_score"
+
+  # ----- Data Quality Rating -----
+  - name: "data_quality_rating_valid"
+    field: "data_quality.overall_rating"
+    operator: "in"
+    value:
+      - "excellent"
+      - "good"
+      - "fair"
+      - "poor"
+      - "A"
+      - "B"
+      - "C"
+      - "D"
+      - "F"
+      - 5
+      - 4
+      - 3
+      - 2
+      - 1
+    severity: "info"
+    message: "Data quality rating provided"
+    enabled: true
+    condition: "exists:data_quality.overall_rating"
+
+  # ----- Missing Data Percentage -----
+  - name: "missing_data_threshold"
+    field: "data_quality.missing_data_percentage"
+    operator: "<="
+    value: 15.0
+    severity: "warning"
+    message: "Missing data exceeds 15% threshold"
+    enabled: true
+    condition: "exists:data_quality.missing_data_percentage"
+
+  - name: "estimated_data_threshold"
+    field: "data_quality.estimated_data_percentage"
+    operator: "<="
+    value: 30.0
+    severity: "warning"
+    message: "Estimated data exceeds 30% of total (high uncertainty)"
+    enabled: true
+    condition: "exists:data_quality.estimated_data_percentage"
+
+  # ============================================================================
+  # SECTION 3: Numeric Validation for Emissions Data
+  # ============================================================================
+  # Validate emissions values are within reasonable ranges
+  # Operators: >=, >, <=, !=
+  # ============================================================================
+
+  # ----- Total Emissions Validation -----
+  - name: "total_emissions_positive"
+    field: "emissions_data.total_emissions_tonnes_co2e"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Total emissions cannot be negative"
+    enabled: true
+
+  - name: "total_emissions_not_zero"
+    field: "emissions_data.total_emissions_tonnes_co2e"
+    operator: ">"
+    value: 0
+    severity: "warning"
+    message: "Total emissions is zero - verify if organization has no emissions"
+    enabled: true
+
+  - name: "total_emissions_reasonable_max"
+    field: "emissions_data.total_emissions_tonnes_co2e"
+    operator: "<="
+    value: 100000000
+    severity: "warning"
+    message: "Total emissions exceeds 100M tonnes CO2e (verify accuracy)"
+    enabled: true
+
+  # ----- Scope-specific Emissions -----
+  - name: "scope_1_non_negative"
+    field: "emissions_data.scope_1_total"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Scope 1 emissions cannot be negative"
+    enabled: true
+
+  - name: "scope_2_non_negative"
+    field: "emissions_data.scope_2_total"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Scope 2 emissions cannot be negative"
+    enabled: true
+
+  - name: "scope_3_non_negative"
+    field: "emissions_data.scope_3_total"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Scope 3 emissions cannot be negative"
+    enabled: true
+    condition: "exists:emissions_data.scope_3_total"
+
+  # ----- Biogenic Emissions -----
+  - name: "biogenic_emissions_non_negative"
+    field: "emissions_data.biogenic_emissions"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Biogenic emissions cannot be negative"
+    enabled: true
+    condition: "exists:emissions_data.biogenic_emissions"
+
+  # ----- Offset Credits -----
+  - name: "offset_credits_non_negative"
+    field: "emissions_data.offset_credits_applied"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Offset credits cannot be negative"
+    enabled: true
+    condition: "exists:emissions_data.offset_credits_applied"
+
+  - name: "offsets_not_exceed_total"
+    field: "emissions_data.offset_credits_applied"
+    operator: "<="
+    value: 999999999  # This should ideally be compared to total_emissions
+    severity: "warning"
+    message: "Offset credits should not exceed total emissions"
+    enabled: true
+    condition: "exists:emissions_data.offset_credits_applied"
+
+  # ----- Year-over-Year Change -----
+  - name: "yoy_change_reasonable_min"
+    field: "emissions_data.year_over_year_change_percent"
+    operator: ">="
+    value: -90
+    severity: "warning"
+    message: "Year-over-year change shows >90% reduction (verify accuracy)"
+    enabled: true
+    condition: "exists:emissions_data.year_over_year_change_percent"
+
+  - name: "yoy_change_reasonable_max"
+    field: "emissions_data.year_over_year_change_percent"
+    operator: "<="
+    value: 500
+    severity: "warning"
+    message: "Year-over-year change shows >500% increase (verify accuracy)"
+    enabled: true
+    condition: "exists:emissions_data.year_over_year_change_percent"
+
+  # ============================================================================
+  # SECTION 4: Aggregation and Breakdown Validation
+  # ============================================================================
+  # Validate data aggregations and category breakdowns
+  # Operators: not_null, >=, in
+  # ============================================================================
+
+  # ----- Category Breakdowns -----
+  - name: "emissions_by_category_provided"
+    field: "emissions_breakdown.by_category"
+    operator: "not_null"
+    severity: "warning"
+    message: "Emissions breakdown by category recommended"
+    enabled: true
+
+  - name: "emissions_by_source_provided"
+    field: "emissions_breakdown.by_source"
+    operator: "not_null"
+    severity: "info"
+    message: "Emissions breakdown by source enhances transparency"
+    enabled: true
+
+  - name: "emissions_by_facility_provided"
+    field: "emissions_breakdown.by_facility"
+    operator: "not_null"
+    severity: "info"
+    message: "Emissions breakdown by facility useful for multi-site organizations"
+    enabled: true
+
+  # ----- Minimum Categories Reported -----
+  - name: "minimum_scope_3_categories"
+    field: "scope_3_categories_count"
+    operator: ">="
+    value: 1
+    severity: "warning"
+    message: "At least one Scope 3 category should be reported"
+    enabled: true
+    condition: "exists:scope_3_categories_count"
+
+  # ----- Category Coverage -----
+  - name: "scope_3_category_coverage"
+    field: "scope_3_category_coverage_percent"
+    operator: ">="
+    value: 80
+    severity: "info"
+    message: "Scope 3 reporting covers majority of applicable categories"
+    enabled: true
+    condition: "exists:scope_3_category_coverage_percent"
+
+  # ============================================================================
+  # SECTION 5: Compliance and Standards Validation
+  # ============================================================================
+  # Validate compliance with reporting standards and frameworks
+  # Operators: in, not_null, contains
+  # ============================================================================
+
+  # ----- Reporting Standard -----
+  - name: "reporting_standard_specified"
+    field: "compliance.reporting_standard"
+    operator: "not_null"
+    severity: "warning"
+    message: "Reporting standard should be specified for credibility"
+    enabled: true
+
+  - name: "reporting_standard_recognized"
+    field: "compliance.reporting_standard"
+    operator: "in"
+    value:
+      - "GHG Protocol"
+      - "ISO 14064-1"
+      - "ISO 14064-2"
+      - "ISO 14064-3"
+      - "ISO 14067"
+      - "PAS 2050"
+      - "CDP"
+      - "GRI"
+      - "TCFD"
+      - "SBTi"
+      - "SECR"
+      - "ESOS"
+    severity: "info"
+    message: "Using recognized reporting standard"
+    enabled: true
+    condition: "exists:compliance.reporting_standard"
+
+  # ----- Verification Status -----
+  - name: "verification_status_valid"
+    field: "compliance.verification_status"
+    operator: "in"
+    value:
+      - "third_party_verified"
+      - "limited_assurance"
+      - "reasonable_assurance"
+      - "internal_review"
+      - "unverified"
+      - "verified"
+      - "not_verified"
+    severity: "info"
+    message: "Verification status documented"
+    enabled: true
+    condition: "exists:compliance.verification_status"
+
+  # ----- Assurance Level -----
+  - name: "assurance_level_valid"
+    field: "compliance.assurance_level"
+    operator: "in"
+    value:
+      - "limited"
+      - "reasonable"
+      - "none"
+    severity: "info"
+    message: "Assurance level specified"
+    enabled: true
+    condition: "exists:compliance.assurance_level"
+
+  # ----- Boundary Definition -----
+  - name: "organizational_boundary_required"
+    field: "methodology.organizational_boundary"
+    operator: "not_null"
+    severity: "error"
+    message: "Organizational boundary must be defined"
+    enabled: true
+
+  - name: "boundary_approach_valid"
+    field: "methodology.boundary_approach"
+    operator: "in"
+    value:
+      - "operational_control"
+      - "financial_control"
+      - "equity_share"
+    severity: "warning"
+    message: "Boundary approach should be operational control, financial control, or equity share"
+    enabled: true
+    condition: "exists:methodology.boundary_approach"
+
+  # ============================================================================
+  # SECTION 6: Format and Structure Validation
+  # ============================================================================
+  # Validate report format and structural requirements
+  # Operators: regex, contains, in, !=
+  # ============================================================================
+
+  # ----- Report ID Format -----
+  - name: "report_id_format"
+    field: "report_metadata.report_id"
+    operator: "regex"
+    value: "^[A-Z0-9]{3,20}$"
+    severity: "warning"
+    message: "Report ID should be alphanumeric (3-20 characters)"
+    enabled: true
+    condition: "exists:report_metadata.report_id"
+
+  # ----- Version Format -----
+  - name: "version_format"
+    field: "report_metadata.version"
+    operator: "regex"
+    value: "^\\d+\\.\\d+(\\.\\d+)?$"
+    severity: "warning"
+    message: "Version should follow semantic versioning (e.g., 1.0 or 1.0.0)"
+    enabled: true
+
+  # ----- Date Format -----
+  - name: "report_date_format"
+    field: "report_metadata.report_date"
+    operator: "regex"
+    value: "^\\d{4}-\\d{2}-\\d{2}$"
+    severity: "error"
+    message: "Report date must be in YYYY-MM-DD format"
+    enabled: true
+
+  # ----- Reporting Period Format -----
+  - name: "reporting_period_format"
+    field: "reporting_period"
+    operator: "regex"
+    value: "^\\d{4}(-\\d{4})?$|^FY\\d{4}$|^Q[1-4]\\s\\d{4}$"
+    severity: "warning"
+    message: "Reporting period should specify year, year range, or fiscal period"
+    enabled: true
+    condition: "exists:reporting_period"
+
+  # ----- Currency Code (for monetary data) -----
+  - name: "currency_code_valid"
+    field: "financial_data.currency_code"
+    operator: "in"
+    value:
+      - "USD"
+      - "EUR"
+      - "GBP"
+      - "JPY"
+      - "CNY"
+      - "CAD"
+      - "AUD"
+      - "CHF"
+      - "INR"
+      - "BRL"
+    severity: "warning"
+    message: "Currency code should be ISO 4217 format"
+    enabled: true
+    condition: "exists:financial_data.currency_code"
+
+  # ----- Units Specified -----
+  - name: "emissions_units_specified"
+    field: "emissions_data.units"
+    operator: "!="
+    value: ""
+    severity: "error"
+    message: "Emissions units must be specified"
+    enabled: true
+    condition: "exists:emissions_data.units"
+
+  - name: "emissions_units_valid"
+    field: "emissions_data.units"
+    operator: "in"
+    value:
+      - "tonnes CO2e"
+      - "metric tons CO2e"
+      - "kg CO2e"
+      - "tCO2e"
+      - "mtCO2e"
+    severity: "error"
+    message: "Emissions units must be a recognized CO2e unit"
+    enabled: true
+    condition: "exists:emissions_data.units"
+
+  # ============================================================================
+  # SECTION 7: Contextual Information Validation
+  # ============================================================================
+  # Validate contextual and explanatory information
+  # Operators: not_null, is_null, >=
+  # ============================================================================
+
+  # ----- Organization Context -----
+  - name: "organization_description_provided"
+    field: "organization.description"
+    operator: "not_null"
+    severity: "info"
+    message: "Organization description enhances report context"
+    enabled: true
+
+  - name: "industry_sector_provided"
+    field: "organization.industry_sector"
+    operator: "not_null"
+    severity: "warning"
+    message: "Industry sector should be specified for benchmarking"
+    enabled: true
+
+  - name: "number_of_employees_provided"
+    field: "organization.number_of_employees"
+    operator: "not_null"
+    severity: "info"
+    message: "Employee count useful for intensity metrics"
+    enabled: true
+
+  - name: "revenue_provided"
+    field: "organization.annual_revenue"
+    operator: "not_null"
+    severity: "info"
+    message: "Annual revenue useful for intensity metrics"
+    enabled: true
+
+  # ----- Intensity Metrics -----
+  - name: "emissions_intensity_provided"
+    field: "intensity_metrics"
+    operator: "not_null"
+    severity: "warning"
+    message: "Emissions intensity metrics recommended for comparability"
+    enabled: true
+
+  - name: "intensity_per_revenue_valid"
+    field: "intensity_metrics.per_revenue"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Emissions intensity per revenue cannot be negative"
+    enabled: true
+    condition: "exists:intensity_metrics.per_revenue"
+
+  - name: "intensity_per_employee_valid"
+    field: "intensity_metrics.per_employee"
+    operator: ">="
+    value: 0
+    severity: "error"
+    message: "Emissions intensity per employee cannot be negative"
+    enabled: true
+    condition: "exists:intensity_metrics.per_employee"
+
+  # ----- Targets and Goals -----
+  - name: "emissions_targets_provided"
+    field: "targets_and_goals"
+    operator: "not_null"
+    severity: "info"
+    message: "Emissions reduction targets demonstrate commitment"
+    enabled: true
+
+  - name: "baseline_year_specified"
+    field: "targets_and_goals.baseline_year"
+    operator: "not_null"
+    severity: "warning"
+    message: "Baseline year should be specified for target tracking"
+    enabled: true
+    condition: "exists:targets_and_goals"
+
+  - name: "target_year_specified"
+    field: "targets_and_goals.target_year"
+    operator: "not_null"
+    severity: "warning"
+    message: "Target year should be specified"
+    enabled: true
+    condition: "exists:targets_and_goals"
+
+  # ----- Uncertainties and Limitations -----
+  - name: "uncertainties_documented"
+    field: "uncertainties_and_limitations"
+    operator: "not_null"
+    severity: "info"
+    message: "Documenting uncertainties enhances transparency"
+    enabled: true
+
+  - name: "data_gaps_documented"
+    field: "data_gaps"
+    operator: "is_null"
+    severity: "info"
+    message: "No data gaps documented (or all data complete)"
+    enabled: true
+
+  # ============================================================================
+  # SECTION 8: Attachments and Supporting Documentation
+  # ============================================================================
+  # Validate supporting documentation is included
+  # Operators: not_null, >=, is_null
+  # ============================================================================
+
+  - name: "calculation_sheets_count"
+    field: "attachments.calculation_sheets_count"
+    operator: ">="
+    value: 0
+    severity: "info"
+    message: "Calculation sheets attached for transparency"
+    enabled: true
+    condition: "exists:attachments.calculation_sheets_count"
+
+  - name: "supporting_documents_provided"
+    field: "attachments.supporting_documents"
+    operator: "not_null"
+    severity: "info"
+    message: "Supporting documents enhance report credibility"
+    enabled: true
+
+  - name: "verification_statement_check"
+    field: "attachments.verification_statement"
+    operator: "is_null"
+    severity: "info"
+    message: "No third-party verification statement attached"
+    enabled: true
+
+# ============================================================================
+# Rule Sets for Different Report Types
+# ============================================================================
+
+rule_sets:
+  # Basic Report Requirements
+  - name: "basic_report"
+    description: "Minimum requirements for a valid emissions report"
+    enabled: true
+    rules:
+      - report_title_required
+      - report_version_required
+      - report_date_required
+      - organization_name_required
+      - emissions_data_required
+      - scope_1_emissions_required
+      - scope_2_emissions_required
+      - total_emissions_positive
+      - methodology_required
+
+  # CDP Submission Requirements
+  - name: "cdp_submission"
+    description: "Requirements aligned with CDP reporting"
+    enabled: true
+    rules:
+      - report_title_required
+      - organization_name_required
+      - emissions_data_required
+      - scope_1_emissions_required
+      - scope_2_emissions_required
+      - scope_3_emissions_check
+      - methodology_required
+      - organizational_boundary_required
+      - emissions_by_category_provided
+      - verification_status_valid
+      - emissions_targets_provided
+
+  # ISO 14064-1 Compliance
+  - name: "iso_14064_compliance"
+    description: "Requirements for ISO 14064-1 compliant reporting"
+    enabled: true
+    rules:
+      - report_title_required
+      - organization_name_required
+      - emissions_data_required
+      - scope_1_emissions_required
+      - scope_2_emissions_required
+      - methodology_required
+      - organizational_boundary_required
+      - boundary_approach_valid
+      - emission_factors_source_required
+      - uncertainties_documented
+      - data_completeness_minimum
+
+  # High-Quality Report (Comprehensive)
+  - name: "comprehensive_report"
+    description: "All validation rules for highest quality reporting"
+    enabled: true
+    rules: "all"
+
+  # Quick Quality Check
+  - name: "quick_quality_check"
+    description: "Fast quality validation for draft reports"
+    enabled: true
+    rules:
+      - report_title_required
+      - emissions_data_required
+      - total_emissions_positive
+      - scope_1_non_negative
+      - scope_2_non_negative
+      - emissions_units_valid
+      - report_date_format
+
+# ============================================================================
+# Configuration
+# ============================================================================
+
+config:
+  stop_on_error: false
+  max_errors: 100
+  include_values_in_errors: true
+  verbose_logging: false
+
+  # Report-specific settings
+  require_executive_summary: true
+  require_third_party_verification: false
+  minimum_completeness_score: 0.85
+  minimum_accuracy_score: 0.80
+
+  # Output format validation
+  allowed_output_formats:
+    - "PDF"
+    - "HTML"
+    - "JSON"
+    - "XML"
+    - "CSV"
+
+  # Section requirements
+  required_sections:
+    - "report_metadata"
+    - "organization"
+    - "emissions_data"
+    - "methodology"
+
+  recommended_sections:
+    - "executive_summary"
+    - "emissions_breakdown"
+    - "intensity_metrics"
+    - "targets_and_goals"
+    - "uncertainties_and_limitations"

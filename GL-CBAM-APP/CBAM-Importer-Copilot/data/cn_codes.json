@@ -1,0 +1,311 @@
+{
+  "_metadata": {
+    "version": "1.0.0-demo",
+    "last_updated": "2025-10-15",
+    "source": "EU CBAM Regulation (EU) 2023/956 - Annex I",
+    "source_url": "https://eur-lex.europa.eu/eli/reg/2023/956/oj",
+    "disclaimer": "Representative subset of CN codes for demo purposes. For actual CBAM filings, refer to the complete official Annex I.",
+    "total_codes": 30,
+    "product_groups": ["cement", "steel", "aluminum", "fertilizers", "hydrogen"]
+  },
+
+  "25231000": {
+    "description": "Cement clinker",
+    "product_group": "cement",
+    "cbam_category": "cement",
+    "annexI_section": "1. Cement",
+    "annexI_reference": "Section 1, entry 1",
+    "unit": "tonnes",
+    "notes": "Intermediate product in cement production"
+  },
+
+  "25232100": {
+    "description": "White cement, whether or not artificially coloured",
+    "product_group": "cement",
+    "cbam_category": "cement",
+    "annexI_section": "1. Cement",
+    "annexI_reference": "Section 1, entry 2",
+    "unit": "tonnes",
+    "notes": "Higher energy requirements than grey cement"
+  },
+
+  "25232900": {
+    "description": "Portland cement other than white (grey cement)",
+    "product_group": "cement",
+    "cbam_category": "cement",
+    "annexI_section": "1. Cement",
+    "annexI_reference": "Section 1, entry 2",
+    "unit": "tonnes",
+    "notes": "Most common cement type"
+  },
+
+  "25239000": {
+    "description": "Other hydraulic cements",
+    "product_group": "cement",
+    "cbam_category": "cement",
+    "annexI_section": "1. Cement",
+    "annexI_reference": "Section 1, entry 2",
+    "unit": "tonnes",
+    "notes": "Includes aluminous cement, slag cement, etc."
+  },
+
+  "72011000": {
+    "description": "Non-alloy pig iron containing by weight 0.5% or less of phosphorus",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 1",
+    "unit": "tonnes",
+    "notes": "Blast furnace output, input to steelmaking"
+  },
+
+  "72012000": {
+    "description": "Non-alloy pig iron containing by weight more than 0.5% of phosphorus",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 1",
+    "unit": "tonnes",
+    "notes": "High-phosphorus pig iron"
+  },
+
+  "72015000": {
+    "description": "Alloy pig iron; spiegeleisen",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 1",
+    "unit": "tonnes",
+    "notes": "Specialty pig iron with alloying elements"
+  },
+
+  "72021100": {
+    "description": "Ferro-manganese containing by weight more than 2% of carbon",
+    "product_group": "steel",
+    "cbam_category": "ferro_alloys",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 2",
+    "unit": "tonnes",
+    "notes": "Alloying material for steel production"
+  },
+
+  "72031000": {
+    "description": "Flat-rolled products, iron or non-alloy steel, hot-rolled",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 3",
+    "unit": "tonnes",
+    "notes": "Hot-rolled sheet and strip"
+  },
+
+  "72044100": {
+    "description": "Ferrous waste and scrap, of cast iron",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 4",
+    "unit": "tonnes",
+    "notes": "Input for EAF steel production"
+  },
+
+  "72044900": {
+    "description": "Ferrous waste and scrap, other than cast iron",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 4",
+    "unit": "tonnes",
+    "notes": "Steel scrap for recycling"
+  },
+
+  "72081000": {
+    "description": "Flat-rolled products of iron or non-alloy steel, in coils, hot-rolled",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 3",
+    "unit": "tonnes",
+    "notes": "Hot-rolled coils"
+  },
+
+  "72082500": {
+    "description": "Flat-rolled products, of iron or non-alloy steel, thickness >= 4.75mm",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 3",
+    "unit": "tonnes",
+    "notes": "Thick plate steel"
+  },
+
+  "72083600": {
+    "description": "Flat-rolled products, of iron or non-alloy steel, thickness < 3mm",
+    "product_group": "steel",
+    "cbam_category": "iron_steel",
+    "annexI_section": "2. Iron and Steel",
+    "annexI_reference": "Section 2, entry 3",
+    "unit": "tonnes",
+    "notes": "Thin sheet steel"
+  },
+
+  "76011000": {
+    "description": "Aluminium, not alloyed, unwrought",
+    "product_group": "aluminum",
+    "cbam_category": "aluminium",
+    "annexI_section": "3. Aluminium",
+    "annexI_reference": "Section 3, entry 1",
+    "unit": "tonnes",
+    "notes": "Primary aluminum from smelting"
+  },
+
+  "76012000": {
+    "description": "Aluminium alloys, unwrought",
+    "product_group": "aluminum",
+    "cbam_category": "aluminium",
+    "annexI_section": "3. Aluminium",
+    "annexI_reference": "Section 3, entry 1",
+    "unit": "tonnes",
+    "notes": "Aluminum with alloying elements"
+  },
+
+  "76020000": {
+    "description": "Aluminium waste and scrap",
+    "product_group": "aluminum",
+    "cbam_category": "aluminium",
+    "annexI_section": "3. Aluminium",
+    "annexI_reference": "Section 3, entry 2",
+    "unit": "tonnes",
+    "notes": "Aluminum scrap for recycling (secondary aluminum)"
+  },
+
+  "76041000": {
+    "description": "Aluminium bars, rods and profiles, not alloyed",
+    "product_group": "aluminum",
+    "cbam_category": "aluminium",
+    "annexI_section": "3. Aluminium",
+    "annexI_reference": "Section 3, entry 3",
+    "unit": "tonnes",
+    "notes": "Extruded aluminum products"
+  },
+
+  "76042100": {
+    "description": "Aluminium hollow profiles, alloys",
+    "product_group": "aluminum",
+    "cbam_category": "aluminium",
+    "annexI_section": "3. Aluminium",
+    "annexI_reference": "Section 3, entry 3",
+    "unit": "tonnes",
+    "notes": "Hollow section aluminum alloys"
+  },
+
+  "28080000": {
+    "description": "Nitric acid; sulphonitric acids",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 1",
+    "unit": "tonnes",
+    "notes": "Key intermediate for fertilizer production; includes N2O emissions"
+  },
+
+  "28141000": {
+    "description": "Anhydrous ammonia",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 2",
+    "unit": "tonnes",
+    "notes": "Primary nitrogen source for fertilizers; Haber-Bosch process"
+  },
+
+  "28142000": {
+    "description": "Ammonia in aqueous solution",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 2",
+    "unit": "tonnes",
+    "notes": "Ammonia solution (typically 25-30%)"
+  },
+
+  "31021000": {
+    "description": "Urea, whether or not in aqueous solution",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 3",
+    "unit": "tonnes",
+    "notes": "Most widely used nitrogen fertilizer"
+  },
+
+  "31022100": {
+    "description": "Ammonium sulphate",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 4",
+    "unit": "tonnes",
+    "notes": "Nitrogen + sulfur fertilizer"
+  },
+
+  "31023000": {
+    "description": "Ammonium nitrate, whether or not in aqueous solution",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 5",
+    "unit": "tonnes",
+    "notes": "High-nitrogen fertilizer; also used in explosives"
+  },
+
+  "31024000": {
+    "description": "Mixtures of ammonium nitrate with calcium carbonate or other inorganic non-fertilising substances",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 6",
+    "unit": "tonnes",
+    "notes": "Blended fertilizers"
+  },
+
+  "31025000": {
+    "description": "Sodium nitrate",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 7",
+    "unit": "tonnes",
+    "notes": "Nitrate fertilizer (Chilean saltpeter)"
+  },
+
+  "31026000": {
+    "description": "Double salts and mixtures of calcium nitrate and ammonium nitrate",
+    "product_group": "fertilizers",
+    "cbam_category": "fertilisers",
+    "annexI_section": "4. Fertilisers",
+    "annexI_reference": "Section 4, entry 8",
+    "unit": "tonnes",
+    "notes": "Complex nitrogen fertilizers"
+  },
+
+  "28041000": {
+    "description": "Hydrogen",
+    "product_group": "hydrogen",
+    "cbam_category": "hydrogen",
+    "annexI_section": "5. Hydrogen",
+    "annexI_reference": "Section 5, entry 1",
+    "unit": "tonnes",
+    "notes": "Produced via SMR (grey), SMR+CCS (blue), or electrolysis (green)"
+  },
+
+  "27160000": {
+    "description": "Electrical energy (used for hydrogen production)",
+    "product_group": "hydrogen",
+    "cbam_category": "electricity",
+    "annexI_section": "6. Electricity",
+    "annexI_reference": "Section 6, entry 1",
+    "unit": "MWh",
+    "notes": "Relevant for green hydrogen production via electrolysis"
+  }
+}

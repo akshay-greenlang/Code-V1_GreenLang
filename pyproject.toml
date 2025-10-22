@@ -228,23 +228,49 @@ profile = "black"
 line_length = 88
 
 [tool.pytest.ini_options]
+# Pytest configuration (duplicates pytest.ini for tool support)
+# NOTE: pytest.ini takes precedence if both exist
 testpaths = ["tests"]
 python_files = ["test_*.py"]
-addopts = "-v --tb=short --cov=greenlang --cov=core.greenlang --cov-report=term-missing:skip-covered --cov-report=xml"
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+# AsyncIO mode for pytest-asyncio (auto discovers async tests)
+asyncio_mode = "auto"
+
+# Add coverage reporting to pytest runs
+addopts = [
+    "-v",                                               # Verbose output
+    "--tb=short",                                       # Short traceback format
+    "--strict-markers",                                 # Fail on unknown markers
+    "--cov=greenlang",                                  # Coverage for main package
+    "--cov=core.greenlang",                             # Coverage for core
+    "--cov-report=term-missing:skip-covered",           # Terminal report
+    "--cov-report=html:.coverage_html",                 # HTML report
+    "--cov-report=xml:coverage.xml",                    # XML report for CI
+    "--cov-fail-under=80",                              # Fail if coverage < 80%
+]
 
 [tool.coverage.run]
-branch = true
+# Coverage measurement configuration
+branch = true                                            # Measure branch coverage
+parallel = true                                          # Support parallel test execution
 source = ["greenlang", "core/greenlang"]
 omit = [
     "*/tests/*",
     "*/__main__.py",
+    "*/conftest.py",                                     # Omit conftest files
     "*/compat/*",
     "*/examples/*",
     "*/cli/templates/*",
-    "*/_version.py"
+    "*/_version.py",
+    "*/.venv/*",
+    "*/.tox/*",
+    "*/site-packages/*",
 ]
 
 [tool.coverage.report]
+# Coverage reporting configuration
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -254,8 +280,19 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
     "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod"
+    "@(abc\\.)?abstractmethod",
+    "@abstractmethod",
+    "except ImportError",
+    "except ModuleNotFoundError",
+    "pass",
 ]
 precision = 2
 show_missing = true
 skip_covered = false
+fail_under = 80                                          # Enforce 80% coverage minimum
+
+[tool.coverage.html]
+directory = ".coverage_html"                             # HTML report directory
+
+[tool.coverage.xml]
+output = "coverage.xml"                                  # XML report for CI/CD
