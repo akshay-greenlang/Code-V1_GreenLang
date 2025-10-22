@@ -465,7 +465,8 @@ class TestReportAgentAI:
         assert isinstance(result, str)
         assert "45.5" in result or "45.50" in result
         assert "electricity" in result
-        assert "54.9" in result or "54.95" in result
+        # Note: 54.95 formatted with .1f rounds to 55.0
+        assert "55.0" in result or "54.9" in result or "54.95" in result
         assert "decreased" in result.lower()
         assert "9.0" in result or "9" in result
         assert "commercial_office" in result

@@ -173,6 +173,58 @@ def doctor(
     git_ok, git_version = check_command("git")
     checks.append(("git", git_version, git_ok))
 
+    # === Supply Chain Security ===
+    console.print("\n[bold cyan]Supply Chain Security:[/bold cyan]")
+
+    # SBOM Generator - Check if sbom.py module exists
+    try:
+        from greenlang.provenance import sbom as sbom_module
+        sbom_ok = True
+        sbom_status = "available"
+
+        # Check for optional SBOM tools
+        cyclonedx_ok, cyclonedx_version = check_command("cyclonedx-py")
+        if not cyclonedx_ok:
+            sbom_status = "module only (install cyclonedx-bom for full support)"
+    except ImportError:
+        sbom_ok = False
+        sbom_status = "not found"
+    checks.append(("SBOM Generator", sbom_status, sbom_ok))
+
+    # Provenance Writer - Check signing module
+    try:
+        from greenlang.provenance import signing as signing_module
+        from greenlang.security import signing as sec_signing_module
+        provenance_ok = True
+        provenance_status = "available"
+    except ImportError:
+        provenance_ok = False
+        provenance_status = "not found"
+    checks.append(("Provenance Tracking", provenance_status, provenance_ok))
+
+    # Signing Capability - Test actual signing
+    try:
+        from greenlang.security.signing import EphemeralKeypairSigner
+        test_signer = EphemeralKeypairSigner()
+        test_data = b"test"
+        test_sig = test_signer.sign(test_data)
+        signing_ok = len(test_sig) > 0
+        signing_status = "functional"
+    except Exception as e:
+        signing_ok = False
+        signing_status = f"error: {str(e)[:30]}"
+    checks.append(("Signing Capability", signing_status, signing_ok))
+
+    # Sandbox Module - Check os_sandbox
+    try:
+        from greenlang.intelligence import os_sandbox
+        sandbox_ok = True
+        sandbox_status = "available"
+    except ImportError:
+        sandbox_ok = False
+        sandbox_status = "not found"
+    checks.append(("Filesystem Sandbox", sandbox_status, sandbox_ok))
+
     # === Runtime Backends ===
     console.print("\n[bold cyan]Runtime Backends:[/bold cyan]")
 
@@ -208,6 +260,32 @@ def doctor(
     policy_ok = policy_dir.exists() and list(policy_dir.glob("*.rego"))
     policy_count = len(list(policy_dir.glob("*.rego"))) if policy_dir.exists() else 0
     checks.append(("Policy Bundle", f"{policy_count} policies", policy_ok))
+
+    # Network Egress Policy - Check for default-deny configuration
+    try:
+        network_policy_file = Path.home() / ".greenlang" / "policies" / "network.rego"
+        if network_policy_file.exists():
+            network_ok = True
+            network_status = "configured"
+        else:
+            network_ok = False
+            network_status = "no policy found (default: allow all)"
+    except Exception:
+        network_ok = False
+        network_status = "check failed"
+    checks.append(("Network Egress Policy", network_status, network_ok))
+
+    # Execution Mode Detection - Check for mode configuration
+    exec_mode = os.getenv("GL_EXEC_MODE", "live")
+    mode_ok = exec_mode in ["live", "replay", "simulation"]
+    mode_status = f"mode: {exec_mode}"
+    checks.append(("Execution Mode", mode_status, mode_ok))
+
+    # RAG Allowlist - Check for RAG configuration
+    rag_allowlist = Path.home() / ".greenlang" / "rag_allowlist.yaml"
+    rag_ok = rag_allowlist.exists()
+    rag_status = "configured" if rag_ok else "not configured (RAG disabled)"
+    checks.append(("RAG Allowlist", rag_status, True))  # Non-critical
 
     # === Platform Detection ===
     console.print("\n[bold cyan]Platform:[/bold cyan]")

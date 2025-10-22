@@ -1,11 +1,19 @@
 from typing import Any, Dict, List
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from templates.agent_monitoring import OperationalMonitoringMixin
 
 
-class CarbonAgent(BaseAgent):
+class CarbonAgent(OperationalMonitoringMixin, BaseAgent):
     """Agent for aggregating emissions and calculating total carbon footprint"""
 
     def __init__(self, config: AgentConfig = None):
+        if config is None:
+            config = AgentConfig(
+                name="CarbonAgent",
+                description="Aggregates emissions and provides carbon footprint",
+            )
+        super().__init__(config)
+        self.setup_monitoring(agent_name="carbon_agent")
         if config is None:
             config = AgentConfig(
                 name="CarbonAgent",
@@ -17,6 +25,58 @@ class CarbonAgent(BaseAgent):
         return "emissions" in input_data and isinstance(input_data["emissions"], list)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        with self.track_execution(input_data) as tracker:
+            emissions_list = input_data["emissions"]
+
+            if not emissions_list:
+                return AgentResult(
+                    success=True,
+                    data={
+                        "total_co2e_kg": 0,
+                        "total_co2e_tons": 0,
+                        "emissions_breakdown": [],
+                        "summary": "No emissions data provided",
+                    },
+                )
+
+            total_co2e_kg = 0
+            emissions_breakdown = []
+
+            for emission in emissions_list:
+                if isinstance(emission, dict):
+                    co2e = emission.get("co2e_emissions_kg", 0)
+                    total_co2e_kg += co2e
+
+                    breakdown_item = {
+                        "source": emission.get("fuel_type", "Unknown"),
+                        "co2e_kg": co2e,
+                        "co2e_tons": co2e / 1000,
+                        "percentage": 0,
+                    }
+                    emissions_breakdown.append(breakdown_item)
+
+            for item in emissions_breakdown:
+                if total_co2e_kg > 0:
+                    item["percentage"] = round((item["co2e_kg"] / total_co2e_kg) * 100, 2)
+
+            total_co2e_tons = total_co2e_kg / 1000
+
+            summary = self._generate_summary(total_co2e_tons, emissions_breakdown)
+
+            return AgentResult(
+                success=True,
+                data={
+                    "total_co2e_kg": round(total_co2e_kg, 2),
+                    "total_co2e_tons": round(total_co2e_tons, 3),
+                    "emissions_breakdown": emissions_breakdown,
+                    "summary": summary,
+                    "carbon_intensity": self._calculate_intensity(
+                        input_data, total_co2e_kg
+                    ),
+                },
+                metadata={"agent": "CarbonAgent", "num_sources": len(emissions_breakdown)},
+            )
+
         emissions_list = input_data["emissions"]
 
         if not emissions_list:

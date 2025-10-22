@@ -74,6 +74,10 @@ def __getattr__(name):
         from greenlang.agents.boiler_replacement_agent_ai import BoilerReplacementAgent_AI
 
         return BoilerReplacementAgent_AI
+    elif name == "IndustrialHeatPumpAgent_AI":
+        from greenlang.agents.industrial_heat_pump_agent_ai import IndustrialHeatPumpAgent_AI
+
+        return IndustrialHeatPumpAgent_AI
     elif name == "DecarbonizationRoadmapAgentAI":
         from greenlang.agents.decarbonization_roadmap_agent_ai import DecarbonizationRoadmapAgentAI
 
@@ -100,5 +104,6 @@ __all__ = [
     "EnergyBalanceAgent",
     "IndustrialProcessHeatAgent_AI",
     "BoilerReplacementAgent_AI",
+    "IndustrialHeatPumpAgent_AI",
     "DecarbonizationRoadmapAgentAI",
 ]

@@ -1,9 +1,10 @@
 from typing import Any, Dict
 from datetime import datetime
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from templates.agent_monitoring import OperationalMonitoringMixin
 
 
-class ReportAgent(BaseAgent):
+class ReportAgent(OperationalMonitoringMixin, BaseAgent):
     """Agent for generating carbon footprint reports in various formats"""
 
     def __init__(self, config: AgentConfig = None):
@@ -12,8 +13,39 @@ class ReportAgent(BaseAgent):
                 name="ReportAgent", description="Generates carbon footprint reports"
             )
         super().__init__(config)
+        self.setup_monitoring(agent_name="report_agent")
+        if config is None:
+            config = AgentConfig(
+                name="ReportAgent", description="Generates carbon footprint reports"
+            )
+        super().__init__(config)
 
     def execute(self, input_data: Dict[str, Any]) -> AgentResult:
+        with self.track_execution(input_data) as tracker:
+            report_format = input_data.get("format", "text")
+            carbon_data = input_data.get("carbon_data", {})
+            building_info = input_data.get("building_info", {})
+            period_info = input_data.get("period", {})
+
+            if report_format == "markdown":
+                report = self._generate_markdown_report(
+                    carbon_data, building_info, period_info
+                )
+            elif report_format == "json":
+                report = self._generate_json_report(carbon_data, building_info, period_info)
+            else:
+                report = self._generate_text_report(carbon_data, building_info, period_info)
+
+            return AgentResult(
+                success=True,
+                data={
+                    "report": report,
+                    "format": report_format,
+                    "generated_at": datetime.now().isoformat(),
+                },
+                metadata={"agent": "ReportAgent", "report_format": report_format},
+            )
+
         report_format = input_data.get("format", "text")
         carbon_data = input_data.get("carbon_data", {})
         building_info = input_data.get("building_info", {})

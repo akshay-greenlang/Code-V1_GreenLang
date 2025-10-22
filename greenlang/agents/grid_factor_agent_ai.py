@@ -46,6 +46,7 @@ import asyncio
 import logging
 
 from ..types import Agent, AgentResult, ErrorInfo
+from templates.agent_monitoring import OperationalMonitoringMixin
 from .types import GridFactorInput, GridFactorOutput
 from .grid_factor_agent import GridFactorAgent
 from greenlang.intelligence import (
@@ -61,7 +62,7 @@ from greenlang.intelligence.schemas.tools import ToolDef
 logger = logging.getLogger(__name__)
 
 
-class GridFactorAgentAI(Agent[GridFactorInput, GridFactorOutput]):
+class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridFactorOutput]):
     """AI-powered grid carbon intensity lookup agent using ChatSession.
 
     This agent enhances the original GridFactorAgent with AI orchestration while
@@ -142,6 +143,9 @@ class GridFactorAgentAI(Agent[GridFactorInput, GridFactorOutput]):
 
         # Define tools for ChatSession
         self._setup_tools()
+
+        # Setup operational monitoring
+        self.setup_monitoring(agent_name="grid_factor_agent_ai")
 
     def _setup_tools(self) -> None:
         """Setup tool definitions for ChatSession."""
@@ -515,52 +519,53 @@ class GridFactorAgentAI(Agent[GridFactorInput, GridFactorOutput]):
         Returns:
             AgentResult with grid intensity and AI explanation
         """
-        start_time = datetime.now()
+        with self.track_execution(payload) as tracker:
+            start_time = datetime.now()
 
-        # Validate input
-        if not self.validate(payload):
-            error_info: ErrorInfo = {
-                "type": "ValidationError",
-                "message": "Missing required fields: country, fuel_type, unit",
-                "agent_id": self.agent_id,
-                "context": {"payload": payload},
-            }
-            return {"success": False, "error": error_info}
-
-        try:
-            # Run async lookup
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            try:
-                result = loop.run_until_complete(self._run_async(payload))
-            finally:
-                loop.close()
-
-            # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
-
-            # Add performance metadata
-            if result["success"]:
-                result["metadata"] = {
-                    **result.get("metadata", {}),
+            # Validate input
+            if not self.validate(payload):
+                error_info: ErrorInfo = {
+                    "type": "ValidationError",
+                    "message": "Missing required fields: country, fuel_type, unit",
                     "agent_id": self.agent_id,
-                    "lookup_time_ms": duration * 1000,
-                    "ai_calls": self._ai_call_count,
-                    "tool_calls": self._tool_call_count,
-                    "total_cost_usd": self._total_cost_usd,
+                    "context": {"payload": payload},
                 }
+                return {"success": False, "error": error_info}
 
-            return result
+            try:
+                # Run async lookup
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    result = loop.run_until_complete(self._run_async(payload))
+                finally:
+                    loop.close()
 
-        except Exception as e:
-            self.logger.error(f"Error in AI grid factor lookup: {e}")
-            error_info: ErrorInfo = {
-                "type": "LookupError",
-                "message": f"Failed to lookup grid factor: {str(e)}",
-                "agent_id": self.agent_id,
-                "traceback": str(e),
-            }
-            return {"success": False, "error": error_info}
+                # Calculate duration
+                duration = (datetime.now() - start_time).total_seconds()
+
+                # Add performance metadata
+                if result["success"]:
+                    result["metadata"] = {
+                        **result.get("metadata", {}),
+                        "agent_id": self.agent_id,
+                        "lookup_time_ms": duration * 1000,
+                        "ai_calls": self._ai_call_count,
+                        "tool_calls": self._tool_call_count,
+                        "total_cost_usd": self._total_cost_usd,
+                    }
+
+                return result
+
+            except Exception as e:
+                self.logger.error(f"Error in AI grid factor lookup: {e}")
+                error_info: ErrorInfo = {
+                    "type": "LookupError",
+                    "message": f"Failed to lookup grid factor: {str(e)}",
+                    "agent_id": self.agent_id,
+                    "traceback": str(e),
+                }
+                return {"success": False, "error": error_info}
 
     async def _run_async(self, payload: GridFactorInput) -> AgentResult[GridFactorOutput]:
         """Async lookup with ChatSession.
