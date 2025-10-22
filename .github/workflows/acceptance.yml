@@ -191,6 +191,8 @@ jobs:
   golden-tests:
     name: Golden Tests
     runs-on: ubuntu-latest
+    env:
+      GL_MODE: replay  # Enforce deterministic mode for golden tests
 
     steps:
       - name: Checkout code
@@ -211,7 +213,7 @@ jobs:
             if [ -d "$pack/tests/golden" ]; then
               echo "Running golden tests for $pack..."
               cd "$pack"
-              gl run gl.yaml --inputs tests/golden/inputs.sample.json --deterministic
+              gl run gl.yaml --inputs tests/golden/inputs.sample.json
               
               # Compare with expected output
               if [ -f "tests/golden/expected.run.json" ]; then

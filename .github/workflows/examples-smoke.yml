@@ -107,12 +107,14 @@ jobs:
 
       - name: Test determinism
         if: steps.run_example.outputs.run_status == 'success'
+        env:
+          GL_MODE: replay  # Enforce deterministic mode for reproducibility test
         run: |
           cd examples/${{ matrix.example }}
 
           # Run twice and compare
-          gl run pipeline.yaml --inputs inputs.json --output output1/ --deterministic
-          gl run pipeline.yaml --inputs inputs.json --output output2/ --deterministic
+          gl run pipeline.yaml --inputs inputs.json --output output1/
+          gl run pipeline.yaml --inputs inputs.json --output output2/
 
           # Compare run.json files (excluding timestamps)
           python - << 'EOF'
