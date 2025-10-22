@@ -11,6 +11,8 @@ jobs:
     name: Enforce No Naked Numbers Policy
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      GL_MODE: replay  # Enforce deterministic mode for all tool runtime tests
 
     strategy:
       matrix:
