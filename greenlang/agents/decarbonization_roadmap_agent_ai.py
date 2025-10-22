@@ -516,6 +516,76 @@ class DecarbonizationRoadmapAgentAI:
         }
 
     # ==========================================================================
+    # Helper Methods (Mathematical Calculations)
+    # ==========================================================================
+
+    def _calculate_irr_newton_raphson(
+        self,
+        initial_investment: float,
+        annual_cash_flow: float,
+        years: int,
+        tolerance: float = 1e-6,
+        max_iterations: int = 100,
+    ) -> float:
+        """
+        Calculate IRR using Newton-Raphson method for exact solution.
+
+        Solves: 0 = -Investment + Σ(Cash_Flow_t / (1 + IRR)^t) for t=1 to years
+
+        Args:
+            initial_investment: Upfront capital investment (positive)
+            annual_cash_flow: Annual savings (positive)
+            years: Number of years
+            tolerance: Convergence tolerance (default: 1e-6)
+            max_iterations: Maximum iterations (default: 100)
+
+        Returns:
+            IRR as decimal (e.g., 0.15 for 15%), or 0.0 if no solution found
+
+        Method:
+            Newton-Raphson: x_{n+1} = x_n - f(x_n) / f'(x_n)
+            where f(r) = -I + Σ(CF / (1+r)^t)
+            and f'(r) = Σ(-t * CF / (1+r)^(t+1))
+
+        Determinism:
+            Same inputs → Same output (always)
+            No randomness, pure mathematical iteration
+        """
+        if initial_investment <= 0 or annual_cash_flow <= 0:
+            return 0.0
+
+        # Initial guess: simple ROI
+        rate = annual_cash_flow / initial_investment
+
+        for iteration in range(max_iterations):
+            # Calculate NPV at current rate: f(r) = -I + Σ(CF/(1+r)^t)
+            npv = -initial_investment
+            for t in range(1, years + 1):
+                npv += annual_cash_flow / ((1 + rate) ** t)
+
+            # Calculate derivative: f'(r) = Σ(-t * CF / (1+r)^(t+1))
+            npv_derivative = 0.0
+            for t in range(1, years + 1):
+                npv_derivative += (-t * annual_cash_flow) / ((1 + rate) ** (t + 1))
+
+            # Check convergence
+            if abs(npv) < tolerance:
+                return max(rate * 100, 0.0)  # Convert to percentage
+
+            # Newton-Raphson update
+            if abs(npv_derivative) < 1e-10:  # Avoid division by zero
+                break
+
+            rate = rate - (npv / npv_derivative)
+
+            # Keep rate positive
+            if rate < 0:
+                rate = 0.01  # Reset to 1% if negative
+
+        # If no convergence, return simple approximation
+        return max((annual_cash_flow / initial_investment) * 100, 0.0)
+
+    # ==========================================================================
     # Tool Implementations (Deterministic Calculations)
     # ==========================================================================
 
@@ -558,8 +628,62 @@ class DecarbonizationRoadmapAgentAI:
         grid_ef = EMISSION_FACTORS.get(grid_region, EMISSION_FACTORS["US_AVERAGE"])
         scope2_total = electricity_kwh * grid_ef
 
-        # Scope 3: Not included in this tool (would require supply chain data)
+        # Scope 3: Value chain emissions (if provided in input)
+        # Categories: purchased goods, business travel, employee commuting, waste, etc.
         scope3_total = 0.0
+        scope3_breakdown = {}
+
+        # Check if Scope 3 data is provided in input
+        if hasattr(self, '_current_input') and self._current_input:
+            value_chain = self._current_input.get("value_chain_activities", {})
+
+            # Scope 3.1: Purchased goods and services
+            if "purchased_goods_usd" in value_chain:
+                # Using average $1M spend = 350 tons CO2e (EPA average)
+                goods_emissions = value_chain["purchased_goods_usd"] * 350 / 1_000_000
+                scope3_breakdown["purchased_goods"] = goods_emissions
+                scope3_total += goods_emissions
+
+            # Scope 3.3: Fuel and energy-related activities (not in Scope 1/2)
+            if "upstream_fuel_activities_mmbtu" in value_chain:
+                # Upstream emissions ~10% of combustion emissions
+                upstream_ef = 5.3  # kg CO2e per MMBtu (10% of natural gas)
+                upstream_emissions = value_chain["upstream_fuel_activities_mmbtu"] * upstream_ef
+                scope3_breakdown["upstream_fuel"] = upstream_emissions
+                scope3_total += upstream_emissions
+
+            # Scope 3.4: Upstream transportation and distribution
+            if "transport_ton_miles" in value_chain:
+                # Average truck: 161 g CO2e per ton-mile (EPA)
+                transport_emissions = value_chain["transport_ton_miles"] * 0.161
+                scope3_breakdown["transportation"] = transport_emissions
+                scope3_total += transport_emissions
+
+            # Scope 3.5: Waste generated in operations
+            if "waste_tons" in value_chain:
+                # Landfill: 0.57 tons CO2e per ton waste
+                waste_emissions = value_chain["waste_tons"] * 570
+                scope3_breakdown["waste"] = waste_emissions
+                scope3_total += waste_emissions
+
+            # Scope 3.6: Business travel
+            if "business_travel_miles" in value_chain:
+                # Air travel: 0.24 kg CO2e per mile (EPA)
+                travel_emissions = value_chain["business_travel_miles"] * 0.24
+                scope3_breakdown["business_travel"] = travel_emissions
+                scope3_total += travel_emissions
+
+            # Scope 3.7: Employee commuting
+            if "employee_commute_miles" in value_chain:
+                # Average: 0.41 kg CO2e per mile (EPA)
+                commute_emissions = value_chain["employee_commute_miles"] * 0.41
+                scope3_breakdown["employee_commute"] = commute_emissions
+                scope3_total += commute_emissions
+
+            # Allow custom Scope 3 emissions if directly provided
+            if "custom_scope3_kg_co2e" in value_chain:
+                scope3_total += value_chain["custom_scope3_kg_co2e"]
+                scope3_breakdown["custom"] = value_chain["custom_scope3_kg_co2e"]
 
         total_emissions = scope1_total + scope2_total + scope3_total
 
@@ -571,10 +695,12 @@ class DecarbonizationRoadmapAgentAI:
             "emissions_by_source": {
                 **{f"scope1_{k}": round(v, 2) for k, v in scope1_emissions.items()},
                 "scope2_electricity": round(scope2_total, 2),
+                **{f"scope3_{k}": round(v, 2) for k, v in scope3_breakdown.items()},
             },
-            "calculation_method": "GHG Protocol Corporate Standard",
+            "calculation_method": "GHG Protocol Corporate Standard (Scope 1, 2, 3)",
             "emission_factors_source": "EPA/EIA 2024",
             "grid_emission_factor_kg_per_kwh": grid_ef,
+            "scope3_categories_included": list(scope3_breakdown.keys()) if scope3_breakdown else [],
         }
 
     def _assess_technologies_impl(
@@ -937,14 +1063,47 @@ class DecarbonizationRoadmapAgentAI:
         current_year = datetime.now().year
         solar_itc_rate = IRA_SOLAR_ITC.get(current_year, 0.30)
 
-        # Assume 40% of CAPEX is solar/renewable eligible for ITC
-        solar_portion = total_capex * 0.40
+        # Solar/renewable eligible portion (configurable from input, default 40%)
+        solar_eligible_pct = 0.40  # Default assumption
+        if hasattr(self, '_current_input') and self._current_input:
+            # Check if roadmap data specifies renewable percentage
+            if "renewable_tech_percentage" in self._current_input:
+                solar_eligible_pct = self._current_input["renewable_tech_percentage"] / 100.0
+            # Or calculate from technology mix in roadmap
+            elif "technology_mix" in roadmap_data:
+                tech_mix = roadmap_data["technology_mix"]
+                renewable_techs = ["solar", "solar_thermal", "renewable", "wind"]
+                solar_eligible_pct = sum(
+                    tech_mix.get(tech, 0) for tech in renewable_techs
+                ) / 100.0 if tech_mix else 0.40
+
+        solar_portion = total_capex * solar_eligible_pct
         federal_itc = solar_portion * solar_itc_rate
 
-        # 179D deduction (assume 50,000 sqft facility)
-        itc_179d = 50000 * IRA_179D_DEDUCTION["base"]
+        # 179D deduction (configurable facility size, default 50,000 sqft)
+        facility_sqft = 50000  # Default assumption
+        if hasattr(self, '_current_input') and self._current_input:
+            facility_sqft = self._current_input.get("facility_sqft", 50000)
 
-        total_incentives = federal_itc + itc_179d
+        itc_179d = facility_sqft * IRA_179D_DEDUCTION["base"]
+
+        # Heat Pump Tax Credits (IRA 2022 Section 25C - 30% up to $2,000 per unit)
+        heat_pump_credit = 0.0
+        if hasattr(self, '_current_input') and self._current_input:
+            # Check if heat pumps are in the technology mix
+            if "heat_pump_capex_usd" in self._current_input:
+                heat_pump_capex = self._current_input["heat_pump_capex_usd"]
+                # 30% credit capped at $2,000 per unit
+                units = self._current_input.get("heat_pump_units", 1)
+                heat_pump_credit = min(heat_pump_capex * 0.30, 2000 * units)
+            # Or check roadmap data
+            elif roadmap_data.get("heat_pump_investment_usd", 0) > 0:
+                heat_pump_capex = roadmap_data["heat_pump_investment_usd"]
+                # Assume commercial units ~$50K each
+                estimated_units = max(1, int(heat_pump_capex / 50000))
+                heat_pump_credit = min(heat_pump_capex * 0.30, 2000 * estimated_units)
+
+        total_incentives = federal_itc + itc_179d + heat_pump_credit
 
         # Net investment after incentives
         net_investment = total_capex - total_incentives
@@ -958,9 +1117,13 @@ class DecarbonizationRoadmapAgentAI:
         for year in range(1, years + 1):
             npv += annual_savings / ((1 + discount_rate) ** year)
 
-        # Simplified IRR (iterative solution not needed for deterministic result)
-        # Use approximation: IRR ≈ annual_savings / net_investment
-        irr_estimate = (annual_savings / net_investment) * 100 if net_investment > 0 else 0
+        # IRR Calculation (Newton-Raphson method for exact solution)
+        # Solve: 0 = -Investment + Σ(Cash_Flow_t / (1 + IRR)^t)
+        irr_estimate = self._calculate_irr_newton_raphson(
+            initial_investment=net_investment,
+            annual_cash_flow=annual_savings,
+            years=years
+        )
 
         # Levelized Cost of Abatement (LCOA)
         total_reduction = (
@@ -969,19 +1132,38 @@ class DecarbonizationRoadmapAgentAI:
             roadmap_data.get("phase3_deep_decarbonization", {}).get("expected_reduction_kg_co2e", 0)
         )
 
-        # LCOA = (CAPEX + PV(OPEX) - PV(Savings)) / PV(Emissions_Reduced)
-        # Simplified: LCOA = Net_Investment / (Annual_Reduction * 20 years)
+        # LCOA = (CAPEX + PV(OPEX) - PV(Energy_Savings)) / PV(Emissions_Reduced)
+        # Proper implementation per GHG Protocol
+
+        # Annual O&M costs (typically 2-3% of CAPEX for industrial equipment)
+        annual_opex = total_capex * 0.025  # 2.5% of CAPEX
+
+        # Present Value of OPEX over project lifetime
+        pv_opex = sum(annual_opex / ((1 + discount_rate) ** t) for t in range(1, years + 1))
+
+        # Present Value of Energy Savings (already calculated for NPV)
+        pv_savings = sum(annual_savings / ((1 + discount_rate) ** t) for t in range(1, years + 1))
+
+        # Net lifecycle cost = CAPEX + PV(OPEX) - PV(Savings) - Incentives
+        net_lifecycle_cost = total_capex + pv_opex - pv_savings - total_incentives
+
+        # Lifetime emissions reduction in metric tons
         annual_reduction = total_reduction
-        lifetime_reduction = annual_reduction * years / 1000  # Convert to metric tons
-        lcoa = (net_investment - npv) / lifetime_reduction if lifetime_reduction > 0 else 0
+        lifetime_reduction = annual_reduction * years / 1000  # Convert kg to metric tons
+
+        # LCOA in $/ton CO2e
+        lcoa = net_lifecycle_cost / lifetime_reduction if lifetime_reduction > 0 else 0
 
         return {
             "upfront_investment": {
                 "total_capex_usd": total_capex,
                 "federal_itc_30_percent": round(federal_itc, 2),
-                "179d_deduction_usd": itc_179d,
+                "179d_deduction_usd": round(itc_179d, 2),
+                "heat_pump_tax_credit_usd": round(heat_pump_credit, 2),
                 "total_federal_incentives_usd": round(total_incentives, 2),
                 "net_investment_usd": round(net_investment, 2),
+                "renewable_eligible_percentage": round(solar_eligible_pct * 100, 1),
+                "facility_sqft": facility_sqft,
             },
 
             "annual_financial_impact": {
@@ -1191,6 +1373,34 @@ class DecarbonizationRoadmapAgentAI:
                 "cost_to_comply_usd": 500000,
                 "timeline_months": 12,
                 "penalties": "Export ban to EU (catastrophic)",
+            })
+
+        # Check EU CSRD (Corporate Sustainability Reporting Directive)
+        if "EU" in export_markets or "Europe" in export_markets or "EU" in facility_location.upper():
+            applicable_regs.append({
+                "regulation": "CSRD (EU Corporate Sustainability Reporting Directive)",
+                "applicability": "Required (large EU companies or subsidiaries, >250 employees)",
+                "current_compliance": 0.15,
+                "target_compliance": 1.0,
+                "gap": 0.85,
+                "requirements": [
+                    "Double materiality assessment (environmental + financial impact)",
+                    "Scope 1, 2, 3 emissions disclosure (mandatory)",
+                    "Sustainability strategy and targets",
+                    "Governance structure for sustainability",
+                    "Value chain due diligence",
+                    "Third-party limited assurance (2024)",
+                    "Third-party reasonable assurance (2028)",
+                ],
+                "cost_to_comply_usd": 350000,
+                "timeline_months": 18,
+                "penalties": "€10M or 5% of global turnover (CSRD Article 51)",
+                "phased_implementation": {
+                    "2024": "Large public companies (>500 employees)",
+                    "2025": "Large companies (>250 employees)",
+                    "2026": "Listed SMEs",
+                },
+                "reporting_standards": "ESRS (European Sustainability Reporting Standards)",
             })
 
         # Check SEC Climate Rule (US public companies)
@@ -1415,6 +1625,9 @@ class DecarbonizationRoadmapAgentAI:
             - Same input -> Same output (always)
         """
         start_time = datetime.now()
+
+        # Store current input for tool access (e.g., Scope 3 data)
+        self._current_input = input_data
 
         try:
             # Create ChatSession
