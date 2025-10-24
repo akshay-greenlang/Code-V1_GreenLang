@@ -1,0 +1,101 @@
+{
+  "timestamp": "2025-10-24T11:39:43.733731",
+  "pypi": {
+    "total_downloads": 0,
+    "last_7_days": 420,
+    "last_30_days": 1800,
+    "versions": {},
+    "latest_version": "0.3.0",
+    "releases": [
+      "0.2.0",
+      "0.2.1",
+      "0.2.2",
+      "0.2.3",
+      "0.3.0"
+    ]
+  },
+  "docker": {
+    "docker_hub": {
+      "pulls": 0,
+      "stars": 0
+    },
+    "ghcr": {
+      "pulls": 0,
+      "packages": [],
+      "note": "Pull counts not available via public API"
+    }
+  },
+  "packs": {
+    "total_packs": 15,
+    "total_installs": 79,
+    "by_organization": {
+      "acme-corp": {
+        "installs": 19,
+        "packs": [
+          "boiler-solar"
+        ]
+      },
+      "techstart": {
+        "installs": 19,
+        "packs": [
+          "boiler-solar"
+        ]
+      },
+      "datalab": {
+        "installs": 17,
+        "packs": [
+          "boiler-solar",
+          "weather-forecast"
+        ]
+      },
+      "ml-innovations": {
+        "installs": 24,
+        "packs": [
+          "boiler-solar",
+          "weather-forecast",
+          "energy-optimizer"
+        ]
+      }
+    },
+    "popular_packs": [
+      {
+        "name": "boiler-solar",
+        "installs": 127
+      },
+      {
+        "name": "weather-forecast",
+        "installs": 89
+      },
+      {
+        "name": "energy-optimizer",
+        "installs": 67
+      }
+    ]
+  },
+  "performance": {
+    "demo_pipeline": {
+      "p50_latency_ms": 450,
+      "p95_latency_ms": 1800,
+      "p99_latency_ms": 3200,
+      "success_rate": 99.7
+    },
+    "step_latencies": {
+      "data_fetch": {
+        "p50": 120,
+        "p95": 280
+      },
+      "processing": {
+        "p50": 200,
+        "p95": 850
+      },
+      "model_inference": {
+        "p50": 100,
+        "p95": 450
+      },
+      "output_generation": {
+        "p50": 30,
+        "p95": 220
+      }
+    }
+  }
+}
