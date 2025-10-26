@@ -81,6 +81,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from greenlang.agents.citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -211,6 +217,10 @@ class IsolationForestAnomalyAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
 
         # Model state
         self._fitted_model = None
@@ -427,6 +437,10 @@ class IsolationForestAnomalyAgent(Agent[Dict[str, Any], Dict[str, Any]]):
 
         # Create ChatSession
         session = ChatSession(self.provider)
+
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
 
         # Build AI prompt
         prompt = self._build_prompt(input_data)
@@ -796,6 +810,25 @@ IMPORTANT:
             else:
                 severities.append("normal")
 
+        # Create calculation citation for anomaly scoring
+        calc_citation = CalculationCitation(
+            step_name="calculate_anomaly_scores",
+            formula="IsolationForest.score_samples(X_scaled) → severity classification",
+            inputs={
+                "n_samples": len(scores),
+                "n_features": len(self._feature_columns),
+                "features": self._feature_columns,
+            },
+            output={
+                "min_score": float(np.min(scores)),
+                "max_score": float(np.max(scores)),
+                "mean_score": float(np.mean(scores)),
+            },
+            timestamp=datetime.now(),
+            tool_call_id=f"anomaly_scores_{self._tool_call_count}",
+        )
+        self._calculation_citations.append(calc_citation)
+
         return {
             "scores": scores.tolist(),
             "severities": severities,
@@ -1143,6 +1176,12 @@ IMPORTANT:
         # Add AI explanation
         if explanation and self.enable_explanations:
             output["explanation"] = explanation
+
+        # Add citations for calculations
+        if self._calculation_citations:
+            output["citations"] = {
+                "calculations": [c.dict() for c in self._calculation_citations],
+            }
 
         return output
 
