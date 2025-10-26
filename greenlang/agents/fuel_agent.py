@@ -12,6 +12,7 @@ from greenlang.data.emission_factors import EmissionFactors
 from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utils.performance_tracker import PerformanceTracker
 from greenlang.agents.tools import get_registry
+from greenlang.exceptions import ValidationError, ExecutionError, MissingData
 
 
 class FuelAgent(Agent[FuelInput, FuelOutput]):
@@ -184,48 +185,49 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         start_time = datetime.now()
 
         with self.performance_tracker.track("fuel_calculation"):
-            if not self.validate(payload):
-                error_info: ErrorInfo = {
-                    "type": "ValidationError",
-                    "message": "Invalid input payload",
-                    "agent_id": self.agent_id,
-                    "context": {"payload": payload},
-                }
-                return {"success": False, "error": error_info}
-
-            fuel_type = payload["fuel_type"]
-            amount = payload["amount"]
-            unit = payload["unit"]
-            country = payload.get("country", "US")
-            year = payload.get("year", 2025)
-
-            # Map fuel type aliases
-            fuel_type_mapping = {
-                "lpg": "propane",
-                "heating_oil": "fuel_oil",
-                "wood": "biomass",
-                "electric": "electricity",
-            }
-            fuel_type = fuel_type_mapping.get(fuel_type, fuel_type)
-
-            self.logger.info(
-                f"Calculating emissions for {amount} {unit} of {fuel_type}"
-            )
-
             try:
+                # Validate input - raises ValidationError if invalid
+                if not self.validate(payload):
+                    raise ValidationError(
+                        message="Invalid input payload",
+                        agent_name=self.agent_id,
+                        context={"payload": payload}
+                    )
+
+                fuel_type = payload["fuel_type"]
+                amount = payload["amount"]
+                unit = payload["unit"]
+                country = payload.get("country", "US")
+                year = payload.get("year", 2025)
+
+                # Map fuel type aliases
+                fuel_type_mapping = {
+                    "lpg": "propane",
+                    "heating_oil": "fuel_oil",
+                    "wood": "biomass",
+                    "electric": "electricity",
+                }
+                fuel_type = fuel_type_mapping.get(fuel_type, fuel_type)
+
+                self.logger.info(
+                    f"Calculating emissions for {amount} {unit} of {fuel_type}"
+                )
+
                 # Get emission factor with caching
                 emission_factor = self._get_cached_emission_factor(
                     fuel_type, unit, country
                 )
 
                 if emission_factor is None:
-                    error_info: ErrorInfo = {
-                        "type": "DataError",
-                        "message": f"No emission factor found for {fuel_type} in {country}",
-                        "agent_id": self.agent_id,
-                        "context": {"fuel_type": fuel_type, "country": country},
-                    }
-                    return {"success": False, "error": error_info}
+                    raise MissingData(
+                        message=f"No emission factor found for {fuel_type} in {country}",
+                        data_type="emission_factor",
+                        context={
+                            "fuel_type": fuel_type,
+                            "country": country,
+                            "unit": unit
+                        }
+                    )
 
                 # Calculate emissions using shared tool
                 calc_result = self.calc_tool(
@@ -238,12 +240,12 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 )
 
                 if not calc_result.success:
-                    error_info: ErrorInfo = {
-                        "type": "CalculationError",
-                        "message": f"Calculation failed: {calc_result.error}",
-                        "agent_id": self.agent_id,
-                    }
-                    return {"success": False, "error": error_info}
+                    raise ExecutionError(
+                        message=f"Calculation failed: {calc_result.error}",
+                        agent_name=self.agent_id,
+                        step="calculate_emissions",
+                        context={"input": payload}
+                    )
 
                 co2e_emissions_kg = calc_result.data["emissions_kg_co2e"]
 
@@ -329,8 +331,38 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                     },
                 }
 
+            except ValidationError as e:
+                self.logger.warning(f"Validation error in fuel calculation: {e}")
+                error_info: ErrorInfo = {
+                    "type": "ValidationError",
+                    "message": e.message,
+                    "agent_id": self.agent_id,
+                    "context": e.context,
+                }
+                return {"success": False, "error": error_info}
+
+            except MissingData as e:
+                self.logger.error(f"Missing data in fuel calculation: {e}")
+                error_info: ErrorInfo = {
+                    "type": "DataError",
+                    "message": e.message,
+                    "agent_id": self.agent_id,
+                    "context": e.context,
+                }
+                return {"success": False, "error": error_info}
+
+            except ExecutionError as e:
+                self.logger.error(f"Execution error in fuel calculation: {e}")
+                error_info: ErrorInfo = {
+                    "type": "ExecutionError",
+                    "message": e.message,
+                    "agent_id": self.agent_id,
+                    "context": e.context,
+                }
+                return {"success": False, "error": error_info}
+
             except Exception as e:
-                self.logger.error(f"Error in fuel calculation: {e}")
+                self.logger.error(f"Unexpected error in fuel calculation: {e}")
                 error_info: ErrorInfo = {
                     "type": "CalculationError",
                     "message": f"Failed to calculate fuel emissions: {str(e)}",
