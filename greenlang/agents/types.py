@@ -46,6 +46,7 @@ class FuelOutput(TypedDict):
     version: str
     last_updated: str
     confidence: NotRequired[float]
+    citations: NotRequired[list]  # List of EmissionFactorCitation objects
 
 
 # ==============================================================================
