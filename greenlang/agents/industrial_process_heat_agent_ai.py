@@ -55,6 +55,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from .citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -228,6 +234,10 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
 
         # Define tools for ChatSession
         self._setup_tools()
@@ -922,6 +932,10 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
             }
             return {"success": False, "error": error_info}
 
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
+
         try:
             # Run async calculation
             loop = asyncio.new_event_loop()
@@ -1274,6 +1288,12 @@ IMPORTANT:
         # Add AI explanation if enabled
         if explanation and self.enable_explanations:
             output["ai_explanation"] = explanation
+
+        # Add citations for calculations
+        if self._calculation_citations:
+            output["citations"] = {
+                "calculations": [c.dict() for c in self._calculation_citations],
+            }
 
         # Add provenance
         output["provenance"] = {

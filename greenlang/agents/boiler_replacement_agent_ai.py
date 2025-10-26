@@ -60,6 +60,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from .citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -277,6 +283,10 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
 
         # Define tools for ChatSession
         self._setup_tools()
@@ -598,6 +608,24 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
             1 - stack_loss_percent / 100 - radiation_loss_percent / 100
         )
         actual_efficiency = max(0.40, min(0.99, actual_efficiency))  # Reasonable bounds
+
+        # Create calculation citation
+        calc_citation = CalculationCitation(
+            step_name="calculate_boiler_efficiency",
+            formula="Efficiency = BaseEff × (1 - 0.005×Age) × (1 - StackLoss/100 - RadLoss/100)",
+            inputs={
+                "boiler_type": boiler_type,
+                "age_years": age_years,
+                "base_efficiency": base_efficiency,
+                "stack_temperature_c": stack_temperature_c,
+                "ambient_temperature_c": ambient_temperature_c,
+                "excess_air_percent": excess_air_percent,
+            },
+            output={"value": actual_efficiency, "unit": "fraction"},
+            timestamp=datetime.now(),
+            tool_call_id=f"calc_eff_{self._tool_call_count}",
+        )
+        self._calculation_citations.append(calc_citation)
 
         return {
             "actual_efficiency": round(actual_efficiency, 4),
@@ -1196,6 +1224,10 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
             }
             return {"success": False, "error": error_info}
 
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
+
         try:
             # Run async calculation
             loop = asyncio.new_event_loop()
@@ -1525,6 +1557,12 @@ IMPORTANT:
         # Add AI explanation if enabled
         if explanation and self.enable_explanations:
             output["ai_explanation"] = explanation
+
+        # Add citations for calculations
+        if self._calculation_citations:
+            output["citations"] = {
+                "calculations": [c.dict() for c in self._calculation_citations],
+            }
 
         # Add provenance
         output["provenance"] = {

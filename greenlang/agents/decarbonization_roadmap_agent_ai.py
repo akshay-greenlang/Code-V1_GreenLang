@@ -75,6 +75,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from .citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -274,6 +280,10 @@ class DecarbonizationRoadmapAgentAI:
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
 
         # Sub-agents (lazy loaded)
         self._sub_agents_cache = {}
@@ -1900,6 +1910,10 @@ class DecarbonizationRoadmapAgentAI:
         """
         start_time = datetime.now()
 
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
+
         # Store current input for tool access (e.g., Scope 3 data)
         self._current_input = input_data
 
@@ -2109,6 +2123,11 @@ Provide a comprehensive executive summary and actionable next steps."""
                 "Risk incidents",
                 "Compliance status",
             ],
+
+            # Citations
+            "citations": {
+                "calculations": [c.dict() for c in self._calculation_citations],
+            } if self._calculation_citations else {},
 
             # Provenance
             "ai_explanation": self._extract_ai_summary(ai_response),
