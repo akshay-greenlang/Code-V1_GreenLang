@@ -11,6 +11,7 @@ from .types import FuelInput, FuelOutput
 from greenlang.data.emission_factors import EmissionFactors
 from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utils.performance_tracker import PerformanceTracker
+from greenlang.agents.tools import get_registry
 
 
 class FuelAgent(Agent[FuelInput, FuelOutput]):
@@ -70,6 +71,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         - Cache management
         - Historical data storage
         - Logging
+        - Shared calculation tools
         """
         self.emission_factors = EmissionFactors()
         self.fuel_config = self.load_fuel_config()
@@ -87,6 +89,10 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         self._execution_times = []
         self._cache_hits = 0
         self._cache_misses = 0
+
+        # Get shared calculation tool from registry
+        registry = get_registry()
+        self.calc_tool = registry.get("calculate_emissions")
 
     def validate(self, payload: FuelInput) -> bool:
         """Validate input payload structure and values with JSON Schema.
@@ -221,8 +227,25 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                     }
                     return {"success": False, "error": error_info}
 
-                # Calculate emissions
-                co2e_emissions_kg = abs(amount) * emission_factor
+                # Calculate emissions using shared tool
+                calc_result = self.calc_tool(
+                    fuel_type=fuel_type,
+                    amount=abs(amount),
+                    unit=unit,
+                    emission_factor=emission_factor,
+                    emission_factor_unit=f"kgCO2e/{unit}",
+                    country=country
+                )
+
+                if not calc_result.success:
+                    error_info: ErrorInfo = {
+                        "type": "CalculationError",
+                        "message": f"Calculation failed: {calc_result.error}",
+                        "agent_id": self.agent_id,
+                    }
+                    return {"success": False, "error": error_info}
+
+                co2e_emissions_kg = calc_result.data["emissions_kg_co2e"]
 
                 # Apply renewable offset if specified
                 renewable_percentage = payload.get("renewable_percentage", 0)
