@@ -1,0 +1,713 @@
+# Factor Broker Service Specification
+# GL-VCCI Scope 3 Platform - Core Service
+#
+# Version: 1.0.0
+# Date: October 25, 2025
+# Part of: CTO v2 Strategic Plan
+
+# ============================================================================
+# SERVICE METADATA
+# ============================================================================
+service:
+  name: "FactorBroker"
+  version: "1.0.0"
+  type: "core_service"
+  category: "data_resolution"
+
+  description: >
+    Runtime emission factor resolution service with license compliance.
+    Resolves factor IDs to licensed sources at runtime, with versioning
+    (GWP set, region, unit, pedigree), caching within license terms,
+    and no bulk redistribution to ensure ecoinvent compliance.
+
+  purpose: >
+    The Factor Broker serves as the central service for emission factor
+    resolution, abstracting complexity of multiple data sources,
+    license compliance, versioning, and regional adaptation.
+
+# ============================================================================
+# BUSINESS VALUE
+# ============================================================================
+business_value:
+  problem_solved: >
+    Emission factor management is complex: multiple sources (ecoinvent,
+    DESNZ, EPA), licensing restrictions (ecoinvent prohibits bulk
+    redistribution), GWP standard evolution (AR5 → AR6), and regional
+    adaptation requirements. Manual management leads to compliance
+    violations and calculation errors.
+
+  solution: >
+    Factor Broker provides runtime resolution with license-compliant
+    caching, automatic cascading fallback (ecoinvent → DESNZ → EPA),
+    GWP standard handling, and complete provenance tracking.
+
+  kpis:
+    - name: "License Compliance"
+      target: "100%"
+      description: "Zero bulk redistribution of ecoinvent factors"
+
+    - name: "Cache Hit Rate"
+      target: ">=85%"
+      description: "85%+ of lookups served from cache"
+
+    - name: "Lookup Latency"
+      target: "<50ms"
+      description: "Factor resolution under 50ms (95th percentile)"
+
+    - name: "Data Coverage"
+      target: ">=95%"
+      description: "95%+ of products have emission factors"
+
+# ============================================================================
+# CAPABILITIES
+# ============================================================================
+capabilities:
+  - name: "Runtime Factor Resolution"
+    description: "Resolve emission factor IDs to values at runtime (no bulk storage)"
+    priority: "critical"
+
+  - name: "Multi-Source Cascading"
+    description: "Cascade across ecoinvent → DESNZ → EPA → proxy"
+    priority: "critical"
+
+  - name: "License Compliance"
+    description: "No bulk redistribution of ecoinvent factors"
+    priority: "critical"
+
+  - name: "GWP Standard Handling"
+    description: "Support AR5 and AR6, allow comparison"
+    priority: "high"
+
+  - name: "Regional Adaptation"
+    description: "Region-specific factors (e.g., EU vs US electricity grid)"
+    priority: "high"
+
+  - name: "Version Tracking"
+    description: "Track factor versions for provenance"
+    priority: "high"
+
+  - name: "Performance Caching"
+    description: "Redis-based caching within license terms (24 hours)"
+    priority: "high"
+
+  - name: "Proxy Calculation"
+    description: "Generate category averages if exact factor not found"
+    priority: "medium"
+
+# ============================================================================
+# DATA SOURCES
+# ============================================================================
+data_sources:
+  # Source 1: ecoinvent (highest quality, licensed)
+  - name: "ecoinvent"
+    version: "3.10"
+    priority: 1
+    type: "licensed"
+    coverage:
+      factors: 20000
+      scope: "Global LCA database - cradle-to-gate, cradle-to-grave"
+
+    license:
+      cost_per_year_usd: 60000
+      terms: "Commercial license - prohibits bulk redistribution"
+      compliance_requirements:
+        - "Runtime API access only (no bulk downloads)"
+        - "Caching allowed within 24 hours"
+        - "No redistribution to third parties"
+        - "Attribution required in reports"
+
+    access:
+      method: "REST API"
+      endpoint: "${ECOINVENT_API_ENDPOINT}"
+      authentication: "API key"
+      rate_limit: "1000 requests/minute"
+
+    quality:
+      data_quality_score: 95  # Pedigree matrix score
+      geographic_coverage: "Global"
+      temporal_coverage: "2023-2024"
+      technology_coverage: "Comprehensive"
+
+  # Source 2: DESNZ UK (free, high quality for UK/EU)
+  - name: "desnz_uk"
+    version: "2024"
+    priority: 2
+    type: "free"
+    coverage:
+      factors: 20000
+      scope: "UK Government conversion factors for GHG reporting"
+
+    license:
+      cost_per_year_usd: 0
+      terms: "Open Government License v3.0"
+      compliance_requirements:
+        - "Attribution to UK DESNZ"
+        - "Use source URL in reports"
+
+    access:
+      method: "REST API"
+      endpoint: "${DESNZ_API_ENDPOINT}"
+      authentication: "None"
+      source_url: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
+
+    quality:
+      data_quality_score: 90
+      geographic_coverage: "UK, EU"
+      temporal_coverage: "2024"
+      technology_coverage: "Standard technologies"
+
+  # Source 3: EPA US (free, high quality for US)
+  - name: "epa_us"
+    version: "2024"
+    priority: 3
+    type: "free"
+    coverage:
+      factors: 15000
+      scope: "US EPA Emission Factors Hub"
+
+    license:
+      cost_per_year_usd: 0
+      terms: "Public domain (US Government work)"
+      compliance_requirements:
+        - "Attribution to US EPA"
+
+    access:
+      method: "REST API"
+      endpoint: "${EPA_API_ENDPOINT}"
+      authentication: "None"
+      source_url: "https://www.epa.gov/climateleadership/ghg-emission-factors-hub"
+
+    quality:
+      data_quality_score: 90
+      geographic_coverage: "US"
+      temporal_coverage: "2024"
+      technology_coverage: "Standard technologies"
+
+# ============================================================================
+# API SPECIFICATION
+# ============================================================================
+api:
+  base_path: "/api/v1/factor-broker"
+
+  endpoints:
+    # Endpoint 1: Resolve Factor
+    - path: "/resolve"
+      method: "POST"
+      description: "Resolve emission factor by product, region, GWP standard"
+
+      request:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          required: ["product", "region", "gwp_standard"]
+          properties:
+            product:
+              type: "string"
+              description: "Product or service name (e.g., 'Steel', 'Electricity')"
+              example: "Steel"
+
+            region:
+              type: "string"
+              description: "ISO 3166-1 alpha-2 country code (e.g., 'US', 'GB')"
+              example: "US"
+
+            gwp_standard:
+              type: "string"
+              enum: ["AR5", "AR6"]
+              default: "AR6"
+              description: "IPCC GWP standard (AR5 or AR6)"
+
+            unit:
+              type: "string"
+              description: "Desired unit (e.g., 'kg', 'tonne', 'kWh')"
+              example: "kg"
+
+            year:
+              type: "integer"
+              description: "Year for factor (defaults to latest)"
+              example: 2024
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            factor_id:
+              type: "string"
+              description: "Unique factor identifier"
+              example: "ecoinvent_3.10_steel_us_ar6_kg"
+
+            value:
+              type: "number"
+              description: "Emission factor value"
+              example: 1.85
+
+            unit:
+              type: "string"
+              description: "Unit of measurement"
+              example: "kgCO2e/kg"
+
+            source:
+              type: "string"
+              enum: ["ecoinvent", "desnz_uk", "epa_us", "proxy"]
+              description: "Data source"
+
+            source_version:
+              type: "string"
+              description: "Version of source database"
+              example: "3.10"
+
+            gwp_standard:
+              type: "string"
+              enum: ["AR5", "AR6"]
+              description: "GWP standard used"
+
+            data_quality_score:
+              type: "integer"
+              minimum: 0
+              maximum: 100
+              description: "Data quality score (0-100)"
+
+            uncertainty:
+              type: "number"
+              description: "Uncertainty percentage (±%)"
+              example: 0.15
+
+            provenance:
+              type: "object"
+              description: "Provenance information"
+              properties:
+                lookup_timestamp:
+                  type: "string"
+                  format: "date-time"
+                cache_hit:
+                  type: "boolean"
+                is_proxy:
+                  type: "boolean"
+                fallback_chain:
+                  type: "array"
+                  items:
+                    type: "string"
+                  description: "Sources tried (e.g., ['ecoinvent', 'desnz_uk'])"
+
+      errors:
+        - code: 404
+          description: "Factor not found (even after cascading and proxy)"
+        - code: 500
+          description: "Internal server error"
+
+    # Endpoint 2: Compare GWP Standards
+    - path: "/compare-gwp"
+      method: "POST"
+      description: "Compare emission factor values between AR5 and AR6"
+
+      request:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          required: ["product", "region"]
+          properties:
+            product:
+              type: "string"
+            region:
+              type: "string"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            ar5:
+              type: "object"
+              description: "AR5 factor"
+            ar6:
+              type: "object"
+              description: "AR6 factor"
+            difference_percent:
+              type: "number"
+              description: "Percentage difference (AR6 vs AR5)"
+
+    # Endpoint 3: Health Check
+    - path: "/health"
+      method: "GET"
+      description: "Service health check"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            status:
+              type: "string"
+              enum: ["healthy", "degraded", "unhealthy"]
+            cache_hit_rate:
+              type: "number"
+            average_latency_ms:
+              type: "number"
+            data_sources:
+              type: "object"
+              description: "Status of each data source"
+
+# ============================================================================
+# CACHING STRATEGY
+# ============================================================================
+caching:
+  enabled: true
+  backend: "redis"
+
+  configuration:
+    ttl_seconds: 86400  # 24 hours (within ecoinvent license terms)
+    max_size_mb: 500
+    eviction_policy: "LRU"  # Least Recently Used
+
+  cache_key_format: >
+    factor:{product}:{region}:{gwp_standard}:{unit}:{year}
+
+  cache_invalidation:
+    - event: "source_update"
+      action: "invalidate_source"
+      description: "Invalidate all factors from updated source"
+
+    - event: "manual_invalidation"
+      action: "invalidate_pattern"
+      description: "Admin can invalidate by pattern"
+
+  performance_targets:
+    cache_hit_rate: 0.85  # >=85%
+    cache_latency_ms: 5  # <5ms for cache hits
+    miss_latency_ms: 50  # <50ms for cache misses
+
+# ============================================================================
+# FALLBACK STRATEGY
+# ============================================================================
+fallback:
+  strategy: "cascade"
+  description: >
+    Try sources in priority order: ecoinvent → DESNZ → EPA → proxy.
+    First successful lookup is returned.
+
+  cascade_order:
+    - source: "ecoinvent"
+      priority: 1
+      on_failure: "try_next"
+
+    - source: "desnz_uk"
+      priority: 2
+      on_failure: "try_next"
+
+    - source: "epa_us"
+      priority: 3
+      on_failure: "try_proxy"
+
+    - source: "proxy"
+      priority: 4
+      on_failure: "return_404"
+
+  proxy_calculation:
+    enabled: true
+    method: "category_average"
+    description: >
+      If no exact factor found, calculate category average from
+      available factors in same category + region.
+
+    flag_in_response: true  # Mark proxy factors in response
+    flag_in_provenance: true  # Mark in provenance chain
+
+    quality_degradation:
+      data_quality_score: 50  # Proxies get 50/100 quality score
+      uncertainty: 0.50  # ±50% uncertainty
+
+# ============================================================================
+# GWP STANDARD HANDLING
+# ============================================================================
+gwp_standards:
+  default: "AR6"
+  supported: ["AR5", "AR6"]
+
+  ar5:
+    name: "IPCC Fifth Assessment Report"
+    year: 2014
+    description: "GWP-100 values from IPCC AR5"
+
+    key_gases:
+      co2: 1
+      ch4: 28  # AR5 GWP-100
+      n2o: 265  # AR5 GWP-100
+
+  ar6:
+    name: "IPCC Sixth Assessment Report"
+    year: 2021
+    description: "GWP-100 values from IPCC AR6"
+
+    key_gases:
+      co2: 1
+      ch4: 27.9  # AR6 GWP-100
+      n2o: 273  # AR6 GWP-100
+
+  comparison:
+    enabled: true
+    endpoint: "/compare-gwp"
+    description: "Allow users to compare AR5 vs AR6 impact"
+
+# ============================================================================
+# VERSION TRACKING
+# ============================================================================
+versioning:
+  track_factor_versions: true
+
+  version_components:
+    - "source_name"  # ecoinvent | desnz_uk | epa_us
+    - "source_version"  # 3.10 | 2024 | 2024
+    - "product_id"  # Steel
+    - "region"  # US
+    - "gwp_standard"  # AR6
+    - "unit"  # kgCO2e/kg
+    - "year"  # 2024
+
+  version_format: "{source}_{version}_{product}_{region}_{gwp}_{unit}_{year}"
+  example: "ecoinvent_3.10_steel_us_ar6_kgco2e_kg_2024"
+
+  provenance_integration:
+    include_in_sha256_chain: true
+    description: >
+      Factor version is included in calculation provenance chain,
+      enabling full reproducibility.
+
+# ============================================================================
+# REGIONAL ADAPTATION
+# ============================================================================
+regional_adaptation:
+  enabled: true
+
+  examples:
+    - product: "Electricity"
+      adaptation: >
+        US electricity grid mix (coal, gas, renewable) differs from
+        EU grid mix. Factor Broker returns region-specific factors.
+
+      factors:
+        us: 0.400  # kgCO2e/kWh (US grid average)
+        gb: 0.193  # kgCO2e/kWh (UK grid)
+        de: 0.310  # kgCO2e/kWh (Germany grid)
+
+    - product: "Transportation (Truck)"
+      adaptation: >
+        US trucks use diesel (higher emissions), EU trucks increasingly
+        use biodiesel blends.
+
+      factors:
+        us: 0.850  # kgCO2e/km (diesel)
+        eu: 0.750  # kgCO2e/km (biodiesel blend)
+
+  fallback_to_global:
+    enabled: true
+    description: >
+      If region-specific factor not found, fall back to global average.
+
+# ============================================================================
+# PERFORMANCE TARGETS
+# ============================================================================
+performance:
+  latency:
+    target_p50_ms: 10  # 50th percentile: 10ms
+    target_p95_ms: 50  # 95th percentile: 50ms
+    target_p99_ms: 100  # 99th percentile: 100ms
+
+  throughput:
+    target_requests_per_second: 1000
+    max_requests_per_second: 5000
+
+  cache:
+    target_hit_rate: 0.85  # 85%
+    target_cache_latency_ms: 5  # <5ms
+
+  availability:
+    target_uptime: 0.999  # 99.9% (3 nines)
+    max_downtime_per_month_minutes: 43  # 43 minutes/month
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+integrations:
+  # Integration 1: Scope3CalculatorAgent
+  - name: "Scope3CalculatorAgent"
+    type: "consumer"
+    description: "Calculator calls Factor Broker for runtime factor resolution"
+
+    usage_pattern:
+      - step: 1
+        action: "Calculator receives product + quantity + region"
+      - step: 2
+        action: "Calculator calls Factor Broker /resolve endpoint"
+      - step: 3
+        action: "Factor Broker returns factor + provenance"
+      - step: 4
+        action: "Calculator uses factor in calculation"
+      - step: 5
+        action: "Calculator includes factor version in provenance"
+
+  # Integration 2: Provenance Chain
+  - name: "ProvenanceChain"
+    type: "producer"
+    description: "Factor Broker provides factor version for provenance"
+
+    provenance_data:
+      - "factor_id"
+      - "factor_version"
+      - "source_name"
+      - "source_version"
+      - "lookup_timestamp"
+      - "cache_hit"
+      - "is_proxy"
+      - "fallback_chain"
+
+  # Integration 3: Policy Engine
+  - name: "PolicyEngine"
+    type: "consumer"
+    description: "OPA policies can query Factor Broker for factor metadata"
+
+    use_cases:
+      - "Check if factor is from licensed source (ecoinvent)"
+      - "Verify factor quality score meets minimum threshold"
+      - "Ensure factor is recent (<1 year old)"
+
+# ============================================================================
+# MONITORING & OBSERVABILITY
+# ============================================================================
+monitoring:
+  metrics:
+    - name: "factor_broker_requests_total"
+      type: "counter"
+      description: "Total number of factor resolution requests"
+
+    - name: "factor_broker_cache_hits_total"
+      type: "counter"
+      description: "Number of cache hits"
+
+    - name: "factor_broker_cache_hit_rate"
+      type: "gauge"
+      description: "Cache hit rate (0-1)"
+
+    - name: "factor_broker_latency_seconds"
+      type: "histogram"
+      buckets: [0.005, 0.010, 0.050, 0.100, 0.500, 1.000]
+      description: "Latency distribution"
+
+    - name: "factor_broker_source_usage"
+      type: "counter"
+      labels: ["source"]
+      description: "Factor lookups by source (ecoinvent, desnz_uk, epa_us, proxy)"
+
+    - name: "factor_broker_proxy_usage_total"
+      type: "counter"
+      description: "Number of proxy calculations (factor not found)"
+
+  alerts:
+    - name: "low_cache_hit_rate"
+      condition: "cache_hit_rate < 0.80"
+      severity: "warning"
+      action: "Investigate cache configuration or data source issues"
+
+    - name: "high_latency"
+      condition: "p95_latency > 100ms"
+      severity: "warning"
+      action: "Investigate data source performance"
+
+    - name: "source_unavailable"
+      condition: "source_error_rate > 0.05"
+      severity: "critical"
+      action: "Check data source connectivity"
+
+    - name: "high_proxy_usage"
+      condition: "proxy_usage_rate > 0.20"
+      severity: "warning"
+      action: "20%+ of factors are proxies, review data coverage"
+
+# ============================================================================
+# QUALITY ASSURANCE
+# ============================================================================
+quality_assurance:
+  data_validation:
+    - check: "factor_value_positive"
+      description: "All emission factors must be positive"
+      severity: "critical"
+
+    - check: "unit_consistency"
+      description: "Units must be valid (kgCO2e/kg, kgCO2e/kWh, etc.)"
+      severity: "critical"
+
+    - check: "factor_within_reasonable_range"
+      description: "Factor values must be within expected ranges"
+      severity: "high"
+
+  testing:
+    - type: "unit_tests"
+      coverage_target: 0.90  # 90%
+      description: "Test each data source connector independently"
+
+    - type: "integration_tests"
+      description: "Test cascading fallback logic"
+
+    - type: "performance_tests"
+      description: "Load test to ensure <50ms p95 latency"
+
+    - type: "license_compliance_tests"
+      description: "Verify no bulk redistribution of ecoinvent factors"
+
+# ============================================================================
+# SECURITY
+# ============================================================================
+security:
+  api_authentication:
+    method: "API key"
+    rotation_period_days: 90
+
+  rate_limiting:
+    enabled: true
+    limit_per_minute: 1000
+    burst_size: 100
+
+  data_encryption:
+    at_rest: false  # Factors are not sensitive
+    at_transit: true  # HTTPS only
+
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+deployment:
+  platform: "kubernetes"
+  replicas: 3  # High availability
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+
+  autoscaling:
+    enabled: true
+    min_replicas: 3
+    max_replicas: 10
+    target_cpu_percent: 70
+
+  health_checks:
+    liveness: "/health"
+    readiness: "/health"
+    startup: "/health"
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+changelog:
+  - version: "1.0.0"
+    date: "2025-10-25"
+    changes:
+      - "Initial Factor Broker specification"
+      - "Runtime factor resolution with license compliance"
+      - "Multi-source cascading (ecoinvent → DESNZ → EPA → proxy)"
+      - "GWP standard handling (AR5, AR6)"
+      - "Regional adaptation"
+      - "Version tracking for provenance"
+      - "Performance targets (<50ms p95 latency, >=85% cache hit rate)"

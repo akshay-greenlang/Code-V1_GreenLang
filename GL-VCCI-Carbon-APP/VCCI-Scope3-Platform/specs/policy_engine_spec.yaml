@@ -1,0 +1,765 @@
+# Policy Engine Service Specification
+# GL-VCCI Scope 3 Platform - Core Service
+#
+# Version: 1.0.0
+# Date: October 25, 2025
+# Part of: CTO v2 Strategic Plan
+
+# ============================================================================
+# SERVICE METADATA
+# ============================================================================
+service:
+  name: "PolicyEngine"
+  version: "1.0.0"
+  type: "core_service"
+  category: "computation_logic"
+
+  description: >
+    Open Policy Agent (OPA) based calculator logic service with versioned
+    policies, provenance tracking, A/B testing, and hot-reload capabilities.
+    Separates calculation logic from code for auditable, testable updates.
+
+  purpose: >
+    The Policy Engine enables versioned, declarative calculator logic using
+    OPA/Rego. This allows calculation formulas to be updated, tested, and
+    audited independently of code deploys, with complete provenance tracking
+    linking every calculation to its policy version.
+
+# ============================================================================
+# BUSINESS VALUE
+# ============================================================================
+business_value:
+  problem_solved: >
+    Hardcoded calculation formulas in source code are difficult to update,
+    test, and audit. Changes require full code deploys, calculation logic
+    is opaque to auditors, and there's no mechanism to compare formula
+    versions or conduct A/B tests.
+
+  solution: >
+    Policy Engine separates calculator logic into versioned OPA policies
+    (Rego language). Policies can be updated via Git, A/B tested, and
+    hot-reloaded without code deploys. Every calculation links to its
+    policy version in the SHA-256 provenance chain.
+
+  kpis:
+    - name: "Policy Update Velocity"
+      target: "<1 hour"
+      description: "Policy updates deployed in <1 hour (vs. days for code deploy)"
+
+    - name: "Provenance Completeness"
+      target: "100%"
+      description: "100% of calculations link to policy version"
+
+    - name: "A/B Test Coverage"
+      target: ">=90%"
+      description: "90%+ of policy changes A/B tested before rollout"
+
+    - name: "Audit Readiness"
+      target: "100%"
+      description: "All policies version-controlled in Git with change history"
+
+# ============================================================================
+# CAPABILITIES
+# ============================================================================
+capabilities:
+  - name: "Versioned Policies"
+    description: "All calculator policies are versioned (semantic versioning)"
+    priority: "critical"
+
+  - name: "Hot Reload"
+    description: "Policies can be updated without service restart"
+    priority: "critical"
+
+  - name: "Provenance Tracking"
+    description: "Every calculation links to policy name + version"
+    priority: "critical"
+
+  - name: "A/B Testing"
+    description: "Run two policy versions in parallel, compare results"
+    priority: "high"
+
+  - name: "Git Integration"
+    description: "Policies stored in Git for version control"
+    priority: "high"
+
+  - name: "OPA Trace"
+    description: "Full OPA evaluation trace for debugging"
+    priority: "medium"
+
+  - name: "Policy Validation"
+    description: "Validate policies before deployment (syntax, semantics)"
+    priority: "high"
+
+# ============================================================================
+# ARCHITECTURE
+# ============================================================================
+architecture:
+  mode: "embedded"  # embedded | remote
+
+  embedded:
+    description: >
+      OPA runs as embedded library within Python application.
+      Policies loaded from local filesystem.
+
+    advantages:
+      - "Lower latency (no network calls)"
+      - "Simpler deployment (no separate OPA server)"
+      - "Better for single-tenant deployments"
+
+    disadvantages:
+      - "Each replica has separate policy cache"
+      - "Policy updates require replica restarts (unless hot-reload enabled)"
+
+  remote:
+    description: >
+      OPA runs as separate server. Application calls OPA via HTTP.
+
+    advantages:
+      - "Centralized policy management"
+      - "Policy updates propagate to all replicas instantly"
+      - "Better for multi-tenant deployments"
+
+    disadvantages:
+      - "Higher latency (network calls)"
+      - "Additional infrastructure (OPA server)"
+
+  chosen: "embedded"
+  rationale: >
+    Embedded mode chosen for lower latency and simpler deployment.
+    Hot-reload enabled to allow policy updates without restart.
+
+# ============================================================================
+# OPA CONFIGURATION
+# ============================================================================
+opa:
+  library: "opa-python"
+  version: ">=1.4.0"
+
+  server_mode: "embedded"
+
+  embedded_configuration:
+    policies_directory: "policy/"
+    hot_reload: true
+    reload_interval_seconds: 60  # Check for policy changes every 60s
+
+    policy_files:
+      - "policy/category_1_purchased_goods.rego"
+      - "policy/category_4_transport.rego"
+      - "policy/category_6_travel.rego"
+
+  remote_configuration:  # If switching to remote mode
+    url: "${OPA_SERVER_URL}"
+    policy_bundle_url: "${OPA_BUNDLE_URL}"
+    timeout_seconds: 10
+
+# ============================================================================
+# POLICY SPECIFICATION
+# ============================================================================
+policies:
+  # Policy 1: Category 1 (Purchased Goods and Services)
+  - name: "category_1_purchased_goods"
+    version: "1.0.0"
+    file: "policy/category_1_purchased_goods.rego"
+    active: true
+
+    scope:
+      category: 1
+      name: "Purchased Goods and Services"
+      coverage: "70% of typical Scope 3 emissions"
+
+    calculation_tiers:
+      - tier: "tier_1"
+        method: "supplier_specific_pcf"
+        data_source: "PCF Exchange (PACT Pathfinder)"
+        formula: "quantity * supplier_pcf"
+        uncertainty: "±5%"
+
+      - tier: "tier_2"
+        method: "average_data"
+        data_source: "Factor Broker (ecoinvent, DESNZ, EPA)"
+        formula: "quantity * product_emission_factor"
+        uncertainty: "±20%"
+
+      - tier: "tier_3"
+        method: "spend_based"
+        data_source: "Factor Broker (economic intensity factors)"
+        formula: "spend_usd * economic_intensity_factor"
+        uncertainty: "±50%"
+
+    inputs:
+      required:
+        - "product"
+        - "quantity"
+        - "unit"
+        - "region"
+
+      optional:
+        - "supplier_pcf"  # Tier 1 only
+        - "spend_usd"  # Tier 3 fallback
+
+    outputs:
+      - "emissions_tco2e"
+      - "tier_used"
+      - "data_quality_score"
+      - "uncertainty_range"
+
+    validation_rules:
+      - "quantity > 0"
+      - "emissions_tco2e >= 0"
+      - "tier in ['tier_1', 'tier_2', 'tier_3']"
+
+  # Policy 2: Category 4 (Upstream Transport & Distribution)
+  - name: "category_4_transport"
+    version: "1.2.0"  # Updated for ISO 14083:2023 conformance
+    file: "policy/category_4_transport.rego"
+    active: true
+    standard: "ISO 14083:2023"
+    conformance: "100%"  # Zero variance to ISO test suite
+
+    scope:
+      category: 4
+      name: "Upstream Transport & Distribution"
+      coverage: "10% of typical Scope 3 emissions"
+
+    calculation_methods:
+      - method: "distance_based"
+        formula: "distance_km * weight_tonnes * emission_factor_per_tkm"
+        data_source: "Factor Broker (ISO 14083 compliant factors)"
+        preferred: true
+
+      - method: "spend_based"
+        formula: "spend_usd * economic_intensity_factor"
+        data_source: "Factor Broker (transport economic intensity)"
+        fallback: true
+
+    transport_modes:
+      - "road"
+      - "rail"
+      - "air"
+      - "sea"
+      - "pipeline"
+
+    wtt_boundary: "full_lifecycle"  # Include well-to-tank (fuel production) emissions
+
+    inputs:
+      required:
+        - "transport_mode"
+        - "distance_km"
+        - "weight_tonnes"
+        - "region"
+
+      optional:
+        - "fuel_type"
+        - "vehicle_class"
+        - "load_factor"
+
+    outputs:
+      - "emissions_tco2e"
+      - "wtt_emissions_tco2e"
+      - "ttw_emissions_tco2e"  # Tank-to-wheel
+      - "iso_14083_conformant"
+
+    validation_rules:
+      - "distance_km > 0"
+      - "weight_tonnes > 0"
+      - "transport_mode in ['road', 'rail', 'air', 'sea', 'pipeline']"
+
+  # Policy 3: Category 6 (Business Travel)
+  - name: "category_6_travel"
+    version: "1.0.0"
+    file: "policy/category_6_travel.rego"
+    active: true
+
+    scope:
+      category: 6
+      name: "Business Travel"
+      coverage: "5% of typical Scope 3 emissions"
+
+    calculation_methods:
+      - method: "distance_based_flights"
+        formula: "distance_km * emission_factor_per_pkm * radiative_forcing_index"
+        preferred: true
+
+      - method: "hotel_nights"
+        formula: "nights * emission_factor_per_night"
+
+      - method: "ground_transport"
+        formula: "distance_km * emission_factor_per_km"
+
+    radiative_forcing_index:
+      short_haul: 1.0  # <500 km
+      medium_haul: 1.5  # 500-3000 km
+      long_haul: 2.0  # >3000 km
+
+    inputs:
+      required:
+        - "travel_type"  # flight | hotel | ground_transport
+        - "distance_km" or "nights"
+
+      optional:
+        - "flight_class"  # economy | business | first
+        - "hotel_category"  # budget | standard | luxury
+
+    outputs:
+      - "emissions_tco2e"
+      - "method_used"
+
+    validation_rules:
+      - "travel_type in ['flight', 'hotel', 'ground_transport']"
+      - "emissions_tco2e >= 0"
+
+# ============================================================================
+# POLICY VERSIONING
+# ============================================================================
+versioning:
+  enabled: true
+  version_control: "git"
+  semantic_versioning: true  # MAJOR.MINOR.PATCH
+
+  version_format: "{major}.{minor}.{patch}"
+  examples:
+    - "1.0.0"  # Initial release
+    - "1.1.0"  # New feature (backward compatible)
+    - "1.0.1"  # Bug fix (backward compatible)
+    - "2.0.0"  # Breaking change (not backward compatible)
+
+  active_versions:
+    category_1: "1.0.0"
+    category_4: "1.2.0"  # Updated for ISO 14083
+    category_6: "1.0.0"
+
+  policy_lifecycle:
+    - stage: "development"
+      description: "Policy being developed in feature branch"
+      deployment: "dev environment"
+
+    - stage: "testing"
+      description: "Policy undergoing A/B testing"
+      deployment: "staging environment"
+
+    - stage: "active"
+      description: "Policy deployed to production"
+      deployment: "production environment"
+
+    - stage: "deprecated"
+      description: "Policy replaced by newer version"
+      sunset_period_days: 90
+
+    - stage: "sunset"
+      description: "Policy no longer available"
+
+  migration_strategy:
+    approach: "gradual_rollout"
+    steps:
+      - step: 1
+        action: "Deploy new policy version alongside old version"
+      - step: 2
+        action: "A/B test new version on 5% of calculations"
+      - step: 3
+        action: "If successful, increase to 50%"
+      - step: 4
+        action: "If successful, increase to 100%"
+      - step: 5
+        action: "Deprecate old version (90-day sunset)"
+
+# ============================================================================
+# A/B TESTING
+# ============================================================================
+ab_testing:
+  enabled: true
+  test_percentage: 0.05  # 5% of calculations use test policy
+  comparison_mode: "parallel"  # Run both policies, compare results
+
+  test_configuration:
+    control_version: "1.0.0"  # Current production version
+    test_version: "1.1.0"  # New version being tested
+
+    traffic_split:
+      control: 0.95  # 95% of traffic
+      test: 0.05  # 5% of traffic
+
+  comparison_metrics:
+    - metric: "emissions_tco2e"
+      tolerance: 0.01  # ±1% difference acceptable
+
+    - metric: "calculation_latency_ms"
+      tolerance: 10  # ±10ms acceptable
+
+    - metric: "error_rate"
+      threshold: 0.001  # <0.1% error rate
+
+  decision_criteria:
+    min_samples: 10000  # Minimum calculations before decision
+    confidence_level: 0.95  # 95% confidence
+    max_duration_days: 30  # Maximum test duration
+
+    success_criteria:
+      - "emissions_difference < 1%"
+      - "latency_increase < 10ms"
+      - "error_rate < 0.1%"
+
+    rollback_criteria:
+      - "emissions_difference > 5%"
+      - "error_rate > 1%"
+      - "latency_increase > 50ms"
+
+# ============================================================================
+# API SPECIFICATION
+# ============================================================================
+api:
+  base_path: "/api/v1/policy-engine"
+
+  endpoints:
+    # Endpoint 1: Evaluate Policy
+    - path: "/evaluate"
+      method: "POST"
+      description: "Evaluate policy with input data"
+
+      request:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          required: ["policy_name", "input"]
+          properties:
+            policy_name:
+              type: "string"
+              description: "Policy name (e.g., 'category_1_purchased_goods')"
+              example: "category_1_purchased_goods"
+
+            policy_version:
+              type: "string"
+              description: "Policy version (defaults to active version)"
+              example: "1.0.0"
+
+            input:
+              type: "object"
+              description: "Input data for policy"
+              example:
+                product: "Steel"
+                quantity: 1000
+                unit: "kg"
+                region: "US"
+
+            trace_enabled:
+              type: "boolean"
+              default: false
+              description: "Include full OPA trace in response"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            result:
+              type: "object"
+              description: "Policy evaluation result"
+
+            policy_metadata:
+              type: "object"
+              properties:
+                policy_name:
+                  type: "string"
+                policy_version:
+                  type: "string"
+                evaluation_timestamp:
+                  type: "string"
+                  format: "date-time"
+                evaluation_duration_ms:
+                  type: "number"
+
+            provenance:
+              type: "object"
+              description: "Provenance information for SHA-256 chain"
+
+            trace:
+              type: "object"
+              description: "OPA evaluation trace (if trace_enabled=true)"
+
+    # Endpoint 2: List Policies
+    - path: "/policies"
+      method: "GET"
+      description: "List all available policies"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              name:
+                type: "string"
+              version:
+                type: "string"
+              status:
+                type: "string"
+                enum: ["active", "deprecated", "sunset"]
+              category:
+                type: "integer"
+
+    # Endpoint 3: Get Policy Details
+    - path: "/policies/{policy_name}/{version}"
+      method: "GET"
+      description: "Get policy details and metadata"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            name:
+              type: "string"
+            version:
+              type: "string"
+            file:
+              type: "string"
+            scope:
+              type: "object"
+            inputs:
+              type: "object"
+            outputs:
+              type: "object"
+            validation_rules:
+              type: "array"
+
+# ============================================================================
+# PROVENANCE INTEGRATION
+# ============================================================================
+provenance:
+  enabled: true
+
+  provenance_data:
+    - field: "policy_name"
+      description: "Name of policy used"
+      example: "category_1_purchased_goods"
+
+    - field: "policy_version"
+      description: "Version of policy used"
+      example: "1.0.0"
+
+    - field: "policy_evaluation_timestamp"
+      description: "When policy was evaluated"
+      format: "ISO 8601"
+
+    - field: "policy_trace_hash"
+      description: "SHA-256 hash of OPA trace (for audit)"
+      example: "abc123..."
+
+  sha256_chain_integration:
+    description: >
+      Policy name + version included in SHA-256 provenance chain,
+      enabling complete reproducibility. Given same input + policy version,
+      calculation is deterministic and reproducible.
+
+    chain_structure:
+      - "input_data_hash"
+      - "policy_name"
+      - "policy_version"
+      - "factor_id"
+      - "factor_version"
+      - "calculation_result_hash"
+
+# ============================================================================
+# PERFORMANCE TARGETS
+# ============================================================================
+performance:
+  latency:
+    target_p50_ms: 5  # 50th percentile: 5ms
+    target_p95_ms: 20  # 95th percentile: 20ms
+    target_p99_ms: 50  # 99th percentile: 50ms
+
+  throughput:
+    target_evaluations_per_second: 10000
+    max_evaluations_per_second: 50000
+
+  cache:
+    enabled: true
+    ttl_seconds: 3600  # 1 hour
+    cache_policy_results: true  # Cache identical input -> result
+
+  availability:
+    target_uptime: 0.999  # 99.9% (3 nines)
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+integrations:
+  # Integration 1: Scope3CalculatorAgent
+  - name: "Scope3CalculatorAgent"
+    type: "consumer"
+    description: "Calculator calls Policy Engine for calculation logic"
+
+    usage_pattern:
+      - step: 1
+        action: "Calculator receives calculation request"
+      - step: 2
+        action: "Calculator calls Policy Engine /evaluate"
+      - step: 3
+        action: "Policy Engine evaluates OPA policy"
+      - step: 4
+        action: "Policy Engine returns result + provenance"
+      - step: 5
+        action: "Calculator includes policy version in SHA-256 chain"
+
+  # Integration 2: Factor Broker
+  - name: "FactorBroker"
+    type: "dependency"
+    description: "Policies query Factor Broker for emission factors"
+
+    integration_method: >
+      OPA policies can make HTTP calls to Factor Broker API
+      to resolve emission factors at runtime.
+
+  # Integration 3: Git (Version Control)
+  - name: "Git"
+    type: "storage"
+    description: "Policies stored in Git repository"
+
+    repository_structure: >
+      policy/
+        category_1_purchased_goods.rego
+        category_4_transport.rego
+        category_6_travel.rego
+        tests/
+          category_1_test.rego
+          category_4_test.rego
+          category_6_test.rego
+
+    workflow:
+      - step: 1
+        action: "Developer creates feature branch"
+      - step: 2
+        action: "Developer updates policy .rego file"
+      - step: 3
+        action: "Developer commits + pushes to Git"
+      - step: 4
+        action: "CI/CD pipeline validates policy"
+      - step: 5
+        action: "CI/CD pipeline deploys policy to staging"
+      - step: 6
+        action: "A/B test runs in staging"
+      - step: 7
+        action: "If successful, deploy to production"
+
+# ============================================================================
+# MONITORING & OBSERVABILITY
+# ============================================================================
+monitoring:
+  metrics:
+    - name: "policy_engine_evaluations_total"
+      type: "counter"
+      labels: ["policy_name", "policy_version"]
+      description: "Total policy evaluations"
+
+    - name: "policy_engine_evaluation_duration_seconds"
+      type: "histogram"
+      labels: ["policy_name"]
+      buckets: [0.001, 0.005, 0.010, 0.050, 0.100, 0.500]
+
+    - name: "policy_engine_errors_total"
+      type: "counter"
+      labels: ["policy_name", "error_type"]
+
+    - name: "policy_engine_cache_hit_rate"
+      type: "gauge"
+      description: "Cache hit rate (0-1)"
+
+    - name: "policy_engine_active_policies"
+      type: "gauge"
+      description: "Number of active policies"
+
+  alerts:
+    - name: "high_error_rate"
+      condition: "error_rate > 0.01"
+      severity: "critical"
+      action: "Investigate policy logic or input validation"
+
+    - name: "high_latency"
+      condition: "p95_latency > 50ms"
+      severity: "warning"
+      action: "Optimize policy or increase resources"
+
+    - name: "ab_test_divergence"
+      condition: "emissions_difference > 5%"
+      severity: "critical"
+      action: "Rollback test policy version"
+
+# ============================================================================
+# SECURITY
+# ============================================================================
+security:
+  policy_signing:
+    enabled: true
+    description: "All policies digitally signed before deployment"
+    signature_algorithm: "RSA-4096"
+
+  access_control:
+    policy_evaluation: "authenticated_users"
+    policy_updates: "admin_only"
+
+  audit_logging:
+    log_all_evaluations: true
+    log_policy_changes: true
+    retention_days: 90
+
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+deployment:
+  platform: "kubernetes"
+  replicas: 3
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "1Gi"
+
+  policy_deployment:
+    method: "configmap"  # Policies stored in Kubernetes ConfigMap
+    hot_reload: true
+
+# ============================================================================
+# TESTING
+# ============================================================================
+testing:
+  unit_tests:
+    coverage_target: 0.95  # 95%
+    test_files:
+      - "policy/tests/category_1_test.rego"
+      - "policy/tests/category_4_test.rego"
+      - "policy/tests/category_6_test.rego"
+
+    example_test:
+      name: "test_category_1_tier_1"
+      input:
+        product: "Steel"
+        quantity: 1000
+        unit: "kg"
+        supplier_pcf: 1.85
+
+      expected_output:
+        emissions_tco2e: 1.85
+        tier_used: "tier_1"
+
+  iso_14083_conformance:
+    standard: "ISO 14083:2023"
+    test_suite_size: 50  # 50 test cases
+    conformance_target: "100%"  # Zero variance
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+changelog:
+  - version: "1.0.0"
+    date: "2025-10-25"
+    changes:
+      - "Initial Policy Engine specification"
+      - "OPA-based calculator logic"
+      - "Versioned policies for Cat 1, 4, 6"
+      - "A/B testing support"
+      - "Provenance integration (policy version tracking)"
+      - "Hot-reload capability"
+      - "ISO 14083:2023 conformance for Cat 4"

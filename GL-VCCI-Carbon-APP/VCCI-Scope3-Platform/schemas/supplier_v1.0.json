@@ -1,0 +1,680 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vcci.greenlang.com/schemas/supplier_v1.0.json",
+  "title": "Supplier Entity Master Schema",
+  "description": "JSON Schema for supplier entity master data. Supports Entity MDM resolution, PCF Exchange integration, and supplier engagement workflows. Enables multi-standard reporting (GHG Protocol, ESRS, CDP, IFRS S2).",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "supplier_id",
+    "supplier_name",
+    "tenant_id"
+  ],
+  "properties": {
+    "supplier_id": {
+      "type": "string",
+      "description": "Unique identifier for supplier entity (system-generated)",
+      "pattern": "^SUPP-[0-9A-Z]{8,16}$",
+      "examples": ["SUPP-20250125001", "SUPP-ABC123DEF456"]
+    },
+    "tenant_id": {
+      "type": "string",
+      "description": "Multi-tenant identifier (automatic, set by system)",
+      "pattern": "^tenant-[a-z0-9-]+$",
+      "examples": ["tenant-acme-corp", "tenant-global-manufacturing"]
+    },
+    "canonical_entity_id": {
+      "type": "string",
+      "description": "Canonical entity ID from Entity MDM (resolved via ML)",
+      "pattern": "^ENT-[0-9A-Z]{8,16}$",
+      "examples": ["ENT-GLOBSTEEL001", "ENT-ACMEELECTRON"]
+    },
+    "supplier_name": {
+      "type": "string",
+      "description": "Supplier company name (as provided by user)",
+      "minLength": 2,
+      "maxLength": 500,
+      "examples": ["Acme Steel Corporation", "Global Electronics Ltd", "ABC Manufacturing Inc."]
+    },
+    "supplier_name_canonical": {
+      "type": "string",
+      "description": "Canonical supplier name (resolved by Entity MDM)",
+      "minLength": 2,
+      "maxLength": 500,
+      "examples": ["Acme Steel Corporation (US)", "Global Electronics Limited"]
+    },
+    "entity_resolution": {
+      "type": "object",
+      "description": "Entity MDM resolution metadata",
+      "properties": {
+        "resolution_method": {
+          "type": "string",
+          "description": "Method used for entity resolution",
+          "enum": [
+            "Exact_Match",
+            "ML_Vector_Similarity",
+            "BERT_Reranking",
+            "Manual_Override",
+            "External_Identifier_Match"
+          ],
+          "examples": ["ML_Vector_Similarity", "BERT_Reranking"]
+        },
+        "match_confidence": {
+          "type": "number",
+          "description": "Confidence score for entity match (0-100)",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [98.5, 85.2, 99.9]
+        },
+        "manual_review_required": {
+          "type": "boolean",
+          "description": "Whether manual review is required (confidence < 95%)",
+          "examples": [false, true]
+        },
+        "resolution_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when entity was resolved",
+          "examples": ["2025-01-25T10:30:00Z"]
+        },
+        "resolution_source": {
+          "type": "string",
+          "description": "Source used for resolution",
+          "enum": [
+            "Weaviate_Vector_Search",
+            "LEI_Database",
+            "DUNS_Database",
+            "OpenCorporates",
+            "Manual_Input"
+          ],
+          "examples": ["Weaviate_Vector_Search", "LEI_Database"]
+        }
+      }
+    },
+    "external_identifiers": {
+      "type": "object",
+      "description": "External entity identifiers for entity resolution",
+      "properties": {
+        "lei": {
+          "type": "string",
+          "description": "Legal Entity Identifier (ISO 17442)",
+          "pattern": "^[A-Z0-9]{20}$",
+          "examples": ["549300ZFEEJ2IP5VME86", "724500VKKSH9QOLTFR81"]
+        },
+        "duns": {
+          "type": "string",
+          "description": "D-U-N-S Number (Dun & Bradstreet)",
+          "pattern": "^[0-9]{9}$",
+          "examples": ["123456789", "987654321"]
+        },
+        "opencorporates_id": {
+          "type": "string",
+          "description": "OpenCorporates company ID",
+          "pattern": "^[a-z]{2}/[a-zA-Z0-9]+$",
+          "examples": ["us_de/1234567", "gb/01234567"]
+        },
+        "vat_number": {
+          "type": "string",
+          "description": "VAT/Tax identification number",
+          "maxLength": 50,
+          "examples": ["DE123456789", "GB123456789", "US12-3456789"]
+        },
+        "company_registration_number": {
+          "type": "string",
+          "description": "Company registration number (varies by country)",
+          "maxLength": 50,
+          "examples": ["12345678", "HRB 123456"]
+        }
+      }
+    },
+    "supplier_id_erp": {
+      "type": "string",
+      "description": "Supplier ID from ERP system (SAP vendor number, Oracle supplier ID)",
+      "maxLength": 100,
+      "examples": ["SAP-12345", "ORACLE-V-67890", "WD-SUPP-ABC123"]
+    },
+    "headquarters": {
+      "type": "object",
+      "description": "Supplier headquarters location",
+      "properties": {
+        "address_line1": {
+          "type": "string",
+          "maxLength": 200,
+          "examples": ["123 Steel Avenue"]
+        },
+        "address_line2": {
+          "type": "string",
+          "maxLength": 200,
+          "examples": ["Suite 500"]
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["Pittsburgh", "Berlin", "Tokyo"]
+        },
+        "state_province": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["Pennsylvania", "Bavaria", "Tokyo Prefecture"]
+        },
+        "country": {
+          "type": "string",
+          "description": "ISO 3166-1 alpha-2 code",
+          "pattern": "^[A-Z]{2}$",
+          "examples": ["US", "DE", "JP"]
+        },
+        "postal_code": {
+          "type": "string",
+          "maxLength": 20,
+          "examples": ["15222", "10117", "100-0001"]
+        },
+        "region": {
+          "type": "string",
+          "description": "Supplier region for factor selection",
+          "enum": ["US", "EU", "APAC", "LATAM", "MENA", "Global"],
+          "examples": ["US", "EU"]
+        }
+      }
+    },
+    "industry_classification": {
+      "type": "object",
+      "description": "Industry classification for supplier",
+      "properties": {
+        "naics_code": {
+          "type": "string",
+          "description": "North American Industry Classification System code",
+          "pattern": "^[0-9]{6}$",
+          "examples": ["331110", "334111"]
+        },
+        "naics_description": {
+          "type": "string",
+          "maxLength": 200,
+          "examples": ["Iron and Steel Mills and Ferroalloy Manufacturing", "Electronic Computer Manufacturing"]
+        },
+        "isic_code": {
+          "type": "string",
+          "description": "International Standard Industrial Classification code",
+          "pattern": "^[0-9]{4}$",
+          "examples": ["2410", "2620"]
+        },
+        "industry_sector": {
+          "type": "string",
+          "enum": [
+            "Metals_Mining",
+            "Chemicals",
+            "Electronics",
+            "Automotive",
+            "Textiles",
+            "Food_Beverage",
+            "Pharmaceuticals",
+            "Construction",
+            "Energy",
+            "Services",
+            "Other"
+          ],
+          "examples": ["Metals_Mining", "Electronics"]
+        }
+      }
+    },
+    "spend_categorization": {
+      "type": "object",
+      "description": "Spend categorization for supplier engagement prioritization",
+      "properties": {
+        "annual_spend_usd": {
+          "type": "number",
+          "description": "Total annual spend with supplier (USD)",
+          "minimum": 0,
+          "examples": [1000000, 5000000, 500000]
+        },
+        "spend_tier": {
+          "type": "string",
+          "description": "Spend tier for prioritization",
+          "enum": [
+            "Tier_1_Top_20_Percent",
+            "Tier_2_20_to_50_Percent",
+            "Tier_3_50_to_80_Percent",
+            "Tier_4_Bottom_20_Percent"
+          ],
+          "examples": ["Tier_1_Top_20_Percent", "Tier_2_20_to_50_Percent"]
+        },
+        "emissions_contribution_percent": {
+          "type": "number",
+          "description": "Estimated % of total Scope 3 emissions from this supplier",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [15.5, 2.3, 45.8]
+        },
+        "strategic_importance": {
+          "type": "string",
+          "enum": ["Critical", "High", "Medium", "Low"],
+          "examples": ["Critical", "High"]
+        }
+      }
+    },
+    "pcf_capabilities": {
+      "type": "object",
+      "description": "Product Carbon Footprint capabilities and engagement status",
+      "properties": {
+        "has_pcf_data": {
+          "type": "boolean",
+          "description": "Whether supplier provides PCF data",
+          "examples": [true, false]
+        },
+        "pcf_sources": {
+          "type": "array",
+          "description": "PCF data sources available from supplier",
+          "items": {
+            "type": "string",
+            "enum": [
+              "PACT_Pathfinder",
+              "Catena-X",
+              "SAP_SDX",
+              "Supplier_Direct",
+              "EPD",
+              "Other"
+            ]
+          },
+          "examples": [["PACT_Pathfinder"], ["PACT_Pathfinder", "EPD"]]
+        },
+        "pcf_coverage_percent": {
+          "type": "number",
+          "description": "% of products with PCF data",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [100, 75, 25]
+        },
+        "pcf_last_updated": {
+          "type": "string",
+          "format": "date",
+          "description": "Date when PCF data was last updated",
+          "examples": ["2024-12-31", "2024-06-30"]
+        },
+        "pcf_verification": {
+          "type": "string",
+          "enum": ["Third_Party_Verified", "Self_Declared", "Not_Verified", "Unknown"],
+          "examples": ["Third_Party_Verified"]
+        }
+      }
+    },
+    "engagement_status": {
+      "type": "object",
+      "description": "Supplier engagement workflow status",
+      "properties": {
+        "engagement_stage": {
+          "type": "string",
+          "description": "Current stage in engagement workflow",
+          "enum": [
+            "Not_Contacted",
+            "Outreach_Sent",
+            "Responded",
+            "PCF_Requested",
+            "PCF_Received",
+            "Engaged",
+            "Opted_Out",
+            "No_Response"
+          ],
+          "examples": ["Engaged", "Outreach_Sent", "PCF_Received"]
+        },
+        "last_contact_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date of last contact attempt",
+          "examples": ["2024-11-15", "2024-12-01"]
+        },
+        "response_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date supplier responded",
+          "examples": ["2024-11-20", "2024-12-05"]
+        },
+        "response_rate_target": {
+          "type": "number",
+          "description": "Target response rate for this supplier tier (%)",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [50, 30, 20]
+        },
+        "engagement_priority": {
+          "type": "string",
+          "enum": ["High", "Medium", "Low"],
+          "examples": ["High"]
+        },
+        "next_follow_up_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Scheduled follow-up date",
+          "examples": ["2025-02-01", "2025-03-15"]
+        }
+      }
+    },
+    "contact_information": {
+      "type": "object",
+      "description": "Primary contact information for supplier engagement",
+      "properties": {
+        "primary_contact_name": {
+          "type": "string",
+          "maxLength": 200,
+          "examples": ["John Smith", "Jane Doe"]
+        },
+        "primary_contact_title": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["Sustainability Manager", "VP of Operations"]
+        },
+        "primary_contact_email": {
+          "type": "string",
+          "format": "email",
+          "description": "Email address (encrypted at rest)",
+          "examples": ["john.smith@supplier.com", "jane.doe@supplier.com"]
+        },
+        "primary_contact_phone": {
+          "type": "string",
+          "maxLength": 50,
+          "examples": ["+1-412-555-1234", "+49-30-1234567"]
+        },
+        "sustainability_contact_email": {
+          "type": "string",
+          "format": "email",
+          "description": "Sustainability team email",
+          "examples": ["sustainability@supplier.com"]
+        },
+        "website": {
+          "type": "string",
+          "format": "uri",
+          "examples": ["https://www.supplier.com", "https://www.globalsupplier.de"]
+        }
+      }
+    },
+    "consent_status": {
+      "type": "object",
+      "description": "Privacy consent status for supplier engagement",
+      "properties": {
+        "consent_status": {
+          "type": "string",
+          "enum": ["opted_in", "opted_out", "pending", "expired", "unknown"],
+          "examples": ["opted_in", "opted_out"]
+        },
+        "consent_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date consent was granted",
+          "examples": ["2024-01-15T10:30:00Z"]
+        },
+        "consent_expiry": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Consent expiration date (2 years for GDPR)",
+          "examples": ["2026-01-15T10:30:00Z"]
+        },
+        "lawful_basis": {
+          "type": "string",
+          "description": "GDPR Article 6 lawful basis",
+          "enum": ["consent", "contract", "legitimate_interest"],
+          "examples": ["consent", "legitimate_interest"]
+        },
+        "opt_out_date": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date supplier opted out (if applicable)",
+          "examples": ["2024-12-01T14:00:00Z"]
+        },
+        "gdpr_applicable": {
+          "type": "boolean",
+          "description": "Whether GDPR applies (EU/EEA supplier)",
+          "examples": [true, false]
+        },
+        "ccpa_applicable": {
+          "type": "boolean",
+          "description": "Whether CCPA applies (California supplier)",
+          "examples": [false, true]
+        }
+      }
+    },
+    "data_quality_indicators": {
+      "type": "object",
+      "description": "Data quality assessment for supplier master data",
+      "properties": {
+        "completeness_score": {
+          "type": "number",
+          "description": "Completeness score (0-100, % of fields populated)",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [95, 80, 60]
+        },
+        "accuracy_score": {
+          "type": "number",
+          "description": "Accuracy score (0-100, based on external validation)",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [98, 85, 70]
+        },
+        "last_validated_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Date when supplier data was last validated",
+          "examples": ["2024-12-31", "2024-11-15"]
+        },
+        "validation_source": {
+          "type": "string",
+          "enum": [
+            "LEI_Database",
+            "DUNS_Database",
+            "OpenCorporates",
+            "Manual_Verification",
+            "Supplier_Portal",
+            "Not_Validated"
+          ],
+          "examples": ["LEI_Database", "Manual_Verification"]
+        },
+        "dqi_rating": {
+          "type": "string",
+          "description": "Overall data quality rating",
+          "enum": ["Excellent", "Good", "Fair", "Poor"],
+          "examples": ["Excellent", "Good"]
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Metadata for traceability and audit",
+      "properties": {
+        "source_system": {
+          "type": "string",
+          "description": "Source system",
+          "enum": [
+            "SAP_S4HANA",
+            "Oracle_Fusion",
+            "Workday",
+            "Manual_Upload",
+            "API",
+            "Entity_MDM",
+            "Other"
+          ],
+          "examples": ["SAP_S4HANA", "Entity_MDM"]
+        },
+        "source_document_id": {
+          "type": "string",
+          "description": "Source document ID (vendor master record ID)",
+          "maxLength": 200,
+          "examples": ["SAP-VM-12345", "ORACLE-SUPP-67890"]
+        },
+        "extraction_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when data was extracted from source system",
+          "examples": ["2025-01-25T14:30:00Z"]
+        },
+        "ingestion_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when data was ingested into VCCI platform",
+          "examples": ["2025-01-25T15:00:00Z"]
+        },
+        "data_lineage": {
+          "type": "string",
+          "description": "Data lineage trail (comma-separated system IDs)",
+          "examples": ["SAP-MM-VM-001 -> Entity-MDM-123 -> VCCI-Supplier-456"]
+        },
+        "validation_status": {
+          "type": "string",
+          "description": "Validation status",
+          "enum": [
+            "Validated",
+            "Validation_Failed",
+            "Pending_Review",
+            "Approved",
+            "Rejected"
+          ],
+          "examples": ["Validated"]
+        },
+        "validation_errors": {
+          "type": "array",
+          "description": "List of validation errors (if any)",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            ["Missing headquarters.country", "LEI validation failed"]
+          ]
+        },
+        "manual_review_required": {
+          "type": "boolean",
+          "description": "Flag for manual review queue",
+          "examples": [false, true]
+        },
+        "manual_review_reason": {
+          "type": "string",
+          "description": "Reason for manual review",
+          "examples": ["Entity resolution confidence < 95%", "Duplicate supplier detected"]
+        },
+        "created_by": {
+          "type": "string",
+          "description": "User or system that created this record",
+          "examples": ["system-entity-mdm", "user-john.doe@example.com"]
+        },
+        "updated_by": {
+          "type": "string",
+          "description": "User or system that last updated this record",
+          "examples": ["user-jane.smith@example.com"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-25T15:00:00Z"]
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-26T10:30:00Z"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": "object",
+      "description": "Customer-specific custom fields (flexible schema)",
+      "additionalProperties": true,
+      "examples": [
+        {
+          "supplier_tier": "Tier 1",
+          "contract_expiry": "2025-12-31",
+          "payment_terms": "Net 30",
+          "certifications": ["ISO 14001", "ISO 50001"]
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "supplier_id": "SUPP-20250125001",
+      "tenant_id": "tenant-acme-corp",
+      "canonical_entity_id": "ENT-GLOBSTEEL001",
+      "supplier_name": "Global Steel Manufacturing Ltd",
+      "supplier_name_canonical": "Global Steel Manufacturing Limited (US)",
+      "entity_resolution": {
+        "resolution_method": "ML_Vector_Similarity",
+        "match_confidence": 98.5,
+        "manual_review_required": false,
+        "resolution_timestamp": "2025-01-25T10:30:00Z",
+        "resolution_source": "Weaviate_Vector_Search"
+      },
+      "external_identifiers": {
+        "lei": "549300ZFEEJ2IP5VME86",
+        "duns": "123456789",
+        "opencorporates_id": "us_de/1234567"
+      },
+      "supplier_id_erp": "SAP-V-12345",
+      "headquarters": {
+        "address_line1": "123 Steel Avenue",
+        "city": "Pittsburgh",
+        "state_province": "Pennsylvania",
+        "country": "US",
+        "postal_code": "15222",
+        "region": "US"
+      },
+      "industry_classification": {
+        "naics_code": "331110",
+        "naics_description": "Iron and Steel Mills and Ferroalloy Manufacturing",
+        "isic_code": "2410",
+        "industry_sector": "Metals_Mining"
+      },
+      "spend_categorization": {
+        "annual_spend_usd": 5000000,
+        "spend_tier": "Tier_1_Top_20_Percent",
+        "emissions_contribution_percent": 15.5,
+        "strategic_importance": "Critical"
+      },
+      "pcf_capabilities": {
+        "has_pcf_data": true,
+        "pcf_sources": ["PACT_Pathfinder"],
+        "pcf_coverage_percent": 100,
+        "pcf_last_updated": "2024-12-31",
+        "pcf_verification": "Third_Party_Verified"
+      },
+      "engagement_status": {
+        "engagement_stage": "Engaged",
+        "last_contact_date": "2024-11-15",
+        "response_date": "2024-11-20",
+        "response_rate_target": 50,
+        "engagement_priority": "High",
+        "next_follow_up_date": "2025-02-01"
+      },
+      "contact_information": {
+        "primary_contact_name": "John Smith",
+        "primary_contact_title": "VP of Sustainability",
+        "primary_contact_email": "john.smith@globalsteel.com",
+        "sustainability_contact_email": "sustainability@globalsteel.com",
+        "website": "https://www.globalsteel.com"
+      },
+      "consent_status": {
+        "consent_status": "opted_in",
+        "consent_date": "2024-01-15T10:30:00Z",
+        "consent_expiry": "2026-01-15T10:30:00Z",
+        "lawful_basis": "consent",
+        "gdpr_applicable": false,
+        "ccpa_applicable": false
+      },
+      "data_quality_indicators": {
+        "completeness_score": 95,
+        "accuracy_score": 98,
+        "last_validated_date": "2024-12-31",
+        "validation_source": "LEI_Database",
+        "dqi_rating": "Excellent"
+      },
+      "metadata": {
+        "source_system": "Entity_MDM",
+        "source_document_id": "SAP-VM-12345",
+        "extraction_timestamp": "2025-01-25T10:00:00Z",
+        "ingestion_timestamp": "2025-01-25T10:15:00Z",
+        "validation_status": "Validated",
+        "validation_errors": [],
+        "manual_review_required": false,
+        "created_by": "system-entity-mdm",
+        "created_at": "2025-01-25T10:15:00Z",
+        "updated_at": "2025-01-25T10:15:00Z"
+      }
+    }
+  ],
+  "definitions": {
+    "comment": "JSON Schema definitions for reusable components"
+  }
+}

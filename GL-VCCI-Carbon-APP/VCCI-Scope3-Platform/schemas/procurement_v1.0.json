@@ -1,0 +1,455 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vcci.greenlang.com/schemas/procurement_v1.0.json",
+  "title": "Procurement Data Schema",
+  "description": "JSON Schema for Category 1 (Purchased Goods and Services) procurement data. Supports tier 1/2/3 calculation methods and multi-standard reporting (GHG Protocol, ESRS, CDP, IFRS S2).",
+  "version": "1.0.0",
+  "type": "object",
+  "required": [
+    "procurement_id",
+    "transaction_date",
+    "supplier_name",
+    "product_name",
+    "quantity",
+    "unit",
+    "spend_usd"
+  ],
+  "properties": {
+    "procurement_id": {
+      "type": "string",
+      "description": "Unique identifier for procurement transaction",
+      "pattern": "^PROC-[0-9A-Z]{8,16}$",
+      "examples": ["PROC-20250125001", "PROC-ABC123DEF456"]
+    },
+    "tenant_id": {
+      "type": "string",
+      "description": "Multi-tenant identifier (automatic, set by system)",
+      "pattern": "^tenant-[a-z0-9-]+$",
+      "examples": ["tenant-acme-corp", "tenant-global-manufacturing"]
+    },
+    "transaction_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Date of procurement transaction (ISO 8601 format: YYYY-MM-DD)",
+      "examples": ["2024-01-15", "2024-12-31"]
+    },
+    "reporting_year": {
+      "type": "integer",
+      "description": "Reporting year for emissions accounting",
+      "minimum": 2020,
+      "maximum": 2100,
+      "examples": [2024, 2025]
+    },
+    "supplier_name": {
+      "type": "string",
+      "description": "Supplier company name (will be resolved to canonical entity via Entity MDM)",
+      "minLength": 2,
+      "maxLength": 500,
+      "examples": ["Acme Steel Corporation", "Global Electronics Ltd", "ABC Manufacturing Inc."]
+    },
+    "supplier_id_erp": {
+      "type": "string",
+      "description": "Supplier ID from ERP system (SAP vendor number, Oracle supplier ID)",
+      "maxLength": 100,
+      "examples": ["SAP-12345", "ORACLE-V-67890", "WD-SUPP-ABC123"]
+    },
+    "supplier_country": {
+      "type": "string",
+      "description": "Supplier country (ISO 3166-1 alpha-2 code)",
+      "pattern": "^[A-Z]{2}$",
+      "examples": ["US", "DE", "CN", "JP", "GB"]
+    },
+    "supplier_region": {
+      "type": "string",
+      "description": "Supplier region for factor selection",
+      "enum": ["US", "EU", "APAC", "LATAM", "MENA", "Global"],
+      "examples": ["US", "EU"]
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Product or service description",
+      "minLength": 2,
+      "maxLength": 1000,
+      "examples": ["Hot-rolled steel sheets", "Aluminum ingots (99.7% purity)", "Laptop computers (15-inch)"]
+    },
+    "product_code": {
+      "type": "string",
+      "description": "Product code (internal SKU, GTIN, UNSPSC, etc.)",
+      "maxLength": 100,
+      "examples": ["SKU-12345", "GTIN-1234567890123", "UNSPSC-30181501"]
+    },
+    "product_category": {
+      "type": "string",
+      "description": "Product category for emission factor matching",
+      "enum": [
+        "Metals_Steel",
+        "Metals_Aluminum",
+        "Metals_Copper",
+        "Plastics_PE",
+        "Plastics_PP",
+        "Plastics_PVC",
+        "Chemicals",
+        "Electronics",
+        "Textiles",
+        "Paper_Cardboard",
+        "Glass",
+        "Cement",
+        "Concrete",
+        "Services_Professional",
+        "Services_IT",
+        "Services_Logistics",
+        "Other"
+      ],
+      "examples": ["Metals_Steel", "Electronics"]
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Quantity purchased",
+      "exclusiveMinimum": 0,
+      "examples": [1000, 25.5, 100000]
+    },
+    "unit": {
+      "type": "string",
+      "description": "Unit of measurement (standardized)",
+      "enum": [
+        "kg",
+        "tonnes",
+        "lbs",
+        "liters",
+        "gallons",
+        "m3",
+        "kWh",
+        "MWh",
+        "items",
+        "units",
+        "USD"
+      ],
+      "examples": ["kg", "tonnes", "items"]
+    },
+    "spend_usd": {
+      "type": "number",
+      "description": "Total spend in USD (required for Tier 3 spend-based method)",
+      "minimum": 0,
+      "examples": [50000, 123456.78, 1000000]
+    },
+    "spend_currency_original": {
+      "type": "string",
+      "description": "Original currency code (ISO 4217)",
+      "pattern": "^[A-Z]{3}$",
+      "examples": ["USD", "EUR", "GBP", "JPY", "CNY"]
+    },
+    "spend_amount_original": {
+      "type": "number",
+      "description": "Spend amount in original currency",
+      "minimum": 0,
+      "examples": [45000, 38000.50]
+    },
+    "exchange_rate_to_usd": {
+      "type": "number",
+      "description": "Exchange rate used to convert to USD",
+      "exclusiveMinimum": 0,
+      "examples": [1.0, 0.85, 110.25]
+    },
+    "facility_location": {
+      "type": "object",
+      "description": "Facility where product is used/consumed (optional, for regional adjustments)",
+      "properties": {
+        "facility_name": {
+          "type": "string",
+          "maxLength": 200,
+          "examples": ["Manufacturing Plant A", "Distribution Center NYC"]
+        },
+        "facility_id": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["FAC-001", "DC-NYC-01"]
+        },
+        "city": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["San Francisco", "Berlin", "Tokyo"]
+        },
+        "state_province": {
+          "type": "string",
+          "maxLength": 100,
+          "examples": ["California", "Bavaria", "Tokyo Prefecture"]
+        },
+        "country": {
+          "type": "string",
+          "pattern": "^[A-Z]{2}$",
+          "examples": ["US", "DE", "JP"]
+        },
+        "postal_code": {
+          "type": "string",
+          "maxLength": 20,
+          "examples": ["94105", "10117", "100-0001"]
+        }
+      }
+    },
+    "supplier_pcf": {
+      "type": "object",
+      "description": "Supplier-specific Product Carbon Footprint (Tier 1 data from PCF Exchange)",
+      "properties": {
+        "pcf_value": {
+          "type": "number",
+          "description": "PCF value in kgCO2e per declared unit",
+          "minimum": 0,
+          "examples": [2.1, 9.5, 0.15]
+        },
+        "pcf_unit": {
+          "type": "string",
+          "description": "Declared unit for PCF (e.g., '1 kg', '1 item')",
+          "examples": ["1 kg", "1 tonne", "1 item"]
+        },
+        "pcf_source": {
+          "type": "string",
+          "description": "Source of PCF data",
+          "enum": ["PACT_Pathfinder", "Catena-X", "SAP_SDX", "Supplier_Direct", "Other"],
+          "examples": ["PACT_Pathfinder"]
+        },
+        "pcf_reference_period_start": {
+          "type": "string",
+          "format": "date",
+          "description": "Start date of PCF reference period",
+          "examples": ["2023-01-01"]
+        },
+        "pcf_reference_period_end": {
+          "type": "string",
+          "format": "date",
+          "description": "End date of PCF reference period",
+          "examples": ["2023-12-31"]
+        },
+        "pcf_boundary": {
+          "type": "string",
+          "description": "System boundary for PCF",
+          "enum": ["Cradle-to-Gate", "Cradle-to-Grave", "Gate-to-Gate"],
+          "examples": ["Cradle-to-Gate"]
+        },
+        "pcf_standard": {
+          "type": "string",
+          "description": "Standard used for PCF calculation",
+          "enum": ["GHG_Protocol", "ISO_14067", "ISO_14064", "PAS_2050", "Other"],
+          "examples": ["ISO_14067"]
+        },
+        "pcf_verification": {
+          "type": "string",
+          "description": "Verification status",
+          "enum": ["Third_Party_Verified", "Self_Declared", "Not_Verified"],
+          "examples": ["Third_Party_Verified"]
+        },
+        "pcf_data_quality": {
+          "type": "number",
+          "description": "Data quality score (0-100, higher is better)",
+          "minimum": 0,
+          "maximum": 100,
+          "examples": [95, 80]
+        }
+      },
+      "required": ["pcf_value", "pcf_unit", "pcf_source"]
+    },
+    "data_quality_indicators": {
+      "type": "object",
+      "description": "ILCD pedigree matrix for data quality assessment",
+      "properties": {
+        "reliability": {
+          "type": "integer",
+          "description": "Reliability of data source (1=worst, 5=best)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "completeness": {
+          "type": "integer",
+          "description": "Completeness of data (1=worst, 5=best)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "temporal_correlation": {
+          "type": "integer",
+          "description": "Age of data (1=very old, 5=current year)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "geographical_correlation": {
+          "type": "integer",
+          "description": "Match between data region and actual region (1=poor, 5=exact)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "technological_correlation": {
+          "type": "integer",
+          "description": "Match between process technology (1=poor, 5=exact)",
+          "minimum": 1,
+          "maximum": 5,
+          "examples": [5, 4, 3]
+        },
+        "dqi_score": {
+          "type": "number",
+          "description": "Calculated DQI score (average of 5 dimensions)",
+          "minimum": 1.0,
+          "maximum": 5.0,
+          "examples": [4.5, 3.8, 2.5]
+        },
+        "dqi_rating": {
+          "type": "string",
+          "description": "DQI rating category",
+          "enum": ["Excellent", "Good", "Fair", "Poor"],
+          "examples": ["Excellent", "Good"]
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Metadata for traceability and audit",
+      "properties": {
+        "source_system": {
+          "type": "string",
+          "description": "Source ERP system",
+          "enum": ["SAP_S4HANA", "Oracle_Fusion", "Workday", "Manual_Upload", "API", "Other"],
+          "examples": ["SAP_S4HANA"]
+        },
+        "source_document_id": {
+          "type": "string",
+          "description": "Source document ID (PO number, invoice number)",
+          "maxLength": 200,
+          "examples": ["PO-20240115-001", "INV-2024-12345"]
+        },
+        "extraction_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when data was extracted from source system",
+          "examples": ["2025-01-25T14:30:00Z"]
+        },
+        "ingestion_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when data was ingested into VCCI platform",
+          "examples": ["2025-01-25T15:00:00Z"]
+        },
+        "data_lineage": {
+          "type": "string",
+          "description": "Data lineage trail (comma-separated system IDs)",
+          "examples": ["SAP-MM-PO-001 -> VCCI-Intake-123 -> VCCI-Calc-456"]
+        },
+        "validation_status": {
+          "type": "string",
+          "description": "Validation status",
+          "enum": ["Validated", "Validation_Failed", "Pending_Review", "Approved", "Rejected"],
+          "examples": ["Validated"]
+        },
+        "validation_errors": {
+          "type": "array",
+          "description": "List of validation errors (if any)",
+          "items": {
+            "type": "string"
+          },
+          "examples": [
+            ["Missing supplier_country", "Quantity must be positive"]
+          ]
+        },
+        "manual_review_required": {
+          "type": "boolean",
+          "description": "Flag for manual review queue",
+          "examples": [false, true]
+        },
+        "manual_review_reason": {
+          "type": "string",
+          "description": "Reason for manual review",
+          "examples": ["Low entity resolution confidence (85%)", "Anomalous spend amount"]
+        },
+        "created_by": {
+          "type": "string",
+          "description": "User or system that created this record",
+          "examples": ["system-intake-agent", "user-john.doe@example.com"]
+        },
+        "updated_by": {
+          "type": "string",
+          "description": "User or system that last updated this record",
+          "examples": ["user-jane.smith@example.com"]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-25T15:00:00Z"]
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "examples": ["2025-01-26T10:30:00Z"]
+        }
+      }
+    },
+    "custom_fields": {
+      "type": "object",
+      "description": "Customer-specific custom fields (flexible schema)",
+      "additionalProperties": true,
+      "examples": [
+        {
+          "project_code": "PROJ-2024-001",
+          "cost_center": "CC-1234",
+          "department": "Operations",
+          "approval_status": "Approved"
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "procurement_id": "PROC-20250125001",
+      "tenant_id": "tenant-acme-corp",
+      "transaction_date": "2024-11-15",
+      "reporting_year": 2024,
+      "supplier_name": "Global Steel Manufacturing Ltd",
+      "supplier_id_erp": "SAP-V-12345",
+      "supplier_country": "US",
+      "supplier_region": "US",
+      "product_name": "Hot-rolled steel sheets (ASTM A36)",
+      "product_code": "SKU-STEEL-HR-A36",
+      "product_category": "Metals_Steel",
+      "quantity": 10000,
+      "unit": "kg",
+      "spend_usd": 18500.00,
+      "spend_currency_original": "USD",
+      "spend_amount_original": 18500.00,
+      "exchange_rate_to_usd": 1.0,
+      "supplier_pcf": {
+        "pcf_value": 1.92,
+        "pcf_unit": "1 kg",
+        "pcf_source": "PACT_Pathfinder",
+        "pcf_reference_period_start": "2024-01-01",
+        "pcf_reference_period_end": "2024-12-31",
+        "pcf_boundary": "Cradle-to-Gate",
+        "pcf_standard": "ISO_14067",
+        "pcf_verification": "Third_Party_Verified",
+        "pcf_data_quality": 95
+      },
+      "data_quality_indicators": {
+        "reliability": 5,
+        "completeness": 5,
+        "temporal_correlation": 5,
+        "geographical_correlation": 5,
+        "technological_correlation": 5,
+        "dqi_score": 5.0,
+        "dqi_rating": "Excellent"
+      },
+      "metadata": {
+        "source_system": "SAP_S4HANA",
+        "source_document_id": "PO-2024-11-001",
+        "extraction_timestamp": "2025-01-25T10:00:00Z",
+        "ingestion_timestamp": "2025-01-25T10:15:00Z",
+        "validation_status": "Validated",
+        "validation_errors": [],
+        "manual_review_required": false,
+        "created_by": "system-intake-agent",
+        "created_at": "2025-01-25T10:15:00Z",
+        "updated_at": "2025-01-25T10:15:00Z"
+      }
+    }
+  ],
+  "definitions": {
+    "comment": "JSON Schema definitions for reusable components"
+  }
+}

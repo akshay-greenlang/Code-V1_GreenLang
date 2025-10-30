@@ -82,12 +82,26 @@ def __getattr__(name):
         from greenlang.agents.decarbonization_roadmap_agent_ai import DecarbonizationRoadmapAgentAI
 
         return DecarbonizationRoadmapAgentAI
+    elif name == "ThermalStorageAgent_AI":
+        from greenlang.agents.thermal_storage_agent_ai import ThermalStorageAgent_AI
+
+        return ThermalStorageAgent_AI
+    elif name == "FuelAgentAI":
+        from greenlang.agents.fuel_agent_ai import FuelAgentAI
+
+        return FuelAgentAI
+    elif name == "FuelAgentAI_v2":
+        from greenlang.agents.fuel_agent_ai_v2 import FuelAgentAI_v2
+
+        return FuelAgentAI_v2
     raise AttributeError(f"module 'greenlang.agents' has no attribute '{name}'")
 
 
 __all__ = [
     "BaseAgent",
     "FuelAgent",
+    "FuelAgentAI",
+    "FuelAgentAI_v2",
     "BoilerAgent",
     "CarbonAgent",
     "InputValidatorAgent",
@@ -106,4 +120,5 @@ __all__ = [
     "BoilerReplacementAgent_AI",
     "IndustrialHeatPumpAgent_AI",
     "DecarbonizationRoadmapAgentAI",
+    "ThermalStorageAgent_AI",
 ]

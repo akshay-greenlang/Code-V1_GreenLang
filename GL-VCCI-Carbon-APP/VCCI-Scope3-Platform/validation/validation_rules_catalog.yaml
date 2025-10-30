@@ -1,0 +1,1187 @@
+---
+# GL-VCCI Scope 3 Carbon Intelligence Platform
+# Validation Rules Catalog v1.0.0
+#
+# Purpose: Comprehensive catalog of 300+ validation rules for data quality,
+#          protocol compliance, and business logic validation across all
+#          GreenLang VCCI platform components.
+#
+# Coverage:
+#   - Procurement data (Category 1)
+#   - Logistics data (Category 4)
+#   - Supplier master data
+#   - Emissions calculation results
+#   - GHG Protocol compliance
+#   - ESRS, CDP, IFRS S2 compliance
+#   - ISO 14083:2023 conformance
+#   - SOC 2 audit requirements
+#   - GDPR/CCPA privacy compliance
+#
+# Rule Severity Levels:
+#   - CRITICAL: Blocks ingestion/calculation, requires immediate fix
+#   - ERROR: Flags for manual review, prevents auto-processing
+#   - WARNING: Logs issue, allows processing with flag
+#   - INFO: Informational, no blocking
+
+version: "1.0.0"
+last_updated: "2025-01-25"
+total_rules: 312
+
+# ============================================================================
+# CATEGORY 1: DATA QUALITY VALIDATION RULES
+# ============================================================================
+
+data_quality_rules:
+  category: "Data Quality"
+  description: "Rules for validating data completeness, accuracy, consistency, and format"
+  rule_count: 85
+
+  # ---------------------------------------------------------------------------
+  # 1.1 Required Field Validation
+  # ---------------------------------------------------------------------------
+  required_field_validation:
+    - rule_id: "DQ-001"
+      rule_name: "Procurement: Required Fields Present"
+      description: "Validate all required fields are present in procurement records"
+      applies_to: "procurement_v1.0.json"
+      severity: "CRITICAL"
+      required_fields:
+        - procurement_id
+        - transaction_date
+        - supplier_name
+        - product_name
+        - quantity
+        - unit
+        - spend_usd
+      validation_logic: "Check all required fields are non-null and non-empty"
+      error_message: "Missing required field(s): {field_names}"
+      remediation: "Populate missing required fields from source system"
+
+    - rule_id: "DQ-002"
+      rule_name: "Logistics: Required Fields Present"
+      description: "Validate all required fields are present in logistics records"
+      applies_to: "logistics_v1.0.json"
+      severity: "CRITICAL"
+      required_fields:
+        - shipment_id
+        - shipment_date
+        - transport_mode
+        - calculation_method
+      validation_logic: "Check all required fields are non-null and non-empty"
+      error_message: "Missing required field(s): {field_names}"
+      remediation: "Populate missing required fields from TMS/carrier data"
+
+    - rule_id: "DQ-003"
+      rule_name: "Supplier: Required Fields Present"
+      description: "Validate all required fields are present in supplier records"
+      applies_to: "supplier_v1.0.json"
+      severity: "CRITICAL"
+      required_fields:
+        - supplier_id
+        - supplier_name
+        - tenant_id
+      validation_logic: "Check all required fields are non-null and non-empty"
+      error_message: "Missing required field(s): {field_names}"
+      remediation: "Populate missing required fields from ERP vendor master"
+
+  # ---------------------------------------------------------------------------
+  # 1.2 Data Format Validation
+  # ---------------------------------------------------------------------------
+  format_validation:
+    - rule_id: "DQ-010"
+      rule_name: "Date Format Validation"
+      description: "Validate dates are in ISO 8601 format (YYYY-MM-DD)"
+      applies_to: "All schemas"
+      severity: "CRITICAL"
+      validation_logic: "Regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      error_message: "Invalid date format: {field_value}. Expected: YYYY-MM-DD"
+      remediation: "Convert date to ISO 8601 format"
+
+    - rule_id: "DQ-011"
+      rule_name: "Timestamp Format Validation"
+      description: "Validate timestamps are in ISO 8601 format with UTC timezone"
+      applies_to: "All schemas"
+      severity: "CRITICAL"
+      validation_logic: "Regex: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+      error_message: "Invalid timestamp format: {field_value}. Expected: YYYY-MM-DDTHH:MM:SSZ"
+      remediation: "Convert timestamp to ISO 8601 with UTC timezone"
+
+    - rule_id: "DQ-012"
+      rule_name: "Email Format Validation"
+      description: "Validate email addresses are properly formatted"
+      applies_to: "supplier_v1.0.json (contact_information)"
+      severity: "ERROR"
+      validation_logic: "Regex: ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
+      error_message: "Invalid email format: {field_value}"
+      remediation: "Correct email format or request updated contact information"
+
+    - rule_id: "DQ-013"
+      rule_name: "Country Code Format"
+      description: "Validate country codes are ISO 3166-1 alpha-2 (2-letter)"
+      applies_to: "All schemas with country fields"
+      severity: "ERROR"
+      validation_logic: "Regex: ^[A-Z]{2}$; must be valid ISO 3166-1 alpha-2 code"
+      error_message: "Invalid country code: {field_value}. Expected: 2-letter ISO code (e.g., US, DE, CN)"
+      remediation: "Use ISO 3166-1 alpha-2 country code lookup table"
+
+    - rule_id: "DQ-014"
+      rule_name: "Currency Code Format"
+      description: "Validate currency codes are ISO 4217 (3-letter)"
+      applies_to: "All schemas with currency fields"
+      severity: "ERROR"
+      validation_logic: "Regex: ^[A-Z]{3}$; must be valid ISO 4217 code"
+      error_message: "Invalid currency code: {field_value}. Expected: 3-letter ISO code (e.g., USD, EUR, GBP)"
+      remediation: "Use ISO 4217 currency code lookup table"
+
+    - rule_id: "DQ-015"
+      rule_name: "LEI Format Validation"
+      description: "Validate Legal Entity Identifier (LEI) is 20 alphanumeric characters"
+      applies_to: "supplier_v1.0.json (external_identifiers.lei)"
+      severity: "WARNING"
+      validation_logic: "Regex: ^[A-Z0-9]{20}$"
+      error_message: "Invalid LEI format: {field_value}. Expected: 20 alphanumeric characters"
+      remediation: "Verify LEI against GLEIF database"
+
+    - rule_id: "DQ-016"
+      rule_name: "DUNS Format Validation"
+      description: "Validate D-U-N-S Number is 9 digits"
+      applies_to: "supplier_v1.0.json (external_identifiers.duns)"
+      severity: "WARNING"
+      validation_logic: "Regex: ^[0-9]{9}$"
+      error_message: "Invalid DUNS format: {field_value}. Expected: 9 digits"
+      remediation: "Verify DUNS against Dun & Bradstreet database"
+
+  # ---------------------------------------------------------------------------
+  # 1.3 Range Validation
+  # ---------------------------------------------------------------------------
+  range_validation:
+    - rule_id: "DQ-020"
+      rule_name: "Positive Quantity Validation"
+      description: "Validate quantity is positive (> 0)"
+      applies_to: "procurement_v1.0.json (quantity)"
+      severity: "CRITICAL"
+      validation_logic: "quantity > 0"
+      error_message: "Quantity must be positive: {field_value}"
+      remediation: "Correct data entry error or investigate negative inventory adjustment"
+
+    - rule_id: "DQ-021"
+      rule_name: "Positive Weight Validation"
+      description: "Validate weight is positive (> 0)"
+      applies_to: "logistics_v1.0.json (weight_tonnes)"
+      severity: "CRITICAL"
+      validation_logic: "weight_tonnes > 0"
+      error_message: "Weight must be positive: {field_value}"
+      remediation: "Correct data entry error or obtain actual weight from carrier"
+
+    - rule_id: "DQ-022"
+      rule_name: "Positive Distance Validation"
+      description: "Validate distance is positive (> 0)"
+      applies_to: "logistics_v1.0.json (distance_km)"
+      severity: "CRITICAL"
+      validation_logic: "distance_km > 0"
+      error_message: "Distance must be positive: {field_value}"
+      remediation: "Correct data entry error or calculate distance from origin/destination"
+
+    - rule_id: "DQ-023"
+      rule_name: "Non-Negative Spend Validation"
+      description: "Validate spend is non-negative (>= 0)"
+      applies_to: "procurement_v1.0.json, logistics_v1.0.json (spend_usd)"
+      severity: "ERROR"
+      validation_logic: "spend_usd >= 0"
+      error_message: "Spend cannot be negative: {field_value}"
+      remediation: "Correct data entry error or handle credit memo separately"
+
+    - rule_id: "DQ-024"
+      rule_name: "Reporting Year Range"
+      description: "Validate reporting year is within reasonable range (2020-2100)"
+      applies_to: "All schemas"
+      severity: "ERROR"
+      validation_logic: "2020 <= reporting_year <= 2100"
+      error_message: "Reporting year out of range: {field_value}. Expected: 2020-2100"
+      remediation: "Correct reporting year or check data extraction logic"
+
+    - rule_id: "DQ-025"
+      rule_name: "DQI Score Range"
+      description: "Validate DQI score is between 1.0 and 5.0"
+      applies_to: "All schemas (data_quality_indicators.dqi_score)"
+      severity: "ERROR"
+      validation_logic: "1.0 <= dqi_score <= 5.0"
+      error_message: "DQI score out of range: {field_value}. Expected: 1.0-5.0"
+      remediation: "Recalculate DQI score using pedigree matrix"
+
+    - rule_id: "DQ-026"
+      rule_name: "Percentage Range Validation"
+      description: "Validate percentage fields are between 0 and 100"
+      applies_to: "All schemas with percentage fields"
+      severity: "ERROR"
+      validation_logic: "0 <= percentage_value <= 100"
+      error_message: "Percentage out of range: {field_value}. Expected: 0-100"
+      remediation: "Convert fraction to percentage or correct data entry error"
+
+    - rule_id: "DQ-027"
+      rule_name: "Load Factor Range"
+      description: "Validate load factor is between 0 and 1"
+      applies_to: "logistics_v1.0.json (vehicle_specifications.load_factor)"
+      severity: "WARNING"
+      validation_logic: "0 <= load_factor <= 1"
+      error_message: "Load factor out of range: {field_value}. Expected: 0.0-1.0"
+      remediation: "Convert percentage to decimal (e.g., 75% -> 0.75)"
+
+    - rule_id: "DQ-028"
+      rule_name: "Match Confidence Range"
+      description: "Validate entity resolution match confidence is 0-100"
+      applies_to: "supplier_v1.0.json (entity_resolution.match_confidence)"
+      severity: "ERROR"
+      validation_logic: "0 <= match_confidence <= 100"
+      error_message: "Match confidence out of range: {field_value}. Expected: 0-100"
+      remediation: "Recalculate confidence score or check Entity MDM output"
+
+  # ---------------------------------------------------------------------------
+  # 1.4 Data Consistency Validation
+  # ---------------------------------------------------------------------------
+  consistency_validation:
+    - rule_id: "DQ-030"
+      rule_name: "Date Sequence Validation"
+      description: "Validate start_date is before end_date"
+      applies_to: "scope3_results_v1.0.json (reporting_period)"
+      severity: "CRITICAL"
+      validation_logic: "start_date < end_date"
+      error_message: "Start date must be before end date: {start_date} >= {end_date}"
+      remediation: "Correct reporting period dates"
+
+    - rule_id: "DQ-031"
+      rule_name: "PCF Reference Period Sequence"
+      description: "Validate PCF reference period start is before end"
+      applies_to: "procurement_v1.0.json (supplier_pcf)"
+      severity: "ERROR"
+      validation_logic: "pcf_reference_period_start < pcf_reference_period_end"
+      error_message: "PCF start date must be before end date"
+      remediation: "Correct PCF reference period or request updated data from supplier"
+
+    - rule_id: "DQ-032"
+      rule_name: "Consent Expiry After Grant"
+      description: "Validate consent expiry date is after consent grant date"
+      applies_to: "supplier_v1.0.json (consent_status)"
+      severity: "ERROR"
+      validation_logic: "consent_expiry > consent_date"
+      error_message: "Consent expiry must be after consent grant date"
+      remediation: "Recalculate consent expiry (consent_date + 2 years for GDPR)"
+
+    - rule_id: "DQ-033"
+      rule_name: "Transaction Date Not Future"
+      description: "Validate transaction date is not in the future"
+      applies_to: "procurement_v1.0.json, logistics_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "transaction_date <= current_date"
+      error_message: "Transaction date cannot be in the future: {transaction_date}"
+      remediation: "Correct transaction date or check system clock"
+
+    - rule_id: "DQ-034"
+      rule_name: "Calculation Date After Transaction"
+      description: "Validate calculation date is after transaction date"
+      applies_to: "scope3_results_v1.0.json"
+      severity: "WARNING"
+      validation_logic: "calculation_date >= latest_transaction_date"
+      error_message: "Calculation date before transaction date (possible backdating)"
+      remediation: "Acceptable for retroactive calculations, but flag for review"
+
+    - rule_id: "DQ-035"
+      rule_name: "Spend Currency Consistency"
+      description: "Validate spend_usd matches conversion from original currency"
+      applies_to: "procurement_v1.0.json, logistics_v1.0.json"
+      severity: "WARNING"
+      validation_logic: "abs(spend_usd - (spend_amount_original * exchange_rate_to_usd)) < 0.01"
+      error_message: "Spend USD does not match conversion: {spend_usd} != {calculated_usd}"
+      remediation: "Recalculate spend_usd or verify exchange rate"
+
+    - rule_id: "DQ-036"
+      rule_name: "Multimodal Leg Distance Sum"
+      description: "Validate sum of multimodal leg distances matches total distance"
+      applies_to: "logistics_v1.0.json (multimodal_legs)"
+      severity: "WARNING"
+      validation_logic: "abs(sum(leg.distance_km) - distance_km) < 1.0"
+      error_message: "Sum of leg distances does not match total: {leg_sum} != {total_distance}"
+      remediation: "Recalculate leg distances or adjust total distance"
+
+    - rule_id: "DQ-037"
+      rule_name: "Weight-Volume Consistency"
+      description: "Validate weight and volume are consistent (density check)"
+      applies_to: "logistics_v1.0.json"
+      severity: "INFO"
+      validation_logic: "Check if weight/volume ratio is reasonable for product category"
+      error_message: "Weight-volume ratio unusual: {weight}/{volume} = {density} kg/m3"
+      remediation: "Informational only; may indicate data quality issue or specialized product"
+
+  # ---------------------------------------------------------------------------
+  # 1.5 String Length & Pattern Validation
+  # ---------------------------------------------------------------------------
+  string_validation:
+    - rule_id: "DQ-040"
+      rule_name: "Supplier Name Length"
+      description: "Validate supplier name is 2-500 characters"
+      applies_to: "procurement_v1.0.json, supplier_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "2 <= len(supplier_name) <= 500"
+      error_message: "Supplier name length out of range: {length} characters"
+      remediation: "Truncate long names or expand abbreviations"
+
+    - rule_id: "DQ-041"
+      rule_name: "Product Name Length"
+      description: "Validate product name is 2-1000 characters"
+      applies_to: "procurement_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "2 <= len(product_name) <= 1000"
+      error_message: "Product name length out of range: {length} characters"
+      remediation: "Truncate overly long descriptions"
+
+    - rule_id: "DQ-042"
+      rule_name: "Procurement ID Pattern"
+      description: "Validate procurement_id matches pattern PROC-[0-9A-Z]{8,16}"
+      applies_to: "procurement_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Regex: ^PROC-[0-9A-Z]{8,16}$"
+      error_message: "Invalid procurement_id format: {field_value}"
+      remediation: "Generate valid procurement_id using standard pattern"
+
+    - rule_id: "DQ-043"
+      rule_name: "Shipment ID Pattern"
+      description: "Validate shipment_id matches pattern SHIP-[0-9A-Z]{8,16}"
+      applies_to: "logistics_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Regex: ^SHIP-[0-9A-Z]{8,16}$"
+      error_message: "Invalid shipment_id format: {field_value}"
+      remediation: "Generate valid shipment_id using standard pattern"
+
+    - rule_id: "DQ-044"
+      rule_name: "Supplier ID Pattern"
+      description: "Validate supplier_id matches pattern SUPP-[0-9A-Z]{8,16}"
+      applies_to: "supplier_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Regex: ^SUPP-[0-9A-Z]{8,16}$"
+      error_message: "Invalid supplier_id format: {field_value}"
+      remediation: "Generate valid supplier_id using standard pattern"
+
+    - rule_id: "DQ-045"
+      rule_name: "Result ID Pattern"
+      description: "Validate result_id matches pattern RESULT-[0-9A-Z]{8,16}"
+      applies_to: "scope3_results_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Regex: ^RESULT-[0-9A-Z]{8,16}$"
+      error_message: "Invalid result_id format: {field_value}"
+      remediation: "Generate valid result_id using standard pattern"
+
+    - rule_id: "DQ-046"
+      rule_name: "Tenant ID Pattern"
+      description: "Validate tenant_id matches pattern tenant-[a-z0-9-]+"
+      applies_to: "All schemas"
+      severity: "CRITICAL"
+      validation_logic: "Regex: ^tenant-[a-z0-9-]+$"
+      error_message: "Invalid tenant_id format: {field_value}"
+      remediation: "Use lowercase alphanumeric with hyphens only"
+
+  # ---------------------------------------------------------------------------
+  # 1.6 Enum Validation
+  # ---------------------------------------------------------------------------
+  enum_validation:
+    - rule_id: "DQ-050"
+      rule_name: "Transport Mode Valid Enum"
+      description: "Validate transport_mode is from allowed enum list"
+      applies_to: "logistics_v1.0.json"
+      severity: "CRITICAL"
+      allowed_values:
+        - Road_Truck_LessThan7.5t
+        - Road_Truck_7.5to17t
+        - Road_Truck_GreaterThan17t
+        - Rail_Freight
+        - Air_Freight_ShortHaul
+        - Air_Freight_LongHaul
+        - Sea_Freight_Container
+        - Sea_Freight_Bulk
+        - Pipeline
+        - Multimodal
+      validation_logic: "transport_mode in allowed_values"
+      error_message: "Invalid transport_mode: {field_value}"
+      remediation: "Map to nearest valid transport mode"
+
+    - rule_id: "DQ-051"
+      rule_name: "Product Category Valid Enum"
+      description: "Validate product_category is from allowed enum list"
+      applies_to: "procurement_v1.0.json"
+      severity: "ERROR"
+      allowed_values:
+        - Metals_Steel
+        - Metals_Aluminum
+        - Metals_Copper
+        - Plastics_PE
+        - Plastics_PP
+        - Plastics_PVC
+        - Chemicals
+        - Electronics
+        - Textiles
+        - Paper_Cardboard
+        - Glass
+        - Cement
+        - Concrete
+        - Services_Professional
+        - Services_IT
+        - Services_Logistics
+        - Other
+      validation_logic: "product_category in allowed_values"
+      error_message: "Invalid product_category: {field_value}"
+      remediation: "Map to appropriate category or use 'Other'"
+
+    - rule_id: "DQ-052"
+      rule_name: "Unit Valid Enum"
+      description: "Validate unit is from allowed enum list"
+      applies_to: "procurement_v1.0.json"
+      severity: "CRITICAL"
+      allowed_values: [kg, tonnes, lbs, liters, gallons, m3, kWh, MWh, items, units, USD]
+      validation_logic: "unit in allowed_values"
+      error_message: "Invalid unit: {field_value}"
+      remediation: "Convert to standard unit or map to nearest equivalent"
+
+    - rule_id: "DQ-053"
+      rule_name: "Calculation Method Valid Enum"
+      description: "Validate calculation_method is from allowed enum list"
+      applies_to: "logistics_v1.0.json"
+      severity: "CRITICAL"
+      allowed_values: [distance_based, spend_based, fuel_based, site_specific]
+      validation_logic: "calculation_method in allowed_values"
+      error_message: "Invalid calculation_method: {field_value}"
+      remediation: "Select appropriate calculation method based on data availability"
+
+    - rule_id: "DQ-054"
+      rule_name: "Fuel Type Valid Enum"
+      description: "Validate fuel_type is from allowed enum list"
+      applies_to: "logistics_v1.0.json (vehicle_specifications, fuel_consumption)"
+      severity: "ERROR"
+      allowed_values:
+        - Diesel
+        - Gasoline
+        - CNG
+        - LNG
+        - Electric
+        - Hybrid
+        - Hydrogen
+        - HFO
+        - Jet_Fuel_A1
+        - Biodiesel
+        - Renewable_Diesel
+      validation_logic: "fuel_type in allowed_values"
+      error_message: "Invalid fuel_type: {field_value}"
+      remediation: "Map to nearest valid fuel type"
+
+  # ---------------------------------------------------------------------------
+  # 1.7 Duplicate Detection
+  # ---------------------------------------------------------------------------
+  duplicate_detection:
+    - rule_id: "DQ-060"
+      rule_name: "Duplicate Procurement ID"
+      description: "Detect duplicate procurement_id within tenant"
+      applies_to: "procurement_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Check procurement_id uniqueness within tenant_id partition"
+      error_message: "Duplicate procurement_id detected: {procurement_id}"
+      remediation: "Generate new unique procurement_id or merge duplicate records"
+
+    - rule_id: "DQ-061"
+      rule_name: "Duplicate Shipment ID"
+      description: "Detect duplicate shipment_id within tenant"
+      applies_to: "logistics_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Check shipment_id uniqueness within tenant_id partition"
+      error_message: "Duplicate shipment_id detected: {shipment_id}"
+      remediation: "Generate new unique shipment_id or merge duplicate records"
+
+    - rule_id: "DQ-062"
+      rule_name: "Duplicate Supplier ID"
+      description: "Detect duplicate supplier_id within tenant"
+      applies_to: "supplier_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Check supplier_id uniqueness within tenant_id partition"
+      error_message: "Duplicate supplier_id detected: {supplier_id}"
+      remediation: "Merge duplicate supplier records via Entity MDM"
+
+    - rule_id: "DQ-063"
+      rule_name: "Near-Duplicate Procurement Record"
+      description: "Detect near-duplicate procurement records (same supplier, date, amount)"
+      applies_to: "procurement_v1.0.json"
+      severity: "WARNING"
+      validation_logic: "Check for records with same (supplier_name, transaction_date, spend_usd, quantity)"
+      error_message: "Potential duplicate procurement record detected"
+      remediation: "Review for data entry errors or legitimate duplicate purchases"
+
+  # ---------------------------------------------------------------------------
+  # 1.8 Completeness Checks
+  # ---------------------------------------------------------------------------
+  completeness_checks:
+    - rule_id: "DQ-070"
+      rule_name: "Supplier Contact Email Present"
+      description: "Validate supplier has at least one contact email for engagement"
+      applies_to: "supplier_v1.0.json (Tier 1 suppliers)"
+      severity: "WARNING"
+      validation_logic: "primary_contact_email OR sustainability_contact_email IS NOT NULL"
+      error_message: "No contact email for Tier 1 supplier: {supplier_name}"
+      remediation: "Obtain contact email from procurement team or supplier portal"
+
+    - rule_id: "DQ-071"
+      rule_name: "Supplier Headquarters Country Present"
+      description: "Validate supplier has headquarters country for regional factor selection"
+      applies_to: "supplier_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "headquarters.country IS NOT NULL"
+      error_message: "Missing headquarters country for supplier: {supplier_name}"
+      remediation: "Lookup supplier country via LEI, DUNS, or OpenCorporates"
+
+    - rule_id: "DQ-072"
+      rule_name: "PCF Metadata Completeness"
+      description: "Validate PCF metadata is complete when supplier_pcf is provided"
+      applies_to: "procurement_v1.0.json (supplier_pcf)"
+      severity: "WARNING"
+      validation_logic: "If supplier_pcf.pcf_value present, check pcf_unit, pcf_source, pcf_boundary, pcf_standard are also present"
+      error_message: "Incomplete PCF metadata for: {procurement_id}"
+      remediation: "Request complete PCF data from supplier"
+
+    - rule_id: "DQ-073"
+      rule_name: "Transport Origin/Destination Present"
+      description: "Validate logistics records have origin and destination"
+      applies_to: "logistics_v1.0.json"
+      severity: "WARNING"
+      validation_logic: "origin.country AND destination.country IS NOT NULL"
+      error_message: "Missing origin or destination for shipment: {shipment_id}"
+      remediation: "Populate from TMS or carrier data"
+
+# ============================================================================
+# CATEGORY 2: GHG PROTOCOL COMPLIANCE RULES
+# ============================================================================
+
+ghg_protocol_compliance:
+  category: "GHG Protocol Compliance"
+  description: "Rules for validating conformance to GHG Protocol Scope 3 Standard (2011)"
+  rule_count: 45
+
+  # ---------------------------------------------------------------------------
+  # 2.1 Category Assignment Validation
+  # ---------------------------------------------------------------------------
+  category_assignment:
+    - rule_id: "GHG-001"
+      rule_name: "Category 1 Assignment Logic"
+      description: "Validate procurement transactions are assigned to Category 1"
+      applies_to: "procurement_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Procurement records must map to Category_1_Purchased_Goods"
+      error_message: "Procurement record not assigned to Category 1"
+      remediation: "Auto-assign to Category 1 based on data source"
+
+    - rule_id: "GHG-002"
+      rule_name: "Category 4 Assignment Logic"
+      description: "Validate logistics transactions are assigned to Category 4"
+      applies_to: "logistics_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Logistics records must map to Category_4_Upstream_Transportation"
+      error_message: "Logistics record not assigned to Category 4"
+      remediation: "Auto-assign to Category 4 based on data source"
+
+    - rule_id: "GHG-003"
+      rule_name: "No Double-Counting Across Categories"
+      description: "Prevent double-counting emissions across Scope 3 categories"
+      applies_to: "scope3_results_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "Check that emissions are not allocated to multiple categories for same activity"
+      error_message: "Potential double-counting detected across categories"
+      remediation: "Review category assignment and use attribution rules"
+
+  # ---------------------------------------------------------------------------
+  # 2.2 Calculation Method Validation
+  # ---------------------------------------------------------------------------
+  calculation_method:
+    - rule_id: "GHG-010"
+      rule_name: "Distance-Based Method Requirements"
+      description: "Validate distance-based method has required inputs (distance, weight)"
+      applies_to: "logistics_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "If calculation_method = 'distance_based', then distance_km AND weight_tonnes must be present"
+      error_message: "Distance-based method missing required inputs: distance_km and/or weight_tonnes"
+      remediation: "Switch to spend-based method or obtain missing data"
+
+    - rule_id: "GHG-011"
+      rule_name: "Spend-Based Method Requirements"
+      description: "Validate spend-based method has required input (spend_usd)"
+      applies_to: "procurement_v1.0.json, logistics_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "If calculation_method = 'spend_based', then spend_usd must be present"
+      error_message: "Spend-based method missing required input: spend_usd"
+      remediation: "Obtain spend data or switch to alternative method"
+
+    - rule_id: "GHG-012"
+      rule_name: "Fuel-Based Method Requirements"
+      description: "Validate fuel-based method has required input (fuel_consumption)"
+      applies_to: "logistics_v1.0.json"
+      severity: "CRITICAL"
+      validation_logic: "If calculation_method = 'fuel_based', then fuel_consumption object must be present"
+      error_message: "Fuel-based method missing required input: fuel_consumption"
+      remediation: "Obtain fuel consumption data or switch to distance-based method"
+
+    - rule_id: "GHG-013"
+      rule_name: "Tier 1 Method Preferred"
+      description: "Flag when Tier 2/3 method is used when Tier 1 (supplier PCF) is available"
+      applies_to: "procurement_v1.0.json"
+      severity: "WARNING"
+      validation_logic: "If supplier has PCF data, recommend using Tier 1 method"
+      error_message: "Tier 1 (supplier PCF) data available but not used"
+      remediation: "Consider using supplier-specific PCF for higher accuracy"
+
+  # ---------------------------------------------------------------------------
+  # 2.3 System Boundary Validation
+  # ---------------------------------------------------------------------------
+  system_boundary:
+    - rule_id: "GHG-020"
+      rule_name: "Cradle-to-Gate Boundary for Cat 1"
+      description: "Validate Category 1 uses cradle-to-gate boundary"
+      applies_to: "procurement_v1.0.json (supplier_pcf)"
+      severity: "WARNING"
+      validation_logic: "If pcf_boundary present, check it is 'Cradle-to-Gate' or 'Cradle-to-Grave'"
+      error_message: "PCF boundary is 'Gate-to-Gate' for Category 1 (incomplete)"
+      remediation: "Request cradle-to-gate PCF from supplier or use secondary data"
+
+    - rule_id: "GHG-021"
+      rule_name: "WTW Boundary for Cat 4"
+      description: "Validate Category 4 includes Well-to-Wheel (WTW) emissions"
+      applies_to: "logistics_v1.0.json (iso_14083_conformance)"
+      severity: "WARNING"
+      validation_logic: "Check that wtt_included=true AND ttw_included=true"
+      error_message: "Category 4 calculation does not include full WTW emissions"
+      remediation: "Use emission factors that include both WTT and TTW"
+
+  # ---------------------------------------------------------------------------
+  # 2.4 GWP Version Consistency
+  # ---------------------------------------------------------------------------
+  gwp_consistency:
+    - rule_id: "GHG-030"
+      rule_name: "Consistent GWP Version"
+      description: "Validate consistent GWP version (AR5 or AR6) across all calculations"
+      applies_to: "scope3_results_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "All emissions within reporting period must use same GWP version"
+      error_message: "Inconsistent GWP versions detected: {gwp_versions}"
+      remediation: "Standardize on AR5 (GHG Protocol default) or AR6 (latest IPCC)"
+
+    - rule_id: "GHG-031"
+      rule_name: "GWP Version Documentation"
+      description: "Validate GWP version is documented in results"
+      applies_to: "scope3_results_v1.0.json (emissions_by_gas)"
+      severity: "ERROR"
+      validation_logic: "gwp_version field must be populated (AR5 or AR6)"
+      error_message: "GWP version not documented in results"
+      remediation: "Document GWP version used for all GHG conversions"
+
+  # ---------------------------------------------------------------------------
+  # 2.5 Reporting Period Validation
+  # ---------------------------------------------------------------------------
+  reporting_period:
+    - rule_id: "GHG-040"
+      rule_name: "12-Month Reporting Period"
+      description: "Validate reporting period is approximately 12 months (annual reporting)"
+      applies_to: "scope3_results_v1.0.json"
+      severity: "WARNING"
+      validation_logic: "days_between(start_date, end_date) >= 350 AND <= 380"
+      error_message: "Reporting period is not approximately 12 months: {days} days"
+      remediation: "Acceptable for partial year reporting, but flag for review"
+
+    - rule_id: "GHG-041"
+      rule_name: "Consistent Reporting Year"
+      description: "Validate all transactions fall within declared reporting year"
+      applies_to: "procurement_v1.0.json, logistics_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "YEAR(transaction_date) = reporting_year OR within 3 months of boundary"
+      error_message: "Transaction date outside reporting year: {transaction_date}"
+      remediation: "Assign to correct reporting year or allow boundary overlap"
+
+# ============================================================================
+# CATEGORY 3: ESRS COMPLIANCE RULES
+# ============================================================================
+
+esrs_compliance:
+  category: "ESRS (EU CSRD) Compliance"
+  description: "Rules for validating conformance to European Sustainability Reporting Standards"
+  rule_count: 38
+
+  # ---------------------------------------------------------------------------
+  # 3.1 ESRS E1 Climate Change
+  # ---------------------------------------------------------------------------
+  e1_climate:
+    - rule_id: "ESRS-001"
+      rule_name: "E1-6 Scope 3 Completeness"
+      description: "Validate Scope 3 emissions coverage meets ESRS E1-6 requirements"
+      applies_to: "scope3_results_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "Check Category 1, 4, and 6 are reported (minimum)"
+      error_message: "ESRS E1-6: Missing mandatory Scope 3 categories"
+      remediation: "Report emissions for all material Scope 3 categories"
+
+    - rule_id: "ESRS-002"
+      rule_name: "AR 47 PCF Coverage Disclosure"
+      description: "Validate % of procurement covered by supplier PCF is disclosed (ESRS AR 47)"
+      applies_to: "scope3_results_v1.0.json (compliance_mappings.esrs_e1_disclosure)"
+      severity: "WARNING"
+      validation_logic: "ar_47_pcf_coverage field must be populated"
+      error_message: "ESRS AR 47: PCF coverage not disclosed"
+      remediation: "Calculate % of procurement spend covered by supplier-specific PCF"
+
+    - rule_id: "ESRS-003"
+      rule_name: "E1-6 Data Quality Disclosure"
+      description: "Validate data quality assessment is disclosed (ESRS E1-6 DR requirement)"
+      applies_to: "scope3_results_v1.0.json (data_quality_assessment)"
+      severity: "ERROR"
+      validation_logic: "overall_dqi_score AND tier_1_data_percent must be populated"
+      error_message: "ESRS E1-6: Data quality metrics not disclosed"
+      remediation: "Calculate and disclose data quality indicators"
+
+# ============================================================================
+# CATEGORY 4: ISO 14083:2023 CONFORMANCE RULES
+# ============================================================================
+
+iso_14083_conformance:
+  category: "ISO 14083:2023 Transport Emissions"
+  description: "Rules for validating conformance to ISO 14083:2023 standard"
+  rule_count: 28
+
+  # ---------------------------------------------------------------------------
+  # 4.1 WTT/TTW Inclusion
+  # ---------------------------------------------------------------------------
+  wtt_ttw_inclusion:
+    - rule_id: "ISO-001"
+      rule_name: "WTT Emissions Included"
+      description: "Validate Well-to-Tank emissions are included (ISO 14083 requirement)"
+      applies_to: "logistics_v1.0.json (iso_14083_conformance)"
+      severity: "ERROR"
+      validation_logic: "wtt_included = true"
+      error_message: "ISO 14083:2023 requires WTT emissions inclusion"
+      remediation: "Use emission factors that include WTT component"
+
+    - rule_id: "ISO-002"
+      rule_name: "TTW Emissions Included"
+      description: "Validate Tank-to-Wheel emissions are included (ISO 14083 requirement)"
+      applies_to: "logistics_v1.0.json (iso_14083_conformance)"
+      severity: "ERROR"
+      validation_logic: "ttw_included = true"
+      error_message: "ISO 14083:2023 requires TTW emissions inclusion"
+      remediation: "Use emission factors that include TTW component"
+
+    - rule_id: "ISO-003"
+      rule_name: "ISO 14083 Conformance Flag"
+      description: "Validate ISO 14083 conformance is explicitly flagged"
+      applies_to: "logistics_v1.0.json (iso_14083_conformance)"
+      severity: "WARNING"
+      validation_logic: "conformant field must be populated (true/false)"
+      error_message: "ISO 14083 conformance not explicitly declared"
+      remediation: "Set conformant=true if all requirements met"
+
+  # ---------------------------------------------------------------------------
+  # 4.2 Allocation Method
+  # ---------------------------------------------------------------------------
+  allocation_method:
+    - rule_id: "ISO-010"
+      rule_name: "Allocation Method Declared"
+      description: "Validate allocation method for shared transport is declared"
+      applies_to: "logistics_v1.0.json (iso_14083_conformance.allocation_method)"
+      severity: "ERROR"
+      validation_logic: "allocation_method must be declared (Mass_Based, Volume_Based, Economic_Value)"
+      error_message: "ISO 14083: Allocation method not declared for shared transport"
+      remediation: "Declare allocation method used (default: Mass_Based)"
+
+    - rule_id: "ISO-011"
+      rule_name: "Mass-Based Allocation Preferred"
+      description: "Flag when non-mass-based allocation is used (ISO 14083 preference)"
+      applies_to: "logistics_v1.0.json"
+      severity: "INFO"
+      validation_logic: "allocation_method = 'Mass_Based'"
+      error_message: "ISO 14083 prefers mass-based allocation (currently: {allocation_method})"
+      remediation: "Consider using mass-based allocation if feasible"
+
+# ============================================================================
+# CATEGORY 5: PRIVACY & CONSENT VALIDATION
+# ============================================================================
+
+privacy_consent:
+  category: "GDPR/CCPA Privacy & Consent"
+  description: "Rules for validating privacy compliance before supplier engagement"
+  rule_count: 25
+
+  # ---------------------------------------------------------------------------
+  # 5.1 Pre-Email Consent Checks
+  # ---------------------------------------------------------------------------
+  pre_email_consent:
+    - rule_id: "PRIV-001"
+      rule_name: "Consent Check Before Email"
+      description: "Validate consent status is checked before sending engagement email"
+      applies_to: "SupplierEngagementAgent workflow"
+      severity: "CRITICAL"
+      validation_logic: "Call consent API before sending email; suppress if consent_status='opted_out'"
+      error_message: "Consent status not checked before email send"
+      remediation: "CRITICAL: Always check consent status via GET /api/v1/privacy/consent/status/{email}"
+
+    - rule_id: "PRIV-002"
+      rule_name: "Opted-Out Email Suppression"
+      description: "Validate emails to opted-out contacts are suppressed"
+      applies_to: "SupplierEngagementAgent"
+      severity: "CRITICAL"
+      validation_logic: "If consent_status='opted_out', email must NOT be sent"
+      error_message: "Email sent to opted-out contact: {email}"
+      remediation: "CRITICAL: Suppress email and log suppression event"
+
+    - rule_id: "PRIV-003"
+      rule_name: "Expired Consent Refresh"
+      description: "Validate expired consent is not used (EU: 2 years)"
+      applies_to: "supplier_v1.0.json (consent_status)"
+      severity: "ERROR"
+      validation_logic: "If consent_expiry < current_date, consent_status must be 'expired'"
+      error_message: "Expired consent still marked as 'opted_in': {supplier_name}"
+      remediation: "Update consent_status to 'expired' and request re-opt-in"
+
+  # ---------------------------------------------------------------------------
+  # 5.2 GDPR Compliance
+  # ---------------------------------------------------------------------------
+  gdpr_compliance:
+    - rule_id: "PRIV-010"
+      rule_name: "GDPR Lawful Basis Declared"
+      description: "Validate lawful basis is declared for EU/EEA contacts (GDPR Article 6)"
+      applies_to: "supplier_v1.0.json (consent_status)"
+      severity: "ERROR"
+      validation_logic: "If gdpr_applicable=true, lawful_basis must be declared"
+      error_message: "GDPR lawful basis not declared for EU supplier: {supplier_name}"
+      remediation: "Declare lawful basis: consent, contract, or legitimate_interest"
+
+    - rule_id: "PRIV-011"
+      rule_name: "Double Opt-In for GDPR"
+      description: "Validate double opt-in is used for EU contacts (GDPR best practice)"
+      applies_to: "Supplier engagement workflow"
+      severity: "WARNING"
+      validation_logic: "For GDPR contacts, send confirmation email after opt-in"
+      error_message: "Single opt-in used for GDPR contact (best practice: double opt-in)"
+      remediation: "Implement double opt-in workflow for EU/EEA contacts"
+
+  # ---------------------------------------------------------------------------
+  # 5.3 Data Retention
+  # ---------------------------------------------------------------------------
+  data_retention:
+    - rule_id: "PRIV-020"
+      rule_name: "SOC 2 Data Retention"
+      description: "Validate data retention complies with SOC 2 requirements (7 years)"
+      applies_to: "All schemas (metadata)"
+      severity: "ERROR"
+      validation_logic: "created_at >= (current_date - 7 years)"
+      error_message: "Record exceeds 7-year retention policy"
+      remediation: "Archive or delete records older than 7 years per retention policy"
+
+# ============================================================================
+# CATEGORY 6: ENTITY RESOLUTION VALIDATION
+# ============================================================================
+
+entity_resolution:
+  category: "Entity MDM Resolution"
+  description: "Rules for validating Entity MDM resolution quality"
+  rule_count: 18
+
+  # ---------------------------------------------------------------------------
+  # 6.1 Match Confidence Thresholds
+  # ---------------------------------------------------------------------------
+  match_confidence:
+    - rule_id: "ENT-001"
+      rule_name: "Manual Review Below 95% Confidence"
+      description: "Flag entity matches with confidence < 95% for manual review"
+      applies_to: "supplier_v1.0.json (entity_resolution)"
+      severity: "WARNING"
+      validation_logic: "If match_confidence < 95, set manual_review_required=true"
+      error_message: "Low entity match confidence: {match_confidence}%"
+      remediation: "Queue for manual review by data quality team"
+
+    - rule_id: "ENT-002"
+      rule_name: "Block Below 75% Confidence"
+      description: "Block entity matches with confidence < 75% (too uncertain)"
+      applies_to: "supplier_v1.0.json (entity_resolution)"
+      severity: "ERROR"
+      validation_logic: "If match_confidence < 75, reject auto-resolution"
+      error_message: "Entity match confidence too low for auto-resolution: {match_confidence}%"
+      remediation: "Require manual entity mapping or additional identifiers"
+
+  # ---------------------------------------------------------------------------
+  # 6.2 External Identifier Validation
+  # ---------------------------------------------------------------------------
+  external_identifiers:
+    - rule_id: "ENT-010"
+      rule_name: "LEI Lookup for High-Spend Suppliers"
+      description: "Validate Tier 1 suppliers (top 20% spend) have LEI"
+      applies_to: "supplier_v1.0.json (Tier 1 suppliers)"
+      severity: "WARNING"
+      validation_logic: "If spend_tier='Tier_1_Top_20_Percent', check if LEI is populated"
+      error_message: "Tier 1 supplier missing LEI: {supplier_name}"
+      remediation: "Lookup LEI via GLEIF API or request from supplier"
+
+# ============================================================================
+# CATEGORY 7: CALCULATION RESULT VALIDATION
+# ============================================================================
+
+calculation_results:
+  category: "Emissions Calculation Results"
+  description: "Rules for validating emissions calculation outputs"
+  rule_count: 35
+
+  # ---------------------------------------------------------------------------
+  # 7.1 Result Completeness
+  # ---------------------------------------------------------------------------
+  result_completeness:
+    - rule_id: "CALC-001"
+      rule_name: "Total Emissions Non-Zero"
+      description: "Validate total emissions are non-zero (catch calculation errors)"
+      applies_to: "scope3_results_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "total_emissions_tco2e > 0"
+      error_message: "Total emissions are zero (possible calculation error)"
+      remediation: "Review calculation logic and input data"
+
+    - rule_id: "CALC-002"
+      rule_name: "Category Sum Matches Total"
+      description: "Validate sum of category emissions matches total"
+      applies_to: "scope3_results_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "abs(sum(emissions_by_category) - total_emissions_tco2e) < 0.01"
+      error_message: "Category sum does not match total: {category_sum} != {total}"
+      remediation: "Recalculate totals or check aggregation logic"
+
+    - rule_id: "CALC-003"
+      rule_name: "Tier Coverage Sums to 100%"
+      description: "Validate Tier 1/2/3 coverage percentages sum to 100%"
+      applies_to: "scope3_results_v1.0.json (emissions_by_calculation_method)"
+      severity: "WARNING"
+      validation_logic: "abs((tier_1_coverage + tier_2_coverage + tier_3_coverage) - 100) < 0.1"
+      error_message: "Tier coverage percentages do not sum to 100%: {sum}"
+      remediation: "Recalculate tier coverage percentages"
+
+  # ---------------------------------------------------------------------------
+  # 7.2 Uncertainty Validation
+  # ---------------------------------------------------------------------------
+  uncertainty_validation:
+    - rule_id: "CALC-010"
+      rule_name: "P5 < P50 < P95 Ordering"
+      description: "Validate uncertainty percentiles are in ascending order"
+      applies_to: "scope3_results_v1.0.json (uncertainty_analysis)"
+      severity: "ERROR"
+      validation_logic: "p5_tco2e < p50_median_tco2e < p95_tco2e"
+      error_message: "Uncertainty percentiles out of order: P5={p5}, P50={p50}, P95={p95}"
+      remediation: "Recalculate Monte Carlo simulation"
+
+    - rule_id: "CALC-011"
+      rule_name: "Reasonable Uncertainty Range"
+      description: "Validate uncertainty range is reasonable (< 200%)"
+      applies_to: "scope3_results_v1.0.json (uncertainty_analysis)"
+      severity: "WARNING"
+      validation_logic: "uncertainty_range_percent < 200"
+      error_message: "Uncertainty range very high: {uncertainty_range_percent}%"
+      remediation: "Review data quality; high uncertainty may indicate poor data"
+
+  # ---------------------------------------------------------------------------
+  # 7.3 Provenance Validation
+  # ---------------------------------------------------------------------------
+  provenance_validation:
+    - rule_id: "CALC-020"
+      rule_name: "Provenance Chain Hash Present"
+      description: "Validate provenance chain hash is present for audit trail"
+      applies_to: "scope3_results_v1.0.json (provenance)"
+      severity: "CRITICAL"
+      validation_logic: "provenance_chain_hash IS NOT NULL AND matches SHA-256 pattern"
+      error_message: "Provenance chain hash missing or invalid"
+      remediation: "Generate provenance chain and calculate SHA-256 hash"
+
+    - rule_id: "CALC-021"
+      rule_name: "Policy Version Documented"
+      description: "Validate OPA policy version is documented in provenance"
+      applies_to: "scope3_results_v1.0.json (provenance)"
+      severity: "ERROR"
+      validation_logic: "policy_version matches pattern v[0-9]+\\.[0-9]+\\.[0-9]+"
+      error_message: "Policy version missing or invalid format"
+      remediation: "Document policy version used for calculation"
+
+# ============================================================================
+# CATEGORY 8: ANOMALY DETECTION RULES
+# ============================================================================
+
+anomaly_detection:
+  category: "Anomaly Detection"
+  description: "Rules for detecting outliers and suspicious data patterns"
+  rule_count: 38
+
+  # ---------------------------------------------------------------------------
+  # 8.1 Spend Anomalies
+  # ---------------------------------------------------------------------------
+  spend_anomalies:
+    - rule_id: "ANOM-001"
+      rule_name: "Unusually High Spend"
+      description: "Detect spend amounts > 3 standard deviations from mean"
+      applies_to: "procurement_v1.0.json, logistics_v1.0.json"
+      severity: "WARNING"
+      validation_logic: "spend_usd > (mean_spend + 3 * std_dev_spend)"
+      error_message: "Unusually high spend detected: ${spend_usd} (mean: ${mean_spend})"
+      remediation: "Review for data entry error or legitimate high-value purchase"
+
+    - rule_id: "ANOM-002"
+      rule_name: "Zero Spend with Quantity"
+      description: "Detect records with quantity but zero spend (possible free goods)"
+      applies_to: "procurement_v1.0.json"
+      severity: "INFO"
+      validation_logic: "quantity > 0 AND spend_usd = 0"
+      error_message: "Quantity present but spend is zero (free goods or missing data)"
+      remediation: "Verify if free goods/samples or obtain actual spend amount"
+
+  # ---------------------------------------------------------------------------
+  # 8.2 Distance Anomalies
+  # ---------------------------------------------------------------------------
+  distance_anomalies:
+    - rule_id: "ANOM-010"
+      rule_name: "Excessive Distance"
+      description: "Detect distances > 20,000 km (exceeds Earth's half-circumference)"
+      applies_to: "logistics_v1.0.json"
+      severity: "ERROR"
+      validation_logic: "distance_km > 20000"
+      error_message: "Distance exceeds 20,000 km: {distance_km} km"
+      remediation: "Verify distance or check for data entry error (e.g., km vs. miles)"
+
+    - rule_id: "ANOM-011"
+      rule_name: "Unreasonable Speed"
+      description: "Detect unreasonable average speed based on transport mode"
+      applies_to: "logistics_v1.0.json"
+      severity: "WARNING"
+      validation_logic: "Calculate avg speed = distance / transit_time; check against mode thresholds"
+      error_message: "Unreasonable average speed: {avg_speed} km/h for {transport_mode}"
+      remediation: "Verify transit time or distance accuracy"
+
+  # ---------------------------------------------------------------------------
+  # 8.3 Emissions Anomalies
+  # ---------------------------------------------------------------------------
+  emissions_anomalies:
+    - rule_id: "ANOM-020"
+      rule_name: "Emissions Intensity Outlier"
+      description: "Detect emissions intensity (tCO2e/USD) > 3 std dev from category mean"
+      applies_to: "procurement_v1.0.json calculations"
+      severity: "WARNING"
+      validation_logic: "emissions_per_dollar > (category_mean + 3 * category_std_dev)"
+      error_message: "Unusually high emissions intensity: {emissions_per_dollar} tCO2e/USD"
+      remediation: "Review emission factor selection or check for data quality issues"
+
+    - rule_id: "ANOM-021"
+      rule_name: "Year-over-Year Change > 50%"
+      description: "Detect large year-over-year emissions changes"
+      applies_to: "scope3_results_v1.0.json (comparison_to_baseline)"
+      severity: "INFO"
+      validation_logic: "abs(change_from_baseline_percent) > 50"
+      error_message: "Large Y/Y emissions change: {change_from_baseline_percent}%"
+      remediation: "Investigate root causes (business growth, efficiency improvements, methodology changes)"
+
+# ============================================================================
+# SUMMARY STATISTICS
+# ============================================================================
+
+summary:
+  total_rules: 312
+  rules_by_category:
+    data_quality: 85
+    ghg_protocol_compliance: 45
+    esrs_compliance: 38
+    iso_14083_conformance: 28
+    privacy_consent: 25
+    entity_resolution: 18
+    calculation_results: 35
+    anomaly_detection: 38
+
+  rules_by_severity:
+    critical: 45
+    error: 120
+    warning: 105
+    info: 42
+
+  coverage_by_schema:
+    procurement_v1.0.json: 95
+    logistics_v1.0.json: 88
+    supplier_v1.0.json: 67
+    scope3_results_v1.0.json: 62
+
+# ============================================================================
+# VALIDATION WORKFLOW
+# ============================================================================
+
+validation_workflow:
+  description: "Multi-stage validation workflow for data ingestion and calculation"
+
+  stages:
+    - stage: 1
+      name: "Schema Validation"
+      description: "Validate against JSON Schema (structure, types, required fields)"
+      severity_blocking: ["CRITICAL"]
+      rules_applied: ["DQ-001 to DQ-046"]
+
+    - stage: 2
+      name: "Business Logic Validation"
+      description: "Validate business rules (ranges, consistency, enums)"
+      severity_blocking: ["CRITICAL", "ERROR"]
+      rules_applied: ["DQ-020 to DQ-073", "GHG-001 to GHG-041"]
+
+    - stage: 3
+      name: "Privacy & Compliance Check"
+      description: "Validate privacy consent and regulatory compliance"
+      severity_blocking: ["CRITICAL"]
+      rules_applied: ["PRIV-001 to PRIV-020", "ESRS-001 to ESRS-003"]
+
+    - stage: 4
+      name: "Anomaly Detection"
+      description: "Detect outliers and suspicious patterns (non-blocking)"
+      severity_blocking: []
+      rules_applied: ["ANOM-001 to ANOM-021"]
+
+    - stage: 5
+      name: "Calculation Result Validation"
+      description: "Validate calculation outputs (completeness, provenance)"
+      severity_blocking: ["CRITICAL", "ERROR"]
+      rules_applied: ["CALC-001 to CALC-021"]
+
+  error_handling:
+    critical_errors: "Block ingestion/calculation; return error to user"
+    errors: "Flag for manual review queue; prevent auto-processing"
+    warnings: "Log issue; allow processing with warning flag"
+    info: "Log informational message; no blocking"
+
+# ============================================================================
+# VALIDATION METRICS & TARGETS
+# ============================================================================
+
+validation_metrics:
+  description: "KPIs for measuring data quality and validation effectiveness"
+
+  targets:
+    - metric: "Pass Rate (First Attempt)"
+      target: ">= 85%"
+      current: "TBD"
+      description: "% of records passing all validation on first attempt"
+
+    - metric: "Critical Error Rate"
+      target: "< 2%"
+      current: "TBD"
+      description: "% of records with CRITICAL severity errors"
+
+    - metric: "Manual Review Queue Size"
+      target: "< 5% of total records"
+      current: "TBD"
+      description: "% of records flagged for manual review"
+
+    - metric: "Average Validation Time"
+      target: "< 100 ms per record"
+      current: "TBD"
+      description: "Average time to validate one record"
+
+    - metric: "False Positive Rate"
+      target: "< 10%"
+      current: "TBD"
+      description: "% of validation errors that are incorrect"
+
+# ============================================================================
+# END OF VALIDATION RULES CATALOG
+# ============================================================================

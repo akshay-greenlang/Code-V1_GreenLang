@@ -1,0 +1,565 @@
+# PCF Exchange Service Specification
+# GL-VCCI Scope 3 Platform - Core Service
+#
+# Version: 1.0.0
+# Date: October 25, 2025
+# Part of: CTO v2 Strategic Plan
+
+# ============================================================================
+# SERVICE METADATA
+# ============================================================================
+service:
+  name: "PCFExchange"
+  version: "1.0.0"
+  type: "core_service"
+  category: "data_exchange"
+
+  description: >
+    Product Carbon Footprint (PCF) exchange service supporting PACT Pathfinder v2.0,
+    Catena-X, and SAP SDX for bidirectional PCF sharing with suppliers and customers.
+
+  purpose: >
+    PCF Exchange creates network effects: import supplier PCFs (Tier 3 → Tier 1
+    upgrade), export our PCFs to customers, establish VCCI as central PCF hub
+    in value chains. Target: 30% of Cat 1 spend covered by supplier PCFs by Q2 post-launch.
+
+# ============================================================================
+# BUSINESS VALUE
+# ============================================================================
+business_value:
+  problem_solved: >
+    Category 1 (Purchased Goods) typically accounts for 70% of Scope 3 emissions,
+    but most companies lack supplier-specific PCFs. Without PCF sharing,
+    calculations rely on Tier 3 (spend-based) or Tier 2 (average-data) methods
+    with ±50% or ±20% uncertainty. Supplier engagement is manual and slow.
+
+  solution: >
+    PCF Exchange automates bidirectional PCF sharing via industry standards
+    (PACT Pathfinder, Catena-X, SAP SDX). Import supplier PCFs to upgrade
+    Tier 3 → Tier 1 (±50% → ±5% uncertainty). Export our PCFs to customers.
+    Create network effects: more suppliers sharing = more value.
+
+  kpis:
+    - name: "PCF Coverage"
+      target: "30% of Cat 1 spend"
+      timeframe: "Q2 post-launch"
+      description: "30% of Category 1 spend covered by supplier PCFs"
+
+    - name: "Tier 1 Conversion Rate"
+      target: "25%"
+      description: "25% of Tier 2/3 calculations upgraded to Tier 1 via PCF"
+
+    - name: "Network Effects"
+      target: "100+ suppliers"
+      timeframe: "Year 1"
+      description: "100+ suppliers sharing PCFs on VCCI platform"
+
+    - name: "Data Quality Improvement"
+      target: "±50% → ±5%"
+      description: "Uncertainty reduction from Tier 3 to Tier 1"
+
+# ============================================================================
+# CAPABILITIES
+# ============================================================================
+capabilities:
+  - name: "PACT Pathfinder v2.0 Support"
+    description: "Full WBCSD PACT Pathfinder v2.0 implementation"
+    priority: "critical"
+    standard: "PACT Pathfinder v2.0"
+
+  - name: "Catena-X Integration"
+    description: "Automotive supply chain PCF exchange"
+    priority: "high"
+    industry: "automotive"
+
+  - name: "SAP SDX Integration"
+    description: "SAP Sustainability Data Exchange (Ariba, S/4HANA)"
+    priority: "high"
+    platform: "SAP"
+
+  - name: "Bidirectional Exchange"
+    description: "Import supplier PCFs AND export our PCFs to customers"
+    priority: "critical"
+
+  - name: "PCF Quality Scoring"
+    description: "Score PCF quality (completeness, recency, verification)"
+    priority: "high"
+
+  - name: "Schema Validation"
+    description: "Validate all PCFs against PACT/Catena-X/SAP schemas"
+    priority: "critical"
+
+# ============================================================================
+# PACT PATHFINDER V2.0
+# ============================================================================
+pact_pathfinder:
+  version: "2.0"
+  standard_body: "WBCSD (World Business Council for Sustainable Development)"
+  specification_url: "https://wbcsd.github.io/data-exchange-protocol/v2/"
+
+  capabilities:
+    import_pcfs: true  # Import supplier PCFs
+    export_pcfs: true  # Export our PCFs to customers
+    bidirectional: true
+
+  data_model:
+    core_fields:
+      - field: "productId"
+        type: "string"
+        required: true
+        description: "Product identifier (GTIN, SKU, custom)"
+
+      - field: "pcf"
+        type: "number"
+        unit: "kgCO2e"
+        required: true
+        description: "Product carbon footprint value"
+
+      - field: "declaredUnit"
+        type: "string"
+        required: true
+        example: "1 kg"
+
+      - field: "referencePeriodStart"
+        type: "date"
+        required: true
+
+      - field: "referencePeriodEnd"
+        type: "date"
+        required: true
+
+      - field: "boundaryProcessesDescription"
+        type: "string"
+        required: true
+        description: "Cradle-to-gate, cradle-to-grave, etc."
+
+      - field: "crossSectoralStandardsUsed"
+        type: "array"
+        required: true
+        values: ["GHG Protocol", "ISO 14067", "ISO 14064"]
+
+    optional_fields:
+      - "productName"
+      - "productDescription"
+      - "companyName"
+      - "companyId"
+      - "geographyCountry"
+      - "secondaryEmissionFactorSources"
+      - "dataQualityIndicators"
+      - "assurance"  # Third-party verification
+
+  schema_validation:
+    enabled: true
+    schema_version: "2.0.0"
+    reject_invalid: true
+    validation_library: "jsonschema"
+
+  api_integration:
+    import_endpoint: "${PACT_API_ENDPOINT}/import"
+    export_endpoint: "${PACT_API_ENDPOINT}/export"
+    authentication: "API key + OAuth2"
+    timeout_seconds: 60
+
+# ============================================================================
+# CATENA-X NETWORK
+# ============================================================================
+catena_x:
+  description: >
+    Catena-X is the automotive industry's data ecosystem for PCF exchange.
+    Tier 1 automotive suppliers (Bosch, Continental, ZF, etc.) share PCFs.
+
+  industry_focus: "automotive"
+  network_url: "${CATENA_X_ENDPOINT}"
+  network_key: "${CATENA_X_KEY}"
+  cost_per_year: 80000
+
+  capabilities:
+    import_supplier_pcfs: true
+    export_our_pcfs: true
+    network_discovery: true  # Discover other participants
+
+  data_model:
+    based_on: "PACT Pathfinder v2.0"
+    extensions:
+      - field: "vehiclePlatform"
+        description: "Which vehicle platform (e.g., MEB, MQB)"
+
+      - field: "partNumber"
+        description: "Automotive part number"
+
+      - field: "tierLevel"
+        description: "Tier 1, Tier 2, Tier 3 supplier"
+
+  integration:
+    connector: "catena_x_connector"
+    authentication: "X.509 certificates"
+    data_sovereignty: "GAIA-X compliant"
+
+# ============================================================================
+# SAP SDX (Sustainability Data Exchange)
+# ============================================================================
+sap_sdx:
+  description: >
+    SAP Sustainability Data Exchange integrates with SAP Ariba and SAP S/4HANA
+    for seamless PCF import from suppliers in procurement workflows.
+
+  platform: "SAP"
+  modules:
+    - "SAP Ariba"  # Procurement platform
+    - "SAP S/4HANA"  # ERP
+    - "SAP Sustainability Control Tower"
+
+  capabilities:
+    import_from_ariba: true
+    export_to_customers: true
+    sap_s4hana_integration: true
+
+  api_integration:
+    endpoint: "${SAP_SDX_ENDPOINT}"
+    api_key: "${SAP_SDX_KEY}"
+    authentication: "OAuth2"
+
+  data_flows:
+    - flow: "import_supplier_pcfs"
+      source: "SAP Ariba suppliers"
+      destination: "VCCI platform"
+      frequency: "weekly"
+
+    - flow: "export_our_pcfs"
+      source: "VCCI platform"
+      destination: "SAP S/4HANA"
+      frequency: "monthly"
+
+# ============================================================================
+# PCF QUALITY SCORING
+# ============================================================================
+pcf_quality_scoring:
+  enabled: true
+
+  dimensions:
+    - dimension: "completeness"
+      weight: 0.30
+      description: "All required PACT fields present"
+      scoring:
+        all_fields_present: 100
+        missing_optional_fields: 80
+        missing_required_fields: 0
+
+    - dimension: "recency"
+      weight: 0.25
+      description: "Data freshness"
+      scoring:
+        less_than_1_year_old: 100
+        1_to_2_years_old: 80
+        2_to_3_years_old: 60
+        older_than_3_years: 40
+
+    - dimension: "verification"
+      weight: 0.25
+      description: "Third-party verification"
+      scoring:
+        verified_by_third_party: 100
+        self_declared_iso_14067: 80
+        self_declared_ghg_protocol: 60
+        no_verification: 40
+
+    - dimension: "granularity"
+      weight: 0.20
+      description: "Product specificity"
+      scoring:
+        product_specific: 100
+        product_family: 80
+        category_average: 60
+        spend_based: 40
+
+  tier_mapping:
+    high_quality: "tier_1"  # Score >=90
+    medium_quality: "tier_2"  # Score 70-89
+    low_quality: "tier_3"  # Score <70
+
+  example:
+    pcf:
+      product_id: "GTIN-12345"
+      pcf_value: 2.5
+      declared_unit: "1 kg"
+      reference_period: "2024"
+      verification: "third_party"
+      age_days: 180
+
+    quality_score:
+      completeness: 100  # All fields present
+      recency: 100  # <1 year old
+      verification: 100  # Third-party verified
+      granularity: 100  # Product-specific
+      total_score: 100  # Average
+      tier: "tier_1"
+
+# ============================================================================
+# API SPECIFICATION
+# ============================================================================
+api:
+  base_path: "/api/v1/pcf-exchange"
+
+  endpoints:
+    # Endpoint 1: Import PCF
+    - path: "/import"
+      method: "POST"
+      description: "Import supplier PCF"
+
+      request:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          required: ["source", "pcf_data"]
+          properties:
+            source:
+              type: "string"
+              enum: ["pact", "catena_x", "sap_sdx", "manual"]
+
+            pcf_data:
+              type: "object"
+              description: "PCF data (PACT Pathfinder v2.0 schema)"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            import_status:
+              type: "string"
+              enum: ["success", "validation_failed", "error"]
+
+            pcf_id:
+              type: "string"
+
+            quality_score:
+              type: "number"
+              minimum: 0
+              maximum: 100
+
+            tier:
+              type: "string"
+              enum: ["tier_1", "tier_2", "tier_3"]
+
+    # Endpoint 2: Export PCF
+    - path: "/export"
+      method: "POST"
+      description: "Export our PCF to customer"
+
+      request:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          required: ["destination", "product_id"]
+          properties:
+            destination:
+              type: "string"
+              enum: ["pact", "catena_x", "sap_sdx"]
+
+            product_id:
+              type: "string"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            export_status:
+              type: "string"
+              enum: ["success", "error"]
+
+    # Endpoint 3: Get PCF Coverage
+    - path: "/coverage"
+      method: "GET"
+      description: "Get PCF coverage statistics"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            category_1_coverage_percentage:
+              type: "number"
+
+            total_pcfs_imported:
+              type: "integer"
+
+            suppliers_sharing_pcfs:
+              type: "integer"
+
+            avg_quality_score:
+              type: "number"
+
+# ============================================================================
+# NETWORK EFFECTS STRATEGY
+# ============================================================================
+network_effects:
+  strategy: >
+    More suppliers sharing PCFs → more value for everyone → more suppliers join.
+    VCCI becomes central PCF hub in value chains.
+
+  growth_tactics:
+    - tactic: "Supplier Onboarding Incentives"
+      description: "First 50 suppliers get free PCF import"
+
+    - tactic: "PCF Leaderboard"
+      description: "Gamification - recognize top PCF-sharing suppliers"
+
+    - tactic: "Industry Partnerships"
+      description: "Partner with Catena-X, PACT Pathfinder, SAP SDX"
+
+    - tactic: "Customer Value Proposition"
+      description: "Customers want supplier PCFs → suppliers incentivized to share"
+
+  success_metrics:
+    - metric: "Supplier Participation Rate"
+      target: "20%"
+      timeframe: "Year 1"
+      description: "20% of suppliers sharing PCFs"
+
+    - metric: "PCF Growth Rate"
+      target: "50%/quarter"
+      timeframe: "Year 1"
+      description: "50% quarterly growth in PCFs imported"
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+integrations:
+  # Integration 1: ValueChainIntakeAgent
+  - name: "ValueChainIntakeAgent"
+    type: "consumer"
+    description: "Import PCFs during data intake"
+
+    workflow:
+      - step: 1
+        action: "Intake detects supplier has PCF available"
+
+      - step: 2
+        action: "Call PCF Exchange /import endpoint"
+
+      - step: 3
+        action: "Validate PCF, score quality"
+
+      - step: 4
+        action: "Link PCF to supplier in database"
+
+      - step: 5
+        action: "Upgrade calculation tier (Tier 3 → Tier 1)"
+
+  # Integration 2: Scope3CalculatorAgent
+  - name: "Scope3CalculatorAgent"
+    type: "consumer"
+    description: "Use imported PCFs in calculations"
+
+    workflow:
+      - step: 1
+        action: "Calculator receives Category 1 calculation request"
+
+      - step: 2
+        action: "Check if supplier has PCF (query PCF Exchange)"
+
+      - step: 3
+        action: "If PCF available, use Tier 1 method (supplier-specific PCF)"
+
+      - step: 4
+        action: "If no PCF, fall back to Tier 2/3"
+
+# ============================================================================
+# PERFORMANCE TARGETS
+# ============================================================================
+performance:
+  latency:
+    import_pcf_ms: 500  # <500ms per PCF import
+    export_pcf_ms: 500  # <500ms per PCF export
+    coverage_query_ms: 100  # <100ms for coverage stats
+
+  throughput:
+    imports_per_day: 10000  # 10K PCF imports/day
+    exports_per_day: 5000  # 5K PCF exports/day
+
+  availability:
+    target_uptime: 0.999  # 99.9% (3 nines)
+
+# ============================================================================
+# MONITORING & OBSERVABILITY
+# ============================================================================
+monitoring:
+  metrics:
+    - name: "pcf_exchange_imports_total"
+      type: "counter"
+      labels: ["source"]  # pact | catena_x | sap_sdx
+
+    - name: "pcf_exchange_exports_total"
+      type: "counter"
+      labels: ["destination"]
+
+    - name: "pcf_exchange_coverage_percentage"
+      type: "gauge"
+      description: "% of Cat 1 spend with supplier PCFs"
+
+    - name: "pcf_exchange_quality_score_avg"
+      type: "gauge"
+
+    - name: "pcf_exchange_suppliers_sharing_total"
+      type: "gauge"
+
+  alerts:
+    - name: "low_pcf_coverage"
+      condition: "coverage_percentage < 0.10"
+      severity: "info"
+      action: "Increase supplier engagement efforts"
+
+    - name: "pcf_import_failures"
+      condition: "import_failure_rate > 0.05"
+      severity: "warning"
+      action: "Investigate schema validation issues"
+
+# ============================================================================
+# SECURITY & COMPLIANCE
+# ============================================================================
+security:
+  data_sensitivity: "medium"  # PCFs are not highly sensitive
+
+  authentication:
+    suppliers: "OAuth2"
+    customers: "OAuth2"
+
+  authorization:
+    import_pcfs: "authenticated_suppliers"
+    export_pcfs: "enterprise_tier_only"  # Feature gate
+
+  data_privacy:
+    anonymize_supplier_data: false  # Supplier attribution required
+    allow_pcf_sharing_opt_out: true
+
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+deployment:
+  platform: "kubernetes"
+  replicas: 3
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+changelog:
+  - version: "1.0.0"
+    date: "2025-10-25"
+    changes:
+      - "Initial PCF Exchange specification"
+      - "PACT Pathfinder v2.0 support"
+      - "Catena-X integration (automotive)"
+      - "SAP SDX integration (Ariba, S/4HANA)"
+      - "PCF quality scoring"
+      - "Bidirectional exchange (import + export)"
+      - "Network effects strategy"
+      - "Target: 30% Cat 1 coverage by Q2 post-launch"
