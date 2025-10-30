@@ -57,6 +57,13 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from greenlang.agents.tools import get_registry
+from .citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +150,15 @@ class CarbonAgentAI(BaseAgent):
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
+
+        # Get shared calculation tools from registry
+        registry = get_registry()
+        self.aggregate_tool = registry.get("aggregate_emissions")
+        self.breakdown_tool = registry.get("calculate_breakdown")
 
         # Setup tools for ChatSession
         self._setup_tools()
@@ -245,7 +261,7 @@ class CarbonAgentAI(BaseAgent):
     def _aggregate_emissions_impl(self, emissions: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Tool implementation: Aggregate emissions from multiple sources.
 
-        Delegates to the original CarbonAgent for deterministic calculations.
+        Uses shared AggregateEmissionsTool for deterministic calculations.
 
         Args:
             emissions: List of emission records
@@ -255,21 +271,46 @@ class CarbonAgentAI(BaseAgent):
         """
         self._tool_call_count += 1
 
-        # Delegate to original CarbonAgent
-        result = self.carbon_agent.execute({"emissions": emissions})
+        # Use shared aggregation tool
+        result = self.aggregate_tool(emissions=emissions)
 
         if not result.success:
             raise ValueError(f"Aggregation failed: {result.error}")
 
+        total_kg = result.data["total_co2e_kg"]
+        total_tons = result.data["total_co2e_tons"]
+
+        # Store citations from shared tool
+        if result.citations:
+            self._calculation_citations.extend(result.citations)
+
+        # Create citations for each emission source
+        for emission in emissions:
+            fuel_type = emission.get("fuel_type", "Unknown")
+            co2e_kg = emission.get("co2e_emissions_kg", 0)
+
+            # Create emission factor citation
+            citation = create_emission_factor_citation(
+                source=emission.get("source", "Aggregated Emissions"),
+                factor_name=f"{fuel_type.replace('_', ' ').title()} Emissions",
+                value=co2e_kg,
+                unit="kgCO2e",
+                version="2025.1",
+                confidence="high",
+            )
+            self._current_citations.append(citation)
+
         return {
-            "total_kg": result.data["total_co2e_kg"],
-            "total_tons": result.data["total_co2e_tons"],
+            "total_kg": total_kg,
+            "total_tons": total_tons,
         }
 
     def _calculate_breakdown_impl(
         self, emissions: List[Dict[str, Any]], total_kg: float
     ) -> Dict[str, Any]:
         """Tool implementation: Calculate percentage breakdown by source.
+
+        Uses shared CalculateBreakdownTool for deterministic calculations.
 
         Args:
             emissions: List of emission records
@@ -280,14 +321,24 @@ class CarbonAgentAI(BaseAgent):
         """
         self._tool_call_count += 1
 
+        # Use shared breakdown tool
+        result = self.breakdown_tool(emissions=emissions, total_emissions=total_kg)
+
+        if not result.success:
+            raise ValueError(f"Breakdown calculation failed: {result.error}")
+
+        # Format breakdown data with additional fields
         breakdown = []
         for emission in emissions:
+            fuel_type = emission.get("fuel_type", "Unknown")
             co2e = emission.get("co2e_emissions_kg", 0)
+            percentage = result.data["by_fuel_percent"].get(fuel_type, 0)
+
             breakdown.append({
-                "source": emission.get("fuel_type", "Unknown"),
+                "source": fuel_type,
                 "co2e_kg": round(co2e, 2),
                 "co2e_tons": round(co2e / 1000, 3),
-                "percentage": round((co2e / total_kg) * 100, 2) if total_kg > 0 else 0,
+                "percentage": percentage,
             })
 
         # Sort by emissions (largest first)
@@ -434,6 +485,10 @@ class CarbonAgentAI(BaseAgent):
                 error="Invalid input: 'emissions' list required",
             )
 
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
+
         emissions_list = input_data.get("emissions", [])
 
         # Handle empty emissions list
@@ -561,6 +616,8 @@ class CarbonAgentAI(BaseAgent):
                     "tokens": response.usage.total_tokens,
                     "cost_usd": response.usage.cost_usd,
                     "tool_calls": len(response.tool_calls),
+                    "seed": 42,  # Reproducibility seed
+                    "temperature": 0.0,  # Deterministic temperature
                     "deterministic": True,
                 },
             )
@@ -690,6 +747,13 @@ IMPORTANT:
         # Add recommendations if enabled
         if self.enable_recommendations and recommendations_result:
             output["recommendations"] = recommendations_result.get("recommendations", [])
+
+        # Add citations for emission factors and calculations
+        if self._current_citations or self._calculation_citations:
+            output["citations"] = {
+                "emission_factors": [c.to_dict() for c in self._current_citations],
+                "calculations": [c.dict() for c in self._calculation_citations],
+            }
 
         return output
 

@@ -58,6 +58,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from .citations import (
+    EmissionFactorCitation,
+    DataSourceCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +146,10 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._data_source_citations: List[DataSourceCitation] = []
 
         # Define tools for ChatSession
         self._setup_tools()
@@ -289,6 +299,32 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
 
         data = result["data"]
 
+        # Create citation for grid intensity factor
+        citation = create_emission_factor_citation(
+            source=data["source"],
+            factor_name=f"{country} Grid Intensity - {fuel_type.replace('_', ' ').title()}",
+            value=data["emission_factor"],
+            unit=data["unit"],
+            version=data["version"],
+            last_updated=datetime.fromisoformat(data["last_updated"]) if isinstance(data["last_updated"], str) else data["last_updated"],
+            confidence="high",
+            region=country,
+            gwp_set="AR6GWP100"
+        )
+
+        # Store citation for output
+        self._current_citations.append(citation)
+
+        # Create data source citation
+        data_source_citation = DataSourceCitation(
+            source_name=data["source"],
+            source_type="database",
+            query={"country": country, "fuel_type": fuel_type, "unit": unit, "year": year},
+            timestamp=datetime.now(),
+            url=None,
+        )
+        self._data_source_citations.append(data_source_citation)
+
         return {
             "emission_factor": data["emission_factor"],
             "unit": data["unit"],
@@ -298,6 +334,7 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
             "version": data["version"],
             "last_updated": data["last_updated"],
             "grid_mix": data.get("grid_mix", {}),
+            "citation": citation.to_dict(),
         }
 
     def _interpolate_hourly_data_impl(
@@ -532,6 +569,10 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
                 }
                 return {"success": False, "error": error_info}
 
+            # Reset citations for new run
+            self._current_citations = []
+            self._data_source_citations = []
+
             try:
                 # Run async lookup
                 loop = asyncio.new_event_loop()
@@ -645,6 +686,8 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
                     "tokens": response.usage.total_tokens,
                     "cost_usd": response.usage.cost_usd,
                     "tool_calls": len(response.tool_calls),
+                    "seed": 42,  # Reproducibility seed
+                    "temperature": 0.0,  # Deterministic temperature
                     "deterministic": True,
                 },
             }
@@ -776,6 +819,13 @@ IMPORTANT:
         # Add AI explanation if enabled
         if explanation and self.enable_explanations:
             output["explanation"] = explanation
+
+        # Add citations for emission factors and data sources
+        if self._current_citations or self._data_source_citations:
+            output["citations"] = {
+                "emission_factors": [c.to_dict() for c in self._current_citations],
+                "data_sources": [ds.dict() for ds in self._data_source_citations],
+            }
 
         return output
 

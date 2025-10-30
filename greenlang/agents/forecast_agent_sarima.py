@@ -82,6 +82,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from greenlang.agents.citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -220,6 +226,10 @@ class SARIMAForecastAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
 
         # Model state
         self._fitted_model = None
@@ -491,6 +501,10 @@ class SARIMAForecastAgent(Agent[Dict[str, Any], Dict[str, Any]]):
 
         # Create ChatSession
         session = ChatSession(self.provider)
+
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
 
         # Build AI prompt
         prompt = self._build_prompt(input_data)
@@ -1127,6 +1141,25 @@ IMPORTANT:
         # MAPE
         mape = np.mean(np.abs((actual - pred) / actual)) * 100
 
+        # Create calculation citation for model evaluation
+        calc_citation = CalculationCitation(
+            step_name="evaluate_model",
+            formula="RMSE=√(mean((actual-pred)²)), MAE=mean(|actual-pred|), MAPE=mean(|actual-pred|/actual)×100",
+            inputs={
+                "train_size": len(train),
+                "test_size": len(test),
+                "train_test_split": train_test_split,
+            },
+            output={
+                "rmse": float(rmse),
+                "mae": float(mae),
+                "mape": float(mape),
+            },
+            timestamp=datetime.now(),
+            tool_call_id=f"eval_{self._tool_call_count}",
+        )
+        self._calculation_citations.append(calc_citation)
+
         return {
             "rmse": float(rmse),
             "mae": float(mae),
@@ -1202,6 +1235,12 @@ IMPORTANT:
         # Add AI explanation
         if explanation and self.enable_explanations:
             output["explanation"] = explanation
+
+        # Add citations for calculations
+        if self._calculation_citations:
+            output["citations"] = {
+                "calculations": [c.dict() for c in self._calculation_citations],
+            }
 
         return output
 

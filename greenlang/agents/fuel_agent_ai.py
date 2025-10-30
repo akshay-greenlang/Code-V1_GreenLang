@@ -49,6 +49,11 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from .citations import (
+    EmissionFactorCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -132,6 +137,9 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
 
         # Define tools for ChatSession
         self._setup_tools()
@@ -312,12 +320,29 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
                 f"No emission factor found for {fuel_type} ({unit}) in {country}"
             )
 
+        # Create citation for this emission factor
+        citation = create_emission_factor_citation(
+            source="GreenLang Emission Factors Database",
+            factor_name=f"{fuel_type.replace('_', ' ').title()} Combustion",
+            value=emission_factor,
+            unit=f"kgCO2e/{unit}",
+            version="2025.1",
+            last_updated=datetime(2025, 1, 15),
+            confidence="high",
+            region=country,
+            gwp_set="AR6GWP100"
+        )
+
+        # Store citation for output
+        self._current_citations.append(citation)
+
         return {
             "emission_factor": emission_factor,
             "unit": f"kgCO2e/{unit}",
             "fuel_type": fuel_type,
             "country": country,
             "source": "GreenLang Emission Factors Database",
+            "citation": citation.to_dict(),
         }
 
     def _generate_recommendations_impl(
@@ -396,6 +421,9 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
             }
             return {"success": False, "error": error_info}
 
+        # Reset citations for new run
+        self._current_citations = []
+
         try:
             # Run async calculation
             loop = asyncio.new_event_loop()
@@ -417,6 +445,9 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
                     "ai_calls": self._ai_call_count,
                     "tool_calls": self._tool_call_count,
                     "total_cost_usd": self._total_cost_usd,
+                    "seed": 42,  # Reproducibility seed
+                    "temperature": 0.0,  # Deterministic temperature
+                    "deterministic": True,  # Deterministic execution flag
                 }
 
             return result
@@ -633,6 +664,10 @@ IMPORTANT:
         # Add AI explanation if enabled
         if explanation and self.enable_explanations:
             output["explanation"] = explanation
+
+        # Add citations for emission factors used
+        if self._current_citations:
+            output["citations"] = [c.to_dict() for c in self._current_citations]
 
         return output
 

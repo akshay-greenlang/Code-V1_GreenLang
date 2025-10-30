@@ -63,6 +63,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from .citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -249,6 +255,10 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
 
         # Define tools for ChatSession
         self._setup_tools()
@@ -691,6 +701,26 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
 
         # Convert to Btu/hr
         heat_output_btu_hr = heat_output_kw * 3412.14
+
+        # Create calculation citation
+        from datetime import datetime
+        calc_citation = CalculationCitation(
+            step_name="calculate_heat_pump_cop",
+            formula="COP = (T_sink/(T_sink-T_source)) × Carnot_eff × (0.9+0.1×PLR)",
+            inputs={
+                "heat_pump_type": heat_pump_type,
+                "source_temperature_f": source_temperature_f,
+                "sink_temperature_f": sink_temperature_f,
+                "compressor_type": compressor_type,
+                "refrigerant": refrigerant,
+                "part_load_ratio": part_load_ratio,
+                "carnot_efficiency": carnot_efficiency,
+            },
+            output={"cop_heating": cop_heating, "carnot_cop": carnot_cop},
+            timestamp=datetime.now(),
+            tool_call_id=f"hp_cop_{self._tool_call_count}",
+        )
+        self._calculation_citations.append(calc_citation)
 
         return {
             "cop_heating": round(cop_heating, 2),
@@ -1399,6 +1429,10 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
             }
             return {"success": False, "error": error_info}
 
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
+
         try:
             # Run async calculation
             loop = asyncio.new_event_loop()
@@ -1773,6 +1807,12 @@ IMPORTANT:
         # Add AI explanation if enabled
         if explanation and self.enable_explanations:
             output["ai_explanation"] = explanation
+
+        # Add citations for calculations
+        if self._calculation_citations:
+            output["citations"] = {
+                "calculations": [c.dict() for c in self._calculation_citations],
+            }
 
         # Add provenance
         output["provenance"] = {

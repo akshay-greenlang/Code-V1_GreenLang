@@ -58,6 +58,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from greenlang.agents.citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +157,10 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
 
         # Supported frameworks
         self.supported_frameworks = [
@@ -400,6 +410,21 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
             trends["baseline_emissions_tons"] = baseline_emissions_tons
             trends["baseline_change_tons"] = round(baseline_change_tons, 3)
             trends["baseline_change_percentage"] = round(baseline_change_percentage, 2)
+
+        # Create calculation citation for trend analysis
+        calc_citation = CalculationCitation(
+            step_name="calculate_trends",
+            formula="YoY_Change% = ((Current - Previous) / Previous) × 100",
+            inputs={
+                "current_emissions_tons": current_emissions_tons,
+                "previous_emissions_tons": previous_emissions_tons,
+                "baseline_emissions_tons": baseline_emissions_tons,
+            },
+            output=trends,
+            timestamp=datetime.now(),
+            tool_call_id=f"trends_{self._tool_call_count}",
+        )
+        self._calculation_citations.append(calc_citation)
 
         return trends
 
@@ -829,6 +854,10 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
         # Create ChatSession
         session = ChatSession(self.provider)
 
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
+
         # Build AI prompt
         prompt = self._build_prompt(input_data)
 
@@ -1071,6 +1100,12 @@ IMPORTANT:
 
         # Add framework metadata
         output["framework_metadata"] = formatted_report.get("framework_metadata", {})
+
+        # Add citations for calculations
+        if self._calculation_citations:
+            output["citations"] = {
+                "calculations": [c.dict() for c in self._calculation_citations],
+            }
 
         return output
 

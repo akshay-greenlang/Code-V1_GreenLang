@@ -58,6 +58,12 @@ from greenlang.intelligence import (
     create_provider,
 )
 from greenlang.intelligence.schemas.tools import ToolDef
+from greenlang.agents.citations import (
+    EmissionFactorCitation,
+    CalculationCitation,
+    CitationBundle,
+    create_emission_factor_citation,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -145,6 +151,10 @@ class RecommendationAgentAI(BaseAgent):
         self._ai_call_count = 0
         self._tool_call_count = 0
         self._total_cost_usd = 0.0
+
+        # Citation tracking
+        self._current_citations: List[EmissionFactorCitation] = []
+        self._calculation_citations: List[CalculationCitation] = []
 
         # Setup tools for ChatSession
         self._setup_tools()
@@ -423,10 +433,31 @@ class RecommendationAgentAI(BaseAgent):
                 "cost_category": cost_category,
             })
 
+        # Create calculation citation for ROI analysis
+        total_savings = sum(r["annual_savings_usd"] for r in roi_results)
+        total_reduction = sum(r["emissions_reduction_kg"] for r in roi_results)
+
+        calc_citation = CalculationCitation(
+            step_name="calculate_roi",
+            formula="ROI = (Annual_Savings × Payback_Years / Cost) × 100",
+            inputs={
+                "recommendations_count": len(recommendations),
+                "current_emissions_kg": current_emissions_kg,
+                "energy_cost_per_kwh": energy_cost_per_kwh,
+            },
+            output={
+                "total_potential_savings_usd": round(total_savings, 2),
+                "total_emissions_reduction_kg": round(total_reduction, 2),
+            },
+            timestamp=datetime.now(),
+            tool_call_id=f"roi_calc_{self._tool_call_count}",
+        )
+        self._calculation_citations.append(calc_citation)
+
         return {
             "roi_calculations": roi_results,
-            "total_potential_savings_usd": round(sum(r["annual_savings_usd"] for r in roi_results), 2),
-            "total_emissions_reduction_kg": round(sum(r["emissions_reduction_kg"] for r in roi_results), 2),
+            "total_potential_savings_usd": round(total_savings, 2),
+            "total_emissions_reduction_kg": round(total_reduction, 2),
         }
 
     def _rank_recommendations_impl(
@@ -643,6 +674,10 @@ class RecommendationAgentAI(BaseAgent):
         """
         # Create ChatSession
         session = ChatSession(self.provider)
+
+        # Reset citations for new run
+        self._current_citations = []
+        self._calculation_citations = []
 
         # Build AI prompt
         prompt = self._build_prompt(input_data)
@@ -869,6 +904,12 @@ IMPORTANT:
         # Add quick wins and high impact (for compatibility)
         output["quick_wins"] = [r for r in recommendations if r.get("cost") == "Low"][:3]
         output["high_impact"] = recommendations[:3]  # Top 3 by ranking
+
+        # Add citations for calculations
+        if self._calculation_citations:
+            output["citations"] = {
+                "calculations": [c.dict() for c in self._calculation_citations],
+            }
 
         return output
 
