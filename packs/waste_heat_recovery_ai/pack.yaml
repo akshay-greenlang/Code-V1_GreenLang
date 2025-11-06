@@ -1,0 +1,352 @@
+# AgentSpec v2 Compliant Pack for WasteHeatRecoveryAgentAI
+# AI-powered industrial waste heat recovery analysis with heat exchanger sizing,
+# technology selection, financial analysis, and opportunity prioritization
+
+schema_version: "2.0.0"
+id: "industrial/waste_heat_recovery_v1"
+name: "Waste Heat Recovery Agent (AI-Powered)"
+version: "1.0.0"
+summary: "AI-powered waste heat recovery analysis for industrial facilities with heat exchanger sizing, technology selection, financial analysis (NPV, IRR, payback), and phased implementation roadmaps"
+
+tags:
+  - "industrial"
+  - "waste-heat-recovery"
+  - "heat-exchanger"
+  - "energy-efficiency"
+  - "thermal-analysis"
+  - "financial-analysis"
+  - "ai-agent"
+  - "ashrae"
+  - "tema"
+  - "citations"
+
+owners:
+  - "greenlang-team"
+
+license: "MIT"
+
+# ==============================================================================
+# Compute Section - Core Functionality
+# ==============================================================================
+compute:
+  entrypoint: "python://greenlang.agents.waste_heat_recovery_agent_ai:execute"
+  deterministic: true
+  timeout_s: 240
+  memory_limit_mb: 768
+
+  # Input Schema
+  inputs:
+    facility_type:
+      dtype: "string"
+      unit: "1"
+      description: "Industrial facility classification (manufacturing, food_beverage, chemical, etc.)"
+      required: true
+
+    processes:
+      dtype: "list"
+      unit: "1"
+      description: "Array of process specifications with fuel consumption and temperature"
+      required: true
+
+    total_annual_fuel_mmbtu:
+      dtype: "float64"
+      unit: "MMBtu/year"
+      description: "Annual fuel consumption in million BTU per year"
+      required: true
+      ge: 0
+
+    fuel_cost_usd_per_mmbtu:
+      dtype: "float64"
+      unit: "USD/MMBtu"
+      description: "Current market fuel cost"
+      required: true
+      ge: 0
+
+    include_hvac_systems:
+      dtype: "bool"
+      unit: "1"
+      description: "Include HVAC preheating opportunities"
+      required: false
+      default: true
+
+    include_compressed_air:
+      dtype: "bool"
+      unit: "1"
+      description: "Include compressed air cooling opportunities"
+      required: false
+      default: true
+
+    minimum_temperature_f:
+      dtype: "float64"
+      unit: "°F"
+      description: "Minimum temperature threshold for waste heat recovery"
+      required: false
+      default: 120.0
+      ge: 80.0
+
+    electricity_price_usd_per_kwh:
+      dtype: "float64"
+      unit: "USD/kWh"
+      description: "Electricity price for parasitic power calculations"
+      required: false
+      default: 0.10
+      ge: 0
+
+    project_lifetime_years:
+      dtype: "int32"
+      unit: "years"
+      description: "Financial analysis project lifetime"
+      required: false
+      default: 20
+      ge: 5
+      le: 40
+
+    discount_rate:
+      dtype: "float64"
+      unit: "fraction"
+      description: "Discount rate for NPV calculations"
+      required: false
+      default: 0.08
+      ge: 0.01
+      le: 0.20
+
+    energy_cost_escalation_rate:
+      dtype: "float64"
+      unit: "fraction"
+      description: "Annual energy cost escalation rate"
+      required: false
+      default: 0.03
+      ge: 0
+      le: 0.10
+
+  # Output Schema
+  outputs:
+    total_waste_heat_identified_mmbtu_yr:
+      dtype: "int32"
+      unit: "MMBtu/year"
+      description: "Total annual waste heat identified"
+
+    recoverable_waste_heat_mmbtu_yr:
+      dtype: "int32"
+      unit: "MMBtu/year"
+      description: "Technically recoverable waste heat (80% of total)"
+
+    economically_recoverable_mmbtu_yr:
+      dtype: "int32"
+      unit: "MMBtu/year"
+      description: "Economically recoverable (payback <3 years)"
+
+    waste_heat_sources:
+      dtype: "list"
+      description: "Detailed characterization of each waste heat stream (11 fields)"
+
+    waste_heat_summary:
+      dtype: "object"
+      description: "Breakdown by temperature grade (high >400°F, medium 200-400°F, low <200°F)"
+
+    portfolio_results:
+      dtype: "object"
+      description: "Portfolio-level financial results"
+
+    prioritized_opportunities:
+      dtype: "list"
+      description: "Ranked opportunities by priority score"
+
+    implementation_roadmap:
+      dtype: "list"
+      description: "Phased deployment plan (Quick Wins, Strategic, Major Projects)"
+
+    analysis_summary:
+      dtype: "string"
+      unit: "1"
+      description: "Human-readable narrative summary"
+
+    ai_narrative:
+      dtype: "string"
+      unit: "1"
+      description: "AI-generated comprehensive analysis with recommendations"
+
+    citations:
+      dtype: "object"
+      description: "Calculation citations with formulas and audit trails"
+
+    metadata:
+      dtype: "object"
+      description: "Execution metadata (cost, tokens, tool_calls, calculation_time)"
+
+  factors: []
+
+# ==============================================================================
+# AI Section - LLM Configuration
+# ==============================================================================
+ai:
+  system_prompt: |
+    You are an expert industrial waste heat recovery engineer and climate advisor for GreenLang.
+
+    Key Responsibilities:
+    - Identify waste heat using process characterization databases (DOE IAC data)
+    - Recommend optimal recovery technologies (8 evaluated: shell-tube, plate, economizer, etc.)
+    - Size heat exchangers using LMTD and effectiveness-NTU methods
+    - Calculate financial metrics (simple payback, NPV, IRR, SIR)
+    - Assess fouling/corrosion risks (NACE guidelines)
+    - Provide phased implementation roadmaps (Quick Wins, Strategic, Major)
+
+    CRITICAL GUIDELINES:
+    1. Use DETERMINISTIC TOOLS ONLY - never estimate calculations
+    2. Consider 3 temperature grades: high >400°F, medium 200-400°F, low <200°F
+    3. Account for heat exchanger effectiveness (70-85% typical)
+    4. Include carbon metrics (CO2 reduction) in all recommendations
+    5. Flag risks: acid dew point >280°F, fouling >100ppm, chloride SCC >50ppm at >140°F
+    6. Cite standards: ASHRAE, DOE, TEMA, NACE, ASME BPVC
+    7. Validate input plausibility (reject unrealistic temperatures, flow rates)
+
+    Business Context:
+    - Best ROI of all efficiency measures: 0.5-3 year payback typical
+    - Largest carbon potential: 1.4 Gt CO2e/yr globally
+    - Market opportunity: $75 billion annually
+
+    Tool Usage Pattern:
+    1. identify_waste_heat: Process characterization and energy balance
+    2. calculate_recovery_potential: Heat recovery with effectiveness-NTU
+    3. select_technology: Multi-criteria scoring (8 technologies)
+    4. size_heat_exchanger: LMTD method with TEMA F-factors
+    5. calculate_energy_savings: Fuel displacement and CO2 reduction
+    6. assess_fouling_corrosion: Risk scoring (NACE standards)
+    7. analyze_financial_metrics: DCF analysis (NPV, IRR, payback)
+    8. prioritize_opportunities: Weighted multi-criteria ranking
+
+    Standards & Methods:
+    - Thermal: ASHRAE Handbook Ch.4, TEMA, ASME BPVC VIII
+    - Energy: DOE WHR Guidelines, GHG Protocol
+    - Corrosion: NACE SP0100 (acid dew point), NACE MR0175 (hydrogen attack)
+    - Economics: FEMP Life Cycle Cost, ASHRAE Economic Analysis
+
+  budget:
+    max_cost_usd: 0.15
+    warn_at_usd: 0.10
+
+  rag_collections:
+    - "doe_waste_heat_database"
+    - "ashrae_hvac_handbook"
+    - "tema_heat_exchanger_standards"
+    - "nace_corrosion_guidelines"
+
+  tools:
+    - name: "identify_waste_heat"
+      description: "Identify waste heat sources using DOE database and energy balance"
+      deterministic: true
+
+    - name: "calculate_recovery_potential"
+      description: "Calculate theoretical and practical heat recovery with effectiveness-NTU"
+      deterministic: true
+
+    - name: "select_technology"
+      description: "Select optimal heat exchanger technology via multi-criteria scoring"
+      deterministic: true
+
+    - name: "size_heat_exchanger"
+      description: "Size heat exchanger using LMTD and NTU methods (TEMA standards)"
+      deterministic: true
+
+    - name: "calculate_energy_savings"
+      description: "Calculate fuel displacement, cost savings, and CO2 reduction"
+      deterministic: true
+
+    - name: "assess_fouling_corrosion"
+      description: "Assess fouling and corrosion risks with NACE standards"
+      deterministic: true
+
+    - name: "analyze_financial_metrics"
+      description: "Perform DCF analysis (NPV, IRR, payback, SIR)"
+      deterministic: true
+
+    - name: "prioritize_opportunities"
+      description: "Rank opportunities using weighted multi-criteria scoring"
+      deterministic: true
+
+# ==============================================================================
+# Realtime Section - Execution Configuration
+# ==============================================================================
+realtime:
+  replay_mode:
+    enabled: true
+    seed: 42
+    temperature: 0.0
+    deterministic: true
+
+# ==============================================================================
+# Provenance Section - Auditability
+# ==============================================================================
+provenance:
+  ef_pinning: "sha256"
+  gwp_set: "AR6"
+
+  audit_fields:
+    - "total_waste_heat_identified_mmbtu_yr"
+    - "economically_recoverable_mmbtu_yr"
+    - "portfolio_results"
+    - "prioritized_opportunities"
+
+  citation_required: true
+  determinism_required: true
+
+  standards:
+    - name: "ASHRAE"
+      description: "ASHRAE Handbook Fundamentals Ch.4 (Heat Transfer)"
+      version: "2021"
+
+    - name: "TEMA"
+      description: "Tubular Exchanger Manufacturers Association Standards"
+      version: "10th Edition"
+
+    - name: "DOE"
+      description: "DOE Industrial Waste Heat Recovery Guidelines"
+      version: "2023"
+
+    - name: "NACE"
+      description: "NACE SP0100 (Acid Dew Point), MR0175 (Hydrogen Attack)"
+      version: "2023"
+
+    - name: "ASME"
+      description: "ASME Boiler & Pressure Vessel Code Section VIII"
+      version: "2023"
+
+    - name: "ISO 50001"
+      description: "Energy Management Systems"
+      version: "2018"
+
+# ==============================================================================
+# Metadata
+# ==============================================================================
+metadata:
+  created: "2025-11-06"
+  updated: "2025-11-06"
+  status: "production"
+  compliance:
+    - "AgentSpec_v2"
+    - "ASHRAE"
+    - "TEMA"
+    - "DOE_WHR"
+    - "NACE"
+    - "ISO_50001"
+
+  documentation:
+    url: "https://docs.greenlang.com/agents/waste_heat_recovery"
+    examples: "examples/waste_heat_recovery/"
+
+  performance:
+    avg_latency_ms: 4000
+    max_latency_ms: 20000
+    throughput_per_sec: 2
+
+  market_opportunity:
+    global_market_usd: 75000000000
+    typical_payback_years: "0.5-3"
+    global_carbon_potential_gt_co2e: 1.4
+
+  dependencies:
+    - "greenlang.agents.base"
+    - "greenlang.intelligence.ChatSession"
+    - "greenlang.agents.citations"
+    - "pandas>=1.5"
+    - "numpy>=1.24"

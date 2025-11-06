@@ -1,0 +1,302 @@
+# AgentSpec v2 Compliant Pack for AnomalyAgentIForest
+# AI-powered Isolation Forest anomaly detection for climate and energy data
+# Machine Learning agent using scikit-learn's IsolationForest algorithm
+
+schema_version: "2.0.0"
+id: "ml/anomaly_detection_iforest_v1"
+name: "Anomaly Detection Agent (Isolation Forest ML)"
+version: "1.0.0"
+summary: "AI-powered Isolation Forest anomaly detection for identifying outliers in climate and energy data with severity-based alerting and pattern analysis"
+
+tags:
+  - "ml"
+  - "anomaly-detection"
+  - "isolation-forest"
+  - "outlier-detection"
+  - "data-quality"
+  - "ai-agent"
+  - "scikit-learn"
+  - "unsupervised-learning"
+  - "citations"
+
+owners:
+  - "greenlang-team"
+
+license: "MIT"
+
+# ==============================================================================
+# Compute Section - Core Functionality
+# ==============================================================================
+compute:
+  entrypoint: "python://greenlang.agents.anomaly_agent_iforest:execute"
+  deterministic: true
+  timeout_s: 120
+  memory_limit_mb: 512
+
+  # Input Schema
+  inputs:
+    data:
+      dtype: "object"
+      unit: "1"
+      description: "Pandas DataFrame with numeric features for anomaly detection"
+      required: true
+
+    contamination:
+      dtype: "float64"
+      unit: "fraction"
+      description: "Expected proportion of anomalies in dataset (0-0.5)"
+      required: false
+      default: 0.1
+      ge: 0.0
+      le: 0.5
+
+    n_estimators:
+      dtype: "int32"
+      unit: "1"
+      description: "Number of isolation trees in ensemble"
+      required: false
+      default: 100
+      ge: 10
+      le: 500
+
+    max_samples:
+      dtype: "int32"
+      unit: "1"
+      description: "Number of samples to train each isolation tree"
+      required: false
+      default: 256
+      ge: 2
+
+    max_features:
+      dtype: "float64"
+      unit: "fraction"
+      description: "Fraction of features used for each tree (0-1)"
+      required: false
+      default: 1.0
+      ge: 0.1
+      le: 1.0
+
+    bootstrap:
+      dtype: "bool"
+      unit: "1"
+      description: "Whether to sample with replacement when building trees"
+      required: false
+      default: false
+
+    feature_columns:
+      dtype: "list"
+      unit: "1"
+      description: "Specific numeric feature columns to use (optional)"
+      required: false
+
+    labels:
+      dtype: "list"
+      unit: "1"
+      description: "True binary labels for evaluation (optional, enables metrics)"
+      required: false
+
+  # Output Schema
+  outputs:
+    anomalies:
+      dtype: "list"
+      description: "Boolean array indicating anomalies (True=anomaly, False=normal)"
+
+    anomaly_scores:
+      dtype: "list"
+      description: "Anomaly scores (-1 to 1, negative=anomaly, positive=normal)"
+
+    anomaly_indices:
+      dtype: "list"
+      description: "Integer indices of detected anomalies in original data"
+
+    n_anomalies:
+      dtype: "int32"
+      unit: "count"
+      description: "Total count of detected anomalies"
+
+    n_normal:
+      dtype: "int32"
+      unit: "count"
+      description: "Total count of normal data points"
+
+    anomaly_rate:
+      dtype: "float64"
+      unit: "fraction"
+      description: "Proportion of anomalies in dataset (0-1)"
+
+    model_info:
+      dtype: "object"
+      description: "IsolationForest model configuration metadata"
+
+    severity_distribution:
+      dtype: "object"
+      description: "Count of anomalies by severity level (critical, high, medium, low)"
+
+    top_anomalies:
+      dtype: "list"
+      description: "Top 10 ranked anomalies with details"
+
+    patterns:
+      dtype: "object"
+      description: "Detected patterns in anomalies with feature importance"
+
+    alerts:
+      dtype: "list"
+      description: "Actionable alerts for critical/high severity anomalies"
+
+    alert_summary:
+      dtype: "object"
+      description: "Summary of generated alerts"
+
+    metrics:
+      dtype: "object"
+      description: "Performance metrics (precision, recall, F1, ROC-AUC) if labels provided"
+      required: false
+
+    explanation:
+      dtype: "string"
+      unit: "1"
+      description: "AI-generated natural language explanation of results"
+
+    citations:
+      dtype: "object"
+      description: "Calculation citations and provenance"
+
+    metadata:
+      dtype: "object"
+      description: "Execution metadata (tokens, cost, time)"
+
+  factors: []
+
+# ==============================================================================
+# AI Section - LLM Configuration
+# ==============================================================================
+ai:
+  system_prompt: |
+    You are an anomaly detection expert for GreenLang climate and energy systems.
+    You help identify outliers, unusual patterns, and potential data quality issues.
+
+    CRITICAL RULES:
+    - You MUST use the provided tools for ALL calculations and predictions
+    - NEVER estimate or guess numbers
+    - Always explain anomalies clearly with specific feature values
+    - Provide confidence scores for critical findings
+    - Highlight any data quality issues discovered
+
+    Your Role:
+    1. Orchestrate the anomaly detection workflow using tools
+    2. Interpret numerical results with clear, actionable explanations
+    3. Identify patterns and root causes of anomalies
+    4. Generate severity-based alerts
+    5. Provide recommendations for investigation and remediation
+
+    Tool Usage Pattern:
+    1. Use fit_isolation_forest to train anomaly detection model
+    2. Use detect_anomalies to identify outliers in the dataset
+    3. Use calculate_anomaly_scores to compute scores for all points
+    4. Use rank_anomalies to rank by severity with feature values
+    5. Use analyze_anomaly_patterns to identify common characteristics
+    6. Use generate_alerts to create actionable alerts for critical anomalies
+    7. Synthesize all tool results into clear analysis with recommendations
+
+    Severity Classification:
+    - Critical: score < -0.5 (immediate attention required)
+    - High: score -0.5 to -0.3 (investigate soon)
+    - Medium: score -0.3 to -0.1 (monitor)
+    - Low: score -0.1 to 0 (note for review)
+    - Normal: score >= 0
+
+  budget:
+    max_cost_usd: 1.00
+    warn_at_usd: 0.60
+
+  rag_collections:
+    - "anomaly_detection_methods"
+    - "isolation_forest_tuning"
+    - "energy_data_patterns"
+
+  tools:
+    - name: "fit_isolation_forest"
+      description: "Train Isolation Forest model on data with specified parameters"
+      deterministic: true
+
+    - name: "detect_anomalies"
+      description: "Identify outliers using fitted model predictions"
+      deterministic: true
+
+    - name: "calculate_anomaly_scores"
+      description: "Compute anomaly scores and severity classification for all points"
+      deterministic: true
+
+    - name: "rank_anomalies"
+      description: "Rank anomalies by severity with feature values"
+      deterministic: true
+
+    - name: "analyze_anomaly_patterns"
+      description: "Identify patterns in anomalies (feature importance, mean/std differences)"
+      deterministic: true
+
+    - name: "generate_alerts"
+      description: "Create actionable alerts with root cause hints and recommendations"
+      deterministic: true
+
+# ==============================================================================
+# Realtime Section - Execution Configuration
+# ==============================================================================
+realtime:
+  replay_mode:
+    enabled: true
+    seed: 42
+    temperature: 0.0
+    deterministic: true
+
+# ==============================================================================
+# Provenance Section - Auditability
+# ==============================================================================
+provenance:
+  ef_pinning: "sha256"
+  gwp_set: "AR6"
+
+  audit_fields:
+    - "n_anomalies"
+    - "anomaly_rate"
+    - "severity_distribution"
+    - "patterns"
+    - "alerts"
+
+  citation_required: true
+  determinism_required: true
+
+  ml_model:
+    algorithm: "IsolationForest"
+    library: "scikit-learn"
+    version: ">=1.0"
+    random_state: 42
+
+# ==============================================================================
+# Metadata
+# ==============================================================================
+metadata:
+  created: "2025-11-06"
+  updated: "2025-11-06"
+  status: "production"
+  compliance:
+    - "AgentSpec_v2"
+    - "ML_Best_Practices"
+
+  documentation:
+    url: "https://docs.greenlang.com/agents/anomaly_iforest"
+    examples: "examples/anomaly_detection/"
+
+  performance:
+    avg_latency_ms: 4000
+    max_latency_ms: 12000
+    throughput_per_sec: 5
+
+  dependencies:
+    - "scikit-learn>=1.0"
+    - "pandas>=1.3"
+    - "numpy>=1.21"
+    - "greenlang.agents.base"
+    - "greenlang.intelligence.ChatSession"
+    - "greenlang.agents.citations"

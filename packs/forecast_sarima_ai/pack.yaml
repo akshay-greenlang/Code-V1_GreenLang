@@ -1,0 +1,273 @@
+# AgentSpec v2 Compliant Pack for ForecastAgentSARIMA
+# AI-powered SARIMA time-series forecasting for energy and emissions prediction
+# Machine Learning agent using statsmodels SARIMAX
+
+schema_version: "2.0.0"
+id: "ml/forecast_sarima_v1"
+name: "SARIMA Forecast Agent (Time-Series ML)"
+version: "1.0.0"
+summary: "AI-powered SARIMA forecasting for time-series prediction with auto-tuning, seasonality detection, confidence intervals, and multi-metric evaluation"
+
+tags:
+  - "ml"
+  - "forecasting"
+  - "time-series"
+  - "sarima"
+  - "sarimax"
+  - "prediction"
+  - "ai-agent"
+  - "statsmodels"
+  - "citations"
+
+owners:
+  - "greenlang-team"
+
+license: "MIT"
+
+# ==============================================================================
+# Compute Section - Core Functionality
+# ==============================================================================
+compute:
+  entrypoint: "python://greenlang.agents.forecast_agent_sarima:execute"
+  deterministic: true
+  timeout_s: 180
+  memory_limit_mb: 512
+
+  # Input Schema
+  inputs:
+    data:
+      dtype: "object"
+      unit: "1"
+      description: "Time-series DataFrame with DatetimeIndex (min: 2×seasonal_period rows)"
+      required: true
+
+    target_column:
+      dtype: "string"
+      unit: "1"
+      description: "Column name to forecast (e.g., 'energy_kwh')"
+      required: true
+
+    forecast_horizon:
+      dtype: "int32"
+      unit: "periods"
+      description: "Number of periods to forecast (1-365)"
+      required: true
+      ge: 1
+      le: 365
+
+    seasonal_period:
+      dtype: "int32"
+      unit: "periods"
+      description: "Seasonal cycle length (12=monthly, 7=daily, 24=hourly)"
+      required: false
+
+    confidence_level:
+      dtype: "float64"
+      unit: "fraction"
+      description: "Prediction interval confidence level (0.5-0.99)"
+      required: false
+      default: 0.95
+      ge: 0.5
+      le: 0.99
+
+    auto_tune:
+      dtype: "bool"
+      unit: "1"
+      description: "Enable grid search for optimal SARIMA parameters"
+      required: false
+      default: true
+
+    exog_columns:
+      dtype: "list"
+      unit: "1"
+      description: "Exogenous variables for SARIMAX modeling (optional)"
+      required: false
+
+  # Output Schema
+  outputs:
+    forecast:
+      dtype: "list"
+      description: "Point forecasts for horizon"
+
+    lower_bound:
+      dtype: "list"
+      description: "Lower confidence bound (e.g., 95%)"
+
+    upper_bound:
+      dtype: "list"
+      description: "Upper confidence bound"
+
+    forecast_dates:
+      dtype: "list"
+      description: "ISO 8601 date for each forecast"
+
+    model_params:
+      dtype: "object"
+      description: "SARIMA model parameters (order, seasonal_order, AIC, BIC, auto_tuned)"
+
+    metrics:
+      dtype: "object"
+      description: "Model performance metrics (RMSE, MAE, MAPE, train/test split)"
+
+    seasonality:
+      dtype: "object"
+      description: "Seasonality analysis (period, strength, detected_peaks, method)"
+
+    stationarity:
+      dtype: "object"
+      description: "Stationarity test results (ADF statistic, p-value, differencing_needed)"
+
+    preprocessing:
+      dtype: "object"
+      description: "Data preprocessing summary (missing values, outliers, final length)"
+
+    explanation:
+      dtype: "string"
+      unit: "1"
+      description: "AI-generated interpretation of forecast and patterns"
+
+    metadata:
+      dtype: "object"
+      description: "Execution metadata (agent_id, version, tokens, cost, time)"
+
+  factors: []
+
+# ==============================================================================
+# AI Section - LLM Configuration
+# ==============================================================================
+ai:
+  system_prompt: |
+    You are a time-series forecasting expert for GreenLang.
+    You help analyze historical data and generate forecasts using SARIMA models.
+
+    CRITICAL RULE: You must use the provided tools for ALL numeric calculations.
+    Never estimate or guess numbers. Always explain patterns and provide actionable insights.
+
+    Your Role:
+    1. Orchestrate time-series analysis workflow using deterministic tools
+    2. Interpret SARIMA model results and parameters
+    3. Explain seasonality patterns and trends
+    4. Assess stationarity and recommend differencing
+    5. Generate clear, actionable forecasts with confidence intervals
+    6. Provide business context and recommendations
+
+    Tool Usage Pattern:
+    1. Use preprocess_data to handle missing values and outliers
+    2. Use validate_stationarity to test stationarity (ADF test)
+    3. Use detect_seasonality to identify seasonal patterns (ACF method)
+    4. Use fit_sarima_model to train optimal SARIMA model (auto-tune or manual)
+    5. Use forecast_future to generate predictions with confidence intervals
+    6. Use calculate_confidence_intervals to compute prediction bounds
+    7. Use evaluate_model to compute RMSE, MAE, MAPE metrics
+    8. Synthesize all results into clear forecast explanation
+
+    Model Configuration:
+    - Auto-tuning searches: p∈[0,1,2,3], d∈[0,1], q∈[0,1,2,3], P∈[0,1], D∈[0,1], Q∈[0,1]
+    - Optimization: Minimize AIC (Akaike Information Criterion)
+    - Stationarity: ADF test (α=0.05)
+    - Seasonality: ACF peak detection (threshold=0.3)
+
+    Output Guidelines:
+    - Format numbers clearly (e.g., "1,234.5 kWh" not "1234.5")
+    - Explain confidence intervals in plain language
+    - Highlight any concerning trends or anomalies
+    - Provide actionable recommendations based on forecast
+
+  budget:
+    max_cost_usd: 1.00
+    warn_at_usd: 0.50
+
+  rag_collections:
+    - "sarima_modeling_guide"
+    - "time_series_patterns"
+    - "seasonality_detection"
+
+  tools:
+    - name: "fit_sarima_model"
+      description: "Train SARIMA model with optional auto-tuning via grid search"
+      deterministic: true
+
+    - name: "forecast_future"
+      description: "Generate point forecasts for specified horizon"
+      deterministic: true
+
+    - name: "calculate_confidence_intervals"
+      description: "Compute prediction intervals at specified confidence level"
+      deterministic: true
+
+    - name: "evaluate_model"
+      description: "Calculate RMSE, MAE, MAPE on train/test split"
+      deterministic: true
+
+    - name: "detect_seasonality"
+      description: "Detect seasonal patterns using ACF method"
+      deterministic: true
+
+    - name: "validate_stationarity"
+      description: "Test stationarity using Augmented Dickey-Fuller test"
+      deterministic: true
+
+    - name: "preprocess_data"
+      description: "Handle missing values and outliers (interpolation + IQR method)"
+      deterministic: true
+
+# ==============================================================================
+# Realtime Section - Execution Configuration
+# ==============================================================================
+realtime:
+  replay_mode:
+    enabled: true
+    seed: 42
+    temperature: 0.0
+    deterministic: true
+
+# ==============================================================================
+# Provenance Section - Auditability
+# ==============================================================================
+provenance:
+  ef_pinning: "sha256"
+  gwp_set: "AR6"
+
+  audit_fields:
+    - "forecast"
+    - "model_params"
+    - "metrics"
+    - "explanation"
+
+  citation_required: true
+  determinism_required: true
+
+  ml_model:
+    algorithm: "SARIMAX"
+    library: "statsmodels"
+    version: ">=0.14.0"
+    optimization: "AIC"
+
+# ==============================================================================
+# Metadata
+# ==============================================================================
+metadata:
+  created: "2025-11-06"
+  updated: "2025-11-06"
+  status: "production"
+  compliance:
+    - "AgentSpec_v2"
+    - "ML_Best_Practices"
+
+  documentation:
+    url: "https://docs.greenlang.com/agents/forecast_sarima"
+    examples: "examples/forecasting/"
+
+  performance:
+    avg_latency_ms: 4000
+    max_latency_ms: 15000
+    throughput_per_sec: 3
+
+  dependencies:
+    - "statsmodels>=0.14.0"
+    - "pandas>=1.5.0"
+    - "numpy>=1.24.0"
+    - "scipy>=1.10.0"
+    - "greenlang.agents.base"
+    - "greenlang.intelligence.ChatSession"
+    - "greenlang.agents.citations"
