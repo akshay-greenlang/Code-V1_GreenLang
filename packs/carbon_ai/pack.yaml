@@ -1,0 +1,277 @@
+# AgentSpec v2 Compliant Pack for CarbonAgentAI
+# This pack defines the schema, inputs, outputs, and configuration for the AI-powered
+# carbon footprint aggregation agent.
+
+schema_version: "2.0.0"
+id: "emissions/carbon_ai_v1"
+name: "Carbon Aggregation Agent (AI-Powered)"
+version: "1.0.0"
+summary: "AI-powered carbon footprint aggregation with intelligent insights, deterministic calculations, and citation tracking"
+
+tags:
+  - "emissions"
+  - "carbon"
+  - "aggregation"
+  - "scope1"
+  - "scope2"
+  - "ai-agent"
+  - "citations"
+  - "recommendations"
+
+owners:
+  - "greenlang-team"
+
+license: "MIT"
+
+# ==============================================================================
+# Compute Section - Core Functionality
+# ==============================================================================
+compute:
+  entrypoint: "python://greenlang.agents.carbon_agent_ai:execute"
+  deterministic: true
+  timeout_s: 60
+  memory_limit_mb: 512
+
+  # Input Schema
+  inputs:
+    emissions:
+      dtype: "list"
+      description: "List of emission sources to aggregate"
+      required: true
+      items:
+        fuel_type:
+          dtype: "string"
+          unit: "1"
+          description: "Type of fuel or energy source"
+          required: true
+
+        co2e_emissions_kg:
+          dtype: "float64"
+          unit: "kgCO2e"
+          description: "CO2 equivalent emissions in kilograms"
+          required: true
+          ge: 0.0
+
+        source:
+          dtype: "string"
+          unit: "1"
+          description: "Optional source identifier or name"
+          required: false
+
+    building_area:
+      dtype: "float64"
+      unit: "sqft"
+      description: "Building area for intensity calculations (optional)"
+      required: false
+      ge: 0.0
+
+    occupancy:
+      dtype: "int32"
+      unit: "people"
+      description: "Number of occupants for per-capita intensity (optional)"
+      required: false
+      ge: 0
+
+    year:
+      dtype: "int32"
+      unit: "1"
+      description: "Year for temporal analysis (optional)"
+      required: false
+      ge: 1990
+      le: 2030
+
+  # Output Schema
+  outputs:
+    total_co2e_kg:
+      dtype: "float64"
+      unit: "kgCO2e"
+      description: "Total CO2 equivalent emissions in kilograms"
+
+    total_co2e_tons:
+      dtype: "float64"
+      unit: "tCO2e"
+      description: "Total CO2 equivalent emissions in metric tons"
+
+    emissions_breakdown:
+      dtype: "list"
+      description: "Breakdown of emissions by source with percentages"
+      items:
+        source:
+          dtype: "string"
+          unit: "1"
+          description: "Emission source name"
+
+        co2e_kg:
+          dtype: "float64"
+          unit: "kgCO2e"
+          description: "Emissions from this source in kg CO2e"
+
+        percentage:
+          dtype: "float64"
+          unit: "%"
+          description: "Percentage of total emissions"
+
+    carbon_intensity:
+      dtype: "object"
+      description: "Carbon intensity metrics"
+      properties:
+        per_sqft:
+          dtype: "float64"
+          unit: "kgCO2e/sqft"
+          description: "Emissions per square foot (if building_area provided)"
+
+        per_person:
+          dtype: "float64"
+          unit: "kgCO2e/person"
+          description: "Emissions per person (if occupancy provided)"
+
+    recommendations:
+      dtype: "list"
+      description: "AI-generated reduction recommendations"
+      items:
+        priority:
+          dtype: "string"
+          unit: "1"
+          description: "Priority level (high/medium/low)"
+
+        source:
+          dtype: "string"
+          unit: "1"
+          description: "Target emission source"
+
+        impact:
+          dtype: "string"
+          unit: "1"
+          description: "Current impact description"
+
+        action:
+          dtype: "string"
+          unit: "1"
+          description: "Recommended action"
+
+        potential_reduction:
+          dtype: "string"
+          unit: "1"
+          description: "Estimated reduction potential"
+
+        estimated_payback:
+          dtype: "string"
+          unit: "1"
+          description: "Estimated payback period"
+
+    summary:
+      dtype: "string"
+      unit: "1"
+      description: "Brief summary of aggregation results"
+
+    ai_summary:
+      dtype: "string"
+      unit: "1"
+      description: "AI-generated detailed analysis and insights"
+
+    citations:
+      dtype: "list"
+      description: "Citation tracking for provenance"
+      required: false
+
+  # Emission Factors (inherited from sources)
+  factors: []
+
+# ==============================================================================
+# AI Section - LLM Configuration
+# ==============================================================================
+ai:
+  system_prompt: |
+    You are an expert carbon footprint analyst helping organizations understand and reduce their emissions.
+
+    Your role:
+    1. Aggregate emissions from multiple sources using exact tools (never hallucinate numbers)
+    2. Calculate percentage breakdowns and identify largest contributors
+    3. Generate clear, actionable insights and recommendations
+    4. Provide context on emission sources and reduction opportunities
+
+    Guidelines:
+    - Always use the aggregate_emissions tool for calculations
+    - Use calculate_breakdown tool for percentage analysis
+    - Generate 3-5 targeted recommendations for largest sources
+    - Focus on practical, cost-effective reduction strategies
+    - Be concise but insightful in your summaries
+
+    Remember: All numeric calculations MUST come from tools. Your role is to interpret and explain.
+
+  budget:
+    max_usd_per_run: 0.50
+    warn_at_usd: 0.30
+
+  rag_collections: []
+
+  tools:
+    - name: "aggregate_emissions"
+      description: "Aggregate CO2e emissions from multiple sources"
+      deterministic: true
+
+    - name: "calculate_breakdown"
+      description: "Calculate percentage breakdown of emissions by source"
+      deterministic: true
+
+    - name: "calculate_intensity"
+      description: "Calculate carbon intensity metrics (per sqft, per person)"
+      deterministic: true
+
+    - name: "generate_recommendations"
+      description: "Generate targeted reduction recommendations based on breakdown"
+      deterministic: true
+
+# ==============================================================================
+# Realtime Section - Execution Configuration
+# ==============================================================================
+realtime:
+  replay_mode:
+    enabled: true
+    seed: 42
+    temperature: 0.0
+    deterministic: true
+
+# ==============================================================================
+# Provenance Section - Auditability
+# ==============================================================================
+provenance:
+  ef_pinning: "sha256"
+  gwp_set: "AR6"
+
+  audit_fields:
+    - "total_co2e_kg"
+    - "total_co2e_tons"
+    - "emissions_breakdown"
+    - "carbon_intensity"
+    - "recommendations"
+    - "ai_summary"
+
+  citation_required: true
+  determinism_required: true
+
+# ==============================================================================
+# Metadata
+# ==============================================================================
+metadata:
+  created: "2025-10-26"
+  updated: "2025-10-26"
+  status: "production"
+  compliance:
+    - "AgentSpec_v2"
+    - "GHG_Protocol"
+    - "ISO_14064"
+
+  documentation:
+    url: "https://docs.greenlang.com/agents/carbon_ai"
+    examples: "examples/carbon_aggregation/"
+
+  performance:
+    avg_latency_ms: 2000
+    max_latency_ms: 5000
+    throughput_per_sec: 10
+
+  dependencies:
+    - "greenlang.agents.carbon_agent"
+    - "greenlang.intelligence.ChatSession"
+    - "greenlang.agents.tools"

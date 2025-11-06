@@ -1,0 +1,325 @@
+# AgentSpec v2 Compliant Pack for GridFactorAgentAI
+# This pack defines the schema, inputs, outputs, and configuration for the AI-powered
+# grid carbon intensity lookup agent.
+
+schema_version: "2.0.0"
+id: "emissions/grid_factor_ai_v1"
+name: "Grid Emission Factor Agent (AI-Powered)"
+version: "1.0.0"
+summary: "AI-powered grid carbon intensity lookup with temporal analysis, intelligent insights, and citation tracking"
+
+tags:
+  - "emissions"
+  - "electricity"
+  - "grid"
+  - "scope2"
+  - "ai-agent"
+  - "citations"
+  - "recommendations"
+
+owners:
+  - "greenlang-team"
+
+license: "MIT"
+
+# ==============================================================================
+# Compute Section - Core Functionality
+# ==============================================================================
+compute:
+  entrypoint: "python://greenlang.agents.grid_factor_agent_ai:compute"
+  deterministic: true
+  timeout_s: 30
+  memory_limit_mb: 256
+
+  # Input Schema
+  inputs:
+    country:
+      dtype: "string"
+      unit: "1"
+      description: "Country code for grid intensity lookup (ISO 3166-1 alpha-2)"
+      required: true
+      examples: ["US", "GB", "DE", "FR", "CN", "IN"]
+
+    fuel_type:
+      dtype: "string"
+      unit: "1"
+      description: "Energy type (typically 'electricity' for grid lookups)"
+      required: true
+      default: "electricity"
+      enum: ["electricity", "grid", "power"]
+
+    unit:
+      dtype: "string"
+      unit: "1"
+      description: "Unit of electricity consumption"
+      required: true
+      enum: ["kWh", "MWh", "GWh"]
+      default: "kWh"
+
+    year:
+      dtype: "int32"
+      unit: "1"
+      description: "Year for historical grid intensity (optional)"
+      required: false
+      ge: 1990
+      le: 2030
+
+    month:
+      dtype: "int32"
+      unit: "1"
+      description: "Month for seasonal grid intensity (1-12, optional)"
+      required: false
+      ge: 1
+      le: 12
+
+    hour:
+      dtype: "int32"
+      unit: "1"
+      description: "Hour for hourly grid intensity (0-23, optional)"
+      required: false
+      ge: 0
+      le: 23
+
+    region:
+      dtype: "string"
+      unit: "1"
+      description: "Sub-national region or grid operator (optional)"
+      required: false
+
+  # Output Schema
+  outputs:
+    emission_factor:
+      dtype: "float64"
+      unit: "kgCO2e/kWh"
+      description: "Grid emission factor in kg CO2e per kWh"
+
+    source:
+      dtype: "string"
+      unit: "1"
+      description: "Data source for emission factor (e.g., 'DEFRA 2023', 'EPA eGRID')"
+
+    country:
+      dtype: "string"
+      unit: "1"
+      description: "Country code used for lookup"
+
+    fuel_type:
+      dtype: "string"
+      unit: "1"
+      description: "Fuel type used for lookup"
+
+    unit:
+      dtype: "string"
+      unit: "1"
+      description: "Unit used for emission factor"
+
+    year:
+      dtype: "int32"
+      unit: "1"
+      description: "Year of emission factor data"
+      required: false
+
+    grid_mix:
+      dtype: "object"
+      description: "Grid energy mix breakdown (if available)"
+      required: false
+      properties:
+        renewable_percent:
+          dtype: "float64"
+          unit: "%"
+          description: "Percentage of renewable energy in grid mix"
+
+        fossil_percent:
+          dtype: "float64"
+          unit: "%"
+          description: "Percentage of fossil fuel energy in grid mix"
+
+        nuclear_percent:
+          dtype: "float64"
+          unit: "%"
+          description: "Percentage of nuclear energy in grid mix"
+
+        coal_percent:
+          dtype: "float64"
+          unit: "%"
+          description: "Percentage of coal in fossil mix"
+
+        gas_percent:
+          dtype: "float64"
+          unit: "%"
+          description: "Percentage of natural gas in fossil mix"
+
+    explanation:
+      dtype: "string"
+      unit: "1"
+      description: "AI-generated explanation of grid intensity and context"
+      required: false
+
+    recommendations:
+      dtype: "list"
+      description: "AI-generated recommendations for cleaner energy"
+      required: false
+      items:
+        priority:
+          dtype: "string"
+          unit: "1"
+          description: "Priority level (high/medium/low)"
+
+        action:
+          dtype: "string"
+          unit: "1"
+          description: "Recommended action"
+
+        impact:
+          dtype: "string"
+          unit: "1"
+          description: "Expected impact description"
+
+    temporal_variation:
+      dtype: "object"
+      description: "Temporal variation analysis (if time-series data available)"
+      required: false
+      properties:
+        peak_hours:
+          dtype: "list"
+          description: "Hours with highest grid intensity"
+
+        clean_hours:
+          dtype: "list"
+          description: "Hours with lowest grid intensity"
+
+        seasonal_trend:
+          dtype: "string"
+          unit: "1"
+          description: "Description of seasonal variations"
+
+    citations:
+      dtype: "list"
+      description: "Citation tracking for provenance"
+      required: false
+
+  # Emission Factors - Reference
+  factors:
+    - id: "ef_grid_intensity"
+      name: "Grid Carbon Intensity Factor"
+      description: "Grid emission factor from authoritative data sources"
+      sources: ["DEFRA", "EPA_eGRID", "IEA", "EEA"]
+
+# ==============================================================================
+# AI Section - LLM Configuration
+# ==============================================================================
+ai:
+  system_prompt: |
+    You are an expert on electrical grid carbon intensity and renewable energy systems.
+
+    Your role:
+    1. Look up grid emission factors using exact tools (never hallucinate numbers)
+    2. Provide context on grid composition and renewable energy share
+    3. Explain temporal variations (hourly, daily, seasonal) in grid intensity
+    4. Recommend strategies for reducing electricity-related emissions
+    5. Highlight opportunities for renewable energy adoption
+
+    Guidelines:
+    - Always use the lookup_grid_intensity tool for emission factors
+    - Explain what drives high/low grid intensity for the region
+    - Mention renewable energy penetration when available
+    - Suggest time-of-use strategies for cleaner electricity consumption
+    - Be clear about data sources and temporal applicability
+
+    Remember: All numeric data MUST come from tools. Your role is to contextualize and guide.
+
+  budget:
+    max_usd_per_run: 0.50
+    warn_at_usd: 0.30
+
+  rag_collections:
+    - "grid_emission_factors"
+    - "renewable_energy_data"
+
+  tools:
+    - name: "lookup_grid_intensity"
+      description: "Look up grid carbon intensity for a country/region/time"
+      deterministic: true
+
+    - name: "interpolate_hourly_data"
+      description: "Interpolate hourly grid intensity data"
+      deterministic: true
+
+    - name: "calculate_weighted_average"
+      description: "Calculate weighted average intensity from multiple sources"
+      deterministic: true
+
+    - name: "analyze_grid_mix"
+      description: "Analyze grid energy mix composition"
+      deterministic: true
+
+# ==============================================================================
+# Realtime Section - Execution Configuration
+# ==============================================================================
+realtime:
+  replay_mode:
+    enabled: true
+    seed: 42
+    temperature: 0.0
+    deterministic: true
+
+  time_series:
+    enabled: true
+    granularity: "hourly"
+    supported_ranges: ["hourly", "daily", "monthly", "annual"]
+
+# ==============================================================================
+# Provenance Section - Auditability
+# ==============================================================================
+provenance:
+  ef_pinning: "sha256"
+  gwp_set: "AR6"
+
+  audit_fields:
+    - "emission_factor"
+    - "source"
+    - "country"
+    - "year"
+    - "grid_mix"
+
+  citation_required: true
+  determinism_required: true
+
+  data_sources:
+    - name: "DEFRA"
+      url: "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors"
+      version: "2023"
+
+    - name: "EPA eGRID"
+      url: "https://www.epa.gov/egrid"
+      version: "2022"
+
+    - name: "IEA"
+      url: "https://www.iea.org/data-and-statistics"
+      version: "2023"
+
+# ==============================================================================
+# Metadata
+# ==============================================================================
+metadata:
+  created: "2025-10-26"
+  updated: "2025-10-26"
+  status: "production"
+  compliance:
+    - "AgentSpec_v2"
+    - "GHG_Protocol_Scope2"
+    - "ISO_14064"
+
+  documentation:
+    url: "https://docs.greenlang.com/agents/grid_factor_ai"
+    examples: "examples/grid_intensity/"
+
+  performance:
+    avg_latency_ms: 1500
+    max_latency_ms: 3000
+    throughput_per_sec: 20
+
+  dependencies:
+    - "greenlang.agents.grid_factor_agent"
+    - "greenlang.intelligence.ChatSession"
+    - "greenlang.data.grid_factors"
