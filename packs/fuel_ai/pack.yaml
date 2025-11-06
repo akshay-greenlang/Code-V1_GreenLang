@@ -1,271 +1,202 @@
-# AgentSpec v2 Compliant Pack for FuelAgentAI
-# This pack defines the schema, inputs, outputs, and configuration for the AI-powered
-# fuel emissions calculator.
-
-schema_version: "2.0.0"
-id: "emissions/fuel_ai_v1"
-name: "Fuel Emissions Agent (AI-Powered)"
-version: "1.0.0"
-summary: "AI-powered fuel emissions calculation with deterministic tool runtime and citation tracking"
-
+schema_version: 2.0.0
+id: emissions/fuel_ai_v1
+name: Fuel Emissions Agent (AI-Powered)
+version: 1.0.0
+summary: AI-powered fuel emissions calculation with deterministic tool runtime and
+  citation tracking
 tags:
-  - "emissions"
-  - "fuel"
-  - "scope1"
-  - "ai-agent"
-  - "citations"
-
+- emissions
+- fuel
+- scope1
+- ai-agent
+- citations
 owners:
-  - "greenlang-team"
-
-license: "MIT"
-
-# ==============================================================================
-# Compute Section - Core Functionality
-# ==============================================================================
+- greenlang-team
+license: MIT
 compute:
-  entrypoint: "python://greenlang.agents.fuel_agent_ai:compute"
+  entrypoint: python://greenlang.agents.fuel_agent_ai:compute
   deterministic: true
   timeout_s: 30
   memory_limit_mb: 512
-
-  # Input Schema
   inputs:
     fuel_type:
-      dtype: "string"
-      unit: "1"  # Dimensionless
-      description: "Type of fuel (natural_gas, coal, diesel, propane, fuel_oil, etc.)"
+      dtype: string
+      unit: '1'
+      description: Type of fuel (natural_gas, coal, diesel, propane, fuel_oil, etc.)
       required: true
-      enum: [
-        "natural_gas",
-        "coal",
-        "diesel",
-        "propane",
-        "fuel_oil",
-        "gasoline",
-        "electricity",
-        "biomass",
-        "lng",
-        "lpg"
-      ]
-
+      enum:
+      - natural_gas
+      - coal
+      - diesel
+      - propane
+      - fuel_oil
+      - gasoline
+      - electricity
+      - biomass
+      - lng
+      - lpg
     consumption_value:
-      dtype: "float64"
-      unit: "1"  # Unit specified separately
-      description: "Fuel consumption amount"
+      dtype: float64
+      unit: '1'
+      description: Fuel consumption amount
       required: true
       ge: 0.0
-
     consumption_unit:
-      dtype: "string"
-      unit: "1"
-      description: "Unit of measurement for consumption"
+      dtype: string
+      unit: '1'
+      description: Unit of measurement for consumption
       required: true
-      enum: ["therms", "m3", "m^3", "gallons", "liters", "kWh", "MWh", "kg", "t", "lb"]
-
+      enum:
+      - therms
+      - m3
+      - m^3
+      - gallons
+      - liters
+      - kWh
+      - MWh
+      - kg
+      - t
+      - lb
     country:
-      dtype: "string"
-      unit: "1"
-      description: "Country code for emission factor lookup (ISO 3166-1 alpha-2)"
+      dtype: string
+      unit: '1'
+      description: Country code for emission factor lookup (ISO 3166-1 alpha-2)
       required: false
-      default: "US"
-
+      default: US
     year:
-      dtype: "int32"
-      unit: "1"
-      description: "Year for historical emission factors (optional)"
+      dtype: int32
+      unit: '1'
+      description: Year for historical emission factors (optional)
       required: false
       ge: 1990
       le: 2030
-
-  # Output Schema
   outputs:
     co2e_emissions_kg:
-      dtype: "float64"
-      unit: "kgCO2e"
-      description: "Total CO2 equivalent emissions"
-
+      dtype: float64
+      unit: kgCO2e
+      description: Total CO2 equivalent emissions
     result_fuel_type:
-      dtype: "string"
-      unit: "1"
-      description: "Type of fuel used in calculation"
-
+      dtype: string
+      unit: '1'
+      description: Type of fuel used in calculation
     result_consumption_value:
-      dtype: "float64"
-      unit: "1"
-      description: "Fuel consumption amount (normalized)"
-
+      dtype: float64
+      unit: '1'
+      description: Fuel consumption amount (normalized)
     result_consumption_unit:
-      dtype: "string"
-      unit: "1"
-      description: "Unit of fuel consumption"
-
+      dtype: string
+      unit: '1'
+      description: Unit of fuel consumption
     emission_factor:
-      dtype: "float64"
-      unit: "1"  # Composite unit like kgCO2e/therm
-      description: "Emission factor value used in calculation"
-
+      dtype: float64
+      unit: '1'
+      description: Emission factor value used in calculation
     emission_factor_unit:
-      dtype: "string"
-      unit: "1"
-      description: "Unit of emission factor"
-
+      dtype: string
+      unit: '1'
+      description: Unit of emission factor
     source:
-      dtype: "string"
-      unit: "1"
-      description: "Data source for emission factor (e.g., EPA, IPCC)"
-
+      dtype: string
+      unit: '1'
+      description: Data source for emission factor (e.g., EPA, IPCC)
     version:
-      dtype: "string"
-      unit: "1"
-      description: "Version of emission factor database"
-
+      dtype: string
+      unit: '1'
+      description: Version of emission factor database
     last_updated:
-      dtype: "string"
-      unit: "1"
-      description: "Last update date of emission factor (ISO 8601)"
-
+      dtype: string
+      unit: '1'
+      description: Last update date of emission factor (ISO 8601)
     citations:
-      dtype: "string"  # JSON array serialized
-      unit: "1"
-      description: "List of emission factor citations with EF CIDs"
-
-  # Emission Factor References
+      dtype: string
+      unit: '1'
+      description: List of emission factor citations with EF CIDs
   factors:
     ipcc_ar6_ng:
-      ref: "ef://ipcc/ar6/fossil-fuels/natural-gas"
-      gwp_set: "AR6GWP100"
-      description: "IPCC AR6 natural gas combustion factors"
-
+      ref: ef://ipcc/ar6/fossil-fuels/natural-gas
+      gwp_set: AR6GWP100
+      description: IPCC AR6 natural gas combustion factors
     epa_ghg_fuels:
-      ref: "ef://epa/ghg-inventory/fossil-fuels"
-      gwp_set: "AR6GWP100"
-      description: "EPA GHG Inventory fossil fuel factors"
-
+      ref: ef://epa/ghg-inventory/fossil-fuels
+      gwp_set: AR6GWP100
+      description: EPA GHG Inventory fossil fuel factors
     uk_defra_fuels:
-      ref: "ef://uk_defra/2023/fuels"
-      gwp_set: "AR6GWP100"
-      description: "UK DEFRA 2023 fuel emission factors"
-
-# ==============================================================================
-# AI Section - LLM Configuration
-# ==============================================================================
+      ref: ef://uk_defra/2023/fuels
+      gwp_set: AR6GWP100
+      description: UK DEFRA 2023 fuel emission factors
 ai:
   json_mode: true
-  system_prompt: |
-    You are a climate emissions expert specialized in calculating fuel-based greenhouse gas emissions.
+  system_prompt: 'You are a climate emissions expert specialized in calculating fuel-based
+    greenhouse gas emissions.
+
 
     Your role:
+
     - Calculate emissions using ONLY the provided tools
+
     - NEVER guess emission factors or numbers
+
     - Always cite data sources with EF CIDs
+
     - Follow GHG Protocol Corporate Standard
+
     - Use appropriate GWP sets (default: AR6GWP100)
 
+
     Rules:
+
     1. Use lookup_emission_factor() to get EFs - NEVER hardcode
+
     2. Use calculate_emissions() to compute results
+
     3. Include citations for all emission factors
+
     4. Validate input units before calculation
+
     5. Return results with full provenance
 
+    '
   budget:
     max_cost_usd: 1.0
     max_input_tokens: 12000
     max_output_tokens: 3000
     max_retries: 3
-
   rag_collections:
-    - "ghg_protocol_corp"
-    - "ipcc_ar6_wg3"
-    - "epa_ghg_inventory"
-
+  - ghg_protocol_corp
+  - ipcc_ar6_wg3
+  - epa_ghg_inventory
   tools:
-    - name: "lookup_emission_factor"
-      schema_in:
-        type: "object"
-        required: ["fuel_type", "country"]
-        properties:
-          fuel_type:
-            type: "string"
-            description: "Type of fuel"
-          country:
-            type: "string"
-            description: "Country code"
-          unit:
-            type: "string"
-            description: "Desired unit for emission factor"
-      schema_out:
-        type: "object"
-        required: ["emission_factor", "unit", "source", "ef_cid"]
-        properties:
-          emission_factor:
-            type: "number"
-            description: "Emission factor value"
-          unit:
-            type: "string"
-            description: "Unit of emission factor"
-          source:
-            type: "string"
-            description: "Data source"
-          ef_cid:
-            type: "string"
-            description: "Emission Factor Content ID for verification"
-          version:
-            type: "string"
-          confidence:
-            type: "string"
-            enum: ["high", "medium", "low"]
-      impl: "python://greenlang.agents.fuel_agent_ai:lookup_emission_factor"
-      safe: true
-
-    - name: "calculate_emissions"
-      schema_in:
-        type: "object"
-        required: ["consumption_value", "consumption_unit", "emission_factor", "ef_unit"]
-        properties:
-          consumption_value:
-            type: "number"
-            description: "Amount of fuel consumed"
-          consumption_unit:
-            type: "string"
-            description: "Unit of consumption"
-          emission_factor:
-            type: "number"
-            description: "Emission factor"
-          ef_unit:
-            type: "string"
-            description: "Emission factor unit"
-      schema_out:
-        type: "object"
-        required: ["emissions_kg_co2e"]
-        properties:
-          emissions_kg_co2e:
-            type: "number"
-            description: "Total emissions in kg CO2e"
-          calculation_method:
-            type: "string"
-      impl: "python://greenlang.agents.fuel_agent_ai:calculate_emissions"
-      safe: true
-
-# ==============================================================================
-# Realtime Section - Replay/Live Modes
-# ==============================================================================
+  - name: lookup_emission_factor
+    description: 'Tool: lookup_emission_factor'
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:lookup_emission_factor
+    safe: true
+  - name: calculate_emissions
+    description: 'Tool: calculate_emissions'
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_emissions
+    safe: true
 realtime:
-  default_mode: "replay"
-  snapshot_path: "./snapshots/"
-  connectors: []  # No live connectors required for fuel calculations
-
-# ==============================================================================
-# Provenance Section - Reproducibility & Audit
-# ==============================================================================
+  default_mode: replay
+  snapshot_path: ./snapshots/
+  connectors: []
 provenance:
-  pin_ef: true  # Pin emission factors for reproducibility
-  gwp_set: "AR6GWP100"  # Default GWP set
+  pin_ef: true
+  gwp_set: AR6GWP100
   record:
-    - "seed"  # Random seed for AI
-    - "temperature"  # LLM temperature
-    - "tool_calls"  # All tool invocations
-    - "ef_cids"  # Emission Factor Content IDs
-    - "calculation_steps"  # Intermediate calculations
-    - "citations"  # Full citation data
+  - seed
+  - temperature
+  - tool_calls
+  - ef_cids
+  - calculation_steps
+  - citations

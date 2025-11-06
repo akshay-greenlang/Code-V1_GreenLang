@@ -1,272 +1,239 @@
-# AgentSpec v2 Compliant Pack for RecommendationAgentAI
-# AI-powered building emissions reduction recommendations with ROI analysis,
-# implementation roadmaps, and location-specific strategies
-
-schema_version: "2.0.0"
-id: "buildings/recommendation_ai_v1"
-name: "Building Recommendation Agent (AI-Powered)"
-version: "1.0.0"
-summary: "AI-powered carbon reduction recommendations with ROI analysis, implementation roadmaps, and location-specific strategies for buildings"
-
+schema_version: 2.0.0
+id: buildings/recommendation_ai_v1
+name: Building Recommendation Agent (AI-Powered)
+version: 1.0.0
+summary: AI-powered carbon reduction recommendations with ROI analysis, implementation
+  roadmaps, and location-specific strategies for buildings
 tags:
-  - "buildings"
-  - "recommendations"
-  - "emissions-reduction"
-  - "roi-analysis"
-  - "efficiency"
-  - "hvac"
-  - "lighting"
-  - "renewable"
-  - "ai-agent"
-  - "citations"
-
+- buildings
+- recommendations
+- emissions-reduction
+- roi-analysis
+- efficiency
+- hvac
+- lighting
+- renewable
+- ai-agent
+- citations
 owners:
-  - "greenlang-team"
-
-license: "MIT"
-
-# ==============================================================================
-# Compute Section - Core Functionality
-# ==============================================================================
+- greenlang-team
+license: MIT
 compute:
-  entrypoint: "python://greenlang.agents.recommendation_agent_ai:execute"
+  entrypoint: python://greenlang.agents.recommendation_agent_ai:execute
   deterministic: true
   timeout_s: 120
   memory_limit_mb: 512
-
-  # Input Schema
   inputs:
     emissions_by_source:
-      dtype: "object"
-      unit: "1"
-      description: "Annual emissions breakdown by source (electricity, natural_gas, etc.)"
+      dtype: object
+      unit: '1'
+      description: Annual emissions breakdown by source (electricity, natural_gas,
+        etc.)
       required: true
-
     building_type:
-      dtype: "string"
-      unit: "1"
-      description: "Type of building"
+      dtype: string
+      unit: '1'
+      description: Type of building
       required: false
-      default: "commercial_office"
-
+      default: commercial_office
     building_age:
-      dtype: "int32"
-      unit: "years"
-      description: "Age of building in years"
+      dtype: int32
+      unit: years
+      description: Age of building in years
       required: false
       default: 10
       ge: 0
       le: 150
-
     performance_rating:
-      dtype: "string"
-      unit: "1"
-      description: "Current energy performance rating"
+      dtype: string
+      unit: '1'
+      description: Current energy performance rating
       required: false
-      default: "Average"
-
+      default: Average
     load_breakdown:
-      dtype: "object"
-      unit: "1"
-      description: "Fraction of building load by end-use (HVAC, lighting, equipment)"
+      dtype: object
+      unit: '1'
+      description: Fraction of building load by end-use (HVAC, lighting, equipment)
       required: false
-
     country:
-      dtype: "string"
-      unit: "1"
-      description: "Country code for location-specific recommendations"
+      dtype: string
+      unit: '1'
+      description: Country code for location-specific recommendations
       required: false
-      default: "US"
-
+      default: US
     intensity:
-      dtype: "object"
-      unit: "1"
-      description: "Optional intensity metrics (building_area_sqft, occupancy)"
+      dtype: object
+      unit: '1'
+      description: Optional intensity metrics (building_area_sqft, occupancy)
       required: false
-
-  # Output Schema
   outputs:
     recommendations:
-      dtype: "list"
-      description: "Ranked recommendations (max 5 by default)"
-
+      dtype: list
+      description: Ranked recommendations (max 5 by default)
     total_recommendations:
-      dtype: "int32"
-      unit: "1"
-      description: "Total recommendations identified"
-
+      dtype: int32
+      unit: '1'
+      description: Total recommendations identified
     usage_analysis:
-      dtype: "object"
-      description: "Energy usage pattern analysis"
-
+      dtype: object
+      description: Energy usage pattern analysis
     potential_savings:
-      dtype: "object"
-      description: "Potential emissions reduction estimates"
-
+      dtype: object
+      description: Potential emissions reduction estimates
     cost_savings:
-      dtype: "object"
-      description: "Estimated annual cost savings"
-
+      dtype: object
+      description: Estimated annual cost savings
     roi_analysis:
-      dtype: "object"
-      description: "ROI and payback calculations for all recommendations"
-
+      dtype: object
+      description: ROI and payback calculations for all recommendations
     implementation_roadmap:
-      dtype: "list"
-      description: "Phased implementation plan with timelines"
-
+      dtype: list
+      description: Phased implementation plan with timelines
     quick_wins:
-      dtype: "list"
-      description: "Low-cost, quick-payback options (up to 3)"
-
+      dtype: list
+      description: Low-cost, quick-payback options (up to 3)
     high_impact:
-      dtype: "list"
-      description: "High emissions reduction options (up to 3)"
-
+      dtype: list
+      description: High emissions reduction options (up to 3)
     ai_summary:
-      dtype: "string"
-      unit: "1"
-      description: "AI-generated analysis and recommendations"
-
+      dtype: string
+      unit: '1'
+      description: AI-generated analysis and recommendations
     citations:
-      dtype: "list"
-      description: "Citation tracking for provenance"
+      dtype: list
+      description: Citation tracking for provenance
       required: false
-
   factors: []
-
-# ==============================================================================
-# AI Section - LLM Configuration
-# ==============================================================================
 ai:
-  system_prompt: |
-    You are a sustainability advisor for GreenLang helping organizations reduce carbon emissions.
+  system_prompt: 'You are a sustainability advisor for GreenLang helping organizations
+    reduce carbon emissions.
+
 
     Your core responsibilities:
+
     1. Analyze building energy usage patterns using tools
+
     2. Generate ranked, actionable recommendations with ROI analysis
+
     3. Assess retrofit requirements and implementation complexity
+
     4. Create prioritized implementation roadmaps
 
+
     CRITICAL GUIDELINES:
+
     - YOU MUST USE PROVIDED TOOLS FOR ALL CALCULATIONS
+
     - NEVER estimate or guess numeric values
+
     - All numbers (emissions, costs, ROI, payback) must come from tools
+
     - Prioritize recommendations by ROI and environmental impact
+
     - Provide clear natural language explanations for each recommendation
+
     - Format numbers clearly (e.g., "15,000 kg" not "15000.0")
 
+
     Tool Usage:
+
     1. Call analyze_energy_usage to identify inefficiencies
+
     2. Call calculate_roi to compute financial metrics
+
     3. Call rank_recommendations to prioritize by impact/cost
+
     4. Call estimate_savings for potential benefits
+
     5. Call generate_implementation_plan for roadmap
+
     6. Synthesize all results into executive summary
 
+
     Focus Areas:
+
     - HVAC efficiency (highest impact for most buildings)
+
     - Lighting upgrades (LED, occupancy sensors, daylight harvesting)
+
     - Building envelope (insulation, windows, air sealing)
+
     - Renewable energy (solar PV, renewable power agreements)
+
     - Operations and energy management systems
+
     - Location-specific incentives (IRA 2022 for US, EU Taxonomy, PAT for India)
 
+    '
   budget:
-    max_cost_usd: 0.50
-    warn_at_usd: 0.30
-
+    max_cost_usd: 0.5
   rag_collections:
-    - "hvac_efficiency_standards"
-    - "building_lighting_practices"
-    - "renewable_energy_options"
-    - "building_envelope_improvements"
-    - "country_specific_incentives"
-
+  - hvac_efficiency_standards
+  - building_lighting_practices
+  - renewable_energy_options
+  - building_envelope_improvements
+  - country_specific_incentives
   tools:
-    - name: "analyze_energy_usage"
-      description: "Analyze energy usage patterns and identify inefficiencies"
-      deterministic: true
-
-    - name: "calculate_roi"
-      description: "Calculate ROI and payback periods for recommendations"
-      deterministic: true
-
-    - name: "rank_recommendations"
-      description: "Rank and prioritize recommendations by impact, cost, and ROI"
-      deterministic: true
-
-    - name: "estimate_savings"
-      description: "Estimate potential emissions and cost savings"
-      deterministic: true
-
-    - name: "generate_implementation_plan"
-      description: "Generate phased implementation roadmap with timeline"
-      deterministic: true
-
-# ==============================================================================
-# Realtime Section - Execution Configuration
-# ==============================================================================
+  - name: analyze_energy_usage
+    description: Analyze energy usage patterns and identify inefficiencies
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:analyze_energy_usage
+    safe: true
+  - name: calculate_roi
+    description: Calculate ROI and payback periods for recommendations
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_roi
+    safe: true
+  - name: rank_recommendations
+    description: Rank and prioritize recommendations by impact, cost, and ROI
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:rank_recommendations
+    safe: true
+  - name: estimate_savings
+    description: Estimate potential emissions and cost savings
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:estimate_savings
+    safe: true
+  - name: generate_implementation_plan
+    description: Generate phased implementation roadmap with timeline
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_implementation_plan
+    safe: true
 realtime:
-  replay_mode:
-    enabled: true
-    seed: 42
-    temperature: 0.0
-    deterministic: true
-
-# ==============================================================================
-# Provenance Section - Auditability
-# ==============================================================================
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
 provenance:
-  ef_pinning: "sha256"
-  gwp_set: "AR6"
-
-  audit_fields:
-    - "total_recommendations"
-    - "potential_savings"
-    - "roi_analysis"
-    - "ai_summary"
-
-  citation_required: true
-  determinism_required: true
-
-  standards:
-    - name: "ENERGY STAR"
-      description: "Energy Star certification and benchmarking"
-      version: "2024"
-
-    - name: "IRA 2022"
-      description: "Inflation Reduction Act tax credits"
-      version: "2022"
-
-    - name: "EU Taxonomy"
-      description: "Sustainable finance classification"
-      version: "2023"
-
-# ==============================================================================
-# Metadata
-# ==============================================================================
-metadata:
-  created: "2025-11-06"
-  updated: "2025-11-06"
-  status: "production"
-  compliance:
-    - "AgentSpec_v2"
-    - "ENERGY_STAR"
-    - "IRA_2022"
-    - "EU_Taxonomy"
-
-  documentation:
-    url: "https://docs.greenlang.com/agents/recommendation_ai"
-    examples: "examples/recommendation_ai/"
-
-  performance:
-    avg_latency_ms: 3000
-    max_latency_ms: 10000
-    throughput_per_sec: 5
-
-  dependencies:
-    - "greenlang.agents.recommendation_agent"
-    - "greenlang.intelligence.ChatSession"
-    - "greenlang.agents.citations"
-    - "greenlang.agents.base"
+  gwp_set: AR6GWP100
+  pin_ef: true
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

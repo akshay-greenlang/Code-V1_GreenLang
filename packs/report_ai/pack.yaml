@@ -1,331 +1,242 @@
-# AgentSpec v2 Compliant Pack for ReportAgentAI
-# AI-powered emissions report generation with multi-framework support
-# (TCFD, CDP, GRI, SASB, SEC, ISO14064)
-
-schema_version: "2.0.0"
-id: "reports/emissions_report_ai_v1"
-name: "Emissions Report Generator (AI-Powered)"
-version: "1.0.0"
-summary: "AI-powered comprehensive emissions report generation with multi-framework support (TCFD, CDP, GRI, SASB, SEC, ISO14064) using deterministic calculations and intelligent narratives"
-
+schema_version: 2.0.0
+id: reports/emissions_report_ai_v1
+name: Emissions Report Generator (AI-Powered)
+version: 1.0.0
+summary: AI-powered comprehensive emissions report generation with multi-framework
+  support (TCFD, CDP, GRI, SASB, SEC, ISO14064) using deterministic calculations and
+  intelligent narratives
 tags:
-  - "reporting"
-  - "emissions"
-  - "compliance"
-  - "ai-assisted"
-  - "tcfd"
-  - "cdp"
-  - "gri"
-  - "sasb"
-  - "sec"
-  - "iso14064"
-  - "multi-framework"
-  - "citations"
-
+- reporting
+- emissions
+- compliance
+- ai-assisted
+- tcfd
+- cdp
+- gri
+- sasb
+- sec
+- iso14064
+- multi-framework
+- citations
 owners:
-  - "greenlang-team"
-
-license: "MIT"
-
-# ==============================================================================
-# Compute Section - Core Functionality
-# ==============================================================================
+- greenlang-team
+license: MIT
 compute:
-  entrypoint: "python://greenlang.agents.report_agent_ai:execute"
+  entrypoint: python://greenlang.agents.report_agent_ai:execute
   deterministic: true
   timeout_s: 60
   memory_limit_mb: 1024
-
-  # Input Schema
   inputs:
     carbon_data:
-      dtype: "object"
-      unit: "1"
-      description: "Carbon emissions data with aggregated metrics"
+      dtype: object
+      unit: '1'
+      description: Carbon emissions data with aggregated metrics
       required: true
-
     framework:
-      dtype: "string"
-      unit: "1"
-      description: "Sustainability reporting framework"
+      dtype: string
+      unit: '1'
+      description: Sustainability reporting framework
       required: true
-
     format:
-      dtype: "string"
-      unit: "1"
-      description: "Output format for the generated report"
+      dtype: string
+      unit: '1'
+      description: Output format for the generated report
       required: false
-      default: "markdown"
-
+      default: markdown
     building_info:
-      dtype: "object"
-      unit: "1"
-      description: "Building/facility metadata"
+      dtype: object
+      unit: '1'
+      description: Building/facility metadata
       required: false
-
     period:
-      dtype: "object"
-      unit: "1"
-      description: "Reporting period boundaries"
+      dtype: object
+      unit: '1'
+      description: Reporting period boundaries
       required: false
-
     previous_period_data:
-      dtype: "object"
-      unit: "1"
-      description: "Previous period emissions for year-over-year comparison"
+      dtype: object
+      unit: '1'
+      description: Previous period emissions for year-over-year comparison
       required: false
-
     baseline_data:
-      dtype: "object"
-      unit: "1"
-      description: "Baseline year emissions for baseline change analysis"
+      dtype: object
+      unit: '1'
+      description: Baseline year emissions for baseline change analysis
       required: false
-
-  # Output Schema
   outputs:
     report:
-      dtype: "string"
-      unit: "1"
-      description: "Formatted emissions report (text content)"
-
+      dtype: string
+      unit: '1'
+      description: Formatted emissions report (text content)
     format:
-      dtype: "string"
-      unit: "1"
-      description: "Output format used (markdown, json, or text)"
-
+      dtype: string
+      unit: '1'
+      description: Output format used (markdown, json, or text)
     framework:
-      dtype: "string"
-      unit: "1"
-      description: "Framework used for report structure"
-
+      dtype: string
+      unit: '1'
+      description: Framework used for report structure
     generated_at:
-      dtype: "string"
-      unit: "1"
-      description: "ISO 8601 timestamp of report generation"
-
+      dtype: string
+      unit: '1'
+      description: ISO 8601 timestamp of report generation
     total_co2e_tons:
-      dtype: "float64"
-      unit: "tCO2e"
-      description: "Total greenhouse gas emissions in metric tons CO2 equivalent"
-
+      dtype: float64
+      unit: tCO2e
+      description: Total greenhouse gas emissions in metric tons CO2 equivalent
     total_co2e_kg:
-      dtype: "float64"
-      unit: "kgCO2e"
-      description: "Total emissions in kilograms CO2 equivalent"
-
+      dtype: float64
+      unit: kgCO2e
+      description: Total emissions in kilograms CO2 equivalent
     emissions_breakdown:
-      dtype: "list"
-      description: "Breakdown of emissions by source"
-
+      dtype: list
+      description: Breakdown of emissions by source
     carbon_intensity:
-      dtype: "object"
-      unit: "1"
-      description: "Carbon intensity metrics if provided in input"
-
+      dtype: object
+      unit: '1'
+      description: Carbon intensity metrics if provided in input
     trends:
-      dtype: "object"
-      unit: "1"
-      description: "Year-over-year and baseline change analysis"
-
+      dtype: object
+      unit: '1'
+      description: Year-over-year and baseline change analysis
     charts:
-      dtype: "object"
-      unit: "1"
-      description: "Chart data for visualization (pie, bar, timeseries)"
-
+      dtype: object
+      unit: '1'
+      description: Chart data for visualization (pie, bar, timeseries)
     compliance_status:
-      dtype: "string"
-      unit: "1"
-      description: "Overall compliance status with selected framework"
-
+      dtype: string
+      unit: '1'
+      description: Overall compliance status with selected framework
     compliance_checks:
-      dtype: "list"
-      description: "Detailed compliance check results"
-
+      dtype: list
+      description: Detailed compliance check results
     executive_summary:
-      dtype: "string"
-      unit: "1"
-      description: "Natural language executive summary for leadership"
-
+      dtype: string
+      unit: '1'
+      description: Natural language executive summary for leadership
     executive_summary_data:
-      dtype: "object"
-      unit: "1"
-      description: "Structured executive summary data"
-
+      dtype: object
+      unit: '1'
+      description: Structured executive summary data
     ai_narrative:
-      dtype: "string"
-      unit: "1"
-      description: "AI-generated professional narrative with analysis and recommendations"
-
+      dtype: string
+      unit: '1'
+      description: AI-generated professional narrative with analysis and recommendations
     framework_metadata:
-      dtype: "object"
-      unit: "1"
-      description: "Framework-specific metadata and requirements"
-
+      dtype: object
+      unit: '1'
+      description: Framework-specific metadata and requirements
     citations:
-      dtype: "object"
-      unit: "1"
-      description: "Calculation citations for audit trail"
-
+      dtype: object
+      unit: '1'
+      description: Calculation citations for audit trail
   factors: []
-
-# ==============================================================================
-# AI Section - LLM Configuration
-# ==============================================================================
 ai:
-  system_prompt: |
-    You are a climate reporting specialist for GreenLang.
-    You help generate comprehensive emissions reports compliant with
-    international frameworks (TCFD, CDP, GRI, SASB, SEC, ISO14064).
-
-    CRITICAL REQUIREMENTS:
-    - You MUST use the provided tools for ALL numeric calculations
-      and data formatting. Never estimate or guess numbers.
-    - Generate clear, professional narratives suitable for regulatory disclosure.
-
-    FRAMEWORK GUIDELINES:
-    - TCFD: Focus on governance, strategy, risk management, metrics & targets
-    - CDP: Emphasize Scope 1 & 2 emissions with third-party verification approach
-    - GRI: Report Direct (Scope 1) and indirect (Scope 2) emissions per GRI 305
-    - SASB: Include industry-specific sustainability metrics
-    - SEC: Full governance, strategy, risk, and metrics disclosure
-    - ISO14064: Structure around direct emissions, indirect, and removal calculations
-
-    EXECUTION WORKFLOW:
-    1. Use fetch_emissions_data tool to aggregate and validate all emissions data
-    2. Use calculate_trends tool to analyze year-over-year changes
-    3. Use generate_charts tool to create visualization data
-    4. Use format_report tool to format according to framework standards
-    5. Use check_compliance tool to verify framework compliance
-    6. Use generate_executive_summary tool to create leadership summary
-    7. Generate professional narrative including:
-       - Executive summary suitable for C-suite audience
-       - Framework-specific sections (governance, strategy, risk, metrics)
-       - Analysis of key emission sources and trends
-       - Recommendations for emissions reduction
-       - Compliance statement
-
-    OUTPUT QUALITY:
-    - Format numbers clearly (e.g., "45,500 kg" not "45500.0")
-    - Use professional, regulatory-appropriate language
-    - Ensure report is audit-ready with full provenance trails
-    - Follow strict framework disclosure requirements
-
+  system_prompt: "You are a climate reporting specialist for GreenLang.\nYou help\
+    \ generate comprehensive emissions reports compliant with\ninternational frameworks\
+    \ (TCFD, CDP, GRI, SASB, SEC, ISO14064).\n\nCRITICAL REQUIREMENTS:\n- You MUST\
+    \ use the provided tools for ALL numeric calculations\n  and data formatting.\
+    \ Never estimate or guess numbers.\n- Generate clear, professional narratives\
+    \ suitable for regulatory disclosure.\n\nFRAMEWORK GUIDELINES:\n- TCFD: Focus\
+    \ on governance, strategy, risk management, metrics & targets\n- CDP: Emphasize\
+    \ Scope 1 & 2 emissions with third-party verification approach\n- GRI: Report\
+    \ Direct (Scope 1) and indirect (Scope 2) emissions per GRI 305\n- SASB: Include\
+    \ industry-specific sustainability metrics\n- SEC: Full governance, strategy,\
+    \ risk, and metrics disclosure\n- ISO14064: Structure around direct emissions,\
+    \ indirect, and removal calculations\n\nEXECUTION WORKFLOW:\n1. Use fetch_emissions_data\
+    \ tool to aggregate and validate all emissions data\n2. Use calculate_trends tool\
+    \ to analyze year-over-year changes\n3. Use generate_charts tool to create visualization\
+    \ data\n4. Use format_report tool to format according to framework standards\n\
+    5. Use check_compliance tool to verify framework compliance\n6. Use generate_executive_summary\
+    \ tool to create leadership summary\n7. Generate professional narrative including:\n\
+    \   - Executive summary suitable for C-suite audience\n   - Framework-specific\
+    \ sections (governance, strategy, risk, metrics)\n   - Analysis of key emission\
+    \ sources and trends\n   - Recommendations for emissions reduction\n   - Compliance\
+    \ statement\n\nOUTPUT QUALITY:\n- Format numbers clearly (e.g., \"45,500 kg\"\
+    \ not \"45500.0\")\n- Use professional, regulatory-appropriate language\n- Ensure\
+    \ report is audit-ready with full provenance trails\n- Follow strict framework\
+    \ disclosure requirements\n"
   budget:
-    max_cost_usd: 1.00
-    warn_at_usd: 0.60
-
+    max_cost_usd: 1.0
   rag_collections:
-    - "ghg_protocol_corporate"
-    - "tcfd_guidance"
-    - "cdp_guidance"
-    - "gri_305_emissions"
-    - "sasb_standards"
-    - "sec_climate_disclosure"
-    - "iso_14064"
-
+  - ghg_protocol_corporate
+  - tcfd_guidance
+  - cdp_guidance
+  - gri_305_emissions
+  - sasb_standards
+  - sec_climate_disclosure
+  - iso_14064
   tools:
-    - name: "fetch_emissions_data"
-      description: "Aggregate and validate all emissions data from carbon_data input"
-      deterministic: true
-
-    - name: "calculate_trends"
-      description: "Calculate year-over-year trends and baseline changes in emissions"
-      deterministic: true
-
-    - name: "generate_charts"
-      description: "Generate chart and visualization data (pie, bar, timeseries)"
-      deterministic: true
-
-    - name: "format_report"
-      description: "Format report according to framework-specific standards"
-      deterministic: true
-
-    - name: "check_compliance"
-      description: "Verify report meets regulatory compliance requirements"
-      deterministic: true
-
-    - name: "generate_executive_summary"
-      description: "Generate high-level executive summary for C-suite audience"
-      deterministic: true
-
-# ==============================================================================
-# Realtime Section - Execution Configuration
-# ==============================================================================
+  - name: fetch_emissions_data
+    description: Aggregate and validate all emissions data from carbon_data input
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:fetch_emissions_data
+    safe: true
+  - name: calculate_trends
+    description: Calculate year-over-year trends and baseline changes in emissions
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_trends
+    safe: true
+  - name: generate_charts
+    description: Generate chart and visualization data (pie, bar, timeseries)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_charts
+    safe: true
+  - name: format_report
+    description: Format report according to framework-specific standards
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:format_report
+    safe: true
+  - name: check_compliance
+    description: Verify report meets regulatory compliance requirements
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:check_compliance
+    safe: true
+  - name: generate_executive_summary
+    description: Generate high-level executive summary for C-suite audience
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_executive_summary
+    safe: true
 realtime:
-  replay_mode:
-    enabled: true
-    seed: 42
-    temperature: 0.0
-    deterministic: true
-
-# ==============================================================================
-# Provenance Section - Auditability
-# ==============================================================================
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
 provenance:
-  ef_pinning: "sha256"
-  gwp_set: "AR6"
-
-  audit_fields:
-    - "total_co2e_tons"
-    - "trends"
-    - "compliance_status"
-    - "ai_narrative"
-
-  citation_required: true
-  determinism_required: true
-
-  standards:
-    - name: "TCFD"
-      description: "Task Force on Climate-related Financial Disclosures"
-      version: "2021"
-
-    - name: "CDP"
-      description: "Carbon Disclosure Project"
-      version: "2024"
-
-    - name: "GRI"
-      description: "Global Reporting Initiative GRI 305"
-      version: "2016"
-
-    - name: "SASB"
-      description: "Sustainability Accounting Standards Board"
-      version: "2023"
-
-    - name: "SEC"
-      description: "Securities and Exchange Commission Climate Disclosure"
-      version: "2024"
-
-    - name: "ISO14064"
-      description: "ISO 14064-1 Greenhouse Gas Emissions"
-      version: "2018"
-
-# ==============================================================================
-# Metadata
-# ==============================================================================
-metadata:
-  created: "2025-11-06"
-  updated: "2025-11-06"
-  status: "production"
-  compliance:
-    - "AgentSpec_v2"
-    - "TCFD"
-    - "CDP"
-    - "GRI_305"
-    - "SASB"
-    - "SEC_Climate"
-    - "ISO_14064"
-
-  documentation:
-    url: "https://docs.greenlang.com/agents/report_ai"
-    examples: "examples/report_ai/"
-
-  performance:
-    avg_latency_ms: 3000
-    max_latency_ms: 8000
-    throughput_per_sec: 8
-
-  dependencies:
-    - "greenlang.agents.report_agent"
-    - "greenlang.intelligence.ChatSession"
-    - "greenlang.agents.citations"
-    - "greenlang.agents.base"
+  gwp_set: AR6GWP100
+  pin_ef: true
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed
