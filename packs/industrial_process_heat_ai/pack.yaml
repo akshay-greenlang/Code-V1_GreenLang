@@ -1,0 +1,275 @@
+schema_version: 2.0.0
+id: industrial/process_heat_ai_v1
+name: Industrial Process Heat Agent (AI-Powered)
+version: 1.0.0
+summary: AI-powered industrial process heat analysis with solar thermal opportunity
+  assessment, hybrid system design, and decarbonization pathway identification
+tags:
+- industrial
+- process-heat
+- solar-thermal
+- decarbonization
+- hybrid-systems
+- ai-agent
+- citations
+owners:
+- greenlang-team
+license: MIT
+compute:
+  entrypoint: python://greenlang.agents.industrial_process_heat_agent_ai:execute
+  deterministic: true
+  timeout_s: 90
+  memory_limit_mb: 768
+  inputs:
+    industry_type:
+      dtype: string
+      unit: '1'
+      description: Industry classification (Food & Beverage, Chemicals, Pharmaceuticals,
+        etc.)
+    process_type:
+      dtype: string
+      unit: '1'
+      description: Process requiring heat (drying, pasteurization, sterilization,
+        distillation, etc.)
+    production_rate:
+      dtype: float64
+      unit: kg/h
+      description: Production rate in kg/hour or units/hour
+      ge: 0.0
+    temperature_requirement:
+      dtype: float64
+      unit: degC
+      description: Required process temperature in Celsius
+      ge: 20.0
+      le: 400.0
+    current_fuel_type:
+      dtype: string
+      unit: '1'
+      description: Current fuel source
+    latitude:
+      dtype: float64
+      unit: degrees
+      description: Site latitude for solar resource calculation
+      ge: -90.0
+      le: 90.0
+    annual_irradiance:
+      dtype: float64
+      unit: kWh/m2/year
+      description: Annual solar irradiance at site
+      ge: 0.0
+    inlet_temperature:
+      dtype: float64
+      unit: degC
+      description: Process inlet/ambient temperature
+      default: 20.0
+      required: false
+    specific_heat:
+      dtype: float64
+      unit: kJ/(kg·K)
+      description: Specific heat capacity of material
+      default: 4.18
+      required: false
+    process_efficiency:
+      dtype: float64
+      unit: '1'
+      description: Current process thermal efficiency (0-1)
+      default: 0.75
+      ge: 0.0
+      le: 1.0
+      required: false
+    load_profile:
+      dtype: string
+      unit: '1'
+      description: Operating schedule pattern
+      default: continuous_24x7
+      required: false
+  outputs:
+    heat_demand_kw:
+      dtype: float64
+      unit: kW
+      description: Thermal power requirement
+    annual_energy_mwh:
+      dtype: float64
+      unit: MWh/year
+      description: Annual energy consumption
+    solar_fraction:
+      dtype: float64
+      unit: '1'
+      description: Fraction of heat provided by solar thermal (0-1)
+    collector_area_m2:
+      dtype: float64
+      unit: m2
+      description: Required solar collector area
+    storage_volume_m3:
+      dtype: float64
+      unit: m3
+      description: Required thermal storage volume
+    backup_capacity_kw:
+      dtype: float64
+      unit: kW
+      description: Required backup system capacity
+    baseline_emissions_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Current annual GHG emissions
+    reduction_potential_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Potential annual emissions reduction
+    reduction_percentage:
+      dtype: float64
+      unit: percent
+      description: Percentage emissions reduction achievable
+    technology_recommendation:
+      dtype: string
+      unit: '1'
+      description: Recommended solar thermal technology
+    energy_intensity_kwh_per_unit:
+      dtype: float64
+      unit: kWh/unit
+      description: Energy intensity per production unit
+    residual_emissions_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Remaining emissions after solar integration
+    ai_explanation:
+      dtype: string
+      unit: '1'
+      description: AI-generated analysis and recommendations
+    citations:
+      dtype: string
+      unit: '1'
+      description: Citation tracking for calculations (JSON serialized)
+  factors: {}
+ai:
+  system_prompt: 'You are an expert in industrial process heat systems and solar thermal
+    integration.
+
+
+    Your role:
+
+    1. Analyze process heat requirements using exact tools (never hallucinate numbers)
+
+    2. Assess solar thermal opportunity based on temperature, location, and load profile
+
+    3. Design hybrid systems (solar + backup fuel) for optimal reliability
+
+    4. Calculate emissions reduction potential and technology recommendations
+
+    5. Provide implementation guidance and risk assessment
+
+
+    Guidelines:
+
+    - Always use provided tools for all calculations
+
+    - Consider temperature requirements (low: <100°C, medium: 100-250°C, high: >250°C)
+
+    - Evaluate solar fraction based on irradiance and load matching
+
+    - Account for thermal storage requirements based on load profile
+
+    - Recommend appropriate collector technology (flat plate, evacuated tube, concentrating)
+
+    - Calculate backup system capacity for reliability
+
+    - Provide clear implementation roadmap with phases
+
+
+    Remember: All numeric calculations MUST come from tools. Focus on clear, practical
+    guidance.
+
+    '
+  budget:
+    max_cost_usd: 0.8
+    max_input_tokens: 15000
+    max_output_tokens: 4000
+    max_retries: 3
+  rag_collections:
+  - solar_thermal_technologies
+  - industrial_process_heat_data
+  - hybrid_system_design
+  tools:
+  - name: calculate_heat_demand
+    description: Calculate process heat demand from production rate and temperature
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_heat_demand
+    safe: true
+  - name: calculate_solar_fraction
+    description: Calculate achievable solar fraction based on irradiance and load
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_solar_fraction
+    safe: true
+  - name: size_collector_system
+    description: Size solar collector array and thermal storage
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:size_collector_system
+    safe: true
+  - name: calculate_backup_requirements
+    description: Calculate backup system capacity and fuel consumption
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_backup_requirements
+    safe: true
+  - name: calculate_emissions
+    description: Calculate baseline and residual emissions
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_emissions
+    safe: true
+  - name: recommend_technology
+    description: Recommend solar thermal technology based on temperature and application
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:recommend_technology
+    safe: true
+  - name: assess_implementation
+    description: Assess implementation feasibility and provide roadmap
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_implementation
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

@@ -1,0 +1,294 @@
+schema_version: 2.0.0
+id: industrial/decarbonization_roadmap_ai_v1
+name: Decarbonization Roadmap Agent (AI-Powered)
+version: 1.0.0
+summary: Master planning agent for comprehensive industrial decarbonization strategy
+  with multi-scenario modeling, phased implementation, financial optimization, and
+  compliance analysis
+tags:
+- industrial
+- decarbonization
+- roadmap
+- net-zero
+- master-coordinator
+- multi-scenario
+- IRA-2022
+- compliance
+- ai-agent
+- citations
+owners:
+- greenlang-team
+license: MIT
+compute:
+  entrypoint: python://greenlang.agents.decarbonization_roadmap_agent_ai:execute
+  deterministic: true
+  timeout_s: 300
+  memory_limit_mb: 2048
+  inputs:
+    facility_id:
+      dtype: string
+      unit: '1'
+      description: Unique facility identifier
+    facility_name:
+      dtype: string
+      unit: '1'
+      description: Facility name
+    industry_type:
+      dtype: string
+      unit: '1'
+      description: Industry classification
+    latitude:
+      dtype: float64
+      unit: degrees
+      description: Site latitude for solar/renewable resource assessment
+      ge: -90.0
+      le: 90.0
+    electricity_consumption_kwh:
+      dtype: float64
+      unit: kWh/year
+      description: Annual electricity consumption
+      ge: 0.0
+    grid_region:
+      dtype: string
+      unit: '1'
+      description: Grid region for electricity emissions
+    capital_budget_usd:
+      dtype: float64
+      unit: USD
+      description: Total capital budget available for decarbonization
+      ge: 0.0
+    target_reduction_percent:
+      dtype: float64
+      unit: percent
+      description: Target emissions reduction percentage
+      ge: 0.0
+      le: 100.0
+    target_year:
+      dtype: int32
+      unit: year
+      description: Target year for achieving reduction goal
+      ge: 2025
+      le: 2050
+    discount_rate:
+      dtype: float64
+      unit: '1'
+      description: Financial discount rate for NPV calculations
+      default: 0.08
+      ge: 0.0
+      le: 1.0
+      required: false
+  outputs:
+    baseline_emissions_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Current baseline annual GHG emissions
+    total_reduction_potential_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Total achievable emissions reduction
+    recommended_pathway:
+      dtype: string
+      unit: '1'
+      description: Recommended decarbonization pathway
+    npv_usd:
+      dtype: float64
+      unit: USD
+      description: Net present value of recommended pathway
+    irr_percent:
+      dtype: float64
+      unit: percent
+      description: Internal rate of return
+    simple_payback_years:
+      dtype: float64
+      unit: years
+      description: Simple payback period
+    total_capex_required_usd:
+      dtype: float64
+      unit: USD
+      description: Total capital expenditure required
+    total_incentives_usd:
+      dtype: float64
+      unit: USD
+      description: Total available incentives (IRA 2022, state, utility)
+    phase1_quick_wins_description:
+      dtype: string
+      unit: '1'
+      description: 'Phase 1: Quick wins (0-2 years)'
+    phase2_core_decarbonization_description:
+      dtype: string
+      unit: '1'
+      description: 'Phase 2: Core decarbonization (2-5 years)'
+    phase3_deep_decarbonization_description:
+      dtype: string
+      unit: '1'
+      description: 'Phase 3: Deep decarbonization (5-10 years)'
+    residual_emissions_2030_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Projected residual emissions in 2030
+    residual_emissions_2050_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Projected residual emissions in 2050
+    compliance_status:
+      dtype: string
+      unit: '1'
+      description: Compliance status summary (CBAM, CSRD, SEC Climate Rule)
+    ai_executive_summary:
+      dtype: string
+      unit: '1'
+      description: AI-generated executive summary with strategic recommendations
+    citations:
+      dtype: string
+      unit: '1'
+      description: Citation tracking for all calculations (JSON serialized)
+  factors: {}
+ai:
+  system_prompt: 'You are a master strategist for industrial decarbonization planning.
+
+
+    Your role:
+
+    1. Orchestrate comprehensive facility assessments across all technologies
+
+    2. Model multiple decarbonization scenarios (BAU, Conservative, Aggressive)
+
+    3. Optimize multi-year implementation pathways with financial constraints
+
+    4. Assess compliance gaps and regulatory risks
+
+    5. Provide executive-level strategic guidance
+
+
+    Guidelines:
+
+    - Use sub-agents for specialized analysis (boilers, process heat, solar, etc.)
+
+    - All calculations must use exact tools (never hallucinate numbers)
+
+    - Model 3 scenarios minimum: Business As Usual, Conservative, Aggressive
+
+    - Create 3-phase implementation plans (Quick Wins, Core, Deep Decarbonization)
+
+    - Include IRA 2022 incentives (30% ITC, 179D, 45Q, 48C)
+
+    - Assess CBAM, CSRD, and SEC Climate Rule compliance
+
+    - Prioritize projects by: NPV, payback, emissions impact, implementation risk
+
+    - Identify technology interdependencies and sequencing constraints
+
+    - Flag regulatory and technical risks proactively
+
+
+    Remember: This is a strategic planning exercise requiring multi-year coordination.
+
+    Focus on actionable roadmaps with clear milestones and decision points.
+
+    '
+  budget:
+    max_cost_usd: 2.0
+    max_input_tokens: 30000
+    max_output_tokens: 8000
+    max_retries: 3
+  rag_collections:
+  - ira_2022_incentives
+  - ghg_protocol_standards
+  - cbam_compliance_requirements
+  - sec_climate_disclosure_rules
+  - industrial_decarbonization_case_studies
+  tools:
+  - name: calculate_ghg_inventory
+    description: Calculate comprehensive Scope 1, 2, 3 GHG inventory
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_ghg_inventory
+    safe: true
+  - name: model_bau_scenario
+    description: Model Business As Usual emissions trajectory
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:model_bau_scenario
+    safe: true
+  - name: generate_pathways
+    description: Generate multiple decarbonization pathways (Conservative, Balanced,
+      Aggressive)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_pathways
+    safe: true
+  - name: optimize_pathway
+    description: Optimize pathway selection based on budget, timeline, risk tolerance
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:optimize_pathway
+    safe: true
+  - name: calculate_financial_metrics
+    description: Calculate comprehensive financial metrics with IRA incentives
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_financial_metrics
+    safe: true
+  - name: assess_compliance_gaps
+    description: Assess compliance gaps (CBAM, CSRD, SEC Climate Rule)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_compliance_gaps
+    safe: true
+  - name: assess_risks
+    description: Assess technical, financial, operational, regulatory risks
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_risks
+    safe: true
+  - name: create_implementation_roadmap
+    description: Create detailed 3-phase implementation roadmap with milestones
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:create_implementation_roadmap
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

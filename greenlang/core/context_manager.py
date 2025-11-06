@@ -8,7 +8,7 @@ between different context types across the GreenLang framework.
 import os
 import json
 import uuid
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, cast
 from pathlib import Path
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
@@ -69,7 +69,7 @@ class ExecutionContext(BaseContext):
     parameters: Dict[str, Any] = field(default_factory=dict)
     secrets: Dict[str, str] = field(default_factory=dict)
     environment: Dict[str, str] = field(default_factory=dict)
-    artifacts: List[str] = field(default_factory=list)
+    artifacts: List[Dict[str, Any]] = field(default_factory=list)
     step_results: Dict[str, Any] = field(default_factory=dict)
     labels: Dict[str, str] = field(default_factory=dict)
     annotations: Dict[str, str] = field(default_factory=dict)
@@ -279,27 +279,28 @@ class UnifiedContextManager:
         merged = ExecutionContext()
 
         for context in contexts:
-            # Merge metadata
-            merged.metadata.update(context.metadata)
+            # Merge metadata (contexts are filtered to be non-None in list comprehension)
+            if context is not None:
+                merged.metadata.update(context.metadata)
 
-            # Type-specific merging
-            if isinstance(context, ExecutionContext):
-                merged.parameters.update(context.parameters)
-                merged.environment.update(context.environment)
-                merged.artifacts.extend(context.artifacts)
-                merged.step_results.update(context.step_results)
-                merged.labels.update(context.labels)
-                merged.annotations.update(context.annotations)
-            elif isinstance(context, CLIContext):
-                merged.metadata["cli_verbose"] = context.verbose
-                merged.metadata["cli_dry_run"] = context.dry_run
-            elif isinstance(context, TenantContext):
-                merged.metadata["tenant_id"] = context.tenant_id
-                merged.metadata["user_id"] = context.user_id
-                merged.metadata["roles"] = context.roles
-            elif isinstance(context, TracingContext):
-                merged.metadata["trace_id"] = context.trace_id
-                merged.metadata["span_id"] = context.span_id
+                # Type-specific merging
+                if isinstance(context, ExecutionContext):
+                    merged.parameters.update(context.parameters)
+                    merged.environment.update(context.environment)
+                    merged.artifacts.extend(context.artifacts)
+                    merged.step_results.update(context.step_results)
+                    merged.labels.update(context.labels)
+                    merged.annotations.update(context.annotations)
+                elif isinstance(context, CLIContext):
+                    merged.metadata["cli_verbose"] = context.verbose
+                    merged.metadata["cli_dry_run"] = context.dry_run
+                elif isinstance(context, TenantContext):
+                    merged.metadata["tenant_id"] = context.tenant_id
+                    merged.metadata["user_id"] = context.user_id
+                    merged.metadata["roles"] = context.roles
+                elif isinstance(context, TracingContext):
+                    merged.metadata["trace_id"] = context.trace_id
+                    merged.metadata["span_id"] = context.span_id
 
         self._contexts[merged.context_id] = merged
         return merged
@@ -381,25 +382,25 @@ def get_context_manager() -> UnifiedContextManager:
 def create_execution_context(**kwargs) -> ExecutionContext:
     """Convenience function to create an execution context"""
     manager = get_context_manager()
-    return manager.create_context(ContextType.EXECUTION, **kwargs)
+    return cast(ExecutionContext, manager.create_context(ContextType.EXECUTION, **kwargs))
 
 
 def create_cli_context(**kwargs) -> CLIContext:
     """Convenience function to create a CLI context"""
     manager = get_context_manager()
-    return manager.create_context(ContextType.CLI, **kwargs)
+    return cast(CLIContext, manager.create_context(ContextType.CLI, **kwargs))
 
 
 def create_tenant_context(**kwargs) -> TenantContext:
     """Convenience function to create a tenant context"""
     manager = get_context_manager()
-    return manager.create_context(ContextType.TENANT, **kwargs)
+    return cast(TenantContext, manager.create_context(ContextType.TENANT, **kwargs))
 
 
 def create_tracing_context(**kwargs) -> TracingContext:
     """Convenience function to create a tracing context"""
     manager = get_context_manager()
-    return manager.create_context(ContextType.TRACING, **kwargs)
+    return cast(TracingContext, manager.create_context(ContextType.TRACING, **kwargs))
 
 
 def get_current_context(

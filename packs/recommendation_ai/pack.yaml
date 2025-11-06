@@ -1,0 +1,244 @@
+schema_version: 2.0.0
+id: buildings/recommendation_ai_v1
+name: Building Recommendation Agent (AI-Powered)
+version: 1.0.0
+summary: AI-powered carbon reduction recommendations with ROI analysis, implementation
+  roadmaps, and location-specific strategies for buildings
+tags:
+- buildings
+- recommendations
+- emissions-reduction
+- roi-analysis
+- efficiency
+- hvac
+- lighting
+- renewable
+- ai-agent
+- citations
+owners:
+- greenlang-team
+license: MIT
+compute:
+  entrypoint: python://greenlang.agents.recommendation_agent_ai:execute
+  deterministic: true
+  timeout_s: 120
+  memory_limit_mb: 512
+  inputs:
+    emissions_by_source:
+      dtype: object
+      unit: '1'
+      description: Annual emissions breakdown by source (electricity, natural_gas,
+        etc.)
+    building_type:
+      dtype: string
+      unit: '1'
+      description: Type of building
+      default: commercial_office
+      required: false
+    building_age:
+      dtype: int32
+      unit: years
+      description: Age of building in years
+      default: 10
+      ge: 0
+      le: 150
+      required: false
+    performance_rating:
+      dtype: string
+      unit: '1'
+      description: Current energy performance rating
+      default: Average
+      required: false
+    load_breakdown:
+      dtype: object
+      unit: '1'
+      description: Fraction of building load by end-use (HVAC, lighting, equipment)
+    country:
+      dtype: string
+      unit: '1'
+      description: Country code for location-specific recommendations
+      default: US
+      required: false
+    intensity:
+      dtype: object
+      unit: '1'
+      description: Optional intensity metrics (building_area_sqft, occupancy)
+  outputs:
+    recommendations:
+      dtype: list
+      description: Ranked recommendations (max 5 by default)
+      unit: '1'
+    total_recommendations:
+      dtype: int32
+      unit: '1'
+      description: Total recommendations identified
+    usage_analysis:
+      dtype: object
+      description: Energy usage pattern analysis
+      unit: '1'
+    potential_savings:
+      dtype: object
+      description: Potential emissions reduction estimates
+      unit: '1'
+    cost_savings:
+      dtype: object
+      description: Estimated annual cost savings
+      unit: '1'
+    roi_analysis:
+      dtype: object
+      description: ROI and payback calculations for all recommendations
+      unit: '1'
+    implementation_roadmap:
+      dtype: list
+      description: Phased implementation plan with timelines
+      unit: '1'
+    quick_wins:
+      dtype: list
+      description: Low-cost, quick-payback options (up to 3)
+      unit: '1'
+    high_impact:
+      dtype: list
+      description: High emissions reduction options (up to 3)
+      unit: '1'
+    ai_summary:
+      dtype: string
+      unit: '1'
+      description: AI-generated analysis and recommendations
+    citations:
+      dtype: list
+      description: Citation tracking for provenance
+      unit: '1'
+  factors: {}
+ai:
+  system_prompt: 'You are a sustainability advisor for GreenLang helping organizations
+    reduce carbon emissions.
+
+
+    Your core responsibilities:
+
+    1. Analyze building energy usage patterns using tools
+
+    2. Generate ranked, actionable recommendations with ROI analysis
+
+    3. Assess retrofit requirements and implementation complexity
+
+    4. Create prioritized implementation roadmaps
+
+
+    CRITICAL GUIDELINES:
+
+    - YOU MUST USE PROVIDED TOOLS FOR ALL CALCULATIONS
+
+    - NEVER estimate or guess numeric values
+
+    - All numbers (emissions, costs, ROI, payback) must come from tools
+
+    - Prioritize recommendations by ROI and environmental impact
+
+    - Provide clear natural language explanations for each recommendation
+
+    - Format numbers clearly (e.g., "15,000 kg" not "15000.0")
+
+
+    Tool Usage:
+
+    1. Call analyze_energy_usage to identify inefficiencies
+
+    2. Call calculate_roi to compute financial metrics
+
+    3. Call rank_recommendations to prioritize by impact/cost
+
+    4. Call estimate_savings for potential benefits
+
+    5. Call generate_implementation_plan for roadmap
+
+    6. Synthesize all results into executive summary
+
+
+    Focus Areas:
+
+    - HVAC efficiency (highest impact for most buildings)
+
+    - Lighting upgrades (LED, occupancy sensors, daylight harvesting)
+
+    - Building envelope (insulation, windows, air sealing)
+
+    - Renewable energy (solar PV, renewable power agreements)
+
+    - Operations and energy management systems
+
+    - Location-specific incentives (IRA 2022 for US, EU Taxonomy, PAT for India)
+
+    '
+  budget:
+    max_cost_usd: 0.5
+  rag_collections:
+  - hvac_efficiency_standards
+  - building_lighting_practices
+  - renewable_energy_options
+  - building_envelope_improvements
+  - country_specific_incentives
+  tools:
+  - name: analyze_energy_usage
+    description: Analyze energy usage patterns and identify inefficiencies
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:analyze_energy_usage
+    safe: true
+  - name: calculate_roi
+    description: Calculate ROI and payback periods for recommendations
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_roi
+    safe: true
+  - name: rank_recommendations
+    description: Rank and prioritize recommendations by impact, cost, and ROI
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:rank_recommendations
+    safe: true
+  - name: estimate_savings
+    description: Estimate potential emissions and cost savings
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:estimate_savings
+    safe: true
+  - name: generate_implementation_plan
+    description: Generate phased implementation roadmap with timeline
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_implementation_plan
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

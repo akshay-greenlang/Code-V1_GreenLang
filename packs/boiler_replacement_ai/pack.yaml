@@ -1,0 +1,325 @@
+schema_version: 2.0.0
+id: industrial/boiler_replacement_ai_v1
+name: Boiler Replacement Agent (AI-Powered)
+version: 1.0.0
+summary: AI-powered industrial boiler replacement analysis with ASME PTC 4.1 calculations,
+  solar thermal integration, heat pump COP analysis, and IRA 2022 incentives
+tags:
+- industrial
+- boiler
+- replacement
+- efficiency
+- solar-thermal
+- heat-pump
+- IRA-2022
+- ai-agent
+- citations
+owners:
+- greenlang-team
+license: MIT
+compute:
+  entrypoint: python://greenlang.agents.boiler_replacement_agent_ai:execute
+  deterministic: true
+  timeout_s: 120
+  memory_limit_mb: 1024
+  inputs:
+    boiler_type:
+      dtype: string
+      unit: '1'
+      description: Type of existing boiler
+    fuel_type:
+      dtype: string
+      unit: '1'
+      description: Current fuel type
+    rated_capacity_kw:
+      dtype: float64
+      unit: kW
+      description: Rated thermal capacity of boiler
+      ge: 10.0
+      le: 100000.0
+    age_years:
+      dtype: int32
+      unit: years
+      description: Age of existing boiler
+      ge: 0
+      le: 100
+    stack_temperature_c:
+      dtype: float64
+      unit: degC
+      description: Stack/flue gas temperature
+      ge: 50.0
+      le: 500.0
+    average_load_factor:
+      dtype: float64
+      unit: '1'
+      description: Average capacity utilization (0-1)
+      ge: 0.0
+      le: 1.0
+    annual_operating_hours:
+      dtype: float64
+      unit: hours
+      description: Hours of operation per year
+      ge: 0.0
+      le: 8760.0
+    latitude:
+      dtype: float64
+      unit: degrees
+      description: Site latitude for solar resource calculation
+      ge: -90.0
+      le: 90.0
+    ambient_temperature_c:
+      dtype: float64
+      unit: degC
+      description: Ambient temperature for heat loss calculations
+      default: 20.0
+      required: false
+    excess_air_percent:
+      dtype: float64
+      unit: percent
+      description: Excess air percentage in combustion
+      default: 15.0
+      ge: 0.0
+      le: 100.0
+      required: false
+    fuel_cost_per_mmbtu:
+      dtype: float64
+      unit: USD/MMBtu
+      description: Fuel cost per million BTU
+    electricity_cost_per_kwh:
+      dtype: float64
+      unit: USD/kWh
+      description: Electricity cost per kWh
+    discount_rate:
+      dtype: float64
+      unit: '1'
+      description: Financial discount rate for NPV
+      default: 0.08
+      ge: 0.0
+      le: 1.0
+      required: false
+    analysis_period_years:
+      dtype: int32
+      unit: years
+      description: Financial analysis period
+      default: 20
+      ge: 1
+      le: 50
+      required: false
+  outputs:
+    current_efficiency:
+      dtype: float64
+      unit: '1'
+      description: Current boiler efficiency (0-1)
+    current_annual_fuel_consumption_mmbtu:
+      dtype: float64
+      unit: MMBtu/year
+      description: Current annual fuel consumption
+    current_annual_cost_usd:
+      dtype: float64
+      unit: USD/year
+      description: Current annual fuel cost
+    current_annual_emissions_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Current annual GHG emissions
+    recommended_technology:
+      dtype: string
+      unit: '1'
+      description: Recommended replacement technology
+    replacement_efficiency:
+      dtype: float64
+      unit: '1'
+      description: Efficiency of recommended system
+    solar_fraction:
+      dtype: float64
+      unit: '1'
+      description: Solar thermal contribution fraction
+    heat_pump_cop:
+      dtype: float64
+      unit: '1'
+      description: Heat pump coefficient of performance
+    simple_payback_years:
+      dtype: float64
+      unit: years
+      description: Simple payback period
+    npv_usd:
+      dtype: float64
+      unit: USD
+      description: Net present value over analysis period
+    irr_percent:
+      dtype: float64
+      unit: percent
+      description: Internal rate of return
+    federal_itc_usd:
+      dtype: float64
+      unit: USD
+      description: Federal ITC incentive (30% IRA 2022)
+    annual_emissions_reduction_kg_co2e:
+      dtype: float64
+      unit: kgCO2e/year
+      description: Annual GHG emissions reduction
+    emissions_reduction_percent:
+      dtype: float64
+      unit: percent
+      description: Percentage emissions reduction
+    retrofit_complexity:
+      dtype: string
+      unit: '1'
+      description: Retrofit complexity assessment
+    estimated_retrofit_cost_usd:
+      dtype: float64
+      unit: USD
+      description: Estimated retrofit cost
+    ai_explanation:
+      dtype: string
+      unit: '1'
+      description: AI-generated analysis and recommendations
+    technology_comparison:
+      dtype: list
+      description: Comparison of replacement options
+      unit: '1'
+    citations:
+      dtype: list
+      description: Citation tracking for calculations
+      unit: '1'
+  factors: {}
+ai:
+  system_prompt: 'You are an expert in industrial boiler systems, solar thermal integration,
+    and heat pump technology.
+
+
+    Your role:
+
+    1. Analyze current boiler performance using ASME PTC 4.1 methods (via tools)
+
+    2. Evaluate replacement technologies (condensing boilers, solar thermal, heat
+    pumps, hybrids)
+
+    3. Calculate financial metrics with IRA 2022 incentives
+
+    4. Assess retrofit requirements and integration challenges
+
+    5. Provide clear recommendations with implementation roadmap
+
+
+    Guidelines:
+
+    - Always use provided tools for calculations (zero hallucinated numbers)
+
+    - Consider efficiency degradation, stack losses, radiation losses
+
+    - Evaluate solar thermal potential based on latitude and load profile
+
+    - Calculate heat pump COP using Carnot efficiency method
+
+    - Include IRA 2022 30% ITC for solar thermal and heat pump systems
+
+    - Assess retrofit complexity (piping, controls, space requirements)
+
+    - Rank technologies by NPV, payback, and emissions reduction
+
+
+    Remember: All calculations must use tools. Focus on clear, actionable guidance.
+
+    '
+  budget:
+    max_cost_usd: 1.0
+  rag_collections:
+  - asme_ptc_4_standards
+  - solar_thermal_design
+  - heat_pump_cop_data
+  - ira_2022_incentives
+  tools:
+  - name: calculate_current_efficiency
+    description: Calculate current boiler efficiency with degradation (ASME PTC 4.1)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_current_efficiency
+    safe: true
+  - name: calculate_stack_loss
+    description: Calculate stack loss based on flue gas temperature
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_stack_loss
+    safe: true
+  - name: calculate_radiation_loss
+    description: Calculate radiation and convection losses
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_radiation_loss
+    safe: true
+  - name: calculate_solar_fraction
+    description: Calculate solar thermal contribution based on latitude and load
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_solar_fraction
+    safe: true
+  - name: calculate_heat_pump_cop
+    description: Calculate heat pump COP using Carnot method
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_heat_pump_cop
+    safe: true
+  - name: calculate_hybrid_performance
+    description: Optimize hybrid system performance (solar + conventional)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_hybrid_performance
+    safe: true
+  - name: calculate_financial_metrics
+    description: Calculate NPV, IRR, payback with IRA incentives
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_financial_metrics
+    safe: true
+  - name: assess_retrofit_requirements
+    description: Assess integration requirements and complexity
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_retrofit_requirements
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

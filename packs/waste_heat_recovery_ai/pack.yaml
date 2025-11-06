@@ -1,0 +1,326 @@
+schema_version: 2.0.0
+id: industrial/waste_heat_recovery_v1
+name: Waste Heat Recovery Agent (AI-Powered)
+version: 1.0.0
+summary: AI-powered waste heat recovery analysis for industrial facilities with heat
+  exchanger sizing, technology selection, financial analysis (NPV, IRR, payback),
+  and phased implementation roadmaps
+tags:
+- industrial
+- waste-heat-recovery
+- heat-exchanger
+- energy-efficiency
+- thermal-analysis
+- financial-analysis
+- ai-agent
+- ashrae
+- tema
+- citations
+owners:
+- greenlang-team
+license: MIT
+compute:
+  entrypoint: python://greenlang.agents.waste_heat_recovery_agent_ai:execute
+  deterministic: true
+  timeout_s: 240
+  memory_limit_mb: 768
+  inputs:
+    facility_type:
+      dtype: string
+      unit: '1'
+      description: Industrial facility classification (manufacturing, food_beverage,
+        chemical, etc.)
+    processes:
+      dtype: list
+      unit: '1'
+      description: Array of process specifications with fuel consumption and temperature
+    total_annual_fuel_mmbtu:
+      dtype: float64
+      unit: MMBtu/year
+      description: Annual fuel consumption in million BTU per year
+      ge: 0
+    fuel_cost_usd_per_mmbtu:
+      dtype: float64
+      unit: USD/MMBtu
+      description: Current market fuel cost
+      ge: 0
+    include_hvac_systems:
+      dtype: bool
+      unit: '1'
+      description: Include HVAC preheating opportunities
+      default: true
+      required: false
+    include_compressed_air:
+      dtype: bool
+      unit: '1'
+      description: Include compressed air cooling opportunities
+      default: true
+      required: false
+    minimum_temperature_f:
+      dtype: float64
+      unit: degF
+      description: Minimum temperature threshold for waste heat recovery
+      default: 120.0
+      ge: 80.0
+      required: false
+    electricity_price_usd_per_kwh:
+      dtype: float64
+      unit: USD/kWh
+      description: Electricity price for parasitic power calculations
+      default: 0.1
+      ge: 0
+      required: false
+    project_lifetime_years:
+      dtype: int32
+      unit: years
+      description: Financial analysis project lifetime
+      default: 20
+      ge: 5
+      le: 40
+      required: false
+    discount_rate:
+      dtype: float64
+      unit: fraction
+      description: Discount rate for NPV calculations
+      default: 0.08
+      ge: 0.01
+      le: 0.2
+      required: false
+    energy_cost_escalation_rate:
+      dtype: float64
+      unit: fraction
+      description: Annual energy cost escalation rate
+      default: 0.03
+      ge: 0
+      le: 0.1
+      required: false
+  outputs:
+    total_waste_heat_identified_mmbtu_yr:
+      dtype: int32
+      unit: MMBtu/year
+      description: Total annual waste heat identified
+    recoverable_waste_heat_mmbtu_yr:
+      dtype: int32
+      unit: MMBtu/year
+      description: Technically recoverable waste heat (80% of total)
+    economically_recoverable_mmbtu_yr:
+      dtype: int32
+      unit: MMBtu/year
+      description: Economically recoverable (payback <3 years)
+    waste_heat_sources:
+      dtype: list
+      description: Detailed characterization of each waste heat stream (11 fields)
+      unit: '1'
+    waste_heat_summary:
+      dtype: object
+      description: Breakdown by temperature grade (high >400°F, medium 200-400°F,
+        low <200°F)
+      unit: '1'
+    portfolio_results:
+      dtype: object
+      description: Portfolio-level financial results
+      unit: '1'
+    prioritized_opportunities:
+      dtype: list
+      description: Ranked opportunities by priority score
+      unit: '1'
+    implementation_roadmap:
+      dtype: list
+      description: Phased deployment plan (Quick Wins, Strategic, Major Projects)
+      unit: '1'
+    analysis_summary:
+      dtype: string
+      unit: '1'
+      description: Human-readable narrative summary
+    ai_narrative:
+      dtype: string
+      unit: '1'
+      description: AI-generated comprehensive analysis with recommendations
+    citations:
+      dtype: object
+      description: Calculation citations with formulas and audit trails
+      unit: '1'
+    metadata:
+      dtype: object
+      description: Execution metadata (cost, tokens, tool_calls, calculation_time)
+      unit: '1'
+  factors: {}
+ai:
+  system_prompt: 'You are an expert industrial waste heat recovery engineer and climate
+    advisor for GreenLang.
+
+
+    Key Responsibilities:
+
+    - Identify waste heat using process characterization databases (DOE IAC data)
+
+    - Recommend optimal recovery technologies (8 evaluated: shell-tube, plate, economizer,
+    etc.)
+
+    - Size heat exchangers using LMTD and effectiveness-NTU methods
+
+    - Calculate financial metrics (simple payback, NPV, IRR, SIR)
+
+    - Assess fouling/corrosion risks (NACE guidelines)
+
+    - Provide phased implementation roadmaps (Quick Wins, Strategic, Major)
+
+
+    CRITICAL GUIDELINES:
+
+    1. Use DETERMINISTIC TOOLS ONLY - never estimate calculations
+
+    2. Consider 3 temperature grades: high >400°F, medium 200-400°F, low <200°F
+
+    3. Account for heat exchanger effectiveness (70-85% typical)
+
+    4. Include carbon metrics (CO2 reduction) in all recommendations
+
+    5. Flag risks: acid dew point >280°F, fouling >100ppm, chloride SCC >50ppm at
+    >140°F
+
+    6. Cite standards: ASHRAE, DOE, TEMA, NACE, ASME BPVC
+
+    7. Validate input plausibility (reject unrealistic temperatures, flow rates)
+
+
+    Business Context:
+
+    - Best ROI of all efficiency measures: 0.5-3 year payback typical
+
+    - Largest carbon potential: 1.4 Gt CO2e/yr globally
+
+    - Market opportunity: $75 billion annually
+
+
+    Tool Usage Pattern:
+
+    1. identify_waste_heat: Process characterization and energy balance
+
+    2. calculate_recovery_potential: Heat recovery with effectiveness-NTU
+
+    3. select_technology: Multi-criteria scoring (8 technologies)
+
+    4. size_heat_exchanger: LMTD method with TEMA F-factors
+
+    5. calculate_energy_savings: Fuel displacement and CO2 reduction
+
+    6. assess_fouling_corrosion: Risk scoring (NACE standards)
+
+    7. analyze_financial_metrics: DCF analysis (NPV, IRR, payback)
+
+    8. prioritize_opportunities: Weighted multi-criteria ranking
+
+
+    Standards & Methods:
+
+    - Thermal: ASHRAE Handbook Ch.4, TEMA, ASME BPVC VIII
+
+    - Energy: DOE WHR Guidelines, GHG Protocol
+
+    - Corrosion: NACE SP0100 (acid dew point), NACE MR0175 (hydrogen attack)
+
+    - Economics: FEMP Life Cycle Cost, ASHRAE Economic Analysis
+
+    '
+  budget:
+    max_cost_usd: 0.15
+  rag_collections:
+  - doe_waste_heat_database
+  - ashrae_hvac_handbook
+  - tema_heat_exchanger_standards
+  - nace_corrosion_guidelines
+  tools:
+  - name: identify_waste_heat
+    description: Identify waste heat sources using DOE database and energy balance
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:identify_waste_heat
+    safe: true
+  - name: calculate_recovery_potential
+    description: Calculate theoretical and practical heat recovery with effectiveness-NTU
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_recovery_potential
+    safe: true
+  - name: select_technology
+    description: Select optimal heat exchanger technology via multi-criteria scoring
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:select_technology
+    safe: true
+  - name: size_heat_exchanger
+    description: Size heat exchanger using LMTD and NTU methods (TEMA standards)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:size_heat_exchanger
+    safe: true
+  - name: calculate_energy_savings
+    description: Calculate fuel displacement, cost savings, and CO2 reduction
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_energy_savings
+    safe: true
+  - name: assess_fouling_corrosion
+    description: Assess fouling and corrosion risks with NACE standards
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:assess_fouling_corrosion
+    safe: true
+  - name: analyze_financial_metrics
+    description: Perform DCF analysis (NPV, IRR, payback, SIR)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:analyze_financial_metrics
+    safe: true
+  - name: prioritize_opportunities
+    description: Rank opportunities using weighted multi-criteria scoring
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:prioritize_opportunities
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

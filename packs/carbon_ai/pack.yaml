@@ -1,0 +1,169 @@
+schema_version: 2.0.0
+id: emissions/carbon_ai_v1
+name: Carbon Aggregation Agent (AI-Powered)
+version: 1.0.0
+summary: AI-powered carbon footprint aggregation with intelligent insights, deterministic
+  calculations, and citation tracking
+tags:
+- emissions
+- carbon
+- aggregation
+- scope1
+- scope2
+- ai-agent
+- citations
+- recommendations
+owners:
+- greenlang-team
+license: MIT
+compute:
+  entrypoint: python://greenlang.agents.carbon_agent_ai:execute
+  deterministic: true
+  timeout_s: 60
+  memory_limit_mb: 512
+  inputs:
+    emissions:
+      dtype: list
+      description: List of emission sources to aggregate
+      unit: '1'
+    building_area:
+      dtype: float64
+      unit: sqft
+      description: Building area for intensity calculations (optional)
+      ge: 0.0
+    occupancy:
+      dtype: int32
+      unit: people
+      description: Number of occupants for per-capita intensity (optional)
+      ge: 0
+    year:
+      dtype: int32
+      unit: '1'
+      description: Year for temporal analysis (optional)
+      ge: 1990
+      le: 2030
+  outputs:
+    total_co2e_kg:
+      dtype: float64
+      unit: kgCO2e
+      description: Total CO2 equivalent emissions in kilograms
+    total_co2e_tons:
+      dtype: float64
+      unit: tCO2e
+      description: Total CO2 equivalent emissions in metric tons
+    emissions_breakdown:
+      dtype: list
+      description: Breakdown of emissions by source with percentages
+      unit: '1'
+    carbon_intensity:
+      dtype: object
+      description: Carbon intensity metrics
+      unit: '1'
+    recommendations:
+      dtype: list
+      description: AI-generated reduction recommendations
+      unit: '1'
+    summary:
+      dtype: string
+      unit: '1'
+      description: Brief summary of aggregation results
+    ai_summary:
+      dtype: string
+      unit: '1'
+      description: AI-generated detailed analysis and insights
+    citations:
+      dtype: list
+      description: Citation tracking for provenance
+      unit: '1'
+  factors: {}
+ai:
+  system_prompt: 'You are an expert carbon footprint analyst helping organizations
+    understand and reduce their emissions.
+
+
+    Your role:
+
+    1. Aggregate emissions from multiple sources using exact tools (never hallucinate
+    numbers)
+
+    2. Calculate percentage breakdowns and identify largest contributors
+
+    3. Generate clear, actionable insights and recommendations
+
+    4. Provide context on emission sources and reduction opportunities
+
+
+    Guidelines:
+
+    - Always use the aggregate_emissions tool for calculations
+
+    - Use calculate_breakdown tool for percentage analysis
+
+    - Generate 3-5 targeted recommendations for largest sources
+
+    - Focus on practical, cost-effective reduction strategies
+
+    - Be concise but insightful in your summaries
+
+
+    Remember: All numeric calculations MUST come from tools. Your role is to interpret
+    and explain.
+
+    '
+  budget:
+    max_cost_usd: 0.5
+  rag_collections: []
+  tools:
+  - name: aggregate_emissions
+    description: Aggregate CO2e emissions from multiple sources
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:aggregate_emissions
+    safe: true
+  - name: calculate_breakdown
+    description: Calculate percentage breakdown of emissions by source
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_breakdown
+    safe: true
+  - name: calculate_intensity
+    description: Calculate carbon intensity metrics (per sqft, per person)
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:calculate_intensity
+    safe: true
+  - name: generate_recommendations
+    description: Generate targeted reduction recommendations based on breakdown
+    schema_in:
+      type: object
+      properties: {}
+    schema_out:
+      type: object
+      properties: {}
+    impl: python://greenlang.agents.tools:generate_recommendations
+    safe: true
+realtime:
+  default_mode: replay
+  snapshot_path: null
+  connectors: []
+provenance:
+  gwp_set: AR6GWP100
+  pin_ef: false
+  record:
+  - inputs
+  - outputs
+  - factors
+  - code_sha
+  - seed

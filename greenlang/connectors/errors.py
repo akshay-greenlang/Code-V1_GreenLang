@@ -15,7 +15,7 @@ Design principles:
 - Integration with policy/security errors
 """
 
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 
 
 class ConnectorError(Exception):
@@ -308,9 +308,9 @@ class ConnectorValidationError(ConnectorError):
         self,
         message: str,
         connector: str,
-        validation_errors: Optional[list] = None,
+        validation_errors: Optional[List[Dict[str, Any]]] = None,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(message, connector, **kwargs)
         self.validation_errors = validation_errors or []
 
@@ -405,7 +405,7 @@ def classify_connector_error(
                 original_error=error
             )
 
-        if 400 <= status_code < 500:
+        if status_code is not None and 400 <= status_code < 500:
             return ConnectorBadRequest(
                 f"Bad request: {error}",
                 connector=connector,
@@ -414,7 +414,7 @@ def classify_connector_error(
                 original_error=error
             )
 
-        if 500 <= status_code < 600:
+        if status_code is not None and 500 <= status_code < 600:
             return ConnectorServerError(
                 f"Server error: {error}",
                 connector=connector,
