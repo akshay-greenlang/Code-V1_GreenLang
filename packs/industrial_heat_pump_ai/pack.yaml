@@ -1,0 +1,360 @@
+# AgentSpec v2 Compliant Pack for IndustrialHeatPumpAgentAI
+# This pack defines the schema, inputs, outputs, and configuration for the AI-powered
+# industrial heat pump selection and optimization agent.
+
+schema_version: "2.0.0"
+id: "industrial/heat_pump_ai_v1"
+name: "Industrial Heat Pump Agent (AI-Powered)"
+version: "1.0.0"
+summary: "AI-powered industrial heat pump analysis with thermodynamic COP calculation, technology selection, cascade system design, and electrification pathway optimization"
+
+tags:
+  - "industrial"
+  - "heat-pump"
+  - "electrification"
+  - "cop-calculation"
+  - "carnot-efficiency"
+  - "waste-heat-recovery"
+  - "ai-agent"
+  - "citations"
+
+owners:
+  - "greenlang-team"
+
+license: "MIT"
+
+# ==============================================================================
+# Compute Section - Core Functionality
+# ==============================================================================
+compute:
+  entrypoint: "python://greenlang.agents.industrial_heat_pump_agent_ai:execute"
+  deterministic: true
+  timeout_s: 90
+  memory_limit_mb: 768
+
+  # Input Schema
+  inputs:
+    process_temperature_f:
+      dtype: "float64"
+      unit: "°F"
+      description: "Required process temperature in Fahrenheit"
+      required: true
+      ge: 32.0
+      le: 300.0
+
+    annual_heating_load_mmbtu:
+      dtype: "float64"
+      unit: "MMBtu/year"
+      description: "Annual heating load in million BTU"
+      required: true
+      ge: 0.0
+
+    load_profile_type:
+      dtype: "string"
+      unit: "1"
+      description: "Operating schedule pattern"
+      required: true
+      enum: ["continuous_24x7", "daytime_only", "batch_intermittent", "seasonal"]
+
+    climate_zone:
+      dtype: "string"
+      unit: "1"
+      description: "ASHRAE climate zone classification"
+      required: true
+      enum: ["hot_humid", "hot_dry", "mixed_humid", "mixed_dry", "cold", "very_cold"]
+
+    design_ambient_temp_f:
+      dtype: "float64"
+      unit: "°F"
+      description: "Design ambient temperature for sizing"
+      required: true
+      ge: -40.0
+      le: 120.0
+
+    baseline_fuel_type:
+      dtype: "string"
+      unit: "1"
+      description: "Current baseline fuel source"
+      required: true
+      enum: ["natural_gas", "fuel_oil", "propane", "coal", "electric_resistance"]
+
+    baseline_efficiency:
+      dtype: "float64"
+      unit: "1"
+      description: "Current system thermal efficiency (0-1)"
+      required: true
+      ge: 0.0
+      le: 1.0
+
+    electricity_rate_usd_per_kwh:
+      dtype: "float64"
+      unit: "USD/kWh"
+      description: "Electricity rate per kilowatt-hour"
+      required: true
+      ge: 0.0
+
+    electricity_rate_structure:
+      dtype: "string"
+      unit: "1"
+      description: "Electricity rate structure type"
+      required: true
+      enum: ["flat", "tou", "tou_plus_demand"]
+
+    grid_emissions_factor_kg_co2e_per_kwh:
+      dtype: "float64"
+      unit: "kgCO2e/kWh"
+      description: "Grid emission factor for electricity"
+      required: true
+      ge: 0.0
+
+    space_constraints:
+      dtype: "string"
+      unit: "1"
+      description: "Available space for equipment"
+      required: true
+      enum: ["tight", "moderate", "generous"]
+
+    demand_charge_usd_per_kw:
+      dtype: "float64"
+      unit: "USD/kW"
+      description: "Monthly demand charge"
+      required: false
+      ge: 0.0
+
+  # Output Schema
+  outputs:
+    recommended_technology:
+      dtype: "string"
+      unit: "1"
+      description: "Recommended heat pump technology"
+      examples: ["Air Source Heat Pump", "Water Source Heat Pump", "Ground Source Heat Pump", "Waste Heat Recovery HP"]
+
+    average_cop:
+      dtype: "float64"
+      unit: "1"
+      description: "Average coefficient of performance"
+
+    capacity_kw_thermal:
+      dtype: "float64"
+      unit: "kW"
+      description: "Required thermal capacity"
+
+    electrical_demand_kw:
+      dtype: "float64"
+      unit: "kW"
+      description: "Peak electrical demand"
+
+    annual_electricity_kwh:
+      dtype: "float64"
+      unit: "kWh/year"
+      description: "Annual electricity consumption"
+
+    baseline_emissions_kg_co2e:
+      dtype: "float64"
+      unit: "kgCO2e/year"
+      description: "Current baseline emissions"
+
+    emissions_reduction_kg_co2e:
+      dtype: "float64"
+      unit: "kgCO2e/year"
+      description: "Annual emissions reduction potential"
+
+    emissions_reduction_percent:
+      dtype: "float64"
+      unit: "%"
+      description: "Percentage emissions reduction"
+
+    simple_payback_years:
+      dtype: "float64"
+      unit: "years"
+      description: "Simple payback period"
+
+    npv_usd:
+      dtype: "float64"
+      unit: "USD"
+      description: "Net present value over analysis period"
+
+    lcoh_usd_per_mmbtu:
+      dtype: "float64"
+      unit: "USD/MMBtu"
+      description: "Levelized cost of heat"
+
+    estimated_capex_usd:
+      dtype: "float64"
+      unit: "USD"
+      description: "Estimated capital expenditure"
+
+    annual_operating_cost_usd:
+      dtype: "float64"
+      unit: "USD/year"
+      description: "Annual operating cost (electricity + maintenance)"
+
+    requires_thermal_storage:
+      dtype: "string"
+      unit: "1"
+      description: "Whether thermal storage is recommended (yes/no)"
+
+    ai_explanation:
+      dtype: "string"
+      unit: "1"
+      description: "AI-generated analysis and recommendations"
+
+    citations:
+      dtype: "string"
+      unit: "1"
+      description: "Citation tracking for calculations (JSON serialized)"
+      required: false
+
+# ==============================================================================
+# AI Section - LLM Configuration
+# ==============================================================================
+ai:
+  system_prompt: |
+    You are an expert in industrial heat pump systems and thermal system electrification.
+
+    Your role:
+    1. Calculate heat pump COP using Carnot efficiency method (never hallucinate numbers)
+    2. Select optimal heat pump technology based on temperature, climate, load profile
+    3. Design cascade systems for high temperature applications (>200°F)
+    4. Optimize thermal storage to reduce demand charges
+    5. Calculate comprehensive financial and emissions impacts
+    6. Provide implementation guidance and risk assessment
+
+    Guidelines:
+    - Always use provided tools for all thermodynamic calculations
+    - Calculate COP using: COP = (T_sink/(T_sink-T_source)) × Carnot_efficiency × part_load_factor
+    - Consider heat source availability (ambient air, waste heat, water, ground)
+    - Account for climate impact on performance (cold climate = lower COP)
+    - Evaluate cascade systems for process temps > 200°F
+    - Include thermal storage for demand charge reduction
+    - Compare electricity cost vs fuel savings
+    - Consider grid emissions factor for true carbon impact
+    - Assess space constraints and noise sensitivity
+
+    Technology Selection Rules:
+    - < 140°F: Air source HP (COP 3-4)
+    - 140-180°F: Water/ground source HP (COP 3-5)
+    - 180-250°F: High-temp HP or cascade (COP 2-3)
+    - Waste heat available: Always prioritize waste heat recovery HP
+
+    Remember: All calculations MUST come from tools. Focus on practical system design.
+
+  budget:
+    max_cost_usd: 0.80
+    max_input_tokens: 15000
+    max_output_tokens: 4000
+    max_retries: 3
+
+  rag_collections:
+    - "heat_pump_cop_data"
+    - "carnot_efficiency_curves"
+    - "industrial_heat_pump_case_studies"
+
+  tools:
+    - name: "calculate_cop"
+      description: "Calculate COP using Carnot efficiency method"
+      schema_in: "IndustrialHeatPumpInput"
+      schema_out: "dict"
+      impl: "python://greenlang.agents.industrial_heat_pump_agent_ai:_calculate_cop_impl"
+
+    - name: "select_technology"
+      description: "Select optimal heat pump technology"
+      schema_in: "dict"
+      schema_out: "dict"
+      impl: "python://greenlang.agents.industrial_heat_pump_agent_ai:_select_technology_impl"
+
+    - name: "size_equipment"
+      description: "Size heat pump capacity and electrical demand"
+      schema_in: "dict"
+      schema_out: "dict"
+      impl: "python://greenlang.agents.industrial_heat_pump_agent_ai:_size_equipment_impl"
+
+    - name: "calculate_energy_consumption"
+      description: "Calculate annual electricity consumption"
+      schema_in: "dict"
+      schema_out: "dict"
+      impl: "python://greenlang.agents.industrial_heat_pump_agent_ai:_calculate_energy_consumption_impl"
+
+    - name: "calculate_emissions"
+      description: "Calculate baseline and heat pump emissions"
+      schema_in: "dict"
+      schema_out: "dict"
+      impl: "python://greenlang.agents.industrial_heat_pump_agent_ai:_calculate_emissions_impl"
+
+    - name: "calculate_financial_metrics"
+      description: "Calculate capex, opex, NPV, payback with demand charges"
+      schema_in: "dict"
+      schema_out: "dict"
+      impl: "python://greenlang.agents.industrial_heat_pump_agent_ai:_calculate_financial_metrics_impl"
+
+    - name: "optimize_thermal_storage"
+      description: "Optimize thermal storage for demand charge reduction"
+      schema_in: "dict"
+      schema_out: "dict"
+      impl: "python://greenlang.agents.industrial_heat_pump_agent_ai:_optimize_thermal_storage_impl"
+
+    - name: "assess_implementation"
+      description: "Assess implementation feasibility and risks"
+      schema_in: "dict"
+      schema_out: "dict"
+      impl: "python://greenlang.agents.industrial_heat_pump_agent_ai:_assess_implementation_impl"
+
+# ==============================================================================
+# Realtime Section - Execution Configuration
+# ==============================================================================
+realtime:
+  replay_mode:
+    enabled: true
+    seed: 42
+    temperature: 0.0
+    deterministic: true
+
+# ==============================================================================
+# Provenance Section - Auditability
+# ==============================================================================
+provenance:
+  ef_pinning: "sha256"
+  gwp_set: "AR6"
+
+  audit_fields:
+    - "average_cop"
+    - "capacity_kw_thermal"
+    - "emissions_reduction_kg_co2e"
+    - "npv_usd"
+
+  citation_required: true
+  determinism_required: true
+
+  standards:
+    - name: "AHRI_540"
+      description: "Performance Rating of Positive Displacement Refrigerant Compressors and Compressor Units"
+      version: "2020"
+
+    - name: "ISO_13256"
+      description: "Water-source Heat Pumps Testing and Rating for Performance"
+      version: "1998"
+
+# ==============================================================================
+# Metadata
+# ==============================================================================
+metadata:
+  created: "2025-11-06"
+  updated: "2025-11-06"
+  status: "production"
+  compliance:
+    - "AgentSpec_v2"
+    - "AHRI_540"
+    - "ISO_13256"
+
+  documentation:
+    url: "https://docs.greenlang.com/agents/industrial_heat_pump_ai"
+    examples: "examples/industrial_heat_pump/"
+
+  performance:
+    avg_latency_ms: 4000
+    max_latency_ms: 8000
+    throughput_per_sec: 3
+
+  dependencies:
+    - "greenlang.intelligence.ChatSession"
+    - "greenlang.agents.citations"
