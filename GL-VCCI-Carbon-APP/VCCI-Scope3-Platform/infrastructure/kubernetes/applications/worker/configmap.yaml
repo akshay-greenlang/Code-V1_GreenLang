@@ -1,0 +1,230 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vcci-worker-config
+  namespace: vcci-platform
+  labels:
+    app: vcci-worker
+data:
+  # Celery configuration
+  celery.yaml: |
+    celery:
+      broker_url: "redis://redis:6379/0"
+      result_backend: "redis://redis:6379/1"
+      task_serializer: "json"
+      result_serializer: "json"
+      accept_content:
+        - json
+        - msgpack
+      timezone: "UTC"
+      enable_utc: true
+
+      # Task execution settings
+      task_acks_late: true
+      task_reject_on_worker_lost: true
+      task_track_started: true
+      task_time_limit: 3600  # 1 hour
+      task_soft_time_limit: 3300  # 55 minutes
+
+      # Worker settings
+      worker_prefetch_multiplier: 4
+      worker_max_tasks_per_child: 1000
+      worker_disable_rate_limits: false
+      worker_send_task_events: true
+
+      # Result backend settings
+      result_expires: 86400  # 24 hours
+      result_compression: "gzip"
+
+      # Queue configuration
+      task_routes:
+        "tasks.calculations.*":
+          queue: "calculations"
+        "tasks.integrations.*":
+          queue: "integrations"
+        "tasks.ml.*":
+          queue: "ml_tasks"
+        "tasks.reporting.*":
+          queue: "reporting"
+        "tasks.notifications.*":
+          queue: "notifications"
+
+      # Task priorities
+      task_default_priority: 5
+      task_inherit_parent_priority: true
+
+  # Task configuration
+  tasks.yaml: |
+    tasks:
+      # Calculation tasks
+      calculations:
+        enabled: true
+        queue: "calculations"
+        priority: 7
+        rate_limit: "100/m"
+        time_limit: 1800
+        soft_time_limit: 1650
+        retry: true
+        retry_policy:
+          max_retries: 3
+          interval_start: 5
+          interval_step: 10
+          interval_max: 60
+
+      # Integration tasks
+      integrations:
+        enabled: true
+        queue: "integrations"
+        priority: 6
+        rate_limit: "50/m"
+        time_limit: 600
+        soft_time_limit: 540
+        retry: true
+        retry_policy:
+          max_retries: 5
+          interval_start: 10
+          interval_step: 30
+          interval_max: 300
+
+      # ML tasks
+      ml_tasks:
+        enabled: true
+        queue: "ml_tasks"
+        priority: 8
+        rate_limit: "20/m"
+        time_limit: 3600
+        soft_time_limit: 3300
+        retry: true
+        retry_policy:
+          max_retries: 2
+          interval_start: 60
+          interval_step: 120
+          interval_max: 600
+
+      # Reporting tasks
+      reporting:
+        enabled: true
+        queue: "reporting"
+        priority: 5
+        rate_limit: "30/m"
+        time_limit: 900
+        soft_time_limit: 810
+        retry: true
+        retry_policy:
+          max_retries: 3
+          interval_start: 10
+          interval_step: 20
+          interval_max: 120
+
+      # Notification tasks
+      notifications:
+        enabled: true
+        queue: "notifications"
+        priority: 9
+        rate_limit: "200/m"
+        time_limit: 60
+        soft_time_limit: 50
+        retry: true
+        retry_policy:
+          max_retries: 5
+          interval_start: 2
+          interval_step: 5
+          interval_max: 30
+
+  # Beat scheduler configuration (for periodic tasks)
+  beat.yaml: |
+    beat:
+      schedule:
+        # Sync emission factors daily
+        sync_emission_factors:
+          task: "tasks.integrations.sync_emission_factors"
+          schedule:
+            crontab:
+              hour: 2
+              minute: 0
+          args: []
+
+        # Generate daily reports
+        generate_daily_reports:
+          task: "tasks.reporting.generate_daily_reports"
+          schedule:
+            crontab:
+              hour: 6
+              minute: 0
+          args: []
+
+        # Update ML models weekly
+        update_ml_models:
+          task: "tasks.ml.update_models"
+          schedule:
+            crontab:
+              day_of_week: 0  # Sunday
+              hour: 3
+              minute: 0
+          args: []
+
+        # Cleanup old tasks every hour
+        cleanup_old_tasks:
+          task: "tasks.maintenance.cleanup_old_tasks"
+          schedule:
+            crontab:
+              minute: 0
+          args: []
+
+        # Health check every 5 minutes
+        health_check:
+          task: "tasks.maintenance.health_check"
+          schedule:
+            crontab:
+              minute: "*/5"
+          args: []
+
+  # Logging configuration
+  logging.yaml: |
+    logging:
+      version: 1
+      disable_existing_loggers: false
+
+      formatters:
+        standard:
+          format: "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+        json:
+          class: "pythonjsonlogger.jsonlogger.JsonFormatter"
+          format: "%(asctime)s %(name)s %(levelname)s %(message)s"
+
+      handlers:
+        console:
+          class: "logging.StreamHandler"
+          level: "INFO"
+          formatter: "json"
+          stream: "ext://sys.stdout"
+
+        file:
+          class: "logging.handlers.RotatingFileHandler"
+          level: "INFO"
+          formatter: "json"
+          filename: "/var/log/vcci/worker.log"
+          maxBytes: 104857600  # 100MB
+          backupCount: 10
+
+      loggers:
+        celery:
+          level: "INFO"
+          handlers:
+            - console
+            - file
+          propagate: false
+
+        app:
+          level: "INFO"
+          handlers:
+            - console
+            - file
+          propagate: false
+
+      root:
+        level: "INFO"
+        handlers:
+          - console
+          - file

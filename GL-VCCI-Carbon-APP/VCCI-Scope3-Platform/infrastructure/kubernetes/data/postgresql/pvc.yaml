@@ -1,0 +1,21 @@
+---
+# Backup PVC for PostgreSQL
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgresql-backup
+  namespace: vcci-platform
+  labels:
+    app: postgresql
+    component: backup
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-storage  # Use appropriate storage class
+  resources:
+    requests:
+      storage: 500Gi
+
+---
+# Note: The main data PVCs are created automatically by the StatefulSet
+# via volumeClaimTemplates. This file only contains auxiliary PVCs.

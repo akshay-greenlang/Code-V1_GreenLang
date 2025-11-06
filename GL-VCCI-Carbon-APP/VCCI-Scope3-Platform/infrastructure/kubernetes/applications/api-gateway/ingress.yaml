@@ -1,0 +1,181 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vcci-api-gateway-ingress
+  namespace: vcci-platform
+  labels:
+    app: vcci-api-gateway
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: nginx
+
+    # SSL/TLS configuration
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains";
+      more_set_headers "Content-Security-Policy: default-src 'self'";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://*.vcci.greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+
+    # Proxy settings
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+
+    # Backend protocol
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+
+    # Load balancing
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$binary_remote_addr"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/affinity-mode: "persistent"
+    nginx.ingress.kubernetes.io/session-cookie-name: "vcci-route"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+
+    # Monitoring
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "true"
+
+    # WAF (Web Application Firewall)
+    nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+    nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.vcci.greenlang.io
+        - "*.api.vcci.greenlang.io"
+      secretName: vcci-tls-cert
+
+  rules:
+    # Main API endpoint
+    - host: api.vcci.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vcci-backend-api
+                port:
+                  number: 8000
+
+    # Tenant-specific subdomains
+    - host: "*.api.vcci.greenlang.io"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vcci-backend-api
+                port:
+                  number: 8000
+
+---
+# Ingress for Frontend
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vcci-frontend-ingress
+  namespace: vcci-platform
+  labels:
+    app: vcci-frontend
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Static content caching
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+      }
+
+    # Security headers
+    nginx.ingress.kubernetes.io/server-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - app.vcci.greenlang.io
+        - "*.app.vcci.greenlang.io"
+      secretName: vcci-frontend-tls-cert
+
+  rules:
+    - host: app.vcci.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vcci-frontend
+                port:
+                  number: 80
+
+---
+# Ingress for Grafana (Observability)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vcci-grafana-ingress
+  namespace: vcci-observability
+  labels:
+    app: grafana
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+
+    # Basic auth for additional security
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: grafana-basic-auth
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - VCCI Observability'
+
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - monitoring.vcci.greenlang.io
+      secretName: vcci-monitoring-tls-cert
+
+  rules:
+    - host: monitoring.vcci.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: grafana
+                port:
+                  number: 3000

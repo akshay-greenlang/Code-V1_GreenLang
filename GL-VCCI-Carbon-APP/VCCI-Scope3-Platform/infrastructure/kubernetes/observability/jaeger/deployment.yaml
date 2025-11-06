@@ -1,0 +1,128 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-all-in-one
+  namespace: vcci-observability
+  labels:
+    app: jaeger
+    component: tracing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+        component: tracing
+    spec:
+      containers:
+        - name: jaeger
+          image: jaegertracing/all-in-one:1.51
+          args:
+            - --memory.max-traces=50000
+          ports:
+            - name: jaeger-ui
+              containerPort: 16686
+              protocol: TCP
+            - name: jaeger-grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: jaeger-http
+              containerPort: 14268
+              protocol: TCP
+            - name: jaeger-otlp
+              containerPort: 4317
+              protocol: TCP
+            - name: jaeger-zipkin
+              containerPort: 9411
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: jaeger-ui
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: jaeger-ui
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          env:
+            - name: COLLECTOR_ZIPKIN_HOST_PORT
+              value: ":9411"
+            - name: SPAN_STORAGE_TYPE
+              value: "elasticsearch"
+            - name: ES_SERVER_URLS
+              value: "http://elasticsearch.vcci-observability.svc.cluster.local:9200"
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+---
+# Jaeger Collector (separate deployment for production)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger-collector
+  namespace: vcci-observability
+  labels:
+    app: jaeger-collector
+    component: tracing
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jaeger-collector
+  template:
+    metadata:
+      labels:
+        app: jaeger-collector
+        component: tracing
+    spec:
+      containers:
+        - name: jaeger-collector
+          image: jaegertracing/jaeger-collector:1.51
+          ports:
+            - name: grpc
+              containerPort: 14250
+              protocol: TCP
+            - name: http
+              containerPort: 14268
+              protocol: TCP
+            - name: otlp-grpc
+              containerPort: 4317
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          env:
+            - name: SPAN_STORAGE_TYPE
+              value: "elasticsearch"
+            - name: ES_SERVER_URLS
+              value: "http://elasticsearch.vcci-observability.svc.cluster.local:9200"

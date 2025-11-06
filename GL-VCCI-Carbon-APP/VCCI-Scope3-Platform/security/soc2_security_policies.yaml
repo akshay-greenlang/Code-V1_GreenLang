@@ -1064,6 +1064,287 @@ evidence_collection:
       collection_method: "Risk register spreadsheet with approvals"
 
 # ============================================================================
+# DETAILED EVIDENCE COLLECTION PROCEDURES
+# ============================================================================
+evidence_collection_procedures:
+  # Access Control Reviews (Quarterly)
+  - procedure_id: "EV-001"
+    procedure_name: "Quarterly Access Reviews"
+    tsc: "CC6.2"
+    frequency: "Quarterly (Jan, Apr, Jul, Oct)"
+
+    steps:
+      - step: 1
+        action: "Export AWS IAM user list + permissions (AWS Access Analyzer)"
+        automation: true
+        output: "s3://vcci-audit-evidence/access-reviews/{YYYY-MM}/iam_users.csv"
+
+      - step: 2
+        action: "Export Kubernetes RBAC roles + bindings"
+        automation: true
+        command: "kubectl get rolebindings,clusterrolebindings -A -o yaml"
+
+      - step: 3
+        action: "Manager reviews team members' access rights"
+        automation: false
+        deliverable: "Signed access review form (DocuSign)"
+
+      - step: 4
+        action: "DevOps removes unnecessary permissions"
+        automation: false
+        evidence: "Jira tickets for permission removals"
+
+      - step: 5
+        action: "CISO approves final review"
+        automation: false
+        evidence: "Signed approval (DocuSign)"
+
+  # Change Management Records (Continuous)
+  - procedure_id: "EV-002"
+    procedure_name: "Change Management Evidence Collection"
+    tsc: "CC8.1, PI1.2"
+    frequency: "Continuous (on every production change)"
+
+    steps:
+      - step: 1
+        action: "GitHub PR created with change description"
+        automation: true
+        evidence: "GitHub PR metadata (title, description, code diff)"
+
+      - step: 2
+        action: "Peer code review (2+ approvals)"
+        automation: true
+        evidence: "GitHub PR approval records"
+
+      - step: 3
+        action: "Automated tests run (unit + integration)"
+        automation: true
+        evidence: "CI/CD pipeline logs (GitHub Actions)"
+
+      - step: 4
+        action: "Lead Architect or DevOps approves deployment"
+        automation: true
+        evidence: "Jira CR ticket approval"
+
+      - step: 5
+        action: "ArgoCD deploys to production"
+        automation: true
+        evidence: "ArgoCD deployment logs + git commit SHA"
+
+      - step: 6
+        action: "Post-deployment validation"
+        automation: true
+        evidence: "Smoke test results, monitoring dashboard screenshots"
+
+  # Security Awareness Training (Annual)
+  - procedure_id: "EV-003"
+    procedure_name: "Security Awareness Training Evidence"
+    tsc: "CC1.4"
+    frequency: "Annual (or upon hire)"
+
+    steps:
+      - step: 1
+        action: "Assign training module to all employees (KnowBe4 LMS)"
+        automation: true
+
+      - step: 2
+        action: "Employee completes training + quiz (>=80% pass rate)"
+        automation: true
+        evidence: "KnowBe4 completion certificate (PDF)"
+
+      - step: 3
+        action: "Phishing simulation (quarterly)"
+        automation: true
+        evidence: "Phishing simulation results (click rate, report rate)"
+
+      - step: 4
+        action: "HR exports training completion report"
+        automation: true
+        output: "s3://vcci-audit-evidence/training-records/{YYYY}/completion_report.csv"
+
+  # Vulnerability Scan Reports (Weekly)
+  - procedure_id: "EV-004"
+    procedure_name: "Vulnerability Scan Evidence Collection"
+    tsc: "CC7.1, CC8.1"
+    frequency: "Weekly (automated)"
+
+    steps:
+      - step: 1
+        action: "Snyk scans dependencies for vulnerabilities"
+        automation: true
+        schedule: "Every Sunday 2am UTC"
+        evidence: "Snyk vulnerability report (JSON + PDF)"
+
+      - step: 2
+        action: "Trivy scans Docker images"
+        automation: true
+        schedule: "On every image build (CI/CD)"
+        evidence: "Trivy scan results (JSON)"
+
+      - step: 3
+        action: "DevOps reviews Critical + High vulnerabilities"
+        automation: false
+        sla: "48 hours for Critical, 7 days for High"
+        evidence: "Jira tickets for vulnerability remediation"
+
+      - step: 4
+        action: "Weekly vulnerability summary report"
+        automation: true
+        output: "s3://vcci-audit-evidence/vulnerability-scans/{YYYY-MM-DD}/weekly_summary.pdf"
+
+  # Backup Restoration Tests (Quarterly)
+  - procedure_id: "EV-005"
+    procedure_name: "Backup Restoration Test Evidence"
+    tsc: "A1.1, A1.2"
+    frequency: "Quarterly"
+
+    steps:
+      - step: 1
+        action: "Select random backup from past 7 days"
+        automation: false
+        responsible: "DevOps Engineer"
+
+      - step: 2
+        action: "Restore backup to staging environment"
+        automation: true
+        command: "aws rds restore-db-instance-from-db-snapshot"
+
+      - step: 3
+        action: "Validate restored data integrity"
+        automation: true
+        validation_checks:
+          - "Row count matches production (±0.1%)"
+          - "Schema integrity (all tables, indexes present)"
+          - "Sample queries return expected results"
+
+      - step: 4
+        action: "Screenshot staging environment + query results"
+        automation: false
+        evidence: "Screenshots uploaded to s3://vcci-audit-evidence/backup-tests/"
+
+      - step: 5
+        action: "Document test results + RTO/RPO achieved"
+        automation: false
+        evidence: "Test report (Markdown) signed by DevOps Engineer"
+
+  # Penetration Testing (Annual)
+  - procedure_id: "EV-006"
+    procedure_name: "Penetration Testing Evidence"
+    tsc: "CC7.1"
+    frequency: "Annual (Week 36)"
+
+    steps:
+      - step: 1
+        action: "Engage external pen test firm (e.g., Bishop Fox, NCC Group)"
+        responsible: "CISO"
+        budget: "$15,000 - $25,000"
+
+      - step: 2
+        action: "Pen test firm conducts assessment (1-2 weeks)"
+        scope: "Web application, APIs, infrastructure"
+
+      - step: 3
+        action: "Receive pen test report (vulnerabilities + recommendations)"
+        evidence: "Pen test report (PDF, confidential)"
+
+      - step: 4
+        action: "DevOps remediates Critical + High findings"
+        sla: "30 days"
+        evidence: "Jira tickets for remediation"
+
+      - step: 5
+        action: "Request re-test for Critical findings"
+        evidence: "Re-test results (confirmation of fix)"
+
+# ============================================================================
+# SOC 2 AUDIT PREPARATION CHECKLIST
+# ============================================================================
+audit_preparation_checklist:
+  phase_1_readiness_assessment: # Week 1-4
+    - task: "Engage Big 4 audit firm (Deloitte, PwC, EY, KPMG)"
+      status: "pending"
+      owner: "CEO + CFO"
+      cost: "$60,000"
+
+    - task: "Conduct gap analysis (current state vs SOC 2 requirements)"
+      status: "pending"
+      owner: "CISO + Audit firm"
+      deliverable: "Gap analysis report (identify missing controls)"
+
+    - task: "Define audit scope (services, Trust Services Criteria)"
+      status: "pending"
+      scope: "GL-VCCI Scope 3 platform - CC, A, PI, C, P"
+
+  phase_2_control_design: # Week 5-12
+    - task: "Document all 20 security policies (POL-001 to POL-020)"
+      status: "in_progress"
+      owner: "CISO"
+      progress: "8/20 detailed policies complete"
+
+    - task: "Implement access control (RBAC, MFA)"
+      status: "in_progress"
+      owner: "DevOps Engineer"
+      evidence: "AWS IAM policies, K8s RBAC configs"
+
+    - task: "Implement encryption (TLS 1.3, AES-256)"
+      status: "in_progress"
+      owner: "DevOps Engineer"
+      evidence: "TLS certificates, KMS configurations"
+
+    - task: "Set up automated evidence collection (logs, access reviews)"
+      status: "in_progress"
+      owner: "DevOps Engineer"
+      evidence: "S3 bucket: s3://vcci-audit-evidence/"
+
+  phase_3_evidence_collection: # Week 1-44 (11 months)
+    - task: "Collect quarterly access reviews (4 cycles)"
+      frequency: "Quarterly"
+      evidence_count: "4 access review reports"
+
+    - task: "Collect change management records (continuous)"
+      frequency: "Continuous"
+      evidence_count: "500+ GitHub PRs, Jira CR tickets"
+
+    - task: "Collect security awareness training records (annual)"
+      frequency: "Annual"
+      evidence_count: "100+ employee completion certificates"
+
+    - task: "Collect vulnerability scan reports (weekly)"
+      frequency: "Weekly"
+      evidence_count: "44 weekly reports"
+
+    - task: "Conduct backup restoration tests (quarterly)"
+      frequency: "Quarterly"
+      evidence_count: "4 test reports"
+
+  phase_4_pre_audit_review: # Week 40-44
+    - task: "CISO reviews all evidence (completeness check)"
+      owner: "CISO"
+      checklist: "80% of evidence collected and organized"
+
+    - task: "Mock audit (internal audit team simulates SOC 2 audit)"
+      owner: "Internal Audit or external consultant"
+      deliverable: "Mock audit findings + remediation plan"
+
+    - task: "Remediate any gaps found in mock audit"
+      owner: "CISO + DevOps"
+      sla: "Before Week 45 (audit start)"
+
+  phase_5_soc2_audit: # Week 45-48
+    - task: "SOC 2 Type II audit (Big 4 firm)"
+      duration: "4 weeks"
+      activities:
+        - "Kick-off meeting (Week 45 Day 1)"
+        - "Evidence review (Week 45-47)"
+        - "Control testing (Week 46-47)"
+        - "Management interviews (Week 47)"
+        - "Draft report review (Week 48)"
+
+    - task: "Receive SOC 2 Type II report"
+      deliverable: "SOC 2 Type II report (PDF, confidential)"
+      distribution: "Share with enterprise customers (procurement requirement)"
+
+# ============================================================================
 # CHANGELOG
 # ============================================================================
 changelog:
@@ -1077,3 +1358,5 @@ changelog:
       - "SOC 2 TSC mapping (CC, A, PI, C, P criteria)"
       - "Evidence collection automation strategy"
       - "Audit readiness timeline (Week 1-44 evidence, Week 45-48 audit)"
+      - "Detailed evidence collection procedures (6 procedures)"
+      - "SOC 2 audit preparation checklist (5 phases)"

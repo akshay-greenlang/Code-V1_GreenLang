@@ -119,41 +119,43 @@ class RAGEngine:
             from greenlang.intelligence.rag.embeddings import get_embedding_provider
             from greenlang.intelligence.rag.vector_stores import get_vector_store
             from greenlang.intelligence.rag.retrievers import get_retriever
-            from greenlang.intelligence.rag.chunker import get_chunker
 
-            # Initialize embedder
-            self.embedder = get_embedding_provider(
-                provider=self.config.embedding_provider,
-                model_name=self.config.embedding_model,
-            )
+            # Initialize embedder (factory function only takes config)
+            self.embedder = get_embedding_provider(config=self.config)
 
-            # Initialize vector store
+            # Initialize vector store (factory function takes dimension and config)
             self.vector_store = get_vector_store(
-                provider=self.config.vector_store_provider,
                 dimension=self.config.embedding_dimension,
-                persist_dir=self.config.vector_store_path,
+                config=self.config,
             )
 
-            # Initialize chunker
-            self.chunker = get_chunker(
-                strategy=self.config.chunking_strategy,
-                chunk_size=self.config.chunk_size,
-                chunk_overlap=self.config.chunk_overlap,
-            )
+            # Initialize retriever (if using MMR retrieval method)
+            if self.config.retrieval_method == "mmr":
+                self.retriever = get_retriever(
+                    vector_store=self.vector_store,
+                    retrieval_method=self.config.retrieval_method,
+                    fetch_k=self.config.default_fetch_k,
+                    top_k=self.config.default_top_k,
+                    lambda_mult=self.config.mmr_lambda,
+                )
+            else:
+                # Simple similarity retrieval
+                self.retriever = get_retriever(
+                    vector_store=self.vector_store,
+                    retrieval_method=self.config.retrieval_method,
+                    top_k=self.config.default_top_k,
+                )
 
-            # Initialize retriever
-            self.retriever = get_retriever(
-                method=self.config.retrieval_method,
-                vector_store=self.vector_store,
-            )
+            # Chunker initialization - skip for now, using simple chunking in _chunk_document
+            # Will be enhanced later when chunker module is ready
+            self.chunker = None
 
         except ImportError as e:
             # Components not yet available - provide helpful error
             raise ImportError(
                 f"RAG components not yet available: {e}\n"
-                "The core components (embedders, vector_stores, retrievers, chunkers) "
-                "are being implemented by another agent. This engine will work once "
-                "they are available."
+                "The core components (embedders, vector_stores, retrievers) "
+                "may need additional dependencies installed."
             )
 
     async def ingest_document(
@@ -372,20 +374,14 @@ class RAGEngine:
         Returns:
             List of embedding vectors
         """
-        # Batch processing for efficiency
-        # Will use embedder.embed_batch() from embedders.py
-        # For now, placeholder
-        embeddings = []
-        batch_size = self.config.embedding_batch_size
+        # Use embedder to generate embeddings (async)
+        if not texts:
+            return []
 
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i : i + batch_size]
-            # Placeholder: will call self.embedder.embed_batch(batch)
-            # For now, return zero vectors
-            batch_embeddings = [
-                [0.0] * self.config.embedding_dimension for _ in batch
-            ]
-            embeddings.extend(batch_embeddings)
+        embeddings_np = await self.embedder.embed(texts)
+
+        # Convert numpy arrays to lists for serialization
+        embeddings = [emb.tolist() for emb in embeddings_np]
 
         return embeddings
 
@@ -403,9 +399,24 @@ class RAGEngine:
             embeddings: List of embeddings
             collection: Collection name
         """
-        # Will call self.vector_store.add(collection, chunks, embeddings)
-        # Placeholder for now
-        pass
+        import numpy as np
+        from greenlang.intelligence.rag.vector_stores import Document
+
+        # Create Document objects for vector store
+        documents = []
+        for chunk, embedding in zip(chunks, embeddings):
+            # Add collection to chunk metadata
+            chunk.extra["collection"] = collection
+
+            # Create Document wrapper
+            doc = Document(
+                chunk=chunk,
+                embedding=np.array(embedding, dtype=np.float32),
+            )
+            documents.append(doc)
+
+        # Add documents to vector store
+        self.vector_store.add_documents(documents, collection=collection)
 
     async def query(
         self,
@@ -515,23 +526,24 @@ class RAGEngine:
         query_embedding = await self._embed_query(query)
 
         # Step 2: Fetch candidates from vector store (fetch_k results)
-        candidates = await self._fetch_candidates(
+        # Returns List[Document] with chunks and embeddings
+        candidate_documents = await self._fetch_candidates(
             query_embedding=query_embedding,
             collections=collections,
             k=fetch_k,
         )
 
         # Step 3: Apply MMR for diversity
-        if self.config.retrieval_method == "mmr" and len(candidates) > top_k:
+        if self.config.retrieval_method == "mmr" and len(candidate_documents) > top_k:
             selected_chunks, scores = await self._apply_mmr(
                 query_embedding=query_embedding,
-                candidates=candidates,
+                candidates=candidate_documents,
                 k=top_k,
                 lambda_mult=mmr_lambda,
             )
         else:
-            # Use top candidates without MMR
-            selected_chunks = candidates[:top_k]
+            # Use top candidates without MMR - extract chunks from documents
+            selected_chunks = [doc.chunk for doc in candidate_documents[:top_k]]
             scores = [1.0] * len(selected_chunks)  # Placeholder scores
 
         # Step 4: Generate citations
@@ -590,18 +602,20 @@ class RAGEngine:
         Returns:
             Embedding vector
         """
-        # Will call self.embedder.embed(query)
-        # Placeholder: return zero vector
-        return [0.0] * self.config.embedding_dimension
+        # Use embedder to embed query
+        embeddings_np = await self.embedder.embed([query])
+
+        # Return first (and only) embedding as list
+        return embeddings_np[0].tolist()
 
     async def _fetch_candidates(
         self,
         query_embedding: List[float],
         collections: List[str],
         k: int,
-    ) -> List[Chunk]:
+    ):
         """
-        Fetch candidate chunks from vector store.
+        Fetch candidate documents from vector store.
 
         Args:
             query_embedding: Query embedding vector
@@ -609,34 +623,60 @@ class RAGEngine:
             k: Number of candidates to fetch
 
         Returns:
-            List of candidate chunks
+            List of candidate Document objects (with chunks and embeddings)
         """
-        # Will call self.vector_store.search(query_embedding, collections, k)
-        # Placeholder: return empty list
-        return []
+        import numpy as np
+
+        # Convert query embedding to numpy array
+        query_vec = np.array(query_embedding, dtype=np.float32)
+
+        # Search vector store (returns Documents with embeddings)
+        documents = self.vector_store.similarity_search(
+            query_embedding=query_vec,
+            k=k,
+            collections=collections,
+        )
+
+        return documents
 
     async def _apply_mmr(
         self,
         query_embedding: List[float],
-        candidates: List[Chunk],
+        candidates,  # List[Document] with chunks and embeddings
         k: int,
         lambda_mult: float,
-    ) -> tuple[List[Chunk], List[float]]:
+    ) -> tuple:
         """
         Apply MMR for diversity.
 
         Args:
             query_embedding: Query embedding
-            candidates: Candidate chunks
+            candidates: Candidate Document objects (with embeddings)
             k: Number of results to select
             lambda_mult: MMR lambda (0=diversity, 1=relevance)
 
         Returns:
             Tuple of (selected_chunks, scores)
         """
-        # Will call self.retriever(query_embedding, candidates, k, lambda_mult)
-        # Placeholder: return top k candidates
-        return candidates[:k], [1.0] * min(k, len(candidates))
+        import numpy as np
+        from greenlang.intelligence.rag.retrievers import mmr_retrieval
+
+        # Convert query embedding to numpy array
+        query_vec = np.array(query_embedding, dtype=np.float32)
+
+        # Apply MMR retrieval
+        results = mmr_retrieval(
+            query_embedding=query_vec,
+            candidates=candidates,  # Documents with embeddings
+            lambda_mult=lambda_mult,
+            k=k,
+        )
+
+        # Extract chunks and scores from results
+        selected_chunks = [doc.chunk for doc, score in results]
+        scores = [score for doc, score in results]
+
+        return selected_chunks, scores
 
     def _generate_citations(
         self,

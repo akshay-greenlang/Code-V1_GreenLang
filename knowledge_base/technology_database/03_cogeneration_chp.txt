@@ -1,0 +1,660 @@
+Combined Heat and Power (CHP) / Cogeneration Systems
+Document ID: tech_chp_cogen_v1
+Publisher: GreenLang Technology Database
+Collection: technology_database
+Version: 1.0
+Last Updated: 2025-11-06
+
+=============================================================================
+COMBINED HEAT AND POWER: TECHNOLOGY, EFFICIENCY, AND ECONOMIC ANALYSIS
+=============================================================================
+
+1. TECHNOLOGY OVERVIEW
+
+1.1 DEFINITION
+Combined Heat and Power (CHP), also called cogeneration, is the simultaneous production of electricity and useful thermal energy from a single fuel source. By capturing and utilizing waste heat from power generation, CHP systems achieve 70-90% total efficiency compared to 45-55% for separate heat and power.
+
+Key Concept:
+TRADITIONAL SYSTEM:
+- Power plant: 100 units fuel → 35 units electricity + 65 units waste heat (35% efficient)
+- Boiler: 100 units fuel → 85 units useful heat (85% efficient)
+- Total: 200 units fuel → 35 units electricity + 85 units heat (60% overall efficiency)
+
+CHP SYSTEM:
+- CHP: 100 units fuel → 30 units electricity + 55 units useful heat (85% total efficiency)
+- Result: Same outputs, 50% less fuel consumption
+
+1.2 BASIC CONFIGURATIONS
+
+Topping Cycle (Most Common):
+Fuel → Prime Mover → Electricity → Waste Heat Recovery → Thermal Energy
+
+Bottoming Cycle (Less Common):
+Fuel → Process Heat → Waste Heat → Power Generation → Electricity
+
+=============================================================================
+2. CHP PRIME MOVER TECHNOLOGIES
+=============================================================================
+
+2.1 RECIPROCATING ENGINES (MOST COMMON)
+
+Technology:
+Internal combustion engines (spark ignition or compression ignition) driving electrical generators.
+
+Fuel Options:
+- Natural gas (most common)
+- Biogas (digester gas, landfill gas)
+- Diesel/fuel oil
+- Propane
+
+Capacity Range: 50 kW to 20 MW
+
+Electrical Efficiency: 30-45%
+- Small engines (<500 kW): 30-38%
+- Medium engines (500 kW - 3 MW): 35-42%
+- Large engines (>3 MW): 40-45%
+
+Heat Recovery:
+- Engine jacket water: 30-40% of fuel input at 80-95°C
+- Exhaust gas: 20-35% of fuel input at 400-550°C
+- Lube oil cooling: 3-5% of fuel input at 60-80°C
+
+Total CHP Efficiency: 70-85%
+
+Heat-to-Power Ratio: 1.2-1.8 : 1
+(Produces more heat than electricity - suitable for high heat demand sites)
+
+Example 1 MW Engine:
+Fuel input: 2.5 MW (HHV basis)
+Electricity output: 1.0 MW (40% elec efficiency)
+Recoverable heat:
+  - Jacket water: 0.85 MW
+  - Exhaust: 0.50 MW
+  - Total heat: 1.35 MW (54% heat recovery)
+Total CHP efficiency: (1.0 + 1.35) / 2.5 = 94% ✓
+
+Advantages:
++ High electrical efficiency
++ Quick start-up (5-10 minutes)
++ Excellent part-load performance
++ Fuel flexible
++ Proven technology, widely available
++ Lower capital cost ($1,200-2,000/kWe)
+
+Disadvantages:
+- Higher maintenance (oil changes, spark plugs, overhauls)
+- Noise and vibration
+- Emissions (NOx, CO) require control
+- Shorter time between overhauls (30,000-50,000 hours)
+
+2.2 COMBUSTION (GAS) TURBINES
+
+Technology:
+Continuous combustion turbine driving generator. Similar to jet engine.
+
+Fuel: Natural gas (primary), biogas, fuel oil
+
+Capacity Range: 1 MW to 300+ MW
+
+Electrical Efficiency: 25-42%
+- Small turbines (1-10 MW): 25-30%
+- Industrial turbines (10-50 MW): 30-38%
+- Advanced turbines (>50 MW): 35-42%
+
+Heat Recovery:
+- Exhaust gas: 45-55% of fuel input at 450-550°C (very high quality heat)
+- Can produce high-pressure steam
+
+Total CHP Efficiency: 70-80%
+
+Heat-to-Power Ratio: 1.5-2.5 : 1
+(Even more heat-heavy than engines)
+
+Example 10 MW Turbine:
+Fuel input: 33.3 MW (HHV)
+Electricity: 10 MW (30% efficiency)
+Exhaust heat: 18 MW at 500°C
+Steam generation: 15 MW (accounting for heat exchanger losses)
+Total CHP efficiency: (10 + 15) / 33.3 = 75%
+
+Advantages:
++ Very high-quality waste heat (high temperature)
++ Can produce high-pressure steam
++ Low maintenance (fewer moving parts)
++ Long service intervals (25,000-50,000 hours)
++ Compact footprint
++ Low emissions potential
+
+Disadvantages:
+- Lower electrical efficiency than engines
+- Poor part-load efficiency (steep drop-off below 70% load)
+- Longer start-up time (30-60 minutes)
+- Higher capital cost ($1,800-3,500/kWe for small turbines)
+- Less fuel flexible
+
+2.3 MICROTURBINES
+
+Technology:
+Small, high-speed turbines with permanent magnet generators.
+
+Capacity Range: 30 kW to 500 kW (typically 65-250 kW units)
+
+Electrical Efficiency: 26-33%
+
+Heat Recovery: 45-50% (exhaust at 230-300°C)
+
+Total CHP Efficiency: 70-80%
+
+Features:
+- Single moving part (simplicity)
+- Compact size (fits in small spaces)
+- Lower emissions than engines
+- Air bearings (no oil needed)
+
+Advantages:
++ Very low emissions (< 9 ppm NOx)
++ Compact and quiet
++ Low maintenance
++ Can run on low-pressure gas
+
+Disadvantages:
+- Lower electrical efficiency
+- Higher cost ($2,500-4,000/kWe)
+- Limited to smaller applications
+
+2.4 STEAM TURBINES
+
+Technology:
+Boiler generates steam, which drives turbine.
+
+Capacity Range: 500 kW to 250+ MW
+
+Configuration:
+- Back-pressure turbine: Exhausts steam at pressure useful for process
+- Condensing turbine: Exhausts at vacuum for maximum power
+
+Electrical Efficiency: 15-38% (depends on steam parameters and turbine type)
+- Back-pressure: 15-25%
+- Condensing: 30-38%
+
+Fuel: Any fuel that can fire a boiler (biomass, coal, gas, oil, waste)
+
+Heat-to-Power Ratio: 3-7 : 1 (very heat-heavy)
+
+Advantages:
++ Fuel flexibility (biomass, waste fuels)
++ Long lifetime (40+ years)
++ Very reliable
++ Can utilize existing boilers
+
+Disadvantages:
+- Low electrical efficiency
+- Slow start-up (hours)
+- Large footprint
+- Not economical for small scale
+
+2.5 FUEL CELLS
+
+Technology:
+Electrochemical conversion of fuel to electricity (no combustion).
+
+Types:
+- Phosphoric Acid Fuel Cell (PAFC): 400 kW units, 40% electric efficiency
+- Molten Carbonate Fuel Cell (MCFC): 1.4-3.7 MW, 47% electric efficiency
+- Solid Oxide Fuel Cell (SOFC): 100 kW - 1 MW, 50-60% electric efficiency
+
+Total CHP Efficiency: 80-90%
+
+Heat Output: 60-80°C (PAFC), 300-400°C (MCFC), 650-1000°C (SOFC)
+
+Advantages:
++ Highest electrical efficiency (especially SOFC)
++ Very low emissions
++ Quiet operation
++ Good part-load performance
+
+Disadvantages:
+- Very high capital cost ($5,000-8,000/kWe)
+- Limited commercial availability
+- Requires clean fuel (sulfur-free)
+- Long start-up time
+
+=============================================================================
+3. HEAT RECOVERY EQUIPMENT
+=============================================================================
+
+3.1 HEAT RECOVERY STEAM GENERATOR (HRSG)
+
+Function: Recovers heat from exhaust gas to produce steam.
+
+Configurations:
+- Single-pressure: Produces one steam pressure level
+- Dual-pressure: Low-pressure and high-pressure steam
+- Triple-pressure: LP, IP, HP steam (for combined cycle power plants)
+
+Performance:
+- Approach temperature: 10-20°C (difference between exhaust exit and steam temp)
+- Stack temperature: 90-150°C (after heat recovery)
+- Heat recovery efficiency: 70-85% of exhaust energy
+
+Steam Production:
+Q_steam = m_exhaust × Cp × (T_in - T_out) × η_HRSG
+
+Example:
+Engine exhaust: 5,000 kg/hr at 500°C
+Stack temp: 120°C
+HRSG efficiency: 80%
+Heat recovered: 5,000 kg/hr × 1.05 kJ/kg·K × (500-120)K × 0.80 = 1,596 kW
+
+Steam (150 psig saturated): h_fg = 1,950 kJ/kg
+Steam production: 1,596 kW / 1,950 kJ/kg = 0.82 kg/s = 2,952 kg/hr = 6,510 lb/hr
+
+3.2 JACKET WATER HEAT EXCHANGER
+
+For reciprocating engines only.
+
+Function: Recovers heat from engine cooling circuit.
+
+Typical Output:
+- Temperature: 80-95°C (suitable for low-temp process heat or building heat)
+- Heat available: 30-40% of fuel input
+
+Heat Exchanger Types:
+- Plate heat exchanger (most common, compact, efficient)
+- Shell-and-tube (for high pressures or fouling conditions)
+
+3.3 EXHAUST GAS HEAT EXCHANGER
+
+For all prime movers.
+
+Function: Recovers heat from exhaust gas for hot water or thermal oil (when steam not needed).
+
+Typical Output:
+- Hot water: 80-95°C
+- Thermal oil: 150-250°C
+
+=============================================================================
+4. SYSTEM SIZING AND DESIGN
+=============================================================================
+
+4.1 THERMAL-TO-ELECTRIC RATIO MATCHING
+
+Critical Design Principle:
+Size CHP to match facility's thermal-to-electric ratio, OR plan to export/import power/heat.
+
+Facility Ratios:
+Heat-Heavy (Thermal : Electric > 2:1):
+- Hospitals
+- Universities
+- Food processing
+- Pulp & paper
+→ Best match: Engines, gas turbines (high heat ratio)
+
+Balanced (Thermal : Electric 1:1 to 2:1):
+- Manufacturing
+- Commercial buildings
+→ Match: Engines with moderate heat recovery
+
+Electric-Heavy (Thermal : Electric < 1:1):
+- Data centers (cooling loads)
+- Commercial offices
+→ May require absorption chiller to utilize heat
+
+Example Analysis:
+Facility annual consumption:
+- Electricity: 10,000 MWh
+- Thermal: 15,000 MWh (natural gas boiler)
+- Ratio: 15,000 / 10,000 = 1.5 : 1
+
+1 MW Reciprocating Engine:
+- Electricity: 1 MW
+- Heat recovery: 1.35 MW
+- Ratio: 1.35 : 1 ✓ GOOD MATCH
+
+If CHP sized at 1 MW:
+- Annual CHP electricity: 1 MW × 8,000 hr = 8,000 MWh (80% of demand)
+- Annual CHP heat: 1.35 MW × 8,000 hr = 10,800 MWh (72% of demand)
+- Grid electricity import: 2,000 MWh
+- Boiler heat: 4,200 MWh
+
+4.2 OPERATING STRATEGIES
+
+Base-Load Operation (Most Common):
+- CHP runs continuously at full load
+- Sized for minimum continuous thermal or electric load
+- Simple controls, maximum efficiency, best economics
+
+Typical sizing: 50-80% of minimum load
+
+Load-Following:
+- CHP output varies to match electrical or thermal demand
+- Requires more sophisticated controls
+- Part-load efficiency penalties
+
+Stand-By (Emergency) Power:
+- CHP sized for critical loads
+- Runs only during grid outages
+- Poor economics (low utilization)
+
+4.3 ELECTRICAL INTERCONNECTION
+
+Grid-Parallel (Most Common):
+- CHP connected to utility grid
+- Can import/export power
+- Requires utility interconnection agreement
+
+Islanded (Off-Grid):
+- CHP operates independently
+- Must match load precisely
+- Requires black-start capability
+
+Interconnection Costs:
+- Small systems (<1 MW): $50,000-200,000
+- Large systems (>5 MW): $200,000-1,000,000+
+
+Net metering vs. standby charges (varies by utility and jurisdiction)
+
+=============================================================================
+5. ECONOMICS AND FINANCIAL ANALYSIS
+=============================================================================
+
+5.1 CAPITAL COSTS (2024 USD)
+
+Installed Costs ($/kWe):
+
+Reciprocating Engines:
+- Small (<500 kW): $2,000-3,000/kWe
+- Medium (500 kW - 3 MW): $1,500-2,200/kWe
+- Large (>3 MW): $1,200-1,800/kWe
+
+Gas Turbines:
+- Small (1-5 MW): $2,500-3,500/kWe
+- Medium (5-20 MW): $1,800-2,800/kWe
+- Large (>20 MW): $1,200-2,000/kWe
+
+Microturbines:
+- $2,500-4,000/kWe (includes heat recovery)
+
+Fuel Cells:
+- $5,000-8,000/kWe (high-tech premium)
+
+Cost Components:
+- Prime mover and generator: 45-55%
+- Heat recovery equipment: 15-25%
+- Electrical interconnection: 10-15%
+- Installation and commissioning: 10-15%
+- Engineering and permitting: 5-10%
+
+Example 1 MW Engine CHP:
+- Prime mover: $700,000
+- Heat recovery (HRSG + HX): $250,000
+- Electrical gear: $150,000
+- Installation: $200,000
+- Engineering: $100,000
+- Total: $1,400,000 ($1,400/kWe)
+
+5.2 OPERATING COSTS
+
+Fuel Costs:
+Largest operating expense, typically 70-85% of total operating cost.
+
+Fuel consumption:
+Fuel (MMBtu/hr) = Electricity Output (kW) / Electrical Efficiency / 293
+
+Example 1 MW engine, 40% efficiency:
+Fuel = 1,000 kW / 0.40 / 293 = 8.53 MMBtu/hr (HHV)
+
+Annual fuel (8,000 hours):
+8.53 MMBtu/hr × 8,000 hr = 68,240 MMBtu/year
+
+Fuel cost @ $8/MMBtu:
+68,240 × $8 = $545,920/year
+
+Maintenance:
+- Reciprocating engines: $0.015-0.025/kWh
+- Gas turbines: $0.008-0.015/kWh
+- Microturbines: $0.010-0.020/kWh
+
+1 MW engine maintenance:
+8,000 MWh/year × $0.020/kWh = $160,000/year
+
+Total Annual Operating Cost:
+- Fuel: $545,920
+- Maintenance: $160,000
+- Insurance, property tax: $20,000
+- Total: $725,920/year
+
+5.3 ENERGY SAVINGS
+
+CHP Value = Electricity Savings + Thermal Savings - Fuel Cost - O&M Cost
+
+Electricity Savings:
+- Grid electricity avoided
+- 1 MW × 8,000 hr = 8,000 MWh
+- @ $0.12/kWh = $960,000/year
+
+Thermal Savings:
+- Heat recovery: 1.35 MW × 8,000 hr = 10,800 MWh thermal
+- Displaces gas boiler (85% efficiency)
+- Gas avoided: 10,800 MWh / 0.85 / 0.293 = 43,400 MMBtu
+- @ $8/MMBtu = $347,200/year
+
+Total Savings:
+$960,000 + $347,200 = $1,307,200/year
+
+Net Savings:
+$1,307,200 - $725,920 (fuel + O&M) = $581,280/year
+
+Simple Payback:
+$1,400,000 / $581,280 = 2.4 years ✓ EXCELLENT
+
+5.4 SPARK SPREAD ANALYSIS
+
+Spark Spread: The difference between electricity price and gas price (adjusted for efficiency).
+
+Spark Spread ($/MWh) = Electricity Price ($/MWh) - [Gas Price ($/MMBtu) × Heat Rate (MMBtu/MWh)]
+
+Heat Rate = 3.412 MMBtu/MWh / Electrical Efficiency
+
+Example:
+Electricity: $120/MWh
+Natural gas: $8/MMBtu
+Engine efficiency: 40%
+Heat rate: 3.412 / 0.40 = 8.53 MMBtu/MWh
+
+Spark spread = $120 - ($8 × 8.53) = $120 - $68.24 = $51.76/MWh
+
+Rule of Thumb:
+- Spark spread >$30/MWh: CHP likely economical
+- Spark spread $20-30/MWh: Marginal
+- Spark spread <$20/MWh: CHP difficult to justify
+
+5.5 INCENTIVES
+
+United States (IRA 2022):
+- Investment Tax Credit (ITC): 30% for CHP >1 MW (if meets efficiency standards)
+- Efficiency requirement: >60% total efficiency, >20% electric efficiency
+- Bonus credits available for energy communities and domestic content
+
+Example with ITC:
+Capital: $1,400,000
+ITC (30%): $420,000
+Net capital: $980,000
+Payback: $980,000 / $581,280 = 1.7 years ✓ VERY ATTRACTIVE
+
+State/Utility Incentives:
+- Varies widely by jurisdiction
+- California SGIP (Self-Generation Incentive Program): $0.50-1.00/W
+- New York: Accelerated depreciation
+- Massachusetts: DOER grants
+
+=============================================================================
+6. EMISSIONS AND ENVIRONMENTAL IMPACT
+=============================================================================
+
+6.1 CARBON EMISSIONS COMPARISON
+
+CHP vs. Separate Heat and Power:
+
+Separate System:
+Grid electricity: 8,000 MWh × 0.417 tons CO2/MWh = 3,336 tons CO2
+Boiler gas: 50,700 MMBtu × 53.06 kg/MMBtu / 1,000 = 2,690 tons CO2
+Total: 6,026 tons CO2/year
+
+CHP System:
+CHP fuel: 68,240 MMBtu × 53.06 kg/MMBtu / 1,000 = 3,621 tons CO2
+Grid import: 2,000 MWh × 0.417 = 834 tons CO2
+Backup boiler: 4,200 MWh / 0.85 / 0.293 = 16,870 MMBtu × 0.05306 = 895 tons CO2
+Total: 5,350 tons CO2/year
+
+Reduction: 6,026 - 5,350 = 676 tons CO2/year (11% reduction)
+
+6.2 AIR EMISSIONS
+
+Criteria Pollutants (per MMBtu fuel input):
+
+Natural Gas Engines (4-stroke, lean-burn with catalytic reduction):
+- NOx: 0.15-0.50 lb/MMBtu
+- CO: 0.20-0.50 lb/MMBtu
+- VOC: 0.02-0.10 lb/MMBtu
+- PM: <0.01 lb/MMBtu
+
+Gas Turbines (with DLN - Dry Low NOx burners):
+- NOx: 0.10-0.20 lb/MMBtu
+- CO: 0.04-0.10 lb/MMBtu
+- VOC: 0.01-0.05 lb/MMBtu
+
+Emission Control Technologies:
+- Selective Catalytic Reduction (SCR): Reduces NOx by 90%
+- Oxidation catalysts: Reduce CO and VOC
+- Low-NOx combustion technology
+
+Permits:
+- Major source (>100 tons/year any pollutant): Title V permit required
+- Minor source: State/local permits
+- Emission testing typically required annually
+
+=============================================================================
+7. CASE STUDY: HOSPITAL CHP SYSTEM
+=============================================================================
+
+Facility Profile:
+- 300-bed hospital
+- Annual electricity: 15,000 MWh ($1.8M @ $0.12/kWh)
+- Annual thermal: 25,000 MWh steam and hot water ($1.2M, gas @ $8/MMBtu)
+- Ratio: 25,000 / 15,000 = 1.67 : 1 (heat-heavy, typical for hospital)
+
+Load Characteristics:
+- Base electricity load: 1.2 MW continuous (8,760 hours)
+- Peak electricity: 2.5 MW
+- Thermal load: 24/7 for space heat, domestic hot water, sterilization
+
+Solution:
+2× 1.2 MW natural gas reciprocating engines with heat recovery
+
+System Specifications:
+- Total electrical capacity: 2.4 MW
+- Total heat recovery: 3.0 MW (steam and hot water)
+- Electrical efficiency: 40%
+- Total CHP efficiency: 85%
+
+Economics:
+- Capital cost: 2.4 MW × $1,600/kW = $3,840,000
+- ITC (30%): $1,152,000
+- Net capital: $2,688,000
+
+Annual Operation (7,500 hours - allowing maintenance downtime):
+- Electricity generated: 2.4 MW × 7,500 hr = 18,000 MWh
+- Heat recovered: 3.0 MW × 7,500 hr = 22,500 MWh
+
+Energy Savings:
+- Electricity (net of exports): 15,000 MWh × $0.12 = $1,800,000
+- Thermal: 22,500 MWh gas avoided = 90,000 MMBtu @ $8 = $720,000
+- Total: $2,520,000
+
+Operating Costs:
+- Fuel: 2.4 MW / 0.40 / 0.293 × 7,500 hr × $8/MMBtu = $1,230,000
+- Maintenance: 18,000 MWh × $0.020/kWh = $360,000
+- Total: $1,590,000
+
+Net Annual Savings: $2,520,000 - $1,590,000 = $930,000/year
+
+Simple Payback: $2,688,000 / $930,000 = 2.9 years ✓
+
+Emissions:
+- CO2 reduction: 22% (1,300 tons/year)
+- Backup power resilience: Can island during grid outages (critical for hospital)
+
+=============================================================================
+8. IMPLEMENTATION CONSIDERATIONS
+=============================================================================
+
+8.1 FEASIBILITY ASSESSMENT
+
+Screening Criteria for Good CHP Candidates:
+✓ High annual operating hours (>4,000 hours/year)
+✓ Coincident electricity and thermal loads
+✓ Thermal-to-electric ratio matches available technology
+✓ Adequate space for equipment
+✓ Favorable spark spread (electricity vs. gas prices)
+✓ Access to natural gas
+✓ Supportive utility policies (net metering, standby rates)
+
+8.2 PERMITTING
+
+Required Permits:
+- Air quality permit (state/local)
+- Building permit
+- Electrical interconnection approval
+- Natural gas service agreement
+- Noise permit (if applicable)
+
+Timeline: 6-18 months depending on jurisdiction
+
+8.3 OPERATION AND MAINTENANCE
+
+Maintenance Schedule:
+
+Daily/Weekly:
+- Visual inspection
+- Check oil and coolant levels
+- Monitor performance parameters
+
+Monthly:
+- Oil and filter change (engines)
+- Check belts and connections
+
+Quarterly:
+- Comprehensive inspection
+- Coolant analysis
+
+Annually:
+- Emissions testing
+- Valve adjustment
+- Heat exchanger cleaning
+
+Major Overhaul:
+- Engines: Every 30,000-60,000 hours (cost: 10-15% of capital)
+- Turbines: Every 25,000-50,000 hours (cost: 8-12% of capital)
+
+8.4 RESILIENCE AND BACKUP POWER
+
+CHP provides resilience benefits:
+- Can operate in island mode during grid outages
+- Critical for hospitals, data centers, emergency services
+- "Resilience Value" often not quantified but significant
+
+Requirements for Islanding:
+- Automatic transfer switch
+- Black-start capability
+- Load shedding controls (if CHP capacity < total load)
+
+=============================================================================
+DOCUMENT METADATA
+=============================================================================
+Content Type: Technology Guide
+Target Audience: Facility managers, energy engineers, project developers
+Applicability: Facilities with coincident electric and thermal loads
+Related Technologies: Waste heat recovery, absorption cooling, thermal storage
+Update Frequency: Annual (technology and incentives evolving)
+References: US DOE CHP Partnership, EPA CHP Partnership, ASHRAE guidelines

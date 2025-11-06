@@ -1,0 +1,327 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcci-backend-api
+  namespace: vcci-platform
+  labels:
+    app: vcci-backend-api
+    component: backend
+    tier: application
+    version: v1
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: vcci-backend-api
+  template:
+    metadata:
+      labels:
+        app: vcci-backend-api
+        component: backend
+        version: v1
+        prometheus.io/scrape: "true"
+      annotations:
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        sidecar.opentelemetry.io/inject: "true"
+    spec:
+      serviceAccountName: vcci-backend-api-sa
+
+      # Anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - vcci-backend-api
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vcci-backend-api
+                topologyKey: topology.kubernetes.io/zone
+
+      # Init containers
+      initContainers:
+        # Wait for database
+        - name: wait-for-db
+          image: postgres:15-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgresql -p 5432 -U vcci; do
+                echo "Waiting for PostgreSQL to be ready..."
+                sleep 5
+              done
+              echo "PostgreSQL is ready!"
+
+        # Wait for Redis
+        - name: wait-for-redis
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until redis-cli -h redis ping; do
+                echo "Waiting for Redis to be ready..."
+                sleep 5
+              done
+              echo "Redis is ready!"
+
+        # Run database migrations
+        - name: run-migrations
+          image: greenlang/vcci-backend-api:latest
+          command:
+            - python
+            - -m
+            - alembic
+            - upgrade
+            - head
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: database-url
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+      containers:
+        - name: api
+          image: greenlang/vcci-backend-api:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: localhost
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: http
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+
+          # Environment variables
+          env:
+            # Application settings
+            - name: APP_ENV
+              value: "production"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: API_VERSION
+              value: "v1"
+            - name: WORKERS
+              value: "4"
+            - name: MAX_REQUESTS
+              value: "1000"
+            - name: MAX_REQUESTS_JITTER
+              value: "100"
+
+            # Database configuration
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: database-url
+            - name: DATABASE_POOL_SIZE
+              value: "20"
+            - name: DATABASE_MAX_OVERFLOW
+              value: "40"
+
+            # Redis configuration
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: redis-url
+            - name: REDIS_MAX_CONNECTIONS
+              value: "50"
+
+            # Weaviate configuration
+            - name: WEAVIATE_URL
+              value: "http://weaviate:8080"
+            - name: WEAVIATE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: weaviate-api-key
+
+            # Authentication
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: jwt-secret
+            - name: JWT_ALGORITHM
+              value: "HS256"
+            - name: JWT_EXPIRY
+              value: "86400"
+
+            # External API keys
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: openai-api-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: anthropic-api-key
+
+            # Observability
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://jaeger-collector:4317"
+            - name: OTEL_SERVICE_NAME
+              value: "vcci-backend-api"
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+            - name: OTEL_METRICS_EXPORTER
+              value: "prometheus"
+
+            # Pod metadata for logging
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Volume mounts
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/cache
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep 15
+
+      # Volumes
+      volumes:
+        - name: config
+          configMap:
+            name: vcci-backend-api-config
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir:
+            sizeLimit: 1Gi
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+
+      # Graceful termination
+      terminationGracePeriodSeconds: 30
+
+      # Security context for pod
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-backend-api-pdb
+  namespace: vcci-platform
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: vcci-backend-api

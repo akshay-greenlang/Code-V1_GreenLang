@@ -1,0 +1,38 @@
+---
+# Note: The main data PVCs are created automatically by the StatefulSet
+# via volumeClaimTemplates. This file can be used for backup PVCs if needed.
+
+# Backup PVC for Weaviate
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: weaviate-backup
+  namespace: vcci-platform
+  labels:
+    app: weaviate
+    component: backup
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-storage
+  resources:
+    requests:
+      storage: 200Gi
+
+---
+# PVC for ML models (shared across workers)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ml-models-pvc
+  namespace: vcci-platform
+  labels:
+    app: ml-models
+    component: storage
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: nfs-storage
+  resources:
+    requests:
+      storage: 100Gi

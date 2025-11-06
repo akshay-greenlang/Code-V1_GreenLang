@@ -1,0 +1,439 @@
+GHG Protocol Reference Emission Factors
+Document ID: ghg_protocol_emission_factors_v1
+Publisher: Compiled from EPA, DEFRA, IEA, IPCC sources
+Collection: ghg_protocol_corp
+Version: 1.0
+Last Updated: 2025-11-06
+
+=============================================================================
+GREENHOUSE GAS EMISSION FACTORS: REFERENCE DATABASE
+=============================================================================
+
+1. PURPOSE AND USAGE
+
+This document provides reference emission factors for common fuels, electricity grids, and activities. These factors enable calculation of GHG emissions using the basic formula:
+
+GHG Emissions = Activity Data × Emission Factor
+
+Important Notes:
+- Use the most specific emission factor available (site > region > national > default)
+- Document the source and vintage of all emission factors used
+- Update factors when new authoritative data becomes available
+- All factors in this document are from recognized authorities (EPA, DEFRA, IEA, IPCC)
+
+=============================================================================
+2. STATIONARY COMBUSTION EMISSION FACTORS
+=============================================================================
+
+2.1 NATURAL GAS
+
+Natural Gas Combustion (kg CO2 per unit):
+- Per therm: 5.3 kg CO2
+- Per million BTU (MMBtu): 53.06 kg CO2
+- Per cubic meter: 1.91 kg CO2
+- Per thousand cubic feet (MCF): 54.00 kg CO2
+
+Full GHG Emissions (kg CO2e per MMBtu):
+- CO2: 53.06 kg
+- CH4: 0.001 kg × GWP 29.8 = 0.030 kg CO2e
+- N2O: 0.0001 kg × GWP 273 = 0.027 kg CO2e
+- Total: 53.12 kg CO2e per MMBtu
+
+Source: US EPA Greenhouse Gas Emission Factors (2024)
+
+Regional Variations:
+- US natural gas: 53.06 kg CO2/MMBtu (standard)
+- European natural gas: 56.1 kg CO2/MMBtu (higher density)
+
+2.2 FUEL OIL AND DIESEL
+
+Diesel Fuel / Distillate Fuel Oil No. 2:
+- Per gallon: 10.21 kg CO2
+- Per liter: 2.70 kg CO2
+- Per MMBtu: 73.96 kg CO2
+
+Residual Fuel Oil No. 6:
+- Per gallon: 11.27 kg CO2
+- Per liter: 2.98 kg CO2
+- Per MMBtu: 75.10 kg CO2
+
+Source: US EPA
+
+2.3 COAL
+
+Bituminous Coal:
+- Per short ton: 2,039 kg CO2
+- Per metric ton: 2,249 kg CO2
+- Per MMBtu: 93.28 kg CO2
+
+Sub-bituminous Coal:
+- Per short ton: 1,672 kg CO2
+- Per metric ton: 1,847 kg CO2
+- Per MMBtu: 97.17 kg CO2
+
+Anthracite Coal:
+- Per short ton: 2,223 kg CO2
+- Per metric ton: 2,454 kg CO2
+- Per MMBtu: 103.69 kg CO2
+
+Source: US EPA
+
+2.4 PROPANE AND LPG
+
+Propane (Liquefied Petroleum Gas):
+- Per gallon: 5.68 kg CO2
+- Per liter: 1.50 kg CO2
+- Per pound: 2.98 kg CO2
+- Per MMBtu: 61.71 kg CO2
+
+Source: US EPA
+
+2.5 BIOMASS FUELS
+
+Wood and Wood Residuals:
+- Per short ton: 1,685 kg biogenic CO2 (reported separately, not in Scope 1)
+- Per MMBtu: 93.80 kg biogenic CO2
+
+Note: Biogenic CO2 from biomass combustion is not counted in Scope 1, 2, or 3 emissions but should be reported separately. Include only fossil-derived CH4 and N2O emissions in Scope 1.
+
+=============================================================================
+3. MOBILE COMBUSTION EMISSION FACTORS
+=============================================================================
+
+3.1 GASOLINE (MOTOR VEHICLES)
+
+Gasoline Combustion:
+- Per gallon: 8.89 kg CO2
+- Per liter: 2.35 kg CO2
+
+Typical Vehicle Fuel Economy and Annual Emissions:
+
+Passenger Car (25 MPG average, 12,000 miles/year):
+- Fuel consumed: 12,000 / 25 = 480 gallons
+- Emissions: 480 gallons × 8.89 kg/gallon = 4,267 kg = 4.27 tons CO2/year
+
+Light Truck/SUV (18 MPG average, 12,000 miles/year):
+- Fuel consumed: 12,000 / 18 = 667 gallons
+- Emissions: 667 gallons × 8.89 kg/gallon = 5,930 kg = 5.93 tons CO2/year
+
+Source: US EPA
+
+3.2 DIESEL (MOBILE)
+
+Diesel for Highway Vehicles:
+- Per gallon: 10.21 kg CO2
+- Per liter: 2.70 kg CO2
+
+Heavy-Duty Truck (6 MPG average, 50,000 miles/year):
+- Fuel consumed: 50,000 / 6 = 8,333 gallons
+- Emissions: 8,333 gallons × 10.21 kg/gallon = 85,080 kg = 85.08 tons CO2/year
+
+3.3 AVIATION FUEL
+
+Jet Fuel (Aviation Gasoline):
+- Per gallon: 9.57 kg CO2
+- Per liter: 2.53 kg CO2
+
+Commercial Aviation (passenger-mile basis):
+- Short-haul (<300 miles): 0.25 kg CO2e per passenger-mile
+- Medium-haul (300-2,300 miles): 0.18 kg CO2e per passenger-mile
+- Long-haul (>2,300 miles): 0.15 kg CO2e per passenger-mile
+
+Example Flight:
+New York to Los Angeles: 2,500 miles, long-haul
+Emissions per passenger = 2,500 miles × 0.15 kg/mile = 375 kg = 0.375 tons CO2e
+
+Source: DEFRA 2024 Conversion Factors
+
+3.4 MARINE FUEL
+
+Residual Fuel Oil (Bunker Fuel):
+- Per gallon: 11.27 kg CO2
+- Per liter: 2.98 kg CO2
+
+Marine Diesel Oil:
+- Per gallon: 10.21 kg CO2
+- Per liter: 2.70 kg CO2
+
+=============================================================================
+4. ELECTRICITY EMISSION FACTORS (SCOPE 2)
+=============================================================================
+
+4.1 UNITED STATES GRID FACTORS
+
+US National Average (eGRID 2023):
+- 0.417 tons CO2 per MWh
+- 0.000417 tons CO2 per kWh
+- 417 kg CO2 per MWh
+
+US Regional Averages (eGRID 2023 subregions):
+
+WECC (Western):
+- CAMX (California): 0.223 tons CO2/MWh (high renewables + nuclear)
+- NWPP (Northwest): 0.318 tons CO2/MWh (hydro-heavy)
+- RMPA (Rockies): 0.832 tons CO2/MWh (coal-heavy)
+
+ERCOT (Texas):
+- ERCT: 0.396 tons CO2/MWh
+
+MRO (Midwest):
+- MROW (Midwest West): 0.732 tons CO2/MWh (coal)
+
+RFC (Mid-Atlantic):
+- RFCE (East): 0.318 tons CO2/MWh
+
+SERC (Southeast):
+- SRVC (Virginia/Carolina): 0.367 tons CO2/MWh
+
+Source: US EPA eGRID2023 (published 2024)
+
+4.2 INTERNATIONAL GRID FACTORS
+
+Europe (IEA 2023):
+- Germany: 0.350 tons CO2/MWh
+- France: 0.057 tons CO2/MWh (high nuclear share)
+- UK: 0.233 tons CO2/MWh
+- Poland: 0.766 tons CO2/MWh (coal-heavy)
+- Norway: 0.008 tons CO2/MWh (nearly 100% hydro)
+- Spain: 0.215 tons CO2/MWh
+
+Asia-Pacific (IEA 2023):
+- China: 0.581 tons CO2/MWh
+- India: 0.708 tons CO2/MWh
+- Japan: 0.462 tons CO2/MWh
+- South Korea: 0.424 tons CO2/MWh
+- Australia: 0.660 tons CO2/MWh
+
+Other Major Economies (IEA 2023):
+- Brazil: 0.075 tons CO2/MWh (high hydro share)
+- Canada: 0.120 tons CO2/MWh (hydro + nuclear)
+- Mexico: 0.459 tons CO2/MWh
+- South Africa: 0.928 tons CO2/MWh (coal-heavy)
+
+Source: IEA CO2 Emissions from Fuel Combustion 2023
+
+4.3 RENEWABLE ENERGY
+
+Grid-Supplied Renewable Energy with Certificates:
+- Wind: 0 tons CO2/MWh (with RECs/GOs)
+- Solar PV: 0 tons CO2/MWh (with RECs/GOs)
+- Hydro: 0 tons CO2/MWh (with RECs/GOs)
+
+Note: Only claim zero emissions for market-based Scope 2 when accompanied by valid renewable energy certificates (RECs) or Guarantees of Origin (GOs).
+
+=============================================================================
+5. FUGITIVE EMISSIONS FACTORS
+=============================================================================
+
+5.1 REFRIGERANTS (HIGH GWP)
+
+Global Warming Potential (GWP) 100-year (IPCC AR6):
+
+HFCs (Hydrofluorocarbons):
+- R-134a (common automotive, commercial refrigeration): GWP 1,530
+- R-410A (residential AC): GWP 2,256
+- R-404A (commercial refrigeration): GWP 4,271
+- R-32 (newer AC systems): GWP 771
+
+CFCs (Chlorofluorocarbons - phased out):
+- R-12: GWP 10,900 (ozone-depleting, banned)
+
+Natural Refrigerants (low GWP alternatives):
+- R-290 (Propane): GWP 3.3
+- R-600a (Isobutane): GWP 3.3
+- R-744 (CO2): GWP 1
+- Ammonia (R-717): GWP <1
+
+Calculation Example:
+HVAC system with R-134a, annual leakage 15 kg
+GWP = 1,530
+Emissions = 15 kg × 1,530 / 1,000 = 22.95 tons CO2e
+
+Typical Annual Leakage Rates:
+- Well-maintained systems: 2-5% of charge
+- Average systems: 10-15% of charge
+- Poorly maintained: 20-30% of charge
+
+5.2 METHANE FROM NATURAL GAS LEAKAGE
+
+Methane (CH4) from natural gas systems:
+- GWP of methane (IPCC AR6): 29.8 (100-year)
+- Typical leakage rate: 0.5-2% of throughput
+
+Example:
+Natural gas consumption: 100,000 MMBtu/year
+Assumed leakage: 1%
+Methane in natural gas: ~95% by volume
+Leakage: 100,000 MMBtu × 0.01 × 0.05 kg CH4/MMBtu = 50 kg CH4
+Emissions = 50 kg × 29.8 = 1,490 kg = 1.49 tons CO2e
+
+5.3 SULFUR HEXAFLUORIDE (SF6)
+
+SF6 from electrical equipment:
+- GWP (IPCC AR6): 25,200
+- Typical annual leakage: 1-3% of charge
+
+Example:
+SF6-insulated switchgear, 50 kg charge, 2% annual leakage
+Leakage: 50 kg × 0.02 = 1 kg
+Emissions = 1 kg × 25,200 / 1,000 = 25.2 tons CO2e
+
+=============================================================================
+6. SCOPE 3 EMISSION FACTORS (SELECTED CATEGORIES)
+=============================================================================
+
+6.1 PURCHASED GOODS (SPEND-BASED)
+
+US EPA EEIO (Environmentally-Extended Input-Output) Factors (2024):
+(tons CO2e per $1,000 spent)
+
+Materials:
+- Paper and paperboard: 0.89 tons CO2e/$1,000
+- Plastics: 1.24 tons CO2e/$1,000
+- Steel: 1.56 tons CO2e/$1,000
+- Aluminum: 2.03 tons CO2e/$1,000
+- Cement: 0.94 tons CO2e/$1,000
+- Chemicals: 1.12 tons CO2e/$1,000
+
+Services:
+- IT services: 0.21 tons CO2e/$1,000
+- Consulting services: 0.15 tons CO2e/$1,000
+- Facilities services: 0.34 tons CO2e/$1,000
+
+Food Products:
+- Meat products: 1.45 tons CO2e/$1,000
+- Dairy products: 1.02 tons CO2e/$1,000
+- Grain products: 0.68 tons CO2e/$1,000
+
+Example:
+Annual spend on steel: $500,000
+Emission factor: 1.56 tons CO2e/$1,000
+Emissions = $500,000 / $1,000 × 1.56 = 500 × 1.56 = 780 tons CO2e
+
+6.2 TRANSPORTATION (DISTANCE-BASED)
+
+Freight Transport (kg CO2 per ton-mile):
+- Heavy-duty truck: 0.062 kg CO2 per ton-mile
+- Rail: 0.021 kg CO2 per ton-mile
+- Ocean shipping: 0.012 kg CO2 per ton-mile
+- Air freight: 0.602 kg CO2 per ton-mile
+
+Example:
+Ship 100 tons of goods 1,000 miles by truck
+Emissions = 100 tons × 1,000 miles × 0.062 kg/ton-mile = 6,200 kg = 6.2 tons CO2
+
+Business Travel:
+- Rental car (per mile): 0.350 kg CO2e
+- Hotel (per night): 12.1 kg CO2e per room-night
+- Rail (per passenger-mile): 0.041 kg CO2e
+
+Source: DEFRA 2024 Conversion Factors
+
+6.3 WASTE DISPOSAL
+
+Waste Treatment (kg CO2e per ton):
+- Landfill (mixed waste): 500 kg CO2e per ton (includes methane from decomposition)
+- Incineration: 420 kg CO2e per ton
+- Recycling (avoided emissions):
+  * Paper recycling: -750 kg CO2e per ton (net negative)
+  * Plastic recycling: -1,500 kg CO2e per ton
+  * Steel recycling: -1,890 kg CO2e per ton
+
+Source: US EPA WARM Model (Waste Reduction Model)
+
+=============================================================================
+7. TRANSMISSION & DISTRIBUTION LOSSES (SCOPE 3 CATEGORY 3)
+=============================================================================
+
+Electricity T&D Loss Factors:
+
+US Average: 5.0% of purchased electricity
+- Apply grid emission factor to 5% of purchased electricity for T&D loss emissions
+
+Example:
+Purchased electricity: 1,000 MWh
+Grid factor: 0.417 tons CO2/MWh
+T&D loss: 1,000 MWh × 5% = 50 MWh
+T&D emissions = 50 MWh × 0.417 = 20.85 tons CO2e
+
+International T&D Losses (% of electricity):
+- EU average: 6%
+- India: 20% (high technical + commercial losses)
+- Brazil: 15%
+- China: 5.5%
+
+Source: IEA World Energy Statistics
+
+=============================================================================
+8. UNCERTAINTY AND DATA QUALITY
+=============================================================================
+
+Emission Factor Uncertainty Ranges (typical):
+
+Tier 1 (Site-specific, continuous measurement): ±2-5%
+Tier 2 (Regional/supplier-specific factors): ±10-15%
+Tier 3 (National averages): ±15-30%
+Tier 4 (Spend-based EEIO factors): ±50-100%
+
+Best Practices:
+1. Document all emission factor sources and vintages
+2. Use most recent factors available
+3. Apply consistent factors year-over-year for comparability
+4. Update factors when new authoritative data published
+5. Conduct sensitivity analysis for material sources
+6. Prioritize improving factors for largest emission sources
+
+=============================================================================
+9. UPDATING EMISSION FACTORS
+=============================================================================
+
+Recommended Update Frequency:
+
+Electricity Grid Factors:
+- Update annually when new eGRID or IEA data published
+- eGRID: Released ~2 years after data year (2023 data published 2024)
+
+Fuel Factors:
+- Update every 2-3 years or when IPCC assessment reports published
+- Fuel CO2 factors relatively stable
+- GWP values change with IPCC assessment cycles
+
+Spend-Based Factors:
+- Update every 2-3 years when EPA EEIO updated
+
+Regional/Supplier Factors:
+- Use most current data available
+- Request annual updates from suppliers
+
+=============================================================================
+10. AUTHORITATIVE SOURCES
+=============================================================================
+
+Primary References:
+
+US Emission Factors:
+- EPA Greenhouse Gas Emission Factors Hub (https://www.epa.gov/climateleadership)
+- eGRID (Emissions & Generation Resource Integrated Database)
+- EPA WARM (Waste Reduction Model)
+
+International:
+- DEFRA UK Government GHG Conversion Factors
+- IEA CO2 Emissions from Fuel Combustion
+- IPCC Guidelines for National Greenhouse Gas Inventories
+
+Global Warming Potentials:
+- IPCC Sixth Assessment Report (AR6) - Current standard
+- IPCC Fifth Assessment Report (AR5) - Previously used
+
+Industry-Specific:
+- American Petroleum Institute (API) Compendium
+- European Commission JRC Database
+
+=============================================================================
+DOCUMENT METADATA
+=============================================================================
+Content Type: Reference Data
+Target Audience: Carbon accountants, GHG inventory specialists
+Update Frequency: Annual (or when new authoritative data available)
+Related Documents: 01_overview.txt, 02_scopes.txt
+Data Vintage: 2023-2024 (most recent available)

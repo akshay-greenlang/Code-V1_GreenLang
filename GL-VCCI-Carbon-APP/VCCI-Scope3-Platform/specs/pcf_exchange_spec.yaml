@@ -549,6 +549,191 @@ deployment:
       memory: "4Gi"
 
 # ============================================================================
+# DETAILED WORKFLOW EXAMPLES
+# ============================================================================
+workflow_examples:
+  # Workflow 1: Import Supplier PCF (PACT Pathfinder)
+  - workflow_name: "Import Supplier PCF via PACT Pathfinder"
+    trigger: "Supplier shares PCF via PACT network"
+
+    steps:
+      - step: 1
+        actor: "Supplier"
+        action: "Uploads PCF to PACT Pathfinder network"
+        data:
+          product_id: "GTIN-12345678"
+          pcf_value: 2.5
+          declared_unit: "1 kg"
+          reference_period: "2024-01-01 to 2024-12-31"
+
+      - step: 2
+        actor: "VCCI Platform"
+        action: "Receives PCF notification from PACT API"
+        endpoint: "/api/v1/pcf-exchange/import"
+
+      - step: 3
+        actor: "PCF Exchange"
+        action: "Validates PCF against PACT Pathfinder v2.0 schema"
+        validation_checks:
+          - "All required fields present (productId, pcf, declaredUnit, etc.)"
+          - "pcf value is positive number"
+          - "reference period is valid date range"
+
+      - step: 4
+        actor: "PCF Exchange"
+        action: "Calculates PCF quality score"
+        result:
+          completeness: 100  # All optional fields present
+          recency: 100  # <1 year old
+          verification: 100  # Third-party verified
+          granularity: 100  # Product-specific
+          total_score: 100
+          tier: "tier_1"
+
+      - step: 5
+        actor: "PCF Exchange"
+        action: "Stores PCF in database, links to supplier entity"
+        database_record:
+          pcf_id: "PCF-123456"
+          supplier_entity_id: "E789012"
+          product_id: "GTIN-12345678"
+          pcf_value: 2.5
+          quality_score: 100
+          tier: "tier_1"
+
+      - step: 6
+        actor: "Scope3CalculatorAgent"
+        action: "Future Cat 1 calculations use this Tier 1 PCF (±5% uncertainty vs ±50% Tier 3)"
+
+  # Workflow 2: Export Our PCF to Customer
+  - workflow_name: "Export Our PCF to Customer via PACT"
+    trigger: "Customer requests our product's PCF"
+
+    steps:
+      - step: 1
+        actor: "Customer"
+        action: "Requests PCF via PACT network"
+        request:
+          product_id: "SKU-WIDGET-001"
+
+      - step: 2
+        actor: "VCCI Platform"
+        action: "Receives export request"
+        endpoint: "/api/v1/pcf-exchange/export"
+
+      - step: 3
+        actor: "PCF Exchange"
+        action: "Retrieves calculated PCF for product"
+        data_source: "Scope3CalculatorAgent (Cat 1 calculation for our manufacturing)"
+
+      - step: 4
+        actor: "PCF Exchange"
+        action: "Formats PCF in PACT Pathfinder v2.0 schema"
+        pact_payload:
+          productId: "SKU-WIDGET-001"
+          pcf: 3.2  # kgCO2e
+          declaredUnit: "1 unit"
+          referencePeriodStart: "2024-01-01"
+          referencePeriodEnd: "2024-12-31"
+          boundaryProcessesDescription: "Cradle-to-gate"
+          crossSectoralStandardsUsed: ["GHG Protocol", "ISO 14067"]
+
+      - step: 5
+        actor: "PCF Exchange"
+        action: "Uploads PCF to PACT network"
+        destination: "${PACT_API_ENDPOINT}/export"
+
+      - step: 6
+        actor: "Customer"
+        action: "Receives PCF, uses in their Cat 1 calculation (Tier 1 method)"
+
+  # Workflow 3: Catena-X Integration (Automotive)
+  - workflow_name: "Import PCF via Catena-X (Automotive Supply Chain)"
+    trigger: "Tier 1 automotive supplier (e.g., Bosch) shares PCF"
+
+    steps:
+      - step: 1
+        actor: "Tier 1 Supplier (Bosch)"
+        action: "Uploads PCF to Catena-X network"
+        data:
+          partNumber: "BOSCH-ABS-MODULE-001"
+          vehiclePlatform: "MEB (Volkswagen)"
+          pcf: 45.0  # kgCO2e per ABS module
+          tierLevel: "Tier 1"
+
+      - step: 2
+        actor: "VCCI Platform"
+        action: "Queries Catena-X API for supplier PCFs"
+        authentication: "X.509 certificates (GAIA-X compliant)"
+
+      - step: 3
+        actor: "PCF Exchange"
+        action: "Imports PCF, validates against Catena-X schema (based on PACT + automotive extensions)"
+
+      - step: 4
+        actor: "Scope3CalculatorAgent"
+        action: "Uses Tier 1 PCF for automotive parts procurement calculations"
+
+# ============================================================================
+# SUPPLIER ENGAGEMENT PLAYBOOK
+# ============================================================================
+supplier_engagement:
+  playbook_name: "PCF Exchange Supplier Engagement Strategy"
+
+  engagement_tiers:
+    - tier: "Tier 1: Strategic Suppliers (Top 20% of spend)"
+      priority: "High"
+      engagement_method: "White-glove onboarding"
+      timeline: "Weeks 1-12 post-GA"
+
+      activities:
+        - activity: "Executive sponsor outreach"
+          owner: "CEO or Head of Sustainability"
+          message: "Partnership opportunity: Share PCFs, reduce Scope 3 uncertainty"
+
+        - activity: "Technical onboarding"
+          owner: "Customer Success + LCA Specialist"
+          deliverable: "Custom PACT Pathfinder integration guide"
+
+        - activity: "Incentive: Free PCF calculation tool"
+          benefit: "VCCI provides free Cat 1-6 calculation for supplier's own reporting"
+
+      success_metric: ">=50% of Tier 1 suppliers sharing PCFs by Q2 post-launch"
+
+    - tier: "Tier 2: Mid-Spend Suppliers (Next 30% of spend)"
+      priority: "Medium"
+      engagement_method: "Scaled onboarding (webinars, self-service)"
+      timeline: "Months 3-9 post-GA"
+
+      activities:
+        - activity: "Monthly webinar: 'How to Share PCFs via PACT Pathfinder'"
+          frequency: "Monthly"
+          attendance_target: "50+ suppliers per webinar"
+
+        - activity: "Self-service PCF upload portal"
+          description: "Supplier portal with drag-and-drop PCF upload"
+
+        - activity: "Gamification: PCF Leaderboard"
+          description: "Recognize top PCF-sharing suppliers (public or private leaderboard)"
+
+      success_metric: ">=20% of Tier 2 suppliers sharing PCFs by Q4 post-launch"
+
+    - tier: "Tier 3: Long-Tail Suppliers (Remaining 50% of spend)"
+      priority: "Low"
+      engagement_method: "Automated email campaigns"
+      timeline: "Year 2+"
+
+      activities:
+        - activity: "Quarterly email campaign"
+          message: "Invitation to join PCF Exchange network"
+          call_to_action: "Upload your first PCF in 5 minutes"
+
+        - activity: "Template PCFs"
+          description: "Provide industry-average PCFs for common products (Tier 2 fallback)"
+
+      success_metric: ">=10% of Tier 3 suppliers sharing PCFs by Year 2"
+
+# ============================================================================
 # CHANGELOG
 # ============================================================================
 changelog:
@@ -563,3 +748,5 @@ changelog:
       - "Bidirectional exchange (import + export)"
       - "Network effects strategy"
       - "Target: 30% Cat 1 coverage by Q2 post-launch"
+      - "Detailed workflow examples (3 scenarios: PACT import, PACT export, Catena-X)"
+      - "Supplier engagement playbook (3-tier strategy)"

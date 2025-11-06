@@ -1,0 +1,110 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgresql-config
+  namespace: vcci-platform
+  labels:
+    app: postgresql
+data:
+  postgresql.conf: |
+    # Connection Settings
+    max_connections = 200
+    superuser_reserved_connections = 3
+
+    # Memory Settings
+    shared_buffers = 4GB
+    effective_cache_size = 12GB
+    maintenance_work_mem = 1GB
+    checkpoint_completion_target = 0.9
+    wal_buffers = 16MB
+    default_statistics_target = 100
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+    work_mem = 64MB
+    min_wal_size = 2GB
+    max_wal_size = 8GB
+    max_worker_processes = 8
+    max_parallel_workers_per_gather = 4
+    max_parallel_workers = 8
+    max_parallel_maintenance_workers = 4
+
+    # Logging
+    logging_collector = on
+    log_directory = 'log'
+    log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+    log_rotation_age = 1d
+    log_rotation_size = 100MB
+    log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+    log_checkpoints = on
+    log_connections = on
+    log_disconnections = on
+    log_duration = off
+    log_lock_waits = on
+    log_statement = 'ddl'
+    log_temp_files = 0
+    log_autovacuum_min_duration = 0
+
+    # Replication
+    wal_level = replica
+    max_wal_senders = 10
+    max_replication_slots = 10
+    hot_standby = on
+    wal_keep_size = 2GB
+
+    # Autovacuum
+    autovacuum = on
+    autovacuum_max_workers = 4
+    autovacuum_naptime = 30s
+    autovacuum_vacuum_threshold = 50
+    autovacuum_analyze_threshold = 50
+    autovacuum_vacuum_scale_factor = 0.1
+    autovacuum_analyze_scale_factor = 0.05
+
+    # Query Planning
+    seq_page_cost = 1.0
+    random_page_cost = 1.1
+    cpu_tuple_cost = 0.01
+    cpu_index_tuple_cost = 0.005
+    cpu_operator_cost = 0.0025
+
+    # Security
+    ssl = off  # Handled by service mesh/network policy
+    password_encryption = scram-sha-256
+
+    # Locale
+    lc_messages = 'en_US.UTF-8'
+    lc_monetary = 'en_US.UTF-8'
+    lc_numeric = 'en_US.UTF-8'
+    lc_time = 'en_US.UTF-8'
+    default_text_search_config = 'pg_catalog.english'
+
+    # Timezone
+    timezone = 'UTC'
+
+  pg_hba.conf: |
+    # TYPE  DATABASE        USER            ADDRESS                 METHOD
+    local   all             all                                     trust
+    host    all             all             127.0.0.1/32            scram-sha-256
+    host    all             all             ::1/128                 scram-sha-256
+    host    all             all             0.0.0.0/0               scram-sha-256
+    host    replication     all             0.0.0.0/0               scram-sha-256
+
+  init.sql: |
+    -- Create extensions
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pg_stat_statements";
+    CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+    CREATE EXTENSION IF NOT EXISTS "btree_gin";
+    CREATE EXTENSION IF NOT EXISTS "btree_gist";
+
+    -- Create read-only user for reporting
+    CREATE USER vcci_readonly WITH PASSWORD 'readonly_password_change_me';
+    GRANT CONNECT ON DATABASE vcci TO vcci_readonly;
+    GRANT USAGE ON SCHEMA public TO vcci_readonly;
+    GRANT SELECT ON ALL TABLES IN SCHEMA public TO vcci_readonly;
+    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO vcci_readonly;
+
+    -- Create monitoring user
+    CREATE USER vcci_monitor WITH PASSWORD 'monitor_password_change_me';
+    GRANT pg_monitor TO vcci_monitor;

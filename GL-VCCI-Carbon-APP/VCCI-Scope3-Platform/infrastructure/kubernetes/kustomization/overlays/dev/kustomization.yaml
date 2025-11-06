@@ -1,0 +1,91 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference base
+bases:
+  - ../../base
+
+# Namespace for dev
+namespace: vcci-dev
+
+# Name prefix for all resources
+namePrefix: dev-
+
+# Common labels for dev environment
+commonLabels:
+  environment: development
+  tier: dev
+
+# Replicas patches for dev (lower replicas)
+replicas:
+  - name: vcci-api-gateway
+    count: 1
+  - name: vcci-backend-api
+    count: 1
+  - name: vcci-worker
+    count: 1
+  - name: vcci-frontend
+    count: 1
+  - name: postgresql
+    count: 1
+  - name: redis
+    count: 1
+  - name: weaviate
+    count: 1
+
+# Patches for dev environment
+patches:
+  # Reduce resource requests for dev
+  - target:
+      kind: Deployment
+      name: vcci-backend-api
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 200m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 2Gi
+
+  # Use staging TLS issuer
+  - target:
+      kind: Ingress
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+        value: letsencrypt-staging
+
+  # Disable HPA for dev
+  - target:
+      kind: HorizontalPodAutoscaler
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+
+# ConfigMap patches
+configMapGenerator:
+  - name: platform-config
+    behavior: merge
+    literals:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - DEBUG=true
+
+# Image tag overrides for dev
+images:
+  - name: greenlang/vcci-backend-api
+    newTag: dev-latest
+  - name: greenlang/vcci-worker
+    newTag: dev-latest
+  - name: greenlang/vcci-frontend
+    newTag: dev-latest

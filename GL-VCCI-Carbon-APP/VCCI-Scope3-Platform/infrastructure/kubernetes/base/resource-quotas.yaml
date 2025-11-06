@@ -1,0 +1,206 @@
+---
+# Resource Quota for Platform Namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: vcci-platform-quota
+  namespace: vcci-platform
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "100"
+    requests.memory: "200Gi"
+    limits.cpu: "200"
+    limits.memory: "400Gi"
+
+    # Storage
+    requests.storage: "1Ti"
+    persistentvolumeclaims: "50"
+
+    # Object counts
+    pods: "500"
+    services: "100"
+    configmaps: "200"
+    secrets: "200"
+    replicationcontrollers: "50"
+
+  scopeSelector:
+    matchExpressions:
+      - operator: In
+        scopeName: PriorityClass
+        values: ["high", "medium"]
+
+---
+# LimitRange for Platform Namespace (default resource limits)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: vcci-platform-limits
+  namespace: vcci-platform
+spec:
+  limits:
+    # Container limits
+    - type: Container
+      max:
+        cpu: "8"
+        memory: "16Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      maxLimitRequestRatio:
+        cpu: "4"
+        memory: "4"
+
+    # Pod limits
+    - type: Pod
+      max:
+        cpu: "16"
+        memory: "32Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+
+    # PVC limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "500Gi"
+      min:
+        storage: "1Gi"
+
+---
+# Resource Quota Template for Tenant Namespaces (Enterprise Tier)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-quota-enterprise
+  namespace: vcci-tenant-template
+  labels:
+    tier: enterprise
+spec:
+  hard:
+    # Compute resources (generous for enterprise)
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+
+    # Storage
+    requests.storage: "500Gi"
+    persistentvolumeclaims: "20"
+
+    # Object counts
+    pods: "200"
+    services: "50"
+    configmaps: "100"
+    secrets: "100"
+
+---
+# Resource Quota Template for Tenant Namespaces (Standard Tier)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-quota-standard
+  namespace: vcci-tenant-template
+  labels:
+    tier: standard
+spec:
+  hard:
+    # Compute resources (moderate for standard)
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+
+    # Storage
+    requests.storage: "200Gi"
+    persistentvolumeclaims: "10"
+
+    # Object counts
+    pods: "100"
+    services: "25"
+    configmaps: "50"
+    secrets: "50"
+
+---
+# Resource Quota Template for Tenant Namespaces (Starter Tier)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: tenant-quota-starter
+  namespace: vcci-tenant-template
+  labels:
+    tier: starter
+spec:
+  hard:
+    # Compute resources (limited for starter)
+    requests.cpu: "5"
+    requests.memory: "10Gi"
+    limits.cpu: "10"
+    limits.memory: "20Gi"
+
+    # Storage
+    requests.storage: "50Gi"
+    persistentvolumeclaims: "5"
+
+    # Object counts
+    pods: "50"
+    services: "10"
+    configmaps: "25"
+    secrets: "25"
+
+---
+# LimitRange for Tenant Namespaces
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: tenant-limits
+  namespace: vcci-tenant-template
+spec:
+  limits:
+    # Container limits for tenant workloads
+    - type: Container
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "10m"
+        memory: "32Mi"
+      default:
+        cpu: "200m"
+        memory: "256Mi"
+      defaultRequest:
+        cpu: "50m"
+        memory: "64Mi"
+      maxLimitRequestRatio:
+        cpu: "2"
+        memory: "2"
+
+    # Pod limits for tenant workloads
+    - type: Pod
+      max:
+        cpu: "8"
+        memory: "16Gi"
+
+---
+# Resource Quota for Observability Namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: vcci-observability-quota
+  namespace: vcci-observability
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    requests.storage: "500Gi"
+    persistentvolumeclaims: "20"
+    pods: "100"
+    services: "20"

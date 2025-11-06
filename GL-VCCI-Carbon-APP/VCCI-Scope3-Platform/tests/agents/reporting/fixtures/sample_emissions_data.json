@@ -1,0 +1,35 @@
+{
+  "scope1_tco2e": 1234.5,
+  "scope2_location_tco2e": 2345.6,
+  "scope2_market_tco2e": 1890.3,
+  "scope3_tco2e": 20000.0,
+  "scope3_categories": {
+    "1": 15000.0,
+    "4": 3000.0,
+    "6": 2000.0
+  },
+  "total_tco2e": 23579.1,
+  "avg_dqi_score": 85.5,
+  "data_quality_by_scope": {
+    "Scope 1": 92.0,
+    "Scope 2": 95.0,
+    "Scope 3": 80.0
+  },
+  "reporting_period_start": "2024-01-01T00:00:00",
+  "reporting_period_end": "2024-12-31T23:59:59",
+  "prior_year_emissions": {
+    "scope1_tco2e": 1300.0,
+    "scope2_tco2e": 2500.0,
+    "scope3_tco2e": 19000.0,
+    "total_tco2e": 22800.0
+  },
+  "yoy_change_pct": 3.4,
+  "provenance_chains": [
+    {
+      "calculation_id": "calc_001",
+      "category": 1,
+      "emissions_kgco2e": 15000000,
+      "timestamp": "2024-12-01T10:00:00"
+    }
+  ]
+}

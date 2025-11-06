@@ -498,6 +498,234 @@ deployment:
     gpu_count: 1
 
 # ============================================================================
+# MACHINE LEARNING TRAINING AND TUNING
+# ============================================================================
+ml_training:
+  # Vector Embedding Model
+  vector_model_training:
+    base_model: "sentence-transformers/all-MiniLM-L6-v2"
+    fine_tuning: false  # Use pre-trained model initially
+    future_fine_tuning:
+      trigger: "When dataset reaches 10,000+ entity pairs"
+      dataset: "data/entity_matching_training.jsonl"
+      training_approach: "Contrastive learning on positive/negative pairs"
+
+  # BERT Re-Ranking Model
+  bert_reranking_training:
+    base_model: "sentence-transformers/cross-encoder/ms-marco-MiniLM-L-12-v2"
+    fine_tuning: true
+    dataset: "data/entity_matching_training.jsonl"
+
+    dataset_format:
+      positive_examples:
+        - input_name: "Acme Corp"
+          candidate_name: "ACME Corporation Ltd"
+          label: 1  # Match
+        - input_name: "ABC Manufacturing"
+          candidate_name: "ABC Manufacturing Inc."
+          label: 1
+
+      negative_examples:
+        - input_name: "ABC Manufacturing"
+          candidate_name: "XYZ Industries"
+          label: 0  # No match
+        - input_name: "Acme Corp"
+          candidate_name: "Acme Industries (different company)"
+          label: 0
+
+    training_procedure:
+      - step: 1
+        action: "Collect 1,000+ labeled entity pairs (500 positive, 500 negative)"
+        source: "Human review queue decisions"
+
+      - step: 2
+        action: "Split dataset: 80% train, 10% validation, 10% test"
+
+      - step: 3
+        action: "Fine-tune cross-encoder for 5 epochs"
+        hyperparameters:
+          learning_rate: 0.00002
+          batch_size: 16
+          warmup_steps: 100
+
+      - step: 4
+        action: "Evaluate on test set (target: >=95% accuracy)"
+
+      - step: 5
+        action: "Deploy new model to staging for A/B test"
+
+    retraining_schedule:
+      frequency: "Quarterly"
+      trigger_conditions:
+        - "Precision drops below 90%"
+        - "New dataset reaches 1,000+ additional labeled pairs"
+
+  # Performance Monitoring
+  ml_monitoring:
+    metrics_tracked:
+      - metric: "Auto-match rate"
+        target: ">=95%"
+        alert_threshold: "<90%"
+
+      - metric: "Precision (% of auto-matches that are correct)"
+        target: ">=95%"
+        alert_threshold: "<90%"
+
+      - metric: "Recall (% of true matches found)"
+        target: ">=90%"
+        alert_threshold: "<85%"
+
+      - metric: "F1 score"
+        target: ">=92%"
+        alert_threshold: "<87%"
+
+    model_drift_detection:
+      method: "Compare monthly performance metrics"
+      action_on_drift: "Trigger model retraining if precision <90% for 2 consecutive months"
+
+# ============================================================================
+# DETAILED EXAMPLES
+# ============================================================================
+detailed_examples:
+  # Example 1: High Confidence Auto-Match
+  - example_name: "High confidence auto-match (LEI code exact match)"
+    input:
+      supplier_name: "Acme Corporation"
+      lei_code: "549300XXXXXXXXXXXX"
+
+    resolution_process:
+      - step: 1
+        action: "Check for LEI code in Entity MDM database"
+        result: "LEI 549300XXXXXXXXXXXX found → ACME Corporation Ltd (entity_id: E123456)"
+
+      - step: 2
+        action: "Return canonical entity with 100% confidence"
+
+    output:
+      match_status: "auto_match"
+      canonical_entity:
+        entity_id: "E123456"
+        canonical_name: "ACME Corporation Ltd"
+        lei_code: "549300XXXXXXXXXXXX"
+        headquarters_address: "123 Main St, New York, NY 10001"
+        parent_company: "ACME Global Holdings"
+      confidence_score: 1.00  # 100% (LEI exact match)
+      match_method: "lei_exact"
+
+  # Example 2: Vector + BERT Auto-Match
+  - example_name: "Vector + BERT auto-match (no external ID)"
+    input:
+      supplier_name: "ABC Mfg"
+
+    resolution_process:
+      - step: 1
+        action: "Check for external IDs (LEI, DUNS, OpenCorporates)"
+        result: "No external IDs provided"
+
+      - step: 2
+        action: "Stage 1: Vector similarity search"
+        result: "Top-10 candidates: ['ABC Manufacturing Inc.', 'ABC Manufacturing Ltd', 'ABC Industries', ...]"
+
+      - step: 3
+        action: "Stage 2: BERT re-ranking"
+        result: "Top-1: 'ABC Manufacturing Inc.' (confidence: 0.97)"
+
+      - step: 4
+        action: "Confidence >=0.95 → auto-match"
+
+    output:
+      match_status: "auto_match"
+      canonical_entity:
+        entity_id: "E789012"
+        canonical_name: "ABC Manufacturing Inc."
+        duns_number: "12-345-6789"
+        headquarters_address: "456 Industrial Ave, Chicago, IL 60601"
+      confidence_score: 0.97
+      match_method: "vector_bert"
+
+  # Example 3: Human Review Required
+  - example_name: "Human review required (moderate confidence)"
+    input:
+      supplier_name: "Smith Industries"
+
+    resolution_process:
+      - step: 1
+        action: "No external IDs"
+      - step: 2
+        action: "Vector + BERT: Top-1 = 'Smith Industrial Solutions' (confidence: 0.87)"
+      - step: 3
+        action: "Confidence 0.80-0.95 → human review queue"
+
+    output:
+      match_status: "human_review"
+      review_queue_entry:
+        review_id: "R12345"
+        input_name: "Smith Industries"
+        candidate_name: "Smith Industrial Solutions"
+        confidence_score: 0.87
+        assigned_to: "reviewer@company.com"
+        status: "pending"
+
+  # Example 4: No Match Found
+  - example_name: "No match found (create new entity)"
+    input:
+      supplier_name: "New Supplier XYZ Ltd"
+
+    resolution_process:
+      - step: 1
+        action: "No external IDs"
+      - step: 2
+        action: "Vector + BERT: Top-1 confidence = 0.62 (<0.80 threshold)"
+      - step: 3
+        action: "No confident match → create new entity"
+
+    output:
+      match_status: "no_match"
+      action: "create_new_entity"
+      new_entity:
+        entity_id: "E999999"  # Newly created
+        canonical_name: "New Supplier XYZ Ltd"
+        source: "manual_entry"
+        enrichment_status: "pending"  # Will query LEI/DUNS/OpenCorporates
+
+# ============================================================================
+# OPERATIONAL PROCEDURES
+# ============================================================================
+operational_procedures:
+  # Daily Operations
+  daily_operations:
+    - task: "Monitor human review queue size"
+      target: "<100 pending reviews"
+      action_if_exceeded: "Allocate additional reviewers"
+
+    - task: "Review auto-match accuracy"
+      method: "Sample 50 auto-matches, manual verification"
+      target: ">=95% correct"
+
+    - task: "Process new entity enrichment requests"
+      frequency: "Nightly batch job"
+      action: "Query LEI, DUNS, OpenCorporates for entities missing enrichment data"
+
+  # Weekly Operations
+  weekly_operations:
+    - task: "Generate ML performance report"
+      metrics: ["Auto-match rate", "Precision", "Recall", "F1 score"]
+      distribution: "Send to Data PM + ML team"
+
+    - task: "Review duplicate entity candidates"
+      method: "Automated duplicate detection (fuzzy matching across canonical entities)"
+      action: "Human review and merge duplicates"
+
+  # Monthly Operations
+  monthly_operations:
+    - task: "Model performance review"
+      action: "Review ML metrics trends, decide if retraining needed"
+
+    - task: "Human review audit"
+      action: "Sample 100 human review decisions, verify correctness"
+      target: ">=98% agreement with expert auditor"
+
+# ============================================================================
 # CHANGELOG
 # ============================================================================
 changelog:
@@ -510,3 +738,6 @@ changelog:
       - "Entity enrichment"
       - "Human review queue"
       - ">=95% auto-match target"
+      - "ML training and tuning procedures"
+      - "Detailed resolution examples (4 scenarios)"
+      - "Operational procedures (daily, weekly, monthly)"

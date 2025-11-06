@@ -1,0 +1,3426 @@
+openapi: 3.0.3
+info:
+  title: GL-VCCI Scope 3 Carbon Intelligence Platform API
+  version: 2.0.0
+  description: |
+    **GL-VCCI Scope 3 Platform API Documentation**
+
+    The GL-VCCI platform provides comprehensive APIs for managing Scope 3 carbon emissions across your value chain. This API enables:
+
+    - **Supplier Master Data Management** - Entity resolution and enrichment
+    - **Procurement Data Intake** - Multi-source data ingestion and processing
+    - **Emissions Calculations** - GHG Protocol Categories 1, 4, 6 with uncertainty
+    - **Primary Data Exchange** - PCF import/export via PACT Pathfinder and Catena-X
+    - **Standards Reporting** - ESRS E1, CDP, IFRS S2, ISO 14083 compliance
+    - **Policy & Configuration** - OPA-based calculation policies
+    - **Admin & Monitoring** - Multi-tenant management and observability
+
+    ## Authentication
+
+    All API requests require authentication using either:
+    - **OAuth 2.0** (recommended for user-facing applications)
+    - **API Keys** (for service-to-service communication)
+
+    See the [Authentication Guide](./AUTHENTICATION.md) for details.
+
+    ## Rate Limits
+
+    - Standard: 1,000 requests/hour per tenant
+    - Premium: 10,000 requests/hour per tenant
+    - Enterprise: Custom limits
+
+    Rate limit headers are included in all responses. See [Rate Limits Guide](./RATE_LIMITS.md).
+
+    ## Support
+
+    - Documentation: https://docs.vcci.greenlang.io
+    - Support Email: support@greenlang.io
+    - Status Page: https://status.vcci.greenlang.io
+
+  contact:
+    name: GL-VCCI API Support
+    email: support@greenlang.io
+    url: https://docs.vcci.greenlang.io
+  license:
+    name: Proprietary
+    url: https://greenlang.io/license
+
+servers:
+  - url: https://api.vcci.greenlang.io/v2
+    description: Production API
+  - url: https://api-staging.vcci.greenlang.io/v2
+    description: Staging API
+  - url: https://api-dev.vcci.greenlang.io/v2
+    description: Development API
+
+tags:
+  - name: Authentication
+    description: OAuth 2.0 and API key management
+  - name: Suppliers
+    description: Supplier master data and entity resolution
+  - name: Procurement
+    description: Procurement data intake and processing
+  - name: Emissions
+    description: Scope 3 emissions calculations
+  - name: Factors
+    description: Emission factor resolution
+  - name: PCF Exchange
+    description: Product Carbon Footprint import/export
+  - name: Reports
+    description: Standards-compliant reporting
+  - name: Policies
+    description: Calculation policies and rules
+  - name: Workflows
+    description: Data quality and review workflows
+  - name: Engagement
+    description: Supplier engagement and portals
+  - name: Admin
+    description: Tenant and user administration
+  - name: Monitoring
+    description: Health checks and metrics
+
+security:
+  - OAuth2:
+      - read
+      - write
+  - ApiKeyAuth: []
+
+paths:
+  # ============================================================================
+  # AUTHENTICATION & AUTHORIZATION
+  # ============================================================================
+
+  /auth/token:
+    post:
+      tags:
+        - Authentication
+      summary: Obtain OAuth 2.0 access token
+      description: |
+        Exchange client credentials or authorization code for an access token.
+        Supports multiple OAuth 2.0 flows:
+        - Client Credentials (service-to-service)
+        - Authorization Code (user-facing apps)
+        - Refresh Token (token renewal)
+      operationId: getAccessToken
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+              properties:
+                grant_type:
+                  type: string
+                  enum: [client_credentials, authorization_code, refresh_token]
+                  description: OAuth 2.0 grant type
+                client_id:
+                  type: string
+                  description: Client ID (required for all flows)
+                client_secret:
+                  type: string
+                  description: Client secret (required for client_credentials)
+                code:
+                  type: string
+                  description: Authorization code (required for authorization_code)
+                refresh_token:
+                  type: string
+                  description: Refresh token (required for refresh_token)
+                scope:
+                  type: string
+                  description: Space-separated list of scopes
+                  example: "read write"
+            examples:
+              clientCredentials:
+                summary: Client Credentials Flow
+                value:
+                  grant_type: client_credentials
+                  client_id: "vcci_client_abc123"
+                  client_secret: "sk_live_abc123xyz789"
+                  scope: "read write"
+      responses:
+        '200':
+          description: Access token generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+              examples:
+                success:
+                  value:
+                    access_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    token_type: "Bearer"
+                    expires_in: 3600
+                    refresh_token: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    scope: "read write"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+  /auth/token/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Exchange a refresh token for a new access token
+      operationId: refreshAccessToken
+      security:
+        - OAuth2: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  description: Refresh token obtained from initial authentication
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/api-keys:
+    get:
+      tags:
+        - Authentication
+      summary: List API keys
+      description: Retrieve all API keys for the current tenant
+      operationId: listApiKeys
+      security:
+        - OAuth2: [read]
+      responses:
+        '200':
+          description: List of API keys
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ApiKey'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Authentication
+      summary: Create API key
+      description: Generate a new API key for service-to-service authentication
+      operationId: createApiKey
+      security:
+        - OAuth2: [write]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Human-readable name for the API key
+                  example: "Production Integration Key"
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  description: Scopes to grant to this API key
+                  example: ["read", "write:procurement"]
+                expires_at:
+                  type: string
+                  format: date-time
+                  description: Optional expiration date (defaults to 1 year)
+      responses:
+        '201':
+          description: API key created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /auth/api-keys/{key_id}:
+    delete:
+      tags:
+        - Authentication
+      summary: Revoke API key
+      description: Permanently revoke an API key
+      operationId: revokeApiKey
+      security:
+        - OAuth2: [write]
+      parameters:
+        - name: key_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: API key ID
+      responses:
+        '204':
+          description: API key revoked successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # SUPPLIERS - ENTITY MASTER DATA MANAGEMENT
+  # ============================================================================
+
+  /suppliers:
+    get:
+      tags:
+        - Suppliers
+      summary: List suppliers
+      description: |
+        Retrieve a paginated list of canonical supplier entities in your master data.
+        Supports filtering by name, status, and various enrichment attributes.
+      operationId: listSuppliers
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search by supplier name (fuzzy match)
+          example: "Acme Corporation"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, pending]
+          description: Filter by supplier status
+        - name: has_lei
+          in: query
+          schema:
+            type: boolean
+          description: Filter suppliers with LEI identifier
+        - name: has_duns
+          in: query
+          schema:
+            type: boolean
+          description: Filter suppliers with DUNS number
+        - name: sort_by
+          in: query
+          schema:
+            type: string
+            enum: [name, created_at, updated_at, spend_total]
+            default: name
+          description: Sort field
+        - name: sort_order
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort order
+      responses:
+        '200':
+          description: List of suppliers retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Supplier'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+              examples:
+                success:
+                  value:
+                    data:
+                      - id: "sup_abc123"
+                        canonical_name: "Acme Corporation"
+                        aliases: ["ACME Corp", "Acme Inc", "ACME CORPORATION"]
+                        identifiers:
+                          lei: "529900XYZU1234567890"
+                          duns: "123456789"
+                        enrichment:
+                          headquarters:
+                            country: "US"
+                            city: "New York"
+                          industry: "Manufacturing"
+                          revenue_usd: 500000000
+                        status: "active"
+                        created_at: "2024-01-15T10:30:00Z"
+                        updated_at: "2024-11-01T14:20:00Z"
+                    pagination:
+                      limit: 100
+                      offset: 0
+                      total: 1
+                      has_more: false
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+
+    post:
+      tags:
+        - Suppliers
+      summary: Create supplier
+      description: Manually create a canonical supplier entity
+      operationId: createSupplier
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierCreate'
+            examples:
+              basic:
+                summary: Basic supplier creation
+                value:
+                  canonical_name: "Acme Corporation"
+                  aliases: ["ACME Corp", "Acme Inc"]
+              withIdentifiers:
+                summary: Supplier with external identifiers
+                value:
+                  canonical_name: "Acme Corporation"
+                  identifiers:
+                    lei: "529900XYZU1234567890"
+                    duns: "123456789"
+                  enrichment:
+                    headquarters:
+                      country: "US"
+                      city: "New York"
+                    industry: "Manufacturing"
+      responses:
+        '201':
+          description: Supplier created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Supplier with this name already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /suppliers/{supplier_id}:
+    get:
+      tags:
+        - Suppliers
+      summary: Get supplier details
+      description: Retrieve detailed information about a specific supplier
+      operationId: getSupplier
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Supplier ID
+          example: "sup_abc123"
+      responses:
+        '200':
+          description: Supplier details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags:
+        - Suppliers
+      summary: Update supplier
+      description: Update supplier attributes (partial update)
+      operationId: updateSupplier
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Supplier ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierUpdate'
+      responses:
+        '200':
+          description: Supplier updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Suppliers
+      summary: Delete supplier
+      description: |
+        Soft-delete a supplier. The supplier will be marked as inactive but not permanently removed.
+        Use `?permanent=true` for hard deletion (requires admin privileges).
+      operationId: deleteSupplier
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Supplier ID
+        - name: permanent
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Permanently delete (requires admin role)
+      responses:
+        '204':
+          description: Supplier deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /suppliers/resolve:
+    post:
+      tags:
+        - Suppliers
+      summary: Resolve supplier entity
+      description: |
+        Resolve an ambiguous supplier name to a canonical entity using ML-powered
+        two-stage resolution (vector similarity + BERT re-ranking).
+
+        Returns top candidate matches with confidence scores. Auto-matches if
+        confidence >= 90%, otherwise queues for human review.
+      operationId: resolveSupplier
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - supplier_name
+              properties:
+                supplier_name:
+                  type: string
+                  description: Supplier name to resolve
+                  example: "ACME CORP"
+                hints:
+                  type: object
+                  description: Optional hints to improve matching
+                  properties:
+                    country:
+                      type: string
+                      example: "US"
+                    city:
+                      type: string
+                      example: "New York"
+                    lei:
+                      type: string
+                      example: "529900XYZU1234567890"
+                    duns:
+                      type: string
+                      example: "123456789"
+                confidence_threshold:
+                  type: number
+                  format: float
+                  minimum: 0.0
+                  maximum: 1.0
+                  default: 0.90
+                  description: Minimum confidence for auto-match
+                max_candidates:
+                  type: integer
+                  minimum: 1
+                  maximum: 10
+                  default: 5
+                  description: Maximum number of candidate matches to return
+      responses:
+        '200':
+          description: Supplier resolution completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupplierResolution'
+              examples:
+                autoMatched:
+                  summary: Auto-matched with high confidence
+                  value:
+                    status: "auto_matched"
+                    matched_supplier_id: "sup_abc123"
+                    confidence: 0.98
+                    candidates:
+                      - supplier_id: "sup_abc123"
+                        canonical_name: "Acme Corporation"
+                        confidence: 0.98
+                        matching_features:
+                          - "name_similarity: 0.95"
+                          - "lei_match: exact"
+                humanReview:
+                  summary: Queued for human review
+                  value:
+                    status: "human_review_required"
+                    review_queue_id: "review_xyz789"
+                    confidence: 0.75
+                    candidates:
+                      - supplier_id: "sup_abc123"
+                        canonical_name: "Acme Corporation"
+                        confidence: 0.75
+                      - supplier_id: "sup_def456"
+                        canonical_name: "Acme Industries Ltd"
+                        confidence: 0.68
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /suppliers/{supplier_id}/enrich:
+    post:
+      tags:
+        - Suppliers
+      summary: Enrich supplier data
+      description: |
+        Enrich supplier with external data sources (LEI, DUNS, OpenCorporates).
+        Fetches headquarters address, parent company, revenue, industry classification, etc.
+      operationId: enrichSupplier
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Supplier ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                sources:
+                  type: array
+                  items:
+                    type: string
+                    enum: [lei, duns, opencorporates]
+                  description: Data sources to use for enrichment (defaults to all)
+                  example: ["lei", "duns"]
+      responses:
+        '200':
+          description: Supplier enriched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '424':
+          description: External enrichment source failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /suppliers/batch/resolve:
+    post:
+      tags:
+        - Suppliers
+      summary: Batch resolve suppliers
+      description: |
+        Resolve multiple supplier names in a single request. Useful for processing
+        large procurement datasets. Maximum 1,000 suppliers per request.
+      operationId: batchResolveSuppliers
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - suppliers
+              properties:
+                suppliers:
+                  type: array
+                  maxItems: 1000
+                  items:
+                    type: object
+                    required:
+                      - id
+                      - supplier_name
+                    properties:
+                      id:
+                        type: string
+                        description: Client-provided ID to track this supplier
+                        example: "row_001"
+                      supplier_name:
+                        type: string
+                        example: "ACME CORP"
+                      hints:
+                        type: object
+                        properties:
+                          country:
+                            type: string
+                          lei:
+                            type: string
+                confidence_threshold:
+                  type: number
+                  format: float
+                  default: 0.90
+      responses:
+        '200':
+          description: Batch resolution completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Client-provided ID
+                        status:
+                          type: string
+                          enum: [auto_matched, human_review_required, no_match]
+                        matched_supplier_id:
+                          type: string
+                        confidence:
+                          type: number
+                          format: float
+                  summary:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      auto_matched:
+                        type: integer
+                      human_review_required:
+                        type: integer
+                      no_match:
+                        type: integer
+              examples:
+                success:
+                  value:
+                    results:
+                      - id: "row_001"
+                        status: "auto_matched"
+                        matched_supplier_id: "sup_abc123"
+                        confidence: 0.98
+                      - id: "row_002"
+                        status: "human_review_required"
+                        confidence: 0.75
+                    summary:
+                      total: 2
+                      auto_matched: 1
+                      human_review_required: 1
+                      no_match: 0
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================================
+  # PROCUREMENT DATA INTAKE
+  # ============================================================================
+
+  /procurement/transactions:
+    get:
+      tags:
+        - Procurement
+      summary: List procurement transactions
+      description: Retrieve procurement transactions (POs, invoices, etc.)
+      operationId: listTransactions
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: supplier_id
+          in: query
+          schema:
+            type: string
+          description: Filter by supplier ID
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter transactions on or after this date
+          example: "2024-01-01"
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter transactions on or before this date
+          example: "2024-12-31"
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, processed, failed]
+          description: Filter by processing status
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Procurement
+      summary: Create procurement transaction
+      description: |
+        Submit a single procurement transaction for processing.
+        Use batch endpoint for bulk uploads.
+      operationId: createTransaction
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionCreate'
+            examples:
+              purchaseOrder:
+                summary: Purchase Order
+                value:
+                  transaction_type: "purchase_order"
+                  transaction_id: "PO-2024-12345"
+                  transaction_date: "2024-11-01"
+                  supplier_name: "Acme Corporation"
+                  product_name: "Steel beams"
+                  quantity: 1000
+                  unit: "kg"
+                  spend_usd: 5000.00
+                  currency: "USD"
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /procurement/transactions/batch:
+    post:
+      tags:
+        - Procurement
+      summary: Batch create transactions
+      description: |
+        Upload multiple transactions at once. Maximum 10,000 transactions per request.
+        Supports asynchronous processing for large batches.
+      operationId: batchCreateTransactions
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transactions
+              properties:
+                transactions:
+                  type: array
+                  maxItems: 10000
+                  items:
+                    $ref: '#/components/schemas/TransactionCreate'
+                async:
+                  type: boolean
+                  default: false
+                  description: Process asynchronously (returns job ID instead of results)
+      responses:
+        '202':
+          description: Batch accepted for processing (async mode)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                    description: Job ID to track processing status
+                    example: "job_abc123"
+                  status:
+                    type: string
+                    enum: [queued, processing]
+                  estimated_completion:
+                    type: string
+                    format: date-time
+        '200':
+          description: Batch processed successfully (sync mode)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        transaction_id:
+                          type: string
+                        status:
+                          type: string
+                          enum: [success, error]
+                        error:
+                          type: string
+                  summary:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      success:
+                        type: integer
+                      error:
+                        type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /procurement/transactions/upload:
+    post:
+      tags:
+        - Procurement
+      summary: Upload procurement file
+      description: |
+        Upload procurement data file (CSV, Excel, JSON, XML).
+        File is validated and processed asynchronously.
+
+        Supported formats:
+        - CSV (.csv)
+        - Excel (.xlsx, .xls)
+        - JSON (.json)
+        - XML (.xml)
+        - PDF with OCR (.pdf)
+
+        Maximum file size: 100MB
+      operationId: uploadProcurementFile
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Procurement data file
+                file_type:
+                  type: string
+                  enum: [csv, excel, json, xml, pdf]
+                  description: File type (auto-detected if not provided)
+                column_mapping:
+                  type: object
+                  description: Optional column name mapping for CSV/Excel
+                  example:
+                    "PO Number": "transaction_id"
+                    "Vendor": "supplier_name"
+                    "Amount": "spend_usd"
+                skip_rows:
+                  type: integer
+                  minimum: 0
+                  default: 0
+                  description: Number of header rows to skip
+      responses:
+        '202':
+          description: File uploaded and queued for processing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_id:
+                    type: string
+                    example: "job_abc123"
+                  file_name:
+                    type: string
+                    example: "procurement_2024.csv"
+                  file_size_bytes:
+                    type: integer
+                    example: 2048576
+                  estimated_rows:
+                    type: integer
+                    example: 5000
+                  status:
+                    type: string
+                    enum: [queued, processing]
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /procurement/jobs/{job_id}:
+    get:
+      tags:
+        - Procurement
+      summary: Get batch processing job status
+      description: Check the status of an asynchronous batch or file upload job
+      operationId: getJobStatus
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Job ID
+          example: "job_abc123"
+      responses:
+        '200':
+          description: Job status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+              examples:
+                processing:
+                  summary: Job in progress
+                  value:
+                    job_id: "job_abc123"
+                    status: "processing"
+                    progress:
+                      processed: 2500
+                      total: 5000
+                      percentage: 50
+                    created_at: "2024-11-06T10:00:00Z"
+                    started_at: "2024-11-06T10:00:15Z"
+                completed:
+                  summary: Job completed
+                  value:
+                    job_id: "job_abc123"
+                    status: "completed"
+                    progress:
+                      processed: 5000
+                      total: 5000
+                      percentage: 100
+                    results:
+                      success: 4850
+                      errors: 150
+                      warnings: 200
+                    created_at: "2024-11-06T10:00:00Z"
+                    started_at: "2024-11-06T10:00:15Z"
+                    completed_at: "2024-11-06T10:05:30Z"
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # EMISSIONS CALCULATIONS
+  # ============================================================================
+
+  /emissions/calculate:
+    post:
+      tags:
+        - Emissions
+      summary: Calculate emissions for transactions
+      description: |
+        Calculate Scope 3 emissions for one or more transactions.
+        Supports Categories 1, 4, and 6 with 3-tier waterfall methodology.
+
+        **Calculation Tiers:**
+        - Tier 1: Supplier-specific PCF (lowest uncertainty: ±5%)
+        - Tier 2: Average-data factors (medium uncertainty: ±20%)
+        - Tier 3: Spend-based factors (highest uncertainty: ±50%)
+
+        Results include emissions values, uncertainty ranges, data quality scores,
+        and full provenance tracking.
+      operationId: calculateEmissions
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transactions
+              properties:
+                transactions:
+                  type: array
+                  maxItems: 1000
+                  items:
+                    type: object
+                    required:
+                      - transaction_id
+                    properties:
+                      transaction_id:
+                        type: string
+                        description: ID of existing transaction to calculate
+                      force_recalculate:
+                        type: boolean
+                        default: false
+                        description: Force recalculation even if already calculated
+                options:
+                  type: object
+                  properties:
+                    gwp_standard:
+                      type: string
+                      enum: [AR5, AR6]
+                      default: AR6
+                      description: GWP (Global Warming Potential) standard
+                    uncertainty_method:
+                      type: string
+                      enum: [monte_carlo, pedigree]
+                      default: monte_carlo
+                      description: Uncertainty quantification method
+                    monte_carlo_iterations:
+                      type: integer
+                      minimum: 1000
+                      maximum: 100000
+                      default: 10000
+                      description: Number of Monte Carlo iterations
+            examples:
+              basic:
+                summary: Basic calculation
+                value:
+                  transactions:
+                    - transaction_id: "txn_abc123"
+                    - transaction_id: "txn_def456"
+              advanced:
+                summary: Advanced options
+                value:
+                  transactions:
+                    - transaction_id: "txn_abc123"
+                      force_recalculate: true
+                  options:
+                    gwp_standard: "AR6"
+                    uncertainty_method: "monte_carlo"
+                    monte_carlo_iterations: 50000
+      responses:
+        '200':
+          description: Emissions calculated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmissionCalculation'
+                  summary:
+                    type: object
+                    properties:
+                      total_emissions_kg_co2e:
+                        type: number
+                        format: double
+                      uncertainty_range:
+                        type: object
+                        properties:
+                          lower_bound:
+                            type: number
+                          upper_bound:
+                            type: number
+                      tier_distribution:
+                        type: object
+                        properties:
+                          tier_1_count:
+                            type: integer
+                          tier_2_count:
+                            type: integer
+                          tier_3_count:
+                            type: integer
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /emissions/calculations/{calculation_id}:
+    get:
+      tags:
+        - Emissions
+      summary: Get calculation details
+      description: |
+        Retrieve detailed calculation results including methodology,
+        emission factors used, uncertainty analysis, and provenance chain.
+      operationId: getCalculation
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: calculation_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Calculation ID
+      responses:
+        '200':
+          description: Calculation details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmissionCalculation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /emissions/aggregate:
+    get:
+      tags:
+        - Emissions
+      summary: Get aggregated emissions
+      description: |
+        Retrieve aggregated emissions data with flexible grouping and filtering.
+        Useful for dashboards, reports, and analytics.
+      operationId: getAggregatedEmissions
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: date_from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Start date (inclusive)
+        - name: date_to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: End date (inclusive)
+        - name: group_by
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [category, supplier, product, month, quarter, year]
+          description: Fields to group by (comma-separated)
+          example: "category,supplier"
+        - name: supplier_id
+          in: query
+          schema:
+            type: string
+          description: Filter by supplier ID
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: ["1", "4", "6"]
+          description: Filter by Scope 3 category
+      responses:
+        '200':
+          description: Aggregated emissions retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        group:
+                          type: object
+                          description: Grouping dimensions
+                        total_emissions_kg_co2e:
+                          type: number
+                          format: double
+                        transaction_count:
+                          type: integer
+                        uncertainty_range:
+                          type: object
+                          properties:
+                            lower_bound:
+                              type: number
+                            upper_bound:
+                              type: number
+                        avg_dqi_score:
+                          type: number
+                          format: float
+                  summary:
+                    type: object
+                    properties:
+                      total_emissions_kg_co2e:
+                        type: number
+                      date_from:
+                        type: string
+                        format: date
+                      date_to:
+                        type: string
+                        format: date
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================================
+  # EMISSION FACTORS
+  # ============================================================================
+
+  /factors/resolve:
+    post:
+      tags:
+        - Factors
+      summary: Resolve emission factor
+      description: |
+        Resolve an emission factor at runtime using the Factor Broker service.
+        Cascades across multiple data sources (ecoinvent → DESNZ → EPA → proxy)
+        to find the best available factor.
+
+        **Note:** This endpoint does not return bulk factor data to maintain
+        license compliance with ecoinvent. Factors are resolved one at a time.
+      operationId: resolveFactor
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - activity_type
+              properties:
+                activity_type:
+                  type: string
+                  description: Type of activity (product, transport, service)
+                  example: "steel_production"
+                product_name:
+                  type: string
+                  description: Product or service name
+                  example: "Steel, hot rolled coil"
+                unit:
+                  type: string
+                  description: Unit of measurement
+                  example: "kg"
+                region:
+                  type: string
+                  description: Region code (ISO 3166-1 alpha-2)
+                  example: "US"
+                gwp_standard:
+                  type: string
+                  enum: [AR5, AR6]
+                  default: AR6
+                transport_mode:
+                  type: string
+                  description: Transport mode (for Category 4)
+                  enum: [road, rail, air, sea, pipeline]
+                distance_km:
+                  type: number
+                  description: Distance in kilometers (for Category 4)
+      responses:
+        '200':
+          description: Factor resolved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmissionFactor'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No factor found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /factors/sources:
+    get:
+      tags:
+        - Factors
+      summary: List available factor sources
+      description: Retrieve list of emission factor data sources and their coverage
+      operationId: listFactorSources
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Factor sources retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sources:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "ecoinvent"
+                        version:
+                          type: string
+                          example: "3.10"
+                        description:
+                          type: string
+                        coverage:
+                          type: object
+                          properties:
+                            regions:
+                              type: array
+                              items:
+                                type: string
+                            categories:
+                              type: array
+                              items:
+                                type: string
+                        last_updated:
+                          type: string
+                          format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================================
+  # PCF EXCHANGE
+  # ============================================================================
+
+  /pcf/products:
+    get:
+      tags:
+        - PCF Exchange
+      summary: List product carbon footprints
+      description: Retrieve PCFs (Product Carbon Footprints) for your products
+      operationId: listPCFs
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: product_id
+          in: query
+          schema:
+            type: string
+          description: Filter by product ID
+        - name: supplier_id
+          in: query
+          schema:
+            type: string
+          description: Filter by supplier ID
+        - name: has_verification
+          in: query
+          schema:
+            type: boolean
+          description: Filter PCFs with third-party verification
+      responses:
+        '200':
+          description: List of PCFs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PCF'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - PCF Exchange
+      summary: Create product carbon footprint
+      description: |
+        Create or update a PCF for your product. Supports PACT Pathfinder v2.0,
+        Catena-X, and SAP SDX formats.
+      operationId: createPCF
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PCFCreate'
+      responses:
+        '201':
+          description: PCF created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PCF'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /pcf/products/{pcf_id}:
+    get:
+      tags:
+        - PCF Exchange
+      summary: Get PCF details
+      description: Retrieve detailed PCF including all lifecycle stages and data quality
+      operationId: getPCF
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: pcf_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: PCF ID
+      responses:
+        '200':
+          description: PCF details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PCF'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /pcf/import:
+    post:
+      tags:
+        - PCF Exchange
+      summary: Import supplier PCFs
+      description: |
+        Import PCFs from suppliers via PACT Pathfinder, Catena-X, or SAP SDX.
+        Validates schema compliance and integrates with emissions calculations.
+      operationId: importPCFs
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - pcfs
+                - format
+              properties:
+                format:
+                  type: string
+                  enum: [pact, catenax, sap_sdx]
+                  description: PCF format/standard
+                pcfs:
+                  type: array
+                  items:
+                    type: object
+                    description: PCF data in specified format
+                validate_only:
+                  type: boolean
+                  default: false
+                  description: Validate without importing
+      responses:
+        '200':
+          description: PCFs imported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imported:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        index:
+                          type: integer
+                        error:
+                          type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /pcf/export:
+    post:
+      tags:
+        - PCF Exchange
+      summary: Export PCFs to customers
+      description: |
+        Generate PCF export package in PACT Pathfinder, Catena-X, or SAP SDX format
+        for sharing with customers.
+      operationId: exportPCFs
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - product_ids
+                - format
+              properties:
+                product_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: Product IDs to export
+                format:
+                  type: string
+                  enum: [pact, catenax, sap_sdx]
+                include_verification:
+                  type: boolean
+                  default: true
+                  description: Include verification certificates
+      responses:
+        '200':
+          description: PCFs exported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  export_id:
+                    type: string
+                  format:
+                    type: string
+                  pcfs:
+                    type: array
+                    items:
+                      type: object
+                  generated_at:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================================
+  # REPORTS
+  # ============================================================================
+
+  /reports/generate:
+    post:
+      tags:
+        - Reports
+      summary: Generate standards-compliant report
+      description: |
+        Generate emissions reports compliant with major standards:
+        - ESRS E1 (EU CSRD)
+        - CDP Climate Change
+        - IFRS S2
+        - ISO 14083 (Transport & Logistics)
+        - GHG Protocol Scope 3
+      operationId: generateReport
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - report_type
+                - reporting_period
+              properties:
+                report_type:
+                  type: string
+                  enum: [esrs_e1, cdp, ifrs_s2, iso_14083, ghg_protocol]
+                  description: Report standard/type
+                reporting_period:
+                  type: object
+                  required:
+                    - start_date
+                    - end_date
+                  properties:
+                    start_date:
+                      type: string
+                      format: date
+                    end_date:
+                      type: string
+                      format: date
+                output_format:
+                  type: string
+                  enum: [pdf, excel, json]
+                  default: pdf
+                include_charts:
+                  type: boolean
+                  default: true
+                categories:
+                  type: array
+                  items:
+                    type: string
+                  description: Scope 3 categories to include (defaults to all)
+                  example: ["1", "4", "6"]
+      responses:
+        '202':
+          description: Report generation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_id:
+                    type: string
+                    example: "rpt_abc123"
+                  status:
+                    type: string
+                    enum: [queued, generating]
+                  estimated_completion:
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /reports/{report_id}:
+    get:
+      tags:
+        - Reports
+      summary: Get report status and download
+      description: Check report generation status and download when ready
+      operationId: getReport
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Report ID
+      responses:
+        '200':
+          description: Report ready for download
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [queued, generating, completed, failed]
+                  report_type:
+                    type: string
+                  reporting_period:
+                    type: object
+                  download_url:
+                    type: string
+                    description: URL to download report (valid for 1 hour)
+                  generated_at:
+                    type: string
+                    format: date-time
+        '202':
+          description: Report still generating
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report_id:
+                    type: string
+                  status:
+                    type: string
+                    enum: [queued, generating]
+                  progress:
+                    type: object
+                    properties:
+                      percentage:
+                        type: integer
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /reports:
+    get:
+      tags:
+        - Reports
+      summary: List generated reports
+      description: Retrieve list of previously generated reports
+      operationId: listReports
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: report_type
+          in: query
+          schema:
+            type: string
+            enum: [esrs_e1, cdp, ifrs_s2, iso_14083, ghg_protocol]
+          description: Filter by report type
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [queued, generating, completed, failed]
+          description: Filter by status
+      responses:
+        '200':
+          description: List of reports
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        report_id:
+                          type: string
+                        report_type:
+                          type: string
+                        status:
+                          type: string
+                        reporting_period:
+                          type: object
+                        generated_at:
+                          type: string
+                          format: date-time
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ============================================================================
+  # POLICIES (OPA-BASED CALCULATION RULES)
+  # ============================================================================
+
+  /policies:
+    get:
+      tags:
+        - Policies
+      summary: List calculation policies
+      description: Retrieve OPA-based calculation policies and rules
+      operationId: listPolicies
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: List of policies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  policies:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Policy'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Policies
+      summary: Create or update policy
+      description: |
+        Create or update a calculation policy using Open Policy Agent (OPA) Rego language.
+        Policies define calculation rules, factor selection logic, and data quality requirements.
+      operationId: createPolicy
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyCreate'
+      responses:
+        '201':
+          description: Policy created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /policies/{policy_id}:
+    get:
+      tags:
+        - Policies
+      summary: Get policy details
+      description: Retrieve detailed policy including Rego code and metadata
+      operationId: getPolicy
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: policy_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Policy ID
+      responses:
+        '200':
+          description: Policy details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Policies
+      summary: Delete policy
+      description: Delete a calculation policy
+      operationId: deletePolicy
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      parameters:
+        - name: policy_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Policy ID
+      responses:
+        '204':
+          description: Policy deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /policies/{policy_id}/evaluate:
+    post:
+      tags:
+        - Policies
+      summary: Evaluate policy
+      description: Test a policy against sample input data
+      operationId: evaluatePolicy
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      parameters:
+        - name: policy_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Policy ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - input
+              properties:
+                input:
+                  type: object
+                  description: Input data to evaluate against policy
+      responses:
+        '200':
+          description: Policy evaluation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: object
+                    description: Policy evaluation output
+                  decision:
+                    type: boolean
+                    description: Policy decision (allow/deny)
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # WORKFLOWS (DATA QUALITY & REVIEW QUEUES)
+  # ============================================================================
+
+  /workflows/review-queue:
+    get:
+      tags:
+        - Workflows
+      summary: List review queue items
+      description: Retrieve items pending human review (entity resolution, data quality, etc.)
+      operationId: listReviewQueue
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: queue_type
+          in: query
+          schema:
+            type: string
+            enum: [entity_resolution, data_quality, calculation_review]
+          description: Filter by queue type
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, in_review, resolved]
+          description: Filter by status
+        - name: assigned_to
+          in: query
+          schema:
+            type: string
+          description: Filter by assigned user ID
+      responses:
+        '200':
+          description: Review queue items retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewQueueItem'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /workflows/review-queue/{item_id}/resolve:
+    post:
+      tags:
+        - Workflows
+      summary: Resolve review queue item
+      description: |
+        Take action on a review queue item (approve, reject, merge, etc.)
+        depending on the queue type.
+      operationId: resolveReviewItem
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      parameters:
+        - name: item_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Review queue item ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - action
+              properties:
+                action:
+                  type: string
+                  enum: [approve, reject, merge, split, manual_match]
+                  description: Action to take on the review item
+                resolution_data:
+                  type: object
+                  description: Action-specific data (e.g., matched supplier ID for manual_match)
+                notes:
+                  type: string
+                  description: Optional notes about the resolution
+      responses:
+        '200':
+          description: Review item resolved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewQueueItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # SUPPLIER ENGAGEMENT
+  # ============================================================================
+
+  /engagement/campaigns:
+    get:
+      tags:
+        - Engagement
+      summary: List engagement campaigns
+      description: Retrieve supplier engagement campaigns (email outreach, PCF requests, etc.)
+      operationId: listCampaigns
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, scheduled, active, completed]
+          description: Filter by campaign status
+      responses:
+        '200':
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Campaign'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags:
+        - Engagement
+      summary: Create engagement campaign
+      description: Create a new supplier engagement campaign
+      operationId: createCampaign
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CampaignCreate'
+      responses:
+        '201':
+          description: Campaign created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /engagement/campaigns/{campaign_id}:
+    get:
+      tags:
+        - Engagement
+      summary: Get campaign details
+      description: Retrieve campaign details including response metrics
+      operationId: getCampaign
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: campaign_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Campaign ID
+      responses:
+        '200':
+          description: Campaign details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /engagement/portal/suppliers/{supplier_id}/access:
+    post:
+      tags:
+        - Engagement
+      summary: Grant supplier portal access
+      description: |
+        Generate portal access link for a supplier. The supplier can use this
+        link to access their dedicated portal for PCF submission, data review, etc.
+      operationId: grantSupplierPortalAccess
+      security:
+        - OAuth2: [write]
+        - ApiKeyAuth: []
+      parameters:
+        - name: supplier_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Supplier ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                contact_email:
+                  type: string
+                  format: email
+                  description: Supplier contact email
+                expiration_days:
+                  type: integer
+                  minimum: 1
+                  maximum: 365
+                  default: 90
+                  description: Number of days until access expires
+                send_email:
+                  type: boolean
+                  default: true
+                  description: Send access invitation email
+      responses:
+        '200':
+          description: Portal access granted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_url:
+                    type: string
+                    description: Portal access URL
+                  access_token:
+                    type: string
+                    description: Portal access token
+                  expires_at:
+                    type: string
+                    format: date-time
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ============================================================================
+  # ADMIN & CONFIGURATION
+  # ============================================================================
+
+  /admin/tenants:
+    get:
+      tags:
+        - Admin
+      summary: List tenants
+      description: Retrieve all tenants (requires super admin role)
+      operationId: listTenants
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+      responses:
+        '200':
+          description: List of tenants
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Tenant'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags:
+        - Admin
+      summary: Create tenant
+      description: Create a new tenant (requires super admin role)
+      operationId: createTenant
+      security:
+        - OAuth2: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TenantCreate'
+      responses:
+        '201':
+          description: Tenant created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: List users
+      description: Retrieve users for the current tenant
+      operationId: listUsers
+      security:
+        - OAuth2: [admin]
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Offset'
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [admin, user, viewer]
+          description: Filter by role
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags:
+        - Admin
+      summary: Create user
+      description: Create a new user in the current tenant
+      operationId: createUser
+      security:
+        - OAuth2: [admin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # ============================================================================
+  # MONITORING & HEALTH
+  # ============================================================================
+
+  /health:
+    get:
+      tags:
+        - Monitoring
+      summary: Health check
+      description: Check API health status
+      operationId: healthCheck
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [healthy, degraded, unhealthy]
+                  version:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                  components:
+                    type: object
+                    properties:
+                      database:
+                        type: string
+                        enum: [healthy, unhealthy]
+                      redis:
+                        type: string
+                        enum: [healthy, unhealthy]
+                      vector_db:
+                        type: string
+                        enum: [healthy, unhealthy]
+        '503':
+          description: API is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [unhealthy]
+                  errors:
+                    type: array
+                    items:
+                      type: string
+
+  /metrics:
+    get:
+      tags:
+        - Monitoring
+      summary: Get platform metrics
+      description: Retrieve platform usage and performance metrics
+      operationId: getMetrics
+      security:
+        - OAuth2: [read]
+        - ApiKeyAuth: []
+      parameters:
+        - name: metric_type
+          in: query
+          schema:
+            type: string
+            enum: [usage, performance, emissions_summary]
+          description: Type of metrics to retrieve
+        - name: date_from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Start date for metrics
+        - name: date_to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: End date for metrics
+      responses:
+        '200':
+          description: Metrics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metrics:
+                    type: object
+                    description: Metrics data (structure varies by metric_type)
+                  period:
+                    type: object
+                    properties:
+                      start_date:
+                        type: string
+                        format: date
+                      end_date:
+                        type: string
+                        format: date
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+# ==============================================================================
+# COMPONENTS
+# ==============================================================================
+
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://api.vcci.greenlang.io/v2/auth/token
+          scopes:
+            read: Read access to resources
+            write: Write access to resources
+            admin: Administrative access
+        authorizationCode:
+          authorizationUrl: https://api.vcci.greenlang.io/v2/auth/authorize
+          tokenUrl: https://api.vcci.greenlang.io/v2/auth/token
+          scopes:
+            read: Read access to resources
+            write: Write access to resources
+            admin: Administrative access
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 100
+      description: Maximum number of items to return
+
+    Offset:
+      name: offset
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: Number of items to skip (for pagination)
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "BAD_REQUEST"
+              message: "Invalid input parameters"
+              details:
+                - field: "supplier_name"
+                  message: "Required field missing"
+
+    Unauthorized:
+      description: Unauthorized - invalid or missing authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "UNAUTHORIZED"
+              message: "Invalid or missing authentication credentials"
+
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "FORBIDDEN"
+              message: "Insufficient permissions to access this resource"
+
+    NotFound:
+      description: Not found - resource does not exist
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "NOT_FOUND"
+              message: "Resource not found"
+
+    TooManyRequests:
+      description: Too many requests - rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per hour
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Remaining requests in current window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when rate limit resets
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error:
+              code: "RATE_LIMIT_EXCEEDED"
+              message: "Rate limit exceeded. Please retry after 60 seconds."
+
+  schemas:
+    # Authentication schemas
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT access token
+        token_type:
+          type: string
+          example: "Bearer"
+        expires_in:
+          type: integer
+          description: Token expiration in seconds
+        refresh_token:
+          type: string
+          description: Refresh token (if applicable)
+        scope:
+          type: string
+          description: Space-separated list of granted scopes
+
+    ApiKey:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "key_abc123"
+        name:
+          type: string
+          example: "Production Integration Key"
+        key:
+          type: string
+          description: API key (only returned on creation)
+          example: "sk_live_abc123xyz789"
+        prefix:
+          type: string
+          description: Key prefix for identification
+          example: "sk_live_abc"
+        scopes:
+          type: array
+          items:
+            type: string
+          example: ["read", "write:procurement"]
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        last_used_at:
+          type: string
+          format: date-time
+
+    # Supplier schemas
+    Supplier:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "sup_abc123"
+        canonical_name:
+          type: string
+          example: "Acme Corporation"
+        aliases:
+          type: array
+          items:
+            type: string
+          example: ["ACME Corp", "Acme Inc"]
+        identifiers:
+          type: object
+          properties:
+            lei:
+              type: string
+              example: "529900XYZU1234567890"
+            duns:
+              type: string
+              example: "123456789"
+            opencorporates_id:
+              type: string
+        enrichment:
+          type: object
+          properties:
+            headquarters:
+              type: object
+              properties:
+                country:
+                  type: string
+                  example: "US"
+                city:
+                  type: string
+                  example: "New York"
+                address:
+                  type: string
+            industry:
+              type: string
+              example: "Manufacturing"
+            revenue_usd:
+              type: number
+              format: double
+            employee_count:
+              type: integer
+            parent_company:
+              type: string
+        status:
+          type: string
+          enum: [active, inactive, pending]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    SupplierCreate:
+      type: object
+      required:
+        - canonical_name
+      properties:
+        canonical_name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        identifiers:
+          type: object
+          properties:
+            lei:
+              type: string
+            duns:
+              type: string
+        enrichment:
+          type: object
+
+    SupplierUpdate:
+      type: object
+      properties:
+        canonical_name:
+          type: string
+        aliases:
+          type: array
+          items:
+            type: string
+        identifiers:
+          type: object
+        enrichment:
+          type: object
+        status:
+          type: string
+          enum: [active, inactive]
+
+    SupplierResolution:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [auto_matched, human_review_required, no_match]
+        matched_supplier_id:
+          type: string
+        confidence:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+        candidates:
+          type: array
+          items:
+            type: object
+            properties:
+              supplier_id:
+                type: string
+              canonical_name:
+                type: string
+              confidence:
+                type: number
+                format: float
+              matching_features:
+                type: array
+                items:
+                  type: string
+        review_queue_id:
+          type: string
+          description: ID if queued for human review
+
+    # Transaction schemas
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "txn_abc123"
+        transaction_type:
+          type: string
+          enum: [purchase_order, invoice, goods_receipt, expense]
+        transaction_id:
+          type: string
+          example: "PO-2024-12345"
+        transaction_date:
+          type: string
+          format: date
+        supplier_id:
+          type: string
+        supplier_name:
+          type: string
+        product_name:
+          type: string
+        quantity:
+          type: number
+          format: double
+        unit:
+          type: string
+        spend_usd:
+          type: number
+          format: double
+        currency:
+          type: string
+          example: "USD"
+        status:
+          type: string
+          enum: [pending, processed, failed]
+        processing_errors:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    TransactionCreate:
+      type: object
+      required:
+        - transaction_type
+        - transaction_id
+        - transaction_date
+        - supplier_name
+        - spend_usd
+      properties:
+        transaction_type:
+          type: string
+          enum: [purchase_order, invoice, goods_receipt, expense]
+        transaction_id:
+          type: string
+        transaction_date:
+          type: string
+          format: date
+        supplier_name:
+          type: string
+        product_name:
+          type: string
+        quantity:
+          type: number
+          format: double
+        unit:
+          type: string
+        spend_usd:
+          type: number
+          format: double
+        currency:
+          type: string
+          default: "USD"
+
+    JobStatus:
+      type: object
+      properties:
+        job_id:
+          type: string
+        status:
+          type: string
+          enum: [queued, processing, completed, failed]
+        progress:
+          type: object
+          properties:
+            processed:
+              type: integer
+            total:
+              type: integer
+            percentage:
+              type: integer
+        results:
+          type: object
+          properties:
+            success:
+              type: integer
+            errors:
+              type: integer
+            warnings:
+              type: integer
+        created_at:
+          type: string
+          format: date-time
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+
+    # Emissions schemas
+    EmissionCalculation:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "calc_abc123"
+        transaction_id:
+          type: string
+        category:
+          type: string
+          enum: ["1", "4", "6"]
+        tier:
+          type: string
+          enum: ["1", "2", "3"]
+        emissions_kg_co2e:
+          type: number
+          format: double
+        uncertainty:
+          type: object
+          properties:
+            method:
+              type: string
+              enum: [monte_carlo, pedigree]
+            range:
+              type: object
+              properties:
+                lower_bound:
+                  type: number
+                upper_bound:
+                  type: number
+            confidence_level:
+              type: number
+              example: 0.95
+        data_quality:
+          type: object
+          properties:
+            dqi_score:
+              type: number
+              format: float
+              minimum: 1.0
+              maximum: 5.0
+            pedigree:
+              type: string
+              enum: [excellent, good, fair, poor]
+        emission_factor:
+          $ref: '#/components/schemas/EmissionFactor'
+        provenance:
+          type: object
+          properties:
+            calculation_hash:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+            methodology_version:
+              type: string
+        calculated_at:
+          type: string
+          format: date-time
+
+    EmissionFactor:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "ef_abc123"
+        source:
+          type: string
+          enum: [ecoinvent, desnz, epa, proxy]
+        source_version:
+          type: string
+          example: "3.10"
+        factor_name:
+          type: string
+          example: "Steel, hot rolled coil"
+        value:
+          type: number
+          format: double
+          description: Emission factor value in kg CO2e per unit
+        unit:
+          type: string
+          example: "kg CO2e per kg"
+        region:
+          type: string
+          example: "US"
+        gwp_standard:
+          type: string
+          enum: [AR5, AR6]
+        uncertainty:
+          type: object
+          properties:
+            min:
+              type: number
+            max:
+              type: number
+            distribution:
+              type: string
+              enum: [normal, lognormal, uniform]
+        valid_from:
+          type: string
+          format: date
+        valid_to:
+          type: string
+          format: date
+
+    # PCF schemas
+    PCF:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "pcf_abc123"
+        product_id:
+          type: string
+        product_name:
+          type: string
+        supplier_id:
+          type: string
+        pcf_value_kg_co2e:
+          type: number
+          format: double
+        functional_unit:
+          type: string
+          example: "1 kg"
+        boundary:
+          type: string
+          enum: [cradle_to_gate, cradle_to_grave, gate_to_gate]
+        reference_period:
+          type: object
+          properties:
+            start_date:
+              type: string
+              format: date
+            end_date:
+              type: string
+              format: date
+        data_quality:
+          type: object
+          properties:
+            coverage:
+              type: number
+              format: float
+            temporal_representativeness:
+              type: string
+            geographical_representativeness:
+              type: string
+        verification:
+          type: object
+          properties:
+            verified:
+              type: boolean
+            verifier:
+              type: string
+            verification_date:
+              type: string
+              format: date
+        format:
+          type: string
+          enum: [pact, catenax, sap_sdx]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PCFCreate:
+      type: object
+      required:
+        - product_id
+        - product_name
+        - pcf_value_kg_co2e
+        - functional_unit
+        - boundary
+      properties:
+        product_id:
+          type: string
+        product_name:
+          type: string
+        supplier_id:
+          type: string
+        pcf_value_kg_co2e:
+          type: number
+          format: double
+        functional_unit:
+          type: string
+        boundary:
+          type: string
+          enum: [cradle_to_gate, cradle_to_grave, gate_to_gate]
+        reference_period:
+          type: object
+        data_quality:
+          type: object
+        verification:
+          type: object
+
+    # Policy schemas
+    Policy:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "pol_abc123"
+        name:
+          type: string
+          example: "Category 1 Calculation Policy"
+        description:
+          type: string
+        category:
+          type: string
+          enum: ["1", "4", "6", "all"]
+        rego_code:
+          type: string
+          description: Open Policy Agent Rego code
+        version:
+          type: string
+        active:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PolicyCreate:
+      type: object
+      required:
+        - name
+        - category
+        - rego_code
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: ["1", "4", "6", "all"]
+        rego_code:
+          type: string
+
+    # Review Queue schemas
+    ReviewQueueItem:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "review_abc123"
+        queue_type:
+          type: string
+          enum: [entity_resolution, data_quality, calculation_review]
+        status:
+          type: string
+          enum: [pending, in_review, resolved]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        data:
+          type: object
+          description: Queue-specific data
+        assigned_to:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        resolved_at:
+          type: string
+          format: date-time
+
+    # Campaign schemas
+    Campaign:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "camp_abc123"
+        name:
+          type: string
+        type:
+          type: string
+          enum: [pcf_request, data_quality_improvement, general_outreach]
+        status:
+          type: string
+          enum: [draft, scheduled, active, completed]
+        target_suppliers:
+          type: array
+          items:
+            type: string
+        message_template:
+          type: string
+        metrics:
+          type: object
+          properties:
+            sent:
+              type: integer
+            opened:
+              type: integer
+            responded:
+              type: integer
+            response_rate:
+              type: number
+              format: float
+        scheduled_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    CampaignCreate:
+      type: object
+      required:
+        - name
+        - type
+        - target_suppliers
+        - message_template
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+          enum: [pcf_request, data_quality_improvement, general_outreach]
+        target_suppliers:
+          type: array
+          items:
+            type: string
+        message_template:
+          type: string
+        scheduled_at:
+          type: string
+          format: date-time
+
+    # Admin schemas
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "tenant_abc123"
+        name:
+          type: string
+        domain:
+          type: string
+        subscription_plan:
+          type: string
+          enum: [core, plus, enterprise]
+        settings:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+
+    TenantCreate:
+      type: object
+      required:
+        - name
+        - domain
+      properties:
+        name:
+          type: string
+        domain:
+          type: string
+        subscription_plan:
+          type: string
+          enum: [core, plus, enterprise]
+        settings:
+          type: object
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "user_abc123"
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, user, viewer]
+        tenant_id:
+          type: string
+        last_login:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+
+    UserCreate:
+      type: object
+      required:
+        - email
+        - name
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, user, viewer]
+
+    # Common schemas
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: "BAD_REQUEST"
+            message:
+              type: string
+              example: "Invalid input parameters"
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  message:
+                    type: string
+
+    Pagination:
+      type: object
+      properties:
+        limit:
+          type: integer
+          example: 100
+        offset:
+          type: integer
+          example: 0
+        total:
+          type: integer
+          example: 1543
+        has_more:
+          type: boolean

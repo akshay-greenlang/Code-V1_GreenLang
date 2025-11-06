@@ -1,0 +1,406 @@
+GHG Protocol Scope 1, 2, and 3 Emissions Categories
+Document ID: ghg_protocol_scopes_v1
+Publisher: World Resources Institute (WRI) and World Business Council for Sustainable Development (WBCSD)
+Collection: ghg_protocol_corp
+Version: 1.0
+Last Updated: 2025-11-06
+
+=============================================================================
+SCOPE 1, 2, AND 3 EMISSIONS: DEFINITIONS, BOUNDARIES, AND EXAMPLES
+=============================================================================
+
+1. SCOPE DEFINITIONS OVERVIEW
+
+The GHG Protocol classifies emissions into three scopes to help organizations comprehensively account for their greenhouse gas emissions across the value chain.
+
+SCOPE 1: Direct GHG emissions
+- Occur from sources owned or controlled by the company
+- Examples: Combustion in boilers, furnaces, vehicles; process emissions
+
+SCOPE 2: Indirect GHG emissions from purchased energy
+- Result from generation of purchased or acquired electricity, steam, heating, or cooling
+- Physically occur at facility where energy is generated
+
+SCOPE 3: Other indirect GHG emissions
+- Consequence of company activities but occur from sources not owned/controlled by company
+- Include upstream and downstream value chain emissions
+
+=============================================================================
+2. SCOPE 1: DIRECT EMISSIONS (MANDATORY REPORTING)
+=============================================================================
+
+2.1 DEFINITION
+Direct greenhouse gas emissions from sources that are owned or controlled by the reporting entity.
+
+2.2 SCOPE 1 EMISSION SOURCES
+
+A) STATIONARY COMBUSTION
+Burning of fuels in stationary equipment:
+- Boilers (steam generation)
+- Furnaces (process heating)
+- Generators (backup power)
+- Incinerators (waste treatment)
+- Ovens, kilns, dryers
+
+Common Fuels:
+- Natural gas, fuel oil, diesel, coal, propane, biomass
+
+Calculation Method:
+Emissions (tons CO2e) = Fuel Consumed (units) × Emission Factor (tons CO2e/unit)
+
+Example - Natural Gas Boiler:
+Annual consumption: 100,000 therms
+Emission factor: 0.0053 tons CO2/therm (EPA)
+Emissions = 100,000 therms × 0.0053 tons/therm = 530 tons CO2
+
+B) MOBILE COMBUSTION
+Burning of fuels in transportation equipment owned/controlled:
+- Company-owned vehicles (cars, trucks, forklifts)
+- Company-owned aircraft
+- Company-owned ships and boats
+- Construction equipment
+- Agricultural equipment
+
+Calculation Method:
+Option 1 (Fuel-based): Fuel consumed × Emission factor
+Option 2 (Distance-based): Distance traveled × Fuel economy × Emission factor
+
+Example - Fleet Vehicles:
+20 vehicles, 15,000 miles/year each, 20 MPG average
+Total miles: 20 × 15,000 = 300,000 miles
+Fuel consumed: 300,000 / 20 = 15,000 gallons gasoline
+Emission factor: 8.89 kg CO2/gallon (EPA)
+Emissions = 15,000 gallons × 8.89 kg/gallon = 133,350 kg = 133.4 tons CO2
+
+C) FUGITIVE EMISSIONS
+Intentional or unintentional releases:
+- Refrigerant leakage (HVAC, chillers, refrigerators)
+- Natural gas leakage from pipes/equipment
+- SF6 from electrical equipment
+- CO2 from fire suppression systems
+
+High GWP gases make fugitive emissions significant despite small masses.
+
+Example - HVAC Refrigerant Leak:
+Refrigerant: R-134a (HFC)
+Annual leakage: 10 kg
+GWP of R-134a: 1,530 (IPCC AR6)
+Emissions = 10 kg × 1,530 / 1,000 = 15.3 tons CO2e
+
+D) PROCESS EMISSIONS
+Chemical or physical processes not involving combustion:
+- Cement production: CaCO3 → CaO + CO2
+- Steel production: Blast furnace reactions
+- Aluminum production: Anode consumption
+- Chemical manufacturing: Various reactions
+- Pulp and paper: Black liquor combustion
+
+Example - Cement Production:
+Clinker produced: 100,000 tons/year
+Process emission factor: 0.52 tons CO2 per ton clinker
+Emissions = 100,000 tons × 0.52 = 52,000 tons CO2
+
+2.3 SCOPE 1 EXCLUSIONS
+- Biogenic CO2 from biomass combustion (reported separately, not in scopes)
+- Emissions from facilities not owned/controlled under chosen boundary approach
+- Emissions from employee commuting (Scope 3)
+
+=============================================================================
+3. SCOPE 2: INDIRECT EMISSIONS FROM PURCHASED ENERGY (MANDATORY)
+=============================================================================
+
+3.1 DEFINITION
+Indirect GHG emissions from the generation of purchased or acquired electricity, steam, heating, cooling, or compressed air consumed by the reporting company.
+
+Key principle: Scope 2 emissions physically occur at the facility where the energy is generated, but are accounted for by the organization that consumes the energy.
+
+3.2 SCOPE 2 EMISSION SOURCES
+
+A) PURCHASED ELECTRICITY
+Most significant Scope 2 source for most organizations.
+
+Calculation Methods:
+
+Location-Based Method (Mandatory):
+Uses average emission intensity of grids where energy is consumed.
+
+Emissions = Electricity Consumed (MWh) × Grid Emission Factor (tons CO2e/MWh)
+
+Example - Office Building:
+Annual electricity: 1,000 MWh
+Grid emission factor (US average): 0.417 tons CO2/MWh (EPA eGRID)
+Emissions = 1,000 MWh × 0.417 = 417 tons CO2
+
+Market-Based Method (Optional):
+Reflects emissions from specific energy suppliers or products chosen by company.
+
+Example - With Renewable Energy Certificates (RECs):
+Annual electricity: 1,000 MWh
+500 MWh covered by RECs (0 emission factor)
+500 MWh from grid (0.417 tons/MWh)
+Emissions = 500 MWh × 0.417 = 208.5 tons CO2
+
+B) PURCHASED STEAM, HEAT, OR COOLING
+District energy systems or from third parties.
+
+Example - District Steam:
+Annual steam: 5,000 MMBtu
+Supplier-specific emission factor: 0.07 tons CO2/MMBtu
+Emissions = 5,000 MMBtu × 0.07 = 350 tons CO2
+
+C) PURCHASED COMPRESSED AIR
+Industrial facilities purchasing compressed air from third-party supplier.
+
+3.3 QUALITY OF EMISSION FACTORS
+
+Tier 1 (Highest Quality): Supplier-specific emission factors
+- Actual generation mix from energy supplier
+- Contractually specified energy products
+
+Tier 2: Subnational grid averages
+- State, provincial, or regional grid factors
+- Better than national averages for heterogeneous countries
+
+Tier 3: National grid averages
+- Average emission intensity for entire country
+- Adequate for initial inventories
+
+Tier 4 (Lowest Quality): Multi-country regional averages
+- Use only when country-specific data unavailable
+
+Example Emission Factors by Region:
+- US Average (eGRID 2023): 0.417 tons CO2/MWh
+- California (CAMX): 0.223 tons CO2/MWh
+- Wyoming (RMPA): 0.832 tons CO2/MWh
+- Germany: 0.350 tons CO2/MWh
+- France: 0.057 tons CO2/MWh (high nuclear)
+- China: 0.581 tons CO2/MWh
+- India: 0.708 tons CO2/MWh
+
+3.4 RENEWABLE ENERGY AND RECs
+
+Renewable Energy Certificates (RECs) or Guarantees of Origin:
+- Unbundled: Purchased separately from electricity
+- Bundled: Included with renewable electricity contract
+- Only reduce market-based Scope 2, not location-based
+
+Power Purchase Agreements (PPAs):
+- Long-term contracts for renewable electricity
+- Can be physical or virtual (financial)
+- Reduce market-based Scope 2 emissions
+
+On-Site Renewable Generation:
+- Solar PV, wind, geothermal on company property
+- Zero Scope 1 emissions (no fuel combustion)
+- Reduces Scope 2 if offsets purchased electricity
+
+=============================================================================
+4. SCOPE 3: VALUE CHAIN EMISSIONS (OPTIONAL BUT RECOMMENDED)
+=============================================================================
+
+4.1 DEFINITION
+All other indirect emissions that occur in the company's value chain, including both upstream and downstream emissions.
+
+Scope 3 is typically the largest share of emissions for most companies (often 70-90% of total carbon footprint).
+
+4.2 SCOPE 3 CATEGORIES (15 TOTAL)
+
+UPSTREAM EMISSIONS (Categories 1-8):
+
+Category 1: PURCHASED GOODS AND SERVICES
+Extraction, production, and transportation of goods and services purchased.
+
+Examples:
+- Raw materials and components
+- Office supplies and IT equipment
+- Outsourced services (consulting, cleaning)
+
+Calculation:
+Spend-based: Purchase amount ($) × Emission factor (tons CO2e/$)
+Supplier-specific: Quantity × Supplier emission factor
+Average-data: Quantity × Industry average emission factor
+
+Example - Paper Procurement:
+Annual paper purchased: 50 tons
+Emission factor: 1.2 tons CO2e per ton paper
+Emissions = 50 tons × 1.2 = 60 tons CO2e
+
+Category 2: CAPITAL GOODS
+Extraction, production, and transportation of capital goods purchased (buildings, machinery, equipment, vehicles).
+
+Amortization approach: Spread emissions over useful life of asset.
+
+Example - New Production Equipment:
+Equipment cost: $1,000,000
+Emission factor: 0.5 tons CO2e per $1,000 (machinery)
+Useful life: 10 years
+Annual emissions = ($1M × 0.5 tons/$1k) / 10 years = 50 tons CO2e/year
+
+Category 3: FUEL AND ENERGY-RELATED ACTIVITIES (Not in Scope 1 or 2)
+Upstream emissions from fuel and energy:
+- Extraction, production, transportation of fuels
+- Transmission and distribution (T&D) losses
+- Generation of purchased electricity sold to end users
+
+Example - T&D Losses:
+Purchased electricity: 1,000 MWh
+T&D loss factor: 5%
+Grid emission factor: 0.417 tons CO2/MWh
+Emissions = 1,000 MWh × 5% × 0.417 = 20.85 tons CO2e
+
+Category 4: UPSTREAM TRANSPORTATION AND DISTRIBUTION
+Transportation and distribution of products purchased (in vehicles not owned/controlled).
+
+Includes:
+- Inbound logistics from suppliers
+- Third-party warehousing and distribution
+- Retail storage
+
+Category 5: WASTE GENERATED IN OPERATIONS
+Disposal and treatment of waste generated in company operations (in facilities not owned/controlled).
+
+Example - Landfilled Waste:
+Annual waste to landfill: 100 tons
+Emission factor: 0.5 tons CO2e per ton waste (includes methane)
+Emissions = 100 tons × 0.5 = 50 tons CO2e
+
+Category 6: BUSINESS TRAVEL
+Transportation of employees for business activities (in vehicles not owned/controlled).
+
+Includes:
+- Air travel (short-haul, long-haul)
+- Rental cars
+- Taxis and ride-shares
+- Hotels
+
+Example - Air Travel:
+50 employees, 2 round-trip flights/year, 2,000 miles each
+Total miles: 50 × 2 × 2,000 = 200,000 miles
+Emission factor: 0.18 kg CO2e per passenger-mile (economy, medium-haul)
+Emissions = 200,000 miles × 0.18 kg/mile = 36,000 kg = 36 tons CO2e
+
+Category 7: EMPLOYEE COMMUTING
+Transportation of employees between homes and worksites.
+
+Calculation methods:
+- Average-data: Number of employees × Average commute distance × Days worked × Emission factor
+- Surveying employees
+
+Example - Employee Commuting:
+100 employees, 20 miles round-trip average, 230 days/year, 25 MPG, single occupancy
+Total miles: 100 × 20 × 230 = 460,000 miles
+Fuel: 460,000 / 25 = 18,400 gallons
+Emissions = 18,400 gallons × 8.89 kg CO2/gallon = 163,576 kg = 163.6 tons CO2
+
+Category 8: UPSTREAM LEASED ASSETS
+Operation of assets leased by reporting company (not included in Scope 1 or 2).
+
+DOWNSTREAM EMISSIONS (Categories 9-15):
+
+Category 9: DOWNSTREAM TRANSPORTATION AND DISTRIBUTION
+Transportation and distribution of products sold (in vehicles not owned/controlled).
+
+Category 10: PROCESSING OF SOLD PRODUCTS
+Processing of intermediate products by third parties after sale.
+
+Category 11: USE OF SOLD PRODUCTS
+End use of goods and services sold.
+
+Example - Electronics Manufacturer:
+Laptops sold: 10,000 units
+Average electricity use: 50 kWh/year over 5-year life
+Grid emission factor: 0.417 tons CO2/MWh
+Emissions = 10,000 units × 50 kWh/year × 5 years × 0.417 tons/1,000 kWh = 1,042.5 tons CO2e
+
+Category 12: END-OF-LIFE TREATMENT OF SOLD PRODUCTS
+Waste disposal and treatment of products sold at end of life.
+
+Category 13: DOWNSTREAM LEASED ASSETS
+Operation of assets owned by reporting company and leased to other entities (not in Scope 1 or 2).
+
+Category 14: FRANCHISES
+Operation of franchises (not in Scope 1 or 2).
+
+Category 15: INVESTMENTS
+Operation of investments (equity investments, debt investments, project finance, managed investments).
+
+4.3 SCOPE 3 SCREENING AND PRIORITIZATION
+
+Not all 15 categories are relevant to every company. Recommended approach:
+
+Step 1: SCREENING
+Evaluate all 15 categories for relevance and significance.
+
+Step 2: PRIORITIZATION
+Focus on categories that:
+- Represent >5% of total Scope 3 emissions
+- Offer emissions reduction opportunities
+- Are deemed critical by stakeholders
+- Contribute to company's climate-related risks/opportunities
+
+Step 3: DATA COLLECTION
+Start with available data and improve over time:
+- Year 1: Spend-based estimates
+- Year 2: Hybrid approach (spend + activity data)
+- Year 3+: Supplier-specific data where material
+
+=============================================================================
+5. SCOPE COMPARISON AND BOUNDARIES
+=============================================================================
+
+KEY DISTINCTIONS:
+
+Scope 1 vs Scope 2:
+- Scope 1: Direct combustion in owned/controlled equipment
+- Scope 2: Indirect from purchased energy generated elsewhere
+
+Scope 1 vs Scope 3 (Category 4):
+- Scope 1: Fuel burned in company-owned vehicles
+- Scope 3 Cat 4: Third-party logistics providers
+
+Scope 2 vs Scope 3 (Category 3):
+- Scope 2: Emissions from electricity generation
+- Scope 3 Cat 3: Upstream extraction/transport of fuels + T&D losses
+
+AVOIDING DOUBLE COUNTING:
+
+Between Scopes:
+- Ensure clear boundary definitions
+- If activity is in Scope 1, exclude from Scope 2 or 3
+
+Across Companies:
+- Scope 1 for seller = Scope 3 for buyer
+- Total emissions across value chain should sum correctly
+
+=============================================================================
+6. INDUSTRY-SPECIFIC SCOPE EXAMPLES
+=============================================================================
+
+MANUFACTURING COMPANY:
+- Scope 1: Natural gas for process heat, company vehicles
+- Scope 2: Electricity for machinery, lighting, HVAC
+- Scope 3 Material: Cat 1 (raw materials), Cat 11 (product use), Cat 4 (inbound logistics)
+
+OFFICE-BASED SERVICE COMPANY:
+- Scope 1: Minimal (backup generators, company cars)
+- Scope 2: Electricity for offices, district heating/cooling
+- Scope 3 Material: Cat 6 (business travel), Cat 7 (commuting), Cat 1 (IT equipment/services)
+
+RETAIL COMPANY:
+- Scope 1: Refrigerants, company distribution vehicles
+- Scope 2: Electricity for stores, refrigeration
+- Scope 3 Material: Cat 1 (products sold), Cat 4 (inbound logistics), Cat 9 (customer transport)
+
+OIL & GAS COMPANY:
+- Scope 1: Extraction operations, refining, fugitive methane
+- Scope 2: Electricity for operations
+- Scope 3 Material: Cat 11 (combustion of sold fuels - typically >90% of total footprint)
+
+=============================================================================
+DOCUMENT METADATA
+=============================================================================
+Content Type: Technical Guidance
+Target Audience: Carbon accountants, sustainability managers, GHG inventory specialists
+Applicability: All sectors
+Related Documents: 01_overview.txt, 03_emission_factors.txt
+Authoritative Source: ghgprotocol.org/corporate-standard

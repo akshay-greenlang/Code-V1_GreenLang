@@ -1,0 +1,399 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcci-worker
+  namespace: vcci-platform
+  labels:
+    app: vcci-worker
+    component: worker
+    tier: background
+    version: v1
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: vcci-worker
+  template:
+    metadata:
+      labels:
+        app: vcci-worker
+        component: worker
+        version: v1
+        prometheus.io/scrape: "true"
+      annotations:
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: vcci-worker-sa
+
+      # Node affinity for compute-optimized nodes
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - compute
+                      - general
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - vcci-worker
+                topologyKey: kubernetes.io/hostname
+
+      # Init containers
+      initContainers:
+        - name: wait-for-redis
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until redis-cli -h redis ping; do
+                echo "Waiting for Redis to be ready..."
+                sleep 5
+              done
+              echo "Redis is ready!"
+
+        - name: wait-for-db
+          image: postgres:15-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgresql -p 5432 -U vcci; do
+                echo "Waiting for PostgreSQL to be ready..."
+                sleep 5
+              done
+              echo "PostgreSQL is ready!"
+
+      containers:
+        - name: worker
+          image: greenlang/vcci-worker:latest
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - app.celery
+            - worker
+            - --loglevel=info
+            - --concurrency=4
+            - --max-tasks-per-child=1000
+            - --time-limit=3600
+            - --soft-time-limit=3300
+
+          ports:
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Resource limits (higher for CPU-intensive tasks)
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 4000m
+              memory: 8Gi
+
+          # Health checks
+          livenessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - app.celery
+                - inspect
+                - ping
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - celery
+                - -A
+                - app.celery
+                - inspect
+                - active
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Environment variables
+          env:
+            # Application settings
+            - name: APP_ENV
+              value: "production"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: WORKER_TYPE
+              value: "celery"
+
+            # Celery configuration
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: redis-url
+            - name: CELERY_RESULT_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: redis-url
+            - name: CELERY_TASK_ALWAYS_EAGER
+              value: "false"
+            - name: CELERY_TASK_EAGER_PROPAGATES
+              value: "true"
+            - name: CELERY_ACKS_LATE
+              value: "true"
+            - name: CELERY_TASK_REJECT_ON_WORKER_LOST
+              value: "true"
+            - name: CELERY_WORKER_PREFETCH_MULTIPLIER
+              value: "4"
+            - name: CELERY_WORKER_MAX_TASKS_PER_CHILD
+              value: "1000"
+
+            # Database configuration
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: database-url
+            - name: DATABASE_POOL_SIZE
+              value: "10"
+            - name: DATABASE_MAX_OVERFLOW
+              value: "20"
+
+            # Redis configuration
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: redis-url
+
+            # Weaviate configuration
+            - name: WEAVIATE_URL
+              value: "http://weaviate:8080"
+            - name: WEAVIATE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: weaviate-api-key
+
+            # External API keys
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: openai-api-key
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: anthropic-api-key
+
+            # Observability
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://jaeger-collector:4317"
+            - name: OTEL_SERVICE_NAME
+              value: "vcci-worker"
+
+            # Pod metadata
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+          # Volume mounts
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: worker-data
+              mountPath: /app/data
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - celery -A app.celery control shutdown && sleep 30
+
+      # Volumes
+      volumes:
+        - name: config
+          configMap:
+            name: vcci-worker-config
+        - name: tmp
+          emptyDir: {}
+        - name: worker-data
+          emptyDir:
+            sizeLimit: 5Gi
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+
+      # Graceful termination (longer for workers)
+      terminationGracePeriodSeconds: 60
+
+      # Security context for pod
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+---
+# Separate deployment for ML workers (GPU-enabled)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vcci-worker-ml
+  namespace: vcci-platform
+  labels:
+    app: vcci-worker-ml
+    component: worker
+    tier: ml
+    version: v1
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: vcci-worker-ml
+  template:
+    metadata:
+      labels:
+        app: vcci-worker-ml
+        component: worker
+        version: v1
+        prometheus.io/scrape: "true"
+    spec:
+      serviceAccountName: vcci-worker-sa
+
+      # Node affinity for GPU nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - gpu
+                      - ml
+
+      # Tolerations for GPU nodes
+      tolerations:
+        - key: nvidia.com/gpu
+          operator: Exists
+          effect: NoSchedule
+
+      containers:
+        - name: worker-ml
+          image: greenlang/vcci-worker-ml:latest
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - app.celery
+            - worker
+            - --loglevel=info
+            - --concurrency=2
+            - --queue=ml_tasks
+            - --max-tasks-per-child=100
+
+          # GPU resource request
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 8Gi
+              nvidia.com/gpu: 1
+            limits:
+              cpu: 4000m
+              memory: 16Gi
+              nvidia.com/gpu: 1
+
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: redis-url
+            - name: CELERY_RESULT_BACKEND
+              valueFrom:
+                secretKeyRef:
+                  name: vcci-backend-secrets
+                  key: redis-url
+            - name: CUDA_VISIBLE_DEVICES
+              value: "0"
+
+          volumeMounts:
+            - name: ml-models
+              mountPath: /models
+              readOnly: true
+
+      volumes:
+        - name: ml-models
+          persistentVolumeClaim:
+            claimName: ml-models-pvc
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vcci-worker-pdb
+  namespace: vcci-platform
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: vcci-worker

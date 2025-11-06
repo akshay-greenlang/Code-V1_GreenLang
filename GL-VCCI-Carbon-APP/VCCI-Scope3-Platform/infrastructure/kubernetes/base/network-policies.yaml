@@ -1,0 +1,351 @@
+---
+# Default Deny All Ingress Traffic (Security First Approach)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: vcci-platform
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# Default Deny All Egress Traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: vcci-platform
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+
+---
+# Allow API Gateway Ingress from Internet
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-api-gateway-ingress
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-api-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+        - protocol: TCP
+          port: 443
+
+---
+# Allow API Gateway to Backend API
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-gateway-to-backend
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-backend-api
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-api-gateway
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Allow Backend API to Database
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-database
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-backend-api
+        - podSelector:
+            matchLabels:
+              app: vcci-worker
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# Allow Backend API and Workers to Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-redis
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-backend-api
+        - podSelector:
+            matchLabels:
+              app: vcci-worker
+      ports:
+        - protocol: TCP
+          port: 6379
+
+---
+# Allow Backend API and Workers to Weaviate
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-to-weaviate
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: weaviate
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-backend-api
+        - podSelector:
+            matchLabels:
+              app: vcci-worker
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+# Allow DNS Resolution (Egress to CoreDNS)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: vcci-platform
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# Allow Backend API Egress to External APIs
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-external-egress
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-backend-api
+  policyTypes:
+    - Egress
+  egress:
+    # Allow to internal services
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    - to:
+        - podSelector:
+            matchLabels:
+              app: weaviate
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow to external APIs (HTTPS)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+# Allow Workers Egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-worker-egress
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-worker
+  policyTypes:
+    - Egress
+  egress:
+    # Allow to internal services
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+    - to:
+        - podSelector:
+            matchLabels:
+              app: weaviate
+      ports:
+        - protocol: TCP
+          port: 8080
+    # Allow to external APIs
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+# Allow Prometheus to scrape metrics
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scraping
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      prometheus.io/scrape: "true"
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: vcci-observability
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+---
+# Tenant Namespace Network Policy - Isolation
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: tenant-isolation
+  namespace: vcci-tenant-template
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  # Default deny all, must explicitly allow
+  ingress: []
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow to platform services
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: vcci-platform
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Allow Frontend to API Gateway
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-gateway
+  namespace: vcci-platform
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-api-gateway
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-frontend
+      ports:
+        - protocol: TCP
+          port: 80

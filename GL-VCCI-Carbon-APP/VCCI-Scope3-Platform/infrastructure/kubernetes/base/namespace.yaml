@@ -1,0 +1,52 @@
+---
+# Base namespace for platform infrastructure
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcci-platform
+  labels:
+    name: vcci-platform
+    environment: production
+    app.kubernetes.io/name: vcci-scope3-platform
+    app.kubernetes.io/part-of: greenlang-carbon-intelligence
+
+---
+# Observability namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcci-observability
+  labels:
+    name: vcci-observability
+    environment: production
+    app.kubernetes.io/part-of: vcci-scope3-platform
+
+---
+# Security namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcci-security
+  labels:
+    name: vcci-security
+    environment: production
+    app.kubernetes.io/part-of: vcci-scope3-platform
+
+---
+# Template for tenant namespaces (apply per tenant)
+# Example: kubectl apply -f - <<EOF ... EOF
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vcci-tenant-template
+  labels:
+    name: vcci-tenant-template
+    tenant: "TENANT_ID"
+    environment: production
+    app.kubernetes.io/part-of: vcci-scope3-platform
+    multi-tenant: "true"
+  annotations:
+    tenant.vcci.io/id: "TENANT_ID"
+    tenant.vcci.io/name: "TENANT_NAME"
+    tenant.vcci.io/tier: "enterprise"
+    tenant.vcci.io/created: "2025-01-01T00:00:00Z"

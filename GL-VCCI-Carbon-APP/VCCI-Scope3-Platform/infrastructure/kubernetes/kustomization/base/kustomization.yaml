@@ -1,0 +1,99 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace
+namespace: vcci-platform
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: vcci-scope3-platform
+  app.kubernetes.io/part-of: greenlang-carbon-intelligence
+  app.kubernetes.io/managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  documentation: "https://docs.vcci.greenlang.io"
+  support: "support@greenlang.io"
+
+# Base resources
+resources:
+  # Base infrastructure
+  - ../../base/namespace.yaml
+  - ../../base/rbac.yaml
+  - ../../base/resource-quotas.yaml
+  - ../../base/network-policies.yaml
+
+  # Application components
+  - ../../applications/api-gateway/deployment.yaml
+  - ../../applications/api-gateway/service.yaml
+  - ../../applications/api-gateway/ingress.yaml
+  - ../../applications/api-gateway/hpa.yaml
+  - ../../applications/api-gateway/configmap.yaml
+
+  - ../../applications/backend-api/deployment.yaml
+  - ../../applications/backend-api/service.yaml
+  - ../../applications/backend-api/hpa.yaml
+  - ../../applications/backend-api/configmap.yaml
+
+  - ../../applications/worker/deployment.yaml
+  - ../../applications/worker/hpa.yaml
+  - ../../applications/worker/configmap.yaml
+
+  - ../../applications/frontend/deployment.yaml
+  - ../../applications/frontend/service.yaml
+  - ../../applications/frontend/hpa.yaml
+
+  # Data layer
+  - ../../data/postgresql/statefulset.yaml
+  - ../../data/postgresql/service.yaml
+  - ../../data/postgresql/configmap.yaml
+  - ../../data/postgresql/pvc.yaml
+
+  - ../../data/redis/deployment.yaml
+  - ../../data/redis/service.yaml
+  - ../../data/redis/configmap.yaml
+
+  - ../../data/weaviate/statefulset.yaml
+  - ../../data/weaviate/service.yaml
+  - ../../data/weaviate/pvc.yaml
+
+  # Security
+  - ../../security/cert-manager/issuer.yaml
+  - ../../security/cert-manager/certificate.yaml
+  - ../../security/pod-security-policies.yaml
+
+# ConfigMap generator
+configMapGenerator:
+  - name: platform-config
+    literals:
+      - ENVIRONMENT=production
+      - PLATFORM_VERSION=1.0.0
+      - LOG_LEVEL=INFO
+
+# Secret generator (use with encrypted values)
+secretGenerator:
+  - name: platform-secrets
+    envs:
+      - secrets.env
+
+# Images
+images:
+  - name: greenlang/vcci-backend-api
+    newTag: latest
+  - name: greenlang/vcci-worker
+    newTag: latest
+  - name: greenlang/vcci-frontend
+    newTag: latest
+
+# Replacements
+replacements:
+  - source:
+      kind: ConfigMap
+      name: platform-config
+      fieldPath: data.ENVIRONMENT
+    targets:
+      - select:
+          kind: Deployment
+        fieldPaths:
+          - spec.template.spec.containers.[name=api].env.[name=APP_ENV].value
+          - spec.template.spec.containers.[name=worker].env.[name=APP_ENV].value
