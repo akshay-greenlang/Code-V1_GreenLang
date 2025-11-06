@@ -27,107 +27,84 @@ compute:
       dtype: string
       unit: '1'
       description: Type of existing boiler
-      required: true
-      enum:
-      - firetube
-      - watertube
-      - condensing
-      - electric_resistance
-      - electrode
     fuel_type:
       dtype: string
       unit: '1'
       description: Current fuel type
-      required: true
-      enum:
-      - natural_gas
-      - fuel_oil
-      - propane
-      - coal
-      - biomass
-      - electricity
     rated_capacity_kw:
       dtype: float64
       unit: kW
       description: Rated thermal capacity of boiler
-      required: true
       ge: 10.0
       le: 100000.0
     age_years:
       dtype: int32
       unit: years
       description: Age of existing boiler
-      required: true
       ge: 0
       le: 100
     stack_temperature_c:
       dtype: float64
-      unit: °C
+      unit: degC
       description: Stack/flue gas temperature
-      required: true
       ge: 50.0
       le: 500.0
     average_load_factor:
       dtype: float64
       unit: '1'
       description: Average capacity utilization (0-1)
-      required: true
       ge: 0.0
       le: 1.0
     annual_operating_hours:
       dtype: float64
       unit: hours
       description: Hours of operation per year
-      required: true
       ge: 0.0
       le: 8760.0
     latitude:
       dtype: float64
       unit: degrees
       description: Site latitude for solar resource calculation
-      required: true
       ge: -90.0
       le: 90.0
     ambient_temperature_c:
       dtype: float64
-      unit: °C
+      unit: degC
       description: Ambient temperature for heat loss calculations
-      required: false
       default: 20.0
+      required: false
     excess_air_percent:
       dtype: float64
-      unit: '%'
+      unit: percent
       description: Excess air percentage in combustion
-      required: false
       default: 15.0
       ge: 0.0
       le: 100.0
+      required: false
     fuel_cost_per_mmbtu:
       dtype: float64
       unit: USD/MMBtu
       description: Fuel cost per million BTU
-      required: false
     electricity_cost_per_kwh:
       dtype: float64
       unit: USD/kWh
       description: Electricity cost per kWh
-      required: false
     discount_rate:
       dtype: float64
       unit: '1'
       description: Financial discount rate for NPV
-      required: false
       default: 0.08
       ge: 0.0
       le: 1.0
+      required: false
     analysis_period_years:
       dtype: int32
       unit: years
       description: Financial analysis period
-      required: false
       default: 20
       ge: 1
       le: 50
+      required: false
   outputs:
     current_efficiency:
       dtype: float64
@@ -157,12 +134,10 @@ compute:
       dtype: float64
       unit: '1'
       description: Solar thermal contribution fraction
-      required: false
     heat_pump_cop:
       dtype: float64
       unit: '1'
       description: Heat pump coefficient of performance
-      required: false
     simple_payback_years:
       dtype: float64
       unit: years
@@ -173,7 +148,7 @@ compute:
       description: Net present value over analysis period
     irr_percent:
       dtype: float64
-      unit: '%'
+      unit: percent
       description: Internal rate of return
     federal_itc_usd:
       dtype: float64
@@ -185,16 +160,12 @@ compute:
       description: Annual GHG emissions reduction
     emissions_reduction_percent:
       dtype: float64
-      unit: '%'
+      unit: percent
       description: Percentage emissions reduction
     retrofit_complexity:
       dtype: string
       unit: '1'
       description: Retrofit complexity assessment
-      enum:
-      - low
-      - medium
-      - high
     estimated_retrofit_cost_usd:
       dtype: float64
       unit: USD
@@ -206,10 +177,12 @@ compute:
     technology_comparison:
       dtype: list
       description: Comparison of replacement options
+      unit: '1'
     citations:
       dtype: list
       description: Citation tracking for calculations
-      required: false
+      unit: '1'
+  factors: {}
 ai:
   system_prompt: 'You are an expert in industrial boiler systems, solar thermal integration,
     and heat pump technology.
@@ -343,7 +316,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

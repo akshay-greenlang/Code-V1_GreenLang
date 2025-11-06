@@ -30,74 +30,70 @@ compute:
       unit: '1'
       description: Industrial facility classification (manufacturing, food_beverage,
         chemical, etc.)
-      required: true
     processes:
       dtype: list
       unit: '1'
       description: Array of process specifications with fuel consumption and temperature
-      required: true
     total_annual_fuel_mmbtu:
       dtype: float64
       unit: MMBtu/year
       description: Annual fuel consumption in million BTU per year
-      required: true
       ge: 0
     fuel_cost_usd_per_mmbtu:
       dtype: float64
       unit: USD/MMBtu
       description: Current market fuel cost
-      required: true
       ge: 0
     include_hvac_systems:
       dtype: bool
       unit: '1'
       description: Include HVAC preheating opportunities
-      required: false
       default: true
+      required: false
     include_compressed_air:
       dtype: bool
       unit: '1'
       description: Include compressed air cooling opportunities
-      required: false
       default: true
+      required: false
     minimum_temperature_f:
       dtype: float64
-      unit: °F
+      unit: degF
       description: Minimum temperature threshold for waste heat recovery
-      required: false
       default: 120.0
       ge: 80.0
+      required: false
     electricity_price_usd_per_kwh:
       dtype: float64
       unit: USD/kWh
       description: Electricity price for parasitic power calculations
-      required: false
       default: 0.1
       ge: 0
+      required: false
     project_lifetime_years:
       dtype: int32
       unit: years
       description: Financial analysis project lifetime
-      required: false
       default: 20
       ge: 5
       le: 40
+      required: false
     discount_rate:
       dtype: float64
       unit: fraction
       description: Discount rate for NPV calculations
-      required: false
       default: 0.08
       ge: 0.01
       le: 0.2
+      required: false
     energy_cost_escalation_rate:
       dtype: float64
       unit: fraction
       description: Annual energy cost escalation rate
-      required: false
       default: 0.03
       ge: 0
       le: 0.1
+      required: false
   outputs:
     total_waste_heat_identified_mmbtu_yr:
       dtype: int32
@@ -114,19 +110,24 @@ compute:
     waste_heat_sources:
       dtype: list
       description: Detailed characterization of each waste heat stream (11 fields)
+      unit: '1'
     waste_heat_summary:
       dtype: object
       description: Breakdown by temperature grade (high >400°F, medium 200-400°F,
         low <200°F)
+      unit: '1'
     portfolio_results:
       dtype: object
       description: Portfolio-level financial results
+      unit: '1'
     prioritized_opportunities:
       dtype: list
       description: Ranked opportunities by priority score
+      unit: '1'
     implementation_roadmap:
       dtype: list
       description: Phased deployment plan (Quick Wins, Strategic, Major Projects)
+      unit: '1'
     analysis_summary:
       dtype: string
       unit: '1'
@@ -138,10 +139,12 @@ compute:
     citations:
       dtype: object
       description: Calculation citations with formulas and audit trails
+      unit: '1'
     metadata:
       dtype: object
       description: Execution metadata (cost, tokens, tool_calls, calculation_time)
-  factors: []
+      unit: '1'
+  factors: {}
 ai:
   system_prompt: 'You are an expert industrial waste heat recovery engineer and climate
     advisor for GreenLang.
@@ -314,7 +317,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

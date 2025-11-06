@@ -31,48 +31,42 @@ compute:
       dtype: object
       unit: '1'
       description: Carbon emissions data with aggregated metrics
-      required: true
     framework:
       dtype: string
       unit: '1'
       description: Sustainability reporting framework
-      required: true
     format:
       dtype: string
       unit: '1'
       description: Output format for the generated report
-      required: false
       default: markdown
+      required: false
     building_info:
       dtype: object
       unit: '1'
       description: Building/facility metadata
-      required: false
     period:
       dtype: object
       unit: '1'
       description: Reporting period boundaries
-      required: false
     previous_period_data:
       dtype: object
       unit: '1'
       description: Previous period emissions for year-over-year comparison
-      required: false
     baseline_data:
       dtype: object
       unit: '1'
       description: Baseline year emissions for baseline change analysis
-      required: false
   outputs:
     report:
       dtype: string
       unit: '1'
       description: Formatted emissions report (text content)
-    format:
+    format_used:
       dtype: string
       unit: '1'
       description: Output format used (markdown, json, or text)
-    framework:
+    framework_used:
       dtype: string
       unit: '1'
       description: Framework used for report structure
@@ -91,6 +85,7 @@ compute:
     emissions_breakdown:
       dtype: list
       description: Breakdown of emissions by source
+      unit: '1'
     carbon_intensity:
       dtype: object
       unit: '1'
@@ -110,6 +105,7 @@ compute:
     compliance_checks:
       dtype: list
       description: Detailed compliance check results
+      unit: '1'
     executive_summary:
       dtype: string
       unit: '1'
@@ -130,7 +126,7 @@ compute:
       dtype: object
       unit: '1'
       description: Calculation citations for audit trail
-  factors: []
+  factors: {}
 ai:
   system_prompt: "You are a climate reporting specialist for GreenLang.\nYou help\
     \ generate comprehensive emissions reports compliant with\ninternational frameworks\
@@ -233,7 +229,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

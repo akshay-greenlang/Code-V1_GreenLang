@@ -26,82 +26,63 @@ compute:
       unit: '1'
       description: Industry classification (Food & Beverage, Chemicals, Pharmaceuticals,
         etc.)
-      required: true
     process_type:
       dtype: string
       unit: '1'
       description: Process requiring heat (drying, pasteurization, sterilization,
         distillation, etc.)
-      required: true
     production_rate:
       dtype: float64
       unit: kg/h
       description: Production rate in kg/hour or units/hour
-      required: true
       ge: 0.0
     temperature_requirement:
       dtype: float64
-      unit: °C
+      unit: degC
       description: Required process temperature in Celsius
-      required: true
       ge: 20.0
       le: 400.0
     current_fuel_type:
       dtype: string
       unit: '1'
       description: Current fuel source
-      required: true
-      enum:
-      - natural_gas
-      - fuel_oil
-      - propane
-      - coal
-      - electricity_grid
-      - biomass
     latitude:
       dtype: float64
       unit: degrees
       description: Site latitude for solar resource calculation
-      required: true
       ge: -90.0
       le: 90.0
     annual_irradiance:
       dtype: float64
-      unit: kWh/m²/year
+      unit: kWh/m2/year
       description: Annual solar irradiance at site
-      required: false
       ge: 0.0
     inlet_temperature:
       dtype: float64
-      unit: °C
+      unit: degC
       description: Process inlet/ambient temperature
-      required: false
       default: 20.0
+      required: false
     specific_heat:
       dtype: float64
       unit: kJ/(kg·K)
       description: Specific heat capacity of material
-      required: false
       default: 4.18
+      required: false
     process_efficiency:
       dtype: float64
       unit: '1'
       description: Current process thermal efficiency (0-1)
-      required: false
       default: 0.75
       ge: 0.0
       le: 1.0
+      required: false
     load_profile:
       dtype: string
       unit: '1'
       description: Operating schedule pattern
-      required: false
       default: continuous_24x7
-      enum:
-      - continuous_24x7
-      - daytime_only
-      - seasonal
-      - batch
+      required: false
   outputs:
     heat_demand_kw:
       dtype: float64
@@ -117,11 +98,11 @@ compute:
       description: Fraction of heat provided by solar thermal (0-1)
     collector_area_m2:
       dtype: float64
-      unit: m²
+      unit: m2
       description: Required solar collector area
     storage_volume_m3:
       dtype: float64
-      unit: m³
+      unit: m3
       description: Required thermal storage volume
     backup_capacity_kw:
       dtype: float64
@@ -137,7 +118,7 @@ compute:
       description: Potential annual emissions reduction
     reduction_percentage:
       dtype: float64
-      unit: '%'
+      unit: percent
       description: Percentage emissions reduction achievable
     technology_recommendation:
       dtype: string
@@ -147,12 +128,10 @@ compute:
       dtype: float64
       unit: kWh/unit
       description: Energy intensity per production unit
-      required: false
     residual_emissions_kg_co2e:
       dtype: float64
       unit: kgCO2e/year
       description: Remaining emissions after solar integration
-      required: false
     ai_explanation:
       dtype: string
       unit: '1'
@@ -161,7 +140,7 @@ compute:
       dtype: string
       unit: '1'
       description: Citation tracking for calculations (JSON serialized)
-      required: false
+  factors: {}
 ai:
   system_prompt: 'You are an expert in industrial process heat systems and solar thermal
     integration.
@@ -287,7 +266,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

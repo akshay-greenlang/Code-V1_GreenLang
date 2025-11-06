@@ -25,60 +25,40 @@ compute:
       dtype: string
       unit: '1'
       description: Country code for grid intensity lookup (ISO 3166-1 alpha-2)
-      required: true
-      examples:
-      - US
-      - GB
-      - DE
-      - FR
-      - CN
-      - IN
     fuel_type:
       dtype: string
       unit: '1'
       description: Energy type (typically 'electricity' for grid lookups)
-      required: true
       default: electricity
-      enum:
-      - electricity
-      - grid
-      - power
+      required: false
     unit:
       dtype: string
       unit: '1'
       description: Unit of electricity consumption
-      required: true
-      enum:
-      - kWh
-      - MWh
-      - GWh
       default: kWh
+      required: false
     year:
       dtype: int32
       unit: '1'
       description: Year for historical grid intensity (optional)
-      required: false
       ge: 1990
       le: 2030
     month:
       dtype: int32
       unit: '1'
       description: Month for seasonal grid intensity (1-12, optional)
-      required: false
       ge: 1
       le: 12
     hour:
       dtype: int32
       unit: '1'
       description: Hour for hourly grid intensity (0-23, optional)
-      required: false
       ge: 0
       le: 23
     region:
       dtype: string
       unit: '1'
       description: Sub-national region or grid operator (optional)
-      required: false
   outputs:
     emission_factor:
       dtype: float64
@@ -88,98 +68,43 @@ compute:
       dtype: string
       unit: '1'
       description: Data source for emission factor (e.g., 'DEFRA 2023', 'EPA eGRID')
-    country:
+    country_used:
       dtype: string
       unit: '1'
       description: Country code used for lookup
-    fuel_type:
+    fuel_type_used:
       dtype: string
       unit: '1'
       description: Fuel type used for lookup
-    unit:
+    unit_used:
       dtype: string
       unit: '1'
       description: Unit used for emission factor
-    year:
+    year_used:
       dtype: int32
       unit: '1'
       description: Year of emission factor data
-      required: false
     grid_mix:
       dtype: object
       description: Grid energy mix breakdown (if available)
-      required: false
-      properties:
-        renewable_percent:
-          dtype: float64
-          unit: '%'
-          description: Percentage of renewable energy in grid mix
-        fossil_percent:
-          dtype: float64
-          unit: '%'
-          description: Percentage of fossil fuel energy in grid mix
-        nuclear_percent:
-          dtype: float64
-          unit: '%'
-          description: Percentage of nuclear energy in grid mix
-        coal_percent:
-          dtype: float64
-          unit: '%'
-          description: Percentage of coal in fossil mix
-        gas_percent:
-          dtype: float64
-          unit: '%'
-          description: Percentage of natural gas in fossil mix
+      unit: '1'
     explanation:
       dtype: string
       unit: '1'
       description: AI-generated explanation of grid intensity and context
-      required: false
     recommendations:
       dtype: list
       description: AI-generated recommendations for cleaner energy
-      required: false
-      items:
-        priority:
-          dtype: string
-          unit: '1'
-          description: Priority level (high/medium/low)
-        action:
-          dtype: string
-          unit: '1'
-          description: Recommended action
-        impact:
-          dtype: string
-          unit: '1'
-          description: Expected impact description
+      unit: '1'
     temporal_variation:
       dtype: object
       description: Temporal variation analysis (if time-series data available)
-      required: false
-      properties:
-        peak_hours:
-          dtype: list
-          description: Hours with highest grid intensity
-        clean_hours:
-          dtype: list
-          description: Hours with lowest grid intensity
-        seasonal_trend:
-          dtype: string
-          unit: '1'
-          description: Description of seasonal variations
+      unit: '1'
     citations:
       dtype: list
       description: Citation tracking for provenance
-      required: false
-  factors:
-  - id: ef_grid_intensity
-    name: Grid Carbon Intensity Factor
-    description: Grid emission factor from authoritative data sources
-    sources:
-    - DEFRA
-    - EPA_eGRID
-    - IEA
-    - EEA
+      unit: '1'
+  factors: {}
 ai:
   system_prompt: 'You are an expert on electrical grid carbon intensity and renewable
     energy systems.
@@ -267,17 +192,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  data_sources:
-  - name: DEFRA
-    url: https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors
-    version: '2023'
-  - name: EPA eGRID
-    url: https://www.epa.gov/egrid
-    version: '2022'
-  - name: IEA
-    url: https://www.iea.org/data-and-statistics
-    version: '2023'
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

@@ -23,51 +23,25 @@ compute:
       dtype: string
       unit: '1'
       description: Type of fuel (natural_gas, coal, diesel, propane, fuel_oil, etc.)
-      required: true
-      enum:
-      - natural_gas
-      - coal
-      - diesel
-      - propane
-      - fuel_oil
-      - gasoline
-      - electricity
-      - biomass
-      - lng
-      - lpg
     consumption_value:
       dtype: float64
       unit: '1'
       description: Fuel consumption amount
-      required: true
       ge: 0.0
     consumption_unit:
       dtype: string
       unit: '1'
       description: Unit of measurement for consumption
-      required: true
-      enum:
-      - therms
-      - m3
-      - m^3
-      - gallons
-      - liters
-      - kWh
-      - MWh
-      - kg
-      - t
-      - lb
     country:
       dtype: string
       unit: '1'
       description: Country code for emission factor lookup (ISO 3166-1 alpha-2)
-      required: false
       default: US
+      required: false
     year:
       dtype: int32
       unit: '1'
       description: Year for historical emission factors (optional)
-      required: false
       ge: 1990
       le: 2030
   outputs:

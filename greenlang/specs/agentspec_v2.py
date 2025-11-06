@@ -75,7 +75,8 @@ PYTHON_URI_RE = re.compile(
 EF_URI_RE = re.compile(r"^ef://[a-z0-9_/-]+$", re.IGNORECASE)
 
 # Simple unit syntax (enhanced validation below)
-UNIT_RE = re.compile(r"^[A-Za-z0-9*/^ \-()]+$")
+# Allows: letters, numbers, operators (*/^), spaces, hyphens, parentheses, percent, degree symbol, dot
+UNIT_RE = re.compile(r"^[A-Za-z0-9*/^ \-()%.°·]+$")
 
 
 # ============================================================================
@@ -214,6 +215,53 @@ CLIMATE_UNITS = {
     "gCO2e/kWh",
     "kgCO2e/MWh",
     "lbCO2e/MWh",
+
+    # Additional dimensionless units (ratios, counts, percentages)
+    "fraction",  # Decimal fraction (0.0-1.0)
+    "%",  # Percentage
+    "percent",  # Percentage (alternative notation)
+    "count",  # Discrete count (people, devices, etc.)
+    "periods",  # Time periods
+    "people",  # Number of people
+    "degrees",  # Angular degrees
+
+    # Additional temperature notation (Unicode degree symbol variants)
+    "°C",  # Celsius with degree symbol
+    "°F",  # Fahrenheit with degree symbol
+    "degK",  # Kelvin
+
+    # Additional area units
+    "sqft",  # Square feet (US notation)
+    "kWh/m2/year",  # Energy use intensity
+
+    # Additional time units with variants
+    "years",  # Plural variant
+    "hours",  # Plural variant
+
+    # Monetary intensity units
+    "USD/kWh",  # Cost per energy
+    "USD/MMBtu",  # Cost per energy (thermal)
+    "USD/MMBTU",  # Alt. notation
+    "USD/year",  # Annual cost
+    "USD/kW",  # Demand charge
+    "USD/ton",  # Cost per mass
+    "USD/tCO2e",  # Carbon price
+
+    # Energy with time dimension
+    "kWh/year",  # Annual energy
+    "MWh/year",  # Annual energy
+    "MMBtu/year",  # Annual thermal energy (US notation)
+    "MMBTU/year",  # Alt. notation
+    "kWh/unit",  # Energy per unit
+
+    # Emission rates
+    "kgCO2e/year",  # Annual emissions
+    "Btu/hr",  # Thermal power (US notation)
+    "kJ/(kg*K)",  # Specific heat capacity
+    "kJ/(kg·K)",  # Specific heat (dot notation)
+
+    # Mass flow rates
+    "kg/h",  # Mass flow rate
 }
 
 
@@ -358,13 +406,13 @@ class IOField(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    dtype: Literal["float32", "float64", "int32", "int64", "string", "bool"] = Field(
+    dtype: Literal["float32", "float64", "int32", "int64", "string", "bool", "list", "object"] = Field(
         ...,
-        description="Data type of input parameter"
+        description="Data type of input parameter. Use 'list' for arrays, 'object' for structured data."
     )
     unit: str = Field(
-        ...,
-        description="Physical unit (validated against climate units whitelist). Use '1' for dimensionless."
+        default="1",
+        description="Physical unit (validated against climate units whitelist). Use '1' for dimensionless. Complex types (list/object) default to '1'."
     )
     required: bool = Field(
         default=True,
@@ -407,11 +455,11 @@ class IOField(BaseModel):
 
     @model_validator(mode="after")
     def check_unit_for_dtype(self):
-        """Enforce: string/bool inputs must have unit='1' (dimensionless)."""
-        if self.dtype in ("string", "bool") and self.unit not in ("1", ""):
+        """Enforce: string/bool/list/object inputs must have unit='1' (dimensionless)."""
+        if self.dtype in ("string", "bool", "list", "object") and self.unit not in ("1", ""):
             raise GLValidationError(
                 GLVErr.UNIT_FORBIDDEN,
-                f"String and bool inputs must use dimensionless unit '1', got '{self.unit}'",
+                f"String, bool, list, and object inputs must use dimensionless unit '1', got '{self.unit}'",
                 ["compute", "inputs", "(field)"]
             )
         return self
@@ -444,13 +492,13 @@ class OutputField(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    dtype: Literal["float32", "float64", "int32", "int64", "string", "bool"] = Field(
+    dtype: Literal["float32", "float64", "int32", "int64", "string", "bool", "list", "object"] = Field(
         ...,
-        description="Data type of output parameter"
+        description="Data type of output parameter. Use 'list' for arrays, 'object' for structured data."
     )
     unit: str = Field(
-        ...,
-        description="Physical unit (validated against climate units whitelist)"
+        default="1",
+        description="Physical unit (validated against climate units whitelist). Use '1' for dimensionless. Complex types (list/object) default to '1'."
     )
     description: Optional[str] = Field(
         default=None,

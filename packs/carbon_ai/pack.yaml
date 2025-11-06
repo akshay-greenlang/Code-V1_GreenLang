@@ -25,41 +25,21 @@ compute:
     emissions:
       dtype: list
       description: List of emission sources to aggregate
-      required: true
-      items:
-        fuel_type:
-          dtype: string
-          unit: '1'
-          description: Type of fuel or energy source
-          required: true
-        co2e_emissions_kg:
-          dtype: float64
-          unit: kgCO2e
-          description: CO2 equivalent emissions in kilograms
-          required: true
-          ge: 0.0
-        source:
-          dtype: string
-          unit: '1'
-          description: Optional source identifier or name
-          required: false
+      unit: '1'
     building_area:
       dtype: float64
       unit: sqft
       description: Building area for intensity calculations (optional)
-      required: false
       ge: 0.0
     occupancy:
       dtype: int32
       unit: people
       description: Number of occupants for per-capita intensity (optional)
-      required: false
       ge: 0
     year:
       dtype: int32
       unit: '1'
       description: Year for temporal analysis (optional)
-      required: false
       ge: 1990
       le: 2030
   outputs:
@@ -74,59 +54,15 @@ compute:
     emissions_breakdown:
       dtype: list
       description: Breakdown of emissions by source with percentages
-      items:
-        source:
-          dtype: string
-          unit: '1'
-          description: Emission source name
-        co2e_kg:
-          dtype: float64
-          unit: kgCO2e
-          description: Emissions from this source in kg CO2e
-        percentage:
-          dtype: float64
-          unit: '%'
-          description: Percentage of total emissions
+      unit: '1'
     carbon_intensity:
       dtype: object
       description: Carbon intensity metrics
-      properties:
-        per_sqft:
-          dtype: float64
-          unit: kgCO2e/sqft
-          description: Emissions per square foot (if building_area provided)
-        per_person:
-          dtype: float64
-          unit: kgCO2e/person
-          description: Emissions per person (if occupancy provided)
+      unit: '1'
     recommendations:
       dtype: list
       description: AI-generated reduction recommendations
-      items:
-        priority:
-          dtype: string
-          unit: '1'
-          description: Priority level (high/medium/low)
-        source:
-          dtype: string
-          unit: '1'
-          description: Target emission source
-        impact:
-          dtype: string
-          unit: '1'
-          description: Current impact description
-        action:
-          dtype: string
-          unit: '1'
-          description: Recommended action
-        potential_reduction:
-          dtype: string
-          unit: '1'
-          description: Estimated reduction potential
-        estimated_payback:
-          dtype: string
-          unit: '1'
-          description: Estimated payback period
+      unit: '1'
     summary:
       dtype: string
       unit: '1'
@@ -138,8 +74,8 @@ compute:
     citations:
       dtype: list
       description: Citation tracking for provenance
-      required: false
-  factors: []
+      unit: '1'
+  factors: {}
 ai:
   system_prompt: 'You are an expert carbon footprint analyst helping organizations
     understand and reduce their emissions.
@@ -224,7 +160,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

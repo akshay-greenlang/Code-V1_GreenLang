@@ -28,71 +28,75 @@ compute:
       unit: '1'
       description: 'Time-series DataFrame with DatetimeIndex (min: 2×seasonal_period
         rows)'
-      required: true
     target_column:
       dtype: string
       unit: '1'
       description: Column name to forecast (e.g., 'energy_kwh')
-      required: true
     forecast_horizon:
       dtype: int32
       unit: periods
       description: Number of periods to forecast (1-365)
-      required: true
       ge: 1
       le: 365
     seasonal_period:
       dtype: int32
       unit: periods
       description: Seasonal cycle length (12=monthly, 7=daily, 24=hourly)
-      required: false
     confidence_level:
       dtype: float64
       unit: fraction
       description: Prediction interval confidence level (0.5-0.99)
-      required: false
       default: 0.95
       ge: 0.5
       le: 0.99
+      required: false
     auto_tune:
       dtype: bool
       unit: '1'
       description: Enable grid search for optimal SARIMA parameters
-      required: false
       default: true
+      required: false
     exog_columns:
       dtype: list
       unit: '1'
       description: Exogenous variables for SARIMAX modeling (optional)
-      required: false
   outputs:
     forecast:
       dtype: list
       description: Point forecasts for horizon
+      unit: '1'
     lower_bound:
       dtype: list
       description: Lower confidence bound (e.g., 95%)
+      unit: '1'
     upper_bound:
       dtype: list
       description: Upper confidence bound
+      unit: '1'
     forecast_dates:
       dtype: list
       description: ISO 8601 date for each forecast
+      unit: '1'
     model_params:
       dtype: object
       description: SARIMA model parameters (order, seasonal_order, AIC, BIC, auto_tuned)
+      unit: '1'
     metrics:
       dtype: object
       description: Model performance metrics (RMSE, MAE, MAPE, train/test split)
+      unit: '1'
     seasonality:
       dtype: object
       description: Seasonality analysis (period, strength, detected_peaks, method)
+      unit: '1'
     stationarity:
       dtype: object
       description: Stationarity test results (ADF statistic, p-value, differencing_needed)
+      unit: '1'
     preprocessing:
       dtype: object
       description: Data preprocessing summary (missing values, outliers, final length)
+      unit: '1'
     explanation:
       dtype: string
       unit: '1'
@@ -100,7 +104,8 @@ compute:
     metadata:
       dtype: object
       description: Execution metadata (agent_id, version, tokens, cost, time)
-  factors: []
+      unit: '1'
+  factors: {}
 ai:
   system_prompt: 'You are a time-series forecasting expert for GreenLang.
 
@@ -252,12 +257,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  ml_model:
-    algorithm: SARIMAX
-    library: statsmodels
-    version: '>=0.14.0'
-    optimization: AIC
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

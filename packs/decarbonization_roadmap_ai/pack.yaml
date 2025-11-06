@@ -19,7 +19,6 @@ tags:
 owners:
 - greenlang-team
 license: MIT
-priority: P0_CRITICAL
 compute:
   entrypoint: python://greenlang.agents.decarbonization_roadmap_agent_ai:execute
   deterministic: true
@@ -30,74 +29,54 @@ compute:
       dtype: string
       unit: '1'
       description: Unique facility identifier
-      required: true
     facility_name:
       dtype: string
       unit: '1'
       description: Facility name
-      required: true
     industry_type:
       dtype: string
       unit: '1'
       description: Industry classification
-      required: true
-      examples:
-      - Food & Beverage
-      - Chemicals
-      - Textiles
-      - Pharmaceuticals
-      - Pulp & Paper
     latitude:
       dtype: float64
       unit: degrees
       description: Site latitude for solar/renewable resource assessment
-      required: true
       ge: -90.0
       le: 90.0
     electricity_consumption_kwh:
       dtype: float64
       unit: kWh/year
       description: Annual electricity consumption
-      required: true
       ge: 0.0
     grid_region:
       dtype: string
       unit: '1'
       description: Grid region for electricity emissions
-      required: true
-      examples:
-      - CAISO
-      - ERCOT
-      - PJM
-      - NYISO
     capital_budget_usd:
       dtype: float64
       unit: USD
       description: Total capital budget available for decarbonization
-      required: true
       ge: 0.0
     target_reduction_percent:
       dtype: float64
-      unit: '%'
+      unit: percent
       description: Target emissions reduction percentage
-      required: true
       ge: 0.0
       le: 100.0
     target_year:
       dtype: int32
       unit: year
       description: Target year for achieving reduction goal
-      required: true
       ge: 2025
       le: 2050
     discount_rate:
       dtype: float64
       unit: '1'
       description: Financial discount rate for NPV calculations
-      required: false
       default: 0.08
       ge: 0.0
       le: 1.0
+      required: false
   outputs:
     baseline_emissions_kg_co2e:
       dtype: float64
@@ -111,17 +90,13 @@ compute:
       dtype: string
       unit: '1'
       description: Recommended decarbonization pathway
-      examples:
-      - Aggressive with Phase 1 Acceleration
-      - Conservative Phased
-      - Balanced Progressive
     npv_usd:
       dtype: float64
       unit: USD
       description: Net present value of recommended pathway
     irr_percent:
       dtype: float64
-      unit: '%'
+      unit: percent
       description: Internal rate of return
     simple_payback_years:
       dtype: float64
@@ -167,7 +142,7 @@ compute:
       dtype: string
       unit: '1'
       description: Citation tracking for all calculations (JSON serialized)
-      required: false
+  factors: {}
 ai:
   system_prompt: 'You are a master strategist for industrial decarbonization planning.
 
@@ -310,7 +285,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

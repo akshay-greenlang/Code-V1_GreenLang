@@ -24,110 +24,67 @@ compute:
   inputs:
     process_temperature_f:
       dtype: float64
-      unit: °F
+      unit: degF
       description: Required process temperature in Fahrenheit
-      required: true
       ge: 32.0
       le: 300.0
     annual_heating_load_mmbtu:
       dtype: float64
       unit: MMBtu/year
       description: Annual heating load in million BTU
-      required: true
       ge: 0.0
     load_profile_type:
       dtype: string
       unit: '1'
       description: Operating schedule pattern
-      required: true
-      enum:
-      - continuous_24x7
-      - daytime_only
-      - batch_intermittent
-      - seasonal
     climate_zone:
       dtype: string
       unit: '1'
       description: ASHRAE climate zone classification
-      required: true
-      enum:
-      - hot_humid
-      - hot_dry
-      - mixed_humid
-      - mixed_dry
-      - cold
-      - very_cold
     design_ambient_temp_f:
       dtype: float64
-      unit: °F
+      unit: degF
       description: Design ambient temperature for sizing
-      required: true
       ge: -40.0
       le: 120.0
     baseline_fuel_type:
       dtype: string
       unit: '1'
       description: Current baseline fuel source
-      required: true
-      enum:
-      - natural_gas
-      - fuel_oil
-      - propane
-      - coal
-      - electric_resistance
     baseline_efficiency:
       dtype: float64
       unit: '1'
       description: Current system thermal efficiency (0-1)
-      required: true
       ge: 0.0
       le: 1.0
     electricity_rate_usd_per_kwh:
       dtype: float64
       unit: USD/kWh
       description: Electricity rate per kilowatt-hour
-      required: true
       ge: 0.0
     electricity_rate_structure:
       dtype: string
       unit: '1'
       description: Electricity rate structure type
-      required: true
-      enum:
-      - flat
-      - tou
-      - tou_plus_demand
     grid_emissions_factor_kg_co2e_per_kwh:
       dtype: float64
       unit: kgCO2e/kWh
       description: Grid emission factor for electricity
-      required: true
       ge: 0.0
     space_constraints:
       dtype: string
       unit: '1'
       description: Available space for equipment
-      required: true
-      enum:
-      - tight
-      - moderate
-      - generous
     demand_charge_usd_per_kw:
       dtype: float64
       unit: USD/kW
       description: Monthly demand charge
-      required: false
       ge: 0.0
   outputs:
     recommended_technology:
       dtype: string
       unit: '1'
       description: Recommended heat pump technology
-      examples:
-      - Air Source Heat Pump
-      - Water Source Heat Pump
-      - Ground Source Heat Pump
-      - Waste Heat Recovery HP
     average_cop:
       dtype: float64
       unit: '1'
@@ -154,7 +111,7 @@ compute:
       description: Annual emissions reduction potential
     emissions_reduction_percent:
       dtype: float64
-      unit: '%'
+      unit: percent
       description: Percentage emissions reduction
     simple_payback_years:
       dtype: float64
@@ -188,7 +145,7 @@ compute:
       dtype: string
       unit: '1'
       description: Citation tracking for calculations (JSON serialized)
-      required: false
+  factors: {}
 ai:
   system_prompt: 'You are an expert in industrial heat pump systems and thermal system
     electrification.
@@ -341,7 +298,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs

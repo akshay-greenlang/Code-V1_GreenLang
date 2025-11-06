@@ -27,64 +27,64 @@ compute:
       dtype: object
       unit: '1'
       description: Pandas DataFrame with numeric features for anomaly detection
-      required: true
     contamination:
       dtype: float64
       unit: fraction
       description: Expected proportion of anomalies in dataset (0-0.5)
-      required: false
       default: 0.1
       ge: 0.0
       le: 0.5
+      required: false
     n_estimators:
       dtype: int32
       unit: '1'
       description: Number of isolation trees in ensemble
-      required: false
       default: 100
       ge: 10
       le: 500
+      required: false
     max_samples:
       dtype: int32
       unit: '1'
       description: Number of samples to train each isolation tree
-      required: false
       default: 256
       ge: 2
+      required: false
     max_features:
       dtype: float64
       unit: fraction
       description: Fraction of features used for each tree (0-1)
-      required: false
       default: 1.0
       ge: 0.1
       le: 1.0
+      required: false
     bootstrap:
       dtype: bool
       unit: '1'
       description: Whether to sample with replacement when building trees
-      required: false
       default: false
+      required: false
     feature_columns:
       dtype: list
       unit: '1'
       description: Specific numeric feature columns to use (optional)
-      required: false
     labels:
       dtype: list
       unit: '1'
       description: True binary labels for evaluation (optional, enables metrics)
-      required: false
   outputs:
     anomalies:
       dtype: list
       description: Boolean array indicating anomalies (True=anomaly, False=normal)
+      unit: '1'
     anomaly_scores:
       dtype: list
       description: Anomaly scores (-1 to 1, negative=anomaly, positive=normal)
+      unit: '1'
     anomaly_indices:
       dtype: list
       description: Integer indices of detected anomalies in original data
+      unit: '1'
     n_anomalies:
       dtype: int32
       unit: count
@@ -100,26 +100,32 @@ compute:
     model_info:
       dtype: object
       description: IsolationForest model configuration metadata
+      unit: '1'
     severity_distribution:
       dtype: object
       description: Count of anomalies by severity level (critical, high, medium, low)
+      unit: '1'
     top_anomalies:
       dtype: list
       description: Top 10 ranked anomalies with details
+      unit: '1'
     patterns:
       dtype: object
       description: Detected patterns in anomalies with feature importance
+      unit: '1'
     alerts:
       dtype: list
       description: Actionable alerts for critical/high severity anomalies
+      unit: '1'
     alert_summary:
       dtype: object
       description: Summary of generated alerts
+      unit: '1'
     metrics:
       dtype: object
       description: Performance metrics (precision, recall, F1, ROC-AUC) if labels
         provided
-      required: false
+      unit: '1'
     explanation:
       dtype: string
       unit: '1'
@@ -127,10 +133,12 @@ compute:
     citations:
       dtype: object
       description: Calculation citations and provenance
+      unit: '1'
     metadata:
       dtype: object
       description: Execution metadata (tokens, cost, time)
-  factors: []
+      unit: '1'
+  factors: {}
 ai:
   system_prompt: 'You are an anomaly detection expert for GreenLang climate and energy
     systems.
@@ -267,12 +275,7 @@ realtime:
   connectors: []
 provenance:
   gwp_set: AR6GWP100
-  ml_model:
-    algorithm: IsolationForest
-    library: scikit-learn
-    version: '>=1.0'
-    random_state: 42
-  pin_ef: true
+  pin_ef: false
   record:
   - inputs
   - outputs
