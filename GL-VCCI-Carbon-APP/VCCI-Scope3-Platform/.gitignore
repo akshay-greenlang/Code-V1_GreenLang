@@ -1,0 +1,391 @@
+# GL-VCCI-Carbon-APP .gitignore
+# Comprehensive ignore patterns for Python, data files, and cloud artifacts
+
+# ============================================================================
+# PYTHON
+# ============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# ============================================================================
+# VCCI-SPECIFIC
+# ============================================================================
+# Output directories
+output/
+results/
+reports/
+exports/
+
+# Data directories (sensitive!)
+data/raw/
+data/validated/
+data/calculations/
+data/provenance/
+data/emission_factors/ecoinvent*  # Licensed data, don't commit!
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Cache directories
+.cache/
+cache/
+
+# ============================================================================
+# CREDENTIALS & SECRETS (CRITICAL!)
+# ============================================================================
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Secrets
+secrets/
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# OAuth tokens
+*.token
+oauth_tokens/
+
+# API keys
+api_keys/
+
+# Database credentials
+database_credentials.json
+
+# ERP credentials
+sap_credentials.json
+oracle_credentials.json
+workday_credentials.json
+
+# ============================================================================
+# DATA FILES (Large & Sensitive)
+# ============================================================================
+# CSV/Excel data files
+data/*.csv
+data/*.xlsx
+data/*.xls
+
+# JSON data dumps
+data/*.json
+!data/*schema.json  # Keep schema files
+!data/*example.json  # Keep example files
+
+# Parquet files
+*.parquet
+
+# Large datasets
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Database dumps
+*.sql
+*.dump
+
+# ============================================================================
+# CLOUD ARTIFACTS
+# ============================================================================
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+
+# AWS
+.aws/
+*.pem
+
+# Azure
+.azure/
+
+# GCP
+.gcp/
+*.json  # Service account keys
+
+# ============================================================================
+# IDEs & EDITORS
+# ============================================================================
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+*~
+
+# ============================================================================
+# OS FILES
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+.nfs*
+
+# ============================================================================
+# DOCKER
+# ============================================================================
+# Docker artifacts
+docker-compose.override.yml
+
+# ============================================================================
+# MONITORING & PROFILING
+# ============================================================================
+# Profiling data
+*.prof
+*.pstats
+
+# Memory profiling
+*.mprof
+
+# ============================================================================
+# TESTING
+# ============================================================================
+# Test output
+.pytest_cache/
+test_results/
+.testmondata
+
+# ============================================================================
+# DOCUMENTATION
+# ============================================================================
+# Build artifacts
+docs/_build/
+docs/.doctrees/
+
+# ============================================================================
+# MISCELLANEOUS
+# ============================================================================
+# Backup files
+*.bak
+*.backup
+*.swp
+*.swo
+
+# Lock files (keep for reproducibility)
+# Uncomment if you want to ignore lock files:
+# poetry.lock
+# Pipfile.lock
+# requirements-pinned.txt
+
+# Node.js (if using for frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================================================
+# PROJECT-SPECIFIC EXCLUDES
+# ============================================================================
+# Emission factor databases (licensed, don't commit)
+data/emission_factors/ecoinvent_*.json
+data/emission_factors/gabi_*.json
+
+# Large model files
+models/*.pkl
+models/*.h5
+models/*.pt
+
+# Generated reports (don't commit customer data)
+reports/*.pdf
+reports/*.xlsx
+reports/*.pptx
+
+# Provenance records (sensitive audit trails)
+provenance/*.json
+provenance/*.zip
+
+# Customer data (NEVER commit!)
+customer_data/
+clients/
+tenants/
+
+# ============================================================================
+# KEEP THESE (Explicitly don't ignore)
+# ============================================================================
+!.gitkeep
+!data/emission_factors/defra_2024.json  # Free, public data
+!data/emission_factors/epa_2024.json  # Free, public data
+!data/examples/  # Example data files are OK
+!schemas/  # JSON schemas should be committed
+!rules/  # Validation rules should be committed
+!templates/  # Email templates should be committed

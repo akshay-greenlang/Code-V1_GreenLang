@@ -1,0 +1,990 @@
+# Privacy Model Specification
+# GL-VCCI Scope 3 Platform - GDPR/CCPA Compliance
+#
+# Version: 1.0.0
+# Date: January 2025
+# Compliance: GDPR, CCPA, CAN-SPAM, SOC 2 (Privacy TSC)
+
+# ============================================================================
+# DOCUMENT METADATA
+# ============================================================================
+metadata:
+  name: "Privacy Model"
+  version: "1.0.0"
+  type: "privacy_specification"
+  category: "data_protection"
+
+  description: >
+    Comprehensive privacy model for GL-VCCI platform covering consent management,
+    lawful basis determination, opt-out enforcement, and data subject rights.
+    Ensures GDPR, CCPA, and CAN-SPAM compliance for supplier engagement workflows.
+
+  purpose: >
+    Enable privacy-compliant supplier engagement at scale (target: 50% response rate
+    in top 20% spend cohort) while ensuring regulatory compliance across jurisdictions.
+    Support SOC 2 Privacy TSC (P1.1, P2.1, P3.1) requirements.
+
+  scope:
+    data_subjects:
+      - "Supplier contacts (emails, names, job titles)"
+      - "Customer users (platform access)"
+      - "Employee data (internal users)"
+
+    jurisdictions:
+      - "EU/EEA (GDPR mandatory)"
+      - "California, USA (CCPA mandatory)"
+      - "United States (CAN-SPAM Act)"
+      - "Global (privacy best practices)"
+
+    workflows:
+      - "Supplier engagement (email outreach, portal invitations)"
+      - "Data collection (procurement data, emissions data)"
+      - "Reporting (anonymized aggregate data)"
+
+# ============================================================================
+# CONSENT REGISTRY
+# ============================================================================
+consent_registry:
+  description: >
+    Centralized registry tracking consent status for all data subjects.
+    Supports opt-in, opt-out, and consent withdrawal workflows.
+
+  database_schema:
+    table_name: "consent_registry"
+
+    columns:
+      - column: "consent_id"
+        type: "UUID"
+        primary_key: true
+        description: "Unique consent record identifier"
+
+      - column: "data_subject_id"
+        type: "UUID"
+        foreign_key: "suppliers.supplier_id OR users.user_id"
+        description: "Reference to data subject (supplier or user)"
+
+      - column: "data_subject_type"
+        type: "ENUM"
+        values: ["supplier_contact", "customer_user", "employee"]
+        description: "Type of data subject"
+
+      - column: "email"
+        type: "VARCHAR(255)"
+        indexed: true
+        encrypted: true
+        description: "Email address (hashed for lookups)"
+
+      - column: "consent_status"
+        type: "ENUM"
+        values: ["opted_in", "opted_out", "pending", "expired"]
+        description: "Current consent status"
+
+      - column: "lawful_basis"
+        type: "ENUM"
+        values: ["consent", "contract", "legitimate_interest", "legal_obligation", "vital_interests", "public_task"]
+        description: "GDPR Article 6 lawful basis"
+
+      - column: "consent_purpose"
+        type: "VARCHAR(500)"
+        description: "Purpose of data processing (e.g., 'Supplier engagement for Scope 3 data collection')"
+
+      - column: "country_code"
+        type: "CHAR(2)"
+        indexed: true
+        description: "ISO 3166-1 alpha-2 country code (for jurisdiction-specific rules)"
+
+      - column: "consent_granted_at"
+        type: "TIMESTAMP"
+        description: "Timestamp when consent was granted"
+
+      - column: "consent_granted_method"
+        type: "ENUM"
+        values: ["email_link", "supplier_portal", "api", "manual", "implied"]
+        description: "How consent was obtained"
+
+      - column: "consent_withdrawn_at"
+        type: "TIMESTAMP"
+        nullable: true
+        description: "Timestamp when consent was withdrawn (opt-out)"
+
+      - column: "consent_expiry_at"
+        type: "TIMESTAMP"
+        nullable: true
+        description: "Consent expiration (EU: 2 years, refresh required)"
+
+      - column: "opt_out_reason"
+        type: "VARCHAR(1000)"
+        nullable: true
+        description: "Reason for opt-out (optional, for analytics)"
+
+      - column: "marketing_consent"
+        type: "BOOLEAN"
+        default: false
+        description: "Separate consent for marketing communications (GDPR requirement)"
+
+      - column: "data_sharing_consent"
+        type: "BOOLEAN"
+        default: false
+        description: "Consent to share data with third parties (if applicable)"
+
+      - column: "ip_address"
+        type: "INET"
+        description: "IP address when consent was granted (audit trail)"
+
+      - column: "user_agent"
+        type: "TEXT"
+        description: "User agent string (audit trail)"
+
+      - column: "consent_version"
+        type: "VARCHAR(10)"
+        description: "Privacy policy version at time of consent"
+
+      - column: "last_email_sent_at"
+        type: "TIMESTAMP"
+        nullable: true
+        description: "Last email sent to this contact (for rate limiting)"
+
+      - column: "email_bounce_count"
+        type: "INTEGER"
+        default: 0
+        description: "Number of bounced emails (suppress after 3 hard bounces)"
+
+      - column: "created_at"
+        type: "TIMESTAMP"
+        default: "NOW()"
+
+      - column: "updated_at"
+        type: "TIMESTAMP"
+        default: "NOW()"
+        on_update: "NOW()"
+
+    indexes:
+      - name: "idx_consent_email"
+        columns: ["email"]
+        type: "HASH"
+        description: "Fast lookups by email (for opt-out enforcement)"
+
+      - name: "idx_consent_status_country"
+        columns: ["consent_status", "country_code"]
+        type: "BTREE"
+        description: "Filter by status and jurisdiction"
+
+      - name: "idx_consent_expiry"
+        columns: ["consent_expiry_at"]
+        type: "BTREE"
+        description: "Identify expired consents for refresh campaigns"
+
+  api_endpoints:
+    # Endpoint 1: Grant Consent
+    - path: "/api/v1/privacy/consent/grant"
+      method: "POST"
+      description: "Record consent (opt-in)"
+
+      request:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          required: ["email", "lawful_basis", "consent_purpose"]
+          properties:
+            email:
+              type: "string"
+              format: "email"
+              example: "supplier@example.com"
+
+            lawful_basis:
+              type: "string"
+              enum: ["consent", "contract", "legitimate_interest"]
+
+            consent_purpose:
+              type: "string"
+              example: "Supplier engagement for Scope 3 data collection"
+
+            country_code:
+              type: "string"
+              example: "US"
+
+            marketing_consent:
+              type: "boolean"
+              default: false
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            consent_id:
+              type: "string"
+              format: "uuid"
+
+            consent_status:
+              type: "string"
+              enum: ["opted_in"]
+
+            consent_granted_at:
+              type: "string"
+              format: "date-time"
+
+    # Endpoint 2: Withdraw Consent (Opt-Out)
+    - path: "/api/v1/privacy/consent/withdraw"
+      method: "POST"
+      description: "Withdraw consent (opt-out)"
+
+      request:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          required: ["email"]
+          properties:
+            email:
+              type: "string"
+              format: "email"
+
+            opt_out_reason:
+              type: "string"
+              description: "Optional reason for opt-out"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            consent_status:
+              type: "string"
+              enum: ["opted_out"]
+
+            consent_withdrawn_at:
+              type: "string"
+              format: "date-time"
+
+            message:
+              type: "string"
+              example: "You have been successfully unsubscribed"
+
+    # Endpoint 3: Check Consent Status
+    - path: "/api/v1/privacy/consent/status/{email}"
+      method: "GET"
+      description: "Check consent status before sending email"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            email:
+              type: "string"
+
+            consent_status:
+              type: "string"
+              enum: ["opted_in", "opted_out", "pending", "expired"]
+
+            can_send_email:
+              type: "boolean"
+              description: "True if consent is opted_in and not expired"
+
+            lawful_basis:
+              type: "string"
+
+            consent_expiry_at:
+              type: "string"
+              format: "date-time"
+
+# ============================================================================
+# LAWFUL BASIS DETERMINATION (GDPR ARTICLE 6)
+# ============================================================================
+lawful_basis_framework:
+  description: >
+    GDPR Article 6 defines 6 lawful bases for processing personal data.
+    GL-VCCI uses 3 primary bases depending on context.
+
+  lawful_bases:
+    - basis: "consent"
+      gdpr_article: "Article 6(1)(a)"
+      description: "Data subject has given clear consent for specific purpose"
+
+      use_cases:
+        - "Supplier engagement emails (initial outreach)"
+        - "Marketing communications"
+        - "Optional data collection (surveys, feedback)"
+
+      requirements:
+        - "Freely given (not coerced)"
+        - "Specific (purpose clearly stated)"
+        - "Informed (privacy notice provided)"
+        - "Unambiguous (clear affirmative action)"
+        - "Revocable (easy opt-out)"
+
+      consent_mechanism:
+        - "Opt-in checkbox (not pre-checked)"
+        - "Double opt-in for email (confirmation email)"
+        - "Unsubscribe link in every email"
+
+      expiry: "2 years (EU best practice)"
+
+      example: >
+        "Supplier receives email: 'We invite you to participate in our Scope 3
+        emissions program. Click here to opt-in.' Supplier clicks link →
+        consent recorded."
+
+    - basis: "contract"
+      gdpr_article: "Article 6(1)(b)"
+      description: "Processing necessary to perform contract with data subject"
+
+      use_cases:
+        - "Customer contracts (platform access)"
+        - "Supplier contracts (data sharing agreements)"
+        - "DPAs (Data Processing Agreements)"
+
+      requirements:
+        - "Contract exists between GL-VCCI and data subject"
+        - "Processing is necessary to fulfill contract"
+
+      consent_mechanism:
+        - "Contract signature (DocuSign)"
+        - "Terms of Service acceptance (platform login)"
+
+      expiry: "Duration of contract + 7 years (audit retention)"
+
+      example: >
+        "Customer signs contract for GL-VCCI platform access. Processing of
+        customer user data (names, emails) is lawful under 'contract' basis."
+
+    - basis: "legitimate_interest"
+      gdpr_article: "Article 6(1)(f)"
+      description: "Processing necessary for legitimate interests, unless overridden by data subject rights"
+
+      use_cases:
+        - "Fraud prevention (security monitoring)"
+        - "Direct marketing to existing customers (soft opt-in)"
+        - "Analytics (anonymized usage data)"
+
+      requirements:
+        - "Legitimate Interest Assessment (LIA) conducted"
+        - "Balancing test: Our interest vs. data subject rights"
+        - "Easy opt-out available"
+        - "Not used for sensitive data"
+
+      lia_checklist:
+        - "Purpose: Why are we processing?"
+        - "Necessity: Is processing necessary to achieve purpose?"
+        - "Balancing: Do data subject rights outweigh our interests?"
+        - "Safeguards: What protections are in place?"
+
+      consent_mechanism:
+        - "Privacy notice disclosure"
+        - "Opt-out link available"
+
+      expiry: "Ongoing (subject to balancing test review)"
+
+      example: >
+        "GL-VCCI sends product update email to existing customers (soft opt-in).
+        Lawful basis: Legitimate interest (ongoing business relationship)."
+
+  decision_tree:
+    - question: "Is this a customer with an active contract?"
+      yes: "Use lawful basis: contract"
+      no: "Continue to next question"
+
+    - question: "Is this a new supplier contact (no prior relationship)?"
+      yes: "Use lawful basis: consent (explicit opt-in required)"
+      no: "Continue to next question"
+
+    - question: "Is this an existing supplier with prior engagement?"
+      yes: "Use lawful basis: legitimate_interest (soft opt-in, easy opt-out)"
+      no: "Use lawful basis: consent (explicit opt-in required)"
+
+# ============================================================================
+# OPT-OUT ENFORCEMENT
+# ============================================================================
+opt_out_enforcement:
+  description: >
+    Automatic suppression of opted-out contacts across all communication channels.
+    Ensures CAN-SPAM, GDPR, and CCPA compliance.
+
+  suppression_list:
+    database_table: "consent_registry WHERE consent_status = 'opted_out'"
+
+    check_before_send:
+      - step: 1
+        action: "SupplierEngagementAgent queues email to supplier@example.com"
+
+      - step: 2
+        action: "Call consent API: GET /api/v1/privacy/consent/status/supplier@example.com"
+
+      - step: 3
+        condition: "If consent_status == 'opted_out'"
+        action: "Suppress email, log suppression event, return error to agent"
+
+      - step: 4
+        condition: "If consent_status == 'opted_in' AND consent_expiry_at > NOW()"
+        action: "Allow email, update last_email_sent_at"
+
+      - step: 5
+        condition: "If consent_status == 'expired'"
+        action: "Suppress email, trigger consent refresh campaign"
+
+  opt_out_mechanisms:
+    - mechanism: "Unsubscribe Link (CAN-SPAM)"
+      location: "Footer of every email"
+      link_format: "https://vcci.greenlang.com/unsubscribe?email={email}&token={token}"
+      process:
+        - "User clicks unsubscribe link"
+        - "Redirect to unsubscribe confirmation page"
+        - "POST /api/v1/privacy/consent/withdraw"
+        - "Update consent_registry: consent_status = 'opted_out'"
+        - "Display confirmation: 'You have been unsubscribed'"
+
+      sla: "Process opt-out within 10 business days (CAN-SPAM requirement)"
+
+    - mechanism: "Email Reply (Automated)"
+      trigger: "User replies to email with 'UNSUBSCRIBE' or 'STOP'"
+      process:
+        - "Email service (SendGrid) detects 'UNSUBSCRIBE' keyword"
+        - "Webhook triggers: POST /api/v1/privacy/consent/withdraw"
+        - "Update consent_registry: consent_status = 'opted_out'"
+        - "Send confirmation email: 'You have been unsubscribed'"
+
+    - mechanism: "Supplier Portal (Manual)"
+      location: "Supplier portal settings page"
+      process:
+        - "Supplier logs into portal"
+        - "Navigate to: Settings → Email Preferences"
+        - "Toggle: 'Receive engagement emails' → OFF"
+        - "PUT /api/v1/privacy/consent/withdraw"
+        - "Display confirmation: 'Email preferences updated'"
+
+    - mechanism: "Customer Support (Manual)"
+      process:
+        - "Data subject contacts support: 'Please unsubscribe me'"
+        - "Support agent accesses admin panel"
+        - "Search by email, click 'Unsubscribe'"
+        - "POST /api/v1/privacy/consent/withdraw"
+        - "Confirmation email sent to data subject"
+
+  suppression_logging:
+    table_name: "suppression_log"
+
+    columns:
+      - column: "suppression_id"
+        type: "UUID"
+        primary_key: true
+
+      - column: "email"
+        type: "VARCHAR(255)"
+        indexed: true
+
+      - column: "suppression_reason"
+        type: "ENUM"
+        values: ["opted_out", "hard_bounce", "spam_complaint", "expired_consent"]
+
+      - column: "attempted_send_at"
+        type: "TIMESTAMP"
+        description: "When email send was attempted"
+
+      - column: "suppressed_by"
+        type: "VARCHAR(100)"
+        description: "System component that suppressed (e.g., 'SupplierEngagementAgent')"
+
+      - column: "created_at"
+        type: "TIMESTAMP"
+
+# ============================================================================
+# DATA SUBJECT RIGHTS (GDPR/CCPA)
+# ============================================================================
+data_subject_rights:
+  description: >
+    Automated workflows for data subject rights requests (GDPR Articles 15-22, CCPA Sections 1798.100-120).
+
+  # Right 1: Right to Access (GDPR Article 15, CCPA Section 1798.100)
+  - right: "right_to_access"
+    gdpr_article: "Article 15"
+    ccpa_section: "Section 1798.100"
+    description: "Data subject can request copy of their personal data"
+
+    api_endpoint:
+      path: "/api/v1/privacy/dsar/access"
+      method: "POST"
+
+      request:
+        schema:
+          type: "object"
+          required: ["email", "identity_verification"]
+          properties:
+            email:
+              type: "string"
+              format: "email"
+
+            identity_verification:
+              type: "object"
+              description: "Verification method (e.g., email confirmation link)"
+
+      process:
+        - step: 1
+          action: "Verify identity (send confirmation email with unique link)"
+
+        - step: 2
+          action: "Query all tables for email matches (suppliers, users, consent_registry)"
+
+        - step: 3
+          action: "Export data to JSON (machine-readable format)"
+
+        - step: 4
+          action: "Anonymize cross-references (remove other users' data)"
+
+        - step: 5
+          action: "Send email with download link (encrypted ZIP, expires in 7 days)"
+
+      sla: "Respond within 30 days (GDPR) or 45 days (CCPA)"
+
+      export_format:
+        format: "JSON"
+        schema:
+          personal_data:
+            - "email"
+            - "name"
+            - "company"
+            - "consent_records"
+            - "email_history"
+            - "portal_activity_log"
+
+  # Right 2: Right to Erasure (GDPR Article 17, CCPA Section 1798.105)
+  - right: "right_to_erasure"
+    gdpr_article: "Article 17 (Right to be Forgotten)"
+    ccpa_section: "Section 1798.105"
+    description: "Data subject can request deletion of personal data"
+
+    api_endpoint:
+      path: "/api/v1/privacy/dsar/erasure"
+      method: "POST"
+
+      request:
+        schema:
+          type: "object"
+          required: ["email", "identity_verification"]
+          properties:
+            email:
+              type: "string"
+
+            deletion_scope:
+              type: "string"
+              enum: ["all_data", "marketing_only", "consent_only"]
+              default: "all_data"
+
+      process:
+        - step: 1
+          action: "Verify identity"
+
+        - step: 2
+          action: "Check if legal obligation to retain (e.g., audit logs, financial records)"
+
+        - step: 3
+          condition: "If legal obligation exists"
+          action: "Pseudonymize data (replace email with random UUID), retain for legal minimum"
+
+        - step: 4
+          condition: "If no legal obligation"
+          action: "Hard delete from all tables (suppliers, consent_registry, email_history)"
+
+        - step: 5
+          action: "Purge backups within 30 days"
+
+        - step: 6
+          action: "Send confirmation email: 'Your data has been deleted'"
+
+      sla: "Process within 30 days (GDPR) or 45 days (CCPA)"
+
+      exceptions:
+        - exception: "Audit logs (7-year retention for SOC 2)"
+          action: "Pseudonymize (replace email with 'deleted-user-{uuid}')"
+
+        - exception: "Financial records (7-year retention for tax)"
+          action: "Pseudonymize"
+
+        - exception: "Legal holds"
+          action: "Retain until hold is lifted, notify data subject"
+
+  # Right 3: Right to Data Portability (GDPR Article 20, CCPA Section 1798.100)
+  - right: "right_to_portability"
+    gdpr_article: "Article 20"
+    ccpa_section: "Section 1798.100"
+    description: "Data subject can receive their data in machine-readable format"
+
+    api_endpoint:
+      path: "/api/v1/privacy/dsar/portability"
+      method: "POST"
+
+    export_formats:
+      - format: "JSON"
+        description: "Structured data (preferred)"
+        mime_type: "application/json"
+
+      - format: "CSV"
+        description: "Tabular data (alternative)"
+        mime_type: "text/csv"
+
+    process:
+      - step: 1
+        action: "Same as Right to Access (export all personal data)"
+
+      - step: 2
+        action: "Convert to requested format (JSON or CSV)"
+
+      - step: 3
+        action: "Send download link (expires in 7 days)"
+
+  # Right 4: Right to Rectification (GDPR Article 16)
+  - right: "right_to_rectification"
+    gdpr_article: "Article 16"
+    description: "Data subject can request correction of inaccurate data"
+
+    api_endpoint:
+      path: "/api/v1/privacy/dsar/rectification"
+      method: "PATCH"
+
+      request:
+        schema:
+          type: "object"
+          required: ["email", "corrections"]
+          properties:
+            email:
+              type: "string"
+
+            corrections:
+              type: "object"
+              properties:
+                name:
+                  type: "string"
+                company:
+                  type: "string"
+                job_title:
+                  type: "string"
+
+    process:
+      - step: 1
+        action: "Verify identity"
+
+      - step: 2
+        action: "Update supplier or user record"
+
+      - step: 3
+        action: "Log correction (audit trail)"
+
+      - step: 4
+        action: "Send confirmation email"
+
+    sla: "Process within 30 days (GDPR)"
+
+# ============================================================================
+# COUNTRY-SPECIFIC RULES
+# ============================================================================
+country_specific_rules:
+  # EU/EEA (GDPR)
+  - jurisdiction: "EU/EEA"
+    regulation: "GDPR (General Data Protection Regulation)"
+    applicable_countries:
+      - "All 27 EU member states"
+      - "EEA: Iceland, Liechtenstein, Norway"
+
+    key_requirements:
+      - requirement: "Explicit consent required for marketing"
+        implementation: "Double opt-in for email (confirmation link)"
+
+      - requirement: "Consent must be freely given, specific, informed, unambiguous"
+        implementation: "Opt-in checkbox (not pre-checked), privacy notice displayed"
+
+      - requirement: "Right to erasure (GDPR Article 17)"
+        implementation: "Automated deletion API, purge backups within 30 days"
+
+      - requirement: "Data breach notification (72 hours)"
+        implementation: "Incident response policy POL-006, automated breach detection"
+
+      - requirement: "Data Protection Officer (DPO) required"
+        implementation: "DPO appointed, contact: dpo@greenlang.com"
+
+    consent_expiry: "2 years (best practice)"
+
+    opt_out_enforcement: "Immediate (suppress within 24 hours)"
+
+  # California, USA (CCPA)
+  - jurisdiction: "California, USA"
+    regulation: "CCPA (California Consumer Privacy Act)"
+    applicable_states: ["CA"]
+
+    key_requirements:
+      - requirement: "Right to know (data disclosure)"
+        implementation: "Privacy notice on website, DSAR API for data export"
+
+      - requirement: "Right to delete"
+        implementation: "Automated deletion API, 45-day SLA"
+
+      - requirement: "Right to opt-out of data sale"
+        implementation: "'Do Not Sell My Personal Information' link (N/A - we don't sell data)"
+
+      - requirement: "Non-discrimination (cannot deny service for opt-out)"
+        implementation: "Supplier engagement continues regardless of email opt-out status"
+
+    consent_expiry: "No explicit requirement (follow best practices)"
+
+    opt_out_enforcement: "Immediate (suppress within 24 hours)"
+
+  # United States (CAN-SPAM)
+  - jurisdiction: "United States"
+    regulation: "CAN-SPAM Act"
+    applicable_states: ["All 50 states"]
+
+    key_requirements:
+      - requirement: "Unsubscribe link in every email"
+        implementation: "Footer link: 'Unsubscribe from this list'"
+
+      - requirement: "Process opt-outs within 10 business days"
+        implementation: "Automated processing, SLA: 24 hours (exceeds requirement)"
+
+      - requirement: "Honor opt-outs for 30 days minimum"
+        implementation: "Permanent opt-out (unless re-consent)"
+
+      - requirement: "Identify message as advertisement (if applicable)"
+        implementation: "N/A (supplier engagement is not advertising)"
+
+      - requirement: "Include physical postal address"
+        implementation: "Email footer: 'GreenLang, Inc., [Address]'"
+
+    consent_expiry: "No expiration"
+
+    opt_out_enforcement: "10 business days (actual: 24 hours)"
+
+# ============================================================================
+# INTEGRATION WITH SUPPLIERENGAGEMENTAGENT
+# ============================================================================
+supplier_engagement_integration:
+  description: >
+    Privacy model integrates with SupplierEngagementAgent to ensure all
+    email outreach is consent-aware and compliant.
+
+  workflow:
+    - step: 1
+      agent: "SupplierEngagementAgent"
+      action: "Identify suppliers in top 20% spend cohort for outreach"
+      output: "List of supplier emails: ['supplier1@example.com', 'supplier2@example.com', ...]"
+
+    - step: 2
+      agent: "SupplierEngagementAgent"
+      action: "For each email, call consent API: GET /api/v1/privacy/consent/status/{email}"
+      output: "Consent status: opted_in, opted_out, pending, or not_found"
+
+    - step: 3
+      agent: "SupplierEngagementAgent"
+      decision_tree:
+        - condition: "consent_status == 'opted_in' AND consent_expiry_at > NOW()"
+          action: "Send email (allowed)"
+
+        - condition: "consent_status == 'opted_out'"
+          action: "Suppress email (log suppression event)"
+
+        - condition: "consent_status == 'pending' OR not_found"
+          action: "Send opt-in invitation email (initial outreach with opt-in link)"
+
+        - condition: "consent_status == 'expired'"
+          action: "Send consent refresh email ('Your consent has expired, click to renew')"
+
+    - step: 4
+      agent: "SupplierEngagementAgent"
+      action: "Send email via SendGrid API"
+      headers:
+        - "List-Unsubscribe: <https://vcci.greenlang.com/unsubscribe?email={email}>"
+        - "List-Unsubscribe-Post: List-Unsubscribe=One-Click"
+
+    - step: 5
+      agent: "SupplierEngagementAgent"
+      action: "Update consent_registry: last_email_sent_at = NOW()"
+
+  email_template_requirements:
+    - requirement: "Unsubscribe link in footer"
+      example: >
+        "You are receiving this email because we identified your company as a
+        key supplier. If you wish to unsubscribe, click here: [Unsubscribe Link]"
+
+    - requirement: "Privacy notice link"
+      example: >
+        "Learn how we protect your data: [Privacy Notice]"
+
+    - requirement: "Opt-in confirmation (for new contacts)"
+      example: >
+        "Click here to opt-in to our Scope 3 supplier program: [Opt-In Link].
+        By opting in, you consent to receive program updates and data requests."
+
+    - requirement: "Physical address (CAN-SPAM)"
+      example: >
+        "GreenLang, Inc., 123 Main Street, San Francisco, CA 94105, USA"
+
+  rate_limiting:
+    - rule: "Max 1 email per supplier per 7 days"
+      enforcement: "Check consent_registry.last_email_sent_at before sending"
+
+    - rule: "Max 3 emails per campaign (avoid spam)"
+      enforcement: "Campaign tracking table with send count"
+
+    - rule: "Suppress after 3 hard bounces"
+      enforcement: "Check consent_registry.email_bounce_count >= 3"
+
+# ============================================================================
+# PRIVACY NOTICE
+# ============================================================================
+privacy_notice:
+  description: >
+    Public-facing privacy notice (GDPR Article 13, CCPA Section 1798.100).
+    Must be clear, concise, and accessible.
+
+  location:
+    - "Website: https://vcci.greenlang.com/privacy"
+    - "Supplier portal: Footer link"
+    - "Email footer: Link to privacy notice"
+
+  required_sections:
+    - section: "Data Controller"
+      content: >
+        GreenLang, Inc. is the data controller for personal data processed
+        through the GL-VCCI Scope 3 platform. Contact: privacy@greenlang.com
+
+    - section: "Data Protection Officer (DPO)"
+      content: >
+        For GDPR-related inquiries, contact our DPO: dpo@greenlang.com
+
+    - section: "Personal Data Collected"
+      content: >
+        We collect the following personal data:
+        - Supplier contact information (name, email, job title, company)
+        - Customer user data (name, email, login credentials)
+        - Usage data (IP addresses, browser information, activity logs)
+
+    - section: "Purpose of Processing"
+      content: >
+        We process personal data for the following purposes:
+        - Supplier engagement (Scope 3 emissions data collection)
+        - Platform access and authentication
+        - Customer support and communication
+        - Legal compliance and audit requirements
+
+    - section: "Lawful Basis (GDPR Article 6)"
+      content: >
+        We rely on the following lawful bases:
+        - Consent (supplier engagement emails)
+        - Contract (customer platform access)
+        - Legitimate interest (fraud prevention, analytics)
+
+    - section: "Data Retention"
+      content: >
+        We retain personal data for the following periods:
+        - Supplier contact data: 7 years post-engagement (audit requirement)
+        - Customer user data: Duration of contract + 7 years
+        - Consent records: Permanent (audit trail)
+        - Audit logs: 7 years (SOC 2 requirement)
+
+    - section: "Data Subject Rights"
+      content: >
+        You have the following rights under GDPR and CCPA:
+        - Right to access your personal data
+        - Right to rectify inaccurate data
+        - Right to erasure (right to be forgotten)
+        - Right to data portability
+        - Right to opt-out of marketing communications
+
+        To exercise your rights, contact: privacy@greenlang.com
+
+    - section: "Data Sharing"
+      content: >
+        We do not sell personal data. We may share data with:
+        - Cloud service providers (AWS, SendGrid) - under DPAs
+        - Auditors (for SOC 2 audits) - under NDAs
+        - Legal authorities (if required by law)
+
+    - section: "International Transfers"
+      content: >
+        We use AWS data centers in US-West-2 (primary) and EU-Central-1 (GDPR compliance).
+        EU data is stored in EU-Central-1 to comply with GDPR data localization requirements.
+
+    - section: "Changes to Privacy Notice"
+      content: >
+        We may update this privacy notice. Last updated: [Date].
+        Material changes will be communicated via email.
+
+# ============================================================================
+# MONITORING AND AUDIT
+# ============================================================================
+monitoring:
+  metrics:
+    - metric: "consent_opt_in_rate"
+      type: "gauge"
+      description: "% of suppliers who opt-in after initial outreach"
+      target: ">=50%"
+      calculation: "(opt_ins / total_invitations) * 100"
+
+    - metric: "consent_opt_out_rate"
+      type: "gauge"
+      description: "% of opted-in suppliers who later opt-out"
+      target: "<5%"
+      calculation: "(opt_outs / total_opted_in) * 100"
+
+    - metric: "suppression_rate"
+      type: "gauge"
+      description: "% of emails suppressed due to opt-out or bounces"
+      target: "<10%"
+      calculation: "(suppressed / total_attempted) * 100"
+
+    - metric: "dsar_response_time_hours"
+      type: "histogram"
+      description: "Time to respond to data subject access requests"
+      target: "<720 hours (30 days)"
+      buckets: [24, 72, 168, 720]
+
+    - metric: "consent_expiry_upcoming"
+      type: "gauge"
+      description: "Number of consents expiring in next 30 days"
+      alert_threshold: ">100"
+      action: "Trigger consent refresh campaign"
+
+  audit_trail:
+    - event: "consent_granted"
+      logged_fields: ["email", "lawful_basis", "consent_purpose", "ip_address", "user_agent", "timestamp"]
+
+    - event: "consent_withdrawn"
+      logged_fields: ["email", "opt_out_reason", "timestamp"]
+
+    - event: "dsar_request"
+      logged_fields: ["email", "request_type", "identity_verified", "response_sent_at", "sla_met"]
+
+    - event: "suppression"
+      logged_fields: ["email", "suppression_reason", "attempted_send_at"]
+
+  compliance_reports:
+    - report: "GDPR Compliance Report"
+      frequency: "Quarterly"
+      contents:
+        - "Total data subjects in consent registry"
+        - "Breakdown by consent status (opted_in, opted_out, pending, expired)"
+        - "DSAR requests (access, erasure, portability)"
+        - "Average DSAR response time"
+        - "Data breaches (if any)"
+
+    - report: "CCPA Compliance Report"
+      frequency: "Annually"
+      contents:
+        - "California residents in consent registry"
+        - "DSAR requests from California residents"
+        - "Opt-out requests"
+        - "Data sale disclosures (N/A - we don't sell data)"
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+changelog:
+  - version: "1.0.0"
+    date: "2025-01-25"
+    changes:
+      - "Initial privacy model specification"
+      - "Consent registry schema (18 columns)"
+      - "Lawful basis framework (GDPR Article 6)"
+      - "Opt-out enforcement (CAN-SPAM, GDPR, CCPA)"
+      - "Data subject rights APIs (access, erasure, portability, rectification)"
+      - "Country-specific rules (EU, California, USA)"
+      - "Integration with SupplierEngagementAgent"
+      - "Privacy notice template"
+      - "Monitoring and audit framework"

@@ -1,0 +1,926 @@
+---
+# GL-VCCI Scope 3 Carbon Intelligence Platform
+# Design Partner Selection & Success Plans v1.0.0
+#
+# Purpose: Define design partner selection criteria, identify 6 target companies
+#          across 2 verticals, and outline success plans for Week 3-12 pilot.
+#
+# Phase: Week 2 (Planning) -> Week 3-12 (Execution)
+# Target: 6 design partners (3 Manufacturing, 3 Retail/Consumer Goods)
+# Timeline: 10-week pilot (Week 3-12 per IMPLEMENTATION_PLAN_V2.md)
+
+version: "1.0.0"
+last_updated: "2025-01-25"
+document_owner: "Product & Partnerships Team"
+
+# ============================================================================
+# DESIGN PARTNER PROGRAM OVERVIEW
+# ============================================================================
+
+program_overview:
+  name: "GL-VCCI Design Partner Program"
+  tagline: "Co-create the future of Scope 3 carbon intelligence"
+
+  objectives:
+    - objective: "Validate product-market fit"
+      description: "Confirm that GL-VCCI solves real Scope 3 pain points for target verticals"
+      success_criteria: "NPS >= 8 from design partners"
+
+    - objective: "Refine calculation methodologies"
+      description: "Test tier 1/2/3 calculation methods with real procurement data"
+      success_criteria: "30% PCF coverage for Category 1 (top 20% suppliers)"
+
+    - objective: "Validate supplier engagement workflows"
+      description: "Test SupplierEngagementAgent and achieve target response rates"
+      success_criteria: "50% supplier response rate in top 20% spend cohort"
+
+    - objective: "Stress-test Entity MDM"
+      description: "Test two-stage ML resolution with diverse supplier name formats"
+      success_criteria: ">=95% auto-match rate with high confidence"
+
+    - objective: "Generate case studies & testimonials"
+      description: "Document emissions reductions and data quality improvements"
+      success_criteria: "2 publishable case studies by end of pilot"
+
+  timeline:
+    start_date: "2025-02-03"  # Week 3
+    end_date: "2025-04-14"    # Week 12
+    duration_weeks: 10
+
+  phases:
+    - phase: 1
+      name: "Onboarding & Data Integration"
+      weeks: "3-5"
+      duration: "3 weeks"
+      activities:
+        - "ERP integration setup (SAP OData, Oracle REST, Workday RaaS)"
+        - "Historical data extraction (12 months procurement + logistics)"
+        - "Supplier master data extraction"
+        - "Initial data quality assessment"
+
+    - phase: 2
+      name: "Baseline Calculation & Validation"
+      weeks: "6-8"
+      duration: "3 weeks"
+      activities:
+        - "Run Scope3CalculatorAgent on historical data"
+        - "Generate baseline emissions (Category 1, 4, 6)"
+        - "Validate results against partner's existing estimates (if available)"
+        - "Data quality review sessions (weekly)"
+
+    - phase: 3
+      name: "Supplier Engagement & PCF Collection"
+      weeks: "9-11"
+      duration: "3 weeks"
+      activities:
+        - "Launch SupplierEngagementAgent (top 20% suppliers)"
+        - "Collect supplier PCF data via PACT Pathfinder"
+        - "Update calculations with Tier 1 (supplier-specific) data"
+        - "Track supplier response rates"
+
+    - phase: 4
+      name: "Reporting & Case Study Development"
+      weeks: "12"
+      duration: "1 week"
+      activities:
+        - "Generate multi-standard reports (ESRS, CDP, IFRS S2)"
+        - "Hotspot analysis review sessions"
+        - "Case study interviews & documentation"
+        - "Feedback sessions & product roadmap input"
+
+# ============================================================================
+# PARTNER SELECTION CRITERIA
+# ============================================================================
+
+selection_criteria:
+  description: "Criteria for selecting ideal design partners"
+
+  # ---------------------------------------------------------------------------
+  # Company Profile Criteria
+  # ---------------------------------------------------------------------------
+  company_profile:
+    - criterion: "Company Size"
+      requirement: "Mid-market to Enterprise (500-10,000 employees)"
+      rationale: "Large enough to have complex supply chains, small enough to be agile"
+      weight: "Medium"
+
+    - criterion: "Annual Revenue"
+      requirement: "$100M - $5B USD"
+      rationale: "Sufficient budget for sustainability initiatives, not too large to require enterprise features"
+      weight: "Medium"
+
+    - criterion: "Industry Vertical"
+      requirement: "Manufacturing OR Retail/Consumer Goods"
+      rationale: "High Scope 3 emissions (70-90% of total), procurement-heavy, supplier engagement critical"
+      weight: "High"
+
+    - criterion: "Geographic Presence"
+      requirement: "US or EU headquarters with global supply chain"
+      rationale: "ESRS/SEC disclosure requirements, diverse supplier base"
+      weight: "Medium"
+
+  # ---------------------------------------------------------------------------
+  # Scope 3 Maturity Criteria
+  # ---------------------------------------------------------------------------
+  scope3_maturity:
+    - criterion: "Current Scope 3 Calculation Status"
+      requirement: "Emerging or Intermediate (NOT Advanced)"
+      ideal_profile: "Currently using spreadsheets or basic tools; some Scope 3 estimates"
+      avoid: "Companies with mature Scope 3 programs (less room for improvement)"
+      weight: "High"
+
+    - criterion: "Disclosure Requirements"
+      requirement: "Subject to ESRS (EU CSRD) or SEC Climate Rule (proposed)"
+      rationale: "Regulatory pressure ensures commitment and urgency"
+      weight: "High"
+
+    - criterion: "Science-Based Targets (SBTi)"
+      requirement: "SBTi committed or validated (Scope 3 target required)"
+      rationale: "Long-term commitment to Scope 3 reduction"
+      weight: "Medium"
+
+  # ---------------------------------------------------------------------------
+  # Data & Technology Criteria
+  # ---------------------------------------------------------------------------
+  data_technology:
+    - criterion: "ERP System"
+      requirement: "SAP S/4HANA, Oracle Fusion, or Workday"
+      rationale: "Proven integration connectors; 80% market coverage"
+      weight: "High"
+
+    - criterion: "Procurement Data Volume"
+      requirement: ">=1,000 suppliers, >=10,000 transactions/year"
+      rationale: "Sufficient data volume to stress-test platform"
+      weight: "Medium"
+
+    - criterion: "Logistics Data Availability"
+      requirement: "TMS or carrier data available (nice-to-have)"
+      rationale: "Enables Category 4 (Transport) validation"
+      weight: "Low"
+
+    - criterion: "Data Quality"
+      requirement: "Willing to invest in data cleanup (if needed)"
+      rationale: "Realistic data quality expectations"
+      weight: "Medium"
+
+  # ---------------------------------------------------------------------------
+  # Commitment & Resources Criteria
+  # ---------------------------------------------------------------------------
+  commitment_resources:
+    - criterion: "Executive Sponsorship"
+      requirement: "VP-level or C-level sustainability sponsor"
+      rationale: "Ensures cross-functional collaboration and priority"
+      weight: "High"
+
+    - criterion: "Dedicated Resources"
+      requirement: "1-2 FTE dedicated to pilot (sustainability + IT/data)"
+      rationale: "Sufficient bandwidth for integration and validation"
+      weight: "High"
+
+    - criterion: "Timeline Commitment"
+      requirement: "10-week pilot commitment (Feb-Apr 2025)"
+      rationale: "Sufficient time for meaningful results"
+      weight: "High"
+
+    - criterion: "Supplier Engagement Willingness"
+      requirement: "Willing to engage top suppliers for PCF data"
+      rationale: "Critical for Tier 1 data collection and validation"
+      weight: "High"
+
+  # ---------------------------------------------------------------------------
+  # Strategic Value Criteria
+  # ---------------------------------------------------------------------------
+  strategic_value:
+    - criterion: "Reference Customer Potential"
+      requirement: "Willing to provide testimonials and case studies"
+      rationale: "Marketing and sales collateral for GA launch"
+      weight: "High"
+
+    - criterion: "Co-Marketing Opportunities"
+      requirement: "Open to joint webinars, conference presentations, press releases"
+      rationale: "Brand credibility and market visibility"
+      weight: "Medium"
+
+    - criterion: "Industry Leadership"
+      requirement: "Recognized sustainability leader in their vertical"
+      rationale: "Influence and credibility with peers"
+      weight: "Medium"
+
+# ============================================================================
+# VERTICAL 1: MANUFACTURING
+# ============================================================================
+
+vertical_1_manufacturing:
+  vertical_name: "Manufacturing"
+  vertical_description: "Discrete manufacturing with complex, multi-tier supply chains"
+
+  target_industries:
+    - "Automotive & Transportation Equipment"
+    - "Industrial Machinery & Equipment"
+    - "Electronics & Technology Hardware"
+    - "Aerospace & Defense"
+
+  scope3_characteristics:
+    - "70-85% of emissions from Scope 3 (primarily Category 1)"
+    - "Hundreds to thousands of Tier 1 suppliers"
+    - "Multi-tier supply chains (Tier 1, 2, 3+)"
+    - "High-carbon materials (steel, aluminum, plastics)"
+    - "Supplier engagement critical for SBTi targets"
+
+  # ---------------------------------------------------------------------------
+  # Design Partner 1: TechManufacture Inc.
+  # ---------------------------------------------------------------------------
+  partner_1:
+    company_name: "TechManufacture Inc."
+    industry: "Electronics & Technology Hardware"
+    headquarters: "Austin, TX, USA"
+    employees: "~3,500"
+    revenue: "~$1.2B USD"
+
+    profile:
+      description: "Mid-market electronics manufacturer (IoT devices, sensors, industrial controllers)"
+      supply_chain: "Global supply chain (Asia-Pacific, EU, Americas)"
+      sustainability_status: "SBTi committed (2024), ESRS reporting required (2026)"
+      scope3_maturity: "Emerging (spreadsheet-based estimates)"
+
+    technology_stack:
+      erp_system: "SAP S/4HANA"
+      tms: "SAP TM (Transportation Management)"
+      other_systems: "Salesforce CRM, Tableau BI"
+      data_readiness: "Good procurement data quality, some logistics gaps"
+
+    scope3_baseline:
+      estimated_scope3_tco2e: "~50,000"
+      category_1_percent: "75%"
+      category_4_percent: "20%"
+      category_6_percent: "5%"
+      current_calculation_method: "Spend-based (Tier 3) for most categories"
+      pcf_coverage: "<5% (minimal supplier engagement to date)"
+
+    design_partner_objectives:
+      primary: "Achieve 30% PCF coverage for top 20% suppliers (Category 1)"
+      secondary_1: "Improve data quality from DQI 2.5 (Fair) to 4.0+ (Good)"
+      secondary_2: "Generate first ESRS-compliant Scope 3 report"
+      stretch_goal: "Identify 5,000 tCO2e reduction opportunities via hotspot analysis"
+
+    resources_committed:
+      executive_sponsor: "VP of Sustainability & ESG"
+      project_lead: "Sustainability Manager (full-time)"
+      it_support: "IT Data Analyst (25% allocation)"
+      procurement_support: "Procurement Director (advisory, 10% allocation)"
+
+    value_proposition:
+      to_partner:
+        - "Free platform access during 10-week pilot (value: $50K)"
+        - "Accelerate SBTi validation (Scope 3 target)"
+        - "ESRS compliance readiness (2026 deadline)"
+        - "Supplier engagement playbook and templates"
+      to_greenlang:
+        - "Validate SAP S/4HANA integration"
+        - "Test electronics supply chain complexity"
+        - "Case study: Mid-market SBTi journey"
+        - "Reference customer for tech manufacturing vertical"
+
+    success_metrics:
+      - metric: "PCF Coverage (Category 1)"
+        baseline: "5%"
+        target: "30%"
+        stretch: "40%"
+
+      - metric: "Supplier Response Rate (Top 20%)"
+        baseline: "N/A"
+        target: "50%"
+        stretch: "60%"
+
+      - metric: "Data Quality (DQI Score)"
+        baseline: "2.5 (Fair)"
+        target: "4.0 (Good)"
+        stretch: "4.5 (Excellent)"
+
+      - metric: "Entity Resolution Auto-Match Rate"
+        baseline: "N/A"
+        target: "95%"
+        stretch: "98%"
+
+      - metric: "Emissions Calculation Completeness"
+        baseline: "50% (many gaps)"
+        target: "95%"
+        stretch: "99%"
+
+  # ---------------------------------------------------------------------------
+  # Design Partner 2: GlobalMotors LLC
+  # ---------------------------------------------------------------------------
+  partner_2:
+    company_name: "GlobalMotors LLC"
+    industry: "Automotive Parts & Components"
+    headquarters: "Stuttgart, Germany"
+    employees: "~7,200"
+    revenue: "~$2.8B EUR"
+
+    profile:
+      description: "Tier 1 automotive supplier (electric vehicle powertrain components)"
+      supply_chain: "Deep multi-tier supply chain (metals, electronics, plastics)"
+      sustainability_status: "ESRS mandatory (2025), SBTi validated (2023)"
+      scope3_maturity: "Intermediate (basic LCA tools, some supplier data)"
+
+    technology_stack:
+      erp_system: "SAP S/4HANA"
+      tms: "Third-party logistics provider (API integration)"
+      other_systems: "Siemens Teamcenter PLM, SAP BW"
+      data_readiness: "Excellent procurement data, good logistics data"
+
+    scope3_baseline:
+      estimated_scope3_tco2e: "~180,000"
+      category_1_percent: "80%"
+      category_4_percent: "15%"
+      category_6_percent: "5%"
+      current_calculation_method: "Tier 2 (average data) for 80%, Tier 1 (PCF) for 20%"
+      pcf_coverage: "~20% (some key suppliers via Catena-X)"
+
+    design_partner_objectives:
+      primary: "Scale PCF coverage from 20% to 50% (Category 1)"
+      secondary_1: "Integrate Catena-X and PACT Pathfinder PCF data"
+      secondary_2: "Achieve ESRS E1-6 full compliance (incl. AR 47 disclosures)"
+      stretch_goal: "Demonstrate 15% emissions reduction vs. baseline (via Tier 1 data upgrade)"
+
+    resources_committed:
+      executive_sponsor: "Chief Sustainability Officer"
+      project_lead: "Sustainability Data Manager (full-time)"
+      it_support: "SAP Technical Architect (50% allocation)"
+      procurement_support: "Strategic Sourcing Manager (25% allocation)"
+
+    value_proposition:
+      to_partner:
+        - "Scale PCF Exchange integration (Catena-X + PACT)"
+        - "ESRS AR 47 compliance (PCF coverage disclosure)"
+        - "Automotive supply chain expertise (multi-tier visibility)"
+        - "Co-marketing: EV supply chain sustainability case study"
+      to_greenlang:
+        - "Validate Catena-X integration (automotive ecosystem)"
+        - "Test high PCF coverage scaling (20% -> 50%)"
+        - "Case study: ESRS compliance for automotive Tier 1"
+        - "Reference customer for automotive vertical"
+
+    success_metrics:
+      - metric: "PCF Coverage (Category 1)"
+        baseline: "20%"
+        target: "50%"
+        stretch: "60%"
+
+      - metric: "Catena-X Integration Success"
+        baseline: "N/A"
+        target: "100% of Catena-X suppliers integrated"
+        stretch: "Real-time PCF updates"
+
+      - metric: "ESRS AR 47 Compliance"
+        baseline: "Partial"
+        target: "Full compliance (all disclosures)"
+        stretch: "Third-party verified"
+
+  # ---------------------------------------------------------------------------
+  # Design Partner 3: PrecisionMachinery Co.
+  # ---------------------------------------------------------------------------
+  partner_3:
+    company_name: "PrecisionMachinery Co."
+    industry: "Industrial Machinery & Equipment"
+    headquarters: "Milwaukee, WI, USA"
+    employees: "~1,800"
+    revenue: "~$650M USD"
+
+    profile:
+      description: "Precision machine tool manufacturer (CNC machines, robotics)"
+      supply_chain: "Regional supply chain (North America, some EU)"
+      sustainability_status: "No regulatory requirements yet, CDP respondent (voluntary)"
+      scope3_maturity: "Emerging (basic spend-based estimates only)"
+
+    technology_stack:
+      erp_system: "Oracle Fusion Cloud ERP"
+      tms: "No dedicated TMS (carrier invoices via AP)"
+      other_systems: "Oracle NetSuite (legacy, being retired)"
+      data_readiness: "Fair procurement data, poor logistics data"
+
+    scope3_baseline:
+      estimated_scope3_tco2e: "~25,000"
+      category_1_percent: "70%"
+      category_4_percent: "25%"
+      category_6_percent: "5%"
+      current_calculation_method: "Spend-based (Tier 3) for all categories"
+      pcf_coverage: "0% (no supplier engagement)"
+
+    design_partner_objectives:
+      primary: "Establish first supplier-specific PCF data (Tier 1) for key materials"
+      secondary_1: "Improve from Tier 3 (spend-based) to Tier 2 (average-data) baseline"
+      secondary_2: "Build supplier engagement playbook for small manufacturers"
+      stretch_goal: "Submit first CDP Climate Change response with validated Scope 3 data"
+
+    resources_committed:
+      executive_sponsor: "CFO (sustainability under finance org)"
+      project_lead: "Sustainability Coordinator (newly hired, full-time)"
+      it_support: "Oracle ERP Administrator (25% allocation)"
+      procurement_support: "Purchasing Manager (10% allocation)"
+
+    value_proposition:
+      to_partner:
+        - "Establish Scope 3 program from ground zero"
+        - "CDP Climate Change response support"
+        - "Supplier engagement training (new to sustainability)"
+        - "Competitive advantage: sustainability as sales differentiator"
+      to_greenlang:
+        - "Validate Oracle Fusion integration"
+        - "Test \"emerging maturity\" use case (ground zero)"
+        - "Small manufacturer segment validation"
+        - "Case study: Building Scope 3 program from scratch"
+
+    success_metrics:
+      - metric: "PCF Coverage (Category 1)"
+        baseline: "0%"
+        target: "15%"
+        stretch: "25%"
+
+      - metric: "Calculation Method Improvement"
+        baseline: "100% Tier 3"
+        target: "50% Tier 2, 15% Tier 1, 35% Tier 3"
+        stretch: "40% Tier 2, 25% Tier 1, 35% Tier 3"
+
+      - metric: "CDP Response Submission"
+        baseline: "N/A"
+        target: "Submit CDP with validated C6.5 data"
+        stretch: "CDP Score: C or better"
+
+# ============================================================================
+# VERTICAL 2: RETAIL / CONSUMER GOODS
+# ============================================================================
+
+vertical_2_retail:
+  vertical_name: "Retail / Consumer Goods"
+  vertical_description: "Consumer-facing brands with high SKU counts and complex product supply chains"
+
+  target_industries:
+    - "Apparel & Footwear"
+    - "Consumer Electronics (retail)"
+    - "Food & Beverage"
+    - "Home Goods & Furniture"
+
+  scope3_characteristics:
+    - "80-95% of emissions from Scope 3 (primarily Category 1)"
+    - "Thousands of SKUs and hundreds of suppliers"
+    - "Brand reputation risk from supply chain emissions"
+    - "Consumer/investor pressure for transparency"
+    - "Fast-moving consumer goods (FMCG) = rapid SKU turnover"
+
+  # ---------------------------------------------------------------------------
+  # Design Partner 4: EcoApparel Brands
+  # ---------------------------------------------------------------------------
+  partner_4:
+    company_name: "EcoApparel Brands"
+    industry: "Apparel & Footwear (sustainable fashion)"
+    headquarters: "Portland, OR, USA"
+    employees: "~2,200"
+    revenue: "~$800M USD"
+
+    profile:
+      description: "Sustainable apparel brand (outdoor gear, activewear, footwear)"
+      supply_chain: "Global manufacturing (Vietnam, Bangladesh, China, USA)"
+      sustainability_status: "B Corp certified, SBTi committed (2024), ESRS voluntary disclosure"
+      scope3_maturity: "Intermediate (Higg Index MSI, some Tier 1 supplier data)"
+
+    technology_stack:
+      erp_system: "SAP S/4HANA (recent migration from SAP ECC)"
+      plm: "Centric PLM (product lifecycle management)"
+      other_systems: "Blue Yonder supply chain planning, Workday HCM"
+      data_readiness: "Good product/supplier data, excellent traceability"
+
+    scope3_baseline:
+      estimated_scope3_tco2e: "~120,000"
+      category_1_percent: "85%"
+      category_4_percent: "12%"
+      category_6_percent: "3%"
+      current_calculation_method: "Higg MSI (Materials Sustainability Index) for fabrics, Tier 3 for other"
+      pcf_coverage: "~10% (key fabric suppliers)"
+
+    design_partner_objectives:
+      primary: "Integrate Higg MSI data with PACT Pathfinder PCF Exchange"
+      secondary_1: "Extend PCF coverage to Tier 2 (fabric mills, not just Tier 1 suppliers)"
+      secondary_2: "Product-level carbon labeling (gCO2e per product)"
+      stretch_goal: "Publish product carbon footprints on e-commerce site (consumer transparency)"
+
+    resources_committed:
+      executive_sponsor: "VP of Sustainability & Impact"
+      project_lead: "Sustainability Analyst (full-time)"
+      it_support: "SAP Functional Lead (40% allocation)"
+      product_support: "Product Development Manager (25% allocation)"
+
+    value_proposition:
+      to_partner:
+        - "Bridge Higg MSI and PACT Pathfinder ecosystems"
+        - "Product-level PCF calculation (SKU-level granularity)"
+        - "Consumer transparency (carbon labeling on products)"
+        - "B Corp reporting efficiency"
+      to_greenlang:
+        - "Validate Higg MSI integration (apparel-specific)"
+        - "Test product-level PCF (thousands of SKUs)"
+        - "Case study: Sustainable fashion leader + consumer transparency"
+        - "Reference customer for apparel/retail vertical"
+
+    success_metrics:
+      - metric: "PCF Coverage (Category 1)"
+        baseline: "10%"
+        target: "40%"
+        stretch: "60%"
+
+      - metric: "Product-Level PCF Coverage"
+        baseline: "0 SKUs"
+        target: "Top 100 SKUs (by revenue)"
+        stretch: "Top 500 SKUs"
+
+      - metric: "Higg MSI Integration"
+        baseline: "Separate systems"
+        target: "Automated data sync"
+        stretch: "Real-time PCF updates"
+
+  # ---------------------------------------------------------------------------
+  # Design Partner 5: HealthFoods Corp.
+  # ---------------------------------------------------------------------------
+  partner_5:
+    company_name: "HealthFoods Corp."
+    industry: "Food & Beverage (organic/natural foods)"
+    headquarters: "Boulder, CO, USA"
+    employees: "~4,500"
+    revenue: "~$1.8B USD"
+
+    profile:
+      description: "Natural and organic food brand (packaged foods, beverages, snacks)"
+      supply_chain: "Agricultural supply chain (raw materials, co-manufacturers, packaging)"
+      sustainability_status: "SEC Climate Rule subject (if finalized), SBTi validated (2022)"
+      scope3_maturity: "Intermediate (Cool Farm Tool for agriculture, limited packaging data)"
+
+    technology_stack:
+      erp_system: "Oracle Fusion Cloud ERP"
+      other_systems: "Trace Register (supplier compliance), Enviance (environmental data)"
+      data_readiness: "Good agricultural data (Cool Farm), gaps in packaging and co-manufacturing"
+
+    scope3_baseline:
+      estimated_scope3_tco2e: "~200,000"
+      category_1_percent: "90%"
+      category_4_percent: "8%"
+      category_6_percent: "2%"
+      current_calculation_method: "Cool Farm Tool for agriculture (~50%), Tier 3 for rest"
+      pcf_coverage: "~25% (agricultural raw materials)"
+
+    design_partner_objectives:
+      primary: "Extend PCF coverage from agriculture to packaging and co-manufacturing"
+      secondary_1: "Integrate Cool Farm Tool data with PACT Pathfinder"
+      secondary_2: "Packaging LCA integration (plastic, glass, aluminum)"
+      stretch_goal: "Achieve 50% PCF coverage across entire value chain"
+
+    resources_committed:
+      executive_sponsor: "Chief Supply Chain Officer"
+      project_lead: "Sustainability Director (full-time)"
+      it_support: "Oracle Fusion Administrator (30% allocation)"
+      supply_chain_support: "Supplier Quality Manager (20% allocation)"
+
+    value_proposition:
+      to_partner:
+        - "Holistic supply chain view (agriculture + packaging + co-manufacturing)"
+        - "Cool Farm Tool integration (agricultural emissions)"
+        - "SBTi progress tracking (Scope 3 reduction targets)"
+        - "SEC Climate Rule readiness"
+      to_greenlang:
+        - "Validate food & beverage vertical (unique supply chain)"
+        - "Test Cool Farm Tool integration"
+        - "Case study: Agricultural supply chain + packaging"
+        - "Reference customer for food & beverage sector"
+
+    success_metrics:
+      - metric: "PCF Coverage (Category 1)"
+        baseline: "25%"
+        target: "50%"
+        stretch: "65%"
+
+      - metric: "Packaging PCF Coverage"
+        baseline: "<5%"
+        target: "80%"
+        stretch: "95%"
+
+      - metric: "Co-Manufacturer Engagement"
+        baseline: "0 co-manufacturers"
+        target: "10 co-manufacturers with PCF"
+        stretch: "20 co-manufacturers"
+
+  # ---------------------------------------------------------------------------
+  # Design Partner 6: GlobalRetail Inc.
+  # ---------------------------------------------------------------------------
+  partner_6:
+    company_name: "GlobalRetail Inc."
+    industry: "Consumer Electronics Retail (omnichannel)"
+    headquarters: "London, UK"
+    employees: "~9,500"
+    revenue: "~£2.2B GBP"
+
+    profile:
+      description: "Consumer electronics retailer (laptops, smartphones, smart home devices)"
+      supply_chain: "Retail supply chain (sourcing from OEMs, private label manufacturing)"
+      sustainability_status: "ESRS mandatory (2025), TCFD reporter (since 2021)"
+      scope3_maturity: "Intermediate (supplier questionnaires, limited PCF data)"
+
+    technology_stack:
+      erp_system: "SAP S/4HANA"
+      retail_systems: "Blue Yonder merchandising, Manhattan Associates WMS"
+      other_systems: "SAP Ariba (procurement), Salesforce CRM"
+      data_readiness: "Excellent retail/logistics data, fair supplier engagement data"
+
+    scope3_baseline:
+      estimated_scope3_tco2e: "~300,000"
+      category_1_percent: "75%"
+      category_4_percent: "20%"
+      category_6_percent: "5%"
+      current_calculation_method: "Supplier questionnaires (20%), Tier 3 spend-based (80%)"
+      pcf_coverage: "~15% (major OEMs like Apple, Samsung)"
+
+    design_partner_objectives:
+      primary: "Scale PCF coverage from 15% to 40% (private label + OEMs)"
+      secondary_1: "SAP Ariba integration (supplier PCF via procurement platform)"
+      secondary_2: "Retail-specific Category 4 (last-mile delivery emissions)"
+      stretch_goal: "Display product carbon footprints on e-commerce site (pilot: top 50 SKUs)"
+
+    resources_committed:
+      executive_sponsor: "Group Sustainability Director"
+      project_lead: "Carbon Accounting Lead (full-time)"
+      it_support: "SAP Ariba Technical Lead (50% allocation)"
+      procurement_support: "Head of Responsible Sourcing (20% allocation)"
+
+    value_proposition:
+      to_partner:
+        - "SAP Ariba + PCF Exchange integration (procurement platform)"
+        - "Retail supply chain complexity (OEMs + private label)"
+        - "ESRS E1-6 compliance (2025 deadline)"
+        - "Consumer-facing carbon labeling (competitive advantage)"
+      to_greenlang:
+        - "Validate SAP Ariba integration (procurement platform)"
+        - "Test retail supply chain (OEM + private label)"
+        - "Case study: ESRS compliance for retail"
+        - "Reference customer for retail vertical"
+
+    success_metrics:
+      - metric: "PCF Coverage (Category 1)"
+        baseline: "15%"
+        target: "40%"
+        stretch: "55%"
+
+      - metric: "SAP Ariba Integration"
+        baseline: "N/A"
+        target: "100% of Ariba suppliers accessible"
+        stretch: "Automated PCF ingestion"
+
+      - metric: "Consumer Carbon Labeling"
+        baseline: "0 SKUs"
+        target: "Top 50 SKUs (pilot)"
+        stretch: "Top 200 SKUs"
+
+# ============================================================================
+# CROSS-PARTNER SUCCESS METRICS
+# ============================================================================
+
+cross_partner_metrics:
+  description: "Aggregate success metrics across all 6 design partners"
+
+  targets:
+    - metric: "Average PCF Coverage (Category 1)"
+      baseline: "12.5%"
+      target: "35%"
+      stretch: "45%"
+      calculation: "Weighted average by spend across all partners"
+
+    - metric: "Supplier Engagement Success Rate"
+      baseline: "N/A"
+      target: "50% response rate (top 20% suppliers)"
+      stretch: "60% response rate"
+      calculation: "Across all partners, % of contacted suppliers that provide PCF"
+
+    - metric: "Entity Resolution Auto-Match Rate"
+      baseline: "N/A"
+      target: ">=95% with high confidence"
+      stretch: ">=98%"
+      calculation: "% of supplier names auto-resolved with confidence >= 95%"
+
+    - metric: "Data Quality Improvement (DQI)"
+      baseline: "2.8 (Fair, weighted avg)"
+      target: "4.0+ (Good)"
+      stretch: "4.5+ (Excellent)"
+      calculation: "Weighted average DQI score across all partners"
+
+    - metric: "Multi-Standard Report Generation"
+      baseline: "0 partners"
+      target: "6 partners with ESRS/CDP/IFRS S2 reports"
+      stretch: "All reports validated by external auditors"
+
+    - metric: "Case Studies Published"
+      baseline: "0"
+      target: "2 publishable case studies"
+      stretch: "4 case studies + 2 webinars"
+
+    - metric: "Net Promoter Score (NPS)"
+      baseline: "N/A"
+      target: "NPS >= 8 (would recommend to peer)"
+      stretch: "NPS >= 9"
+      calculation: "Average NPS across all 6 partners"
+
+# ============================================================================
+# VALUE PROPOSITION SUMMARY
+# ============================================================================
+
+value_proposition:
+  to_design_partners:
+    financial_value:
+      - "Free platform access during 10-week pilot ($50K-$75K value per partner)"
+      - "No setup fees, no subscription fees during pilot"
+      - "Optional: Discounted annual subscription post-pilot (50% off Year 1)"
+
+    strategic_value:
+      - "Accelerate regulatory compliance (ESRS, SEC Climate Rule)"
+      - "SBTi target validation and progress tracking"
+      - "Supplier engagement playbook and templates"
+      - "Data quality improvement (2x DQI score increase typical)"
+
+    operational_value:
+      - "Automated ERP integration (no manual data entry)"
+      - "AI-powered Entity MDM (supplier name resolution)"
+      - "Multi-standard reporting (ESRS, CDP, IFRS S2) in one platform"
+      - "Hotspot analysis for reduction prioritization"
+
+    brand_value:
+      - "Co-marketing opportunities (webinars, case studies, press releases)"
+      - "Industry leadership (early adopter of AI-powered Scope 3 platform)"
+      - "Product roadmap influence (design partner feedback shapes features)"
+
+  to_greenlang:
+    product_validation:
+      - "Validate product-market fit across 2 verticals (Manufacturing, Retail)"
+      - "Stress-test platform with real-world data volumes and complexity"
+      - "Refine calculation methodologies (Tier 1/2/3) with diverse use cases"
+
+    market_intelligence:
+      - "Deep understanding of vertical-specific pain points"
+      - "Competitive intelligence (alternatives considered by partners)"
+      - "Pricing insights (willingness to pay, budget allocation)"
+
+    sales_enablement:
+      - "6 reference customers across 2 verticals"
+      - "2-4 publishable case studies with quantified results"
+      - "Testimonials and NPS scores for website/marketing"
+      - "Proof points for GA launch (Week 44+)"
+
+    technical_debt_reduction:
+      - "Real-world integration testing (SAP, Oracle, Workday)"
+      - "Edge case discovery (data quality issues, rare scenarios)"
+      - "Performance benchmarking (calculation speed, Entity MDM accuracy)"
+
+# ============================================================================
+# PARTNER ONBOARDING PLAN
+# ============================================================================
+
+onboarding_plan:
+  description: "Standardized onboarding process for all 6 design partners"
+
+  pre_kickoff:
+    - activity: "Partner Agreement Signature"
+      timeline: "Week 2 (before pilot start)"
+      deliverables: ["Signed Design Partner Agreement", "Data Processing Agreement (DPA)", "NDA"]
+
+    - activity: "Technical Discovery Call"
+      timeline: "Week 2"
+      attendees: ["Partner IT/Data team", "GreenLang Integration Engineer", "Product Manager"]
+      deliverables: ["ERP system details", "API credentials (scoped, read-only)", "Data schema documentation"]
+
+    - activity: "ERP Access Provisioning"
+      timeline: "Week 2"
+      deliverables: ["Read-only API keys", "Network whitelisting (if required)", "OAuth tokens"]
+
+  week_3_kickoff:
+    - activity: "Kickoff Workshop (Virtual)"
+      duration: "2 hours"
+      attendees: ["Executive sponsor", "Project lead", "IT/Data team", "GreenLang CSM", "Product team"]
+      agenda:
+        - "Pilot objectives and success metrics review (30 min)"
+        - "Platform demo and training (45 min)"
+        - "Integration plan review (30 min)"
+        - "Q&A and next steps (15 min)"
+      deliverables: ["Project charter", "RACI matrix", "Communication plan"]
+
+  weeks_3_5_integration:
+    - activity: "ERP Connector Setup"
+      deliverables: ["SAP OData / Oracle REST / Workday RaaS connection", "Historical data extraction (12 months)"]
+
+    - activity: "Data Quality Assessment"
+      deliverables: ["Data completeness report", "Entity resolution preview (top 100 suppliers)", "DQI baseline scores"]
+
+    - activity: "Supplier Master Data Import"
+      deliverables: ["Supplier entity records", "Contact information (for engagement)", "Spend categorization"]
+
+  weekly_cadence:
+    - meeting: "Weekly Status Call"
+      frequency: "Every Monday, 10:00 AM partner time zone"
+      duration: "30 minutes"
+      attendees: ["Partner project lead", "GreenLang CSM", "Integration Engineer (if needed)"]
+      agenda: ["Progress update", "Blockers/issues", "Data quality review", "Next week priorities"]
+
+    - meeting: "Bi-weekly Executive Sponsor Update"
+      frequency: "Every other Friday"
+      duration: "15 minutes"
+      attendees: ["Executive sponsor", "GreenLang Head of Partnerships"]
+      agenda: ["High-level progress", "Key wins", "Strategic alignment"]
+
+# ============================================================================
+# RISK MITIGATION
+# ============================================================================
+
+risk_mitigation:
+  description: "Identified risks and mitigation strategies for design partner pilot"
+
+  risks:
+    - risk: "Partner resource constraints (1-2 FTE commitment not met)"
+      likelihood: "Medium"
+      impact: "High"
+      mitigation:
+        - "Secure executive sponsorship upfront (enforce commitment)"
+        - "Automate data extraction (minimize partner IT burden)"
+        - "Provide dedicated CSM for each partner (remove friction)"
+
+    - risk: "ERP integration complexity (API issues, data access)"
+      likelihood: "Medium"
+      impact: "High"
+      mitigation:
+        - "Pre-validate ERP versions and API availability in Week 2"
+        - "Fallback: Manual data upload (CSV templates) if API fails"
+        - "Dedicated integration engineer for each ERP type"
+
+    - risk: "Low supplier response rate (<50%)"
+      likelihood: "Medium"
+      impact: "High"
+      mitigation:
+        - "Pilot supplier engagement emails with 3 partners (A/B testing)"
+        - "Provide email templates and incentives (PCF data = preferred supplier status)"
+        - "Executive sponsor outreach to strategic suppliers (if needed)"
+
+    - risk: "Data quality issues (poor DQI, missing key fields)"
+      likelihood: "High"
+      impact: "Medium"
+      mitigation:
+        - "Conduct data quality assessment in Week 3 (before calculation)"
+        - "Partner training on data cleanup (if needed)"
+        - "Graceful degradation: Use Tier 2/3 methods if Tier 1 data unavailable"
+
+    - risk: "Partner dissatisfaction (unmet expectations, NPS < 7)"
+      likelihood: "Low"
+      impact: "Critical"
+      mitigation:
+        - "Set realistic expectations upfront (pilot = MVP, not GA)"
+        - "Weekly check-ins and rapid issue resolution"
+        - "Mid-pilot survey (Week 7) to course-correct if needed"
+
+    - risk: "Timeline slippage (pilot extends beyond Week 12)"
+      likelihood: "Medium"
+      impact: "Medium"
+      mitigation:
+        - "Phased approach: Prioritize Category 1 (defer Cat 4/6 if needed)"
+        - "Weekly status tracking and early escalation"
+        - "Buffer: 2-week extension allowed (max Week 14)"
+
+# ============================================================================
+# POST-PILOT TRANSITION
+# ============================================================================
+
+post_pilot:
+  description: "Transition plan from design partner pilot to paying customers"
+
+  week_12_deliverables:
+    - "Final emissions calculation results (Category 1, 4, 6)"
+    - "Multi-standard reports (ESRS, CDP, IFRS S2)"
+    - "Hotspot analysis and reduction roadmap"
+    - "Case study draft (2 partners)"
+    - "Feedback survey and NPS collection"
+
+  commercial_terms:
+    - option: "Option 1: Convert to Paying Customer"
+      pricing: "50% discount Year 1 (design partner appreciation)"
+      contract: "Annual subscription ($50K-$150K ARR depending on size)"
+      terms: "Standard SLA, full platform access, priority support"
+
+    - option: "Option 2: Extended Pilot (3 months)"
+      pricing: "Free for 3 additional months (max 1 extension)"
+      contract: "Extended Design Partner Agreement"
+      terms: "Continue platform access, provide feedback, case study participation required"
+
+    - option: "Option 3: No Commercial Relationship"
+      pricing: "N/A"
+      contract: "Pilot ends Week 12, platform access terminated"
+      terms: "Keep data exports, testimonial encouraged but not required"
+
+  conversion_targets:
+    - "Goal: 4 of 6 partners convert to paying customers (67% conversion rate)"
+    - "Stretch: 5 of 6 partners (83% conversion rate)"
+    - "Acceptable: 3 of 6 partners (50% conversion rate)"
+
+# ============================================================================
+# END OF DESIGN PARTNER SELECTION & SUCCESS PLANS
+# ============================================================================

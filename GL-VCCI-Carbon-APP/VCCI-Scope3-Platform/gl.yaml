@@ -1,0 +1,1471 @@
+# GreenLang Agent Configuration
+# GL-VCCI-Carbon-APP: Scope 3 Value Chain Carbon Intelligence Platform
+#
+# This configuration file defines agent orchestration, LLM settings,
+# provenance tracking, and runtime behavior for the Scope 3 platform.
+#
+# Version: 2.0.0 (CTO v2 Strategic Plan)
+# Author: GreenLang Framework Team
+# Date: October 25, 2025
+
+# Project metadata
+project:
+  name: "GL-VCCI-Scope3-Platform"
+  version: "2.0.0"
+  description: "Enterprise Scope 3 Value Chain Carbon Intelligence - Cat 1, 4, 6 Focus"
+  environment: "production"  # production | staging | development
+
+# GreenLang framework configuration
+greenlang:
+  version: "0.3.0"
+  mode: "production"  # production | debug
+
+  framework:
+    enable_provenance: true  # CRITICAL: Complete audit trail
+    enable_validation: true  # CRITICAL: 300+ validation rules
+    enable_caching: true  # Performance optimization
+    enable_monitoring: true  # Prometheus metrics
+
+  runtime:
+    max_workers: 12  # Concurrent agent workers
+    timeout_seconds: 7200  # 2 hours for complete pipeline
+    retry_attempts: 3  # Auto-retry on failure
+    backoff_multiplier: 2  # Exponential backoff
+
+# Core Services Configuration (NEW in v2.0)
+# These services are shared across all agents
+core_services:
+  # Factor Broker: Runtime emission factor resolution
+  factor_broker:
+    enabled: true
+    version: "1.0.0"
+
+    # Runtime factor resolution settings
+    resolution:
+      cache_enabled: true
+      cache_ttl_seconds: 86400  # 24 hours (within ecoinvent license terms)
+      cache_max_size_mb: 500
+      target_latency_ms: 50  # <50ms per lookup
+      target_cache_hit_rate: 0.85  # >=85%
+
+    # Data sources configuration
+    sources:
+      - name: "desnz_uk"
+        enabled: true
+        type: "free"
+        api_endpoint: "${DESNZ_API_ENDPOINT}"
+        coverage: 20000
+        priority: 2  # After ecoinvent (Tier 2)
+
+      - name: "epa_us"
+        enabled: true
+        type: "free"
+        api_endpoint: "${EPA_API_ENDPOINT}"
+        coverage: 15000
+        priority: 3  # After DESNZ (Tier 3)
+
+      - name: "ecoinvent"
+        enabled: true
+        type: "licensed"
+        api_endpoint: "${ECOINVENT_API_ENDPOINT}"
+        api_key: "${ECOINVENT_API_KEY}"
+        version: "3.10"
+        coverage: 20000
+        license_cost_per_year: 60000
+        priority: 1  # Highest quality (Tier 1)
+        access_method: "runtime_api"  # No bulk distribution
+        compliance:
+          no_bulk_redistribution: true
+          cache_within_license: true
+
+    # Factor versioning
+    versioning:
+      gwp_standard: "AR6"  # AR5 | AR6
+      allow_gwp_comparison: true  # Compare AR5 vs AR6
+      regional_adaptation: true  # Region-specific factors
+      temporal_resolution: "annual"  # annual | quarterly
+
+    # Fallback strategy
+    fallback:
+      strategy: "cascade"  # Try ecoinvent -> DESNZ -> EPA -> proxy
+      proxy_calculation:
+        enabled: true
+        method: "category_average"  # Use category average if no match
+        flag_as_proxy: true  # Mark in provenance
+
+  # Policy Engine: OPA-based calculator logic
+  policy_engine:
+    enabled: true
+    version: "1.0.0"
+
+    # OPA server configuration
+    opa:
+      server_mode: "embedded"  # embedded | remote
+      remote_url: "${OPA_SERVER_URL}"  # If remote mode
+      policy_bundle_url: "${OPA_BUNDLE_URL}"
+
+      # For embedded mode
+      embedded:
+        policies_directory: "policy/"
+        hot_reload: true  # Reload policies on file change
+        reload_interval_seconds: 60
+
+    # Policy versioning
+    versioning:
+      enabled: true
+      version_control: "git"  # Track policy changes in Git
+      semantic_versioning: true  # v1.0.0, v1.1.0, etc.
+
+      # Active policy versions (multiple versions can coexist)
+      active_versions:
+        category_1: "1.0.0"
+        category_4: "1.2.0"  # Example: Updated for ISO 14083
+        category_6: "1.0.0"
+
+    # Policy evaluation settings
+    evaluation:
+      cache_enabled: true
+      cache_ttl_seconds: 3600  # 1 hour
+      trace_enabled: true  # Full OPA trace for debugging
+      metrics_enabled: true  # Policy evaluation metrics
+
+    # A/B testing support
+    ab_testing:
+      enabled: true
+      test_percentage: 0.05  # 5% of calculations use test policy
+      comparison_mode: "parallel"  # Run both policies, compare results
+
+    # Policies deployed
+    policies:
+      - name: "category_1_purchased_goods"
+        version: "1.0.0"
+        file: "policy/category_1_purchased_goods.rego"
+        tiers: ["tier_1_supplier_pcf", "tier_2_average_data", "tier_3_spend_based"]
+        coverage: "All purchased goods and services"
+
+      - name: "category_4_transport"
+        version: "1.2.0"
+        file: "policy/category_4_transport.rego"
+        standard: "ISO 14083:2023"
+        conformance: "100%"  # Zero variance to test suite
+        modes: ["road", "rail", "air", "sea", "pipeline"]
+
+      - name: "category_6_travel"
+        version: "1.0.0"
+        file: "policy/category_6_travel.rego"
+        methods: ["distance_based_flights", "hotel_nights", "ground_transport"]
+
+  # Entity MDM: Master Data Management for suppliers
+  entity_mdm:
+    enabled: true
+    version: "1.0.0"
+
+    # Entity resolution configuration
+    resolution:
+      strategy: "two_stage"  # vector_similarity + bert_reranking
+      auto_match_threshold: 0.95  # >=95% confidence for auto-match
+      human_review_threshold: 0.80  # <95% but >=80% -> human review
+      auto_reject_threshold: 0.80  # <80% -> auto-reject
+
+      target_metrics:
+        auto_match_rate: 0.95  # >=95% auto-matched
+        precision: 0.95  # >=95% correct matches
+        recall: 0.90  # >=90% of true matches found
+
+    # Stage 1: Vector similarity (fast)
+    vector_similarity:
+      enabled: true
+      engine: "weaviate"
+      weaviate_url: "${WEAVIATE_URL}"
+      embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+      top_k: 10  # Return top 10 candidates
+      min_score: 0.70  # Filter candidates with <70% similarity
+
+    # Stage 2: BERT re-ranking (accurate)
+    bert_reranking:
+      enabled: true
+      model: "sentence-transformers/cross-encoder/ms-marco-MiniLM-L-12-v2"
+      fine_tuned: true
+      fine_tune_dataset: "data/entity_matching_training.jsonl"
+      batch_size: 32
+
+    # External identifier lookup
+    identifiers:
+      - name: "lei"
+        enabled: true
+        provider: "GLEIF"
+        api_endpoint: "${GLEIF_API_ENDPOINT}"
+        api_key: "${GLEIF_API_KEY}"
+        cost_per_year: 10000
+        coverage: "1.7M global entities"
+        lookup_limit: "unlimited"
+
+      - name: "duns"
+        enabled: true
+        provider: "Dun & Bradstreet"
+        api_endpoint: "${DNB_API_ENDPOINT}"
+        api_key: "${DNB_API_KEY}"
+        cost_per_year: 100000
+        coverage: "400M businesses worldwide"
+        lookup_limit: "500K/year"
+
+      - name: "opencorporates"
+        enabled: true
+        provider: "OpenCorporates"
+        api_endpoint: "https://api.opencorporates.com/v0.4"
+        api_key: "${OPENCORPORATES_API_KEY}"
+        cost_per_year: "free"
+        coverage: "200M companies in 140+ jurisdictions"
+        rate_limit: "500 requests/minute"
+
+    # Entity enrichment
+    enrichment:
+      enabled: true
+      sources:
+        - "lei_data"  # Headquarters, parent company
+        - "duns_data"  # Revenue, employee count, industry
+        - "opencorporates_data"  # Registration number, status
+
+      fields_enriched:
+        - "legal_name"
+        - "headquarters_address"
+        - "parent_company"
+        - "industry_classification"
+        - "revenue_usd"
+        - "employee_count"
+
+    # Human review queue
+    human_review:
+      enabled: true
+      queue_backend: "postgresql"
+      assignment_strategy: "round_robin"  # round_robin | workload_based
+      sla_hours: 24  # Resolve within 24 hours
+
+  # PCF Exchange: Product Carbon Footprint data sharing
+  pcf_exchange:
+    enabled: true
+    version: "1.0.0"
+
+    # PACT Pathfinder v2.0 (WBCSD standard)
+    pact:
+      enabled: true
+      version: "2.0"
+      api_endpoint: "${PACT_API_ENDPOINT}"
+      api_key: "${PACT_API_KEY}"
+
+      capabilities:
+        import_pcfs: true  # Import supplier PCFs
+        export_pcfs: true  # Share our PCFs (Enterprise tier)
+        bidirectional: true  # Full exchange
+
+      validation:
+        schema_validation: true
+        schema_version: "2.0.0"
+        reject_invalid: true
+
+      # PCF coverage targets
+      targets:
+        category_1_coverage: 0.30  # 30% of Cat 1 spend by Q2 post-launch
+        tier_1_conversion_rate: 0.25  # 25% of Tier 2 -> Tier 1 via PCF
+
+    # Catena-X (automotive supply chain)
+    catena_x:
+      enabled: true
+      network_endpoint: "${CATENA_X_ENDPOINT}"
+      network_key: "${CATENA_X_KEY}"
+      cost_per_year: 80000
+
+      focus:
+        industry: "automotive"
+        coverage: "Tier 1 automotive suppliers"
+
+    # SAP Sustainability Data Exchange
+    sap_sdx:
+      enabled: true
+      api_endpoint: "${SAP_SDX_ENDPOINT}"
+      api_key: "${SAP_SDX_KEY}"
+
+      integration:
+        sap_s4hana: true
+        sap_ariba: true  # Procurement platform
+
+      data_flows:
+        - "import_supplier_pcfs_from_ariba"
+        - "export_product_pcfs_to_customers"
+
+    # PCF quality scoring
+    quality_scoring:
+      enabled: true
+      dimensions:
+        - "completeness"  # All required fields present
+        - "recency"  # Data <1 year old
+        - "verification"  # Third-party verified
+        - "granularity"  # Product-specific vs. category average
+
+      tier_mapping:
+        high_quality: "tier_1"  # Score >=90
+        medium_quality: "tier_2"  # Score 70-89
+        low_quality: "tier_3"  # Score <70
+
+    # Network effects tracking
+    network_metrics:
+      track_supplier_participation: true
+      track_pcf_coverage_by_category: true
+      track_data_quality_trends: true
+
+# Agent configurations
+agents:
+  # Agent 1: ValueChainIntakeAgent (v2.0)
+  intake:
+    id: "value_chain_intake_agent"
+    name: "ValueChainIntakeAgent"
+    version: "2.0.0"
+    type: "data-processor"
+    enabled: true
+
+    configuration:
+      # Data ingestion settings
+      ingestion:
+        supported_formats:
+          - "csv"
+          - "xlsx"
+          - "json"
+          - "xml"
+          - "pdf"  # OCR-powered
+
+        max_file_size_mb: 500
+        batch_size: 10000  # Records per batch
+        parallel_processing: true
+        workers: 4
+
+      # Entity resolution settings (Entity MDM integration)
+      entity_resolution:
+        enabled: true
+        engine: "entity_mdm"  # Use core Entity MDM service
+
+        # Confidence thresholds (from Entity MDM)
+        thresholds:
+          auto_match: 0.95  # >=95% -> auto-match
+          human_review: 0.80  # 80-95% -> human review
+          auto_reject: 0.80  # <80% -> reject
+
+        # External identifiers (LEI, DUNS, OpenCorporates)
+        external_lookup:
+          lei_enabled: true
+          duns_enabled: true
+          opencorporates_enabled: true
+
+        # Legacy fuzzy matching (fallback)
+        fuzzy_matching:
+          algorithm: "levenshtein"
+          threshold: 0.85  # 85% similarity required
+          phonetic_matching: true  # Soundex, Metaphone
+
+        # LLM disambiguation (legacy, now replaced by BERT)
+        llm_disambiguation:
+          provider: "anthropic"
+          model: "claude-3-5-sonnet-20241022"
+          temperature: 0.0  # Deterministic for entity resolution
+          max_tokens: 1000
+          confidence_threshold: 0.90  # Flag for human review if <90%
+
+      # PCF import (PACT Pathfinder integration)
+      pcf_import:
+        enabled: true
+        source: "pcf_exchange"  # Use core PCF Exchange service
+
+        # PCF quality validation
+        validation:
+          schema_version: "2.0.0"
+          reject_invalid: true
+          min_quality_score: 70  # Reject PCFs with <70 quality score
+
+        # Tier upgrade logic
+        tier_upgrade:
+          enabled: true
+          pcf_overrides_spend_based: true  # Tier 1 PCF > Tier 3 spend
+          require_verification: false  # Accept unverified PCFs (with quality flag)
+
+        # PCF coverage tracking
+        coverage_metrics:
+          track_by_category: true
+          track_by_supplier: true
+          target_category_1: 0.30  # 30% Cat 1 coverage
+
+      # Data quality scoring
+      data_quality:
+        enabled: true
+        scoring_dimensions:
+          - "completeness"  # Required fields present
+          - "accuracy"  # Within expected ranges
+          - "consistency"  # Matches other sources
+          - "timeliness"  # Data recency
+
+        tier_classification:
+          tier_1_threshold: 90  # 90+ score = Tier 1 (actual data)
+          tier_2_threshold: 70  # 70-89 score = Tier 2 (average data)
+          tier_3_threshold: 50  # 50-69 score = Tier 3 (spend-based)
+
+      # Gap analysis
+      gap_analysis:
+        enabled: true
+        prioritization_method: "pareto"  # Top 20% by spend
+        min_spend_threshold: 10000  # $10K minimum spend
+
+      # ERP connections (configured separately)
+      erp_integration:
+        enabled: true
+        connectors:
+          - "sap"
+          - "oracle"
+          - "workday"
+
+    inputs:
+      schemas:
+        - "procurement_data.schema.json"
+        - "logistics_data.schema.json"
+        - "supplier_data.schema.json"
+
+    outputs:
+      - name: "validated_value_chain_data"
+        format: "json"
+        compression: false
+        encryption: false  # Customer data, consider enabling
+
+      - name: "gap_analysis"
+        format: "json"
+
+    performance:
+      target_throughput: 10000  # Records per hour
+      target_latency_ms: 200  # Per record
+      memory_limit_gb: 8
+
+    monitoring:
+      metrics:
+        - "records_processed"
+        - "entity_resolution_accuracy"
+        - "entity_mdm_auto_match_rate"
+        - "pcf_import_count"
+        - "pcf_coverage_percentage"
+        - "data_quality_score"
+        - "gap_analysis_findings"
+
+      alerts:
+        - condition: "entity_mdm_auto_match_rate < 0.90"
+          severity: "warning"
+          action: "notify_team"
+
+        - condition: "pcf_coverage_percentage < 0.10"
+          severity: "info"
+          message: "Low PCF coverage (<10%), prioritize supplier engagement"
+
+  # Agent 2: Scope3CalculatorAgent (v2.0 - Cat 1, 4, 6 Focus)
+  calculator:
+    id: "scope3_calculator_agent"
+    name: "Scope3CalculatorAgent"
+    version: "2.0.0"
+    type: "calculator"
+    enabled: true
+
+    configuration:
+      # Calculation engine settings
+      calculation:
+        mode: "hybrid"  # tier1-deterministic + tier2/3-ai-assisted
+
+        tier_selection:
+          strategy: "best_available"  # Use highest quality tier available
+          allow_tier_mixing: true  # Mix Tier 1/2/3 in same calculation
+
+        zero_hallucination:
+          enabled: true  # CRITICAL: Tier 1 must be deterministic
+          validation_level: "strict"
+          reproducibility_check: true  # Same input -> same output
+
+      # Policy Engine integration (NEW in v2.0)
+      policy_engine:
+        enabled: true
+        mode: "opa"  # Use OPA for calculator logic
+
+        # Policy execution
+        execution:
+          trace_enabled: true  # Full OPA trace
+          cache_enabled: true
+          cache_ttl_seconds: 3600
+
+        # Provenance linkage
+        provenance:
+          track_policy_version: true  # Include policy version in SHA-256 chain
+          track_policy_evaluation_time: true
+          store_policy_trace: true  # Store full OPA trace for audit
+
+      # Scope 3 category configuration (v2.0: Focus on Cat 1, 4, 6)
+      scope3_categories:
+        # GA launch categories (Week 44)
+        enabled_categories: [1, 4, 6]  # Categories 1, 4, 6 only (85-95% of Scope 3)
+
+        # Post-GA roadmap (future releases)
+        roadmap_categories: [2, 3, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+
+        # Category 1: Purchased Goods and Services (CRITICAL - 70% of Scope 3)
+        category_01_purchased_goods:
+          priority: "CRITICAL"
+          methods: ["supplier-specific", "average-data", "spend-based"]
+          default_tier: "best_available"
+
+          # Policy-based calculation
+          policy:
+            name: "category_1_purchased_goods"
+            version: "1.0.0"
+            tiers:
+              tier_1:
+                method: "supplier_specific_pcf"
+                source: "pact_pathfinder"  # PCF Exchange
+                target_coverage: 0.30  # 30% by Q2 post-launch
+
+              tier_2:
+                method: "average_data"
+                source: "factor_broker"  # ecoinvent, DESNZ, EPA
+
+              tier_3:
+                method: "spend_based"
+                source: "factor_broker"  # Economic intensity factors
+
+        # Category 4: Upstream Transport & Distribution (HIGH - 10% of Scope 3)
+        category_04_upstream_transport:
+          priority: "HIGH"
+          methods: ["distance-based", "spend-based"]
+          default_tier: "best_available"
+
+          # ISO 14083:2023 conformance
+          standard: "ISO 14083:2023"
+          conformance: "100%"  # Zero variance to test suite (50 cases)
+
+          # Policy-based calculation
+          policy:
+            name: "category_4_transport"
+            version: "1.2.0"
+            modes: ["road", "rail", "air", "sea", "pipeline"]
+
+            # Well-to-tank (WTT) emissions
+            wtt_boundary: "full_lifecycle"  # Include fuel production
+            gwp_standard: "AR6"
+
+        # Category 6: Business Travel (HIGH - 5% of Scope 3)
+        category_06_business_travel:
+          priority: "HIGH"
+          methods: ["distance-based", "spend-based"]
+          default_tier: "best_available"
+
+          # Policy-based calculation
+          policy:
+            name: "category_6_travel"
+            version: "1.0.0"
+            methods:
+              - "distance_based_flights"  # Flight km * EF
+              - "hotel_nights"  # Nights * EF
+              - "ground_transport"  # Rental cars, taxis
+
+        # Post-GA categories (disabled at launch)
+        category_02_capital_goods:
+          enabled: false
+          roadmap_milestone: "Month 12 (Week 45-48)"
+
+        category_03_fuel_energy:
+          enabled: false
+          roadmap_milestone: "Month 13-15"
+
+        category_05_waste:
+          enabled: false
+          roadmap_milestone: "Month 16-18"
+
+        category_07_employee_commuting:
+          enabled: false
+          roadmap_milestone: "Month 19-21"
+
+        category_08_upstream_leased_assets:
+          enabled: false
+          roadmap_milestone: "Month 22-24"
+
+        category_09_downstream_transport:
+          enabled: false
+          roadmap_milestone: "Month 22-24"
+
+        category_10_processing:
+          enabled: false
+          roadmap_milestone: "Month 22-24"
+
+        category_11_use_of_products:
+          enabled: false
+          roadmap_milestone: "Month 25-27"
+
+        category_12_end_of_life:
+          enabled: false
+          roadmap_milestone: "Month 28-30"
+
+        category_13_downstream_leased_assets:
+          enabled: false
+          roadmap_milestone: "Month 28-30"
+
+        category_14_franchises:
+          enabled: false
+          roadmap_milestone: "Month 28-30"
+
+        category_15_investments:
+          enabled: false
+          roadmap_milestone: "Month 31-33"
+
+      # Emission factor database (Factor Broker integration)
+      emission_factors:
+        source: "factor_broker"  # Use core Factor Broker service
+
+        # Factor Broker configuration
+        factor_broker:
+          enabled: true
+          cache_enabled: true
+          fallback_strategy: "cascade"  # ecoinvent -> DESNZ -> EPA
+
+        # Legacy database path (deprecated in v2.0)
+        database_path: "data/scope3_emission_factors.json"  # Fallback only
+
+        sources:
+          - name: "ecoinvent"
+            version: "3.10"
+            coverage: 20000
+            licensed: true
+            license_cost: 60000
+            access_method: "factor_broker"  # Runtime resolution
+
+          - name: "DESNZ"
+            version: "2024"
+            coverage: 20000
+            free: true
+            access_method: "factor_broker"
+
+          - name: "EPA"
+            version: "2024"
+            coverage: 15000
+            free: true
+            access_method: "factor_broker"
+
+        update_frequency: "quarterly"  # Refresh emission factors quarterly
+        fallback_strategy: "average-data"  # If exact factor not found
+
+      # Uncertainty quantification
+      uncertainty:
+        enabled: true
+        method: "monte_carlo"
+        simulations: 10000  # Monte Carlo iterations
+        confidence_interval: 0.95  # 95% confidence interval
+
+        tier_uncertainty_ranges:
+          tier_1: 0.05  # ±5% uncertainty
+          tier_2: 0.20  # ±20% uncertainty
+          tier_3: 0.50  # ±50% uncertainty
+
+      # Provenance tracking (enhanced in v2.0)
+      provenance:
+        enabled: true  # CRITICAL: Complete audit trail
+        hash_algorithm: "sha256"
+        track_lineage: true  # Every calculation traced to source
+        store_intermediate_results: true
+
+        # v2.0 enhancements
+        track_policy_version: true  # Policy version in SHA-256 chain
+        track_factor_version: true  # Factor version from Factor Broker
+        track_pcf_source: true  # PCF source (PACT, Catena-X, SAP SDX)
+
+        # Provenance chain structure
+        chain_elements:
+          - "input_data_hash"
+          - "policy_name"
+          - "policy_version"
+          - "factor_id"
+          - "factor_version"
+          - "factor_source"  # ecoinvent | desnz | epa | pact
+          - "calculation_timestamp"
+          - "calculation_result_hash"
+          - "gwp_standard"  # AR5 | AR6
+
+    inputs:
+      - "validated_value_chain_data.json"
+
+    outputs:
+      - name: "scope3_emissions"
+        format: "json"
+        schema: "scope3_results.schema.json"
+
+      - name: "calculation_lineage"
+        format: "json"
+        description: "SHA-256 provenance chain with policy + factor versions"
+
+    performance:
+      target_throughput: 10000  # Calculations per second
+      target_latency_ms: 1  # Per calculation
+      memory_limit_gb: 16
+      parallel_categories: true  # Calculate categories in parallel
+
+    monitoring:
+      metrics:
+        - "calculations_completed"
+        - "tier_1_percentage"
+        - "tier_2_percentage"
+        - "tier_3_percentage"
+        - "pcf_based_calculations"  # Tier 1 from PCF Exchange
+        - "factor_broker_lookups"
+        - "policy_engine_evaluations"
+        - "total_emissions_tco2e"
+        - "uncertainty_range"
+
+      alerts:
+        - condition: "tier_1_percentage < 0.10"
+          severity: "warning"
+          message: "Low Tier 1 data quality (<10%)"
+
+        - condition: "factor_broker_cache_hit_rate < 0.80"
+          severity: "info"
+          message: "Factor Broker cache hit rate below target"
+
+  # Agent 3: HotspotAnalysisAgent (v2.0)
+  hotspot:
+    id: "hotspot_analysis_agent"
+    name: "HotspotAnalysisAgent"
+    version: "2.0.0"
+    type: "analyzer"
+    enabled: true
+
+    configuration:
+      # Pareto analysis
+      pareto:
+        enabled: true
+        threshold: 0.80  # Top 20% suppliers = 80% emissions
+        min_suppliers: 10  # Minimum suppliers for analysis
+
+      # Multi-dimensional hotspots
+      dimensions:
+        - "category"  # Which Scope 3 categories (1, 4, 6)
+        - "supplier"  # Which suppliers
+        - "product"  # Which products/services
+        - "geography"  # Which regions/countries
+        - "temporal"  # Time-based trends
+
+      # AI-powered abatement recommendations
+      abatement:
+        enabled: true
+        engine: "llm"  # LLM-generated recommendations
+
+        llm_config:
+          provider: "anthropic"
+          model: "claude-3-5-sonnet-20241022"
+          temperature: 0.3  # Some creativity for recommendations
+          max_tokens: 2000
+          system_prompt: |
+            You are a climate science and supply chain expert. Analyze Scope 3
+            emissions hotspots and provide actionable abatement recommendations
+            with ROI analysis. Be specific, quantitative, and practical.
+
+            Focus on Categories 1 (Purchased Goods), 4 (Transport), and 6 (Travel).
+
+        recommendation_types:
+          - "supplier_switching"  # Lower-carbon alternatives
+          - "process_optimization"  # Efficiency improvements
+          - "material_substitution"  # Renewable/recycled materials
+          - "modal_shift"  # Transport optimization (rail vs. truck)
+          - "renewable_energy"  # Supplier renewable energy adoption
+          - "pcf_engagement"  # Prioritize suppliers for PCF sharing
+
+        roi_analysis:
+          enabled: true
+          carbon_price_per_tco2e: 50  # $50/tCO2e for cost-benefit
+          discount_rate: 0.07  # 7% discount rate for NPV
+          time_horizon_years: 10
+
+      # Scenario modeling
+      scenario_modeling:
+        enabled: true
+        default_scenarios:
+          - name: "business_as_usual"
+            description: "No interventions"
+
+          - name: "top_20_suppliers_engaged"
+            description: "Top 20% suppliers achieve 10% reduction"
+            reduction_percentage: 0.10
+            target_suppliers: "pareto_top_20"
+
+          - name: "pcf_exchange_30_percent"
+            description: "30% of Cat 1 spend covered by supplier PCFs"
+            impact_category: 1
+            tier_shift: "tier_3_to_tier_1"  # Spend-based -> PCF
+            coverage: 0.30
+
+          - name: "logistics_optimization"
+            description: "10% logistics emissions reduction via modal shift"
+            reduction_percentage: 0.10
+            impact_category: 4  # Cat 4: Upstream Transport
+
+    inputs:
+      - "scope3_emissions.json"
+
+    outputs:
+      - name: "hotspot_analysis"
+        format: "json"
+
+      - name: "abatement_opportunities"
+        format: "json"
+
+      - name: "scenario_analysis"
+        format: "json"
+
+    performance:
+      target_latency_seconds: 5  # For 10,000 suppliers
+      memory_limit_gb: 4
+
+  # Agent 4: SupplierEngagementAgent (v2.0 with GDPR/CCPA compliance)
+  engagement:
+    id: "supplier_engagement_agent"
+    name: "SupplierEngagementAgent"
+    version: "2.0.0"
+    type: "workflow-automation"
+    enabled: true
+
+    configuration:
+      # Email campaign automation
+      email_campaigns:
+        enabled: true
+        provider: "sendgrid"  # sendgrid | smtp
+        api_key: "${SENDGRID_API_KEY}"
+
+        # GDPR/CCPA compliance (NEW in v2.0)
+        compliance:
+          gdpr_enabled: true
+          ccpa_enabled: true
+          can_spam_enabled: true
+
+          consent_management:
+            require_explicit_consent: true
+            consent_storage: "postgresql"
+            double_opt_in: true
+
+          unsubscribe:
+            one_click_unsubscribe: true  # RFC 8058
+            honor_immediately: true
+            suppression_list: "postgresql"
+
+          data_retention:
+            email_logs_days: 90
+            personal_data_days: 2555  # 7 years (GDPR)
+            right_to_erasure: true  # GDPR Article 17
+
+        templates:
+          - name: "initial_outreach"
+            subject: "Partnership on Climate Data - {{company_name}}"
+            sequence:
+              - delay_days: 0
+                template_file: "templates/email_01_initial.html"
+
+              - delay_days: 7
+                template_file: "templates/email_02_followup.html"
+
+              - delay_days: 14
+                template_file: "templates/email_03_final.html"
+
+        personalization:
+          enabled: true
+          llm_generation: true  # AI-powered personalization
+          variables:
+            - "supplier_name"
+            - "spend_amount"
+            - "emissions_estimate"
+            - "category"
+            - "contact_name"
+
+      # Supplier portal
+      supplier_portal:
+        enabled: true
+        url: "https://suppliers.vcci-platform.com"
+        authentication: "oauth2"
+        features:
+          - "data_upload"  # CSV, Excel, PDF
+          - "pcf_upload"  # PACT Pathfinder format
+          - "progress_tracking"  # % complete dashboard
+          - "real_time_validation"  # Immediate feedback
+          - "certification_upload"  # ISO 14064, CDP disclosures
+          - "consent_management"  # GDPR consent preferences
+
+      # Supplier scoring
+      supplier_scoring:
+        enabled: true
+        dimensions:
+          - name: "data_quality"
+            weight: 0.40
+            metrics:
+              - "completeness"
+              - "accuracy"
+              - "timeliness"
+
+          - name: "response_rate"
+            weight: 0.30
+            metrics:
+              - "email_open_rate"
+              - "portal_login_rate"
+              - "data_submission_rate"
+
+          - name: "improvement_rate"
+            weight: 0.30
+            metrics:
+              - "year_over_year_emissions_reduction"
+              - "data_quality_improvement"
+              - "pcf_sharing"  # NEW in v2.0
+
+      # Leaderboards (gamification)
+      leaderboards:
+        enabled: true
+        update_frequency: "weekly"
+        categories:
+          - "highest_data_quality"
+          - "best_improvement"
+          - "fastest_response"
+          - "pcf_leaders"  # NEW: Suppliers sharing PCFs
+        recognition:
+          - "top_10_badge"
+          - "monthly_recognition_email"
+
+    inputs:
+      - "gap_analysis.json"
+      - "hotspot_analysis.json"
+
+    outputs:
+      - name: "engagement_status"
+        format: "json"
+
+      - name: "supplier_scores"
+        format: "json"
+
+    performance:
+      target_email_delivery_rate: 0.99  # 99% delivery
+      target_response_rate: 0.30  # 30% (vs. 20% manual)
+
+  # Agent 5: Scope3ReportingAgent (v2.0 with ESRS, IFRS S2)
+  reporting:
+    id: "scope3_reporting_agent"
+    name: "Scope3ReportingAgent"
+    version: "2.0.0"
+    type: "reporter"
+    enabled: true
+
+    configuration:
+      # GHG Protocol reporting
+      ghg_protocol:
+        enabled: true
+        standard_version: "2011"  # GHG Protocol Scope 3 Standard
+        report_formats:
+          - "pdf"
+          - "xlsx"
+          - "json"
+
+        sections:
+          - "executive_summary"
+          - "methodology_disclosure"
+          - "category_breakdown"  # Cat 1, 4, 6 at launch
+          - "data_quality_statement"
+          - "year_over_year_comparison"
+          - "uncertainty_analysis"
+          - "third_party_assurance_package"
+
+      # CDP Climate Change questionnaire
+      cdp:
+        enabled: true
+        questionnaire_year: 2026
+        auto_population_target: 0.90  # 90% auto-populated
+
+        sections:
+          - "C6.5"  # Scope 3 emissions breakdown
+          - "C8.2"  # Energy-related activities
+          - "C12.1"  # Supplier engagement
+
+        output_format: "xlsx"  # CDP-ready Excel format
+        validation: true  # Pre-validate before export
+
+      # SBTi submission package
+      sbti:
+        enabled: true
+        version: "2.0"  # SBTi Corporate Net-Zero Standard
+
+        components:
+          - "scope3_screening"  # Materiality assessment
+          - "boundary_definition"  # Included categories (1, 4, 6)
+          - "target_setting"  # % reduction by 2030
+          - "validation_checklist"
+
+        output_formats:
+          - "pdf"
+          - "xlsx"
+
+      # ESRS (EU CSRD) - NEW in v2.0
+      esrs:
+        enabled: true
+        version: "2023"
+        regulation: "EU CSRD"
+        effective_date: "2025-01-01"
+
+        standards:
+          - name: "ESRS E1"
+            description: "Climate change"
+            sections:
+              - "E1-1: Transition plan"
+              - "E1-2: Policies related to climate change mitigation"
+              - "E1-3: Actions and resources in relation to climate change"
+              - "E1-6: Gross Scopes 1, 2, 3 and Total GHG emissions"
+
+          - name: "ESRS E2"
+            description: "Pollution"
+            scope: "Air emissions"
+
+          - name: "ESRS E3"
+            description: "Water and marine resources"
+
+          - name: "ESRS E4"
+            description: "Biodiversity and ecosystems"
+
+          - name: "ESRS E5"
+            description: "Resource use and circular economy"
+
+        output_formats:
+          - "pdf"
+          - "xlsx"
+          - "xbrl"  # ESEF format for EU
+
+      # IFRS S2 Climate-related Disclosures - NEW in v2.0
+      ifrs_s2:
+        enabled: true
+        version: "2023"
+        issuer: "IFRS Foundation"
+        effective_date: "2024-01-01"
+
+        disclosure_requirements:
+          - name: "Governance"
+            sections:
+              - "Board oversight of climate-related risks and opportunities"
+              - "Management's role in climate governance"
+
+          - name: "Strategy"
+            sections:
+              - "Climate-related risks and opportunities"
+              - "Effect on financial position, performance, cash flows"
+              - "Climate resilience (scenario analysis)"
+
+          - name: "Risk Management"
+            sections:
+              - "Processes to identify climate-related risks"
+              - "Integration into overall risk management"
+
+          - name: "Metrics and Targets"
+            sections:
+              - "Scope 1, 2, 3 GHG emissions"
+              - "Climate-related targets"
+              - "Progress against targets"
+
+        output_formats:
+          - "pdf"
+          - "xlsx"
+
+      # Executive dashboards
+      dashboards:
+        enabled: true
+        library: "plotly"  # plotly | matplotlib
+
+        visualizations:
+          - type: "bar_chart"
+            name: "emissions_by_category"
+            categories: [1, 4, 6]  # v2.0: Cat 1, 4, 6 only
+            interactive: true
+
+          - type: "pie_chart"
+            name: "emissions_by_tier"
+
+          - type: "treemap"
+            name: "supplier_emissions_hierarchy"
+
+          - type: "map"
+            name: "geographic_hotspots"
+
+          - type: "line_chart"
+            name: "year_over_year_trends"
+
+          - type: "waterfall_chart"
+            name: "pcf_coverage_progress"
+            description: "Track progress toward 30% PCF coverage"
+
+        export_formats:
+          - "html"  # Interactive
+          - "pdf"  # Static for presentations
+          - "pptx"  # PowerPoint
+
+      # Multi-format export
+      export:
+        formats:
+          - "pdf"
+          - "xlsx"
+          - "json"
+          - "html"
+          - "pptx"
+          - "xbrl"  # ESRS ESEF format
+
+        templates:
+          pdf: "templates/ghg_protocol_template.pdf"
+          pptx: "templates/executive_dashboard_template.pptx"
+          xbrl: "templates/esrs_esef_template.xbrl"
+
+    inputs:
+      - "scope3_emissions.json"
+      - "hotspot_analysis.json"
+      - "engagement_status.json"
+
+    outputs:
+      - name: "ghg_protocol_inventory"
+        formats: ["pdf", "xlsx", "json"]
+
+      - name: "cdp_questionnaire"
+        format: "xlsx"
+
+      - name: "sbti_package"
+        formats: ["pdf", "xlsx"]
+
+      - name: "esrs_disclosure"
+        formats: ["pdf", "xlsx", "xbrl"]
+
+      - name: "ifrs_s2_disclosure"
+        formats: ["pdf", "xlsx"]
+
+      - name: "executive_dashboard"
+        formats: ["html", "pdf", "pptx"]
+
+    performance:
+      target_generation_time_seconds: 10  # Per report
+      concurrent_reports: 5
+
+# Pipeline orchestration
+pipeline:
+  name: "scope3_complete_pipeline"
+  enabled: true
+
+  execution:
+    mode: "sequential"  # sequential | parallel
+    parallel_stages: [1, 3, 4]  # Stages that can run in parallel
+    sequential_stages: [2, 5]  # Stages that must run sequentially
+
+  stages:
+    - stage_id: 1
+      name: "data_intake"
+      agent: "intake"
+      timeout_seconds: 3600  # 1 hour
+      retry_on_failure: true
+      critical: true  # Failure blocks pipeline
+
+    - stage_id: 2
+      name: "calculation"
+      agent: "calculator"
+      timeout_seconds: 1800  # 30 minutes
+      depends_on: [1]
+      retry_on_failure: true
+      critical: true
+
+    - stage_id: 3
+      name: "hotspot_analysis"
+      agent: "hotspot"
+      timeout_seconds: 600  # 10 minutes
+      depends_on: [2]
+      retry_on_failure: false
+      critical: false  # Optional
+
+    - stage_id: 4
+      name: "supplier_engagement"
+      agent: "engagement"
+      timeout_seconds: 300  # 5 minutes
+      depends_on: [1, 3]
+      retry_on_failure: false
+      critical: false  # Optional
+
+    - stage_id: 5
+      name: "reporting"
+      agent: "reporting"
+      timeout_seconds: 600  # 10 minutes
+      depends_on: [2, 3, 4]
+      retry_on_failure: true
+      critical: true
+
+  error_handling:
+    strategy: "fail_fast"  # fail_fast | continue_on_error
+    notify_on_failure: true
+    notification_channels:
+      - "email"
+      - "slack"
+
+# LLM configuration (global)
+llm:
+  default_provider: "anthropic"  # anthropic | openai
+
+  providers:
+    anthropic:
+      api_key: "${ANTHROPIC_API_KEY}"
+      default_model: "claude-3-5-sonnet-20241022"
+      max_tokens: 4096
+      temperature: 0.0  # Deterministic by default
+      timeout_seconds: 60
+
+    openai:
+      api_key: "${OPENAI_API_KEY}"
+      default_model: "gpt-4-turbo-preview"
+      max_tokens: 4096
+      temperature: 0.0
+      timeout_seconds: 60
+
+  usage_limits:
+    max_tokens_per_day: 1000000  # 1M tokens/day
+    max_cost_per_day_usd: 100  # $100/day budget
+    alert_threshold: 0.80  # Alert at 80% of limit
+
+  caching:
+    enabled: true
+    ttl_seconds: 3600  # 1 hour cache
+    max_size_mb: 1000  # 1GB cache
+
+# Provenance tracking (global - enhanced in v2.0)
+provenance:
+  enabled: true
+  storage_backend: "s3"  # s3 | local | postgresql
+
+  s3_config:
+    bucket: "${VCCI_PROVENANCE_BUCKET}"
+    region: "us-west-2"
+    encryption: "AES256"
+    versioning: true
+
+  retention:
+    policy: "7_years"  # Regulatory requirement (EU CSRD)
+    archive_after_days: 365  # Archive to Glacier after 1 year
+
+  audit_trail:
+    include_environment: true  # Python version, packages
+    include_timestamps: true
+    include_user_info: true
+    hash_algorithm: "sha256"
+
+    # v2.0 enhancements
+    include_policy_version: true  # OPA policy version
+    include_factor_version: true  # Emission factor version
+    include_pcf_source: true  # PCF source (PACT, Catena-X, SAP SDX)
+    include_gwp_standard: true  # AR5 | AR6
+
+# Validation framework (global)
+validation:
+  enabled: true
+  strict_mode: true  # Fail on validation errors
+
+  schemas:
+    directory: "schemas/"
+    format: "json_schema"
+
+  rules:
+    directory: "rules/"
+    format: "yaml"
+    total_rules: 300
+
+    categories:
+      - name: "data_quality_rules"
+        file: "data_quality_rules.yaml"
+        count: 150
+
+      - name: "ghg_protocol_rules"
+        file: "ghg_protocol_rules.yaml"
+        count: 100
+
+      - name: "supplier_data_rules"
+        file: "supplier_data_rules.yaml"
+        count: 50
+
+# Monitoring & observability
+monitoring:
+  enabled: true
+
+  metrics:
+    backend: "prometheus"  # prometheus | datadog
+    port: 9090
+    endpoint: "/metrics"
+
+    custom_metrics:
+      - "vcci_pipeline_duration_seconds"
+      - "vcci_emissions_calculated_tco2e_total"
+      - "vcci_suppliers_processed_total"
+      - "vcci_entity_resolution_accuracy"
+      - "vcci_entity_mdm_auto_match_rate"
+      - "vcci_factor_broker_cache_hit_rate"
+      - "vcci_policy_engine_evaluations_total"
+      - "vcci_pcf_import_count"
+      - "vcci_pcf_coverage_percentage"
+      - "vcci_tier1_data_percentage"
+      - "vcci_llm_api_calls_total"
+      - "vcci_llm_api_cost_usd_total"
+
+  logging:
+    level: "INFO"  # DEBUG | INFO | WARNING | ERROR
+    format: "json"  # json | text
+    destination: "stdout"  # stdout | file | cloudwatch
+
+    structured_logging:
+      enabled: true
+      include_correlation_id: true
+      include_agent_id: true
+      include_stage_id: true
+
+  tracing:
+    enabled: true
+    backend: "opentelemetry"
+    sampling_rate: 0.1  # 10% of requests
+
+  alerts:
+    backend: "pagerduty"  # pagerduty | email | slack
+    api_key: "${PAGERDUTY_API_KEY}"
+
+    rules:
+      - name: "high_error_rate"
+        condition: "error_rate > 0.05"  # >5% error rate
+        severity: "critical"
+        notify: ["on_call"]
+
+      - name: "low_data_quality"
+        condition: "tier1_percentage < 0.20"  # <20% Tier 1 data
+        severity: "warning"
+        notify: ["team_lead"]
+
+      - name: "pipeline_timeout"
+        condition: "pipeline_duration > 7200"  # >2 hours
+        severity: "warning"
+        notify: ["devops"]
+
+      - name: "entity_mdm_low_auto_match"
+        condition: "entity_mdm_auto_match_rate < 0.90"
+        severity: "warning"
+        notify: ["data_team"]
+
+      - name: "factor_broker_cache_miss"
+        condition: "factor_broker_cache_hit_rate < 0.80"
+        severity: "info"
+        notify: ["platform_team"]
+
+# Security
+security:
+  encryption:
+    at_rest: true
+    algorithm: "AES256"
+
+    at_transit: true
+    protocol: "TLS1.3"
+
+  secrets_management:
+    backend: "vault"  # vault | aws_secrets_manager | env
+    vault_addr: "${VAULT_ADDR}"
+    vault_token: "${VAULT_TOKEN}"
+
+  api_keys:
+    rotation_days: 90  # Rotate every 90 days
+    min_length: 32
+
+  authentication:
+    method: "oauth2"  # oauth2 | api_key | jwt
+    provider: "auth0"  # auth0 | okta | custom
+
+  authorization:
+    rbac_enabled: true
+    roles:
+      - "admin"  # Full access
+      - "analyst"  # Read + calculate
+      - "viewer"  # Read only
+      - "supplier"  # Supplier portal access only
+
+# Performance optimization
+performance:
+  caching:
+    enabled: true
+    backend: "redis"
+    redis_url: "${REDIS_URL}"
+    ttl_seconds: 3600
+    max_memory_mb: 2048
+
+  database:
+    backend: "postgresql"
+    connection_pool_size: 20
+    max_overflow: 10
+    timeout_seconds: 30
+
+  parallel_processing:
+    enabled: true
+    max_workers: 12
+    worker_type: "thread"  # thread | process
+
+# Multi-tenancy
+multi_tenancy:
+  enabled: true
+  isolation_level: "schema"  # schema | database | namespace
+
+  tenant_config:
+    max_tenants: 500  # Year 3 target
+    default_limits:
+      max_suppliers: 10000
+      max_users: 100
+      max_storage_gb: 1000
+
+# Deployment
+deployment:
+  platform: "kubernetes"  # kubernetes | docker | bare_metal
+
+  kubernetes:
+    namespace: "vcci-production"
+    replicas: 3  # High availability
+    autoscaling:
+      enabled: true
+      min_replicas: 3
+      max_replicas: 10
+      target_cpu_percent: 70
+
+  health_checks:
+    liveness_probe: "/health/live"
+    readiness_probe: "/health/ready"
+    startup_probe: "/health/startup"
+
+# Development & debugging
+development:
+  debug_mode: false
+  verbose_logging: false
+  profiling_enabled: false
+
+  test_mode:
+    enabled: false
+    mock_llm_responses: false
+    mock_erp_connections: false
+
+# Changelog
+changelog:
+  - version: "2.0.0"
+    date: "2025-10-25"
+    changes:
+      - "CTO v2 Strategic Plan implementation"
+      - "Added core_services: Factor Broker, Policy Engine, Entity MDM, PCF Exchange"
+      - "Focus on Categories 1, 4, 6 (85-95% of Scope 3 value)"
+      - "Policy Engine (OPA) integration for versioned calculator logic"
+      - "Entity MDM with LEI, DUNS, OpenCorporates (>=95% auto-match)"
+      - "PCF Exchange with PACT Pathfinder, Catena-X, SAP SDX"
+      - "Enhanced provenance: policy version + factor version tracking"
+      - "Added ESRS (EU CSRD) and IFRS S2 reporting"
+      - "GDPR/CCPA compliance for supplier engagement"
+      - "ISO 14083:2023 conformance for Category 4 transport"
+      - "All agents updated to v2.0.0"
+      - "Post-GA roadmap for Categories 2, 3, 5, 7-15"
+
+  - version: "1.0.0"
+    date: "2025-10-25"
+    changes:
+      - "Initial gl.yaml configuration"
+      - "All 5 agents configured"
+      - "Pipeline orchestration defined"
+      - "LLM, provenance, validation settings"
+      - "Monitoring, security, performance optimizations"

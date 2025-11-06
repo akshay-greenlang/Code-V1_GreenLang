@@ -1,0 +1,512 @@
+# Entity MDM Service Specification
+# GL-VCCI Scope 3 Platform - Core Service
+#
+# Version: 1.0.0
+# Date: October 25, 2025
+# Part of: CTO v2 Strategic Plan
+
+# ============================================================================
+# SERVICE METADATA
+# ============================================================================
+service:
+  name: "EntityMDM"
+  version: "1.0.0"
+  type: "core_service"
+  category: "master_data_management"
+
+  description: >
+    Master Data Management for supplier entities with two-stage resolution
+    (vector similarity + BERT re-ranking), external identifier lookup
+    (LEI, DUNS, OpenCorporates), entity enrichment, and human review queue.
+
+  purpose: >
+    Entity MDM resolves ambiguous supplier names to canonical entities,
+    achieving >=95% auto-match rate through ML-powered two-stage resolution
+    and external identifier lookups.
+
+# ============================================================================
+# BUSINESS VALUE
+# ============================================================================
+business_value:
+  problem_solved: >
+    Supplier names in procurement data are messy: typos, abbreviations,
+    subsidiaries vs parents, legal name changes. Basic fuzzy matching
+    achieves only 60-70% auto-match rate, requiring extensive manual
+    review (expensive, slow, error-prone).
+
+  solution: >
+    Entity MDM uses two-stage ML resolution (Weaviate vector search +
+    BERT re-ranking) plus external identifiers (LEI, DUNS, OpenCorporates)
+    to achieve >=95% auto-match rate with >=95% precision.
+
+  kpis:
+    - name: "Auto-Match Rate"
+      target: ">=95%"
+      description: "95%+ of suppliers auto-matched without human review"
+
+    - name: "Precision"
+      target: ">=95%"
+      description: "95%+ of auto-matches are correct"
+
+    - name: "Recall"
+      target: ">=90%"
+      description: "90%+ of true matches found"
+
+    - name: "Human Review SLA"
+      target: "<24 hours"
+      description: "Human review completed within 24 hours"
+
+# ============================================================================
+# CAPABILITIES
+# ============================================================================
+capabilities:
+  - name: "Two-Stage Resolution"
+    description: "Vector similarity (fast) + BERT re-ranking (accurate)"
+    priority: "critical"
+
+  - name: "External Identifier Lookup"
+    description: "LEI, DUNS, OpenCorporates for high-confidence matching"
+    priority: "critical"
+
+  - name: "Entity Enrichment"
+    description: "Enrich with HQ address, parent company, revenue, industry"
+    priority: "high"
+
+  - name: "Human Review Queue"
+    description: "Queue ambiguous matches for human review"
+    priority: "high"
+
+  - name: "Confidence Scoring"
+    description: "ML confidence score (0-100) for each match"
+    priority: "high"
+
+  - name: "Canonical Entity Database"
+    description: "Maintain master list of canonical supplier entities"
+    priority: "critical"
+
+# ============================================================================
+# TWO-STAGE RESOLUTION
+# ============================================================================
+two_stage_resolution:
+  strategy: "vector_similarity + bert_reranking"
+
+  # Stage 1: Vector Similarity (Weaviate)
+  stage_1_vector_similarity:
+    engine: "weaviate"
+    embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+
+    process:
+      - step: 1
+        action: "Embed supplier name using sentence-transformers"
+        example: "'Acme Corporation Ltd' → [0.12, -0.34, 0.56, ...]"
+
+      - step: 2
+        action: "Query Weaviate for top-K nearest neighbors"
+        k: 10
+
+      - step: 3
+        action: "Filter candidates with similarity score >= min_score"
+        min_score: 0.70  # 70% similarity minimum
+
+    performance:
+      latency_ms: 20  # <20ms for vector search
+      recall: 0.95  # 95% of true matches in top-10
+
+  # Stage 2: BERT Re-Ranking
+  stage_2_bert_reranking:
+    model: "sentence-transformers/cross-encoder/ms-marco-MiniLM-L-12-v2"
+    fine_tuned: true
+    fine_tune_dataset: "data/entity_matching_training.jsonl"
+
+    process:
+      - step: 1
+        action: "Take top-10 candidates from Stage 1"
+
+      - step: 2
+        action: "Re-rank using fine-tuned BERT cross-encoder"
+
+      - step: 3
+        action: "Return top-1 match with confidence score"
+
+    performance:
+      latency_ms: 100  # <100ms for BERT re-ranking (10 candidates)
+      precision: 0.95  # 95% precision
+
+  combined_performance:
+    total_latency_ms: 120  # Stage 1 + Stage 2
+    auto_match_rate: 0.95  # >=95% auto-matched
+    precision: 0.95  # >=95% correct
+    recall: 0.90  # >=90% of true matches found
+
+# ============================================================================
+# EXTERNAL IDENTIFIERS
+# ============================================================================
+external_identifiers:
+  # Identifier 1: LEI (Legal Entity Identifier)
+  lei:
+    provider: "GLEIF (Global Legal Entity Identifier Foundation)"
+    coverage: "1.7M global entities"
+    api_endpoint: "https://api.gleif.org/api/v1"
+    cost_per_year: 10000
+    lookup_limit: "unlimited"
+
+    use_cases:
+      - "Match suppliers by LEI code (high confidence)"
+      - "Resolve parent-subsidiary relationships"
+      - "Enrich with legal name, HQ address, registration date"
+
+    match_confidence:
+      lei_exact_match: 100  # LEI match = 100% confidence
+
+  # Identifier 2: DUNS (Dun & Bradstreet)
+  duns:
+    provider: "Dun & Bradstreet"
+    coverage: "400M businesses worldwide"
+    api_endpoint: "${DNB_API_ENDPOINT}"
+    cost_per_year: 100000
+    lookup_limit: "500K/year"
+
+    use_cases:
+      - "Match suppliers by DUNS number"
+      - "Enrich with revenue, employee count, industry (NAICS)"
+      - "Resolve parent-subsidiary (D&B family tree)"
+
+    match_confidence:
+      duns_exact_match: 100  # DUNS match = 100% confidence
+
+  # Identifier 3: OpenCorporates
+  opencorporates:
+    provider: "OpenCorporates"
+    coverage: "200M+ companies in 140+ jurisdictions"
+    api_endpoint: "https://api.opencorporates.com/v0.4"
+    cost_per_year: 0  # Free tier
+    rate_limit: "500 requests/minute"
+
+    use_cases:
+      - "Match suppliers by company registration number"
+      - "Verify company status (active, dissolved)"
+      - "Enrich with jurisdiction, incorporation date"
+
+    match_confidence:
+      registration_number_match: 100  # Registration match = 100% confidence
+
+# ============================================================================
+# CONFIDENCE THRESHOLDS
+# ============================================================================
+confidence_thresholds:
+  auto_match_threshold: 0.95  # >=95% confidence → auto-match
+  human_review_threshold: 0.80  # 80-95% confidence → human review
+  auto_reject_threshold: 0.80  # <80% confidence → auto-reject
+
+  examples:
+    - input: "Acme Corp"
+      candidate: "ACME Corporation Ltd"
+      confidence: 0.98
+      action: "auto_match"
+      rationale: "High confidence (98%) from BERT re-ranking"
+
+    - input: "ABC Manufacturing"
+      candidate: "ABC Manufacturing Inc."
+      confidence: 0.87
+      action: "human_review"
+      rationale: "Moderate confidence (87%), needs human verification"
+
+    - input: "XYZ"
+      candidate: "XYZ Industries"
+      confidence: 0.65
+      action: "auto_reject"
+      rationale: "Low confidence (65%), insufficient similarity"
+
+# ============================================================================
+# ENTITY ENRICHMENT
+# ============================================================================
+entity_enrichment:
+  enabled: true
+
+  data_sources:
+    - source: "lei_data"
+      fields:
+        - "legal_name"
+        - "headquarters_address"
+        - "parent_company"
+        - "lei_code"
+        - "registration_date"
+
+    - source: "duns_data"
+      fields:
+        - "revenue_usd"
+        - "employee_count"
+        - "industry_classification"  # NAICS, SIC
+        - "duns_number"
+        - "credit_rating"
+
+    - source: "opencorporates_data"
+      fields:
+        - "company_number"
+        - "jurisdiction"
+        - "incorporation_date"
+        - "company_status"  # active | dissolved
+
+  enrichment_process:
+    - step: 1
+      action: "Resolve entity (two-stage resolution + external IDs)"
+
+    - step: 2
+      action: "Query LEI API (if LEI code available)"
+
+    - step: 3
+      action: "Query DUNS API (if DUNS number available)"
+
+    - step: 4
+      action: "Query OpenCorporates API (if registration number available)"
+
+    - step: 5
+      action: "Merge enrichment data into canonical entity record"
+
+# ============================================================================
+# HUMAN REVIEW QUEUE
+# ============================================================================
+human_review:
+  enabled: true
+  queue_backend: "postgresql"
+
+  queue_entry:
+    fields:
+      - "input_supplier_name"
+      - "candidate_entity"
+      - "confidence_score"
+      - "match_rationale"
+      - "enrichment_data"
+      - "assigned_to"
+      - "status"  # pending | approved | rejected
+      - "created_at"
+      - "resolved_at"
+
+  assignment_strategy: "round_robin"  # round_robin | workload_based | expertise_based
+
+  sla:
+    target_resolution_hours: 24
+    escalation_hours: 48
+
+  review_interface:
+    show_fields:
+      - "input_name"
+      - "candidate_name"
+      - "confidence_score"
+      - "lei_code"
+      - "duns_number"
+      - "headquarters_address"
+      - "revenue_usd"
+
+    actions:
+      - "approve_match"
+      - "reject_match"
+      - "merge_duplicates"
+      - "create_new_entity"
+
+# ============================================================================
+# API SPECIFICATION
+# ============================================================================
+api:
+  base_path: "/api/v1/entity-mdm"
+
+  endpoints:
+    # Endpoint 1: Resolve Entity
+    - path: "/resolve"
+      method: "POST"
+      description: "Resolve supplier name to canonical entity"
+
+      request:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          required: ["supplier_name"]
+          properties:
+            supplier_name:
+              type: "string"
+              example: "Acme Corporation"
+
+            hints:
+              type: "object"
+              description: "Optional hints for matching"
+              properties:
+                lei_code:
+                  type: "string"
+                duns_number:
+                  type: "string"
+                country:
+                  type: "string"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            match_status:
+              type: "string"
+              enum: ["auto_match", "human_review", "no_match"]
+
+            canonical_entity:
+              type: "object"
+              properties:
+                entity_id:
+                  type: "string"
+                canonical_name:
+                  type: "string"
+                lei_code:
+                  type: "string"
+                duns_number:
+                  type: "string"
+                headquarters_address:
+                  type: "string"
+
+            confidence_score:
+              type: "number"
+              minimum: 0
+              maximum: 1
+
+            match_method:
+              type: "string"
+              enum: ["lei_exact", "duns_exact", "vector_bert", "manual"]
+
+    # Endpoint 2: Enrich Entity
+    - path: "/enrich/{entity_id}"
+      method: "GET"
+      description: "Get enriched entity data"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "object"
+          properties:
+            entity_id:
+              type: "string"
+            canonical_name:
+              type: "string"
+            lei_data:
+              type: "object"
+            duns_data:
+              type: "object"
+            opencorporates_data:
+              type: "object"
+
+    # Endpoint 3: Human Review Queue
+    - path: "/review-queue"
+      method: "GET"
+      description: "Get pending human reviews"
+
+      response:
+        content_type: "application/json"
+        schema:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              review_id:
+                type: "string"
+              input_name:
+                type: "string"
+              candidate_name:
+                type: "string"
+              confidence_score:
+                type: "number"
+
+# ============================================================================
+# PERFORMANCE TARGETS
+# ============================================================================
+performance:
+  resolution_latency:
+    target_p50_ms: 100  # 50th percentile
+    target_p95_ms: 200  # 95th percentile
+    target_p99_ms: 500  # 99th percentile
+
+  accuracy:
+    target_auto_match_rate: 0.95  # >=95%
+    target_precision: 0.95  # >=95%
+    target_recall: 0.90  # >=90%
+
+  throughput:
+    target_resolutions_per_second: 100
+    max_resolutions_per_second: 500
+
+  human_review:
+    target_queue_size: 100  # <100 pending reviews
+    target_sla_compliance: 0.95  # 95% resolved within SLA
+
+# ============================================================================
+# MONITORING & OBSERVABILITY
+# ============================================================================
+monitoring:
+  metrics:
+    - name: "entity_mdm_resolutions_total"
+      type: "counter"
+      labels: ["match_status"]
+
+    - name: "entity_mdm_auto_match_rate"
+      type: "gauge"
+      description: "Auto-match rate (0-1)"
+
+    - name: "entity_mdm_confidence_distribution"
+      type: "histogram"
+      buckets: [0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0]
+
+    - name: "entity_mdm_resolution_latency_seconds"
+      type: "histogram"
+      buckets: [0.1, 0.2, 0.5, 1.0, 2.0]
+
+    - name: "entity_mdm_human_review_queue_size"
+      type: "gauge"
+
+    - name: "entity_mdm_external_id_lookups_total"
+      type: "counter"
+      labels: ["source"]  # lei | duns | opencorporates
+
+  alerts:
+    - name: "low_auto_match_rate"
+      condition: "auto_match_rate < 0.90"
+      severity: "warning"
+      action: "Investigate ML model performance"
+
+    - name: "high_human_review_queue"
+      condition: "queue_size > 200"
+      severity: "warning"
+      action: "Allocate more human reviewers"
+
+    - name: "sla_breach"
+      condition: "sla_compliance < 0.90"
+      severity: "critical"
+      action: "Escalate to management"
+
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+deployment:
+  platform: "kubernetes"
+  replicas: 3
+
+  resources:
+    requests:
+      cpu: "1000m"
+      memory: "4Gi"
+    limits:
+      cpu: "4000m"
+      memory: "16Gi"
+
+  gpu_support:
+    enabled: true  # For BERT re-ranking
+    gpu_type: "NVIDIA T4"
+    gpu_count: 1
+
+# ============================================================================
+# CHANGELOG
+# ============================================================================
+changelog:
+  - version: "1.0.0"
+    date: "2025-10-25"
+    changes:
+      - "Initial Entity MDM specification"
+      - "Two-stage resolution (vector + BERT)"
+      - "External identifiers (LEI, DUNS, OpenCorporates)"
+      - "Entity enrichment"
+      - "Human review queue"
+      - ">=95% auto-match target"

@@ -1,0 +1,285 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.ai/schemas/fuel_input_v2.json",
+  "title": "FuelAgentAI v2 Input Schema",
+  "description": "Input parameters for FuelAgentAI v2 emission calculations with multi-gas support",
+  "type": "object",
+  "required": ["fuel_type", "amount", "unit"],
+  "properties": {
+    "fuel_type": {
+      "type": "string",
+      "description": "Type of fuel consumed or generated",
+      "enum": [
+        "diesel",
+        "gasoline",
+        "natural_gas",
+        "electricity",
+        "propane",
+        "fuel_oil",
+        "coal",
+        "biomass",
+        "biodiesel",
+        "ethanol",
+        "lng",
+        "lpg",
+        "jet_fuel",
+        "kerosene",
+        "residual_fuel_oil",
+        "wood",
+        "solar_pv",
+        "wind",
+        "hydro",
+        "geothermal",
+        "nuclear",
+        "hydrogen",
+        "ammonia",
+        "methanol"
+      ],
+      "examples": ["diesel", "natural_gas", "electricity"]
+    },
+    "amount": {
+      "type": "number",
+      "description": "Consumption amount (positive for consumption, negative for renewable generation)",
+      "examples": [1000, -500]
+    },
+    "unit": {
+      "type": "string",
+      "description": "Unit of measurement for amount",
+      "enum": [
+        "kWh",
+        "MWh",
+        "GWh",
+        "therms",
+        "ccf",
+        "mcf",
+        "m3",
+        "MMBtu",
+        "MBtu",
+        "Btu",
+        "GJ",
+        "MJ",
+        "gallons",
+        "liters",
+        "barrels",
+        "tons",
+        "tonnes",
+        "kg",
+        "lbs",
+        "ft3"
+      ],
+      "examples": ["gallons", "kWh", "therms"]
+    },
+    "country": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-2 country code or region identifier",
+      "pattern": "^[A-Z]{2,3}$",
+      "default": "US",
+      "examples": ["US", "UK", "EU", "IN", "CN", "JP", "AU"]
+    },
+    "year": {
+      "type": "integer",
+      "description": "Reporting year for emissions (affects factor selection)",
+      "minimum": 1990,
+      "maximum": 2100,
+      "default": 2025,
+      "examples": [2024, 2025]
+    },
+    "renewable_percentage": {
+      "type": "number",
+      "description": "Percentage of renewable energy in fuel/grid mix (0-100)",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0,
+      "examples": [0, 20, 50]
+    },
+    "efficiency": {
+      "type": "number",
+      "description": "Equipment efficiency factor (0-1, where 1.0 = 100% efficient)",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 1.0,
+      "examples": [0.85, 0.9, 1.0]
+    },
+    "scope": {
+      "type": "string",
+      "description": "GHG Protocol scope (1=direct emissions, 2=purchased energy, 3=value chain)",
+      "enum": ["1", "2", "3"],
+      "default": "1",
+      "examples": ["1", "2"]
+    },
+    "location": {
+      "type": "string",
+      "description": "Specific location or facility identifier (optional, for future sub-national factors)",
+      "maxLength": 100,
+      "examples": ["California", "New York", "Texas", "Facility-001"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Custom metadata for tracking and reporting",
+      "additionalProperties": true,
+      "examples": [
+        {
+          "facility_id": "FAC-123",
+          "reporting_period": "2024-Q3",
+          "department": "Operations"
+        }
+      ]
+    },
+    "region_hint": {
+      "type": "string",
+      "description": "Sub-national region code (e.g., US-CA for California, IN-WR for Western India)",
+      "pattern": "^[A-Z]{2,3}-[A-Z]{2,3}$",
+      "examples": ["US-CA", "US-TX", "IN-WR", "UK-SCT"]
+    },
+    "scope2_mode": {
+      "type": "string",
+      "description": "Scope 2 accounting method for electricity (location-based or market-based)",
+      "enum": ["location", "market"],
+      "default": "location",
+      "examples": ["location", "market"]
+    },
+    "boundary": {
+      "type": "string",
+      "description": "Emission boundary: combustion (direct only), WTT (well-to-tank/upstream), WTW (well-to-wheel/full lifecycle)",
+      "enum": ["combustion", "WTT", "WTW", "cradle_to_gate", "cradle_to_grave"],
+      "default": "combustion",
+      "examples": ["combustion", "WTW"]
+    },
+    "gwp_set": {
+      "type": "string",
+      "description": "Global Warming Potential reference dataset (IPCC Assessment Report and horizon)",
+      "enum": [
+        "IPCC_AR6_100",
+        "IPCC_AR6_20",
+        "IPCC_AR5_100",
+        "IPCC_SAR_100"
+      ],
+      "default": "IPCC_AR6_100",
+      "examples": ["IPCC_AR6_100", "IPCC_AR6_20"]
+    },
+    "heating_value_basis": {
+      "type": "string",
+      "description": "Heating value basis for fuel energy content (HHV=Higher/Gross, LHV=Lower/Net)",
+      "enum": ["HHV", "LHV"],
+      "examples": ["HHV", "LHV"]
+    },
+    "temp_C": {
+      "type": "number",
+      "description": "Reference temperature in Celsius for liquid fuel density corrections",
+      "minimum": -50,
+      "maximum": 100,
+      "examples": [15, 20, 25]
+    },
+    "biogenic_share_pct": {
+      "type": "number",
+      "description": "Percentage of biogenic carbon in fuel blend (e.g., B20 biodiesel = 20%)",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0,
+      "examples": [0, 20, 100]
+    },
+    "recs_pct": {
+      "type": "number",
+      "description": "Percentage of electricity covered by Renewable Energy Certificates (RECs) for market-based Scope 2",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 0,
+      "examples": [0, 50, 100]
+    },
+    "vintage": {
+      "type": "string",
+      "description": "Emission factor version selection: 'latest' (current), 'YYYY' (specific year), or factor_id",
+      "default": "latest",
+      "examples": ["latest", "2024", "2023", "EF:US:diesel:2024:v1"]
+    },
+    "calculation_id": {
+      "type": "string",
+      "description": "Client-provided unique identifier for this calculation (for tracking and auditing)",
+      "maxLength": 100,
+      "examples": ["calc_2024_Q3_001", "monthly_report_diesel"]
+    },
+    "response_format": {
+      "type": "string",
+      "description": "Output format: legacy (v1 compatible), enhanced (v2 full features), compact (minimal for mobile/IoT)",
+      "enum": ["legacy", "enhanced", "compact"],
+      "default": "legacy",
+      "examples": ["legacy", "enhanced", "compact"]
+    },
+    "features": {
+      "type": "object",
+      "description": "Feature flags to enable/disable specific v2 capabilities (granular control)",
+      "properties": {
+        "multi_gas_breakdown": {
+          "type": "boolean",
+          "description": "Include CO2/CH4/N2O vectors separately",
+          "default": true
+        },
+        "provenance_tracking": {
+          "type": "boolean",
+          "description": "Include emission factor source attribution and citation",
+          "default": true
+        },
+        "data_quality_scoring": {
+          "type": "boolean",
+          "description": "Include 5-dimension DQS and uncertainty ranges",
+          "default": true
+        },
+        "uncertainty_ranges": {
+          "type": "boolean",
+          "description": "Include ±X% confidence intervals",
+          "default": true
+        },
+        "compliance_markers": {
+          "type": "boolean",
+          "description": "Include CSRD/CDP/GHG Protocol compliance flags",
+          "default": true
+        },
+        "alternative_gwp": {
+          "type": "boolean",
+          "description": "Include 20-year GWP horizon results (in addition to 100-year)",
+          "default": false
+        },
+        "explanations": {
+          "type": "boolean",
+          "description": "Include AI-generated natural language explanations",
+          "default": true
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "examples": [
+    {
+      "fuel_type": "diesel",
+      "amount": 1000,
+      "unit": "gallons",
+      "country": "US",
+      "response_format": "enhanced"
+    },
+    {
+      "fuel_type": "natural_gas",
+      "amount": 5000,
+      "unit": "therms",
+      "country": "US",
+      "boundary": "WTW",
+      "gwp_set": "IPCC_AR6_20",
+      "response_format": "enhanced",
+      "features": {
+        "alternative_gwp": true,
+        "explanations": false
+      }
+    },
+    {
+      "fuel_type": "electricity",
+      "amount": 10000,
+      "unit": "kWh",
+      "country": "US",
+      "region_hint": "US-CA",
+      "scope": "2",
+      "scope2_mode": "market",
+      "recs_pct": 50,
+      "response_format": "enhanced"
+    }
+  ]
+}

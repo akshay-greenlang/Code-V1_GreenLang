@@ -1,0 +1,1212 @@
+# GreenLang Pack Specification v2.0
+# GL-VCCI-Carbon-APP: Scope 3 Value Chain Carbon Intelligence Platform
+#
+# This pack provides a comprehensive Scope 3 emissions tracking system
+# following the GHG Protocol Corporate Value Chain (Scope 3) Standard.
+#
+# Version: 2.0.0 (CTO Approved)
+# Author: GreenLang Framework Team
+# License: Proprietary
+# Date: January 25, 2025
+# Status: Phase 1 - Strategy and Architecture
+
+pack:
+  name: "gl-vcci-scope3-platform"
+  version: "2.0.0"
+  description: >
+    Enterprise-grade Scope 3 Value Chain Carbon Intelligence Platform v2.
+    Calculates emissions for Categories 1, 4, 6 (85-95% of Scope 3 value)
+    with zero-hallucination guarantee, Factor Broker for license compliance,
+    Policy Engine (OPA) for versioned calculators, Entity MDM for ≥95% auto-match,
+    and PCF Exchange (PACT, Catena-X, SAP SDX) as strategic moat.
+    Multi-standard reporting (GHG Protocol, ESRS, CDP, IFRS S2, ISO 14083).
+
+  keywords:
+    - scope3
+    - value-chain
+    - carbon-accounting
+    - ghg-protocol
+    - esrs
+    - ifrs-s2
+    - iso-14083
+    - pcf-exchange
+    - pact-pathfinder
+    - catena-x
+    - factor-broker
+    - policy-engine
+    - entity-mdm
+    - supply-chain
+    - emissions-tracking
+    - supplier-engagement
+    - cdp
+    - sbti
+    - climate-disclosure
+    - esg
+    - sustainability
+
+  homepage: "https://greenlang.io/packs/vcci-scope3"
+  repository: "https://github.com/greenlang/gl-vcci-carbon-app"
+  documentation: "https://docs.greenlang.io/packs/vcci-scope3"
+
+  license: "Proprietary"
+
+  authors:
+    - name: "GreenLang Core Team"
+      email: "team@greenlang.io"
+    - name: "Climate Intelligence Group"
+      email: "climate@greenlang.io"
+
+  maintainers:
+    - name: "GL-VCCI Project Lead"
+      email: "vcci@greenlang.io"
+
+# Metadata
+metadata:
+  category: "carbon-accounting"
+  subcategory: "scope3"
+  maturity: "production"
+  version: "2.0"
+
+  compliance:
+    - "GHG Protocol Scope 3 Standard (2011)"
+    - "ESRS E1 to E5, S1 to S4, G1 (EU CSRD)"
+    - "IFRS S2 Climate-related Disclosures"
+    - "ISO 14083:2023 Greenhouse gases - Quantification and reporting of GHG emissions arising from transport chain operations"
+    - "ISO 14064-1:2018 Greenhouse gases - Part 1: Specification with guidance at the organization level for quantification and reporting"
+    - "CDP Climate Change Questionnaire 2024+"
+    - "Science-Based Targets initiative (SBTi) - Scope 3 Guidance"
+    - "WBCSD PACT Pathfinder v2.0 (PCF Exchange)"
+    - "Catena-X PCF Exchange Standard"
+
+  regulatory_alignment:
+    - "EU CSRD (Corporate Sustainability Reporting Directive) - Mandatory 2025+"
+    - "IFRS S2 (Global baseline for climate disclosures)"
+    - "SEC Climate Disclosure Rule (US) - Optional"
+    - "California SB 253 (Climate Corporate Data Accountability Act)"
+    - "GDPR (General Data Protection Regulation) - Supplier engagement"
+    - "CCPA (California Consumer Privacy Act) - Data privacy"
+    - "ePrivacy Directive (EU) - Email outreach"
+    - "CAN-SPAM Act (US) - Email compliance"
+
+  target_users:
+    - "Corporate Sustainability Directors"
+    - "Procurement Managers"
+    - "Supply Chain Directors"
+    - "CFOs / Finance Teams"
+    - "ESG Consultants"
+    - "Audit & Compliance Teams"
+
+  industries:
+    - "Manufacturing"
+    - "Retail & Consumer Goods"
+    - "Financial Services"
+    - "Technology"
+    - "Healthcare"
+    - "Automotive"
+    - "Energy & Utilities"
+    - "Transportation & Logistics"
+
+  tags:
+    - ghg-protocol-scope3
+    - esrs-e1
+    - ifrs-s2
+    - iso-14083
+    - zero-hallucination
+    - factor-broker
+    - policy-engine-opa
+    - entity-mdm
+    - pcf-exchange
+    - pact-pathfinder
+    - catena-x
+    - sap-sdx
+    - ai-powered
+    - erp-integration
+    - supplier-engagement
+    - multi-standard-reporting
+    - soc2-compliant
+
+# Core Services (NEW in v2.0)
+core_services:
+  - name: "FactorBroker"
+    version: "1.0.0"
+    description: >
+      Runtime emission factor resolution service with license compliance.
+      Resolves factor IDs to licensed sources at runtime, with versioning
+      (GWP set, region, unit, pedigree), caching within license terms,
+      and no bulk redistribution to ensure ecoinvent compliance.
+
+    capabilities:
+      - "Runtime factor resolution (no bulk redistribution)"
+      - "Version control (GWP AR5/AR6, region, unit, pedigree)"
+      - "License compliance (ecoinvent, DEFRA, EPA)"
+      - "Caching within license terms"
+      - "Multi-source aggregation (DESNZ, EPA, ecoinvent API)"
+
+    sources:
+      - name: "UK DESNZ"
+        type: "free"
+        coverage: "20,000+ factors"
+        update_frequency: "annual"
+
+      - name: "US EPA Emission Factors Hub"
+        type: "free"
+        coverage: "15,000+ factors"
+        update_frequency: "annual"
+
+      - name: "ecoinvent v3.10 LCA Database"
+        type: "licensed"
+        license_cost: "$60,000/year"
+        coverage: "20,000+ product/process factors"
+        update_frequency: "quarterly"
+
+    performance:
+      target_latency: "< 50ms per factor lookup"
+      cache_hit_rate: ">= 85%"
+
+  - name: "PolicyEngine"
+    version: "1.0.0"
+    description: >
+      OPA (Open Policy Agent) based policy engine for calculator logic.
+      Category calculators are versioned policies, enabling auditable
+      updates, A/B testing, and provenance tracking of policy versions.
+
+    capabilities:
+      - "OPA-based policy execution"
+      - "Versioned calculator policies (Cat 1, 4, 6)"
+      - "Guardrails and overrides"
+      - "Policy testing framework"
+      - "Provenance: Every calculation links to policy version"
+
+    policies:
+      - name: "category_1_purchased_goods"
+        version: "1.0.0"
+        tiers: ["tier_1_supplier_pcf", "tier_2_average_data", "tier_3_spend_based"]
+
+      - name: "category_4_transport"
+        version: "1.0.0"
+        standard: "ISO 14083:2023"
+        conformance: "100% (zero variance to test suite)"
+
+      - name: "category_6_travel"
+        version: "1.0.0"
+        methods: ["distance_based_flights", "hotel_nights", "ground_transport"]
+
+    performance:
+      target_latency: "< 10ms per policy evaluation"
+
+  - name: "EntityMDM"
+    version: "1.0.0"
+    description: >
+      Entity Master Data Management for supplier identification.
+      Supplier master with LEI (Legal Entity Identifier), DUNS (D&B),
+      OpenCorporates, and facility geocodes. Confidence scoring and
+      lineage per ID. Target: ≥95% auto-match at 95% precision.
+
+    capabilities:
+      - "Legal Entity Identifier (LEI) lookup via GLEIF API"
+      - "DUNS number lookup via Dun & Bradstreet API"
+      - "OpenCorporates company search"
+      - "Facility-level geocoding (lat/long)"
+      - "Confidence scoring (0-100% per match)"
+      - "Lineage tracking (match method, timestamp, user override)"
+
+    identifiers:
+      - name: "LEI (Legal Entity Identifier)"
+        coverage: "1.7M global entities"
+        api_provider: "GLEIF"
+        cost: "$10,000/year (unlimited lookups)"
+
+      - name: "DUNS (Data Universal Numbering System)"
+        coverage: "400M businesses worldwide"
+        api_provider: "Dun & Bradstreet"
+        cost: "$100,000/year (500K lookups)"
+
+      - name: "OpenCorporates"
+        coverage: "200M companies"
+        api_provider: "OpenCorporates"
+        cost: "Free tier (rate limited)"
+
+    performance:
+      auto_match_rate: ">= 95% (target)"
+      precision: ">= 95%"
+      target_latency: "< 500ms per supplier lookup"
+
+  - name: "PCFExchange"
+    version: "1.0.0"
+    description: >
+      Product Carbon Footprint (PCF) exchange for Tier 1 data acquisition.
+      WBCSD PACT Pathfinder import/export, Catena-X PCF integration,
+      SAP Sustainability Data Exchange (SDX) connector. Strategic moat:
+      Network effects as more suppliers share PCFs.
+
+    capabilities:
+      - "PACT Pathfinder v2.0 PCF import/export"
+      - "Catena-X PCF data model conformance"
+      - "SAP Sustainability Data Exchange (SDX) integration"
+      - "Bidirectional exchange (Enterprise tier)"
+      - "PCF validation against PACT schema"
+      - "Automatic Tier 1 calculation when PCF available"
+
+    standards:
+      - name: "WBCSD PACT Pathfinder"
+        version: "2.0"
+        description: "Product Carbon Footprint exchange standard"
+
+      - name: "Catena-X PCF"
+        description: "Automotive supply chain PCF exchange"
+
+      - name: "SAP Sustainability Data Exchange"
+        description: "SAP native PCF exchange via SDX"
+
+    target:
+      pcf_coverage: ">= 30% of Cat 1 spend by Q2 post-launch"
+
+    pricing_tiers:
+      - tier: "Core"
+        pcf_capability: "None"
+
+      - tier: "Plus"
+        pcf_capability: "PCF import only (PACT)"
+
+      - tier: "Enterprise"
+        pcf_capability: "Bidirectional PCF exchange (PACT, Catena-X, SAP SDX)"
+
+# Agents
+agents:
+  - name: "ValueChainIntakeAgent"
+    version: "2.0.0"
+    description: >
+      Multi-format data ingestion agent with Entity MDM integration,
+      data quality scoring, and gap analysis. Supports CSV, Excel, JSON, XML,
+      PDF (OCR), and direct ERP integration (SAP, Oracle, Workday).
+      NEW in v2: Entity MDM (LEI, DUNS, OpenCorporates) for ≥95% auto-match.
+
+    type: "data-processor"
+
+    capabilities:
+      - "Multi-format ingestion (CSV, Excel, JSON, XML, PDF with OCR)"
+      - "ERP integration (SAP S/4HANA, Oracle ERP Cloud, Workday)"
+      - "Entity MDM integration (LEI, DUNS, OpenCorporates) - NEW v2"
+      - "Deterministic + fuzzy matching + ML hints"
+      - "Human review queue for low-confidence matches (<90%)"
+      - "Data quality scoring (ILCD pedigree-based DQI)"
+      - "Gap analysis and supplier prioritization (Pareto)"
+      - "Tier classification (Tier 1/2/3 methodology assignment)"
+
+    entity_resolution:
+      two_stage_approach:
+        - stage: "candidate_generation"
+          method: "Vector similarity search (Weaviate)"
+          output: "Top 10 candidates with similarity > 0.7"
+
+        - stage: "re_ranking"
+          method: "Fine-tuned BERT pairwise matching"
+          output: "Match probability (0.0-1.0)"
+
+      auto_match_threshold: 0.90  # 90% confidence
+      human_review: "Below 90% confidence → queue for human review"
+
+    inputs:
+      - type: "file"
+        formats: ["csv", "xlsx", "json", "xml", "pdf"]
+        schemas:
+          - "procurement_v1.0.schema.json"
+          - "logistics_v1.0.schema.json"
+          - "supplier_v1.0.schema.json"
+
+      - type: "api"
+        sources:
+          - "SAP S/4HANA OData API (MM, SD, FI modules)"
+          - "Oracle ERP Cloud REST API (Procurement, SCM)"
+          - "Workday RaaS (Expense Reports)"
+
+    outputs:
+      - type: "validated_data"
+        format: "json"
+        schema: "validated_value_chain_data_v1.0.schema.json"
+        description: "Validated and enriched value chain data with DQI scores"
+
+      - type: "gap_analysis"
+        format: "json"
+        description: "Missing data analysis and supplier engagement priorities"
+
+      - type: "entity_matches"
+        format: "json"
+        description: "Entity resolution results with confidence scores"
+
+    performance:
+      target_throughput: "100,000 transactions per hour"
+      target_latency: "< 100ms per record"
+      entity_resolution_accuracy: ">= 95% auto-match at 95% precision"
+
+    dependencies:
+      - "greenlang.validation >= 0.3.0"
+      - "greenlang.provenance >= 0.3.0"
+      - "greenlang.io >= 0.3.0"
+      - "anthropic >= 0.18.0"  # LLM for entity disambiguation
+      - "sentence-transformers >= 2.2.0"  # Vector embeddings
+      - "weaviate-client >= 3.26.0"  # Vector database
+
+  - name: "Scope3CalculatorAgent"
+    version: "2.0.0"
+    description: >
+      Zero-hallucination Scope 3 calculation engine with Policy Engine (OPA)
+      integration. FOCUS: Categories 1, 4, 6 initially (85-95% of Scope 3).
+      Cat 2, 3, 5, 7-15 on post-GA roadmap. Includes Factor Broker integration,
+      uncertainty quantification (Monte Carlo), and complete provenance tracking.
+
+    type: "calculator"
+
+    capabilities:
+      - "Categories 1, 4, 6 (GA launch) - 85-95% of Scope 3 value"
+      - "Policy Engine (OPA) integration for versioned calculator logic"
+      - "Factor Broker integration (runtime factor resolution)"
+      - "Tiered calculation (Tier 1/2/3 with DQI scoring)"
+      - "100,000+ emission factors via Factor Broker"
+      - "Zero-hallucination guarantee (Tier 1 deterministic)"
+      - "Uncertainty quantification (Monte Carlo with 10K iterations)"
+      - "Complete provenance chain (SHA-256 hashing + policy version)"
+      - "ISO 14083 conformance for Cat 4 (zero variance to test suite)"
+
+    scope3_categories_ga:
+      # Categories shipping at GA (Week 44)
+      - category: 1
+        name: "Purchased Goods and Services"
+        priority: "P0"  # 70% of Scope 3 for most companies
+        coverage: "70% of typical Scope 3"
+        methods: ["supplier-specific-pcf", "average-data", "spend-based"]
+        tiers:
+          - tier: "tier_1"
+            method: "Supplier-specific PCF (PACT Pathfinder)"
+            dqi: "4.5-5.0 (Excellent)"
+            target_coverage: "30% of Cat 1 spend by Q2 post-launch"
+
+          - tier: "tier_2"
+            method: "Average-data (product emission factors)"
+            dqi: "3.5-4.4 (Good)"
+            target_coverage: "50% of Cat 1 spend"
+
+          - tier: "tier_3"
+            method: "Spend-based (economic intensity factors)"
+            dqi: "2.5-3.4 (Fair)"
+            target_coverage: "20% of Cat 1 spend"
+
+      - category: 4
+        name: "Upstream Transportation and Distribution"
+        priority: "P0"
+        coverage: "10-15% of typical Scope 3"
+        methods: ["distance-based-iso-14083", "spend-based"]
+        standard: "ISO 14083:2023"
+        conformance: "100% (zero variance to test suite of 50 cases)"
+
+      - category: 6
+        name: "Business Travel"
+        priority: "P0"
+        coverage: "5-10% of typical Scope 3"
+        methods: ["distance-based-flights", "hotel-nights", "ground-transport"]
+        data_sources: ["Workday expense reports", "Corporate travel portals"]
+
+    scope3_categories_post_ga:
+      # Post-GA roadmap (Month 12+)
+      - category: 2
+        name: "Capital Goods"
+        priority: "Month 12 (Week 45-48)"
+        coverage: "5% of typical Scope 3"
+
+      - category: 3
+        name: "Fuel and Energy-Related Activities"
+        priority: "Month 13-15"
+        coverage: "3% of typical Scope 3"
+
+      - category: 5
+        name: "Waste Generated in Operations"
+        priority: "Month 13-15"
+        coverage: "2% of typical Scope 3"
+
+      - category: 7
+        name: "Employee Commuting"
+        priority: "Month 16-18"
+        coverage: "2% of typical Scope 3"
+
+      - categories: [8, 9, 10, 11, 12, 13, 14, 15]
+        priority: "Month 16-24 (specialized use cases)"
+
+    inputs:
+      - type: "validated_data"
+        format: "json"
+        schema: "validated_value_chain_data_v1.0.schema.json"
+
+      - type: "pcf_data"
+        format: "json"
+        schema: "pact_pathfinder_v2.0.schema.json"
+        description: "Supplier PCFs for Tier 1 calculation"
+
+    outputs:
+      - type: "scope3_emissions"
+        format: "json"
+        schema: "scope3_results_v1.0.schema.json"
+        description: "Complete Scope 3 inventory with provenance"
+
+      - type: "calculation_lineage"
+        format: "json"
+        description: "SHA-256 hashed provenance chain + policy version + factor version"
+
+      - type: "uncertainty_analysis"
+        format: "json"
+        description: "Monte Carlo uncertainty quantification (mean, p5, p95)"
+
+    performance:
+      target_throughput: "10,000 calculations per second"
+      target_accuracy: "100% (Tier 1), 95% (Tier 2), 80% (Tier 3)"
+      reproducibility: "100% (same input -> same output for Tier 1)"
+
+    data_sources_via_factor_broker:
+      - name: "UK DESNZ Emission Factors"
+        source: "UK Government (free)"
+        coverage: "20,000+ factors"
+
+      - name: "US EPA Emission Factors Hub"
+        source: "US EPA (free)"
+        coverage: "15,000+ factors"
+
+      - name: "ecoinvent v3.10 LCA Database"
+        source: "ecoinvent (licensed $60K/year)"
+        coverage: "20,000+ product/process factors"
+        access_method: "Runtime API lookup (no bulk distribution)"
+
+    dependencies:
+      - "greenlang.agents.calculator >= 0.3.0"
+      - "greenlang.provenance >= 0.3.0"
+      - "opa-python >= 1.4.0"  # Policy Engine client
+      - "pandas >= 2.1.0"
+      - "numpy >= 1.24.0"
+      - "scipy >= 1.11.0"  # Monte Carlo simulation
+
+  - name: "HotspotAnalysisAgent"
+    version: "2.0.0"
+    description: >
+      AI-powered hotspot identification and abatement opportunity analysis.
+      Performs Pareto analysis (80/20 rule), multi-dimensional hotspot detection,
+      and generates ROI-ranked reduction recommendations. NEW v2: Enhanced
+      scenario modeling for supplier switching and modal shift.
+
+    type: "analyzer"
+
+    capabilities:
+      - "Pareto analysis (top 20% suppliers = 80% emissions)"
+      - "Multi-dimensional hotspots (category, supplier, product, geography, facility)"
+      - "AI-powered abatement recommendations (LLM-generated)"
+      - "ROI analysis ($/tCO2e abated)"
+      - "Scenario modeling (supplier switching, modal shift, product substitution)"
+      - "Reduction roadmap generation (5-year targets)"
+
+    inputs:
+      - type: "scope3_emissions"
+        format: "json"
+        schema: "scope3_results_v1.0.schema.json"
+
+    outputs:
+      - type: "hotspot_analysis"
+        format: "json"
+        description: "Multi-dimensional hotspot rankings with Pareto charts"
+
+      - type: "abatement_opportunities"
+        format: "json"
+        description: "AI-powered reduction recommendations with ROI ($/tCO2e)"
+
+      - type: "scenario_analysis"
+        format: "json"
+        description: "What-if modeling results (supplier switching, modal shift)"
+
+    performance:
+      target_latency: "< 5 seconds for 10,000 suppliers"
+      recommendation_quality: "NPS >= 60 (user satisfaction at GA)"
+
+    dependencies:
+      - "greenlang.agents.analyzer >= 0.3.0"
+      - "anthropic >= 0.18.0"  # LLM for recommendations
+      - "plotly >= 5.18.0"  # Interactive visualizations
+
+  - name: "SupplierEngagementAgent"
+    version: "2.0.0"
+    description: >
+      Automated supplier engagement platform with GDPR/CCPA compliant
+      email campaigns, web portal, PCF upload, scoring, leaderboards,
+      and collaboration workflows. Reduces supplier data collection time
+      by 80% (from 18 months to <4 months). Target: ≥50% response rate
+      in top 20% spend cohort.
+
+    type: "workflow-automation"
+
+    capabilities:
+      - "Consent-aware email campaigns (GDPR, CCPA, CAN-SPAM compliant)"
+      - "Supplier data upload portal (web-based, secure)"
+      - "PCF upload (PACT Pathfinder v2.0 schema validation)"
+      - "Live validation (real-time data quality feedback)"
+      - "Supplier scoring (data quality, response rate, improvement)"
+      - "Leaderboards and gamification"
+      - "Joint reduction targets and progress tracking"
+      - "Collaboration dashboards (shared visibility)"
+
+    gdpr_ccpa_compliance:
+      - "Consent registry (opt-in, opt-out enforcement)"
+      - "Lawful basis tagging (legitimate interest, contract, consent per GDPR Art. 6)"
+      - "Right to erasure (GDPR Art. 17)"
+      - "Data portability (GDPR Art. 20)"
+      - "Opt-out enforcement (CCPA §1798.120, CAN-SPAM)"
+      - "Country-specific rules (EU, CA, US)"
+
+    inputs:
+      - type: "gap_analysis"
+        format: "json"
+        description: "Supplier prioritization and data gaps"
+
+      - type: "supplier_master"
+        format: "json"
+        description: "Supplier contact information"
+
+    outputs:
+      - type: "engagement_status"
+        format: "json"
+        description: "Campaign metrics (open rate, response rate, completion)"
+
+      - type: "supplier_scores"
+        format: "json"
+        description: "Supplier performance scorecards"
+
+      - type: "pcf_uploads"
+        format: "json"
+        schema: "pact_pathfinder_v2.0.schema.json"
+        description: "Supplier-provided PCFs for Tier 1 calculation"
+
+    performance:
+      target_response_rate: ">= 50% in top 20% spend cohort (vs. 20% manual)"
+      target_data_collection_time: "< 4 months (vs. 18 months manual)"
+
+    dependencies:
+      - "greenlang.agents.workflow >= 0.3.0"
+      - "sendgrid >= 6.10.0"  # Email automation
+      - "celery >= 5.3.0"  # Task queue
+
+  - name: "Scope3ReportingAgent"
+    version: "2.0.0"
+    description: >
+      Multi-standard reporting engine for GHG Protocol, ESRS (EU CSRD),
+      CDP, IFRS S2, ISO 14083, and SBTi. Auto-populates 90% of CDP
+      questionnaire (vs. 100% manual). NEW v2: ESRS E1-E5, IFRS S2,
+      ISO 14083 conformance certificate.
+
+    type: "reporter"
+
+    capabilities:
+      - "GHG Protocol Scope 3 inventory (Cat 1, 4, 6)"
+      - "ESRS E1 to E5 (Climate, Pollution, Water, Biodiversity, Circular Economy)"
+      - "ESRS S1 to S4 (Social standards)"
+      - "ESRS G1 (Governance)"
+      - "CDP Climate Change questionnaire auto-population (2024+)"
+      - "IFRS S2 Climate-related Disclosures export"
+      - "ISO 14083 conformance certificate (transport emissions)"
+      - "SBTi submission package generation"
+      - "Executive dashboards (interactive charts, maps)"
+      - "Multi-format export (PDF, Excel, JSON, PowerPoint)"
+      - "Year-over-year comparison and trend analysis"
+
+    reporting_standards:
+      - name: "GHG Protocol Scope 3 Standard"
+        coverage: "Cat 1, 4, 6 (GA) | All 15 categories (post-GA)"
+        auto_population: "95%"
+
+      - name: "ESRS (EU CSRD)"
+        coverage: "E1 (Climate), E2 (Pollution), E3 (Water), E4 (Biodiversity), E5 (Circular Economy)"
+        auto_population: "90% (for Cat 1, 4, 6)"
+        mandatory: "50,000+ EU companies starting 2025"
+
+      - name: "IFRS S2 Climate-related Disclosures"
+        coverage: "Scope 1, 2, 3 emissions; Climate risks and opportunities"
+        auto_population: "85%"
+        global_baseline: "120+ countries"
+
+      - name: "ISO 14083:2023"
+        coverage: "Transport emissions (Cat 4, 9)"
+        conformance: "100% (zero variance to test suite)"
+        certificate: "Conformance certificate generated automatically"
+
+      - name: "CDP Climate Change Questionnaire"
+        coverage: "Scope 3 sections (C6, C8, C12)"
+        auto_population: "90%"
+
+      - name: "SBTi Submission Package"
+        coverage: "Scope 3 screening, boundary, targets (≥67% when Scope 3 >40%)"
+        auto_population: "85%"
+
+    inputs:
+      - type: "scope3_emissions"
+        format: "json"
+        schema: "scope3_results_v1.0.schema.json"
+
+      - type: "hotspot_analysis"
+        format: "json"
+
+      - type: "engagement_status"
+        format: "json"
+
+    outputs:
+      - type: "ghg_protocol_inventory"
+        formats: ["pdf", "xlsx", "json"]
+        description: "Official GHG Protocol Scope 3 report"
+
+      - type: "esrs_report"
+        formats: ["pdf", "xlsx", "json", "xbrl"]
+        description: "EU CSRD compliant ESRS report (E1-E5, S1-S4, G1)"
+
+      - type: "ifrs_s2_disclosures"
+        formats: ["pdf", "xlsx", "json"]
+        description: "IFRS S2 Climate-related Disclosures"
+
+      - type: "iso_14083_certificate"
+        format: "pdf"
+        description: "ISO 14083 conformance certificate for transport emissions"
+
+      - type: "cdp_questionnaire"
+        format: "xlsx"
+        description: "CDP-ready Excel file (2024+ integrated format)"
+
+      - type: "sbti_package"
+        formats: ["pdf", "xlsx"]
+        description: "SBTi submission package"
+
+      - type: "executive_dashboard"
+        formats: ["html", "pdf", "pptx"]
+        description: "Interactive charts and maps"
+
+    performance:
+      target_generation_time: "< 10 seconds per report"
+      time_savings: ">= 200 hours vs. manual reporting (with ESRS, IFRS S2)"
+
+    dependencies:
+      - "greenlang.agents.reporter >= 0.3.0"
+      - "plotly >= 5.18.0"
+      - "openpyxl >= 3.1.0"
+      - "reportlab >= 4.0.0"
+      - "python-pptx >= 0.6.23"
+
+# Pipeline
+pipeline:
+  name: "scope3_complete_pipeline_v2"
+  description: >
+    End-to-end Scope 3 emissions calculation pipeline (v2.0) from ERP data
+    ingestion through multi-standard reporting. NEW: Factor Broker, Policy Engine,
+    Entity MDM, PCF Exchange integration.
+
+  stages:
+    - stage: 1
+      name: "Data Intake & Validation"
+      agent: "ValueChainIntakeAgent"
+      inputs: ["procurement_data", "logistics_data", "supplier_data"]
+      outputs: ["validated_value_chain_data", "gap_analysis", "entity_matches"]
+      timeout: 3600  # 1 hour
+      services_used: ["EntityMDM"]
+
+    - stage: 2
+      name: "Scope 3 Calculation (Cat 1, 4, 6)"
+      agent: "Scope3CalculatorAgent"
+      inputs: ["validated_value_chain_data", "pcf_data"]
+      outputs: ["scope3_emissions", "calculation_lineage", "uncertainty_analysis"]
+      timeout: 1800  # 30 minutes
+      services_used: ["FactorBroker", "PolicyEngine"]
+
+    - stage: 3
+      name: "Hotspot Analysis"
+      agent: "HotspotAnalysisAgent"
+      inputs: ["scope3_emissions"]
+      outputs: ["hotspot_analysis", "abatement_opportunities"]
+      timeout: 600  # 10 minutes
+
+    - stage: 4
+      name: "Supplier Engagement"
+      agent: "SupplierEngagementAgent"
+      inputs: ["gap_analysis", "hotspot_analysis"]
+      outputs: ["engagement_status", "supplier_scores", "pcf_uploads"]
+      timeout: 300  # 5 minutes
+      optional: true  # Can skip for reporting-only runs
+
+    - stage: 5
+      name: "Multi-Standard Reporting (GHG, ESRS, IFRS S2, ISO 14083)"
+      agent: "Scope3ReportingAgent"
+      inputs: ["scope3_emissions", "hotspot_analysis", "engagement_status"]
+      outputs: ["ghg_protocol_inventory", "esrs_report", "ifrs_s2_disclosures", "iso_14083_certificate", "cdp_questionnaire", "sbti_package", "executive_dashboard"]
+      timeout: 600  # 10 minutes
+
+  performance:
+    target_end_to_end_time: "< 2 hours (for 10,000 suppliers)"
+    target_success_rate: ">= 99.5%"
+
+# CLI Commands
+cli:
+  name: "vcci"
+  description: "Scope 3 Value Chain Carbon Intelligence CLI v2.0"
+
+  commands:
+    - name: "intake"
+      description: "Ingest and validate value chain data with Entity MDM"
+      usage: "vcci intake --file procurement_data.csv --format csv"
+      options:
+        - name: "--file"
+          type: "path"
+          required: true
+          description: "Input file path (CSV, Excel, JSON, XML, PDF)"
+
+        - name: "--format"
+          type: "string"
+          choices: ["csv", "xlsx", "json", "xml", "pdf", "auto"]
+          default: "auto"
+          description: "Input file format (auto-detect if omitted)"
+
+        - name: "--validate"
+          type: "boolean"
+          default: true
+          description: "Enable data validation"
+
+        - name: "--entity-mdm"
+          type: "boolean"
+          default: true
+          description: "Enable Entity MDM (LEI, DUNS, OpenCorporates)"
+
+    - name: "calculate"
+      description: "Calculate Scope 3 emissions for Cat 1, 4, 6"
+      usage: "vcci calculate --data validated_data.json --categories 1,4,6"
+      options:
+        - name: "--data"
+          type: "path"
+          required: true
+          description: "Validated data JSON file"
+
+        - name: "--categories"
+          type: "string"
+          default: "1,4,6"
+          description: "Categories to calculate (1, 4, 6 available at GA)"
+
+        - name: "--tier"
+          type: "string"
+          choices: ["1", "2", "3", "auto"]
+          default: "auto"
+          description: "Calculation tier (1=PCF, 2=average, 3=spend, auto=best available)"
+
+        - name: "--uncertainty"
+          type: "boolean"
+          default: true
+          description: "Enable Monte Carlo uncertainty quantification"
+
+    - name: "analyze"
+      description: "Perform hotspot analysis and identify abatement opportunities"
+      usage: "vcci analyze --emissions scope3_results.json --pareto"
+      options:
+        - name: "--emissions"
+          type: "path"
+          required: true
+          description: "Scope 3 emissions JSON file"
+
+        - name: "--pareto"
+          type: "boolean"
+          default: true
+          description: "Perform Pareto analysis (80/20 rule)"
+
+    - name: "engage"
+      description: "Automate GDPR/CCPA compliant supplier engagement campaigns"
+      usage: "vcci engage --suppliers top100.json --campaign reduction_targets"
+      options:
+        - name: "--suppliers"
+          type: "path"
+          required: true
+          description: "Supplier list JSON file"
+
+        - name: "--campaign"
+          type: "string"
+          required: true
+          description: "Campaign template name"
+
+        - name: "--gdpr-compliant"
+          type: "boolean"
+          default: true
+          description: "Enforce GDPR/CCPA consent requirements"
+
+    - name: "report"
+      description: "Generate multi-standard reports (GHG, ESRS, IFRS S2, ISO 14083)"
+      usage: "vcci report --emissions scope3_results.json --format esrs"
+      options:
+        - name: "--emissions"
+          type: "path"
+          required: true
+          description: "Scope 3 emissions JSON file"
+
+        - name: "--format"
+          type: "string"
+          choices: ["ghg-protocol", "esrs", "ifrs-s2", "iso-14083", "cdp", "sbti", "all"]
+          default: "all"
+          description: "Report format"
+
+        - name: "--output"
+          type: "path"
+          default: "./reports"
+          description: "Output directory"
+
+    - name: "pipeline"
+      description: "Run complete end-to-end Scope 3 pipeline (v2.0)"
+      usage: "vcci pipeline --input data/ --output results/"
+      options:
+        - name: "--input"
+          type: "path"
+          required: true
+          description: "Input data directory"
+
+        - name: "--output"
+          type: "path"
+          default: "./results"
+          description: "Output results directory"
+
+        - name: "--stages"
+          type: "string"
+          default: "all"
+          description: "Pipeline stages to run (1-5, all)"
+
+    - name: "pcf"
+      description: "Manage PCF Exchange (import/export via PACT Pathfinder)"
+      usage: "vcci pcf import --file supplier_pcf.json --validate"
+      options:
+        - name: "import"
+          description: "Import supplier PCFs (PACT Pathfinder v2.0)"
+
+        - name: "export"
+          description: "Export product PCFs (Enterprise tier)"
+
+        - name: "--file"
+          type: "path"
+          required: true
+          description: "PCF file path (PACT Pathfinder JSON)"
+
+        - name: "--validate"
+          type: "boolean"
+          default: true
+          description: "Validate against PACT schema"
+
+    - name: "connect"
+      description: "Connect to ERP systems (SAP, Oracle, Workday)"
+      usage: "vcci connect --erp sap --credentials creds.json"
+      options:
+        - name: "--erp"
+          type: "string"
+          choices: ["sap", "oracle", "workday"]
+          required: true
+          description: "ERP system type"
+
+        - name: "--credentials"
+          type: "path"
+          required: true
+          description: "Credentials JSON file (OAuth tokens, API keys)"
+
+        - name: "--test"
+          type: "boolean"
+          default: false
+          description: "Test connection without extracting data"
+
+# SDK
+sdk:
+  languages:
+    - python
+
+  python:
+    package_name: "vcci_scope3"
+    min_version: "3.9"
+    recommended_version: "3.11"
+
+    installation: |
+      pip install vcci-scope3
+
+    quick_start: |
+      from vcci_scope3 import Scope3Pipeline
+
+      # Initialize pipeline
+      pipeline = Scope3Pipeline(config_path="config/vcci_config.yaml")
+
+      # Run complete Scope 3 analysis (Cat 1, 4, 6)
+      results = pipeline.run(
+          procurement_data="procurement.csv",
+          logistics_data="logistics.csv",
+          supplier_data="suppliers.json",
+          pcf_data="supplier_pcfs.json"  # Optional PCF data
+      )
+
+      # Access results
+      print(f"Total Scope 3 emissions: {results.total_emissions:.2f} tCO2e")
+      print(f"Data coverage (Tier 1/2): {results.data_coverage:.1%}")
+      print(f"PCF coverage (Cat 1): {results.pcf_coverage:.1%}")
+
+      # Generate reports
+      pipeline.generate_report(
+          results=results,
+          format="esrs",  # ESRS, IFRS S2, ISO 14083, etc.
+          output="scope3_report.pdf"
+      )
+
+    core_classes:
+      - "Scope3Pipeline"
+      - "ValueChainIntakeAgent"
+      - "Scope3CalculatorAgent"
+      - "HotspotAnalysisAgent"
+      - "SupplierEngagementAgent"
+      - "Scope3ReportingAgent"
+      - "FactorBroker"
+      - "PolicyEngine"
+      - "EntityMDM"
+      - "PCFExchange"
+
+# Dependencies
+dependencies:
+  greenlang:
+    - "greenlang.core >= 0.3.0"
+    - "greenlang.agents >= 0.3.0"
+    - "greenlang.validation >= 0.3.0"
+    - "greenlang.provenance >= 0.3.0"
+    - "greenlang.io >= 0.3.0"
+
+  python:
+    min_version: "3.9"
+    recommended_version: "3.11"
+
+  external:
+    required:
+      - "pandas >= 2.1.0"
+      - "numpy >= 1.24.0"
+      - "scipy >= 1.11.0"  # Monte Carlo
+      - "pydantic >= 2.5.0"
+      - "fastapi >= 0.104.0"
+      - "anthropic >= 0.18.0"
+      - "openai >= 1.10.0"
+      - "opa-python >= 1.4.0"  # Policy Engine
+      - "sentence-transformers >= 2.2.0"  # Entity MDM
+      - "httpx >= 0.25.0"
+      - "pyyaml >= 6.0"
+      - "python-dotenv >= 1.0.0"
+      - "rich >= 13.7.0"
+      - "typer >= 0.9.0"
+
+    optional:
+      - "plotly >= 5.18.0"  # Visualizations
+      - "openpyxl >= 3.1.0"  # Excel I/O
+      - "reportlab >= 4.0.0"  # PDF generation
+      - "python-pptx >= 0.6.23"  # PowerPoint
+      - "sendgrid >= 6.10.0"  # Email automation
+      - "celery >= 5.3.0"  # Task queue
+      - "redis >= 5.0.0"  # Caching
+      - "psycopg2-binary >= 2.9.0"  # PostgreSQL
+      - "weaviate-client >= 3.26.0"  # Vector DB
+
+# Configuration
+configuration:
+  default_config_file: "config/vcci_config.yaml"
+
+  required_settings:
+    - "llm_api_key"  # Anthropic or OpenAI
+    - "factor_broker_config"  # ecoinvent license key
+    - "entity_mdm_config"  # LEI, DUNS API keys
+    - "output_directory"
+
+  optional_settings:
+    - "policy_engine_config"  # OPA server endpoint
+    - "pcf_exchange_config"  # PACT, Catena-X, SAP SDX
+    - "erp_connections"  # SAP, Oracle, Workday credentials
+    - "email_api_key"  # SendGrid for supplier engagement
+    - "cache_backend"  # Redis for performance
+    - "database_connection"  # PostgreSQL for multi-tenant
+
+  environment_variables:
+    - "VCCI_API_KEY"
+    - "VCCI_CONFIG_PATH"
+    - "VCCI_OUTPUT_DIR"
+    - "ANTHROPIC_API_KEY"
+    - "OPENAI_API_KEY"
+    - "ECOINVENT_LICENSE_KEY"  # $60K/year
+    - "DUNS_API_KEY"  # D&B ($100K/year)
+    - "LEI_API_KEY"  # GLEIF ($10K/year)
+    - "CATENA_X_API_KEY"  # Catena-X network ($80K/year)
+    - "SENDGRID_API_KEY"
+    - "SAP_API_ENDPOINT"
+    - "SAP_OAUTH_TOKEN"
+    - "ORACLE_API_ENDPOINT"
+    - "ORACLE_OAUTH_TOKEN"
+    - "WORKDAY_API_ENDPOINT"
+    - "WORKDAY_OAUTH_TOKEN"
+
+# Quality Assurance
+quality:
+  test_coverage: ">= 90%"
+  security_scan: ">= 90/100 (Grade A-)"
+  soc2_compliant: "Type II (Week 1 start, complete by Week 44)"
+
+  performance_benchmarks:
+    - "100,000 transactions intake < 1 hour"
+    - "10,000 calculations (Cat 1, 4, 6) < 30 minutes"
+    - "10,000 suppliers hotspot analysis < 5 minutes"
+    - "Report generation (all formats) < 10 seconds"
+    - "Entity MDM lookup < 500ms per supplier"
+    - "Factor Broker lookup < 50ms per factor"
+
+  validation:
+    - "300+ validation rules (data quality + GHG Protocol + supplier)"
+    - "4 JSON schemas v1.0 (procurement, logistics, supplier, scope3_results)"
+    - "Zero-hallucination guarantee (Tier 1 calculations, deterministic)"
+    - "Entity resolution accuracy >= 95% at 95% precision"
+    - "ISO 14083 conformance: 100% (zero variance to test suite)"
+
+# Support
+support:
+  documentation: "https://docs.greenlang.io/packs/vcci-scope3"
+  community: "https://community.greenlang.io"
+  issues: "https://github.com/greenlang/gl-vcci-carbon-app/issues"
+  email: "support@greenlang.io"
+
+  enterprise:
+    onboarding: "2-day workshop included"
+    sla: "99.9% uptime, <2 hour critical response"
+    support_hours: "24/7 (Enterprise tier)"
+    dedicated_csm: "Enterprise tier"
+
+# Pricing (v2.0)
+pricing:
+  model: "subscription"
+
+  tiers:
+    - name: "Core"
+      price: "$100,000 - $200,000/year"
+      description: "Cat 1 and 4 calculators, basic reporting"
+      features:
+        - "Cat 1 (Purchased Goods) and Cat 4 (Transport) calculators with uncertainty"
+        - "Factor Broker access (DESNZ, EPA, ecoinvent)"
+        - "ESRS, CDP, IFRS S2 exports"
+        - "Up to 10,000 suppliers"
+        - "Email support"
+      limits:
+        suppliers: "up to 10,000"
+        users: "10"
+        support: "email (business hours)"
+        pcf_exchange: "None"
+        entity_mdm: "Basic (deterministic + fuzzy only)"
+
+    - name: "Plus"
+      price: "$200,000 - $350,000/year"
+      description: "Full Cat 1,4,6, engagement, PCF import"
+      features:
+        - "Everything in Core"
+        - "Cat 6 (Business Travel)"
+        - "Engagement workflows (supplier portal, campaigns)"
+        - "ISO 14083 detailed logistics (Cat 4)"
+        - "PCF import (PACT Pathfinder)"
+        - "Entity MDM (LEI, DUNS, OpenCorporates)"
+        - "Up to 50,000 suppliers"
+        - "Priority support"
+      limits:
+        suppliers: "up to 50,000"
+        users: "50"
+        support: "email + chat (24x5)"
+        pcf_exchange: "Import only (PACT)"
+        entity_mdm: "Full (LEI, DUNS, OpenCorporates)"
+
+    - name: "Enterprise"
+      price: "$350,000 - $500,000/year"
+      description: "Bidirectional PCF, advanced scenarios, custom contracts"
+      features:
+        - "Everything in Plus"
+        - "PCF bidirectional exchange (PACT, Catena-X, SAP SDX)"
+        - "Advanced scenarios (abatement, forecasting)"
+        - "Custom data contracts"
+        - "Unlimited suppliers"
+        - "Unlimited users"
+        - "24/7 on-call support"
+        - "Dedicated customer success manager"
+        - "Custom ERP connectors"
+      limits:
+        suppliers: "unlimited"
+        users: "unlimited"
+        support: "24/7 phone + on-call"
+        pcf_exchange: "Bidirectional (PACT, Catena-X, SAP SDX)"
+        entity_mdm: "Full + custom matching rules"
+        features:
+          - "White-label reporting"
+          - "Custom ERP connectors"
+          - "On-premises deployment option"
+          - "API rate limit overrides"
+
+  api_pricing:
+    - "Calculation API: $0.05 per emission calculation"
+    - "Entity Resolution API: $0.10 per supplier match"
+    - "PCF Validation API: $0.20 per PCF validation (PACT schema)"
+    - "Report Generation API: $10.00 per report"
+
+  data_license_costs:
+    - "ecoinvent v3.10: $60,000/year (included in all tiers)"
+    - "Dun & Bradstreet DUNS API: $100,000/year (Plus and Enterprise)"
+    - "GLEIF LEI API: $10,000/year (Plus and Enterprise)"
+    - "Catena-X Network: $80,000/year (Enterprise only)"
+
+# Changelog
+changelog:
+  - version: "2.0.0"
+    date: "2026-08-30" (Target GA)
+    changes:
+      - "CTO v2 approved strategic plan"
+      - "FOCUS: Cat 1, 4, 6 initially (85-95% of Scope 3 value)"
+      - "NEW: Factor Broker (runtime factor resolution, license compliance)"
+      - "NEW: Policy Engine (OPA-based calculator versioning)"
+      - "NEW: Entity MDM (LEI, DUNS, OpenCorporates for ≥95% auto-match)"
+      - "NEW: PCF Exchange (PACT Pathfinder, Catena-X, SAP SDX)"
+      - "NEW: ESRS E1-E5, S1-S4, G1 (EU CSRD compliance)"
+      - "NEW: IFRS S2 Climate-related Disclosures"
+      - "NEW: ISO 14083:2023 conformance (transport emissions)"
+      - "NEW: GDPR/CCPA compliant supplier engagement"
+      - "NEW: SOC 2 Type II compliant (audit complete at GA)"
+      - "SAP, Oracle, Workday ERP connectors"
+      - "1,200+ tests, 90% coverage"
+      - "Security scan: 90/100 (Grade A-)"
+
+  - version: "1.0.0"
+    date: "2026-08-30" (Superseded by v2.0)
+    status: "Deprecated - see v2.0"
+
+# Future Roadmap
+roadmap:
+  - version: "2.1.0"
+    quarter: "Month 12 (Week 45-48)"
+    features:
+      - "Cat 2 (Capital Goods)"
+      - "High customer demand category"
+
+  - version: "2.2.0"
+    quarter: "Month 13-15"
+    features:
+      - "Cat 3 (Fuel & Energy-Related Activities)"
+      - "Cat 5 (Waste Generated in Operations)"
+
+  - version: "2.3.0"
+    quarter: "Month 16-18"
+    features:
+      - "Cat 7 (Employee Commuting)"
+      - "Cat 8 (Upstream Leased Assets)"
+      - "Cat 9 (Downstream Transportation)"
+      - "Cat 10 (Processing of Sold Products)"
+
+  - version: "2.4.0"
+    quarter: "Month 19-24"
+    features:
+      - "Cat 11 (Use of Sold Products)"
+      - "Cat 12 (End-of-Life Treatment)"
+      - "Cat 13 (Downstream Leased Assets)"
+      - "Cat 14 (Franchises)"
+      - "Cat 15 (Investments)"
+
+  - version: "3.0.0"
+    quarter: "Q2 2027"
+    features:
+      - "Product-level LCA integration (cradle-to-grave)"
+      - "Advanced ML forecasting (LSTM models)"
+      - "Blockchain-based supplier verification"
+      - "White-label reseller program"

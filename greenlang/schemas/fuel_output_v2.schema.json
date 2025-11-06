@@ -1,0 +1,591 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.ai/schemas/fuel_output_v2.json",
+  "title": "FuelAgentAI v2 Output Schema",
+  "description": "Response structure for FuelAgentAI v2 emission calculations with multi-gas support",
+  "type": "object",
+  "required": ["success"],
+  "properties": {
+    "success": {
+      "type": "boolean",
+      "description": "Whether the calculation succeeded",
+      "examples": [true, false]
+    },
+    "data": {
+      "type": "object",
+      "description": "Calculation results (structure varies by response_format)",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/LegacyOutput"
+        },
+        {
+          "$ref": "#/definitions/EnhancedOutput"
+        },
+        {
+          "$ref": "#/definitions/CompactOutput"
+        }
+      ]
+    },
+    "error": {
+      "type": "object",
+      "description": "Error details (only present if success=false)",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Error code",
+          "examples": ["INVALID_FUEL_TYPE", "FACTOR_NOT_FOUND", "VALIDATION_ERROR"]
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable error message",
+          "examples": ["No emission factor found for fuel type 'invalid_fuel' in US"]
+        },
+        "details": {
+          "type": "object",
+          "description": "Additional error context",
+          "additionalProperties": true
+        }
+      },
+      "required": ["code", "message"]
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Execution metadata",
+      "properties": {
+        "agent_id": {
+          "type": "string",
+          "description": "Agent identifier",
+          "examples": ["fuel_ai"]
+        },
+        "calculation_time_ms": {
+          "type": "number",
+          "description": "Total calculation time in milliseconds",
+          "examples": [125.5, 220.3]
+        },
+        "ai_calls": {
+          "type": "integer",
+          "description": "Number of AI model calls made",
+          "examples": [0, 1, 2]
+        },
+        "tool_calls": {
+          "type": "integer",
+          "description": "Number of tool function calls",
+          "examples": [1, 2, 3]
+        },
+        "total_cost_usd": {
+          "type": "number",
+          "description": "Total cost in USD (AI + infrastructure)",
+          "examples": [0.0001, 0.0025, 0.0055]
+        },
+        "provider": {
+          "type": "string",
+          "description": "AI provider used",
+          "examples": ["openai", "anthropic", "none"]
+        },
+        "model": {
+          "type": "string",
+          "description": "AI model used",
+          "examples": ["gpt-4o-mini", "claude-3-sonnet", "none"]
+        },
+        "fast_path": {
+          "type": "boolean",
+          "description": "Whether fast path was used (deterministic bypass of AI)",
+          "examples": [true, false]
+        },
+        "cache_hit": {
+          "type": "boolean",
+          "description": "Whether emission factor was served from cache",
+          "examples": [true, false]
+        }
+      }
+    }
+  },
+  "definitions": {
+    "LegacyOutput": {
+      "type": "object",
+      "description": "v1 backward-compatible output format (single CO2e value)",
+      "required": [
+        "co2e_emissions_kg",
+        "fuel_type",
+        "consumption_amount",
+        "consumption_unit",
+        "emission_factor",
+        "emission_factor_unit",
+        "country",
+        "scope"
+      ],
+      "properties": {
+        "co2e_emissions_kg": {
+          "type": "number",
+          "description": "Total CO2-equivalent emissions in kilograms",
+          "examples": [10210.0, 5310.0]
+        },
+        "fuel_type": {
+          "type": "string",
+          "description": "Fuel type used in calculation",
+          "examples": ["diesel", "natural_gas", "electricity"]
+        },
+        "consumption_amount": {
+          "type": "number",
+          "description": "Consumption amount (absolute value)",
+          "examples": [1000.0, 5000.0]
+        },
+        "consumption_unit": {
+          "type": "string",
+          "description": "Unit of consumption",
+          "examples": ["gallons", "therms", "kWh"]
+        },
+        "emission_factor": {
+          "type": "number",
+          "description": "Emission factor used (kg CO2e per unit)",
+          "examples": [10.21, 5.3, 0.385]
+        },
+        "emission_factor_unit": {
+          "type": "string",
+          "description": "Unit of emission factor",
+          "examples": ["kgCO2e/gallons", "kgCO2e/therms", "kgCO2e/kWh"]
+        },
+        "country": {
+          "type": "string",
+          "description": "Country/region used for factor selection",
+          "examples": ["US", "UK", "EU"]
+        },
+        "scope": {
+          "type": "string",
+          "description": "GHG Protocol scope",
+          "enum": ["1", "2", "3"],
+          "examples": ["1", "2"]
+        },
+        "energy_content_mmbtu": {
+          "type": "number",
+          "description": "Energy content in MMBtu (if applicable)",
+          "examples": [138.7, 500.0]
+        },
+        "renewable_offset_applied": {
+          "type": "boolean",
+          "description": "Whether renewable offset was applied",
+          "examples": [false, true]
+        },
+        "efficiency_adjusted": {
+          "type": "boolean",
+          "description": "Whether efficiency adjustment was applied",
+          "examples": [false, true]
+        },
+        "recommendations": {
+          "type": "array",
+          "description": "Fuel switching and efficiency recommendations",
+          "items": {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "examples": ["Switch to biodiesel (B20)"]
+              },
+              "potential_reduction_pct": {
+                "type": "number",
+                "examples": [15, 50]
+              },
+              "feasibility": {
+                "type": "string",
+                "enum": ["high", "medium", "low"]
+              },
+              "description": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "explanation": {
+          "type": "string",
+          "description": "AI-generated natural language explanation (optional)",
+          "examples": ["Calculated 10,210 kg CO2e emissions from 1000 gallons of diesel..."]
+        },
+        "energy_content_info": {
+          "type": "object",
+          "description": "Additional energy content details (optional)"
+        }
+      }
+    },
+    "EnhancedOutput": {
+      "type": "object",
+      "description": "v2 enhanced output format (multi-gas, provenance, DQS)",
+      "allOf": [
+        {
+          "$ref": "#/definitions/LegacyOutput"
+        },
+        {
+          "type": "object",
+          "required": ["vectors_kg", "co2e_by_gwp", "factor_record", "quality"],
+          "properties": {
+            "vectors_kg": {
+              "type": "object",
+              "description": "Individual greenhouse gas emissions (kg)",
+              "required": ["CO2", "CH4", "N2O"],
+              "properties": {
+                "CO2": {
+                  "type": "number",
+                  "description": "Carbon dioxide emissions (kg)",
+                  "examples": [10180.0]
+                },
+                "CH4": {
+                  "type": "number",
+                  "description": "Methane emissions (kg)",
+                  "examples": [0.82]
+                },
+                "N2O": {
+                  "type": "number",
+                  "description": "Nitrous oxide emissions (kg)",
+                  "examples": [0.164]
+                },
+                "HFCs": {
+                  "type": "number",
+                  "description": "Hydrofluorocarbons emissions (kg) - optional",
+                  "examples": [0.0]
+                },
+                "PFCs": {
+                  "type": "number",
+                  "description": "Perfluorocarbons emissions (kg) - optional",
+                  "examples": [0.0]
+                },
+                "SF6": {
+                  "type": "number",
+                  "description": "Sulfur hexafluoride emissions (kg) - optional",
+                  "examples": [0.0]
+                },
+                "biogenic_CO2": {
+                  "type": "number",
+                  "description": "Biogenic carbon dioxide (reported separately per GHGP)",
+                  "examples": [0.0, 2000.0]
+                }
+              }
+            },
+            "co2e_by_gwp": {
+              "type": "object",
+              "description": "CO2-equivalent by different GWP horizons",
+              "required": ["co2e_100yr"],
+              "properties": {
+                "co2e_100yr": {
+                  "type": "number",
+                  "description": "CO2e using 100-year GWP (standard)",
+                  "examples": [10210.0]
+                },
+                "co2e_20yr": {
+                  "type": "number",
+                  "description": "CO2e using 20-year GWP (if alternative_gwp enabled)",
+                  "examples": [10256.0]
+                }
+              }
+            },
+            "factor_record": {
+              "type": "object",
+              "description": "Emission factor provenance and metadata",
+              "required": [
+                "factor_id",
+                "source_org",
+                "source_publication",
+                "source_year",
+                "methodology",
+                "valid_from",
+                "gwp_set",
+                "boundary",
+                "citation"
+              ],
+              "properties": {
+                "factor_id": {
+                  "type": "string",
+                  "description": "Unique factor identifier",
+                  "examples": ["EF:US:diesel:2024:v1"]
+                },
+                "source_org": {
+                  "type": "string",
+                  "description": "Source organization",
+                  "examples": ["EPA", "IEA", "UK DESNZ", "IPCC"]
+                },
+                "source_publication": {
+                  "type": "string",
+                  "description": "Source publication name",
+                  "examples": ["Emission Factors for Greenhouse Gas Inventories 2024"]
+                },
+                "source_year": {
+                  "type": "integer",
+                  "description": "Publication year",
+                  "examples": [2024, 2023]
+                },
+                "source_url": {
+                  "type": "string",
+                  "format": "uri",
+                  "description": "Source URL (if available)"
+                },
+                "methodology": {
+                  "type": "string",
+                  "description": "Calculation methodology",
+                  "enum": [
+                    "IPCC_Tier_1",
+                    "IPCC_Tier_2",
+                    "IPCC_Tier_3",
+                    "direct_measurement",
+                    "lifecycle_assessment",
+                    "hybrid"
+                  ],
+                  "examples": ["IPCC_Tier_1"]
+                },
+                "valid_from": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Factor validity start date",
+                  "examples": ["2024-01-01"]
+                },
+                "valid_to": {
+                  "type": "string",
+                  "format": "date",
+                  "description": "Factor validity end date (null if current)",
+                  "examples": ["2024-12-31", null]
+                },
+                "gwp_set": {
+                  "type": "string",
+                  "description": "GWP reference set used",
+                  "examples": ["IPCC_AR6_100", "IPCC_AR6_20"]
+                },
+                "boundary": {
+                  "type": "string",
+                  "description": "Emission boundary",
+                  "examples": ["combustion", "WTT", "WTW"]
+                },
+                "citation": {
+                  "type": "string",
+                  "description": "Full citation for source",
+                  "examples": ["EPA (2024). Emission Factors for GHG Inventories. URL: https://..."]
+                }
+              }
+            },
+            "quality": {
+              "type": "object",
+              "description": "Data quality indicators",
+              "required": ["uncertainty_95ci_pct", "dqs"],
+              "properties": {
+                "uncertainty_95ci_pct": {
+                  "type": "number",
+                  "description": "Uncertainty as ±percentage (95% confidence interval)",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "examples": [5.0, 10.0, 25.0]
+                },
+                "dqs": {
+                  "type": "object",
+                  "description": "Data Quality Score (5-dimension GHG Protocol scoring)",
+                  "required": [
+                    "temporal",
+                    "geographical",
+                    "technological",
+                    "representativeness",
+                    "methodological",
+                    "overall_score",
+                    "rating"
+                  ],
+                  "properties": {
+                    "temporal": {
+                      "type": "integer",
+                      "description": "How recent is the data? (1=old, 5=current year)",
+                      "minimum": 1,
+                      "maximum": 5,
+                      "examples": [5, 4]
+                    },
+                    "geographical": {
+                      "type": "integer",
+                      "description": "How geographically specific? (1=global, 5=facility)",
+                      "minimum": 1,
+                      "maximum": 5,
+                      "examples": [4, 3]
+                    },
+                    "technological": {
+                      "type": "integer",
+                      "description": "How technology-specific? (1=industry avg, 5=equipment)",
+                      "minimum": 1,
+                      "maximum": 5,
+                      "examples": [4, 3]
+                    },
+                    "representativeness": {
+                      "type": "integer",
+                      "description": "How representative? (1=proxy, 5=direct measurement)",
+                      "minimum": 1,
+                      "maximum": 5,
+                      "examples": [4, 5]
+                    },
+                    "methodological": {
+                      "type": "integer",
+                      "description": "How rigorous? (1=estimate, 5=IPCC Tier 3)",
+                      "minimum": 1,
+                      "maximum": 5,
+                      "examples": [5, 4]
+                    },
+                    "overall_score": {
+                      "type": "number",
+                      "description": "Weighted average of 5 dimensions",
+                      "minimum": 1,
+                      "maximum": 5,
+                      "examples": [4.4, 3.8]
+                    },
+                    "rating": {
+                      "type": "string",
+                      "description": "Qualitative rating",
+                      "enum": ["excellent", "high_quality", "good", "moderate", "low"],
+                      "examples": ["high_quality", "good"]
+                    }
+                  }
+                }
+              }
+            },
+            "compliance": {
+              "type": "object",
+              "description": "Regulatory compliance markers",
+              "properties": {
+                "frameworks": {
+                  "type": "array",
+                  "description": "Applicable compliance frameworks",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "GHG_Protocol",
+                      "IPCC_2006",
+                      "EPA_MRR",
+                      "CSRD",
+                      "CDP",
+                      "SECR",
+                      "ISO14064",
+                      "TCFD"
+                    ]
+                  },
+                  "examples": [["GHG_Protocol", "IPCC_2006", "EPA_MRR"]]
+                },
+                "csrd_compliant": {
+                  "type": "boolean",
+                  "description": "Meets CSRD Annex II requirements (multi-gas breakdown)",
+                  "examples": [true]
+                },
+                "cdp_reportable": {
+                  "type": "boolean",
+                  "description": "Suitable for CDP Climate Change reporting",
+                  "examples": [true]
+                }
+              }
+            },
+            "provenance_hash": {
+              "type": "string",
+              "description": "SHA-256 hash of input parameters and factor for reproducibility",
+              "pattern": "^sha256:[a-f0-9]{64}$",
+              "examples": ["sha256:abc123..."]
+            }
+          }
+        }
+      ]
+    },
+    "CompactOutput": {
+      "type": "object",
+      "description": "Minimal output format for mobile/IoT (reduced payload size)",
+      "required": [
+        "co2e_kg",
+        "fuel",
+        "amount",
+        "unit",
+        "factor",
+        "scope"
+      ],
+      "properties": {
+        "co2e_kg": {
+          "type": "number",
+          "description": "Total CO2e emissions (kg)",
+          "examples": [10210.0]
+        },
+        "fuel": {
+          "type": "string",
+          "description": "Fuel type",
+          "examples": ["diesel"]
+        },
+        "amount": {
+          "type": "number",
+          "description": "Consumption amount",
+          "examples": [1000]
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit",
+          "examples": ["gallons"]
+        },
+        "factor": {
+          "type": "number",
+          "description": "Emission factor (kgCO2e/unit)",
+          "examples": [10.21]
+        },
+        "scope": {
+          "type": "string",
+          "description": "GHG scope",
+          "examples": ["1"]
+        },
+        "quality_score": {
+          "type": "number",
+          "description": "Overall data quality (1-5)",
+          "examples": [4.4]
+        },
+        "uncertainty_pct": {
+          "type": "number",
+          "description": "Uncertainty ±%",
+          "examples": [5.0]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "success": true,
+      "data": {
+        "co2e_emissions_kg": 10210.0,
+        "vectors_kg": {
+          "CO2": 10180.0,
+          "CH4": 0.82,
+          "N2O": 0.164
+        },
+        "co2e_by_gwp": {
+          "co2e_100yr": 10210.0
+        },
+        "factor_record": {
+          "factor_id": "EF:US:diesel:2024:v1",
+          "source_org": "EPA",
+          "source_publication": "Emission Factors for GHG Inventories 2024",
+          "source_year": 2024,
+          "methodology": "IPCC_Tier_1",
+          "valid_from": "2024-01-01",
+          "valid_to": "2024-12-31",
+          "gwp_set": "IPCC_AR6_100",
+          "boundary": "combustion",
+          "citation": "EPA (2024)..."
+        },
+        "quality": {
+          "uncertainty_95ci_pct": 5.0,
+          "dqs": {
+            "temporal": 5,
+            "geographical": 4,
+            "technological": 4,
+            "representativeness": 4,
+            "methodological": 5,
+            "overall_score": 4.4,
+            "rating": "high_quality"
+          }
+        },
+        "compliance": {
+          "frameworks": ["GHG_Protocol", "IPCC_2006", "EPA_MRR"],
+          "csrd_compliant": true,
+          "cdp_reportable": true
+        }
+      },
+      "metadata": {
+        "agent_id": "fuel_ai",
+        "calculation_time_ms": 220.5,
+        "ai_calls": 0,
+        "tool_calls": 2,
+        "total_cost_usd": 0.0001,
+        "fast_path": true,
+        "cache_hit": true
+      }
+    }
+  ]
+}
