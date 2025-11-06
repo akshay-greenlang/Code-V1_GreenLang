@@ -13,7 +13,7 @@ Categories:
 Demo responses cite "demo mode" and encourage users to add API keys for production use.
 """
 
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 
 # Demo responses for common climate queries
@@ -226,16 +226,16 @@ DEMO_TOOL_CALLS: Dict[str, List[Dict[str, Any]]] = {
 }
 
 
-def get_demo_response(query: str, tools: List[Any] = None) -> Dict[str, Any]:
+def get_demo_response(query: str, tools: Optional[List[Any]] = None) -> Dict[str, Any]:
     """
-    Get demo response for a query
+    Get demo response for a query.
 
     Returns appropriate pre-recorded response based on query content.
     If tools are provided, may return tool call instead of text.
 
     Args:
         query: User query text
-        tools: Available tool definitions
+        tools: Available tool definitions (optional)
 
     Returns:
         Dict with "type" ("text" or "tool_call"), "content", and optional "tool_calls"

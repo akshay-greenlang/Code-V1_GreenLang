@@ -15,6 +15,7 @@ from typing import (
     Tuple,
     TypeVar,
     Union,
+    runtime_checkable,
 )
 from typing_extensions import TypedDict, NotRequired, Annotated
 
@@ -161,12 +162,22 @@ AgentResult = Union[SuccessResult[T_co], FailureResult]
 # Agent Protocol Definition
 # ==============================================================================
 
-InT = TypeVar("InT", contravariant=True)  # Input type
-OutT = TypeVar("OutT", covariant=True)  # Output type
+# Note: Using invariant type variables for Protocol definitions
+# Covariant/contravariant variance causes mypy Protocol strictness issues
+# See: https://github.com/python/mypy/issues/8961
+InT = TypeVar("InT")  # Input type (invariant for Protocol)
+OutT = TypeVar("OutT")  # Output type (invariant for Protocol)
 
 
+@runtime_checkable
 class Agent(Protocol[InT, OutT]):
-    """Protocol defining the contract all agents must follow."""
+    """Protocol defining the contract all agents must follow.
+
+    Note: Type variables are invariant for Protocol compatibility.
+    For concrete implementations, use Generic[InT, OutT] with any variance.
+
+    The @runtime_checkable decorator allows isinstance() checks against this Protocol.
+    """
 
     agent_id: str
     name: str
