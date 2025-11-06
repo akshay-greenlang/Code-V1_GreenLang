@@ -248,15 +248,15 @@
   - [ ] Add proper tool schemas (schema_in, schema_out, impl)
   - [ ] Fix budget fields (max_cost_usd vs max_usd_per_run)
   - [ ] Convert factors from list to dict format
-- [ ] **Continue pack.yaml creation**
-  - [ ] Migrate IndustrialProcessHeatAgentAI to AgentSpec v2
-  - [ ] Migrate DecarbonizationRoadmapAgentAI to AgentSpec v2
-  - [ ] Migrate AnomalyAgentIForest to AgentSpec v2
-  - [ ] Migrate ForecastAgentSARIMA to AgentSpec v2
-  - [ ] Migrate IndustrialHeatPumpAgentAI to AgentSpec v2
+- [ ] **Batch 3: Create pack.yaml files for remaining priority agents**
   - [ ] Migrate RecommendationAgentAI to AgentSpec v2
   - [ ] Migrate ReportAgentAI to AgentSpec v2
-  - [ ] Migrate all remaining 15+ agents to AgentSpec v2
+  - [ ] Migrate AnomalyAgentIForest to AgentSpec v2 (ML)
+  - [ ] Migrate ForecastAgentSARIMA to AgentSpec v2 (ML)
+  - [ ] Migrate WasteHeatRecoveryAgentAI to AgentSpec v2
+- [ ] **Migrate all remaining non-AI agents** (~18+ agents)
+  - [ ] Migrate BoilerAgent to AgentSpec v2
+  - [ ] Migrate remaining deterministic agents to AgentSpec v2
 - [x] Create AgentSpec v2 validation tests for Batch 1 ✅ 2025-11-06 Session 8
 - [ ] Update orchestrator to handle AgentSpec v2 agents uniformly
 
