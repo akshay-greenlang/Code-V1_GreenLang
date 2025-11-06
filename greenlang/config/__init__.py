@@ -46,6 +46,12 @@ from greenlang.config.container import (
     inject,
 )
 
+from greenlang.config.providers import (
+    create_provider_from_config,
+    register_provider_factory,
+    setup_provider_di,
+)
+
 
 __all__ = [
     # Schemas
@@ -74,4 +80,8 @@ __all__ = [
     "reset_container",
     "register_default_services",
     "inject",
+    # Provider DI Integration
+    "create_provider_from_config",
+    "register_provider_factory",
+    "setup_provider_di",
 ]
