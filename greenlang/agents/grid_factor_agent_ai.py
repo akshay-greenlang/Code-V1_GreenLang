@@ -44,6 +44,18 @@ from typing import Any, Dict, List, Optional
 from datetime import datetime
 import asyncio
 import logging
+import warnings
+
+# DEPRECATION WARNING: This agent is deprecated for CRITICAL PATH emissions calculations
+warnings.warn(
+    "GridFactorAgentAI has been deprecated. "
+    "For CRITICAL PATH emissions calculations (Scope 1/2 grid factors), use the deterministic version instead: "
+    "from greenlang.agents.grid_factor_agent import GridFactorAgent. "
+    "This AI version should only be used for non-regulatory recommendations. "
+    "See AGENT_CATEGORIZATION_AUDIT.md for details.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 from ..types import Agent, AgentResult, ErrorInfo
 from templates.agent_monitoring import OperationalMonitoringMixin

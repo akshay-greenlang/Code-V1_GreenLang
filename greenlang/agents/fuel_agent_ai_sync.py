@@ -31,6 +31,18 @@ Status: Production Ready
 """
 
 from typing import Optional, Dict, Any
+import warnings
+
+# DEPRECATION WARNING: This agent is deprecated for CRITICAL PATH emissions calculations
+warnings.warn(
+    "FuelAgentAISync has been deprecated. "
+    "For CRITICAL PATH emissions calculations (Scope 1/2 fuel emissions), use the deterministic version instead: "
+    "from greenlang.agents.fuel_agent import FuelAgent. "
+    "This AI version should only be used for non-regulatory recommendations. "
+    "See AGENT_CATEGORIZATION_AUDIT.md for details.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 from greenlang.agents.base import AgentResult
 from greenlang.agents.sync_wrapper import SyncAgentWrapper

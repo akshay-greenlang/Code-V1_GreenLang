@@ -1,37 +1,38 @@
-"""Demo: AI-Powered Grid Carbon Intensity Lookup
+"""Demo: Grid Carbon Intensity Lookup (Updated to use deterministic version)
 
-This script demonstrates the GridFactorAgentAI which enhances the original GridFactorAgent
-with AI orchestration while preserving all deterministic lookups.
+DEPRECATION NOTICE: This demo has been updated to use GridFactorAgent (deterministic)
+instead of GridFactorAgentAI for CRITICAL PATH emissions calculations.
+
+GridFactorAgentAI has been deprecated for regulatory/compliance use cases.
+For non-regulatory recommendations, you may still use GridFactorAgentAI, but
+the deterministic GridFactorAgent is recommended for all CRITICAL PATH calculations.
 
 Key Features Demonstrated:
 1. Tool-first lookups (all data from database)
-2. Natural language explanations of grid intensity
-3. Deterministic results (same input -> same output)
-4. Temporal analysis (hourly interpolation)
-5. Weighted averages for mixed sources
-6. Intelligent recommendations for cleaner energy
-7. Backward compatibility with GridFactorAgent
-8. Performance tracking
+2. Deterministic results (same input -> same output)
+3. Backward compatibility
+4. Performance tracking
 
 Usage:
     python examples/grid_factor_agent_ai_demo.py
 
 Author: GreenLang Framework Team
 Date: October 2025
+Updated: November 2025 (Switched to deterministic version)
 """
 
-from greenlang.agents.grid_factor_agent_ai import GridFactorAgentAI
+# Updated to use deterministic version for CRITICAL PATH calculations
 from greenlang.agents.grid_factor_agent import GridFactorAgent
 import json
 
 
 def demo_basic_lookup():
-    """Demo 1: Basic grid intensity lookup with AI explanation."""
+    """Demo 1: Basic grid intensity lookup (deterministic)."""
     print("=" * 80)
-    print("DEMO 1: Basic Grid Intensity Lookup with AI")
+    print("DEMO 1: Basic Grid Intensity Lookup (Deterministic)")
     print("=" * 80)
 
-    agent = GridFactorAgentAI(budget_usd=0.50, enable_explanations=True)
+    agent = GridFactorAgent()
 
     payload = {
         "country": "US",
@@ -81,7 +82,7 @@ def demo_country_comparison():
     print("DEMO 2: Country Grid Intensity Comparison")
     print("=" * 80)
 
-    agent = GridFactorAgentAI()
+    agent = GridFactorAgent()
 
     countries = [
         ("US", "United States"),
@@ -99,22 +100,24 @@ def demo_country_comparison():
     results = []
     for code, name in countries:
         try:
-            result = agent._lookup_grid_intensity_impl(
-                country=code,
-                fuel_type="electricity",
-                unit="kWh",
-            )
-            intensity = result["emission_factor"] * 1000  # Convert to gCO2/kWh
-            renewable = result.get("grid_mix", {}).get("renewable", 0) * 100
-
-            results.append({
-                "name": name,
-                "code": code,
-                "intensity": intensity,
-                "renewable": renewable,
+            result = agent.run({
+                "country": code,
+                "fuel_type": "electricity",
+                "unit": "kWh",
             })
+            if result["success"]:
+                data = result["data"]
+                intensity = data["emission_factor"] * 1000  # Convert to gCO2/kWh
+                renewable = data.get("grid_mix", {}).get("renewable", 0) * 100
 
-            print(f"{name:<20} {code:<6} {intensity:<12.0f} {renewable:<15.1f}%")
+                results.append({
+                    "name": name,
+                    "code": code,
+                    "intensity": intensity,
+                    "renewable": renewable,
+                })
+
+                print(f"{name:<20} {code:<6} {intensity:<12.0f} {renewable:<15.1f}%")
         except Exception as e:
             print(f"{name:<20} {code:<6} ERROR: {str(e)}")
 
@@ -136,7 +139,7 @@ def demo_determinism():
     print("DEMO 3: Determinism Test")
     print("=" * 80)
 
-    agent = GridFactorAgentAI()
+    agent = GridFactorAgent()
 
     payload = {
         "country": "US",
@@ -149,14 +152,13 @@ def demo_determinism():
 
     results = []
     for i in range(3):
-        # Use tool directly to show determinism
-        result = agent._lookup_grid_intensity_impl(
-            country=payload["country"],
-            fuel_type=payload["fuel_type"],
-            unit=payload["unit"],
-        )
-        results.append(result["emission_factor"])
-        print(f"  Run {i+1}: {result['emission_factor']} {result['unit']}")
+        # Use agent to show determinism
+        result = agent.run(payload)
+        if result["success"]:
+            factor = result["data"]["emission_factor"]
+            unit = result["data"]["unit"]
+            results.append(factor)
+            print(f"  Run {i+1}: {factor} {unit}")
 
     all_same = len(set(results)) == 1
     print(f"\nDeterministic: {all_same} [PASS]" if all_same else f"\nDeterministic: {all_same} [FAIL]")
@@ -170,7 +172,7 @@ def demo_backward_compatibility():
     print("=" * 80)
 
     original = GridFactorAgent()
-    ai_enhanced = GridFactorAgentAI()
+    enhanced = GridFactorAgent()
 
     payload = {
         "country": "US",
@@ -184,71 +186,53 @@ def demo_backward_compatibility():
     result_orig = original.run(payload)
     factor_orig = result_orig["data"]["emission_factor"] if result_orig["success"] else 0
 
-    # AI agent tool (bypassing AI for exact comparison)
-    result_ai = ai_enhanced._lookup_grid_intensity_impl(
-        country=payload["country"],
-        fuel_type=payload["fuel_type"],
-        unit=payload["unit"],
-    )
-    factor_ai = result_ai["emission_factor"]
+    # Enhanced agent (same deterministic version)
+    result_enhanced = enhanced.run(payload)
+    factor_enhanced = result_enhanced["data"]["emission_factor"] if result_enhanced["success"] else 0
 
     print(f"\nOriginal GridFactorAgent:  {factor_orig} kgCO2e/{payload['unit']}")
-    print(f"AI GridFactorAgent Tool:   {factor_ai} kgCO2e/{payload['unit']}")
-    print(f"Match: {factor_orig == factor_ai} [PASS]" if factor_orig == factor_ai else f"Match: {factor_orig == factor_ai} [FAIL]")
+    print(f"Enhanced GridFactorAgent:  {factor_enhanced} kgCO2e/{payload['unit']}")
+    print(f"Match: {factor_orig == factor_enhanced} [PASS]" if factor_orig == factor_enhanced else f"Match: {factor_orig == factor_enhanced} [FAIL]")
     print()
 
 
 def demo_hourly_interpolation():
-    """Demo 5: Hourly grid intensity interpolation."""
+    """Demo 5: Grid mix information."""
     print("=" * 80)
-    print("DEMO 5: Hourly Grid Intensity Interpolation")
+    print("DEMO 5: Grid Mix Information")
     print("=" * 80)
 
-    agent = GridFactorAgentAI()
+    agent = GridFactorAgent()
 
     # Get base intensity
-    base_result = agent._lookup_grid_intensity_impl(
-        country="US",
-        fuel_type="electricity",
-        unit="kWh",
-    )
-    base_intensity = base_result["emission_factor"] * 1000  # Convert to gCO2/kWh
-    renewable_share = base_result.get("grid_mix", {}).get("renewable", 0)
+    result = agent.run({
+        "country": "US",
+        "fuel_type": "electricity",
+        "unit": "kWh",
+    })
 
-    print(f"\nUS Grid Base Intensity: {base_intensity:.0f} gCO2/kWh")
-    print(f"Renewable Share: {renewable_share*100:.1f}%\n")
+    if result["success"]:
+        data = result["data"]
+        base_intensity = data["emission_factor"] * 1000  # Convert to gCO2/kWh
+        grid_mix = data.get("grid_mix", {})
 
-    print(f"{'Hour':<8} {'Period':<20} {'Intensity (gCO2/kWh)':<25} {'vs. Average':<15}")
-    print("-" * 70)
+        print(f"\nUS Grid Base Intensity: {base_intensity:.0f} gCO2/kWh")
 
-    # Sample key hours
-    sample_hours = [2, 8, 13, 18, 22]
+        if grid_mix:
+            print(f"\nGrid Energy Mix:")
+            for source, percentage in grid_mix.items():
+                print(f"  {source.replace('_', ' ').title():<20} {percentage*100:.1f}%")
 
-    for hour in sample_hours:
-        result = agent._interpolate_hourly_data_impl(
-            base_intensity=base_intensity,
-            hour=hour,
-            renewable_share=renewable_share,
-        )
-
-        interpolated = result["interpolated_intensity"]
-        period = result["period"].replace("_", " ").title()
-        diff_pct = ((interpolated - base_intensity) / base_intensity) * 100
-
-        print(f"{hour:02d}:00   {period:<20} {interpolated:<25.1f} {diff_pct:+.1f}%")
-
-    print("\nNote: Peak hours have higher intensity due to increased fossil fuel generation.")
-    print("      Midday has lower intensity due to solar generation (varies by renewable share).")
     print()
 
 
 def demo_weighted_average():
-    """Demo 6: Weighted average for mixed energy sources."""
+    """Demo 6: Simple calculation for mixed energy sources."""
     print("=" * 80)
     print("DEMO 6: Weighted Average for Mixed Energy Sources")
     print("=" * 80)
 
-    agent = GridFactorAgentAI()
+    agent = GridFactorAgent()
 
     # Scenario: Facility with mixed energy sources
     print("\nScenario: Manufacturing facility with mixed energy portfolio")
@@ -256,83 +240,66 @@ def demo_weighted_average():
     print("  - 30% on-site solar")
     print("  - 10% backup diesel generator\n")
 
-    # Get intensities
-    grid_intensity = 385.0  # gCO2/kWh (US grid)
-    solar_intensity = 0.0   # gCO2/kWh (zero emissions)
-    diesel_intensity = 700.0  # gCO2/kWh (diesel generator)
+    # Get grid intensity
+    result = agent.run({
+        "country": "US",
+        "fuel_type": "electricity",
+        "unit": "kWh",
+    })
 
-    intensities = [grid_intensity, solar_intensity, diesel_intensity]
-    weights = [0.6, 0.3, 0.1]
+    if result["success"]:
+        grid_intensity = result["data"]["emission_factor"] * 1000  # gCO2/kWh
+        solar_intensity = 0.0   # gCO2/kWh (zero emissions)
+        diesel_intensity = 700.0  # gCO2/kWh (diesel generator estimate)
 
-    result = agent._calculate_weighted_average_impl(
-        intensities=intensities,
-        weights=weights,
-    )
+        # Manual weighted average calculation
+        weighted_avg = (grid_intensity * 0.6) + (solar_intensity * 0.3) + (diesel_intensity * 0.1)
 
-    print(f"Individual Intensities:")
-    print(f"  Grid electricity:     {grid_intensity:.0f} gCO2/kWh (60%)")
-    print(f"  On-site solar:        {solar_intensity:.0f} gCO2/kWh (30%)")
-    print(f"  Diesel generator:     {diesel_intensity:.0f} gCO2/kWh (10%)")
+        print(f"Individual Intensities:")
+        print(f"  Grid electricity:     {grid_intensity:.0f} gCO2/kWh (60%)")
+        print(f"  On-site solar:        {solar_intensity:.0f} gCO2/kWh (30%)")
+        print(f"  Diesel generator:     {diesel_intensity:.0f} gCO2/kWh (10%)")
 
-    print(f"\nWeighted Average Intensity: {result['weighted_average']:.1f} gCO2/kWh")
+        print(f"\nWeighted Average Intensity: {weighted_avg:.1f} gCO2/kWh")
 
-    # Calculate savings vs pure grid
-    savings = ((grid_intensity - result['weighted_average']) / grid_intensity) * 100
-    print(f"Reduction vs. Pure Grid Power: {savings:.1f}%")
+        # Calculate savings vs pure grid
+        savings = ((grid_intensity - weighted_avg) / grid_intensity) * 100
+        print(f"Reduction vs. Pure Grid Power: {savings:.1f}%")
 
     print()
 
 
 def demo_recommendations():
-    """Demo 7: Intelligent recommendations for cleaner energy."""
+    """Demo 7: Comparing different grids."""
     print("=" * 80)
-    print("DEMO 7: Recommendations for Cleaner Energy")
+    print("DEMO 7: Grid Intensity Comparison")
     print("=" * 80)
 
-    agent = GridFactorAgentAI(enable_recommendations=True)
+    agent = GridFactorAgent()
 
     # Test different scenarios
     scenarios = [
-        {
-            "country": "IN",
-            "intensity": 710.0,
-            "renewable_share": 0.23,
-            "description": "India (Coal-Heavy Grid)",
-        },
-        {
-            "country": "US",
-            "intensity": 385.0,
-            "renewable_share": 0.21,
-            "description": "United States (Mixed Grid)",
-        },
-        {
-            "country": "BR",
-            "intensity": 120.0,
-            "renewable_share": 0.83,
-            "description": "Brazil (Hydro-Heavy Grid)",
-        },
+        ("IN", "India (Coal-Heavy Grid)"),
+        ("US", "United States (Mixed Grid)"),
+        ("BR", "Brazil (Hydro-Heavy Grid)"),
     ]
 
-    for scenario in scenarios:
-        print(f"\n{scenario['description']}")
-        print(f"Current Intensity: {scenario['intensity']:.0f} gCO2/kWh")
-        print(f"Renewable Share: {scenario['renewable_share']*100:.0f}%")
+    for code, description in scenarios:
+        result = agent.run({
+            "country": code,
+            "fuel_type": "electricity",
+            "unit": "kWh",
+        })
 
-        result = agent._generate_recommendations_impl(
-            country=scenario["country"],
-            current_intensity=scenario["intensity"],
-            renewable_share=scenario["renewable_share"],
-        )
+        if result["success"]:
+            data = result["data"]
+            intensity = data["emission_factor"] * 1000
+            grid_mix = data.get("grid_mix", {})
+            renewable = grid_mix.get("renewable", 0) * 100 if grid_mix else 0
 
-        print(f"\nTop Recommendations:")
-
-        for i, rec in enumerate(result["recommendations"][:3], 1):
-            print(f"\n  {i}. [{rec['priority'].upper()}] {rec['action']}")
-            print(f"     Impact: {rec['impact']}")
-            print(f"     Potential Reduction: {rec['potential_reduction_gco2_kwh']:.0f} gCO2/kWh")
-            print(f"     Payback: {rec['estimated_payback']}")
-
-        print("\n" + "-" * 80)
+            print(f"\n{description}")
+            print(f"  Current Intensity: {intensity:.0f} gCO2/kWh")
+            print(f"  Renewable Share: {renewable:.0f}%")
 
     print()
 
@@ -343,7 +310,7 @@ def demo_available_data():
     print("DEMO 8: Available Data")
     print("=" * 80)
 
-    agent = GridFactorAgentAI()
+    agent = GridFactorAgent()
 
     # Get available countries
     countries = agent.get_available_countries()
@@ -362,14 +329,14 @@ def demo_available_data():
 
 
 def demo_performance_metrics():
-    """Demo 9: Performance tracking."""
+    """Demo 9: Multiple lookups."""
     print("=" * 80)
-    print("DEMO 9: Performance Metrics")
+    print("DEMO 9: Multiple Lookups")
     print("=" * 80)
 
-    agent = GridFactorAgentAI()
+    agent = GridFactorAgent()
 
-    # Make several tool calls
+    # Make several lookups
     lookup_configs = [
         ("US", "electricity", "kWh"),
         ("IN", "electricity", "kWh"),
@@ -377,25 +344,22 @@ def demo_performance_metrics():
         ("CN", "electricity", "MWh"),
     ]
 
+    print(f"\nRunning {len(lookup_configs)} lookups...")
+
     for country, fuel_type, unit in lookup_configs:
-        agent._lookup_grid_intensity_impl(
-            country=country,
-            fuel_type=fuel_type,
-            unit=unit,
-        )
+        result = agent.run({
+            "country": country,
+            "fuel_type": fuel_type,
+            "unit": unit,
+        })
+        if result["success"]:
+            factor = result["data"]["emission_factor"]
+            print(f"  {country} {fuel_type} ({unit}): {factor} kgCO2e/{unit}")
 
-    summary = agent.get_performance_summary()
-
-    print(f"\nPerformance Summary:")
-    print(f"  AI calls: {summary['ai_metrics']['ai_call_count']}")
-    print(f"  Tool calls: {summary['ai_metrics']['tool_call_count']}")
-    print(f"  Total cost: ${summary['ai_metrics']['total_cost_usd']:.4f}")
-    print(f"  Avg cost per lookup: ${summary['ai_metrics']['avg_cost_per_lookup']:.4f}")
-
-    print(f"\nBase Agent:")
-    print(f"  Agent ID: {summary['base_agent_metrics']['agent_id']}")
-    print(f"  Name: {summary['base_agent_metrics']['name']}")
-    print(f"  Version: {summary['base_agent_metrics']['version']}")
+    print(f"\nAgent Info:")
+    print(f"  Agent ID: {agent.agent_id}")
+    print(f"  Name: {agent.name}")
+    print(f"  Version: {agent.version}")
 
     print()
 
@@ -403,13 +367,13 @@ def demo_performance_metrics():
 def main():
     """Run all demos."""
     print("\n" + "=" * 80)
-    print("AI-Powered GridFactorAgent Demonstration")
+    print("GridFactorAgent Demonstration (Deterministic Version)")
     print("=" * 80)
     print()
 
-    # Note about demo mode
-    print("NOTE: Running in demo mode (no API keys required)")
-    print("      For production use with real AI, set OPENAI_API_KEY or ANTHROPIC_API_KEY")
+    # Note about deterministic version
+    print("NOTE: This demo uses the deterministic GridFactorAgent")
+    print("      For CRITICAL PATH emissions calculations (regulatory/compliance)")
     print()
 
     try:

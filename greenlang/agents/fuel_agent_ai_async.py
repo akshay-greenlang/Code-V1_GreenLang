@@ -46,6 +46,18 @@ from datetime import datetime
 import asyncio
 import logging
 import uuid
+import warnings
+
+# DEPRECATION WARNING: This agent is deprecated for CRITICAL PATH emissions calculations
+warnings.warn(
+    "AsyncFuelAgentAI has been deprecated. "
+    "For CRITICAL PATH emissions calculations (Scope 1/2 fuel emissions), use the deterministic version instead: "
+    "from greenlang.agents.fuel_agent import FuelAgent. "
+    "This AI version should only be used for non-regulatory recommendations. "
+    "See AGENT_CATEGORIZATION_AUDIT.md for details.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 from greenlang.agents.base import AgentResult
 from greenlang.agents.async_agent_base import AsyncAgentBase, AsyncAgentExecutionContext

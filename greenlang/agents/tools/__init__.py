@@ -60,6 +60,63 @@ from .emissions import (
     CalculateEmissionsTool,
     AggregateEmissionsTool,
     CalculateBreakdownTool,
+    CalculateScopeEmissionsTool,
+    RegionalEmissionFactorTool,
+)
+
+# Financial tools
+from .financial import (
+    FinancialMetricsTool,
+)
+
+# Grid/Utility tools
+from .grid import (
+    GridIntegrationTool,
+)
+
+# Security components
+from .validation import (
+    ValidationRule,
+    ValidationResult,
+    RangeValidator,
+    TypeValidator,
+    EnumValidator,
+    RegexValidator,
+    CustomValidator,
+    CompositeValidator,
+)
+
+from .rate_limiting import (
+    RateLimiter,
+    RateLimitExceeded,
+    get_rate_limiter,
+    configure_rate_limiter,
+)
+
+from .audit import (
+    AuditLogger,
+    AuditLogEntry,
+    get_audit_logger,
+    configure_audit_logger,
+)
+
+from .security_config import (
+    SecurityConfig,
+    get_security_config,
+    configure_security,
+    development_config,
+    testing_config,
+    production_config,
+    high_security_config,
+    SecurityContext,
+)
+
+# Telemetry
+from .telemetry import (
+    TelemetryCollector,
+    ToolMetrics,
+    get_telemetry,
+    reset_global_telemetry,
 )
 
 __all__ = [
@@ -79,6 +136,45 @@ __all__ = [
     "CalculateEmissionsTool",
     "AggregateEmissionsTool",
     "CalculateBreakdownTool",
+    "CalculateScopeEmissionsTool",
+    "RegionalEmissionFactorTool",
+    # Financial Tools
+    "FinancialMetricsTool",
+    # Grid/Utility Tools
+    "GridIntegrationTool",
+    # Security - Validation
+    "ValidationRule",
+    "ValidationResult",
+    "RangeValidator",
+    "TypeValidator",
+    "EnumValidator",
+    "RegexValidator",
+    "CustomValidator",
+    "CompositeValidator",
+    # Security - Rate Limiting
+    "RateLimiter",
+    "RateLimitExceeded",
+    "get_rate_limiter",
+    "configure_rate_limiter",
+    # Security - Audit Logging
+    "AuditLogger",
+    "AuditLogEntry",
+    "get_audit_logger",
+    "configure_audit_logger",
+    # Security - Configuration
+    "SecurityConfig",
+    "get_security_config",
+    "configure_security",
+    "development_config",
+    "testing_config",
+    "production_config",
+    "high_security_config",
+    "SecurityContext",
+    # Telemetry
+    "TelemetryCollector",
+    "ToolMetrics",
+    "get_telemetry",
+    "reset_global_telemetry",
 ]
 
 
@@ -95,8 +191,22 @@ def _register_standard_tools():
         registry.register(CalculateEmissionsTool(), category="emissions", version="1.0.0")
         registry.register(AggregateEmissionsTool(), category="emissions", version="1.0.0")
         registry.register(CalculateBreakdownTool(), category="emissions", version="1.0.0")
+        registry.register(CalculateScopeEmissionsTool(), category="emissions", version="1.0.0")
+        registry.register(RegionalEmissionFactorTool(), category="emissions", version="1.0.0")
     except ValueError:
         # Tools already registered (e.g., in testing)
+        pass
+
+    # Register financial tools
+    try:
+        registry.register(FinancialMetricsTool(), category="financial", version="1.0.0")
+    except ValueError:
+        pass
+
+    # Register grid tools
+    try:
+        registry.register(GridIntegrationTool(), category="grid", version="1.0.0")
+    except ValueError:
         pass
 
 

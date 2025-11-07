@@ -49,6 +49,18 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 import asyncio
 import logging
+import warnings
+
+# DEPRECATION WARNING: This agent is deprecated for CRITICAL PATH emissions calculations
+warnings.warn(
+    "FuelAgentAI_v2 has been deprecated. "
+    "For CRITICAL PATH emissions calculations (Scope 1/2 fuel emissions), use the deterministic version instead: "
+    "from greenlang.agents.fuel_agent import FuelAgent. "
+    "This AI version should only be used for non-regulatory recommendations. "
+    "See AGENT_CATEGORIZATION_AUDIT.md for details.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 from ..types import Agent, AgentResult, ErrorInfo
 from .types import FuelInput, FuelOutput

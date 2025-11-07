@@ -78,6 +78,15 @@ def __getattr__(name):
         from greenlang.agents.industrial_heat_pump_agent_ai import IndustrialHeatPumpAgent_AI
 
         return IndustrialHeatPumpAgent_AI
+    # Phase 6 V4 agents with shared tool library
+    elif name == "IndustrialHeatPumpAgentAI_V4":
+        from greenlang.agents.industrial_heat_pump_agent_ai_v4 import IndustrialHeatPumpAgentAI_V4
+
+        return IndustrialHeatPumpAgentAI_V4
+    elif name == "BoilerReplacementAgentAI_V4":
+        from greenlang.agents.boiler_replacement_agent_ai_v4 import BoilerReplacementAgentAI_V4
+
+        return BoilerReplacementAgentAI_V4
     elif name == "DecarbonizationRoadmapAgentAI":
         from greenlang.agents.decarbonization_roadmap_agent_ai import DecarbonizationRoadmapAgentAI
 
@@ -86,28 +95,42 @@ def __getattr__(name):
         from greenlang.agents.thermal_storage_agent_ai import ThermalStorageAgent_AI
 
         return ThermalStorageAgent_AI
+    # DEPRECATED: AI versions of CRITICAL PATH agents
+    # These agents have been deprecated for regulatory/compliance calculations
+    # Use deterministic versions instead (e.g., FuelAgent, GridFactorAgent)
     elif name == "FuelAgentAI":
+        import warnings
+        warnings.warn(
+            "FuelAgentAI is deprecated for CRITICAL PATH calculations. "
+            "Use FuelAgent instead for regulatory/compliance work.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         from greenlang.agents.fuel_agent_ai import FuelAgentAI
-
         return FuelAgentAI
     elif name == "FuelAgentAI_v2":
+        import warnings
+        warnings.warn(
+            "FuelAgentAI_v2 is deprecated for CRITICAL PATH calculations. "
+            "Use FuelAgent instead for regulatory/compliance work.",
+            DeprecationWarning,
+            stacklevel=2
+        )
         from greenlang.agents.fuel_agent_ai_v2 import FuelAgentAI_v2
-
         return FuelAgentAI_v2
     raise AttributeError(f"module 'greenlang.agents' has no attribute '{name}'")
 
 
 __all__ = [
     "BaseAgent",
+    # CRITICAL PATH agents (deterministic for regulatory/compliance)
     "FuelAgent",
-    "FuelAgentAI",
-    "FuelAgentAI_v2",
+    "GridFactorAgent",
     "BoilerAgent",
     "CarbonAgent",
     "InputValidatorAgent",
     "ReportAgent",
     "BenchmarkAgent",
-    "GridFactorAgent",
     "BuildingProfileAgent",
     "IntensityAgent",
     "RecommendationAgent",
@@ -116,9 +139,17 @@ __all__ = [
     "LoadProfileAgent",
     "FieldLayoutAgent",
     "EnergyBalanceAgent",
+    # RECOMMENDATION PATH agents (AI for decision support)
     "IndustrialProcessHeatAgent_AI",
     "BoilerReplacementAgent_AI",
     "IndustrialHeatPumpAgent_AI",
     "DecarbonizationRoadmapAgentAI",
     "ThermalStorageAgent_AI",
+    # Phase 6 V4 agents with shared tool library
+    "IndustrialHeatPumpAgentAI_V4",
+    "BoilerReplacementAgentAI_V4",
+    # DEPRECATED: AI versions of CRITICAL PATH agents (backward compatibility only)
+    # Use deterministic versions (FuelAgent, GridFactorAgent) for regulatory work
+    "FuelAgentAI",  # DEPRECATED - use FuelAgent
+    "FuelAgentAI_v2",  # DEPRECATED - use FuelAgent
 ]

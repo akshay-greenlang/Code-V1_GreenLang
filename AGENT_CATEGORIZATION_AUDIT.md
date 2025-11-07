@@ -42,19 +42,20 @@
 | 8 | intake/agent | GL-VCCI-Carbon-APP/VCCI-Scope3-Platform | Value chain data ingestion | ✅ Optimal |
 | 9 | boiler_agent | greenlang/agents | Boiler emissions | ✅ Optimal |
 | 10 | grid_factor_agent | greenlang/agents | Grid emission factors | ✅ Optimal |
-| 11 | validator_agent | greenlang/agents | Input validation | ✅ Optimal |
-| 12 | site_input_agent | greenlang/agents | Site data collection | ✅ Optimal |
-| 13 | energy_balance_agent | greenlang/agents | Solar energy balance | ✅ Optimal |
-| 14 | field_layout_agent | greenlang/agents | Solar field sizing | ✅ Optimal |
-| 15 | load_profile_agent | greenlang/agents | Thermal load profiles | ✅ Optimal |
-| 16 | solar_resource_agent | greenlang/agents | TMY solar data | ✅ Optimal |
-| 17 | emissions_calculator | packs/cement-lca | Cement LCA emissions | ✅ Optimal |
-| 18 | boiler_analyzer | packs/boiler-solar | Boiler efficiency | ✅ Optimal |
-| 19 | solar_estimator | packs/boiler-solar | Solar potential | ✅ Optimal |
-| 20 | energy_calculator | packs/hvac-measures | HVAC energy | ✅ Optimal |
-| 21 | material_analyzer | packs/cement-lca | Material composition | ✅ Optimal |
-| 22 | impact_assessor | packs/cement-lca | Environmental impact | ✅ Optimal |
-| 23 | intensity_agent (calculations) | greenlang/agents | Carbon intensity calcs | ✅ Optimal |
+| 11 | fuel_agent | greenlang/agents | Scope 1/2 fuel emissions | ✅ Optimal |
+| 12 | validator_agent | greenlang/agents | Input validation | ✅ Optimal |
+| 13 | site_input_agent | greenlang/agents | Site data collection | ✅ Optimal |
+| 14 | energy_balance_agent | greenlang/agents | Solar energy balance | ✅ Optimal |
+| 15 | field_layout_agent | greenlang/agents | Solar field sizing | ✅ Optimal |
+| 16 | load_profile_agent | greenlang/agents | Thermal load profiles | ✅ Optimal |
+| 17 | solar_resource_agent | greenlang/agents | TMY solar data | ✅ Optimal |
+| 18 | emissions_calculator | packs/cement-lca | Cement LCA emissions | ✅ Optimal |
+| 19 | boiler_analyzer | packs/boiler-solar | Boiler efficiency | ✅ Optimal |
+| 20 | solar_estimator | packs/boiler-solar | Solar potential | ✅ Optimal |
+| 21 | energy_calculator | packs/hvac-measures | HVAC energy | ✅ Optimal |
+| 22 | material_analyzer | packs/cement-lca | Material composition | ✅ Optimal |
+| 23 | impact_assessor | packs/cement-lca | Environmental impact | ✅ Optimal |
+| 24 | intensity_agent (calculations) | greenlang/agents | Carbon intensity calcs | ✅ Optimal |
 
 **Why Critical Path:**
 - EU CBAM compliance (regulatory fines)

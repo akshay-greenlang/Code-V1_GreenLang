@@ -1,0 +1,42 @@
+# GL-VCCI Scope 3 Carbon Intelligence Platform - Transaction Upload Template (CSV)
+# Version: 1.0
+# Last Updated: 2025-11-07
+#
+# FIELD DEFINITIONS:
+# - transaction_id: Unique identifier for the transaction (alphanumeric, max 50 chars)
+# - date: Transaction date in ISO 8601 format (YYYY-MM-DD)
+# - supplier_name: Full legal name of the supplier (max 200 chars)
+# - supplier_id: Unique supplier identifier in your system (alphanumeric, max 50 chars)
+# - product_name: Name or description of product/service (max 500 chars)
+# - product_category: UNSPSC code or category (see TEMPLATE_GUIDE.md for codes)
+# - quantity: Numeric quantity purchased
+# - unit: Unit of measurement (kg, liters, pieces, hours, etc.)
+# - spend_usd: Total spend amount in USD (numeric, 2 decimal places)
+# - currency: Original transaction currency (ISO 4217 code: USD, EUR, GBP, etc.)
+# - ghg_category: Scope 3 GHG Protocol category (1-15, see guide)
+# - country: ISO 3166-1 alpha-2 country code (US, GB, CN, etc.)
+# - description: Additional context or notes (optional, max 1000 chars)
+#
+# VALIDATION RULES:
+# - All fields except 'description' are required
+# - Date must be within last 5 years
+# - Quantity and spend_usd must be positive numbers
+# - Duplicate transaction_id values will be rejected
+#
+# ENCODING: UTF-8 with BOM
+# DELIMITER: Comma (,)
+# QUOTE CHARACTER: Double quote (")
+# ESCAPE CHARACTER: Backslash (\)
+#
+transaction_id,date,supplier_name,supplier_id,product_name,product_category,quantity,unit,spend_usd,currency,ghg_category,country,description
+TXN-2024-MFG-00001,2024-08-15,Precision Steel Manufacturing Co.,SUP-1001,Cold-rolled steel sheets - Grade 304,3310.15.10.00,5000,kg,12500.00,USD,1,US,High-grade stainless steel for automotive parts manufacturing
+TXN-2024-MFG-00002,2024-08-20,ChemTech Solutions GmbH,SUP-1002,Industrial adhesive polymer - Type A200,11121507,500,liters,8750.00,EUR,1,DE,Specialty adhesive for electronic component assembly
+TXN-2024-RTL-00003,2024-09-01,Pacific Freight Logistics,SUP-2001,Ocean freight container shipping - 40ft,78101803,12,containers,24000.00,USD,4,CN,Shanghai to Los Angeles route - consumer electronics shipment
+TXN-2024-MFG-00004,2024-09-05,GreenPower Energy Solutions,SUP-3001,Electricity - Renewable Energy Mix,26111701,150000,kWh,18000.00,USD,3,US,Monthly electricity consumption for manufacturing facility
+TXN-2024-TECH-00005,2024-09-10,CloudCompute Services Inc.,SUP-4001,Cloud infrastructure services - Compute,81111800,5000,compute-hours,15000.00,USD,1,US,AWS EC2 instances for data processing and ML training
+TXN-2024-RTL-00006,2024-09-15,Global Express Couriers,SUP-2002,Express air freight - International,78102202,250,kg,5500.00,GBP,4,GB,Urgent delivery of prototype samples to European clients
+TXN-2024-MFG-00007,2024-09-20,Aluminum Extrusion Specialists,SUP-1003,Aluminum extrusions - 6061-T6 alloy,3010.30.00.00,3000,kg,9600.00,USD,1,CA,Lightweight aluminum profiles for aerospace applications
+TXN-2024-TECH-00008,2024-09-25,TravelCorp Business Services,SUP-5001,Business travel - International flights,78111801,15,trips,22500.00,USD,6,US,Employee travel for client meetings and conferences Q3 2024
+TXN-2024-RTL-00009,2024-10-01,EcoPackaging Solutions Ltd.,SUP-6001,Recycled cardboard packaging,14111506,10000,units,6800.00,EUR,1,NL,Sustainable packaging materials for product distribution
+TXN-2024-MFG-00010,2024-10-05,Industrial Waste Management Co.,SUP-7001,Waste disposal and recycling services,76111803,50,tonnes,3500.00,USD,5,US,Monthly hazardous and non-hazardous waste processing
+TXN-2024-TECH-00011,2024-10-10,DataCenter Cooling Systems,SUP-8001,HVAC maintenance and R-22 refrigerant,40101500,100,kg,8500.00,USD,3,US,Quarterly maintenance and refrigerant top-up for cooling systems
