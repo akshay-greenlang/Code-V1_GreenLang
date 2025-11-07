@@ -1,0 +1,11 @@
+{
+  "output": {
+    "calculation": "500.0 gallons × 10.21 kgCO2e/gallons",
+    "emission_factor": 10.21,
+    "emission_factor_unit": "kgCO2e/gallons",
+    "emissions_kg_co2e": 5105.0,
+    "energy_content_mmbtu": 69.0,
+    "scope": "1"
+  },
+  "test_name": "fuel_agent_diesel_500_gallons"
+}

@@ -1,0 +1,52 @@
+
+================================================================================
+PROFILING REPORT: FuelAgentAI_profile
+================================================================================
+
+CPU PROFILE:
+  Total Calls: 53,621
+  Total Time: 10.31s
+
+  Top Functions (by cumulative time):
+     1. <frozen os>:712(__getitem__)
+        Time: 0.000s  Calls: 5
+     2. cp1252.py:18(encode)
+        Time: 0.000s  Calls: 11
+     3. <frozen genericpath>:157(_splitext)
+        Time: 0.004s  Calls: 403
+     4. base_events.py:823(call_soon)
+        Time: 0.002s  Calls: 200
+     5. <frozen ntpath>:222(split)
+        Time: 0.008s  Calls: 403
+     6. contextlib.py:108(__init__)
+        Time: 0.000s  Calls: 50
+     7. <frozen os>:780(check_str)
+        Time: 0.000s  Calls: 5
+     8. <frozen ntpath>:243(splitext)
+        Time: 0.005s  Calls: 403
+     9. <frozen os>:786(encodekey)
+        Time: 0.000s  Calls: 5
+    10. <frozen os>:811(getenv)
+        Time: 0.000s  Calls: 5
+
+MEMORY PROFILE:
+  Peak Memory: 0.52 MB
+  Current Memory: 0.50 MB
+
+  Top Allocations:
+    1. 0.01 MB (88 blocks)
+         File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\greenlang\agents\fuel_agent.py", line 285
+    2. 0.01 MB (50 blocks)
+         File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\greenlang\utils\performance_tracker.py", line 85
+    3. 0.00 MB (9 blocks)
+         File "C:\Python313\Lib\asyncio\windows_events.py", line 488
+    4. 0.00 MB (54 blocks)
+         File "C:\Users\rshar\Desktop\Akshay Makar\Tools\GreenLang\Code V1_GreenLang\greenlang\agents\fuel_agent.py", line 286
+    5. 0.00 MB (22 blocks)
+         File "C:\Users\rshar\AppData\Roaming\Python\Python313\site-packages\pydantic\main.py", line 253
+
+OPTIMIZATION RECOMMENDATIONS:
+  1. Consider caching expensive computations or using async I/O
+
+================================================================================
+

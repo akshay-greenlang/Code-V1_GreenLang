@@ -1,0 +1,338 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "greenlang-errors-alerts",
+    "title": "GreenLang Errors & Alerts",
+    "tags": ["greenlang", "errors", "alerts"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 0},
+        "type": "graph",
+        "title": "Error Rate by Component",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_errors_total[5m])) by (component)",
+            "legendFormat": "{{component}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Errors/sec"},
+          {"format": "short"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [5], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "name": "High Error Rate",
+          "noDataState": "no_data"
+        }
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "type": "graph",
+        "title": "Errors by Type",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_errors_total[5m])) by (error_type)",
+            "legendFormat": "{{error_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Errors/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "type": "piechart",
+        "title": "Error Distribution",
+        "targets": [
+          {
+            "expr": "sum(increase(gl_errors_total[1h])) by (error_type)",
+            "legendFormat": "{{error_type}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right"
+          },
+          "pieType": "pie"
+        }
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+        "type": "table",
+        "title": "Recent Errors",
+        "targets": [
+          {
+            "expr": "topk(20, sum by (component, error_type, tenant_id) (increase(gl_errors_total[5m])))",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "indexByName": {
+                "component": 0,
+                "error_type": 1,
+                "tenant_id": 2,
+                "Value": 3
+              },
+              "renameByName": {
+                "component": "Component",
+                "error_type": "Error Type",
+                "tenant_id": "Tenant",
+                "Value": "Count (5m)"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "type": "graph",
+        "title": "Pipeline Failure Rate",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_pipeline_runs_total{status='failure'}[5m])) by (pipeline) / sum(rate(gl_pipeline_runs_total[5m])) by (pipeline)",
+            "legendFormat": "{{pipeline}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percentunit", "label": "Failure Rate"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 6,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "type": "graph",
+        "title": "Cache Miss Rate",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_cache_misses_total[5m])) by (cache_name) / (sum(rate(gl_cache_hits_total[5m])) by (cache_name) + sum(rate(gl_cache_misses_total[5m])) by (cache_name))",
+            "legendFormat": "{{cache_name}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percentunit", "label": "Miss Rate"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 7,
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 32},
+        "type": "logs",
+        "title": "Error Logs",
+        "targets": [
+          {
+            "expr": "{level=~\"ERROR|CRITICAL\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showTime": true,
+          "showLabels": true,
+          "sortOrder": "Descending"
+        }
+      },
+      {
+        "id": 8,
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 40},
+        "type": "stat",
+        "title": "Total Errors (1h)",
+        "targets": [
+          {
+            "expr": "sum(increase(gl_errors_total[1h]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 10},
+                {"color": "red", "value": 50}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 40},
+        "type": "stat",
+        "title": "Active Alerts",
+        "targets": [
+          {
+            "expr": "count(ALERTS{alertstate='firing'})",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 40},
+        "type": "stat",
+        "title": "Error Rate",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_errors_total[5m])) / sum(rate(gl_pipeline_runs_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.01},
+                {"color": "red", "value": 0.05}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 48},
+        "type": "table",
+        "title": "Alert Summary",
+        "targets": [
+          {
+            "expr": "ALERTS{alertstate='firing'}",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "Value": true},
+              "indexByName": {
+                "alertname": 0,
+                "severity": 1,
+                "alertstate": 2,
+                "component": 3
+              },
+              "renameByName": {
+                "alertname": "Alert",
+                "severity": "Severity",
+                "alertstate": "State",
+                "component": "Component"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "component",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(gl_errors_total, component)",
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "error_type",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(gl_errors_total, error_type)",
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"]
+    }
+  }
+}

@@ -1,0 +1,283 @@
+# Prometheus alerting rules for GreenLang
+groups:
+  - name: greenlang_application
+    interval: 30s
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(gl_errors_total[5m])) by (component)
+            /
+            sum(rate(gl_pipeline_runs_total[5m])) by (component)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          component: '{{ $labels.component }}'
+        annotations:
+          summary: 'High error rate in {{ $labels.component }}'
+          description: 'Error rate is {{ $value | humanizePercentage }} (threshold: 5%)'
+
+      # Very high error rate
+      - alert: CriticalErrorRate
+        expr: |
+          (
+            sum(rate(gl_errors_total[5m])) by (component)
+            /
+            sum(rate(gl_pipeline_runs_total[5m])) by (component)
+          ) > 0.10
+        for: 2m
+        labels:
+          severity: critical
+          component: '{{ $labels.component }}'
+        annotations:
+          summary: 'CRITICAL: Very high error rate in {{ $labels.component }}'
+          description: 'Error rate is {{ $value | humanizePercentage }} (threshold: 10%)'
+
+      # Slow pipeline execution
+      - alert: SlowPipelineExecution
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(gl_pipeline_duration_seconds_bucket[5m])) by (le, pipeline)
+          ) > 60
+        for: 10m
+        labels:
+          severity: warning
+          pipeline: '{{ $labels.pipeline }}'
+        annotations:
+          summary: 'Slow pipeline execution for {{ $labels.pipeline }}'
+          description: 'P95 latency is {{ $value }}s (threshold: 60s)'
+
+      # API latency high
+      - alert: HighAPILatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(gl_api_latency_seconds_bucket[5m])) by (le, endpoint)
+          ) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          endpoint: '{{ $labels.endpoint }}'
+        annotations:
+          summary: 'High API latency for {{ $labels.endpoint }}'
+          description: 'P95 latency is {{ $value }}s (threshold: 1s)'
+
+      # No active executions
+      - alert: NoActiveExecutions
+        expr: |
+          sum(gl_active_executions) == 0
+        for: 15m
+        labels:
+          severity: info
+        annotations:
+          summary: 'No active pipeline executions'
+          description: 'There have been no active executions for 15 minutes'
+
+      # Cache hit rate too low
+      - alert: LowCacheHitRate
+        expr: |
+          (
+            sum(rate(gl_cache_hits_total[5m])) by (cache_name)
+            /
+            (
+              sum(rate(gl_cache_hits_total[5m])) by (cache_name)
+              +
+              sum(rate(gl_cache_misses_total[5m])) by (cache_name)
+            )
+          ) < 0.50
+        for: 10m
+        labels:
+          severity: warning
+          cache: '{{ $labels.cache_name }}'
+        annotations:
+          summary: 'Low cache hit rate for {{ $labels.cache_name }}'
+          description: 'Cache hit rate is {{ $value | humanizePercentage }} (threshold: 50%)'
+
+      # Database query latency
+      - alert: SlowDatabaseQueries
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(gl_db_query_duration_seconds_bucket[5m])) by (le, table)
+          ) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          table: '{{ $labels.table }}'
+        annotations:
+          summary: 'Slow database queries on {{ $labels.table }}'
+          description: 'P95 query latency is {{ $value }}s (threshold: 1s)'
+
+  - name: greenlang_resources
+    interval: 30s
+    rules:
+      # High CPU usage
+      - alert: HighCPUUsage
+        expr: gl_cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High CPU usage'
+          description: 'CPU usage is {{ $value }}% (threshold: 80%)'
+
+      # Critical CPU usage
+      - alert: CriticalCPUUsage
+        expr: gl_cpu_usage_percent > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'CRITICAL: Very high CPU usage'
+          description: 'CPU usage is {{ $value }}% (threshold: 95%)'
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: |
+          (gl_memory_usage_bytes / (1024 * 1024 * 1024)) > 4
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High memory usage'
+          description: 'Memory usage is {{ $value | humanize }}GB (threshold: 4GB)'
+
+      # Low disk space
+      - alert: LowDiskSpace
+        expr: |
+          (
+            gl_disk_usage_bytes
+            /
+            (gl_disk_usage_bytes + 1073741824)
+          ) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          path: '{{ $labels.path }}'
+        annotations:
+          summary: 'Low disk space on {{ $labels.path }}'
+          description: 'Disk usage is {{ $value | humanizePercentage }} (threshold: 85%)'
+
+      # Critical disk space
+      - alert: CriticalDiskSpace
+        expr: |
+          (
+            gl_disk_usage_bytes
+            /
+            (gl_disk_usage_bytes + 1073741824)
+          ) > 0.95
+        for: 1m
+        labels:
+          severity: critical
+          path: '{{ $labels.path }}'
+        annotations:
+          summary: 'CRITICAL: Very low disk space on {{ $labels.path }}'
+          description: 'Disk usage is {{ $value | humanizePercentage }} (threshold: 95%)'
+
+  - name: greenlang_health
+    interval: 60s
+    rules:
+      # Service down
+      - alert: ServiceDown
+        expr: up{job="greenlang"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: 'GreenLang service is down'
+          description: 'The GreenLang service has been down for more than 1 minute'
+
+      # Health check failing
+      - alert: HealthCheckFailing
+        expr: gl_health_status{status="unhealthy"} == 1
+        for: 2m
+        labels:
+          severity: critical
+          check: '{{ $labels.check_name }}'
+        annotations:
+          summary: 'Health check {{ $labels.check_name }} is failing'
+          description: 'Health check has been unhealthy for 2 minutes'
+
+      # Database connection issues
+      - alert: DatabaseConnectionIssues
+        expr: gl_db_connections{state="idle"} < 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Low number of idle database connections'
+          description: 'Only {{ $value }} idle connections available'
+
+  - name: greenlang_performance
+    interval: 30s
+    rules:
+      # Request rate spike
+      - alert: RequestRateSpike
+        expr: |
+          (
+            rate(gl_api_requests_total[5m])
+            /
+            rate(gl_api_requests_total[1h] offset 1h)
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'Request rate spike detected'
+          description: 'Request rate is {{ $value }}x higher than usual'
+
+      # Too many concurrent executions
+      - alert: HighConcurrentExecutions
+        expr: gl_active_executions > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High number of concurrent executions'
+          description: '{{ $value }} concurrent executions (threshold: 100)'
+
+      # Pack operation failures
+      - alert: PackOperationFailures
+        expr: |
+          (
+            sum(rate(gl_pack_operations_total{status="failure"}[5m]))
+            /
+            sum(rate(gl_pack_operations_total[5m]))
+          ) > 0.10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: 'High pack operation failure rate'
+          description: 'Pack operation failure rate is {{ $value | humanizePercentage }}'
+
+  - name: greenlang_tenant
+    interval: 30s
+    rules:
+      # Tenant resource usage spike
+      - alert: TenantResourceSpike
+        expr: |
+          sum(rate(gl_resource_usage[5m])) by (tenant_id) > 1000
+        for: 10m
+        labels:
+          severity: warning
+          tenant: '{{ $labels.tenant_id }}'
+        annotations:
+          summary: 'Resource usage spike for tenant {{ $labels.tenant_id }}'
+          description: 'Tenant is using {{ $value }} resource units/sec'
+
+      # Tenant error rate high
+      - alert: TenantErrorRateHigh
+        expr: |
+          (
+            sum(rate(gl_errors_total[5m])) by (tenant_id)
+            /
+            sum(rate(gl_pipeline_runs_total[5m])) by (tenant_id)
+          ) > 0.15
+        for: 5m
+        labels:
+          severity: warning
+          tenant: '{{ $labels.tenant_id }}'
+        annotations:
+          summary: 'High error rate for tenant {{ $labels.tenant_id }}'
+          description: 'Error rate is {{ $value | humanizePercentage }}'

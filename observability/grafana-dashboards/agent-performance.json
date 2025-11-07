@@ -1,0 +1,297 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "greenlang-agent-performance",
+    "title": "GreenLang Agent Performance",
+    "tags": ["greenlang", "agents", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "type": "graph",
+        "title": "Agent Execution Rate",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_pipeline_runs_total{pipeline=~'.*agent.*'}[5m])) by (pipeline)",
+            "legendFormat": "{{pipeline}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Executions/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 2,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "type": "graph",
+        "title": "Agent Success vs Failure Rate",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_pipeline_runs_total{status='success',pipeline=~'.*agent.*'}[5m])) by (pipeline)",
+            "legendFormat": "{{pipeline}} - Success",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(gl_pipeline_runs_total{status='failure',pipeline=~'.*agent.*'}[5m])) by (pipeline)",
+            "legendFormat": "{{pipeline}} - Failure",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Rate"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 3,
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+        "type": "graph",
+        "title": "Agent Execution Duration (All Percentiles)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gl_pipeline_duration_seconds_bucket{pipeline=~'.*agent.*'}[5m])) by (le, pipeline))",
+            "legendFormat": "{{pipeline}} - P50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl_pipeline_duration_seconds_bucket{pipeline=~'.*agent.*'}[5m])) by (le, pipeline))",
+            "legendFormat": "{{pipeline}} - P95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gl_pipeline_duration_seconds_bucket{pipeline=~'.*agent.*'}[5m])) by (le, pipeline))",
+            "legendFormat": "{{pipeline}} - P99",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 4,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "type": "table",
+        "title": "Agent Performance Summary",
+        "targets": [
+          {
+            "expr": "sum by (pipeline) (rate(gl_pipeline_runs_total{pipeline=~'.*agent.*'}[5m]))",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          },
+          {
+            "expr": "sum by (pipeline) (rate(gl_pipeline_runs_total{pipeline=~'.*agent.*', status='failure'}[5m])) / sum by (pipeline) (rate(gl_pipeline_runs_total{pipeline=~'.*agent.*'}[5m]))",
+            "format": "table",
+            "instant": true,
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum by (le, pipeline) (rate(gl_pipeline_duration_seconds_bucket{pipeline=~'.*agent.*'}[5m])))",
+            "format": "table",
+            "instant": true,
+            "refId": "C"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "merge",
+            "options": {}
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "indexByName": {
+                "pipeline": 0,
+                "Value #A": 1,
+                "Value #B": 2,
+                "Value #C": 3
+              },
+              "renameByName": {
+                "pipeline": "Agent",
+                "Value #A": "Rate (ops/s)",
+                "Value #B": "Error Rate",
+                "Value #C": "P95 Duration (s)"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "type": "graph",
+        "title": "Agent Memory Usage",
+        "targets": [
+          {
+            "expr": "sum(gl_resource_usage{resource_type=~'.*agent.*_memory'}) by (resource_type)",
+            "legendFormat": "{{resource_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "decbytes", "label": "Memory"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 6,
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "type": "heatmap",
+        "title": "Agent Duration Heatmap",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_pipeline_duration_seconds_bucket{pipeline=~'.*agent.*'}[5m])) by (le)",
+            "format": "heatmap",
+            "refId": "A"
+          }
+        ],
+        "dataFormat": "tsbuckets",
+        "yAxis": {
+          "format": "s"
+        }
+      },
+      {
+        "id": 7,
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "type": "graph",
+        "title": "Agent Errors by Type",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_errors_total{component=~'.*agent.*'}[5m])) by (error_type)",
+            "legendFormat": "{{error_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Errors/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 8,
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 32},
+        "type": "stat",
+        "title": "Total Agent Executions (24h)",
+        "targets": [
+          {
+            "expr": "sum(increase(gl_pipeline_runs_total{pipeline=~'.*agent.*'}[24h]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        }
+      },
+      {
+        "id": 9,
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 32},
+        "type": "stat",
+        "title": "Avg Agent Duration",
+        "targets": [
+          {
+            "expr": "avg(rate(gl_pipeline_duration_seconds_sum{pipeline=~'.*agent.*'}[5m]) / rate(gl_pipeline_duration_seconds_count{pipeline=~'.*agent.*'}[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 32},
+        "type": "stat",
+        "title": "Agent Success Rate",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_pipeline_runs_total{pipeline=~'.*agent.*', status='success'}[5m])) / sum(rate(gl_pipeline_runs_total{pipeline=~'.*agent.*'}[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 0.90},
+                {"color": "green", "value": 0.95}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "agent",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(gl_pipeline_runs_total{pipeline=~'.*agent.*'}, pipeline)",
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "tenant_id",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(gl_pipeline_runs_total, tenant_id)",
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"]
+    }
+  }
+}

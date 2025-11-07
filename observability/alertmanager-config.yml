@@ -1,0 +1,92 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'localhost:25'
+  smtp_from: 'alertmanager@greenlang.io'
+
+# Templates for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Routing tree
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 12h
+  routes:
+    # Critical alerts - immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 0s
+      repeat_interval: 1h
+
+    # Warning alerts - grouped notifications
+    - match:
+        severity: warning
+      receiver: 'warning-alerts'
+      group_wait: 30s
+      repeat_interval: 4h
+
+    # Info alerts - daily digest
+    - match:
+        severity: info
+      receiver: 'info-alerts'
+      group_wait: 5m
+      repeat_interval: 24h
+
+# Alert receivers
+receivers:
+  - name: 'default'
+    webhook_configs:
+      - url: 'http://localhost:5001/webhook'
+        send_resolved: true
+
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'ops-team@greenlang.io'
+        subject: 'CRITICAL: {{ .GroupLabels.alertname }}'
+        html: '{{ template "email.default.html" . }}'
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#alerts-critical'
+        title: 'CRITICAL Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+    pagerduty_configs:
+      - service_key: 'YOUR_PAGERDUTY_KEY'
+        description: '{{ .GroupLabels.alertname }}'
+
+  - name: 'warning-alerts'
+    email_configs:
+      - to: 'dev-team@greenlang.io'
+        subject: 'WARNING: {{ .GroupLabels.alertname }}'
+        html: '{{ template "email.default.html" . }}'
+    slack_configs:
+      - api_url: 'YOUR_SLACK_WEBHOOK_URL'
+        channel: '#alerts-warning'
+        title: 'Warning: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+
+  - name: 'info-alerts'
+    email_configs:
+      - to: 'monitoring@greenlang.io'
+        subject: 'INFO: {{ .GroupLabels.alertname }}'
+        html: '{{ template "email.default.html" . }}'
+
+# Inhibition rules
+inhibit_rules:
+  # Inhibit warning if critical alert is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service']
+
+  # Inhibit info if warning or critical is firing
+  - source_match_re:
+      severity: 'critical|warning'
+    target_match:
+      severity: 'info'
+    equal: ['alertname', 'cluster', 'service']

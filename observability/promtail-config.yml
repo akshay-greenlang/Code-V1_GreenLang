@@ -1,0 +1,43 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Scrape GreenLang application logs
+  - job_name: greenlang
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: greenlang
+          __path__: /var/log/greenlang/*.log
+    pipeline_stages:
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            component: component
+            tenant_id: tenant_id
+      - labels:
+          level:
+          component:
+          tenant_id:
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+
+  # Scrape system logs
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: syslog
+          __path__: /var/log/syslog
