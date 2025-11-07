@@ -1,0 +1,34 @@
+# Test Dependencies for Oracle Fusion Cloud Connector
+# GL-VCCI Scope 3 Platform - Phase 4 (Weeks 24-26)
+
+# Core testing framework
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-mock>=3.11.1
+pytest-asyncio>=0.21.1
+
+# HTTP mocking
+responses>=0.23.1
+
+# Data validation (already in main requirements)
+pydantic>=2.0.0
+
+# HTTP client (already in main requirements)
+requests>=2.31.0
+
+# Code coverage
+coverage[toml]>=7.3.0
+
+# Additional testing utilities
+pytest-xdist>=3.3.1  # Parallel test execution
+pytest-timeout>=2.1.0  # Test timeout control
+pytest-benchmark>=4.0.0  # Performance benchmarking (optional)
+
+# Code quality
+flake8>=6.0.0  # Linting
+black>=23.7.0  # Code formatting
+mypy>=1.5.0  # Type checking
+
+# Development utilities
+ipdb>=0.13.13  # Debugging
+pytest-sugar>=0.9.7  # Better test output formatting

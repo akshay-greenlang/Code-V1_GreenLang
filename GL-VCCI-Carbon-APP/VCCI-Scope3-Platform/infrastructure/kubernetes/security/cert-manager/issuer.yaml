@@ -1,0 +1,62 @@
+---
+# ClusterIssuer for Let's Encrypt (Production)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@greenlang.io
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+      - dns01:
+          route53:
+            region: us-east-1
+            hostedZoneID: CHANGE_ME  # Your Route53 Hosted Zone ID
+            accessKeyIDSecretRef:
+              name: route53-credentials
+              key: access-key-id
+            secretAccessKeySecretRef:
+              name: route53-credentials
+              key: secret-access-key
+
+---
+# ClusterIssuer for Let's Encrypt (Staging)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: devops@greenlang.io
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+      - dns01:
+          route53:
+            region: us-east-1
+            hostedZoneID: CHANGE_ME
+            accessKeyIDSecretRef:
+              name: route53-credentials
+              key: access-key-id
+            secretAccessKeySecretRef:
+              name: route53-credentials
+              key: secret-access-key
+
+---
+# Self-signed ClusterIssuer (for development)
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned
+spec:
+  selfSigned: {}

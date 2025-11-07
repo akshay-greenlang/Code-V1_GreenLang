@@ -1,0 +1,283 @@
+GHG Protocol Corporate Accounting and Reporting Standard
+Document ID: ghg_protocol_overview_v1
+Publisher: World Resources Institute (WRI) and World Business Council for Sustainable Development (WBCSD)
+Collection: ghg_protocol_corp
+Version: 1.0
+Last Updated: 2025-11-06
+
+=============================================================================
+GREENHOUSE GAS PROTOCOL: CORPORATE STANDARD OVERVIEW
+=============================================================================
+
+1. PURPOSE AND SCOPE
+
+The GHG Protocol Corporate Accounting and Reporting Standard provides comprehensive global standardized frameworks and guidance for companies and organizations preparing a corporate-level GHG emissions inventory.
+
+The Standard covers the accounting and reporting of seven greenhouse gases covered by the Kyoto Protocol:
+- Carbon dioxide (CO2)
+- Methane (CH4)
+- Nitrous oxide (N2O)
+- Hydrofluorocarbons (HFCs)
+- Perfluorocarbons (PFCs)
+- Sulphur hexafluoride (SF6)
+- Nitrogen trifluoride (NF3)
+
+2. GHG PROTOCOL PRINCIPLES
+
+The Standard is built on five key accounting principles:
+
+2.1 RELEVANCE
+Ensure the GHG inventory appropriately reflects the GHG emissions of the company and serves the decision-making needs of users – both internal and external to the company.
+
+Application:
+- Select inventory boundary that reflects substance and economic reality of business relationships
+- Include all sources and activities that are expected to significantly influence emissions
+- Ensure inventory is appropriate for intended use
+
+2.2 COMPLETENESS
+Account for and report on all GHG emission sources and activities within the chosen inventory boundary. Disclose and justify any specific exclusions.
+
+Application:
+- Account for all emission sources within organizational and operational boundaries
+- Include all relevant GHGs from Kyoto Protocol
+- Document any exclusions with rationale
+- Strive to improve completeness over time
+
+2.3 CONSISTENCY
+Use consistent methodologies to allow for meaningful performance tracking of emissions over time. Transparently document any changes to the data, inventory boundary, methods, or any other relevant factors in the time series.
+
+Application:
+- Use same accounting methods year-over-year
+- If methodologies change, recalculate base year emissions
+- Document changes to data, methods, or boundaries
+- Maintain consistent boundary definitions
+
+2.4 TRANSPARENCY
+Address all relevant issues in a factual and coherent manner, based on a clear audit trail. Disclose any relevant assumptions and make appropriate references to the accounting and calculation methodologies and data sources used.
+
+Application:
+- Document all assumptions, data sources, and calculation methods
+- Provide clear disclosure of data quality
+- Enable external verification
+- Make boundaries, assumptions, and methods clearly understandable
+
+2.5 ACCURACY
+Ensure that the quantification of GHG emissions is systematically neither over nor under actual emissions, as far as can be judged, and that uncertainties are reduced as far as practicable. Achieve sufficient accuracy to enable users to make decisions with reasonable confidence as to the integrity of the reported information.
+
+Application:
+- Use the most accurate data available
+- Apply quality assurance/quality control procedures
+- Quantify and reduce uncertainty where possible
+- Choose calculation methods appropriate to desired accuracy
+- Use site-specific emission factors when available
+
+3. ORGANIZATIONAL BOUNDARIES
+
+Companies must choose an approach to consolidate GHG emissions:
+
+3.1 EQUITY SHARE APPROACH
+Account for GHG emissions from operations according to share of equity in the operation.
+
+Equity share reflects:
+- Percentage of economic interest (percentage of rights to benefits and obligations)
+- Not necessarily the same as percentage of voting rights
+
+Example: If company owns 30% equity in a facility with 1,000 tons CO2e emissions:
+- Report: 300 tons CO2e (30% × 1,000 tons)
+
+3.2 CONTROL APPROACH
+Account for 100% of GHG emissions from operations over which the company has control.
+
+Two types of control:
+a) Financial Control: Company has ability to direct financial and operating policies
+b) Operational Control: Company has full authority to introduce and implement operating policies
+
+Example: If company has operational control of facility with 1,000 tons CO2e:
+- Report: 1,000 tons CO2e (100%)
+
+Even if company owns only 30% equity, reports 100% under operational control.
+
+4. OPERATIONAL BOUNDARIES
+
+Once organizational boundary is established, companies must identify emissions associated with operations, categorize them as direct or indirect, and choose scope of accounting and reporting.
+
+The operational boundary determines which emissions are direct and indirect:
+- Direct GHG emissions: From sources owned or controlled by company (Scope 1)
+- Indirect GHG emissions: Consequence of company activities but occur at sources owned/controlled by another entity (Scope 2 & 3)
+
+See document 02_scopes.txt for detailed scope definitions and examples.
+
+5. TRACKING EMISSIONS OVER TIME
+
+5.1 BASE YEAR
+Companies must establish a base year for which verifiable emissions data exists.
+
+Base year characteristics:
+- Should be a specific year (not an average)
+- Must have reliable data
+- Should be meaningful for tracking performance
+- Typically 1-3 years prior to current reporting year
+
+5.2 BASE YEAR EMISSIONS RECALCULATION
+Recalculate base year emissions when:
+- Structural changes: Mergers, acquisitions, divestments
+- Changes in calculation methodology
+- Discovery of significant errors
+- Changes in emission factors (if material)
+
+Recalculation Policy Requirements:
+- Define significance threshold (typically 5%)
+- Document approach for different types of changes
+- Apply consistently
+
+5.3 PERFORMANCE METRICS
+Express emissions changes as:
+- Absolute emissions: Total GHG emissions in tons CO2e
+- Emissions intensity: GHG emissions per unit of activity (e.g., tons CO2e per MWh, per revenue, per product unit)
+
+Example:
+- Base year (2020): 10,000 tons CO2e, Revenue $10M → Intensity: 1.0 tons/$M
+- Current year (2025): 9,000 tons CO2e, Revenue $15M → Intensity: 0.6 tons/$M
+- Absolute reduction: 10% (from 10,000 to 9,000)
+- Intensity reduction: 40% (from 1.0 to 0.6 tons/$M)
+
+6. REPORTING
+
+6.1 MANDATORY REPORTING REQUIREMENTS
+At minimum, companies must report:
+- Total Scope 1 emissions (in tons CO2e)
+- Total Scope 2 emissions (in tons CO2e)
+- Emissions by GHG type (CO2, CH4, N2O, HFCs, PFCs, SF6, NF3)
+- Organizational boundary approach used
+- Methodologies and emission factors used
+- Base year and any recalculations
+
+6.2 RECOMMENDED REPORTING
+Companies should also report:
+- Scope 3 emissions (value chain emissions)
+- Emissions by business unit, facility, or geography
+- Emissions intensity metrics
+- Emissions reduction targets and progress
+- Biogenic CO2 emissions (separately from scopes)
+
+6.3 THIRD-PARTY VERIFICATION
+Recommended for:
+- Ensuring inventory quality and credibility
+- Public reporting and climate disclosures
+- Voluntary or mandatory reporting programs
+- Internal accountability
+
+Verification levels:
+- Limited assurance: Basic procedures, lower confidence
+- Reasonable assurance: Extensive procedures, higher confidence
+
+7. CALCULATION METHODOLOGY
+
+7.1 BASIC EMISSION CALCULATION
+GHG Emissions = Activity Data × Emission Factor
+
+Where:
+- Activity Data: Measure of level of activity (e.g., liters of fuel, kWh of electricity)
+- Emission Factor: Rate of emissions per unit activity (e.g., kg CO2 per liter)
+
+Example:
+Activity: 10,000 liters diesel consumed
+Emission Factor: 2.68 kg CO2 per liter (typical diesel)
+Emissions = 10,000 liters × 2.68 kg/liter = 26,800 kg CO2 = 26.8 tons CO2
+
+7.2 GLOBAL WARMING POTENTIAL (GWP)
+Convert non-CO2 gases to CO2 equivalents:
+CO2e = Mass of Gas × GWP
+
+100-year GWP values (IPCC AR6):
+- CO2: 1
+- CH4 (methane): 29.8
+- N2O (nitrous oxide): 273
+- HFC-134a: 1,530
+- SF6: 25,200
+
+Example:
+1 ton of CH4 = 1 ton × 29.8 = 29.8 tons CO2e
+
+7.3 DATA QUALITY
+Prioritize data sources:
+1. Direct measurement (continuous monitoring)
+2. Site-specific emission factors
+3. Supplier-specific data
+4. Industry-average data
+5. Proxy data or estimations
+
+Document data quality indicators:
+- Source reliability
+- Completeness
+- Temporal correlation
+- Geographical correlation
+- Technological correlation
+
+8. COMMON PITFALLS AND SOLUTIONS
+
+8.1 DOUBLE COUNTING
+Problem: Counting same emissions multiple times
+Solution:
+- Clearly define organizational boundaries
+- Categorize emissions by scope consistently
+- For equity share, sum across all facilities carefully
+
+8.2 INCOMPLETE SCOPE 3
+Problem: Missing significant value chain emissions
+Solution:
+- Conduct initial screening of all 15 Scope 3 categories
+- Prioritize material categories (>5% of total footprint)
+- Improve data quality over time
+
+8.3 INCONSISTENT BASE YEAR
+Problem: Changing base year without documentation
+Solution:
+- Establish clear recalculation policy
+- Document all changes to base year
+- Maintain historical emissions data
+
+8.4 INACCURATE EMISSION FACTORS
+Problem: Using outdated or inappropriate factors
+Solution:
+- Use most recent emission factors from authoritative sources
+- Prefer region-specific and supplier-specific factors
+- Document emission factor sources and vintage
+
+9. REFERENCE STANDARDS AND TOOLS
+
+9.1 AUTHORITATIVE SOURCES
+- EPA Emission Factors for Greenhouse Gas Inventories (US)
+- DEFRA Greenhouse Gas Conversion Factors (UK)
+- IEA CO2 Emissions from Fuel Combustion (Global)
+- IPCC Guidelines for National GHG Inventories
+
+9.2 COMPLEMENTARY STANDARDS
+- ISO 14064-1: Specification for quantification and reporting
+- ISO 14065: Requirements for GHG validation and verification bodies
+- The Climate Registry General Reporting Protocol
+- Science Based Targets initiative (SBTi) guidance
+
+9.3 CALCULATION TOOLS
+- GHG Protocol Calculation Tools (sector-specific)
+- EPA Simplified GHG Emissions Calculator
+- Carbon Trust Footprinting Software
+- Third-party carbon accounting platforms
+
+10. CONTINUOUS IMPROVEMENT
+
+Companies should strive to improve GHG inventory quality over time:
+- Expand inventory boundary to include more emissions sources
+- Improve data quality through better measurement
+- Reduce uncertainties in emission factors
+- Implement automated data collection systems
+- Enhance verification and quality assurance processes
+
+=============================================================================
+DOCUMENT METADATA
+=============================================================================
+Content Type: Regulatory Standard Overview
+Target Audience: Sustainability professionals, carbon accountants, compliance officers
+Applicability: All sectors and geographies
+Revision Frequency: Updated with IPCC assessment reports (every 5-7 years)
+Authoritative Source: ghgprotocol.org

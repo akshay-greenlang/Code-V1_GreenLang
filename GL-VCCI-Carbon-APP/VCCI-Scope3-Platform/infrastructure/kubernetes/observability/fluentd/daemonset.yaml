@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd
+  namespace: vcci-observability
+  labels:
+    app: fluentd
+    component: logging
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  template:
+    metadata:
+      labels:
+        app: fluentd
+        component: logging
+    spec:
+      serviceAccountName: vcci-observability-sa
+      tolerations:
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+
+      containers:
+        - name: fluentd
+          image: fluent/fluentd-kubernetes-daemonset:v1.16-debian-elasticsearch8-1
+          env:
+            - name: FLUENT_ELASTICSEARCH_HOST
+              value: "elasticsearch.vcci-observability.svc.cluster.local"
+            - name: FLUENT_ELASTICSEARCH_PORT
+              value: "9200"
+            - name: FLUENT_ELASTICSEARCH_SCHEME
+              value: "http"
+            - name: FLUENT_ELASTICSEARCH_SSL_VERIFY
+              value: "false"
+            - name: FLUENT_ELASTICSEARCH_LOGSTASH_FORMAT
+              value: "true"
+            - name: FLUENT_ELASTICSEARCH_LOGSTASH_PREFIX
+              value: "vcci-logs"
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          volumeMounts:
+            - name: varlog
+              mountPath: /var/log
+              readOnly: true
+            - name: varlibdockercontainers
+              mountPath: /var/lib/docker/containers
+              readOnly: true
+            - name: config
+              mountPath: /fluentd/etc/fluent.conf
+              subPath: fluent.conf
+
+          securityContext:
+            runAsUser: 0
+            privileged: true
+
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
+        - name: varlibdockercontainers
+          hostPath:
+            path: /var/lib/docker/containers
+        - name: config
+          configMap:
+            name: fluentd-config

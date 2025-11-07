@@ -1,0 +1,68 @@
+---
+# ServiceMonitor for Prometheus Operator (if using)
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vcci-backend-api
+  namespace: vcci-platform
+  labels:
+    app: vcci-backend-api
+spec:
+  selector:
+    matchLabels:
+      app: vcci-backend-api
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vcci-worker
+  namespace: vcci-platform
+  labels:
+    app: vcci-worker
+spec:
+  selector:
+    matchLabels:
+      app: vcci-worker
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: postgresql
+  namespace: vcci-platform
+  labels:
+    app: postgresql
+spec:
+  selector:
+    matchLabels:
+      app: postgresql
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis
+  namespace: vcci-platform
+  labels:
+    app: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics

@@ -799,6 +799,72 @@ consistency_checks:
       PCF Exchange Tier 1 coverage.
 
 # ============================================================================
+# VALIDATION AND TESTING
+# ============================================================================
+validation_and_testing:
+  # Cross-Standard Validation Tests
+  cross_standard_tests:
+    - test_name: "Scope 3 Total Consistency Test"
+      description: "Verify total Scope 3 emissions match across all standards"
+      frequency: "On every report generation"
+
+      test_steps:
+        - step: 1
+          action: "Calculate total Scope 3 from GHG Protocol calculation"
+        - step: 2
+          action: "Extract ESRS E1-6 AR44 Total Scope 3"
+        - step: 3
+          action: "Extract CDP C6.5a Total Scope 3"
+        - step: 4
+          action: "Extract IFRS S2 Para 29(a)(iii) Total Scope 3"
+        - step: 5
+          action: "Compare all four values (tolerance: ±1%)"
+
+      pass_criteria: "All values within 1% of each other"
+      failure_action: "Alert admin, block report export"
+
+    - test_name: "Supplier-Specific Data % Consistency"
+      description: "Verify ESRS AR 47 matches CDP C6.5c"
+      frequency: "On every report generation"
+
+      formula: "ESRS_AR47 == CDP_C6_5c"
+      tolerance: 0.001  # 0.1%
+
+      pass_criteria: "Values within 0.1% of each other"
+      failure_action: "Alert admin, log discrepancy"
+
+  # Standard-Specific Validation
+  standard_validation:
+    ghg_protocol:
+      - validation: "All 15 categories accounted for or excluded"
+        check: "Sum of included categories + excluded categories == 15"
+
+      - validation: "Tier method documented for each category"
+        check: "Every calculation has tier_used field (tier_1, tier_2, tier_3)"
+
+    esrs:
+      - validation: "XBRL validates against ESRS taxonomy"
+        tool: "ESRS XBRL validator (online)"
+        frequency: "Before customer delivery"
+
+      - validation: "All mandatory data points present"
+        mandatory_fields: ["AR 40", "AR 41", "AR 44", "AR 47"]
+
+    cdp:
+      - validation: "CDP Excel template format correct"
+        check: "All required fields populated (C6.5a, C6.5b, C6.5c, C6.5d)"
+
+      - validation: "% values sum to 100%"
+        check: "Sum of category percentages == 100%"
+
+    ifrs_s2:
+      - validation: "Materiality threshold applied (>5% of Scope 3)"
+        check: "Categories >5% of total disclosed individually"
+
+      - validation: "Measurement approach disclosed"
+        required_disclosure: "GHG Protocol, ISO 14083, PACT Pathfinder mentioned"
+
+# ============================================================================
 # CHANGELOG
 # ============================================================================
 changelog:
@@ -812,3 +878,4 @@ changelog:
       - "Data quality and uncertainty mappings"
       - "Export format specifications (XBRL, Excel, PDF, JSON)"
       - "Cross-standard consistency checks"
+      - "Validation and testing procedures for cross-standard compliance"

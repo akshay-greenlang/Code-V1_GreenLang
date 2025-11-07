@@ -1,11 +1,13 @@
-# SAP S/4HANA Connector
-# OData API integration for procurement and logistics data extraction
-
 """
-SAP S/4HANA Connector
-====================
+SAP S/4HANA Connector for GL-VCCI Scope 3 Platform
+GL-VCCI Scope 3 Platform
 
-Native integration with SAP S/4HANA using OData API.
+Production-ready SAP S/4HANA OData connector with OAuth 2.0 authentication,
+automatic pagination, retry logic, and comprehensive error handling.
+
+Version: 1.0.0
+Phase: 4 (Weeks 19-22)
+Date: 2025-11-06
 
 Modules Supported:
 -----------------
@@ -32,25 +34,101 @@ Data Extracted:
 
 Authentication:
 --------------
-OAuth 2.0 client credentials flow
+OAuth 2.0 client credentials flow with token caching
 
 Usage:
 ------
 ```python
-from connectors.sap import SAPConnector
+from connectors.sap import SAPODataClient, SAPConnectorConfig, create_query
 
-connector = SAPConnector(
-    endpoint="https://your-sap-instance.com/sap/opu/odata/sap",
-    client_id="your_client_id",
-    client_secret="your_client_secret"
-)
+# Load configuration from environment
+config = SAPConnectorConfig.from_env()
 
-# Extract procurement data
-data = connector.get_procurement_data(
-    start_date="2024-01-01",
-    end_date="2024-12-31"
-)
+# Create client
+client = SAPODataClient(config)
+
+# Query with filters
+query = create_query().filter("PostingDate ge '2024-01-01'").top(100)
+results = client.query("purchase_orders", query)
+
+# Query with pagination
+for batch in client.query_paginated("vendor_master"):
+    process_batch(batch)
+
+# Close client
+client.close()
 ```
 """
 
+from .config import (
+    SAPConnectorConfig,
+    SAPEnvironment,
+    SAPModule,
+    ODataEndpoint,
+    OAuth2Config,
+    RetryConfig,
+    RateLimitConfig,
+    TimeoutConfig,
+    get_config,
+    reset_config,
+)
+
+from .auth import (
+    SAPAuthHandler,
+    TokenCache,
+    get_auth_handler,
+    reset_auth_handlers,
+)
+
+from .client import (
+    SAPODataClient,
+    ODataQueryBuilder,
+    RateLimiter,
+    create_query,
+)
+
+from .exceptions import (
+    SAPConnectorError,
+    SAPConnectionError,
+    SAPAuthenticationError,
+    SAPRateLimitError,
+    SAPDataError,
+    SAPTimeoutError,
+    SAPConfigurationError,
+    get_exception_for_status_code,
+)
+
 __version__ = "1.0.0"
+
+__all__ = [
+    # Config
+    "SAPConnectorConfig",
+    "SAPEnvironment",
+    "SAPModule",
+    "ODataEndpoint",
+    "OAuth2Config",
+    "RetryConfig",
+    "RateLimitConfig",
+    "TimeoutConfig",
+    "get_config",
+    "reset_config",
+    # Auth
+    "SAPAuthHandler",
+    "TokenCache",
+    "get_auth_handler",
+    "reset_auth_handlers",
+    # Client
+    "SAPODataClient",
+    "ODataQueryBuilder",
+    "RateLimiter",
+    "create_query",
+    # Exceptions
+    "SAPConnectorError",
+    "SAPConnectionError",
+    "SAPAuthenticationError",
+    "SAPRateLimitError",
+    "SAPDataError",
+    "SAPTimeoutError",
+    "SAPConfigurationError",
+    "get_exception_for_status_code",
+]

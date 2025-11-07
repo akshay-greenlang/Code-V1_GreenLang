@@ -1,0 +1,82 @@
+---
+# Certificate for API domain
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vcci-api-cert
+  namespace: vcci-platform
+spec:
+  secretName: vcci-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - api.vcci.greenlang.io
+    - "*.api.vcci.greenlang.io"
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  duration: 2160h  # 90 days
+  renewBefore: 360h  # 15 days
+
+---
+# Certificate for Frontend domain
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vcci-frontend-cert
+  namespace: vcci-platform
+spec:
+  secretName: vcci-frontend-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - app.vcci.greenlang.io
+    - "*.app.vcci.greenlang.io"
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  duration: 2160h
+  renewBefore: 360h
+
+---
+# Certificate for Monitoring domain
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vcci-monitoring-cert
+  namespace: vcci-observability
+spec:
+  secretName: vcci-monitoring-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - monitoring.vcci.greenlang.io
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  duration: 2160h
+  renewBefore: 360h
+
+---
+# Wildcard certificate for tenant subdomains
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vcci-wildcard-cert
+  namespace: vcci-platform
+spec:
+  secretName: vcci-wildcard-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.vcci.greenlang.io"
+    - vcci.greenlang.io
+  privateKey:
+    algorithm: RSA
+    size: 2048
+  duration: 2160h
+  renewBefore: 360h

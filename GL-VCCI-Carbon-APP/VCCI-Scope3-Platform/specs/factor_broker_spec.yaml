@@ -698,6 +698,260 @@ deployment:
     startup: "/health"
 
 # ============================================================================
+# TESTING STRATEGY
+# ============================================================================
+testing:
+  unit_tests:
+    coverage_target: 0.95  # 95%
+
+    test_suites:
+      - suite: "Data Source Connectors"
+        tests:
+          - test: "test_ecoinvent_api_connection"
+            description: "Verify connection to ecoinvent API"
+            mock_data: true
+
+          - test: "test_ecoinvent_factor_lookup"
+            description: "Lookup 'Steel' in ecoinvent, verify response"
+            expected_result: "Factor value ≈ 1.85 kgCO2e/kg"
+
+          - test: "test_ecoinvent_rate_limit_handling"
+            description: "Verify graceful handling of rate limit (1000 req/min)"
+            expected_behavior: "Backoff and retry"
+
+          - test: "test_desnz_api_connection"
+            description: "Verify connection to DESNZ API"
+
+          - test: "test_epa_api_connection"
+            description: "Verify connection to EPA API"
+
+      - suite: "Cascading Fallback Logic"
+        tests:
+          - test: "test_cascade_ecoinvent_success"
+            description: "ecoinvent returns factor → use it"
+            expected_source: "ecoinvent"
+
+          - test: "test_cascade_ecoinvent_fail_desnz_success"
+            description: "ecoinvent fails → DESNZ returns factor"
+            expected_source: "desnz_uk"
+
+          - test: "test_cascade_all_fail_proxy"
+            description: "All sources fail → generate proxy"
+            expected_source: "proxy"
+            expected_is_proxy: true
+
+      - suite: "GWP Standard Handling"
+        tests:
+          - test: "test_gwp_ar6_default"
+            description: "Default GWP standard is AR6"
+            expected_gwp_standard: "AR6"
+
+          - test: "test_gwp_ar5_vs_ar6_methane"
+            description: "Compare CH4 GWP: AR5=28, AR6=27.9"
+            expected_difference: "0.36%"
+
+      - suite: "Regional Adaptation"
+        tests:
+          - test: "test_electricity_us_vs_gb"
+            description: "US grid (0.400) vs GB grid (0.193)"
+            expected_difference: ">50%"
+
+          - test: "test_fallback_to_global"
+            description: "Unknown region → fall back to global average"
+
+      - suite: "Caching"
+        tests:
+          - test: "test_cache_hit"
+            description: "Second lookup uses cache"
+            expected_latency: "<5ms"
+
+          - test: "test_cache_miss"
+            description: "First lookup hits source API"
+            expected_latency: "<50ms"
+
+          - test: "test_cache_ttl_expiration"
+            description: "Cache expires after 24 hours"
+            wait_time: "24h + 1min"
+            expected_behavior: "Re-fetch from source"
+
+      - suite: "License Compliance"
+        tests:
+          - test: "test_no_bulk_redistribution"
+            description: "Verify ecoinvent factors not bulk-exported"
+            check: "No /export-all endpoint exists"
+
+          - test: "test_cache_ttl_within_license"
+            description: "Cache TTL ≤ 24 hours (ecoinvent license terms)"
+            expected_ttl: 86400  # seconds
+
+  integration_tests:
+    - test: "test_end_to_end_factor_resolution"
+      description: "Full flow: request → ecoinvent → cache → response"
+
+      steps:
+        - step: 1
+          action: "POST /resolve with product='Steel', region='US', gwp='AR6'"
+        - step: 2
+          action: "Verify ecoinvent API called"
+        - step: 3
+          action: "Verify factor returned (≈1.85 kgCO2e/kg)"
+        - step: 4
+          action: "Verify factor cached"
+        - step: 5
+          action: "Second request uses cache (<5ms)"
+
+    - test: "test_calculator_integration"
+      description: "Scope3CalculatorAgent calls Factor Broker"
+
+      steps:
+        - step: 1
+          action: "Calculator requests factor for 'Cement', region='GB'"
+        - step: 2
+          action: "Factor Broker resolves from DESNZ"
+        - step: 3
+          action: "Calculator uses factor in calculation"
+        - step: 4
+          action: "Provenance includes factor_id and source"
+
+  performance_tests:
+    - test: "test_p95_latency_under_50ms"
+      description: "95th percentile latency <50ms"
+      load: "1000 requests/second for 5 minutes"
+      success_criteria: "p95 < 50ms"
+
+    - test: "test_cache_hit_rate_above_85_percent"
+      description: "Cache hit rate ≥85%"
+      scenario: "Realistic workload (repeated product lookups)"
+      success_criteria: "cache_hit_rate ≥ 0.85"
+
+    - test: "test_throughput_5000_rps"
+      description: "Sustain 5000 requests/second"
+      duration: "10 minutes"
+      success_criteria: "No errors, p99 < 100ms"
+
+# ============================================================================
+# ERROR HANDLING
+# ============================================================================
+error_handling:
+  error_scenarios:
+    - scenario: "ecoinvent API down"
+      error_code: "503"
+      handling: "Fall back to DESNZ → EPA → proxy"
+      user_impact: "No impact (transparent fallback)"
+
+    - scenario: "All data sources down"
+      error_code: "503"
+      handling: "Return cached factors if available, otherwise 503 error"
+      user_impact: "Degraded (cached data may be stale)"
+      mitigation: "Redis cache persists across restarts"
+
+    - scenario: "Invalid product name"
+      error_code: "404"
+      handling: "Attempt fuzzy matching, offer suggestions"
+      example_response:
+        error: "Product 'Steal' not found"
+        suggestions: ["Steel", "Stainless Steel"]
+
+    - scenario: "Rate limit exceeded (ecoinvent 1000/min)"
+      error_code: "429"
+      handling: "Exponential backoff (1s, 2s, 4s, 8s, 16s)"
+      max_retries: 5
+
+    - scenario: "Proxy quality too low (DQI <50)"
+      error_code: "200" # Returns result but flags low quality
+      handling: "Return proxy with warning flag"
+      example_response:
+        factor_value: 2.5
+        is_proxy: true
+        quality_score: 45
+        warning: "Low quality proxy - consider supplier engagement for Tier 1 data"
+
+  retry_policies:
+    transient_errors:
+      errors: ["503 Service Unavailable", "429 Too Many Requests", "Timeout"]
+      retry_strategy: "Exponential backoff with jitter"
+      max_retries: 5
+      base_delay: 1000  # ms
+      max_delay: 16000  # ms
+
+    permanent_errors:
+      errors: ["404 Not Found", "400 Bad Request"]
+      retry_strategy: "No retry"
+      handling: "Return error immediately"
+
+# ============================================================================
+# EXAMPLES
+# ============================================================================
+examples:
+  # Example 1: Successful lookup (ecoinvent)
+  - example_name: "Successful ecoinvent lookup"
+    request:
+      product: "Steel"
+      region: "US"
+      gwp_standard: "AR6"
+      unit: "kg"
+
+    response:
+      factor_id: "ecoinvent_3.10_steel_us_ar6_kg"
+      value: 1.85
+      unit: "kgCO2e/kg"
+      source: "ecoinvent"
+      source_version: "3.10"
+      gwp_standard: "AR6"
+      data_quality_score: 95
+      uncertainty: 0.10  # ±10%
+      provenance:
+        lookup_timestamp: "2025-01-25T10:30:00Z"
+        cache_hit: false
+        is_proxy: false
+        fallback_chain: ["ecoinvent"]
+
+  # Example 2: Fallback to DESNZ
+  - example_name: "Fallback to DESNZ (ecoinvent unavailable)"
+    request:
+      product: "Electricity"
+      region: "GB"
+      gwp_standard: "AR6"
+
+    response:
+      factor_id: "desnz_uk_2024_electricity_gb_ar6_kwh"
+      value: 0.193
+      unit: "kgCO2e/kWh"
+      source: "desnz_uk"
+      source_version: "2024"
+      gwp_standard: "AR6"
+      data_quality_score: 90
+      uncertainty: 0.05  # ±5%
+      provenance:
+        lookup_timestamp: "2025-01-25T10:31:00Z"
+        cache_hit: false
+        is_proxy: false
+        fallback_chain: ["ecoinvent", "desnz_uk"]  # Tried ecoinvent first, fell back to DESNZ
+
+  # Example 3: Proxy calculation
+  - example_name: "Proxy calculation (no exact match)"
+    request:
+      product: "Custom Widget XYZ"
+      region: "US"
+      gwp_standard: "AR6"
+
+    response:
+      factor_id: "proxy_category_average_us_ar6"
+      value: 2.50  # Category average
+      unit: "kgCO2e/kg"
+      source: "proxy"
+      source_version: "N/A"
+      gwp_standard: "AR6"
+      data_quality_score: 50  # Low quality
+      uncertainty: 0.50  # ±50%
+      provenance:
+        lookup_timestamp: "2025-01-25T10:32:00Z"
+        cache_hit: false
+        is_proxy: true
+        fallback_chain: ["ecoinvent", "desnz_uk", "epa_us", "proxy"]
+        proxy_method: "category_average"
+
+# ============================================================================
 # CHANGELOG
 # ============================================================================
 changelog:
@@ -711,3 +965,6 @@ changelog:
       - "Regional adaptation"
       - "Version tracking for provenance"
       - "Performance targets (<50ms p95 latency, >=85% cache hit rate)"
+      - "Comprehensive testing strategy (unit, integration, performance tests)"
+      - "Error handling and retry policies"
+      - "Detailed examples (successful lookup, fallback, proxy)"

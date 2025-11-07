@@ -1,0 +1,186 @@
+---
+# Service Account for API Gateway
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vcci-api-gateway-sa
+  namespace: vcci-platform
+  labels:
+    app: vcci-api-gateway
+    component: gateway
+
+---
+# Service Account for Backend API
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vcci-backend-api-sa
+  namespace: vcci-platform
+  labels:
+    app: vcci-backend-api
+    component: backend
+
+---
+# Service Account for Workers
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vcci-worker-sa
+  namespace: vcci-platform
+  labels:
+    app: vcci-worker
+    component: worker
+
+---
+# Service Account for Observability
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vcci-observability-sa
+  namespace: vcci-observability
+  labels:
+    app: vcci-observability
+
+---
+# ClusterRole for API Gateway (read-only access to services and endpoints)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vcci-api-gateway-role
+rules:
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch"]
+
+---
+# ClusterRoleBinding for API Gateway
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vcci-api-gateway-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vcci-api-gateway-role
+subjects:
+  - kind: ServiceAccount
+    name: vcci-api-gateway-sa
+    namespace: vcci-platform
+
+---
+# Role for Backend API (namespace-scoped)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vcci-backend-api-role
+  namespace: vcci-platform
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+
+---
+# RoleBinding for Backend API
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vcci-backend-api-binding
+  namespace: vcci-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vcci-backend-api-role
+subjects:
+  - kind: ServiceAccount
+    name: vcci-backend-api-sa
+    namespace: vcci-platform
+
+---
+# Role for Workers
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: vcci-worker-role
+  namespace: vcci-platform
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["batch"]
+    resources: ["jobs"]
+    verbs: ["get", "list", "watch", "create"]
+
+---
+# RoleBinding for Workers
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vcci-worker-binding
+  namespace: vcci-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: vcci-worker-role
+subjects:
+  - kind: ServiceAccount
+    name: vcci-worker-sa
+    namespace: vcci-platform
+
+---
+# ClusterRole for Prometheus (metrics collection)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vcci-prometheus-role
+rules:
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/proxy
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["extensions", "networking.k8s.io"]
+    resources:
+      - ingresses
+    verbs: ["get", "list", "watch"]
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+
+---
+# ClusterRoleBinding for Prometheus
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vcci-prometheus-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vcci-prometheus-role
+subjects:
+  - kind: ServiceAccount
+    name: vcci-observability-sa
+    namespace: vcci-observability
+
+---
+# Tenant-specific RBAC template (apply per tenant)
+# Role for tenant isolation
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tenant-access-role
+  namespace: vcci-tenant-template
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch"]

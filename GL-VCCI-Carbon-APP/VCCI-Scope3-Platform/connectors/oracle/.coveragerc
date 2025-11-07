@@ -1,0 +1,39 @@
+# Coverage configuration for Oracle Fusion Cloud Connector
+# Alternative to pytest.ini coverage settings
+
+[run]
+source = .
+omit =
+    */tests/*
+    */test_*.py
+    */__pycache__/*
+    */venv/*
+    */virtualenv/*
+    */site-packages/*
+    conftest.py
+
+branch = True
+parallel = False
+
+[report]
+precision = 2
+show_missing = True
+fail_under = 85
+
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    @abstractmethod
+    if TYPE_CHECKING:
+    pass
+    \.\.\.
+
+[html]
+directory = htmlcov
+title = Oracle Connector Coverage Report
+
+[xml]
+output = coverage.xml

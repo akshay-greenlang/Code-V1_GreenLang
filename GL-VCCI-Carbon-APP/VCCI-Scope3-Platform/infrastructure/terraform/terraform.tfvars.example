@@ -1,0 +1,104 @@
+# Example Terraform Variables
+# Copy this file to terraform.tfvars and customize for your environment
+
+# General Configuration
+project_name            = "vcci-scope3"
+environment             = "production"
+aws_region              = "us-west-2"
+aws_region_secondary    = "eu-central-1"
+availability_zones      = ["us-west-2a", "us-west-2b", "us-west-2c"]
+
+# VPC Configuration
+vpc_cidr            = "10.0.0.0/16"
+enable_nat_gateway  = true
+single_nat_gateway  = false
+enable_vpc_endpoints = true
+
+# EKS Configuration
+eks_cluster_version = "1.27"
+eks_cluster_endpoint_private_access = true
+eks_cluster_endpoint_public_access  = true
+eks_cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
+
+# Compute Node Group
+compute_node_group_instance_types = ["t3.xlarge"]
+compute_node_group_desired_size   = 12
+compute_node_group_min_size       = 3
+compute_node_group_max_size       = 20
+
+# Memory Node Group
+memory_node_group_instance_types = ["r6g.2xlarge"]
+memory_node_group_desired_size   = 5
+memory_node_group_min_size       = 2
+memory_node_group_max_size       = 10
+
+# GPU Node Group
+gpu_node_group_instance_types = ["g4dn.xlarge"]
+gpu_node_group_desired_size   = 2
+gpu_node_group_min_size       = 1
+gpu_node_group_max_size       = 5
+
+# RDS Configuration
+rds_engine_version                        = "15.3"
+rds_instance_class                        = "db.r6g.2xlarge"
+rds_allocated_storage                     = 500
+rds_max_allocated_storage                 = 1000
+rds_storage_type                          = "gp3"
+rds_iops                                  = 10000
+rds_storage_throughput                    = 250
+rds_multi_az                              = true
+rds_backup_retention_period               = 7
+rds_backup_window                         = "03:00-04:00"
+rds_maintenance_window                    = "sun:04:00-sun:05:00"
+rds_deletion_protection                   = true
+rds_performance_insights_enabled          = true
+rds_performance_insights_retention_period = 7
+rds_read_replica_count                    = 2
+rds_database_name                         = "vcci_scope3"
+rds_master_username                       = "postgres"
+
+# ElastiCache Configuration
+elasticache_engine_version             = "7.0"
+elasticache_node_type                  = "cache.r6g.large"
+elasticache_num_node_groups            = 3
+elasticache_replicas_per_node_group    = 2
+elasticache_automatic_failover_enabled = true
+elasticache_multi_az_enabled           = true
+elasticache_at_rest_encryption_enabled = true
+elasticache_transit_encryption_enabled = true
+elasticache_snapshot_retention_limit   = 5
+elasticache_snapshot_window            = "05:00-06:00"
+elasticache_maintenance_window         = "sun:06:00-sun:07:00"
+
+# S3 Configuration
+s3_enable_versioning                 = true
+s3_enable_replication                = true
+s3_lifecycle_glacier_transition_days = 365
+s3_lifecycle_ia_transition_days      = 90
+s3_lifecycle_expiration_days         = 0
+
+# Monitoring Configuration
+enable_cloudwatch_logs     = true
+cloudwatch_log_retention_days = 30
+enable_cloudwatch_alarms   = true
+alarm_email_endpoints      = ["platform@example.com", "devops@example.com"]
+alarm_slack_webhook_url    = ""
+
+# Backup Configuration
+enable_aws_backup      = true
+backup_retention_days  = 30
+backup_schedule        = "cron(0 3 * * ? *)"
+
+# Security Configuration
+allowed_cidr_blocks = []
+enable_encryption   = true
+kms_key_deletion_window = 30
+
+# Tags
+tags = {
+  Project     = "VCCI-Scope3"
+  ManagedBy   = "Terraform"
+  Owner       = "Platform-Team"
+  CostCenter  = "Engineering"
+  Compliance  = "SOC2-GDPR"
+}

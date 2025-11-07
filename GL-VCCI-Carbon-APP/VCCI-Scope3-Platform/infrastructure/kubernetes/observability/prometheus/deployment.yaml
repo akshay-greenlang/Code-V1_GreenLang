@@ -1,0 +1,114 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: vcci-observability
+  labels:
+    app: prometheus
+    component: monitoring
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+        component: monitoring
+    spec:
+      serviceAccountName: vcci-observability-sa
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - prometheus
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.48.0
+          args:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--storage.tsdb.retention.time=30d'
+            - '--storage.tsdb.retention.size=50GB'
+            - '--web.enable-lifecycle'
+            - '--web.enable-admin-api'
+          ports:
+            - name: http
+              containerPort: 9090
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 4Gi
+            limits:
+              cpu: 4000m
+              memory: 16Gi
+
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          volumeMounts:
+            - name: config
+              mountPath: /etc/prometheus
+            - name: data
+              mountPath: /prometheus
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 65534
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: config
+          configMap:
+            name: prometheus-config
+        - name: data
+          persistentVolumeClaim:
+            claimName: prometheus-data
+
+      securityContext:
+        fsGroup: 65534
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+---
+# PVC for Prometheus data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-data
+  namespace: vcci-observability
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 100Gi

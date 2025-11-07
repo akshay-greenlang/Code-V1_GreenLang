@@ -744,10 +744,224 @@ testing:
         emissions_tco2e: 1.85
         tier_used: "tier_1"
 
+    additional_test_cases:
+      - name: "test_category_1_tier_2_fallback"
+        description: "No supplier PCF → fall back to Tier 2 (Factor Broker)"
+        input:
+          product: "Steel"
+          quantity: 1000
+          unit: "kg"
+          region: "US"
+        expected_output:
+          emissions_tco2e: 1850  # 1000 kg × 1.85 kgCO2e/kg
+          tier_used: "tier_2"
+
+      - name: "test_category_1_tier_3_spend_based"
+        description: "No product factor → fall back to Tier 3 (spend-based)"
+        input:
+          spend_usd: 50000
+          economic_intensity: 0.5  # kgCO2e/$
+        expected_output:
+          emissions_tco2e: 25000  # 50000 × 0.5
+          tier_used: "tier_3"
+
+      - name: "test_category_4_distance_based"
+        description: "Transport calculation using distance × weight × factor"
+        input:
+          transport_mode: "road"
+          distance_km: 500
+          weight_tonnes: 10
+          region: "EU"
+        expected_output:
+          emissions_tco2e: 425  # 500 × 10 × 0.085 kgCO2e/tkm
+          method_used: "distance_based"
+          iso_14083_conformant: true
+
+      - name: "test_category_6_flight_rfi"
+        description: "Flight with radiative forcing index (RFI)"
+        input:
+          travel_type: "flight"
+          distance_km: 8000  # Long haul
+          flight_class: "economy"
+        expected_output:
+          emissions_tco2e: 1600  # 8000 × 0.1 × 2.0 RFI
+          rfi_applied: 2.0  # Long-haul RFI
+
   iso_14083_conformance:
     standard: "ISO 14083:2023"
     test_suite_size: 50  # 50 test cases
     conformance_target: "100%"  # Zero variance
+
+    detailed_test_cases:
+      - case_id: "ISO-TC-001"
+        scenario: "Road freight - Diesel truck"
+        inputs:
+          mode: "road"
+          distance_km: 500
+          weight_tonnes: 20
+          fuel_type: "diesel"
+        expected_emissions_kgco2e: 850
+        variance_tolerance: 0.0001  # 0.01%
+
+      - case_id: "ISO-TC-002"
+        scenario: "Sea freight - Container ship"
+        inputs:
+          mode: "sea"
+          distance_km: 10000
+          weight_tonnes: 100
+          vessel_type: "container"
+        expected_emissions_kgco2e: 3000
+        variance_tolerance: 0.0001
+
+      - case_id: "ISO-TC-003"
+        scenario: "Air freight - Cargo plane"
+        inputs:
+          mode: "air"
+          distance_km: 5000
+          weight_tonnes: 5
+        expected_emissions_kgco2e: 7500
+        variance_tolerance: 0.0001
+
+  policy_validation_tests:
+    - test_name: "validate_policy_syntax"
+      description: "Verify all .rego files have valid syntax"
+      tool: "opa check"
+      command: "opa check policy/"
+
+    - test_name: "validate_policy_coverage"
+      description: "Ensure policies cover all required scenarios"
+      checks:
+        - "Tier 1, 2, 3 logic in Category 1"
+        - "All transport modes in Category 4"
+        - "RFI application in Category 6"
+
+    - test_name: "validate_policy_performance"
+      description: "Policy evaluation latency <20ms (p95)"
+      benchmark_iterations: 10000
+      success_criteria: "p95 < 20ms"
+
+  integration_tests:
+    - test_name: "calculator_policy_integration"
+      description: "Scope3CalculatorAgent calls Policy Engine"
+      workflow:
+        - step: 1
+          action: "Calculator receives Cat 1 request (Steel, 1000 kg)"
+        - step: 2
+          action: "Calculator calls Policy Engine /evaluate"
+        - step: 3
+          action: "Policy evaluates category_1_purchased_goods.rego"
+        - step: 4
+          action: "Policy calls Factor Broker for emission factor"
+        - step: 5
+          action: "Policy returns emissions + tier + provenance"
+        - step: 6
+          action: "Calculator includes policy version in SHA-256 chain"
+
+    - test_name: "ab_testing_workflow"
+      description: "A/B test new policy version"
+      workflow:
+        - step: 1
+          action: "Deploy policy v1.1.0 alongside v1.0.0"
+        - step: 2
+          action: "Route 5% of traffic to v1.1.0"
+        - step: 3
+          action: "Compare emissions results (tolerance: ±1%)"
+        - step: 4
+          action: "If successful, increase to 50%, then 100%"
+        - step: 5
+          action: "Deprecate v1.0.0 after 90-day sunset"
+
+# ============================================================================
+# POLICY DEVELOPMENT WORKFLOW
+# ============================================================================
+policy_development_workflow:
+  workflow_name: "GitOps Policy Development and Deployment"
+
+  development_phases:
+    - phase: "1. Requirements Gathering"
+      activities:
+        - "LCA Specialist defines calculation requirements"
+        - "Review GHG Protocol, ISO standards for methodology"
+        - "Document inputs, outputs, validation rules"
+      deliverables:
+        - "Policy requirements document (Markdown)"
+
+    - phase: "2. Policy Authoring"
+      activities:
+        - "Backend Engineer authors .rego policy"
+        - "Implement calculation logic in OPA/Rego syntax"
+        - "Add inline comments for audit trail"
+      tools:
+        - "VS Code with OPA extension"
+        - "opa check for syntax validation"
+      deliverables:
+        - "policy/category_X.rego file"
+
+    - phase: "3. Unit Testing"
+      activities:
+        - "Write test cases in .rego test files"
+        - "Test edge cases (zero quantity, missing inputs)"
+        - "Verify tier waterfall logic (Tier 1 → 2 → 3)"
+      tools:
+        - "opa test policy/ --verbose"
+      deliverables:
+        - "policy/tests/category_X_test.rego"
+        - "Test coverage report (≥90%)"
+
+    - phase: "4. Code Review"
+      activities:
+        - "Create GitHub PR with policy changes"
+        - "LCA Specialist reviews calculation logic"
+        - "Backend Engineer reviews code quality"
+      approval_criteria:
+        - "2+ approvals (LCA + Engineer)"
+        - "All tests pass"
+        - "No syntax errors (opa check)"
+      deliverables:
+        - "Approved GitHub PR"
+
+    - phase: "5. Staging Deployment"
+      activities:
+        - "Merge PR → ArgoCD auto-deploys to staging"
+        - "Run integration tests (E2E scenarios)"
+        - "Compare staging results with production (if updating existing policy)"
+      deliverables:
+        - "Staging deployment successful"
+        - "Integration test results"
+
+    - phase: "6. A/B Testing (Production)"
+      activities:
+        - "Deploy new policy version alongside current version"
+        - "Route 5% of traffic to new version"
+        - "Monitor for 7 days (collect 10,000+ samples)"
+        - "Compare emissions results (tolerance: ±1%)"
+      decision_criteria:
+        - "Emissions difference <1%"
+        - "Error rate <0.1%"
+        - "Latency increase <10ms"
+      deliverables:
+        - "A/B test report (statistical significance)"
+
+    - phase: "7. Full Rollout"
+      activities:
+        - "Increase traffic to 50% → 100%"
+        - "Deprecate old policy version (90-day sunset)"
+        - "Update documentation (API docs, changelog)"
+      deliverables:
+        - "New policy version at 100% traffic"
+        - "Old policy version deprecated"
+
+  example_timeline:
+    - week: 1
+      milestone: "Requirements gathering + Policy authoring"
+    - week: 2
+      milestone: "Unit testing + Code review"
+    - week: 3
+      milestone: "Staging deployment + Integration tests"
+    - week: 4-5
+      milestone: "A/B testing (7-14 days)"
+    - week: 6
+      milestone: "Full rollout + Documentation"
 
 # ============================================================================
 # CHANGELOG
@@ -763,3 +977,5 @@ changelog:
       - "Provenance integration (policy version tracking)"
       - "Hot-reload capability"
       - "ISO 14083:2023 conformance for Cat 4"
+      - "Comprehensive testing strategy (unit, integration, A/B tests)"
+      - "Policy development workflow (GitOps, 6-week cycle)"

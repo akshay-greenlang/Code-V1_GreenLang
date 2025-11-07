@@ -1,0 +1,132 @@
+# GL-VCCI Load Testing Suite - Python Dependencies
+# Phase 6: Testing & Validation
+# Version: 1.0.0
+
+# ============================================================================
+# LOAD TESTING FRAMEWORK
+# ============================================================================
+
+# Locust - Python-based load testing framework
+locust>=2.16.0,<3.0.0
+
+# ============================================================================
+# HTTP CLIENT & NETWORKING
+# ============================================================================
+
+# Requests - HTTP library for Python
+requests>=2.31.0,<3.0.0
+
+# urllib3 - HTTP client (required by requests)
+urllib3>=2.0.0,<3.0.0
+
+# ============================================================================
+# DATA PROCESSING & ANALYSIS
+# ============================================================================
+
+# Pandas - Data analysis and manipulation
+pandas>=2.1.0,<3.0.0
+
+# NumPy - Numerical computing
+numpy>=1.24.0,<2.0.0
+
+# ============================================================================
+# VISUALIZATION & REPORTING
+# ============================================================================
+
+# Matplotlib - Plotting library
+matplotlib>=3.8.0,<4.0.0
+
+# Seaborn - Statistical data visualization (optional)
+seaborn>=0.13.0,<1.0.0
+
+# ============================================================================
+# TEMPLATING & HTML GENERATION
+# ============================================================================
+
+# Jinja2 - Template engine for Python
+Jinja2>=3.1.0,<4.0.0
+
+# MarkupSafe - String escaping (required by Jinja2)
+MarkupSafe>=2.1.0,<3.0.0
+
+# ============================================================================
+# SYSTEM MONITORING
+# ============================================================================
+
+# psutil - System and process utilities
+psutil>=5.9.0,<6.0.0
+
+# ============================================================================
+# TESTING & FIXTURES
+# ============================================================================
+
+# pytest - Testing framework
+pytest>=7.4.0,<8.0.0
+
+# pytest-xdist - Parallel test execution (optional)
+pytest-xdist>=3.3.0,<4.0.0
+
+# pytest-timeout - Test timeouts
+pytest-timeout>=2.1.0,<3.0.0
+
+# ============================================================================
+# UTILITIES
+# ============================================================================
+
+# python-dateutil - Date/time utilities
+python-dateutil>=2.8.0,<3.0.0
+
+# pytz - Timezone definitions
+pytz>=2023.3
+
+# ============================================================================
+# DATA FORMATS
+# ============================================================================
+
+# openpyxl - Excel file support (for report exports)
+openpyxl>=3.1.0,<4.0.0
+
+# PyYAML - YAML parser
+PyYAML>=6.0.0,<7.0.0
+
+# ============================================================================
+# OPTIONAL DEPENDENCIES
+# ============================================================================
+
+# colorama - Colored terminal output (Windows support)
+colorama>=0.4.6; sys_platform == "win32"
+
+# ============================================================================
+# DEVELOPMENT DEPENDENCIES (optional)
+# ============================================================================
+
+# black - Code formatter (dev only)
+# black>=23.0.0,<24.0.0
+
+# flake8 - Linting (dev only)
+# flake8>=6.0.0,<7.0.0
+
+# mypy - Type checking (dev only)
+# mypy>=1.5.0,<2.0.0
+
+# ============================================================================
+# INSTALLATION NOTES
+# ============================================================================
+
+# To install all dependencies:
+#   pip install -r requirements.txt
+
+# To install specific groups:
+#   pip install locust pandas matplotlib jinja2 psutil pytest
+
+# For development with all optional dependencies:
+#   pip install -r requirements.txt
+#   pip install black flake8 mypy pytest-cov
+
+# ============================================================================
+# COMPATIBILITY
+# ============================================================================
+
+# Python Version: 3.9+
+# Tested on: Python 3.9, 3.10, 3.11
+# OS: Windows, Linux, macOS

@@ -1,0 +1,3 @@
+"""
+Industry Mappings Test Suite
+"""
