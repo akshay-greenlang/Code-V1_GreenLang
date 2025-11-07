@@ -1,0 +1,11 @@
+{
+  "output": {
+    "calculation": "1000.0 therms × 5.3 kgCO2e/therms",
+    "emission_factor": 5.3,
+    "emission_factor_unit": "kgCO2e/therms",
+    "emissions_kg_co2e": 5300.0,
+    "energy_content_mmbtu": 100.0,
+    "scope": "1"
+  },
+  "test_name": "fuel_agent_natural_gas_1000_therms"
+}

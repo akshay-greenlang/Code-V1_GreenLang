@@ -1,0 +1,19 @@
+exclude_dirs:
+  - /tests/
+  - /.venv/
+  - /.venv-*/
+  - /build/
+  - /dist/
+  - /.git/
+  - /.pytest_cache/
+  - /.mypy_cache/
+  - /.ruff_cache/
+  - /__pycache__/
+  - /node_modules/
+  - /.hypothesis/
+  - /htmlcov/
+  - /.coverage_html/
+
+skips:
+  - B101
+

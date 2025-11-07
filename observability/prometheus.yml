@@ -1,0 +1,107 @@
+# Prometheus configuration for GreenLang observability
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'greenlang-production'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'alertmanager:9093'
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - 'alerting-rules.yml'
+
+# Scrape configurations
+scrape_configs:
+  # GreenLang application metrics
+  - job_name: 'greenlang'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets:
+          - 'greenlang:8000'
+        labels:
+          service: 'greenlang-core'
+          tier: 'application'
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+  # GreenLang agent metrics
+  - job_name: 'greenlang-agents'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets:
+          - 'greenlang:8001'
+        labels:
+          service: 'greenlang-agents'
+          tier: 'agent-execution'
+    scrape_interval: 15s
+
+  # Node exporter for system metrics
+  - job_name: 'node'
+    static_configs:
+      - targets:
+          - 'node-exporter:9100'
+        labels:
+          service: 'system-metrics'
+          tier: 'infrastructure'
+
+  # Postgres exporter for database metrics
+  - job_name: 'postgres'
+    static_configs:
+      - targets:
+          - 'postgres-exporter:9187'
+        labels:
+          service: 'database'
+          tier: 'infrastructure'
+
+  # Redis exporter for cache metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+          - 'redis-exporter:9121'
+        labels:
+          service: 'cache'
+          tier: 'infrastructure'
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+        labels:
+          service: 'prometheus'
+          tier: 'monitoring'
+
+  # Pushgateway for batch jobs
+  - job_name: 'pushgateway'
+    honor_labels: true
+    static_configs:
+      - targets:
+          - 'pushgateway:9091'
+        labels:
+          service: 'batch-jobs'
+          tier: 'application'
+
+# Remote write for long-term storage (optional)
+# remote_write:
+#   - url: 'http://thanos-receive:19291/api/v1/receive'
+#     queue_config:
+#       capacity: 10000
+#       max_shards: 50
+#       min_shards: 1
+#       max_samples_per_send: 5000
+#       batch_send_deadline: 5s
+
+# Storage configuration
+storage:
+  tsdb:
+    path: /prometheus
+    retention:
+      time: 30d
+      size: 50GB
