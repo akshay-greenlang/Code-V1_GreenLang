@@ -1,0 +1,308 @@
+---
+# Resource Quota for the greenlang namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-quota
+  namespace: greenlang
+  labels:
+    app: greenlang
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "100"          # Total CPU requests
+    requests.memory: "200Gi"     # Total memory requests
+    limits.cpu: "200"            # Total CPU limits
+    limits.memory: "400Gi"       # Total memory limits
+
+    # Storage resources
+    requests.storage: "2Ti"                    # Total storage requests
+    persistentvolumeclaims: "50"              # Max PVCs
+    requests.ephemeral-storage: "100Gi"       # Ephemeral storage requests
+    limits.ephemeral-storage: "200Gi"         # Ephemeral storage limits
+
+    # Object counts
+    pods: "200"                   # Max pods
+    services: "50"                # Max services
+    services.loadbalancers: "5"   # Max load balancers
+    services.nodeports: "10"      # Max node ports
+    replicationcontrollers: "20"  # Max replication controllers
+    secrets: "100"                # Max secrets
+    configmaps: "100"             # Max config maps
+
+---
+# Resource Quota for development namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-dev-quota
+  namespace: greenlang-dev
+  labels:
+    app: greenlang
+    environment: development
+spec:
+  hard:
+    requests.cpu: "20"
+    requests.memory: "40Gi"
+    limits.cpu: "40"
+    limits.memory: "80Gi"
+    requests.storage: "500Gi"
+    persistentvolumeclaims: "20"
+    pods: "50"
+    services: "20"
+
+---
+# Resource Quota for staging namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-staging-quota
+  namespace: greenlang-staging
+  labels:
+    app: greenlang
+    environment: staging
+spec:
+  hard:
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+    requests.storage: "1Ti"
+    persistentvolumeclaims: "30"
+    pods: "100"
+    services: "30"
+
+---
+# Limit Range for the greenlang namespace
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limits
+  namespace: greenlang
+  labels:
+    app: greenlang
+spec:
+  limits:
+    # Default limits for containers
+    - type: Container
+      default:
+        cpu: "2"
+        memory: "4Gi"
+        ephemeral-storage: "2Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "1Gi"
+        ephemeral-storage: "500Mi"
+      max:
+        cpu: "8"
+        memory: "16Gi"
+        ephemeral-storage: "10Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+        ephemeral-storage: "50Mi"
+      maxLimitRequestRatio:
+        cpu: "4"
+        memory: "4"
+
+    # Default limits for pods
+    - type: Pod
+      max:
+        cpu: "16"
+        memory: "32Gi"
+        ephemeral-storage: "20Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+        ephemeral-storage: "50Mi"
+
+    # Default limits for PVCs
+    - type: PersistentVolumeClaim
+      max:
+        storage: "1Ti"
+      min:
+        storage: "1Gi"
+
+---
+# Limit Range for development namespace
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-dev-limits
+  namespace: greenlang-dev
+  labels:
+    app: greenlang
+    environment: development
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1"
+        memory: "2Gi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "512Mi"
+      max:
+        cpu: "4"
+        memory: "8Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+---
+# Limit Range for staging namespace
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-staging-limits
+  namespace: greenlang-staging
+  labels:
+    app: greenlang
+    environment: staging
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1.5"
+        memory: "3Gi"
+      defaultRequest:
+        cpu: "375m"
+        memory: "768Mi"
+      max:
+        cpu: "6"
+        memory: "12Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+---
+# Network Policy to limit egress/ingress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-network-policy
+  namespace: greenlang
+  labels:
+    app: greenlang
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow from same namespace
+    - from:
+        - podSelector: {}
+
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+
+    # Allow from monitoring namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+
+  egress:
+    # Allow to same namespace
+    - to:
+        - podSelector: {}
+
+    # Allow DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow to external services (HTTPS)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow to database
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow to Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis-sentinel
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 26379
+
+---
+# Priority Class for critical workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-critical
+  labels:
+    app: greenlang
+value: 1000000
+globalDefault: false
+description: "Critical GreenLang workloads (API, executors)"
+
+---
+# Priority Class for high priority workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-high
+  labels:
+    app: greenlang
+value: 10000
+globalDefault: false
+description: "High priority GreenLang workloads (workers)"
+
+---
+# Priority Class for normal priority workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-normal
+  labels:
+    app: greenlang
+value: 1000
+globalDefault: true
+description: "Normal priority GreenLang workloads"
+
+---
+# Priority Class for low priority workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-low
+  labels:
+    app: greenlang
+value: 100
+globalDefault: false
+description: "Low priority GreenLang workloads (batch jobs)"

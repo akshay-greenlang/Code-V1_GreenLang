@@ -1,0 +1,425 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-sentinel-config
+  namespace: greenlang
+  labels:
+    app: redis-sentinel
+    component: cache
+data:
+  redis.conf: |
+    # Redis production configuration
+    port 6379
+    bind 0.0.0.0
+    protected-mode yes
+    requirepass ${REDIS_PASSWORD}
+
+    # Persistence
+    save 900 1
+    save 300 10
+    save 60 10000
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    dir /data
+
+    # AOF persistence
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+
+    # Replication
+    replica-read-only yes
+    repl-diskless-sync yes
+    repl-diskless-sync-delay 5
+
+    # Memory management
+    maxmemory 6gb
+    maxmemory-policy allkeys-lru
+
+    # Logging
+    loglevel notice
+
+    # Performance
+    tcp-backlog 511
+    timeout 300
+    tcp-keepalive 60
+
+  sentinel.conf: |
+    # Redis Sentinel configuration
+    port 26379
+    bind 0.0.0.0
+
+    sentinel monitor greenlang-master redis-0.redis-headless.greenlang.svc.cluster.local 6379 2
+    sentinel auth-pass greenlang-master ${REDIS_PASSWORD}
+    sentinel down-after-milliseconds greenlang-master 5000
+    sentinel parallel-syncs greenlang-master 1
+    sentinel failover-timeout greenlang-master 10000
+
+    # Notification script
+    sentinel client-reconfig-script greenlang-master /usr/local/bin/sentinel-notify.sh
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-headless
+  namespace: greenlang
+  labels:
+    app: redis-sentinel
+    component: cache
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+    - name: sentinel
+      port: 26379
+      targetPort: 26379
+      protocol: TCP
+  selector:
+    app: redis-sentinel
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-sentinel
+  namespace: greenlang
+  labels:
+    app: redis-sentinel
+    component: cache
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+    - name: sentinel
+      port: 26379
+      targetPort: 26379
+      protocol: TCP
+    - name: metrics
+      port: 9121
+      targetPort: 9121
+      protocol: TCP
+  selector:
+    app: redis-sentinel
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-sentinel
+  namespace: greenlang
+  labels:
+    app: redis-sentinel
+    component: cache
+    version: "7.2"
+spec:
+  serviceName: redis-headless
+  replicas: 3
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: redis-sentinel
+  template:
+    metadata:
+      labels:
+        app: redis-sentinel
+        component: cache
+        version: "7.2"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: greenlang-executor
+
+      # Anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - redis-sentinel
+              topologyKey: kubernetes.io/hostname
+
+        # Prefer nodes with SSD storage
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                      - m5.xlarge
+                      - m5.2xlarge
+                      - r5.xlarge
+                      - r5.2xlarge
+
+      # Init container to configure Redis
+      initContainers:
+        - name: config-init
+          image: redis:7.2-alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+
+              # Get pod ordinal
+              ORDINAL=${HOSTNAME##*-}
+
+              # Copy base config
+              cp /readonly-config/redis.conf /data/redis.conf
+
+              # Replace password placeholder
+              sed -i "s/\${REDIS_PASSWORD}/$REDIS_PASSWORD/g" /data/redis.conf
+
+              # Configure replication for replicas
+              if [ "$ORDINAL" -ne 0 ]; then
+                echo "replicaof redis-0.redis-headless.greenlang.svc.cluster.local 6379" >> /data/redis.conf
+                echo "masterauth $REDIS_PASSWORD" >> /data/redis.conf
+              fi
+
+              # Set replica announce IP
+              echo "replica-announce-ip $POD_IP" >> /data/redis.conf
+
+              # Copy and configure Sentinel
+              cp /readonly-config/sentinel.conf /data/sentinel.conf
+              sed -i "s/\${REDIS_PASSWORD}/$REDIS_PASSWORD/g" /data/sentinel.conf
+
+              echo "Configuration initialized successfully"
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-secrets
+                  key: redis-password
+          volumeMounts:
+            - name: config
+              mountPath: /readonly-config
+              readOnly: true
+            - name: data
+              mountPath: /data
+
+      containers:
+        # Redis container
+        - name: redis
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-server
+            - /data/redis.conf
+          ports:
+            - name: redis
+              containerPort: 6379
+              protocol: TCP
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: 2000m
+              memory: 8Gi
+
+          # Health checks
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -a $REDIS_PASSWORD ping | grep PONG
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -a $REDIS_PASSWORD ping | grep PONG
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Environment variables
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-secrets
+                  key: redis-password
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+          # Volume mounts
+          volumeMounts:
+            - name: data
+              mountPath: /data
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: false
+
+        # Redis Sentinel container
+        - name: sentinel
+          image: redis:7.2-alpine
+          imagePullPolicy: IfNotPresent
+          command:
+            - redis-sentinel
+            - /data/sentinel.conf
+          ports:
+            - name: sentinel
+              containerPort: 26379
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -p 26379 ping | grep PONG
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - redis-cli -p 26379 ping | grep PONG
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          volumeMounts:
+            - name: data
+              mountPath: /data
+
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: false
+
+        # Redis exporter for Prometheus
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.55.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: metrics
+              containerPort: 9121
+              protocol: TCP
+          env:
+            - name: REDIS_ADDR
+              value: "localhost:6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: greenlang-secrets
+                  key: redis-password
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 999
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+
+      # Volumes
+      volumes:
+        - name: config
+          configMap:
+            name: redis-sentinel-config
+
+      # Security context for pod
+      securityContext:
+        fsGroup: 999
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 30
+
+  # Volume claim templates
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app: redis-sentinel
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: fast-ssd
+        resources:
+          requests:
+            storage: 20Gi
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: redis-sentinel-pdb
+  namespace: greenlang
+  labels:
+    app: redis-sentinel
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: redis-sentinel

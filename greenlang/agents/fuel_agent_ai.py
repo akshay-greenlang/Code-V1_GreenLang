@@ -53,6 +53,7 @@ warnings.warn(
 from ..types import Agent, AgentResult, ErrorInfo
 from .types import FuelInput, FuelOutput
 from .fuel_agent import FuelAgent
+from greenlang.exceptions import ExecutionError, MissingData
 from greenlang.intelligence import (
     ChatSession,
     ChatMessage,
@@ -292,7 +293,19 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
         })
 
         if not result["success"]:
-            raise ValueError(f"Calculation failed: {result['error']['message']}")
+            raise ExecutionError(
+                message="Fuel emissions calculation failed",
+                agent_name=self.agent_id,
+                context={
+                    "fuel_type": fuel_type,
+                    "amount": amount,
+                    "unit": unit,
+                    "country": country,
+                    "error_details": result.get("error", {})
+                },
+                step="calculate_emissions",
+                cause=Exception(result['error']['message'])
+            )
 
         data = result["data"]
 
@@ -329,8 +342,16 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
         )
 
         if emission_factor is None:
-            raise ValueError(
-                f"No emission factor found for {fuel_type} ({unit}) in {country}"
+            raise MissingData(
+                message=f"No emission factor found for {fuel_type} ({unit}) in {country}",
+                context={
+                    "fuel_type": fuel_type,
+                    "unit": unit,
+                    "country": country,
+                    "agent_id": self.agent_id
+                },
+                data_type="emission_factor",
+                missing_fields=["emission_factor"]
             )
 
         # Create citation for this emission factor

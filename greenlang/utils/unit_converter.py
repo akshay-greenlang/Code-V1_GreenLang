@@ -5,7 +5,10 @@ Centralized unit conversion library for GreenLang agents.
 Handles energy, fuel, area, and emission unit conversions.
 """
 
+from typing import Dict
 import logging
+
+from greenlang.exceptions import ValidationError
 
 
 class UnitConverter:
@@ -131,7 +134,7 @@ class UnitConverter:
         "electricity": {"kWh": 0.003412, "MWh": 3.412, "GWh": 3412.0},
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the unit converter with logging."""
         self.logger = logging.getLogger(__name__)
 
@@ -154,13 +157,29 @@ class UnitConverter:
 
         # Convert to MMBtu first
         if from_unit not in self.ENERGY_TO_MMBTU:
-            raise ValueError(f"Unknown energy unit: {from_unit}")
+            raise ValidationError(
+                message=f"Unknown energy unit: {from_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(self.ENERGY_TO_MMBTU.keys())
+                },
+                invalid_fields={"from_unit": f"Unit '{from_unit}' not recognized"}
+            )
 
         mmbtu_value = value * self.ENERGY_TO_MMBTU[from_unit]
 
         # Convert from MMBtu to target unit
         if to_unit not in self.ENERGY_TO_MMBTU:
-            raise ValueError(f"Unknown energy unit: {to_unit}")
+            raise ValidationError(
+                message=f"Unknown energy unit: {to_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(self.ENERGY_TO_MMBTU.keys())
+                },
+                invalid_fields={"to_unit": f"Unit '{to_unit}' not recognized"}
+            )
 
         return mmbtu_value / self.ENERGY_TO_MMBTU[to_unit]
 
@@ -183,13 +202,29 @@ class UnitConverter:
 
         # Convert to sqft first
         if from_unit not in self.AREA_TO_SQFT:
-            raise ValueError(f"Unknown area unit: {from_unit}")
+            raise ValidationError(
+                message=f"Unknown area unit: {from_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(self.AREA_TO_SQFT.keys())
+                },
+                invalid_fields={"from_unit": f"Unit '{from_unit}' not recognized"}
+            )
 
         sqft_value = value * self.AREA_TO_SQFT[from_unit]
 
         # Convert from sqft to target unit
         if to_unit not in self.AREA_TO_SQFT:
-            raise ValueError(f"Unknown area unit: {to_unit}")
+            raise ValidationError(
+                message=f"Unknown area unit: {to_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(self.AREA_TO_SQFT.keys())
+                },
+                invalid_fields={"to_unit": f"Unit '{to_unit}' not recognized"}
+            )
 
         return sqft_value / self.AREA_TO_SQFT[to_unit]
 
@@ -212,13 +247,29 @@ class UnitConverter:
 
         # Convert to kg first
         if from_unit not in self.MASS_TO_KG:
-            raise ValueError(f"Unknown mass unit: {from_unit}")
+            raise ValidationError(
+                message=f"Unknown mass unit: {from_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(self.MASS_TO_KG.keys())
+                },
+                invalid_fields={"from_unit": f"Unit '{from_unit}' not recognized"}
+            )
 
         kg_value = value * self.MASS_TO_KG[from_unit]
 
         # Convert from kg to target unit
         if to_unit not in self.MASS_TO_KG:
-            raise ValueError(f"Unknown mass unit: {to_unit}")
+            raise ValidationError(
+                message=f"Unknown mass unit: {to_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(self.MASS_TO_KG.keys())
+                },
+                invalid_fields={"to_unit": f"Unit '{to_unit}' not recognized"}
+            )
 
         return kg_value / self.MASS_TO_KG[to_unit]
 
@@ -241,13 +292,29 @@ class UnitConverter:
 
         # Convert to liters first
         if from_unit not in self.VOLUME_TO_LITERS:
-            raise ValueError(f"Unknown volume unit: {from_unit}")
+            raise ValidationError(
+                message=f"Unknown volume unit: {from_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(self.VOLUME_TO_LITERS.keys())
+                },
+                invalid_fields={"from_unit": f"Unit '{from_unit}' not recognized"}
+            )
 
         liter_value = value * self.VOLUME_TO_LITERS[from_unit]
 
         # Convert from liters to target unit
         if to_unit not in self.VOLUME_TO_LITERS:
-            raise ValueError(f"Unknown volume unit: {to_unit}")
+            raise ValidationError(
+                message=f"Unknown volume unit: {to_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(self.VOLUME_TO_LITERS.keys())
+                },
+                invalid_fields={"to_unit": f"Unit '{to_unit}' not recognized"}
+            )
 
         return liter_value / self.VOLUME_TO_LITERS[to_unit]
 
@@ -275,7 +342,16 @@ class UnitConverter:
         fuel_factors = self.FUEL_ENERGY_CONTENT[fuel_type]
 
         if fuel_unit not in fuel_factors:
-            raise ValueError(f"Unknown unit '{fuel_unit}' for fuel type '{fuel_type}'")
+            raise ValidationError(
+                message=f"Unknown unit '{fuel_unit}' for fuel type '{fuel_type}'",
+                context={
+                    "fuel_type": fuel_type,
+                    "fuel_unit": fuel_unit,
+                    "energy_unit": energy_unit,
+                    "supported_units": list(fuel_factors.keys())
+                },
+                invalid_fields={"fuel_unit": f"Unit '{fuel_unit}' not supported for fuel type '{fuel_type}'"}
+            )
 
         # Convert to MMBtu
         mmbtu_value = value * fuel_factors[fuel_unit]
@@ -318,13 +394,29 @@ class UnitConverter:
 
         # Convert to kg first
         if from_unit not in emission_conversions:
-            raise ValueError(f"Unknown emission unit: {from_unit}")
+            raise ValidationError(
+                message=f"Unknown emission unit: {from_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(emission_conversions.keys())
+                },
+                invalid_fields={"from_unit": f"Unit '{from_unit}' not recognized"}
+            )
 
         kg_value = value * emission_conversions[from_unit]
 
         # Convert from kg to target unit
         if to_unit not in emission_conversions:
-            raise ValueError(f"Unknown emission unit: {to_unit}")
+            raise ValidationError(
+                message=f"Unknown emission unit: {to_unit}",
+                context={
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_units": list(emission_conversions.keys())
+                },
+                invalid_fields={"to_unit": f"Unit '{to_unit}' not recognized"}
+            )
 
         return kg_value / emission_conversions[to_unit]
 
@@ -375,6 +467,9 @@ class UnitConverter:
 
         Returns:
             float: The conversion factor
+
+        Raises:
+            ValidationError: If conversion type is not recognized
         """
         if conversion_type == "energy":
             return self.convert_energy(1.0, from_unit, to_unit)
@@ -385,4 +480,13 @@ class UnitConverter:
         elif conversion_type == "volume":
             return self.convert_volume(1.0, from_unit, to_unit)
         else:
-            raise ValueError(f"Unknown conversion type: {conversion_type}")
+            raise ValidationError(
+                message=f"Unknown conversion type: {conversion_type}",
+                context={
+                    "conversion_type": conversion_type,
+                    "from_unit": from_unit,
+                    "to_unit": to_unit,
+                    "supported_types": ["energy", "area", "mass", "volume"]
+                },
+                invalid_fields={"conversion_type": f"Type '{conversion_type}' not recognized"}
+            )

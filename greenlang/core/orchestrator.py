@@ -1,8 +1,10 @@
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 from greenlang.agents.base import BaseAgent
 from greenlang.core.workflow import Workflow
 import logging
 import ast
+
+from greenlang.exceptions import ValidationError, ExecutionError, MissingData
 
 # Import policy enforcement if available
 try:
@@ -27,17 +29,29 @@ logger = logging.getLogger(__name__)
 class Orchestrator:
     """Orchestrates the execution of agent workflows"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.agents: Dict[str, BaseAgent] = {}
         self.workflows: Dict[str, Workflow] = {}
-        self.execution_history: List[Dict] = []
+        self.execution_history: List[Dict[str, Any]] = []
         self.logger = logger
 
-    def register_agent(self, agent_id: str, agent: BaseAgent):
+    def register_agent(self, agent_id: str, agent: BaseAgent) -> None:
+        """Register an agent for use in workflows.
+
+        Args:
+            agent_id: Unique identifier for the agent
+            agent: Agent instance to register
+        """
         self.agents[agent_id] = agent
         self.logger.info(f"Registered agent: {agent_id}")
 
-    def register_workflow(self, workflow_id: str, workflow: Workflow):
+    def register_workflow(self, workflow_id: str, workflow: Workflow) -> None:
+        """Register a workflow for execution.
+
+        Args:
+            workflow_id: Unique identifier for the workflow
+            workflow: Workflow instance to register
+        """
         self.workflows[workflow_id] = workflow
         self.logger.info(f"Registered workflow: {workflow_id}")
 
@@ -45,7 +59,15 @@ class Orchestrator:
         self, workflow_id: str, input_data: Dict[str, Any]
     ) -> Dict[str, Any]:
         if workflow_id not in self.workflows:
-            raise ValueError(f"Workflow '{workflow_id}' not found")
+            raise MissingData(
+                message=f"Workflow '{workflow_id}' not found",
+                context={
+                    "workflow_id": workflow_id,
+                    "available_workflows": list(self.workflows.keys())
+                },
+                data_type="workflow",
+                missing_fields=["workflow"]
+            )
 
         workflow = self.workflows[workflow_id]
         execution_id = f"{workflow_id}_{len(self.execution_history)}"
@@ -114,7 +136,16 @@ class Orchestrator:
                     agent = self.agents.get(step.agent_id)
 
                     if not agent:
-                        raise ValueError(f"Agent '{step.agent_id}' not found")
+                        raise MissingData(
+                            message=f"Agent '{step.agent_id}' not found",
+                            context={
+                                "agent_id": step.agent_id,
+                                "step_name": step.name,
+                                "available_agents": list(self.agents.keys())
+                            },
+                            data_type="agent",
+                            missing_fields=["agent"]
+                        )
 
                     result = agent.run(step_input)
 
@@ -228,7 +259,14 @@ class Orchestrator:
                     return all(eval_node(v) for v in node.values)
                 if isinstance(node.op, ast.Or):
                     return any(eval_node(v) for v in node.values)
-                raise ValueError("Unsupported boolean operator")
+                raise ValidationError(
+                    message="Unsupported boolean operator in workflow condition",
+                    context={
+                        "operator": type(node.op).__name__,
+                        "condition": ast.dump(node)
+                    },
+                    invalid_fields={"operator": f"Boolean operator '{type(node.op).__name__}' not supported"}
+                )
             if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
                 return not eval_node(node.operand)
             if isinstance(node, ast.Compare):
@@ -252,7 +290,14 @@ class Orchestrator:
                     elif isinstance(op, ast.NotIn):
                         ok = left not in right
                     else:
-                        raise ValueError("Unsupported comparison operator")
+                        raise ValidationError(
+                            message="Unsupported comparison operator in workflow condition",
+                            context={
+                                "operator": type(op).__name__,
+                                "condition": ast.dump(node)
+                            },
+                            invalid_fields={"operator": f"Comparison operator '{type(op).__name__}' not supported"}
+                        )
                     if not ok:
                         return False
                     left = right
@@ -260,7 +305,15 @@ class Orchestrator:
             if isinstance(node, ast.Name):
                 if node.id in allowed_names:
                     return allowed_names[node.id]
-                raise ValueError(f"Name '{node.id}' is not allowed")
+                raise ValidationError(
+                    message=f"Name '{node.id}' is not allowed in workflow condition",
+                    context={
+                        "name": node.id,
+                        "allowed_names": list(allowed_names.keys()),
+                        "condition": ast.dump(node)
+                    },
+                    invalid_fields={"name": f"'{node.id}' is not a valid name"}
+                )
             if isinstance(node, ast.Constant):
                 return node.value
             if isinstance(node, ast.Subscript):
@@ -272,7 +325,14 @@ class Orchestrator:
                 if isinstance(value, dict):
                     return value.get(node.attr)
                 return getattr(value, node.attr)
-            raise ValueError(f"Unsupported expression: {ast.dump(node)}")
+            raise ValidationError(
+                message=f"Unsupported expression in workflow condition",
+                context={
+                    "expression_type": type(node).__name__,
+                    "expression": ast.dump(node)
+                },
+                invalid_fields={"expression": f"Expression type '{type(node).__name__}' not supported"}
+            )
 
         tree = ast.parse(expression, mode="eval")
         return bool(eval_node(tree.body))
@@ -328,7 +388,15 @@ class Orchestrator:
     ) -> Dict[str, Any]:
         agent = self.agents.get(agent_id)
         if not agent:
-            raise ValueError(f"Agent '{agent_id}' not found")
+            raise MissingData(
+                message=f"Agent '{agent_id}' not found",
+                context={
+                    "agent_id": agent_id,
+                    "available_agents": list(self.agents.keys())
+                },
+                data_type="agent",
+                missing_fields=["agent"]
+            )
 
         result = agent.run(input_data)
 

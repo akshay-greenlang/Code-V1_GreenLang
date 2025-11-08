@@ -1,0 +1,331 @@
+# Production environment values for greenlang
+# Maximum resources and high availability configuration
+
+global:
+  environment: production
+  storageClass: fast-ssd
+
+# Executor configuration - production scale
+executor:
+  enabled: true
+  replicaCount: 5
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 65
+    targetMemoryUtilizationPercentage: 75
+
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/rate-limit: "200"
+      nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+      nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    hosts:
+      - host: api.greenlang.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: greenlang-tls-cert
+        hosts:
+          - api.greenlang.io
+          - greenlang.io
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+# Worker configuration - production scale
+worker:
+  enabled: true
+  replicaCount: 10
+
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+      ephemeral-storage: 3Gi
+    limits:
+      cpu: 6000m
+      memory: 12Gi
+      ephemeral-storage: 8Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 30
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    customMetrics:
+      - type: Pods
+        pods:
+          metric:
+            name: greenlang_active_tasks
+          target:
+            type: AverageValue
+            averageValue: "10"
+      - type: Pods
+        pods:
+          metric:
+            name: greenlang_queue_depth
+          target:
+            type: AverageValue
+            averageValue: "50"
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 4
+
+  config:
+    maxConcurrentTasks: 15
+    taskTimeout: 3600
+    heartbeatInterval: 3
+
+# Redis configuration - production HA
+redis:
+  enabled: true
+  architecture: replication
+  auth:
+    enabled: true
+    existingSecret: greenlang-secrets
+    existingSecretPasswordKey: redis-password
+
+  master:
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: fast-ssd
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 4Gi
+      limits:
+        cpu: 3000m
+        memory: 12Gi
+
+  replica:
+    replicaCount: 3
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: fast-ssd
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 4Gi
+      limits:
+        cpu: 3000m
+        memory: 12Gi
+
+  sentinel:
+    enabled: true
+    quorum: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 400m
+        memory: 512Mi
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# PostgreSQL configuration - production HA
+postgresql:
+  enabled: false  # Use external RDS in production
+  auth:
+    username: greenlang
+    database: greenlang
+    existingSecret: greenlang-secrets
+
+# External database configuration
+externalDatabase:
+  enabled: true
+  host: "greenlang-prod.abc123.us-east-1.rds.amazonaws.com"
+  port: 5432
+  database: greenlang
+  username: greenlang
+  existingSecret: greenlang-secrets
+  existingSecretPasswordKey: database-password
+
+# External Redis configuration (ElastiCache)
+externalRedis:
+  enabled: false  # Set to true if using ElastiCache instead of in-cluster Redis
+  host: "greenlang-prod.abc123.cache.amazonaws.com"
+  port: 6379
+  existingSecret: greenlang-secrets
+  existingSecretPasswordKey: redis-password
+
+# Service configuration
+service:
+  type: LoadBalancer
+  port: 443
+  targetPort: 8080
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERT_ID"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "200"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+  hosts:
+    - host: greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+    - host: api.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: greenlang-tls-cert
+      hosts:
+        - greenlang.io
+        - api.greenlang.io
+        - "*.greenlang.io"
+
+# Storage configuration - production scale
+storage:
+  logs:
+    enabled: true
+    size: 200Gi
+    storageClass: efs-storage
+    accessMode: ReadWriteMany
+
+  backups:
+    enabled: true
+    size: 1Ti
+    storageClass: standard-storage
+    accessMode: ReadWriteOnce
+
+  artifacts:
+    enabled: true
+    size: 200Gi
+    storageClass: efs-storage
+    accessMode: ReadWriteMany
+
+# Security configuration
+security:
+  podSecurityPolicy:
+    enabled: true
+  networkPolicy:
+    enabled: true
+    policyTypes:
+      - Ingress
+      - Egress
+
+  secrets:
+    create: false
+    existingSecret: greenlang-secrets
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 15s
+      scrapeTimeout: 10s
+  grafana:
+    enabled: true
+    dashboards:
+      enabled: true
+  alerts:
+    enabled: true
+
+# Resource quotas - production scale
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "150"
+    requests.memory: "300Gi"
+    limits.cpu: "300"
+    limits.memory: "600Gi"
+    persistentvolumeclaims: "100"
+    pods: "300"
+    services: "100"
+
+# Limit ranges - production scale
+limitRange:
+  enabled: true
+  limits:
+    - type: Container
+      default:
+        cpu: "3"
+        memory: "6Gi"
+      defaultRequest:
+        cpu: "750m"
+        memory: "1.5Gi"
+      max:
+        cpu: "12"
+        memory: "24Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+# Pod priority
+priorityClass:
+  create: true
+  critical:
+    name: greenlang-critical
+    value: 1000000
+  high:
+    name: greenlang-high
+    value: 10000
+
+# Topology spread - strict for production
+topologySpreadConstraints:
+  enabled: true
+  maxSkew: 1
+  topologyKey: topology.kubernetes.io/zone
+  whenUnsatisfiable: DoNotSchedule
+
+# Affinity - strict anti-affinity for production
+affinity:
+  podAntiAffinity: required
+
+# Environment variables
+env:
+  - name: APP_ENV
+    value: "production"
+  - name: LOG_LEVEL
+    value: "INFO"
+  - name: DEBUG
+    value: "false"
+  - name: ENABLE_PROFILING
+    value: "false"
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  retention: 30  # Keep 30 days of backups
+  s3:
+    bucket: greenlang-prod-backups
+    region: us-east-1

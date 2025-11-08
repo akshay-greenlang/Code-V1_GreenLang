@@ -1,0 +1,207 @@
+---
+# Storage Class for fast SSD (AWS EBS gp3)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+  labels:
+    app: greenlang
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+  encrypted: "true"
+  kmsKeyId: "arn:aws:kms:us-east-1:ACCOUNT_ID:key/KEY_ID"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+
+---
+# Storage Class for standard storage (AWS EBS gp2)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard-storage
+  labels:
+    app: greenlang
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp2
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+
+---
+# Storage Class for archive storage (AWS EBS sc1)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: archive-storage
+  labels:
+    app: greenlang
+provisioner: ebs.csi.aws.com
+parameters:
+  type: sc1
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+
+---
+# PVC for shared logs
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-logs
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: logs
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-storage  # EFS for shared access
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+# PVC for data backups
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-backups
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: backups
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard-storage
+  resources:
+    requests:
+      storage: 500Gi
+
+---
+# PVC for shared cache (optional)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-shared-cache
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: cache
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-storage
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# PVC for PostgreSQL data (if running in-cluster)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data
+  namespace: greenlang
+  labels:
+    app: postgres
+    component: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: fast-ssd
+  resources:
+    requests:
+      storage: 200Gi
+
+---
+# PVC for artifact storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-artifacts
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: artifacts
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-storage
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+# PVC for model storage (ML models)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-models
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: models
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: efs-storage
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# Storage Class for EFS (shared storage)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: efs-storage
+  labels:
+    app: greenlang
+provisioner: efs.csi.aws.com
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: fs-XXXXXXXX  # Replace with actual EFS ID
+  directoryPerms: "700"
+  gidRangeStart: "1000"
+  gidRangeEnd: "2000"
+  basePath: "/greenlang"
+volumeBindingMode: Immediate
+reclaimPolicy: Retain
+
+---
+# Volume Snapshot Class for backups
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: greenlang-snapshot-class
+  labels:
+    app: greenlang
+driver: ebs.csi.aws.com
+deletionPolicy: Retain
+parameters:
+  tagSpecification_1: "Name=greenlang-snapshot"
+  tagSpecification_2: "Environment=production"
+
+---
+# Example VolumeSnapshot
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: redis-snapshot-daily
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: redis
+    backup-type: daily
+spec:
+  volumeSnapshotClassName: greenlang-snapshot-class
+  source:
+    persistentVolumeClaimName: data-redis-sentinel-0

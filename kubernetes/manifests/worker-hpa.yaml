@@ -1,0 +1,158 @@
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-worker-hpa
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-worker
+
+  minReplicas: 5
+  maxReplicas: 20
+
+  # Metrics for autoscaling
+  metrics:
+    # CPU-based scaling
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory-based scaling
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom metric: Active tasks per worker
+    - type: Pods
+      pods:
+        metric:
+          name: greenlang_active_tasks
+        target:
+          type: AverageValue
+          averageValue: "10"
+
+    # Custom metric: Task queue depth
+    - type: Pods
+      pods:
+        metric:
+          name: greenlang_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "50"
+
+  # Advanced scaling behavior
+  behavior:
+    scaleDown:
+      # Stabilization window - prevent flapping
+      stabilizationWindowSeconds: 300  # 5 minutes
+
+      # Scale down policies
+      policies:
+        # Don't scale down more than 50% of current pods in 60s
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+
+        # Don't scale down more than 2 pods in 60s
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+
+      # Use the policy that removes the least pods
+      selectPolicy: Min
+
+    scaleUp:
+      # Stabilization window for scale up (0 = immediate)
+      stabilizationWindowSeconds: 0
+
+      # Scale up policies
+      policies:
+        # Can scale up by 100% in 30s (double the replicas)
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+
+        # Can add up to 4 pods in 30s
+        - type: Pods
+          value: 4
+          periodSeconds: 30
+
+      # Use the policy that adds the most pods
+      selectPolicy: Max
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-executor-hpa
+  namespace: greenlang
+  labels:
+    app: greenlang
+    component: executor
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-executor
+
+  minReplicas: 2
+  maxReplicas: 10
+
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom metric: HTTP request rate
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 180
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      selectPolicy: Min
+
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max

@@ -61,6 +61,7 @@ from ..types import Agent, AgentResult, ErrorInfo
 from templates.agent_monitoring import OperationalMonitoringMixin
 from .types import GridFactorInput, GridFactorOutput
 from .grid_factor_agent import GridFactorAgent
+from greenlang.exceptions import ExecutionError, ValidationError
 from greenlang.intelligence import (
     ChatSession,
     ChatMessage,
@@ -307,7 +308,19 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
         })
 
         if not result["success"]:
-            raise ValueError(f"Lookup failed: {result['error']['message']}")
+            raise ExecutionError(
+                message="Grid intensity factor lookup failed",
+                agent_name=self.agent_id,
+                context={
+                    "country": country,
+                    "fuel_type": fuel_type,
+                    "unit": unit,
+                    "year": year,
+                    "error_details": result.get("error", {})
+                },
+                step="lookup_grid_intensity",
+                cause=Exception(result['error']['message'])
+            )
 
         data = result["data"]
 
@@ -417,7 +430,20 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
         self._tool_call_count += 1
 
         if len(intensities) != len(weights):
-            raise ValueError("Intensities and weights must have same length")
+            raise ValidationError(
+                message="Intensities and weights must have same length",
+                agent_name=self.agent_id,
+                context={
+                    "intensities_count": len(intensities),
+                    "weights_count": len(weights),
+                    "intensities": intensities,
+                    "weights": weights
+                },
+                invalid_fields={
+                    "intensities": f"Expected {len(weights)} values, got {len(intensities)}",
+                    "weights": f"Expected {len(intensities)} values, got {len(weights)}"
+                }
+            )
 
         # Normalize weights if they don't sum to 1.0
         weight_sum = sum(weights)
