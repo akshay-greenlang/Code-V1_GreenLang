@@ -25,13 +25,41 @@ import time
 
 from .models import (
     Category1Input,
+    Category2Input,
+    Category3Input,
     Category4Input,
+    Category5Input,
     Category6Input,
+    Category7Input,
+    Category8Input,
+    Category9Input,
+    Category10Input,
+    Category11Input,
+    Category12Input,
+    Category13Input,
+    Category14Input,
+    Category15Input,
     CalculationResult,
     BatchResult,
 )
 from .config import get_config, CalculatorConfig
-from .categories import Category1Calculator, Category4Calculator, Category6Calculator
+from .categories import (
+    Category1Calculator,
+    Category2Calculator,
+    Category3Calculator,
+    Category4Calculator,
+    Category5Calculator,
+    Category6Calculator,
+    Category7Calculator,
+    Category8Calculator,
+    Category9Calculator,
+    Category10Calculator,
+    Category11Calculator,
+    Category12Calculator,
+    Category13Calculator,
+    Category14Calculator,
+    Category15Calculator,
+)
 from .calculations import UncertaintyEngine
 from .provenance import ProvenanceChainBuilder
 from .exceptions import CalculatorError, BatchProcessingError
@@ -43,13 +71,26 @@ class Scope3CalculatorAgent:
     """
     Main Scope 3 emissions calculator agent.
 
-    Supports:
+    Supports ALL 15 Scope 3 Categories:
     - Category 1: Purchased Goods & Services (3-tier waterfall)
+    - Category 2: Capital Goods
+    - Category 3: Fuel & Energy-Related Activities
     - Category 4: Upstream Transportation & Distribution (ISO 14083)
+    - Category 5: Waste Generated in Operations
     - Category 6: Business Travel (flights, hotels, ground transport)
+    - Category 7: Employee Commuting
+    - Category 8: Upstream Leased Assets
+    - Category 9: Downstream Transportation & Distribution
+    - Category 10: Processing of Sold Products
+    - Category 11: Use of Sold Products
+    - Category 12: End-of-Life Treatment of Sold Products
+    - Category 13: Downstream Leased Assets
+    - Category 14: Franchises
+    - Category 15: Investments (PCAF Standard)
 
     Features:
     - Automatic tier selection
+    - LLM-powered intelligent classification
     - Uncertainty propagation
     - Provenance tracking
     - Batch processing
@@ -86,7 +127,28 @@ class Scope3CalculatorAgent:
             config=self.config
         )
 
+        self.category_2 = Category2Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_3 = Category3Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
         self.category_4 = Category4Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_5 = Category5Calculator(
             factor_broker=factor_broker,
             uncertainty_engine=self.uncertainty_engine,
             provenance_builder=self.provenance_builder,
@@ -100,17 +162,80 @@ class Scope3CalculatorAgent:
             config=self.config
         )
 
+        self.category_7 = Category7Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_8 = Category8Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_9 = Category9Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_10 = Category10Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_11 = Category11Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_12 = Category12Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_13 = Category13Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_14 = Category14Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
+        self.category_15 = Category15Calculator(
+            factor_broker=factor_broker,
+            uncertainty_engine=self.uncertainty_engine,
+            provenance_builder=self.provenance_builder,
+            config=self.config
+        )
+
         # Performance statistics
         self.stats = {
             "total_calculations": 0,
             "successful_calculations": 0,
             "failed_calculations": 0,
-            "category_breakdown": {1: 0, 4: 0, 6: 0},
+            "category_breakdown": {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, 13: 0, 14: 0, 15: 0},
             "total_processing_time_ms": 0.0,
         }
 
         logger.info(
-            "Initialized Scope3CalculatorAgent with categories: [1, 4, 6], "
+            "Initialized Scope3CalculatorAgent with ALL 15 categories, "
             f"monte_carlo={self.config.enable_monte_carlo}, "
             f"provenance={self.config.enable_provenance}"
         )
@@ -263,6 +388,262 @@ class Scope3CalculatorAgent:
             logger.error(f"Category 6 calculation failed: {e}", exc_info=True)
             raise
 
+    async def calculate_category_2(
+        self, data: Union[Category2Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 2 emissions (Capital Goods)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category2Input(**data)
+            result = await self.category_2.calculate(data)
+            self._update_stats(category=2, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 2 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=2, success=False)
+            logger.error(f"Category 2 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_3(
+        self, data: Union[Category3Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 3 emissions (Fuel & Energy-Related Activities)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category3Input(**data)
+            result = await self.category_3.calculate(data)
+            self._update_stats(category=3, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 3 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=3, success=False)
+            logger.error(f"Category 3 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_5(
+        self, data: Union[Category5Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 5 emissions (Waste Generated in Operations)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category5Input(**data)
+            result = await self.category_5.calculate(data)
+            self._update_stats(category=5, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 5 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=5, success=False)
+            logger.error(f"Category 5 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_7(
+        self, data: Union[Category7Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 7 emissions (Employee Commuting)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category7Input(**data)
+            result = await self.category_7.calculate(data)
+            self._update_stats(category=7, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 7 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=7, success=False)
+            logger.error(f"Category 7 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_8(
+        self, data: Union[Category8Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 8 emissions (Upstream Leased Assets)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category8Input(**data)
+            result = await self.category_8.calculate(data)
+            self._update_stats(category=8, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 8 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=8, success=False)
+            logger.error(f"Category 8 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_9(
+        self, data: Union[Category9Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 9 emissions (Downstream Transportation & Distribution)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category9Input(**data)
+            result = await self.category_9.calculate(data)
+            self._update_stats(category=9, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 9 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=9, success=False)
+            logger.error(f"Category 9 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_10(
+        self, data: Union[Category10Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 10 emissions (Processing of Sold Products)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category10Input(**data)
+            result = await self.category_10.calculate(data)
+            self._update_stats(category=10, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 10 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=10, success=False)
+            logger.error(f"Category 10 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_11(
+        self, data: Union[Category11Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 11 emissions (Use of Sold Products)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category11Input(**data)
+            result = await self.category_11.calculate(data)
+            self._update_stats(category=11, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 11 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=11, success=False)
+            logger.error(f"Category 11 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_12(
+        self, data: Union[Category12Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 12 emissions (End-of-Life Treatment)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category12Input(**data)
+            result = await self.category_12.calculate(data)
+            self._update_stats(category=12, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 12 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=12, success=False)
+            logger.error(f"Category 12 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_13(
+        self, data: Union[Category13Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 13 emissions (Downstream Leased Assets)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category13Input(**data)
+            result = await self.category_13.calculate(data)
+            self._update_stats(category=13, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 13 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=13, success=False)
+            logger.error(f"Category 13 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_14(
+        self, data: Union[Category14Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 14 emissions (Franchises)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category14Input(**data)
+            result = await self.category_14.calculate(data)
+            self._update_stats(category=14, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 14 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=14, success=False)
+            logger.error(f"Category 14 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_category_15(
+        self, data: Union[Category15Input, Dict[str, Any]]
+    ) -> CalculationResult:
+        """Calculate Category 15 emissions (Investments - PCAF)."""
+        start_time = time.time()
+        try:
+            if isinstance(data, dict):
+                data = Category15Input(**data)
+            result = await self.category_15.calculate(data)
+            self._update_stats(category=15, success=True, processing_time_ms=(time.time()-start_time)*1000)
+            logger.info(f"Category 15 calculation completed: {result.emissions_kgco2e:.2f} kgCO2e")
+            return result
+        except Exception as e:
+            self._update_stats(category=15, success=False)
+            logger.error(f"Category 15 calculation failed: {e}", exc_info=True)
+            raise
+
+    async def calculate_by_category(
+        self, category: int, data: Dict[str, Any]
+    ) -> CalculationResult:
+        """
+        Route calculation to appropriate category calculator.
+
+        Args:
+            category: Scope 3 category number (1-15)
+            data: Input data dictionary
+
+        Returns:
+            CalculationResult
+
+        Raises:
+            ValueError: If category is not supported
+        """
+        if category == 1:
+            return await self.calculate_category_1(data)
+        elif category == 2:
+            return await self.calculate_category_2(data)
+        elif category == 3:
+            return await self.calculate_category_3(data)
+        elif category == 4:
+            return await self.calculate_category_4(data)
+        elif category == 5:
+            return await self.calculate_category_5(data)
+        elif category == 6:
+            return await self.calculate_category_6(data)
+        elif category == 7:
+            return await self.calculate_category_7(data)
+        elif category == 8:
+            return await self.calculate_category_8(data)
+        elif category == 9:
+            return await self.calculate_category_9(data)
+        elif category == 10:
+            return await self.calculate_category_10(data)
+        elif category == 11:
+            return await self.calculate_category_11(data)
+        elif category == 12:
+            return await self.calculate_category_12(data)
+        elif category == 13:
+            return await self.calculate_category_13(data)
+        elif category == 14:
+            return await self.calculate_category_14(data)
+        elif category == 15:
+            return await self.calculate_category_15(data)
+        else:
+            raise ValueError(
+                f"Unsupported category: {category}. "
+                f"Supported categories: 1-15"
+            )
+
     async def calculate_batch(
         self,
         records: List[Union[Dict[str, Any], Category1Input, Category4Input, Category6Input]],
@@ -289,15 +670,8 @@ class Scope3CalculatorAgent:
             f"Starting batch calculation: {len(records)} records, category {category}"
         )
 
-        # Select calculation method
-        if category == 1:
-            calc_func = self.calculate_category_1
-        elif category == 4:
-            calc_func = self.calculate_category_4
-        elif category == 6:
-            calc_func = self.calculate_category_6
-        else:
-            raise ValueError(f"Unsupported category: {category}")
+        # Select calculation method using routing
+        calc_func = lambda data: self.calculate_by_category(category, data)
 
         # Process records
         results = []
@@ -419,7 +793,7 @@ class Scope3CalculatorAgent:
             "total_calculations": 0,
             "successful_calculations": 0,
             "failed_calculations": 0,
-            "category_breakdown": {1: 0, 4: 0, 6: 0},
+            "category_breakdown": {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, 13: 0, 14: 0, 15: 0},
             "total_processing_time_ms": 0.0,
         }
         logger.info("Performance statistics reset")
@@ -427,7 +801,7 @@ class Scope3CalculatorAgent:
     def __repr__(self) -> str:
         """String representation."""
         return (
-            f"Scope3CalculatorAgent(categories=[1,4,6], "
+            f"Scope3CalculatorAgent(categories=[1-15], "
             f"calculations={self.stats['total_calculations']}, "
             f"success_rate={self.get_performance_stats()['success_rate']:.2%})"
         )
