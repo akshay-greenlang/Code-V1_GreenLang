@@ -57,6 +57,102 @@ class CabinClass(str, Enum):
     FIRST = "first"
 
 
+class CommuteMode(str, Enum):
+    """Commute transportation modes for Category 7."""
+    CAR_PETROL = "car_petrol"
+    CAR_DIESEL = "car_diesel"
+    CAR_HYBRID = "car_hybrid"
+    CAR_ELECTRIC = "car_electric"
+    BUS = "bus"
+    TRAIN = "train"
+    SUBWAY = "subway"
+    TRAM = "tram"
+    MOTORCYCLE = "motorcycle"
+    BIKE = "bike"
+    WALK = "walk"
+    CARPOOL = "carpool"
+
+
+class BuildingType(str, Enum):
+    """Building types for Categories 8, 13."""
+    OFFICE = "office"
+    RETAIL = "retail"
+    WAREHOUSE = "warehouse"
+    MANUFACTURING = "manufacturing"
+    DATA_CENTER = "data_center"
+    HEALTHCARE = "healthcare"
+    EDUCATION = "education"
+    INDUSTRIAL = "industrial"
+    RESIDENTIAL = "residential"
+    MIXED_USE = "mixed_use"
+    HOTEL = "hotel"
+    RESTAURANT = "restaurant"
+
+
+class FranchiseType(str, Enum):
+    """Franchise industry types for Category 14."""
+    QUICK_SERVICE_RESTAURANT = "qsr"
+    CASUAL_DINING = "casual_dining"
+    FAST_FOOD = "fast_food"
+    COFFEE_SHOP = "coffee_shop"
+    RETAIL_STORE = "retail_store"
+    CONVENIENCE_STORE = "convenience_store"
+    GYM_FITNESS = "gym_fitness"
+    HOTEL = "hotel"
+    AUTO_SERVICE = "auto_service"
+    BEAUTY_SALON = "beauty_salon"
+    CLEANING_SERVICE = "cleaning_service"
+    EDUCATION = "education"
+    HEALTHCARE = "healthcare"
+    OTHER = "other"
+
+
+class ProductType(str, Enum):
+    """Product type categories for Category 11."""
+    APPLIANCE = "appliance"
+    ELECTRONICS = "electronics"
+    VEHICLE = "vehicle"
+    CLOUD_SERVICE = "cloud_service"
+    SOFTWARE = "software"
+    OTHER = "other"
+
+
+class MaterialType(str, Enum):
+    """Material types for Categories 5, 12."""
+    PLASTIC = "plastic"
+    METAL = "metal"
+    GLASS = "glass"
+    PAPER = "paper"
+    ELECTRONICS = "electronics"
+    TEXTILE = "textile"
+    ORGANIC = "organic"
+    MIXED = "mixed"
+    CARDBOARD = "cardboard"
+    OTHER = "other"
+
+
+class DisposalMethod(str, Enum):
+    """Disposal method types for Categories 5, 12."""
+    LANDFILL = "landfill"
+    RECYCLING = "recycling"
+    INCINERATION = "incineration"
+    COMPOSTING = "composting"
+    INCINERATION_ENERGY_RECOVERY = "incineration_energy_recovery"
+    MIXED = "mixed"
+
+
+class AssetClass(str, Enum):
+    """PCAF asset classes for Category 15."""
+    LISTED_EQUITY = "listed_equity"
+    CORPORATE_BONDS = "corporate_bonds"
+    BUSINESS_LOANS = "business_loans"
+    PROJECT_FINANCE = "project_finance"
+    COMMERCIAL_REAL_ESTATE = "commercial_real_estate"
+    MORTGAGES = "mortgages"
+    MOTOR_VEHICLE_LOANS = "motor_vehicle_loans"
+    SOVEREIGN_DEBT = "sovereign_debt"
+
+
 class CalculatorConfig(BaseModel):
     """Main configuration for Scope3CalculatorAgent."""
 
@@ -312,6 +408,13 @@ __all__ = [
     "TierType",
     "TransportMode",
     "CabinClass",
+    "CommuteMode",
+    "BuildingType",
+    "FranchiseType",
+    "ProductType",
+    "MaterialType",
+    "DisposalMethod",
+    "AssetClass",
     "get_config",
     "set_config",
     "TRANSPORT_MODE_DEFAULTS",

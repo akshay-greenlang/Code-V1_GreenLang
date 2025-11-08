@@ -13,7 +13,18 @@ from typing import Optional, List, Dict, Any, Union
 from pydantic import BaseModel, Field, field_validator
 from enum import Enum
 
-from .config import TierType, TransportMode, CabinClass
+from .config import (
+    TierType,
+    TransportMode,
+    CabinClass,
+    CommuteMode,
+    BuildingType,
+    FranchiseType,
+    ProductType,
+    MaterialType,
+    DisposalMethod,
+    AssetClass,
+)
 
 
 # ============================================================================
@@ -238,6 +249,508 @@ class Category6Input(BaseModel):
     trip_purpose: Optional[str] = Field(default=None)
 
 
+class Category2Input(BaseModel):
+    """Input data for Category 2 (Capital Goods) calculation."""
+
+    asset_description: str = Field(
+        description="Description of capital asset purchased"
+    )
+
+    capex_amount: float = Field(
+        gt=0,
+        description="Capital expenditure amount in USD"
+    )
+
+    region: str = Field(
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Tier 1 data (supplier-specific)
+    supplier_pcf: Optional[float] = Field(
+        default=None,
+        description="Supplier-specific total carbon footprint (kgCO2e)"
+    )
+
+    supplier_pcf_uncertainty: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=1,
+        description="PCF uncertainty as decimal"
+    )
+
+    # Tier 2 data (asset-specific with LLM classification)
+    asset_category: Optional[str] = Field(
+        default=None,
+        description="Asset category (buildings, machinery, vehicles, IT, equipment)"
+    )
+
+    useful_life_years: Optional[float] = Field(
+        default=None,
+        gt=0,
+        description="Useful life of asset in years"
+    )
+
+    emission_factor_kgco2e_per_usd: Optional[float] = Field(
+        default=None,
+        description="Asset-specific emission factor (kgCO2e per USD)"
+    )
+
+    # Tier 3 data (spend-based)
+    economic_sector: Optional[str] = Field(
+        default=None,
+        description="Economic sector for spend-based calculation"
+    )
+
+    # Metadata
+    supplier_name: Optional[str] = Field(default=None)
+    purchase_date: Optional[datetime] = Field(default=None)
+    industry: Optional[str] = Field(default=None, description="Company industry for useful life estimation")
+    data_quality_notes: Optional[str] = Field(default=None)
+
+
+class Category3Input(BaseModel):
+    """Input data for Category 3 (Fuel & Energy-Related Activities) calculation."""
+
+    fuel_or_energy_type: str = Field(
+        description="Type of fuel or energy (electricity, natural_gas, diesel, etc.)"
+    )
+
+    quantity: float = Field(
+        gt=0,
+        description="Quantity of fuel/energy consumed"
+    )
+
+    quantity_unit: str = Field(
+        description="Unit of quantity (kWh, liters, kg, etc.)"
+    )
+
+    region: str = Field(
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Tier 1 data (supplier-specific)
+    supplier_upstream_ef: Optional[float] = Field(
+        default=None,
+        description="Supplier-specific upstream emission factor (kgCO2e/unit)"
+    )
+
+    supplier_td_losses_ef: Optional[float] = Field(
+        default=None,
+        description="Supplier-specific T&D losses emission factor (kgCO2e/unit)"
+    )
+
+    # Tier 2 data (database factors with LLM fuel type identification)
+    well_to_tank_ef: Optional[float] = Field(
+        default=None,
+        description="Well-to-tank emission factor (kgCO2e/unit)"
+    )
+
+    td_loss_percentage: Optional[float] = Field(
+        default=None,
+        ge=0,
+        le=1,
+        description="Transmission & distribution loss percentage (0-1)"
+    )
+
+    # Metadata
+    supplier_name: Optional[str] = Field(default=None)
+    consumption_period: Optional[str] = Field(default=None)
+    grid_region: Optional[str] = Field(default=None, description="Electricity grid region")
+    data_quality_notes: Optional[str] = Field(default=None)
+
+
+class Category5Input(BaseModel):
+    """Input data for Category 5 (Waste Generated in Operations) calculation."""
+
+    waste_description: str = Field(
+        description="Description of waste generated"
+    )
+
+    waste_mass_kg: float = Field(
+        gt=0,
+        description="Mass of waste in kilograms"
+    )
+
+    region: str = Field(
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Tier 1 data (supplier-specific)
+    supplier_disposal_ef: Optional[float] = Field(
+        default=None,
+        description="Supplier-specific disposal emission factor (kgCO2e/kg)"
+    )
+
+    # Tier 2 data (with LLM waste categorization)
+    waste_type: Optional[str] = Field(
+        default=None,
+        description="Waste type (municipal_solid, hazardous, construction, organic, etc.)"
+    )
+
+    disposal_method: Optional[str] = Field(
+        default=None,
+        description="Disposal method (landfill, incineration, recycling, composting, etc.)"
+    )
+
+    emission_factor_kgco2e_per_kg: Optional[float] = Field(
+        default=None,
+        description="Waste-specific emission factor (kgCO2e per kg)"
+    )
+
+    # Tier 3 data (average/proxy)
+    waste_category_generic: Optional[str] = Field(
+        default=None,
+        description="Generic waste category for proxy factors"
+    )
+
+    # Metadata
+    waste_handler: Optional[str] = Field(default=None)
+    disposal_date: Optional[datetime] = Field(default=None)
+    recycling_rate: Optional[float] = Field(default=None, ge=0, le=1, description="Recycling rate (0-1)")
+    data_quality_notes: Optional[str] = Field(default=None)
+
+
+class Category7Input(BaseModel):
+    """Input data for Category 7 (Employee Commuting) calculation."""
+
+    commute_mode: Optional[CommuteMode] = Field(
+        default=None,
+        description="Commute transportation mode"
+    )
+
+    distance_km: Optional[float] = Field(
+        default=None,
+        gt=0,
+        description="One-way commute distance in kilometers"
+    )
+
+    days_per_week: Optional[float] = Field(
+        default=None,
+        gt=0,
+        description="Days commuting per week"
+    )
+
+    num_employees: int = Field(
+        default=1,
+        ge=1,
+        description="Number of employees"
+    )
+
+    # Optional parameters
+    weeks_per_year: Optional[int] = Field(
+        default=48,
+        description="Working weeks per year"
+    )
+
+    car_occupancy: float = Field(
+        default=1.0,
+        ge=1.0,
+        description="Car occupancy (for carpools)"
+    )
+
+    survey_response: Optional[str] = Field(
+        default=None,
+        description="Employee survey response for LLM analysis"
+    )
+
+    # Metadata
+    employee_id: Optional[str] = Field(default=None)
+    department: Optional[str] = Field(default=None)
+    location: Optional[str] = Field(default=None)
+
+
+class Category8Input(BaseModel):
+    """Input data for Category 8 (Upstream Leased Assets) calculation."""
+
+    lease_type: str = Field(
+        description="Type of leased asset"
+    )
+
+    floor_area: Optional[float] = Field(
+        default=None,
+        gt=0,
+        description="Floor area in square meters"
+    )
+
+    building_type: Optional[BuildingType] = Field(
+        default=None,
+        description="Building type"
+    )
+
+    energy_consumed: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description="Energy consumed (kWh)"
+    )
+
+    region: Optional[str] = Field(
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Metadata
+    asset_id: Optional[str] = Field(default=None)
+    lease_start_date: Optional[datetime] = Field(default=None)
+    lease_end_date: Optional[datetime] = Field(default=None)
+
+
+class Category9Input(BaseModel):
+    """Input data for Category 9 (Downstream Transportation & Distribution) calculation."""
+
+    transport_mode: TransportMode = Field(
+        description="Transport mode"
+    )
+
+    distance_km: float = Field(
+        gt=0,
+        description="Distance in kilometers"
+    )
+
+    weight_tonnes: float = Field(
+        gt=0,
+        description="Weight in tonnes"
+    )
+
+    # Optional parameters
+    delivery_route: Optional[str] = Field(
+        default=None,
+        description="Delivery route description"
+    )
+
+    emission_factor: Optional[float] = Field(
+        default=None,
+        description="Custom emission factor (kgCO2e per tonne-km)"
+    )
+
+    # Metadata
+    shipment_id: Optional[str] = Field(default=None)
+    customer_id: Optional[str] = Field(default=None)
+    shipment_date: Optional[datetime] = Field(default=None)
+
+
+class Category10Input(BaseModel):
+    """Input data for Category 10 (Processing of Sold Products) calculation."""
+
+    product_description: str = Field(
+        description="Description of intermediate product sold"
+    )
+
+    sold_quantity: float = Field(
+        gt=0,
+        description="Quantity sold"
+    )
+
+    industry_sector: Optional[str] = Field(
+        default=None,
+        description="Customer industry sector"
+    )
+
+    processing_data: Optional[Dict[str, Any]] = Field(
+        default=None,
+        description="Processing data from customer"
+    )
+
+    region: Optional[str] = Field(
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Metadata
+    customer_name: Optional[str] = Field(default=None)
+    sale_date: Optional[datetime] = Field(default=None)
+
+
+class Category11Input(BaseModel):
+    """Input data for Category 11 (Use of Sold Products) calculation."""
+
+    product_type: ProductType = Field(
+        description="Product type category"
+    )
+
+    units_sold: int = Field(
+        gt=0,
+        description="Number of units sold"
+    )
+
+    energy_consumption: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description="Annual energy consumption per unit (kWh/year)"
+    )
+
+    lifespan_years: Optional[float] = Field(
+        default=None,
+        gt=0,
+        description="Product lifespan in years"
+    )
+
+    region: str = Field(
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Metadata
+    product_name: Optional[str] = Field(default=None)
+    sale_date: Optional[datetime] = Field(default=None)
+
+
+class Category12Input(BaseModel):
+    """Input data for Category 12 (End-of-Life Treatment) calculation."""
+
+    product_description: str = Field(
+        description="Description of product"
+    )
+
+    weight_kg: float = Field(
+        gt=0,
+        description="Product weight in kilograms"
+    )
+
+    material_composition: Optional[Dict[str, float]] = Field(
+        default=None,
+        description="Material composition breakdown"
+    )
+
+    disposal_method: Optional[DisposalMethod] = Field(
+        default=None,
+        description="Disposal method"
+    )
+
+    region: Optional[str] = Field(
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Metadata
+    units_sold: Optional[int] = Field(default=None)
+    recycling_rate: Optional[float] = Field(default=None, ge=0, le=1)
+
+
+class Category13Input(BaseModel):
+    """Input data for Category 13 (Downstream Leased Assets) calculation."""
+
+    building_type: Optional[BuildingType] = Field(
+        default=None,
+        description="Building type"
+    )
+
+    floor_area: float = Field(
+        gt=0,
+        description="Floor area in square meters"
+    )
+
+    tenant_type: Optional[str] = Field(
+        default=None,
+        description="Tenant type"
+    )
+
+    energy_consumed: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description="Energy consumed by tenant (kWh)"
+    )
+
+    region: Optional[str] = Field(
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Metadata
+    asset_id: Optional[str] = Field(default=None)
+    tenant_name: Optional[str] = Field(default=None)
+
+
+class Category14Input(BaseModel):
+    """Input data for Category 14 (Franchises) calculation."""
+
+    franchise_type: Optional[FranchiseType] = Field(
+        default=None,
+        description="Franchise type"
+    )
+
+    franchise_count: int = Field(
+        ge=1,
+        description="Number of franchise locations"
+    )
+
+    revenue_usd: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description="Total franchise revenue in USD"
+    )
+
+    floor_area: Optional[float] = Field(
+        default=None,
+        gt=0,
+        description="Total floor area across franchises (sqm)"
+    )
+
+    region: Optional[str] = Field(
+        default=None,
+        min_length=2,
+        max_length=2,
+        description="ISO 3166-1 alpha-2 country code"
+    )
+
+    # Metadata
+    franchise_name: Optional[str] = Field(default=None)
+    energy_consumed: Optional[float] = Field(default=None, ge=0)
+
+
+class Category15Input(BaseModel):
+    """Input data for Category 15 (Investments) calculation - PCAF Standard."""
+
+    portfolio_company: str = Field(
+        description="Portfolio company name"
+    )
+
+    outstanding_amount: float = Field(
+        gt=0,
+        description="Outstanding investment amount (USD)"
+    )
+
+    company_value: float = Field(
+        gt=0,
+        description="Company value - EVIC or Total Assets (USD)"
+    )
+
+    sector: Optional[str] = Field(
+        default=None,
+        description="Industry sector"
+    )
+
+    asset_class: Optional[AssetClass] = Field(
+        default=None,
+        description="PCAF asset class"
+    )
+
+    company_emissions: Optional[float] = Field(
+        default=None,
+        ge=0,
+        description="Portfolio company total emissions (tCO2e)"
+    )
+
+    # Metadata
+    investment_id: Optional[str] = Field(default=None)
+    region: Optional[str] = Field(default=None)
+    reporting_year: Optional[int] = Field(default=None)
+
+
 # ============================================================================
 # CALCULATION OUTPUT MODELS
 # ============================================================================
@@ -396,11 +909,23 @@ class ISO14083TestCase(BaseModel):
 __all__ = [
     # Input models
     "Category1Input",
+    "Category2Input",
+    "Category3Input",
     "Category4Input",
+    "Category5Input",
     "Category6Input",
     "Category6FlightInput",
     "Category6HotelInput",
     "Category6GroundTransportInput",
+    "Category7Input",
+    "Category8Input",
+    "Category9Input",
+    "Category10Input",
+    "Category11Input",
+    "Category12Input",
+    "Category13Input",
+    "Category14Input",
+    "Category15Input",
 
     # Output models
     "CalculationResult",
