@@ -248,7 +248,7 @@ addopts = [
     "--cov-report=term-missing:skip-covered",           # Terminal report
     "--cov-report=html:.coverage_html",                 # HTML report
     "--cov-report=xml:coverage.xml",                    # XML report for CI
-    "--cov-fail-under=80",                              # Fail if coverage < 80%
+    "--cov-fail-under=95",                              # Fail if coverage < 95%
 ]
 
 [tool.coverage.run]
@@ -289,7 +289,7 @@ exclude_lines = [
 precision = 2
 show_missing = true
 skip_covered = false
-fail_under = 80                                          # Enforce 80% coverage minimum
+fail_under = 95                                          # Enforce 95% coverage minimum
 
 [tool.coverage.html]
 directory = ".coverage_html"                             # HTML report directory

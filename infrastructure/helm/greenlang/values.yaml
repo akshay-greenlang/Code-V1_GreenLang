@@ -1,0 +1,401 @@
+# Default values for greenlang production deployment
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Global settings
+global:
+  environment: production
+  storageClass: fast-ssd
+  registry: ghcr.io/greenlang
+  pullPolicy: IfNotPresent
+
+# Namespace configuration
+namespace:
+  create: true
+  name: greenlang
+
+# Image configuration
+image:
+  registry: ghcr.io
+  repository: greenlang/greenlang
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+    # - name: greenlang-registry
+
+# Executor configuration
+executor:
+  enabled: true
+  replicaCount: 3
+
+  image:
+    repository: greenlang/executor
+    tag: "1.0.0"
+
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+
+  service:
+    type: ClusterIP
+    port: 8080
+    metricsPort: 9090
+
+  ingress:
+    enabled: true
+    className: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - host: api.greenlang.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: greenlang-tls-cert
+        hosts:
+          - api.greenlang.io
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+# Worker configuration
+worker:
+  enabled: true
+  replicaCount: 5
+
+  image:
+    repository: greenlang/worker
+    tag: "1.0.0"
+
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+      ephemeral-storage: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+      ephemeral-storage: 5Gi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+    customMetrics:
+      - type: Pods
+        pods:
+          metric:
+            name: greenlang_active_tasks
+          target:
+            type: AverageValue
+            averageValue: "10"
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 3
+
+  config:
+    maxConcurrentTasks: 10
+    taskTimeout: 3600
+    heartbeatInterval: 5
+
+# Redis configuration (using external chart)
+redis:
+  enabled: true
+  architecture: replication
+  auth:
+    enabled: true
+    existingSecret: greenlang-secrets
+    existingSecretPasswordKey: redis-password
+
+  master:
+    count: 1
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: fast-ssd
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 8Gi
+
+  replica:
+    replicaCount: 2
+    persistence:
+      enabled: true
+      size: 20Gi
+      storageClass: fast-ssd
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 8Gi
+
+  sentinel:
+    enabled: true
+    quorum: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# PostgreSQL configuration (using external chart)
+postgresql:
+  enabled: true
+  auth:
+    username: greenlang
+    database: greenlang
+    existingSecret: greenlang-secrets
+    secretKeys:
+      adminPasswordKey: postgres-password
+      userPasswordKey: database-password
+
+  primary:
+    persistence:
+      enabled: true
+      size: 200Gi
+      storageClass: fast-ssd
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+
+  readReplicas:
+    replicaCount: 2
+    persistence:
+      enabled: true
+      size: 200Gi
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+
+# Service configuration
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8080
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: greenlang-tls-cert
+      hosts:
+        - greenlang.io
+        - api.greenlang.io
+
+# Storage configuration
+storage:
+  logs:
+    enabled: true
+    size: 100Gi
+    storageClass: efs-storage
+    accessMode: ReadWriteMany
+
+  backups:
+    enabled: true
+    size: 500Gi
+    storageClass: standard-storage
+    accessMode: ReadWriteOnce
+
+  artifacts:
+    enabled: true
+    size: 100Gi
+    storageClass: efs-storage
+    accessMode: ReadWriteMany
+
+# Security configuration
+security:
+  podSecurityPolicy:
+    enabled: true
+  networkPolicy:
+    enabled: true
+    policyTypes:
+      - Ingress
+      - Egress
+
+  secrets:
+    create: false
+    existingSecret: greenlang-secrets
+
+# RBAC configuration
+rbac:
+  create: true
+  serviceAccount:
+    create: true
+    name: greenlang-executor
+    annotations: {}
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+      scrapeTimeout: 10s
+
+  grafana:
+    enabled: true
+    dashboards:
+      enabled: true
+
+  alerts:
+    enabled: true
+
+# Resource quotas
+resourceQuota:
+  enabled: true
+  hard:
+    requests.cpu: "100"
+    requests.memory: "200Gi"
+    limits.cpu: "200"
+    limits.memory: "400Gi"
+    persistentvolumeclaims: "50"
+    pods: "200"
+
+# Limit ranges
+limitRange:
+  enabled: true
+  limits:
+    - type: Container
+      default:
+        cpu: "2"
+        memory: "4Gi"
+      defaultRequest:
+        cpu: "500m"
+        memory: "1Gi"
+      max:
+        cpu: "8"
+        memory: "16Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+# Pod priority
+priorityClass:
+  create: true
+  critical:
+    name: greenlang-critical
+    value: 1000000
+  high:
+    name: greenlang-high
+    value: 10000
+  normal:
+    name: greenlang-normal
+    value: 1000
+
+# Affinity and topology
+affinity:
+  podAntiAffinity: preferred
+  nodeAffinity:
+    enabled: true
+    requiredDuringSchedulingIgnoredDuringExecution: []
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+            - key: workload-type
+              operator: In
+              values:
+                - compute
+                - general
+
+# Topology spread constraints
+topologySpreadConstraints:
+  enabled: true
+  maxSkew: 1
+  topologyKey: topology.kubernetes.io/zone
+  whenUnsatisfiable: DoNotSchedule
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Environment variables
+env:
+  - name: APP_ENV
+    value: "production"
+  - name: LOG_LEVEL
+    value: "INFO"
+
+# Extra environment variables from secrets
+envFrom:
+  - secretRef:
+      name: greenlang-secrets
+
+# ConfigMap data
+configMap:
+  create: true
+  data:
+    config.yaml: |
+      backend:
+        type: kubernetes
+        namespace: greenlang
+      logging:
+        level: INFO
+        format: json
+      metrics:
+        enabled: true
+        port: 9090
+      execution:
+        default_timeout: 3600
+        max_retries: 3

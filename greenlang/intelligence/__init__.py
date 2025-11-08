@@ -34,6 +34,15 @@ Week 1 (INTL-101) Foundation:
 - Tool runtime & JSON schema validation
 - Budget & telemetry
 - Security (PromptGuard, HallucinationDetector)
+
+Phase 5 (AI Optimization):
+- Semantic caching with vector embeddings (>30% cache hit rate)
+- Prompt compression (>20% token reduction)
+- Streaming responses with SSE
+- Model fallback chains with circuit breaker
+- Quality validation and confidence scoring
+- Budget tracking and enforcement
+- Request batching for throughput optimization
 """
 
 from greenlang.intelligence.schemas.messages import ChatMessage, Role
@@ -57,7 +66,51 @@ from greenlang.intelligence.verification import (
 )
 from greenlang.intelligence.security import PromptGuard, PromptInjectionDetected
 
-__version__ = "0.2.0"
+# Phase 5: AI Optimization
+from greenlang.intelligence.semantic_cache import (
+    SemanticCache,
+    get_global_cache,
+    CacheEntry,
+    CacheMetrics,
+)
+from greenlang.intelligence.cache_warming import (
+    CacheWarmer,
+    warm_cache_on_startup,
+    COMMON_QUERIES,
+)
+from greenlang.intelligence.prompt_compression import (
+    PromptCompressor,
+    CompressionResult,
+    get_compression_metrics,
+)
+from greenlang.intelligence.streaming import (
+    stream_chat_completion,
+    stream_to_sse,
+    StreamToken,
+    StreamingProvider,
+)
+from greenlang.intelligence.fallback import (
+    FallbackManager,
+    ModelConfig,
+    DEFAULT_FALLBACK_CHAIN,
+    CircuitBreaker,
+)
+from greenlang.intelligence.quality_check import (
+    QualityChecker,
+    QualityScore,
+)
+from greenlang.intelligence.budget import (
+    BudgetTracker,
+    Budget as BudgetConfig,
+    BudgetExceededError,
+    Usage as UsageRecord,
+)
+from greenlang.intelligence.request_batching import (
+    RequestBatcher,
+    AdaptiveBatcher,
+)
+
+__version__ = "0.3.0"
 
 __all__ = [
     # Core schemas
@@ -93,4 +146,31 @@ __all__ = [
     "Citation",
     "PromptGuard",
     "PromptInjectionDetected",
+    # Phase 5: AI Optimization
+    "SemanticCache",
+    "get_global_cache",
+    "CacheEntry",
+    "CacheMetrics",
+    "CacheWarmer",
+    "warm_cache_on_startup",
+    "COMMON_QUERIES",
+    "PromptCompressor",
+    "CompressionResult",
+    "get_compression_metrics",
+    "stream_chat_completion",
+    "stream_to_sse",
+    "StreamToken",
+    "StreamingProvider",
+    "FallbackManager",
+    "ModelConfig",
+    "DEFAULT_FALLBACK_CHAIN",
+    "CircuitBreaker",
+    "QualityChecker",
+    "QualityScore",
+    "BudgetTracker",
+    "BudgetConfig",
+    "BudgetExceededError",
+    "UsageRecord",
+    "RequestBatcher",
+    "AdaptiveBatcher",
 ]
