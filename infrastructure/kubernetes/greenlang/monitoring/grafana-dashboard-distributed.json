@@ -1,0 +1,416 @@
+{
+  "dashboard": {
+    "title": "GreenLang Distributed Execution",
+    "tags": ["greenlang", "distributed", "orchestration"],
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Cluster Overview",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(greenlang_node_healthy{cluster=\"greenlang-cluster\"})",
+            "legendFormat": "Healthy Nodes",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "orientation": "auto",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 3, "color": "yellow"},
+                {"value": 5, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Total Nodes",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "count(greenlang_node_status{cluster=\"greenlang-cluster\"})",
+            "legendFormat": "Total Nodes",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Active Tasks",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(greenlang_active_tasks{cluster=\"greenlang-cluster\"})",
+            "legendFormat": "Active Tasks",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Throughput (tasks/sec)",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(greenlang_tasks_completed_total{cluster=\"greenlang-cluster\"}[5m])",
+            "legendFormat": "Tasks/sec",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Node Status Distribution",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 4},
+        "targets": [
+          {
+            "expr": "count by (status) (greenlang_node_status{cluster=\"greenlang-cluster\"})",
+            "legendFormat": "{{status}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Task Execution Rate",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 16, "x": 8, "y": 4},
+        "targets": [
+          {
+            "expr": "rate(greenlang_tasks_completed_total{cluster=\"greenlang-cluster\"}[5m])",
+            "legendFormat": "Completed",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(greenlang_tasks_failed_total{cluster=\"greenlang-cluster\"}[5m])",
+            "legendFormat": "Failed",
+            "refId": "B"
+          },
+          {
+            "expr": "rate(greenlang_tasks_distributed_total{cluster=\"greenlang-cluster\"}[5m])",
+            "legendFormat": "Distributed",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "ops", "label": "Tasks/sec"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Node Resource Usage - CPU",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 12},
+        "targets": [
+          {
+            "expr": "greenlang_node_cpu_usage{cluster=\"greenlang-cluster\"}",
+            "legendFormat": "{{node_id}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "max": 100, "min": 0},
+          {"format": "short"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"type": "gt", "params": [80]},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "name": "High CPU Usage",
+          "noDataState": "no_data"
+        }
+      },
+      {
+        "id": 8,
+        "title": "Node Resource Usage - Memory",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 12},
+        "targets": [
+          {
+            "expr": "greenlang_node_memory_usage{cluster=\"greenlang-cluster\"}",
+            "legendFormat": "{{node_id}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "max": 100, "min": 0},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Task Distribution by Node",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 20},
+        "targets": [
+          {
+            "expr": "greenlang_active_tasks{cluster=\"greenlang-cluster\"}",
+            "legendFormat": "{{node_id}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Active Tasks"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Task Duration (p95)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 20},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(greenlang_task_duration_seconds_bucket{cluster=\"greenlang-cluster\"}[5m]))",
+            "legendFormat": "p95 Duration",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.50, rate(greenlang_task_duration_seconds_bucket{cluster=\"greenlang-cluster\"}[5m]))",
+            "legendFormat": "p50 Duration",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Failover Events",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 28},
+        "targets": [
+          {
+            "expr": "rate(greenlang_failovers_total{cluster=\"greenlang-cluster\"}[5m])",
+            "legendFormat": "Failovers/sec",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(greenlang_node_recoveries_total{cluster=\"greenlang-cluster\"}[5m])",
+            "legendFormat": "Recoveries/sec",
+            "refId": "B"
+          }
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"type": "gt", "params": [0.1]},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "name": "Frequent Failovers",
+          "noDataState": "no_data"
+        }
+      },
+      {
+        "id": 12,
+        "title": "Network Latency Between Nodes",
+        "type": "heatmap",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 28},
+        "targets": [
+          {
+            "expr": "greenlang_node_network_latency_ms{cluster=\"greenlang-cluster\"}",
+            "legendFormat": "{{source_node}} -> {{target_node}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Redis Cache Hit Rate",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 34},
+        "targets": [
+          {
+            "expr": "rate(greenlang_cache_hits_total{cluster=\"greenlang-cluster\"}[5m]) / (rate(greenlang_cache_hits_total{cluster=\"greenlang-cluster\"}[5m]) + rate(greenlang_cache_misses_total{cluster=\"greenlang-cluster\"}[5m]))",
+            "legendFormat": "Hit Rate",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "percentunit", "max": 1, "min": 0},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Distributed Lock Contention",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 34},
+        "targets": [
+          {
+            "expr": "rate(greenlang_lock_wait_time_seconds_sum{cluster=\"greenlang-cluster\"}[5m]) / rate(greenlang_lock_wait_time_seconds_count{cluster=\"greenlang-cluster\"}[5m])",
+            "legendFormat": "Avg Wait Time",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Wait Time"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "id": 15,
+        "title": "Task Retry Rate",
+        "type": "graph",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 34},
+        "targets": [
+          {
+            "expr": "rate(greenlang_tasks_retried_total{cluster=\"greenlang-cluster\"}[5m])",
+            "legendFormat": "Retries/sec",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "title": "Cluster Health Score",
+        "type": "gauge",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 40},
+        "targets": [
+          {
+            "expr": "(sum(greenlang_node_healthy{cluster=\"greenlang-cluster\"}) / count(greenlang_node_status{cluster=\"greenlang-cluster\"})) * 100",
+            "legendFormat": "Health %",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "max": 100,
+            "min": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 60, "color": "orange"},
+                {"value": 80, "color": "yellow"},
+                {"value": 90, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 17,
+        "title": "Recent Errors (Last 24h)",
+        "type": "table",
+        "gridPos": {"h": 8, "w": 18, "x": 6, "y": 40},
+        "targets": [
+          {
+            "expr": "sort_desc(increase(greenlang_errors_total{cluster=\"greenlang-cluster\"}[24h]))",
+            "legendFormat": "",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true},
+              "indexByName": {},
+              "renameByName": {
+                "node_id": "Node",
+                "error_type": "Error Type",
+                "Value": "Count"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "cluster",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(greenlang_node_status, cluster)",
+          "current": {
+            "text": "greenlang-cluster",
+            "value": "greenlang-cluster"
+          }
+        },
+        {
+          "name": "node",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(greenlang_node_status{cluster=\"$cluster\"}, node_id)",
+          "multi": true,
+          "includeAll": true
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "greenlang_deployment_event{cluster=\"greenlang-cluster\"}",
+          "name": "Deployments",
+          "tagKeys": "event_type"
+        },
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "greenlang_failover_event{cluster=\"greenlang-cluster\"}",
+          "name": "Failovers",
+          "tagKeys": "failed_node"
+        }
+      ]
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    }
+  }
+}

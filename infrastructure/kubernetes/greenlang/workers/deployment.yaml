@@ -1,0 +1,430 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-worker-config
+  namespace: greenlang-system
+  labels:
+    app: greenlang-worker
+    component: worker
+data:
+  worker-config.yaml: |
+    # GreenLang Distributed Worker Configuration
+
+    cluster:
+      name: "greenlang-cluster"
+      heartbeat_interval: 5
+      heartbeat_timeout: 15
+      max_parallel_steps: 10
+
+    redis:
+      sentinel_service: "redis-sentinel"
+      sentinel_port: 26379
+      master_name: "greenlang-master"
+      socket_timeout: 5
+      socket_connect_timeout: 5
+      retry_on_timeout: true
+      max_connections: 50
+
+    execution:
+      max_retries: 3
+      task_timeout: 3600
+      soft_task_timeout: 3300
+      result_ttl: 86400
+
+    monitoring:
+      enabled: true
+      metrics_port: 9090
+      health_check_port: 8080
+
+    logging:
+      level: "INFO"
+      format: "json"
+
+  agents-config.yaml: |
+    # Agents configuration
+    agents:
+      - name: "fuel"
+        class: "AsyncFuelAgentAI"
+        enabled: true
+      - name: "carbon"
+        class: "AsyncCarbonAgentAI"
+        enabled: true
+      - name: "grid"
+        class: "AsyncGridFactorAgentAI"
+        enabled: true
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: greenlang-worker-secrets
+  namespace: greenlang-system
+  labels:
+    app: greenlang-worker
+type: Opaque
+stringData:
+  # Redis connection
+  redis-password: "greenlang-redis-secure-password-change-in-production"
+
+  # API keys (if needed by agents)
+  # openai-api-key: "your-openai-key"
+  # anthropic-api-key: "your-anthropic-key"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-worker
+  namespace: greenlang-system
+  labels:
+    app: greenlang-worker
+    component: worker
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for StatefulSet
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+    - name: health
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: greenlang-worker
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-worker
+  namespace: greenlang-system
+  labels:
+    app: greenlang-worker
+    component: worker
+    version: v1
+spec:
+  replicas: 5  # Start with 5 nodes
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: greenlang-worker
+  template:
+    metadata:
+      labels:
+        app: greenlang-worker
+        component: worker
+        version: v1
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: greenlang-worker
+
+      # Node affinity for compute-optimized nodes
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - compute
+                      - general
+
+        # Pod anti-affinity for high availability
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - greenlang-worker
+                topologyKey: kubernetes.io/hostname
+
+      # Init containers
+      initContainers:
+        - name: wait-for-redis
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Redis to be ready..."
+              until redis-cli -h redis -a $REDIS_PASSWORD ping > /dev/null 2>&1; do
+                echo "Redis not ready, waiting..."
+                sleep 5
+              done
+              echo "Redis is ready!"
+          env:
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secrets
+                  key: password
+
+      containers:
+        - name: worker
+          image: greenlang/distributed-worker:latest
+          imagePullPolicy: Always
+          command:
+            - python
+            - -m
+            - greenlang.distributed.worker
+            - --config
+            - /etc/greenlang/worker-config.yaml
+
+          ports:
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: health
+              containerPort: 8080
+              protocol: TCP
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 4000m
+              memory: 8Gi
+
+          # Health checks
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Startup probe for slow initialization
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+
+          # Environment variables
+          env:
+            # Application settings
+            - name: APP_ENV
+              value: "production"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: WORKER_TYPE
+              value: "distributed"
+
+            # Cluster configuration
+            - name: CLUSTER_NAME
+              value: "greenlang-cluster"
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+            # Redis configuration
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secrets
+                  key: redis-url
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-secrets
+                  key: password
+            - name: REDIS_SENTINEL_SERVICE
+              value: "redis-sentinel"
+            - name: REDIS_SENTINEL_PORT
+              value: "26379"
+
+            # Observability
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://jaeger-collector:4317"
+            - name: OTEL_SERVICE_NAME
+              value: "greenlang-worker"
+            - name: METRICS_PORT
+              value: "9090"
+            - name: HEALTH_PORT
+              value: "8080"
+
+            # Pod metadata
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Volume mounts
+          volumeMounts:
+            - name: config
+              mountPath: /etc/greenlang
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: worker-data
+              mountPath: /app/data
+            - name: cache
+              mountPath: /app/cache
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    # Graceful shutdown
+                    echo "Starting graceful shutdown..."
+                    kill -TERM 1
+                    sleep 30
+
+      # Volumes
+      volumes:
+        - name: config
+          configMap:
+            name: greenlang-worker-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: worker-data
+          emptyDir:
+            sizeLimit: 5Gi
+        - name: cache
+          emptyDir:
+            sizeLimit: 2Gi
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+
+      # Graceful termination (longer for workers)
+      terminationGracePeriodSeconds: 60
+
+      # Security context for pod
+      securityContext:
+        fsGroup: 1000
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-worker-hpa
+  namespace: greenlang-system
+  labels:
+    app: greenlang-worker
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-worker
+  minReplicas: 5
+  maxReplicas: 20
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: greenlang_active_tasks
+        target:
+          type: AverageValue
+          averageValue: "10"
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 4
+          periodSeconds: 30
+      selectPolicy: Max
+
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-worker-pdb
+  namespace: greenlang-system
+spec:
+  minAvailable: 3
+  selector:
+    matchLabels:
+      app: greenlang-worker
