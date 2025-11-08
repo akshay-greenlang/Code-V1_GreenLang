@@ -17,6 +17,7 @@ import pytest
 import asyncio
 from datetime import datetime
 from unittest.mock import Mock, AsyncMock, patch
+from pydantic import ValidationError
 
 from services.agents.calculator.categories.category_13 import (
     Category13Calculator,
@@ -435,7 +436,7 @@ async def test_missing_region(calculator):
         reporting_year=2024
     )
 
-    with pytest.raises(Exception):  # Pydantic validation error
+    with pytest.raises(ValidationError):  # Pydantic validation error
         await calculator.calculate(input_data)
 
 

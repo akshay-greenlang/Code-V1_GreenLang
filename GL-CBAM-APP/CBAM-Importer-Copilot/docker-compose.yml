@@ -1,0 +1,292 @@
+# ============================================================================
+# GL-CBAM-APP - Docker Compose Configuration
+# ============================================================================
+# Full stack deployment: Backend API + PostgreSQL + Redis + pgAdmin
+# Version: 3.8
+# ============================================================================
+
+version: '3.8'
+
+# ----------------------------------------------------------------------------
+# SERVICES
+# ----------------------------------------------------------------------------
+services:
+
+  # --------------------------------------------------------------------------
+  # Backend API (GL-CBAM-APP)
+  # --------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: ${APP_VERSION:-1.0.0}
+        BUILD_DATE: ${BUILD_DATE}
+    image: gl-cbam-app:${APP_VERSION:-latest}
+    container_name: cbam-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      # Application
+      APP_ENV: ${APP_ENV:-production}
+      APP_VERSION: ${APP_VERSION:-1.0.0}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cbam_user}:${POSTGRES_PASSWORD:-cbam_secure_password}@postgres:5432/${POSTGRES_DB:-cbam_db}
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+      DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-20}
+
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      # Security
+      SECRET_KEY: ${SECRET_KEY}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-30}
+
+      # CORS
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:8080}
+
+      # File Upload
+      MAX_UPLOAD_SIZE_MB: ${MAX_UPLOAD_SIZE_MB:-100}
+      UPLOAD_DIR: /app/uploads
+
+      # Feature Flags
+      ENABLE_API_DOCS: ${ENABLE_API_DOCS:-true}
+      ENABLE_METRICS: ${ENABLE_METRICS:-true}
+      ENABLE_TRACING: ${ENABLE_TRACING:-false}
+
+    volumes:
+      # Persistent data
+      - api-data:/app/data
+      - api-logs:/app/logs
+      - api-output:/app/output
+      - api-uploads:/app/uploads
+
+      # Configuration (optional - mount custom configs)
+      - ./config:/app/config:ro
+      - ./rules:/app/rules:ro
+      - ./schemas:/app/schemas:ro
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - cbam-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # --------------------------------------------------------------------------
+  # PostgreSQL Database
+  # --------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: cbam-postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cbam_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cbam_secure_password}
+      POSTGRES_DB: ${POSTGRES_DB:-cbam_db}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=en_US.UTF-8 --lc-ctype=en_US.UTF-8"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      # Initialization scripts (optional)
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks:
+      - cbam-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cbam_user} -d ${POSTGRES_DB:-cbam_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "maintenance_work_mem=64MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "default_statistics_target=100"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "work_mem=2MB"
+      - "-c"
+      - "min_wal_size=1GB"
+      - "-c"
+      - "max_wal_size=4GB"
+
+  # --------------------------------------------------------------------------
+  # Redis Cache
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: cbam-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
+    networks:
+      - cbam-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      ${REDIS_PASSWORD:+--requirepass ${REDIS_PASSWORD}}
+
+  # --------------------------------------------------------------------------
+  # pgAdmin (Database Management UI)
+  # --------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: cbam-pgadmin
+    restart: unless-stopped
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@greenlang.com}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin_secure_password}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+      # Server configuration (optional)
+      - ./config/pgadmin-servers.json:/pgadmin4/servers.json:ro
+    networks:
+      - cbam-network
+    depends_on:
+      - postgres
+
+# ----------------------------------------------------------------------------
+# VOLUMES (Persistent Data)
+# ----------------------------------------------------------------------------
+volumes:
+  # API volumes
+  api-data:
+    driver: local
+    name: cbam-api-data
+  api-logs:
+    driver: local
+    name: cbam-api-logs
+  api-output:
+    driver: local
+    name: cbam-api-output
+  api-uploads:
+    driver: local
+    name: cbam-api-uploads
+
+  # Database volumes
+  postgres-data:
+    driver: local
+    name: cbam-postgres-data
+
+  # Redis volumes
+  redis-data:
+    driver: local
+    name: cbam-redis-data
+
+  # pgAdmin volumes
+  pgadmin-data:
+    driver: local
+    name: cbam-pgadmin-data
+
+# ----------------------------------------------------------------------------
+# NETWORKS
+# ----------------------------------------------------------------------------
+networks:
+  cbam-network:
+    driver: bridge
+    name: cbam-network
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16
+
+# ============================================================================
+# USAGE INSTRUCTIONS
+# ============================================================================
+#
+# Prerequisites:
+#   1. Copy .env.production.example to .env
+#   2. Update environment variables in .env
+#   3. Ensure Docker and Docker Compose are installed
+#
+# Commands:
+#   # Start all services
+#   docker-compose up -d
+#
+#   # Start specific service
+#   docker-compose up -d api
+#
+#   # View logs
+#   docker-compose logs -f api
+#   docker-compose logs -f postgres
+#
+#   # Stop all services
+#   docker-compose down
+#
+#   # Stop and remove volumes (CAUTION: deletes data)
+#   docker-compose down -v
+#
+#   # Rebuild and restart
+#   docker-compose up -d --build
+#
+#   # Scale API service
+#   docker-compose up -d --scale api=3
+#
+#   # Execute commands in container
+#   docker-compose exec api python cbam_pipeline.py --help
+#   docker-compose exec postgres psql -U cbam_user -d cbam_db
+#   docker-compose exec redis redis-cli
+#
+#   # View running containers
+#   docker-compose ps
+#
+#   # View resource usage
+#   docker-compose stats
+#
+# Access Points:
+#   - API: http://localhost:8000
+#   - API Docs: http://localhost:8000/docs
+#   - pgAdmin: http://localhost:5050
+#   - PostgreSQL: localhost:5432
+#   - Redis: localhost:6379
+#
+# Health Checks:
+#   curl http://localhost:8000/health
+#   curl http://localhost:8000/api/v1/health/detailed
+#
+# ============================================================================

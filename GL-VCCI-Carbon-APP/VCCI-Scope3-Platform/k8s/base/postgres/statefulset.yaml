@@ -1,0 +1,146 @@
+# ==============================================================================
+# GL-VCCI PostgreSQL - StatefulSet
+# ==============================================================================
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vcci-postgres
+  namespace: vcci-production
+  labels:
+    app: vcci-postgres
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+    tier: database
+spec:
+  serviceName: vcci-postgres
+  replicas: 1  # For HA, use 3 with streaming replication
+
+  selector:
+    matchLabels:
+      app: vcci-postgres
+      tier: database
+
+  template:
+    metadata:
+      labels:
+        app: vcci-postgres
+        tier: database
+        app.kubernetes.io/name: gl-vcci
+        app.kubernetes.io/component: database
+
+    spec:
+      serviceAccountName: vcci-postgres-sa
+      priorityClassName: vcci-high-priority
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_INITDB_ARGS
+              value: "--encoding=UTF8 --locale=en_US.utf8"
+
+          resources:
+            requests:
+              cpu: 2000m
+              memory: 4Gi
+            limits:
+              cpu: 8000m
+              memory: 16Gi
+
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U $POSTGRES_USER
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - pg_isready -U $POSTGRES_USER
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+            - name: postgres-config
+              mountPath: /etc/postgresql
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # PostgreSQL needs write access
+            runAsNonRoot: true
+            runAsUser: 999
+
+      volumes:
+        - name: postgres-config
+          configMap:
+            name: postgres-config
+        - name: init-scripts
+          configMap:
+            name: postgres-init-scripts
+
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+        labels:
+          app: vcci-postgres
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: fast-ssd  # Use appropriate storage class
+        resources:
+          requests:
+            storage: 100Gi
+
+---
+# ==============================================================================
+# Service Account
+# ==============================================================================
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vcci-postgres-sa
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database

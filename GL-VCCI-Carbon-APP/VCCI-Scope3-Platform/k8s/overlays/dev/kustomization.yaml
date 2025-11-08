@@ -1,0 +1,89 @@
+# ==============================================================================
+# GL-VCCI Development Environment - Kustomize Overlay
+# ==============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: vcci-dev
+
+bases:
+  - ../../base
+
+namePrefix: dev-
+
+commonLabels:
+  environment: development
+  team: carbon-intelligence
+
+replicas:
+  - name: vcci-backend-api
+    count: 1
+  - name: vcci-worker
+    count: 1
+  - name: vcci-postgres
+    count: 1
+  - name: vcci-redis
+    count: 1
+
+images:
+  - name: YOUR_REGISTRY/vcci-backend
+    newTag: dev-latest
+  - name: YOUR_REGISTRY/vcci-worker
+    newTag: dev-latest
+
+configMapGenerator:
+  - name: backend-config
+    behavior: merge
+    literals:
+      - APP_ENV=development
+      - LOG_LEVEL=debug
+      - ENABLE_METRICS=false
+      - API_RATE_LIMIT=100/hour
+
+  - name: worker-config
+    behavior: merge
+    literals:
+      - CELERY_CONCURRENCY=1
+      - LOG_LEVEL=debug
+
+patches:
+  # Minimal resources for development
+  - target:
+      kind: Deployment
+      name: vcci-backend-api
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 100m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 256Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 1Gi
+
+  - target:
+      kind: Deployment
+      name: vcci-worker
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 2Gi
+
+  # Disable HPA for dev
+  - target:
+      kind: HorizontalPodAutoscaler
+    patch: |-
+      $patch: delete

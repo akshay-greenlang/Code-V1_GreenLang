@@ -1,0 +1,74 @@
+# ============================================================================
+# GreenLang Platform - Unified Alerting Rules
+# ============================================================================
+
+groups:
+  - name: platform_health
+    interval: 30s
+    rules:
+      # Application Down Alerts
+      - alert: CBAMApplicationDown
+        expr: up{app="cbam"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          app: cbam
+        annotations:
+          summary: "CBAM application is down"
+          description: "CBAM API has been down for more than 2 minutes"
+
+      - alert: CSRDApplicationDown
+        expr: up{app="csrd"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          app: csrd
+        annotations:
+          summary: "CSRD application is down"
+          description: "CSRD Web has been down for more than 2 minutes"
+
+      - alert: VCCIApplicationDown
+        expr: up{app="vcci"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          app: vcci
+        annotations:
+          summary: "VCCI application is down"
+          description: "VCCI Backend has been down for more than 2 minutes"
+
+  - name: infrastructure_health
+    interval: 30s
+    rules:
+      # Database Alerts
+      - alert: PostgreSQLDown
+        expr: up{app="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: database
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "Shared PostgreSQL database is unavailable"
+
+      # Cache Alerts
+      - alert: RedisDown
+        expr: up{app="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: cache
+        annotations:
+          summary: "Redis cache is down"
+          description: "Shared Redis cache is unavailable"
+
+      # Message Queue Alerts
+      - alert: RabbitMQDown
+        expr: up{app="rabbitmq"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: message-queue
+        annotations:
+          summary: "RabbitMQ is down"
+          description: "Message queue is unavailable - cross-app events may be lost"

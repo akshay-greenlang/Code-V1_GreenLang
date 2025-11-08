@@ -1,0 +1,83 @@
+# ==============================================================================
+# GL-VCCI Staging Environment - Kustomize Overlay
+# ==============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: vcci-staging
+
+bases:
+  - ../../base
+
+namePrefix: staging-
+
+commonLabels:
+  environment: staging
+  team: carbon-intelligence
+
+replicas:
+  - name: vcci-backend-api
+    count: 2
+  - name: vcci-worker
+    count: 2
+  - name: vcci-postgres
+    count: 1
+  - name: vcci-redis
+    count: 1
+
+images:
+  - name: YOUR_REGISTRY/vcci-backend
+    newTag: staging-latest
+  - name: YOUR_REGISTRY/vcci-worker
+    newTag: staging-latest
+
+configMapGenerator:
+  - name: backend-config
+    behavior: merge
+    literals:
+      - APP_ENV=staging
+      - LOG_LEVEL=debug
+      - ENABLE_METRICS=true
+      - API_RATE_LIMIT=500/hour
+
+  - name: worker-config
+    behavior: merge
+    literals:
+      - CELERY_CONCURRENCY=2
+      - LOG_LEVEL=debug
+
+patches:
+  # Reduce resource limits for staging
+  - target:
+      kind: Deployment
+      name: vcci-backend-api
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 250m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 512Mi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 2Gi
+
+  - target:
+      kind: Deployment
+      name: vcci-worker
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 500m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 1Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 4Gi

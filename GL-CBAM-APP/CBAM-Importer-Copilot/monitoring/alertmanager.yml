@@ -1,0 +1,242 @@
+# ============================================================================
+# ALERTMANAGER CONFIGURATION FOR CBAM IMPORTER COPILOT
+# ============================================================================
+#
+# Alertmanager handles alerts sent by Prometheus and routes them to
+# the appropriate notification channels (email, Slack, PagerDuty, etc.)
+#
+# Version: 1.0.0
+# ============================================================================
+
+global:
+  # The smarthost and SMTP sender used for mail notifications
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@cbam.greenlang.com'
+  smtp_auth_username: 'alerts@cbam.greenlang.com'
+  smtp_auth_password: 'your-smtp-password-here'
+  smtp_require_tls: true
+
+  # Default notification settings
+  resolve_timeout: 5m
+
+  # Slack webhook (optional)
+  # slack_api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK/URL'
+
+  # PagerDuty integration key (optional)
+  # pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+# ============================================================================
+# TEMPLATES
+# ============================================================================
+
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# ============================================================================
+# ROUTING
+# ============================================================================
+
+# The root route on which each incoming alert enters
+route:
+  # The labels by which incoming alerts are grouped together
+  group_by: ['alertname', 'severity', 'instance']
+
+  # When a new group of alerts is created by an incoming alert, wait
+  # at least 'group_wait' to send the initial notification
+  group_wait: 30s
+
+  # When the first notification was sent, wait 'group_interval' to send
+  # a batch of new alerts that started firing for that group
+  group_interval: 5m
+
+  # If an alert has successfully been sent, wait 'repeat_interval' to
+  # resend them
+  repeat_interval: 4h
+
+  # Default receiver
+  receiver: 'cbam-team-email'
+
+  # Child routes
+  routes:
+    # Critical alerts go to PagerDuty
+    - match:
+        severity: critical
+      receiver: 'cbam-pagerduty'
+      continue: true  # Also send to default receiver
+
+    # Warning alerts go to Slack
+    - match:
+        severity: warning
+      receiver: 'cbam-slack'
+      continue: false
+
+    # Info alerts only to email
+    - match:
+        severity: info
+      receiver: 'cbam-team-email'
+      continue: false
+
+    # Service down alerts - immediate notification
+    - match:
+        alertname: CBAMServiceDown
+      receiver: 'cbam-emergency'
+      group_wait: 0s
+      repeat_interval: 5m
+
+    # SLA violation alerts
+    - match_re:
+        alertname: CBAMSLA.*
+      receiver: 'cbam-management'
+      continue: true
+
+# ============================================================================
+# INHIBITION RULES
+# ============================================================================
+
+# Inhibition rules allow to mute a set of alerts given that another alert is firing
+# For example, if service is down, don't alert on high latency for that service
+
+inhibit_rules:
+  # Inhibit all alerts if service is down
+  - source_match:
+      alertname: 'CBAMServiceDown'
+    target_match_re:
+      alertname: '.*'
+    equal: ['instance']
+
+  # Inhibit warning if critical is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+# ============================================================================
+# RECEIVERS
+# ============================================================================
+
+receivers:
+  # Default email receiver
+  - name: 'cbam-team-email'
+    email_configs:
+      - to: 'cbam-team@greenlang.com'
+        headers:
+          Subject: '[CBAM Alert] {{ .GroupLabels.alertname }} - {{ .GroupLabels.severity }}'
+        html: |
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; }
+              .alert-critical { background-color: #d32f2f; color: white; }
+              .alert-warning { background-color: #f57c00; color: white; }
+              .alert-info { background-color: #1976d2; color: white; }
+              .alert-header { padding: 15px; font-size: 18px; font-weight: bold; }
+              .alert-details { padding: 15px; background-color: #f5f5f5; }
+              .alert-item { margin: 10px 0; padding: 10px; background-color: white; border-left: 4px solid #1976d2; }
+            </style>
+          </head>
+          <body>
+            <div class="alert-header alert-{{ .GroupLabels.severity }}">
+              CBAM Alert: {{ .GroupLabels.alertname }}
+            </div>
+            <div class="alert-details">
+              <p><strong>Severity:</strong> {{ .GroupLabels.severity }}</p>
+              <p><strong>Time:</strong> {{ .CommonAnnotations.timestamp }}</p>
+              <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+
+              {{ range .Alerts }}
+              <div class="alert-item">
+                <p><strong>Instance:</strong> {{ .Labels.instance }}</p>
+                <p><strong>Summary:</strong> {{ .Annotations.summary }}</p>
+                <p><strong>Impact:</strong> {{ .Annotations.impact }}</p>
+                <p><strong>Action:</strong> {{ .Annotations.action }}</p>
+                {{ if .Annotations.runbook_url }}
+                <p><a href="{{ .Annotations.runbook_url }}">View Runbook</a></p>
+                {{ end }}
+              </div>
+              {{ end }}
+            </div>
+          </body>
+          </html>
+
+  # Slack receiver (requires webhook URL)
+  - name: 'cbam-slack'
+    slack_configs:
+      - api_url: 'https://hooks.slack.com/services/YOUR/WEBHOOK/URL'
+        channel: '#cbam-alerts'
+        username: 'CBAM Alertmanager'
+        icon_emoji: ':warning:'
+        title: 'CBAM Alert: {{ .GroupLabels.alertname }}'
+        text: |
+          *Severity:* {{ .GroupLabels.severity }}
+          {{ range .Alerts }}
+          *Summary:* {{ .Annotations.summary }}
+          *Description:* {{ .Annotations.description }}
+          *Instance:* {{ .Labels.instance }}
+          {{ if .Annotations.runbook_url }}
+          <{{ .Annotations.runbook_url }}|View Runbook>
+          {{ end }}
+          {{ end }}
+        send_resolved: true
+
+  # PagerDuty receiver (requires integration key)
+  - name: 'cbam-pagerduty'
+    pagerduty_configs:
+      - service_key: 'YOUR_PAGERDUTY_INTEGRATION_KEY'
+        description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+        details:
+          severity: '{{ .GroupLabels.severity }}'
+          instance: '{{ .GroupLabels.instance }}'
+          description: '{{ .CommonAnnotations.description }}'
+          impact: '{{ .CommonAnnotations.impact }}'
+          action: '{{ .CommonAnnotations.action }}'
+
+  # Emergency receiver for critical service outages
+  - name: 'cbam-emergency'
+    email_configs:
+      - to: 'cbam-oncall@greenlang.com'
+        headers:
+          Subject: '[CRITICAL] CBAM Service Down!'
+        send_resolved: true
+    # Also page
+    pagerduty_configs:
+      - service_key: 'YOUR_PAGERDUTY_INTEGRATION_KEY'
+        severity: 'critical'
+
+  # Management receiver for SLA violations
+  - name: 'cbam-management'
+    email_configs:
+      - to: 'cbam-management@greenlang.com,cbam-team@greenlang.com'
+        headers:
+          Subject: '[SLA VIOLATION] {{ .GroupLabels.alertname }}'
+
+# ============================================================================
+# SETUP INSTRUCTIONS
+# ============================================================================
+#
+# 1. Configure email settings:
+#    - Update smtp_smarthost with your SMTP server
+#    - Update smtp_from with your sender email
+#    - Update smtp_auth_username and smtp_auth_password
+#
+# 2. Configure Slack (optional):
+#    - Create a Slack webhook: https://api.slack.com/messaging/webhooks
+#    - Replace 'YOUR/WEBHOOK/URL' in slack_configs
+#
+# 3. Configure PagerDuty (optional):
+#    - Create a PagerDuty integration
+#    - Replace 'YOUR_PAGERDUTY_INTEGRATION_KEY'
+#
+# 4. Update receiver email addresses:
+#    - cbam-team@greenlang.com
+#    - cbam-oncall@greenlang.com
+#    - cbam-management@greenlang.com
+#
+# 5. Test the configuration:
+#    amtool check-config alertmanager.yml
+#
+# 6. Reload Alertmanager:
+#    curl -X POST http://localhost:9093/-/reload
+#
+# ============================================================================

@@ -193,9 +193,13 @@ cryptography>=41.0.0  # Encryption and cryptography
 pyjwt>=2.8.0  # JWT token handling
 passlib[bcrypt]>=1.7.4  # Password hashing
 python-jose[cryptography]>=3.3.0  # JOSE (JWT, JWS, JWE) implementation
+defusedxml>=0.7.1  # Secure XML parsing (XXE attack prevention)
 
 # Secrets management
 hvac>=2.1.0  # HashiCorp Vault client
+
+# Rate limiting
+slowapi>=0.1.9  # Rate limiting for FastAPI
 
 # ============================================================================
 # MONITORING & OBSERVABILITY

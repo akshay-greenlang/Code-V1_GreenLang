@@ -1,0 +1,382 @@
+# ============================================================================
+# PROMETHEUS ALERTING RULES FOR CBAM IMPORTER COPILOT
+# ============================================================================
+#
+# This file defines critical alerts for production monitoring of the
+# CBAM Importer Copilot application.
+#
+# Alert Severity Levels:
+# - critical: Immediate action required (pages on-call)
+# - warning: Attention needed (notifies team)
+# - info: Informational (logged only)
+#
+# Version: 1.0.0
+# Author: GreenLang CBAM Team (Team A3: Monitoring & Observability)
+# ============================================================================
+
+groups:
+  # ==========================================================================
+  # APPLICATION AVAILABILITY ALERTS
+  # ==========================================================================
+
+  - name: cbam_availability
+    interval: 30s
+    rules:
+      - alert: CBAMServiceDown
+        expr: up{job="cbam-importer-copilot"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: application
+          team: cbam
+        annotations:
+          summary: "CBAM Importer Copilot service is down"
+          description: "The CBAM application on {{ $labels.instance }} has been down for more than 2 minutes."
+          impact: "Pipeline executions will fail. New CBAM reports cannot be generated."
+          action: "1. Check application logs\n2. Verify service status\n3. Restart service if needed\n4. Check system resources"
+          runbook_url: "https://wiki.greenlang.com/cbam/runbooks/service-down"
+
+      - alert: CBAMHealthCheckFailing
+        expr: |
+          (
+            sum(rate(probe_success{job="blackbox-http"}[5m])) by (instance)
+            / sum(rate(probe_duration_seconds_count{job="blackbox-http"}[5m])) by (instance)
+          ) < 0.9
+        for: 5m
+        labels:
+          severity: critical
+          component: health
+          team: cbam
+        annotations:
+          summary: "CBAM health checks failing"
+          description: "Health check success rate is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          impact: "Application may be unhealthy or experiencing issues."
+          action: "Check /health/ready and /health/live endpoints for details"
+
+      - alert: CBAMReadinessCheckFailing
+        expr: probe_success{instance=~".*health/ready.*"} == 0
+        for: 3m
+        labels:
+          severity: warning
+          component: health
+          team: cbam
+        annotations:
+          summary: "CBAM readiness check failing"
+          description: "Readiness probe is failing - application may not be ready to serve traffic."
+          impact: "New requests may be routed to unhealthy instances."
+          action: "Check dependency availability (files, databases, etc.)"
+
+  # ==========================================================================
+  # PERFORMANCE ALERTS
+  # ==========================================================================
+
+  - name: cbam_performance
+    interval: 30s
+    rules:
+      - alert: CBAMHighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(cbam_pipeline_duration_seconds_bucket{stage="total"}[5m])) by (le)
+          ) > 600
+        for: 10m
+        labels:
+          severity: warning
+          component: performance
+          team: cbam
+        annotations:
+          summary: "CBAM pipeline latency is high"
+          description: "95th percentile pipeline duration is {{ $value | humanizeDuration }} (threshold: 10 minutes)"
+          impact: "Pipeline executions are taking longer than expected. SLA may be at risk."
+          action: "1. Check system resources\n2. Review recent changes\n3. Check for large input files\n4. Monitor agent performance"
+
+      - alert: CBAMSlowAgentPerformance
+        expr: |
+          cbam_agent_ms_per_record{quantile="0.95"} > 100
+        for: 15m
+        labels:
+          severity: warning
+          component: performance
+          team: cbam
+        annotations:
+          summary: "CBAM agent {{ $labels.agent }} is processing slowly"
+          description: "Agent {{ $labels.agent }} is processing at {{ $value | humanize }} ms/record (threshold: 100ms)"
+          impact: "Reduced throughput for pipeline executions."
+          action: "1. Check agent-specific logs\n2. Review recent code changes\n3. Check data quality issues"
+
+      - alert: CBAMLowThroughput
+        expr: |
+          sum(rate(cbam_records_processed_total{status="success"}[5m])) < 10
+        for: 15m
+        labels:
+          severity: warning
+          component: performance
+          team: cbam
+        annotations:
+          summary: "CBAM processing throughput is low"
+          description: "Processing only {{ $value | humanize }} records/second (threshold: 10 records/sec)"
+          impact: "Reduced capacity for processing shipments."
+          action: "Check for resource constraints or bottlenecks"
+
+  # ==========================================================================
+  # ERROR RATE ALERTS
+  # ==========================================================================
+
+  - name: cbam_errors
+    interval: 30s
+    rules:
+      - alert: CBAMHighErrorRate
+        expr: |
+          (
+            sum(rate(cbam_pipeline_executions_total{status="failed"}[5m]))
+            / sum(rate(cbam_pipeline_executions_total[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          component: reliability
+          team: cbam
+        annotations:
+          summary: "CBAM pipeline error rate is high"
+          description: "{{ $value | humanizePercentage }} of pipeline executions are failing (threshold: 5%)"
+          impact: "Multiple CBAM report generations are failing. Data quality may be compromised."
+          action: "1. Check error logs\n2. Review recent input data\n3. Verify reference data integrity\n4. Check validation errors"
+
+      - alert: CBAMValidationFailures
+        expr: |
+          (
+            sum(rate(cbam_validation_results_total{result="invalid"}[5m]))
+            / sum(rate(cbam_validation_results_total[5m]))
+          ) > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          component: validation
+          team: cbam
+        annotations:
+          summary: "High validation failure rate"
+          description: "{{ $value | humanizePercentage }} of records are failing validation (threshold: 20%)"
+          impact: "Data quality issues. Many shipments being rejected."
+          action: "1. Review validation error types\n2. Check input data quality\n3. Verify CN code mappings\n4. Contact data providers"
+
+      - alert: CBAMExceptionSpike
+        expr: |
+          sum(rate(cbam_exceptions_total[5m])) by (exception_type) > 1
+        for: 5m
+        labels:
+          severity: warning
+          component: reliability
+          team: cbam
+        annotations:
+          summary: "Spike in {{ $labels.exception_type }} exceptions"
+          description: "{{ $labels.exception_type }} exceptions occurring at {{ $value | humanize }}/sec"
+          impact: "Unexpected errors in application. May indicate a bug or data issue."
+          action: "Check application logs for exception details and stack traces"
+
+  # ==========================================================================
+  # RESOURCE ALERTS
+  # ==========================================================================
+
+  - name: cbam_resources
+    interval: 30s
+    rules:
+      - alert: CBAMHighMemoryUsage
+        expr: |
+          cbam_memory_usage_bytes / (1024 * 1024) > 500
+        for: 10m
+        labels:
+          severity: warning
+          component: resources
+          team: cbam
+        annotations:
+          summary: "CBAM memory usage is high"
+          description: "Application is using {{ $value | humanize }} MB of memory (threshold: 500 MB)"
+          impact: "Risk of out-of-memory errors. Performance degradation possible."
+          action: "1. Check for memory leaks\n2. Review batch sizes\n3. Consider increasing memory limits\n4. Monitor for growth trend"
+
+      - alert: CBAMHighCPUUsage
+        expr: |
+          cbam_cpu_usage_percent > 80
+        for: 15m
+        labels:
+          severity: warning
+          component: resources
+          team: cbam
+        annotations:
+          summary: "CBAM CPU usage is high"
+          description: "CPU usage is {{ $value | humanize }}% (threshold: 80%)"
+          impact: "Reduced processing capacity. Increased latency likely."
+          action: "1. Check for CPU-intensive operations\n2. Review concurrent executions\n3. Consider scaling up"
+
+      - alert: CBAMDiskSpaceLow
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/"}
+            / node_filesystem_size_bytes{mountpoint="/"}
+          ) < 0.1
+        for: 10m
+        labels:
+          severity: critical
+          component: resources
+          team: cbam
+        annotations:
+          summary: "Disk space critically low"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+          impact: "Risk of application failure. Log files and reports may not be written."
+          action: "1. Clean up old log files\n2. Archive old reports\n3. Increase disk space\n4. Check for disk space leaks"
+
+  # ==========================================================================
+  # BUSINESS METRICS ALERTS
+  # ==========================================================================
+
+  - name: cbam_business
+    interval: 1m
+    rules:
+      - alert: CBAMNoRecentProcessing
+        expr: |
+          sum(increase(cbam_pipeline_executions_total[1h])) == 0
+        for: 2h
+        labels:
+          severity: warning
+          component: business
+          team: cbam
+        annotations:
+          summary: "No CBAM pipelines executed recently"
+          description: "No pipeline executions in the last 2 hours"
+          impact: "May indicate no incoming work or upstream issues."
+          action: "1. Check if this is expected\n2. Verify data ingestion pipeline\n3. Check for scheduled job failures"
+
+      - alert: CBAMEmissionsCalculationAnomaly
+        expr: |
+          (
+            rate(cbam_emissions_calculated_tco2[5m])
+            / rate(cbam_emissions_calculated_tco2[5m] offset 1h)
+          ) > 3 or (
+            rate(cbam_emissions_calculated_tco2[5m])
+            / rate(cbam_emissions_calculated_tco2[5m] offset 1h)
+          ) < 0.3
+        for: 10m
+        labels:
+          severity: info
+          component: business
+          team: cbam
+        annotations:
+          summary: "Anomaly in emissions calculation rate"
+          description: "Emissions calculation rate changed by {{ $value | humanize }}x compared to 1h ago"
+          impact: "Unusual pattern. May indicate data quality issue or business change."
+          action: "Review recent input data and calculation results for anomalies"
+
+      - alert: CBAMHighDefaultValueUsage
+        expr: |
+          (
+            sum(rate(cbam_calculation_method_total{method="default"}[5m]))
+            / sum(rate(cbam_calculation_method_total[5m]))
+          ) > 0.8
+        for: 30m
+        labels:
+          severity: info
+          component: business
+          team: cbam
+        annotations:
+          summary: "High usage of default emission factors"
+          description: "{{ $value | humanizePercentage }} of calculations using default values (threshold: 80%)"
+          impact: "Lower accuracy in emissions reporting. Compliance risk."
+          action: "1. Check supplier data quality\n2. Encourage suppliers to provide actual data\n3. Review supplier onboarding process"
+
+  # ==========================================================================
+  # SLA ALERTS
+  # ==========================================================================
+
+  - name: cbam_sla
+    interval: 1m
+    rules:
+      - alert: CBAMSLAViolation
+        expr: |
+          (
+            sum(rate(cbam_pipeline_executions_total{status="success"}[1h]))
+            / sum(rate(cbam_pipeline_executions_total[1h]))
+          ) < 0.99
+        for: 15m
+        labels:
+          severity: critical
+          component: sla
+          team: cbam
+        annotations:
+          summary: "CBAM SLA violation - success rate below 99%"
+          description: "Success rate is {{ $value | humanizePercentage }} (SLA: 99%)"
+          impact: "Service Level Agreement breach. Customer impact likely."
+          action: "1. Immediate investigation required\n2. Notify management\n3. Review all recent failures\n4. Prepare incident report"
+
+      - alert: CBAMSLALatencyViolation
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(cbam_pipeline_duration_seconds_bucket{stage="total"}[1h])) by (le)
+          ) > 600
+        for: 30m
+        labels:
+          severity: warning
+          component: sla
+          team: cbam
+        annotations:
+          summary: "CBAM SLA latency violation"
+          description: "95th percentile duration is {{ $value | humanizeDuration }} (SLA: 10 minutes)"
+          impact: "Performance SLA breach. User experience degraded."
+          action: "Performance optimization required. Review bottlenecks."
+
+  # ==========================================================================
+  # SECURITY ALERTS
+  # ==========================================================================
+
+  - name: cbam_security
+    interval: 1m
+    rules:
+      - alert: CBAMUnusualErrorPattern
+        expr: |
+          sum(rate(cbam_errors_total{severity="critical"}[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+          team: cbam
+        annotations:
+          summary: "Unusual pattern of critical errors"
+          description: "{{ $value | humanize }} critical errors/sec"
+          impact: "May indicate security incident or malicious activity."
+          action: "1. Review error logs for suspicious patterns\n2. Check for unauthorized access\n3. Verify data integrity"
+
+# ============================================================================
+# ALERT ROUTING (for Alertmanager)
+# ============================================================================
+#
+# Configure in alertmanager.yml:
+#
+# route:
+#   receiver: 'cbam-team'
+#   group_by: ['alertname', 'severity']
+#   group_wait: 30s
+#   group_interval: 5m
+#   repeat_interval: 4h
+#
+#   routes:
+#     - match:
+#         severity: critical
+#       receiver: 'cbam-pagerduty'
+#       continue: true
+#
+#     - match:
+#         severity: warning
+#       receiver: 'cbam-slack'
+#
+# receivers:
+#   - name: 'cbam-team'
+#     email_configs:
+#       - to: 'cbam-team@greenlang.com'
+#
+#   - name: 'cbam-pagerduty'
+#     pagerduty_configs:
+#       - service_key: '<pagerduty-key>'
+#
+#   - name: 'cbam-slack'
+#     slack_configs:
+#       - api_url: '<slack-webhook-url>'
+#         channel: '#cbam-alerts'
+#         title: 'CBAM Alert: {{ .GroupLabels.alertname }}'

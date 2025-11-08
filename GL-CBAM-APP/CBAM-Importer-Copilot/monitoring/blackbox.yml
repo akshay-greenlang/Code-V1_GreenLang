@@ -1,0 +1,94 @@
+# ============================================================================
+# BLACKBOX EXPORTER CONFIGURATION FOR CBAM IMPORTER COPILOT
+# ============================================================================
+#
+# Blackbox exporter allows blackbox probing of endpoints over HTTP, HTTPS,
+# DNS, TCP and ICMP. Used for monitoring health check endpoints.
+#
+# Version: 1.0.0
+# ============================================================================
+
+modules:
+  # HTTP 200 check (GET request)
+  http_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      fail_if_not_ssl: false
+      preferred_ip_protocol: "ip4"
+
+  # HTTP 2xx check (any 2xx response)
+  http_2xx_any:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: []  # Defaults to 2xx
+      method: GET
+
+  # HTTP POST check
+  http_post_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      valid_status_codes: [200, 201]
+      method: POST
+      headers:
+        Content-Type: application/json
+      body: '{}'
+
+  # HTTPS check with TLS verification
+  https_2xx:
+    prober: http
+    timeout: 5s
+    http:
+      valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+      valid_status_codes: [200]
+      method: GET
+      fail_if_not_ssl: true
+      tls_config:
+        insecure_skip_verify: false
+
+  # TCP connection check
+  tcp_connect:
+    prober: tcp
+    timeout: 5s
+    tcp:
+      preferred_ip_protocol: "ip4"
+
+  # ICMP ping check
+  icmp:
+    prober: icmp
+    timeout: 5s
+    icmp:
+      preferred_ip_protocol: "ip4"
+
+  # DNS check
+  dns_check:
+    prober: dns
+    timeout: 5s
+    dns:
+      preferred_ip_protocol: "ip4"
+      query_name: "cbam.greenlang.com"
+      query_type: "A"
+
+# ============================================================================
+# USAGE EXAMPLES
+# ============================================================================
+#
+# Test from command line:
+#   curl 'http://localhost:9115/probe?target=http://localhost:8000/health&module=http_2xx'
+#
+# Use in Prometheus (already configured in prometheus.yml):
+#   - job_name: 'blackbox-http'
+#     metrics_path: /probe
+#     params:
+#       module: [http_2xx]
+#     static_configs:
+#       - targets:
+#         - http://localhost:8000/health
+#
+# ============================================================================

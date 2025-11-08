@@ -1,0 +1,87 @@
+# ==============================================================================
+# GL-VCCI Production Environment - Kustomize Overlay
+# ==============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: vcci-production
+
+bases:
+  - ../../base
+
+namePrefix: prod-
+
+commonLabels:
+  environment: production
+  team: carbon-intelligence
+
+replicas:
+  - name: vcci-backend-api
+    count: 5
+  - name: vcci-worker
+    count: 3
+  - name: vcci-postgres
+    count: 1
+  - name: vcci-redis
+    count: 1
+
+images:
+  - name: YOUR_REGISTRY/vcci-backend
+    newTag: v2.0.0
+  - name: YOUR_REGISTRY/vcci-worker
+    newTag: v2.0.0
+
+configMapGenerator:
+  - name: backend-config
+    behavior: merge
+    literals:
+      - APP_ENV=production
+      - LOG_LEVEL=info
+      - ENABLE_METRICS=true
+      - API_RATE_LIMIT=1000/hour
+
+  - name: worker-config
+    behavior: merge
+    literals:
+      - CELERY_CONCURRENCY=4
+      - LOG_LEVEL=info
+
+patchesStrategicMerge:
+  - patches/backend-resources.yaml
+  - patches/worker-resources.yaml
+
+patches:
+  # Increase resource limits for production
+  - target:
+      kind: Deployment
+      name: vcci-backend-api
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 1000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 2Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 4000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 8Gi
+
+  - target:
+      kind: Deployment
+      name: vcci-worker
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: 2000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: 4Gi
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: 8000m
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: 16Gi

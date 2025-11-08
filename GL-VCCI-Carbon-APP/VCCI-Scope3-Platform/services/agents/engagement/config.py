@@ -3,6 +3,7 @@ Configuration for Supplier Engagement Agent.
 
 Includes consent rules, campaign settings, portal configuration, and email service settings.
 """
+import os
 from typing import Dict, Any, List
 from datetime import timedelta
 
@@ -150,9 +151,9 @@ EMAIL_SERVICE_CONFIG = {
     "batch_size": 50,
 }
 
-# SendGrid configuration (stub)
+# SendGrid configuration
 SENDGRID_CONFIG = {
-    "api_key": "SENDGRID_API_KEY_PLACEHOLDER",
+    "api_key": os.getenv("SENDGRID_API_KEY"),
     "endpoint": "https://api.sendgrid.com/v3/mail/send",
     "tracking": {
         "open_tracking": True,
@@ -161,10 +162,10 @@ SENDGRID_CONFIG = {
     }
 }
 
-# Mailgun configuration (stub)
+# Mailgun configuration
 MAILGUN_CONFIG = {
-    "api_key": "MAILGUN_API_KEY_PLACEHOLDER",
-    "domain": "mg.company.com",
+    "api_key": os.getenv("MAILGUN_API_KEY"),
+    "domain": os.getenv("MAILGUN_DOMAIN", "mg.company.com"),
     "endpoint": "https://api.mailgun.net/v3",
     "tracking": {
         "clicks": True,
@@ -172,11 +173,11 @@ MAILGUN_CONFIG = {
     }
 }
 
-# AWS SES configuration (stub)
+# AWS SES configuration
 AWS_SES_CONFIG = {
-    "access_key_id": "AWS_ACCESS_KEY_PLACEHOLDER",
-    "secret_access_key": "AWS_SECRET_KEY_PLACEHOLDER",
-    "region": "us-east-1",
+    "access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
+    "secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
+    "region": os.getenv("AWS_REGION", "us-east-1"),
     "configuration_set": "supplier-engagement",
 }
 
@@ -233,12 +234,63 @@ API_CONFIG = {
 
 # Security settings
 SECURITY_CONFIG = {
-    "encryption_key": "ENCRYPTION_KEY_PLACEHOLDER",
-    "jwt_secret": "JWT_SECRET_PLACEHOLDER",
+    "encryption_key": os.getenv("ENCRYPTION_KEY"),
+    "jwt_secret": os.getenv("JWT_SECRET"),
     "jwt_expiry_hours": 24,
     "password_min_length": 12,
     "require_2fa": False,
 }
+
+# Validate security configuration
+def validate_security_config():
+    """
+    Validate that required security environment variables are set.
+
+    SECURITY FIX (BLOCKER-SEC-003): Enhanced validation to prevent hardcoded secrets.
+    This function MUST be called on application startup.
+    """
+    required_vars = {
+        "ENCRYPTION_KEY": SECURITY_CONFIG["encryption_key"],
+        "JWT_SECRET": SECURITY_CONFIG["jwt_secret"],
+    }
+
+    missing_vars = [var for var, value in required_vars.items() if not value]
+
+    if missing_vars:
+        raise ValueError(
+            f"SECURITY ERROR: Missing required security environment variables: {', '.join(missing_vars)}. "
+            f"Please set them in your .env file or environment. "
+            f"NEVER hardcode secrets in source code."
+        )
+
+    # Validate minimum key lengths
+    if len(SECURITY_CONFIG["jwt_secret"] or "") < 32:
+        raise ValueError(
+            "SECURITY ERROR: JWT_SECRET must be at least 32 characters long for security. "
+            "Generate a strong secret using: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
+        )
+
+    if len(SECURITY_CONFIG["encryption_key"] or "") < 32:
+        raise ValueError(
+            "SECURITY ERROR: ENCRYPTION_KEY must be at least 32 characters long for security. "
+            "Generate a strong key using: python -c 'from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())'"
+        )
+
+    # SECURITY: Check for common placeholder values that indicate secrets haven't been properly configured
+    dangerous_placeholders = [
+        "changeme", "replace_me", "your_", "placeholder", "secret_key_here",
+        "example", "test", "demo", "default", "12345", "password"
+    ]
+
+    for var_name, var_value in required_vars.items():
+        if var_value:
+            lower_value = var_value.lower()
+            for placeholder in dangerous_placeholders:
+                if placeholder in lower_value:
+                    raise ValueError(
+                        f"SECURITY ERROR: {var_name} appears to contain a placeholder value ('{placeholder}'). "
+                        f"Please set a proper secret value. This is a production security requirement."
+                    )
 
 
 def get_jurisdiction_config(country_code: str) -> Dict[str, Any]:

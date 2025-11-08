@@ -1,0 +1,243 @@
+# ============================================================================
+# GL-CBAM-APP - Kubernetes Services
+# ============================================================================
+# Service definitions for all components:
+# - Backend API (ClusterIP + NodePort + LoadBalancer options)
+# - PostgreSQL
+# - Redis
+# ============================================================================
+
+---
+# ============================================================================
+# Backend API Service (ClusterIP)
+# ============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbam-api
+  namespace: gl-cbam
+  labels:
+    app: cbam-api
+    component: backend
+    tier: application
+  annotations:
+    description: "GL-CBAM-APP Backend API Service"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+spec:
+  type: ClusterIP
+  selector:
+    app: cbam-api
+    component: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+---
+# ============================================================================
+# Backend API Service (LoadBalancer) - Production
+# ============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbam-api-external
+  namespace: gl-cbam
+  labels:
+    app: cbam-api
+    component: backend
+    tier: application
+  annotations:
+    description: "GL-CBAM-APP External LoadBalancer Service"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+spec:
+  type: LoadBalancer
+  selector:
+    app: cbam-api
+    component: backend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: http
+      protocol: TCP
+  sessionAffinity: ClientIP
+  externalTrafficPolicy: Local
+  healthCheckNodePort: 30080
+
+---
+# ============================================================================
+# Backend API Service (NodePort) - Development/Testing
+# ============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbam-api-nodeport
+  namespace: gl-cbam
+  labels:
+    app: cbam-api
+    component: backend
+    tier: application
+  annotations:
+    description: "GL-CBAM-APP NodePort Service (Dev/Test)"
+spec:
+  type: NodePort
+  selector:
+    app: cbam-api
+    component: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      nodePort: 30800
+      protocol: TCP
+
+---
+# ============================================================================
+# PostgreSQL Service
+# ============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbam-postgres
+  namespace: gl-cbam
+  labels:
+    app: cbam-postgres
+    component: database
+    tier: data
+  annotations:
+    description: "PostgreSQL Database Service"
+spec:
+  type: ClusterIP
+  selector:
+    app: cbam-postgres
+    component: database
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  clusterIP: None  # Headless service for StatefulSet
+
+---
+# ============================================================================
+# Redis Service
+# ============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbam-redis
+  namespace: gl-cbam
+  labels:
+    app: cbam-redis
+    component: cache
+    tier: data
+  annotations:
+    description: "Redis Cache Service"
+spec:
+  type: ClusterIP
+  selector:
+    app: cbam-redis
+    component: cache
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+
+---
+# ============================================================================
+# Headless Service for StatefulSets (PostgreSQL)
+# ============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbam-postgres-headless
+  namespace: gl-cbam
+  labels:
+    app: cbam-postgres
+    component: database
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: cbam-postgres
+    component: database
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+
+---
+# ============================================================================
+# Service Monitor (Prometheus)
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cbam-api-monitor
+  namespace: gl-cbam
+  labels:
+    app: cbam-api
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: cbam-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# Apply:
+#   kubectl apply -f k8s/service.yaml
+#
+# View services:
+#   kubectl get svc -n gl-cbam
+#   kubectl describe svc cbam-api -n gl-cbam
+#
+# Get endpoints:
+#   kubectl get endpoints -n gl-cbam
+#
+# Test connectivity:
+#   # From within cluster
+#   kubectl run -it --rm debug --image=busybox --restart=Never -n gl-cbam -- sh
+#   wget -O- http://cbam-api:8000/health
+#
+#   # From outside (NodePort)
+#   curl http://<node-ip>:30800/health
+#
+#   # From outside (LoadBalancer)
+#   curl http://<external-ip>/health
+#
+# Get external IP (LoadBalancer):
+#   kubectl get svc cbam-api-external -n gl-cbam -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+#
+# Port forward (for testing):
+#   kubectl port-forward svc/cbam-api 8000:8000 -n gl-cbam
+#
+# ============================================================================

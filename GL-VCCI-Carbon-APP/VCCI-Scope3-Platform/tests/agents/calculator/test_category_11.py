@@ -23,6 +23,7 @@ import pytest
 import asyncio
 from datetime import datetime
 from unittest.mock import Mock, AsyncMock, patch
+from pydantic import ValidationError
 
 from services.agents.calculator.categories.category_11 import (
     Category11Calculator,
@@ -610,7 +611,7 @@ async def test_validation_negative_units(calculator):
         region="US"
     )
 
-    with pytest.raises(Exception):  # Pydantic validation
+    with pytest.raises(ValidationError):  # Pydantic validation
         await calculator.calculate(input_data)
 
 
@@ -638,7 +639,7 @@ async def test_validation_zero_units(calculator):
         region="US"
     )
 
-    with pytest.raises(Exception):  # Pydantic validation
+    with pytest.raises(ValidationError):  # Pydantic validation
         await calculator.calculate(input_data)
 
 
@@ -646,7 +647,7 @@ async def test_validation_zero_units(calculator):
 async def test_validation_usage_hours_limit(calculator):
     """Test validation for usage hours (max 24)."""
     # This should be caught by Pydantic validation
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         Category11Input(
             product_name="Product",
             product_type=ProductType.ELECTRONICS_LAPTOP,

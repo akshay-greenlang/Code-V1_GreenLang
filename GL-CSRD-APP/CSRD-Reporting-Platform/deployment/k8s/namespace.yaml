@@ -1,0 +1,23 @@
+---
+# ============================================================================
+# Kubernetes Namespace for CSRD/ESRS Platform
+# ============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+  labels:
+    name: production
+    app: csrd
+    environment: production
+    managed-by: kubectl
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+  labels:
+    name: staging
+    app: csrd
+    environment: staging
+    managed-by: kubectl

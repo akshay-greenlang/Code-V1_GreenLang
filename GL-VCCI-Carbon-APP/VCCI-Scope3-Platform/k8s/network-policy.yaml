@@ -1,0 +1,551 @@
+# ==============================================================================
+# GL-VCCI Network Policies
+# Implements zero-trust network security at the pod level
+# ==============================================================================
+
+# ==============================================================================
+# Default Deny All Ingress Traffic
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all-ingress
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: security
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# ==============================================================================
+# Default Deny All Egress Traffic
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all-egress
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: security
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+
+---
+# ==============================================================================
+# Backend API - Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vcci-backend-api-netpol
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: backend-api
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-backend-api
+      tier: backend
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from frontend
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-frontend
+              tier: frontend
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow traffic from nginx/ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow traffic from monitoring (Prometheus)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow connection to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-postgres
+              tier: database
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow connection to Redis
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-redis
+              tier: cache
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow connection to Weaviate
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-weaviate
+              tier: database
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow HTTPS egress for external APIs (OpenAI, Anthropic, etc.)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow HTTP egress
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
+
+---
+# ==============================================================================
+# Worker - Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vcci-worker-netpol
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: worker
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-worker
+      tier: worker
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from monitoring (Prometheus, Flower)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 5555  # Flower monitoring
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow connection to PostgreSQL
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-postgres
+              tier: database
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow connection to Redis (Celery broker)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-redis
+              tier: cache
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow connection to Weaviate
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-weaviate
+              tier: database
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow HTTPS egress for ML models and external APIs
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow HTTP egress
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
+
+---
+# ==============================================================================
+# Frontend - Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vcci-frontend-netpol
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: frontend
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-frontend
+      tier: frontend
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+
+    # Allow traffic from monitoring
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 3000
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow connection to backend API
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-backend-api
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow CDN and external resources
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# ==============================================================================
+# PostgreSQL - Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vcci-postgres-netpol
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-postgres
+      tier: database
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow connections from backend API
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-backend-api
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow connections from workers
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-worker
+              tier: worker
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow connections from monitoring/backup tools
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 5432
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow replication (if using PostgreSQL cluster)
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-postgres
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# ==============================================================================
+# Redis - Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vcci-redis-netpol
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: cache
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-redis
+      tier: cache
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow connections from backend API
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-backend-api
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow connections from workers (Celery)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-worker
+              tier: worker
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow connections from beat scheduler
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-beat
+      ports:
+        - protocol: TCP
+          port: 6379
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow Redis cluster communication
+    - to:
+        - podSelector:
+            matchLabels:
+              app: vcci-redis
+      ports:
+        - protocol: TCP
+          port: 6379
+        - protocol: TCP
+          port: 16379  # Redis cluster bus
+
+---
+# ==============================================================================
+# Weaviate - Network Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vcci-weaviate-netpol
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: vector-db
+spec:
+  podSelector:
+    matchLabels:
+      app: vcci-weaviate
+      tier: database
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow connections from backend API
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-backend-api
+              tier: backend
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow connections from workers
+    - from:
+        - podSelector:
+            matchLabels:
+              app: vcci-worker
+              tier: worker
+      ports:
+        - protocol: TCP
+          port: 8080
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow HTTPS for vectorizer modules (if using external vectorizers)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# ==============================================================================
+# NOTES ON NETWORK POLICIES
+# ==============================================================================
+#
+# 1. Network Policy Requirements:
+#    - Requires a network plugin that supports NetworkPolicy (Calico, Cilium, Weave)
+#    - Does not work with default kubenet plugin
+#
+# 2. Policy Evaluation:
+#    - Policies are additive (OR logic)
+#    - If multiple policies select a pod, the pod is allowed if ANY policy allows
+#    - Empty podSelector {} selects all pods in namespace
+#
+# 3. Testing Network Policies:
+#    # Test connectivity from one pod to another
+#    kubectl run test-pod --rm -it --image=nicolaka/netshoot -- /bin/bash
+#    nc -zv vcci-postgres 5432
+#    curl http://vcci-backend-api:8000/health
+#
+# 4. Debugging:
+#    kubectl describe networkpolicy <policy-name> -n vcci-production
+#    kubectl get networkpolicy -n vcci-production
+#
+#    # Check if network plugin supports NetworkPolicy
+#    kubectl get pods -n kube-system | grep -E 'calico|cilium|weave'
+#
+# 5. Best Practices:
+#    - Start with default deny-all
+#    - Add specific allow rules incrementally
+#    - Use namespace and pod selectors for granular control
+#    - Test policies in staging before production
+#    - Document allowed traffic flows
+#
+# 6. Common Issues:
+#    - DNS not working: Ensure DNS egress is allowed
+#    - External API calls failing: Add HTTPS (443) egress
+#    - Pod-to-pod communication blocked: Check pod labels match selectors

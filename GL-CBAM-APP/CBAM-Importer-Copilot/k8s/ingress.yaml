@@ -1,0 +1,291 @@
+# ============================================================================
+# GL-CBAM-APP - Kubernetes Ingress
+# ============================================================================
+# Ingress configuration for external access with:
+# - TLS/SSL termination
+# - Path-based routing
+# - Rate limiting
+# - CORS headers
+# - Authentication
+# ============================================================================
+
+---
+# ============================================================================
+# Ingress (NGINX)
+# ============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cbam-api-ingress
+  namespace: gl-cbam
+  labels:
+    app: cbam-api
+    component: ingress
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: "nginx"
+
+    # SSL/TLS
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://cbam.greenlang.com,https://app.greenlang.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-max-age: "86400"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-connections: "20"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+
+    # Body size
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+
+    # WebSocket support
+    nginx.ingress.kubernetes.io/websocket-services: "cbam-api"
+
+    # Session affinity
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "cbam-session"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "3600"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=()";
+
+spec:
+  # TLS configuration
+  tls:
+    - hosts:
+        - api.cbam.greenlang.com
+        - cbam-api.greenlang.com
+      secretName: cbam-api-tls-cert
+
+  # Routing rules
+  rules:
+    - host: api.cbam.greenlang.com
+      http:
+        paths:
+          # API endpoints
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: cbam-api
+                port:
+                  number: 8000
+
+          # Health checks
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: cbam-api
+                port:
+                  number: 8000
+
+          # API documentation
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: cbam-api
+                port:
+                  number: 8000
+
+          # OpenAPI spec
+          - path: /openapi.json
+            pathType: Exact
+            backend:
+              service:
+                name: cbam-api
+                port:
+                  number: 8000
+
+    # Alternative hostname
+    - host: cbam-api.greenlang.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cbam-api
+                port:
+                  number: 8000
+
+---
+# ============================================================================
+# Ingress (Staging/Development)
+# ============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cbam-api-ingress-dev
+  namespace: gl-cbam
+  labels:
+    app: cbam-api
+    component: ingress
+    environment: development
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+spec:
+  rules:
+    - host: dev.api.cbam.greenlang.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cbam-api
+                port:
+                  number: 8000
+
+---
+# ============================================================================
+# TLS Certificate (cert-manager)
+# ============================================================================
+
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cbam-api-tls-cert
+  namespace: gl-cbam
+spec:
+  secretName: cbam-api-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - api.cbam.greenlang.com
+    - cbam-api.greenlang.com
+  usages:
+    - digital signature
+    - key encipherment
+
+---
+# ============================================================================
+# ClusterIssuer (Let's Encrypt - Production)
+# ============================================================================
+
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: ssl@greenlang.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+
+---
+# ============================================================================
+# ClusterIssuer (Let's Encrypt - Staging)
+# ============================================================================
+
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: ssl@greenlang.com
+    privateKeySecretRef:
+      name: letsencrypt-staging-key
+    solvers:
+      - http01:
+          ingress:
+            class: nginx
+
+---
+# ============================================================================
+# Network Policy (Ingress Traffic)
+# ============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: cbam-api-ingress-policy
+  namespace: gl-cbam
+spec:
+  podSelector:
+    matchLabels:
+      app: cbam-api
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# Prerequisites:
+#   1. Install NGINX Ingress Controller:
+#      kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+#
+#   2. Install cert-manager:
+#      kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+#
+# Apply:
+#   kubectl apply -f k8s/ingress.yaml
+#
+# View ingress:
+#   kubectl get ingress -n gl-cbam
+#   kubectl describe ingress cbam-api-ingress -n gl-cbam
+#
+# Get ingress IP:
+#   kubectl get ingress cbam-api-ingress -n gl-cbam -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+#
+# View certificates:
+#   kubectl get certificate -n gl-cbam
+#   kubectl describe certificate cbam-api-tls-cert -n gl-cbam
+#
+# Test access:
+#   curl https://api.cbam.greenlang.com/health
+#   curl https://api.cbam.greenlang.com/api/v1/shipments
+#
+# View ingress controller logs:
+#   kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx -f
+#
+# DNS Configuration:
+#   Add A record for:
+#     api.cbam.greenlang.com -> <ingress-ip>
+#     cbam-api.greenlang.com -> <ingress-ip>
+#
+# ============================================================================

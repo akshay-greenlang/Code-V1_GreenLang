@@ -1,0 +1,266 @@
+# ============================================================================
+# PROMETHEUS CONFIGURATION FOR CBAM IMPORTER COPILOT
+# ============================================================================
+#
+# This configuration sets up Prometheus to scrape metrics from the CBAM
+# Importer Copilot application.
+#
+# Usage:
+#   prometheus --config.file=prometheus.yml
+#
+# Version: 1.0.0
+# Author: GreenLang CBAM Team (Team A3: Monitoring & Observability)
+# ============================================================================
+
+global:
+  # How frequently to scrape targets
+  scrape_interval: 15s
+
+  # How frequently to evaluate rules
+  evaluation_interval: 15s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager)
+  external_labels:
+    cluster: 'cbam-production'
+    service: 'cbam-importer-copilot'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - 'localhost:9093'  # Default Alertmanager port
+
+# Load alerting rules
+rule_files:
+  - 'alerts.yml'
+
+# Scrape configurations
+scrape_configs:
+  # ========================================================================
+  # CBAM IMPORTER COPILOT APPLICATION METRICS
+  # ========================================================================
+
+  - job_name: 'cbam-importer-copilot'
+
+    # Override global scrape interval for this job
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+    # Metrics path (default: /metrics)
+    metrics_path: '/metrics'
+
+    # Scheme (http or https)
+    scheme: 'http'
+
+    # Static targets (for development/single instance)
+    static_configs:
+      - targets:
+          - 'localhost:8000'  # FastAPI default port
+        labels:
+          instance: 'cbam-app-01'
+          region: 'eu-west-1'
+
+    # Relabeling rules
+    relabel_configs:
+      # Add source label
+      - source_labels: [__address__]
+        target_label: __param_target
+
+      # Add instance label
+      - source_labels: [__param_target]
+        target_label: instance
+
+      # Keep the address as is
+      - target_label: __address__
+        replacement: localhost:8000
+
+  # ========================================================================
+  # CBAM HEALTH CHECK METRICS
+  # ========================================================================
+
+  - job_name: 'cbam-health'
+
+    scrape_interval: 30s
+    scrape_timeout: 5s
+
+    metrics_path: '/health'
+
+    static_configs:
+      - targets:
+          - 'localhost:8000'
+        labels:
+          instance: 'cbam-app-01'
+          check_type: 'health'
+
+  # ========================================================================
+  # PROMETHEUS SELF-MONITORING
+  # ========================================================================
+
+  - job_name: 'prometheus'
+
+    scrape_interval: 10s
+
+    static_configs:
+      - targets:
+          - 'localhost:9090'
+        labels:
+          instance: 'prometheus-01'
+
+  # ========================================================================
+  # NODE EXPORTER (System Metrics)
+  # ========================================================================
+
+  - job_name: 'node-exporter'
+
+    scrape_interval: 15s
+
+    static_configs:
+      - targets:
+          - 'localhost:9100'  # Default node_exporter port
+        labels:
+          instance: 'cbam-host-01'
+          role: 'application-server'
+
+  # ========================================================================
+  # PUSHGATEWAY (For Batch Jobs)
+  # ========================================================================
+
+  # CBAM pipeline can run as batch job and push metrics to Pushgateway
+  - job_name: 'pushgateway'
+
+    scrape_interval: 15s
+
+    honor_labels: true  # Preserve labels from pushed metrics
+
+    static_configs:
+      - targets:
+          - 'localhost:9091'  # Default pushgateway port
+        labels:
+          instance: 'pushgateway-01'
+
+  # ========================================================================
+  # BLACKBOX EXPORTER (Endpoint Monitoring)
+  # ========================================================================
+
+  - job_name: 'blackbox-http'
+
+    scrape_interval: 30s
+
+    metrics_path: '/probe'
+
+    params:
+      module: [http_2xx]  # Look for HTTP 200 response
+
+    static_configs:
+      - targets:
+          - 'http://localhost:8000/health'
+          - 'http://localhost:8000/health/ready'
+          - 'http://localhost:8000/health/live'
+
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 'localhost:9115'  # Blackbox exporter address
+
+# ============================================================================
+# REMOTE STORAGE (Optional - for long-term storage)
+# ============================================================================
+
+# Uncomment to enable remote write to time-series database
+# remote_write:
+#   - url: "http://localhost:8428/api/v1/write"
+#     queue_config:
+#       max_samples_per_send: 10000
+#       max_shards: 30
+#       capacity: 500000
+
+# ============================================================================
+# STORAGE CONFIGURATION
+# ============================================================================
+
+# Local storage configuration
+# Default retention: 15 days
+# Can be overridden with --storage.tsdb.retention.time flag
+# For production, consider:
+#   --storage.tsdb.retention.time=90d
+#   --storage.tsdb.retention.size=50GB
+
+# ============================================================================
+# KUBERNETES DEPLOYMENT (Alternative Configuration)
+# ============================================================================
+
+# For Kubernetes deployment, replace static_configs with kubernetes_sd_configs:
+#
+# - job_name: 'cbam-kubernetes'
+#   kubernetes_sd_configs:
+#     - role: pod
+#       namespaces:
+#         names:
+#           - cbam-production
+#
+#   relabel_configs:
+#     # Only scrape pods with prometheus.io/scrape annotation
+#     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+#       action: keep
+#       regex: true
+#
+#     # Use custom metrics path if specified
+#     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+#       action: replace
+#       target_label: __metrics_path__
+#       regex: (.+)
+#
+#     # Use custom port if specified
+#     - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+#       action: replace
+#       regex: ([^:]+)(?::\d+)?;(\d+)
+#       replacement: $1:$2
+#       target_label: __address__
+#
+#     # Add pod labels
+#     - action: labelmap
+#       regex: __meta_kubernetes_pod_label_(.+)
+#
+#     # Add namespace
+#     - source_labels: [__meta_kubernetes_namespace]
+#       action: replace
+#       target_label: kubernetes_namespace
+#
+#     # Add pod name
+#     - source_labels: [__meta_kubernetes_pod_name]
+#       action: replace
+#       target_label: kubernetes_pod_name
+
+# ============================================================================
+# SERVICE DISCOVERY (Cloud Platforms)
+# ============================================================================
+
+# AWS EC2 Service Discovery:
+# - job_name: 'cbam-aws-ec2'
+#   ec2_sd_configs:
+#     - region: eu-west-1
+#       port: 8000
+#       filters:
+#         - name: tag:Service
+#           values:
+#             - cbam-importer-copilot
+
+# Azure Service Discovery:
+# - job_name: 'cbam-azure'
+#   azure_sd_configs:
+#     - subscription_id: <subscription-id>
+#       resource_group: cbam-rg
+#       port: 8000
+
+# GCP Service Discovery:
+# - job_name: 'cbam-gcp'
+#   gce_sd_configs:
+#     - project: cbam-project
+#       zone: europe-west1-b
+#       port: 8000

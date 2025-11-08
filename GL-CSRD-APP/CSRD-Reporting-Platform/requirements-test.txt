@@ -1,0 +1,281 @@
+################################################################################
+# GL-CSRD Test Requirements
+# Complete testing dependencies for 975-test suite
+################################################################################
+#
+# Installation: pip install -r requirements-test.txt
+#
+# This file includes all dependencies needed for:
+# - Running 975 tests across 14 test files
+# - Parallel test execution (pytest-xdist)
+# - Coverage reporting (90%+ target)
+# - Performance benchmarking
+# - HTML test reports
+# - CI/CD integration
+#
+################################################################################
+
+# Base requirements (application dependencies)
+-r requirements.txt
+
+################################################################################
+# CORE TESTING FRAMEWORK
+################################################################################
+
+# Pytest core and essential plugins
+pytest>=8.0.0                      # Testing framework
+pytest-cov>=4.1.0                  # Coverage plugin
+pytest-asyncio>=0.23.0             # Async test support
+pytest-mock>=3.12.0                # Mocking plugin
+pytest-timeout>=2.2.0              # Test timeout handling
+pytest-xfail>=0.1.0                # Expected failure handling
+
+################################################################################
+# PARALLEL EXECUTION
+################################################################################
+
+# Parallel test execution (4-8x speedup)
+pytest-xdist>=3.5.0                # Distributed testing
+pytest-parallel>=0.1.1             # Alternative parallel runner
+pytest-forked>=1.6.0               # Fork-based test isolation
+
+################################################################################
+# TEST REPORTING & OUTPUT
+################################################################################
+
+# HTML and visual reports
+pytest-html>=4.1.0                 # HTML test reports
+pytest-html-reporter>=0.2.9        # Enhanced HTML reporter
+pytest-json-report>=1.5.0          # JSON test reports
+pytest-metadata>=3.0.0             # Test metadata plugin
+
+# Terminal output enhancement
+pytest-sugar>=0.9.7                # Better test output
+pytest-clarity>=1.0.1              # Better assertion diffs
+pytest-icdiff>=0.9                 # Improved diff output
+
+################################################################################
+# COVERAGE ENHANCEMENTS
+################################################################################
+
+# Advanced coverage features
+coverage[toml]>=7.4.0              # Core coverage with TOML support
+coverage-badge>=1.1.0              # Generate coverage badges
+diff-cover>=8.0.0                  # Coverage diff reporting
+pytest-cov-exclude>=0.0.1          # Exclude patterns from coverage
+
+################################################################################
+# MOCKING & FIXTURES
+################################################################################
+
+# Advanced mocking
+pytest-mock>=3.12.0                # Mock plugin
+responses>=0.24.0                  # Mock HTTP responses
+httpx-mock>=0.14.0                 # Mock httpx requests
+requests-mock>=1.11.0              # Mock requests library
+freezegun>=1.4.0                   # Mock datetime/time
+faker>=22.0.0                      # Generate fake test data
+
+################################################################################
+# DATABASE TESTING
+################################################################################
+
+# Database fixtures and utilities
+pytest-postgresql>=5.0.0           # PostgreSQL fixtures
+pytest-redis>=3.0.0                # Redis fixtures
+sqlalchemy-utils>=0.41.0           # Database test utilities
+factory-boy>=3.3.0                 # Test fixtures factory
+
+################################################################################
+# API & WEB TESTING
+################################################################################
+
+# FastAPI and HTTP testing
+httpx>=0.26.0                      # Async HTTP client for testing
+starlette[full]>=0.36.0            # ASGI testing utilities
+
+################################################################################
+# PERFORMANCE & BENCHMARKING
+################################################################################
+
+# Performance testing
+pytest-benchmark>=4.0.0            # Benchmarking plugin
+pytest-profiling>=1.7.0            # Profiling tests
+memory-profiler>=0.61.0            # Memory usage profiling
+py-spy>=0.3.0                      # Sampling profiler
+
+################################################################################
+# PROPERTY-BASED & FUZZING TESTS
+################################################################################
+
+# Property-based testing
+hypothesis>=6.96.0                 # Property-based testing
+hypothesis[pandas]>=6.96.0         # Pandas strategies
+hypothesis[numpy]>=6.96.0          # NumPy strategies
+
+################################################################################
+# TEST DATA GENERATION
+################################################################################
+
+# Synthetic data generation
+mimesis>=13.0.0                    # Advanced fake data
+pandas-profiling>=3.6.0            # Data profiling
+great-expectations>=0.18.0         # Data validation
+
+################################################################################
+# CODE QUALITY & LINTING (Test-Related)
+################################################################################
+
+# Test code quality
+pylint>=3.0.0                      # Linting for test code
+flake8>=7.0.0                      # Style checker
+flake8-pytest-style>=1.7.0         # Pytest-specific linting
+mypy>=1.8.0                        # Type checking
+
+################################################################################
+# ASYNC TESTING UTILITIES
+################################################################################
+
+# Async test support
+pytest-asyncio>=0.23.0             # Already listed above
+aioresponses>=0.7.6                # Mock aiohttp responses
+pytest-aiohttp>=1.0.5              # aiohttp test utilities
+
+################################################################################
+# SECURITY TESTING
+################################################################################
+
+# Security test tools
+bandit>=1.7.0                      # Security linting
+safety>=3.0.0                      # Dependency vulnerability checks
+pytest-security>=0.1.0             # Security-focused tests
+
+################################################################################
+# XML/XBRL TESTING (CSRD-Specific)
+################################################################################
+
+# XBRL validation and testing
+lxml>=5.0.0                        # XML parsing (already in main)
+xmlschema>=3.0.0                   # XML Schema validation
+xmldiff>=2.6.0                     # XML comparison
+
+################################################################################
+# ESRS/CSRD-SPECIFIC TESTING UTILITIES
+################################################################################
+
+# Financial data validation
+pydantic>=2.5.0                    # Data validation (already in main)
+jsonschema>=4.20.0                 # JSON schema validation
+cerberus>=1.3.5                    # Lightweight validation
+
+################################################################################
+# CI/CD INTEGRATION
+################################################################################
+
+# CI/CD tools
+pytest-github-actions-annotate-failures>=0.2.0  # GitHub Actions integration
+pytest-azurepipelines>=1.0.0       # Azure Pipelines integration
+pytest-circleci-parallelized>=0.1.0  # CircleCI parallelization
+
+################################################################################
+# TEST UTILITIES
+################################################################################
+
+# General test utilities
+testfixtures>=7.2.0                # Test fixture utilities
+dirty-equals>=0.7.0                # Flexible equality testing
+pytest-regressions>=2.5.0          # Regression test data
+pytest-datadir>=1.5.0              # Test data directory management
+
+################################################################################
+# SNAPSHOT TESTING
+################################################################################
+
+# Snapshot tests for output validation
+syrupy>=4.6.0                      # Snapshot testing
+pytest-snapshot>=0.9.0             # Alternative snapshot testing
+
+################################################################################
+# FLAKY TEST HANDLING
+################################################################################
+
+# Retry and flaky test management
+pytest-rerunfailures>=13.0         # Rerun flaky tests
+pytest-flakefinder>=1.1.0          # Identify flaky tests
+pytest-retry>=1.6.0                # Retry mechanisms
+
+################################################################################
+# REPORTING & DASHBOARDS
+################################################################################
+
+# Advanced reporting
+allure-pytest>=2.13.0              # Allure test reporting
+pytest-html-lee>=2.0.0             # Lee HTML reporter
+pytest-reportlog>=0.4.0            # Report log plugin
+
+################################################################################
+# DEVELOPMENT & DEBUGGING
+################################################################################
+
+# Debugging tools (optional, for development)
+pytest-pdb>=0.3.1                  # PDB debugging integration
+ipdb>=0.13.0                       # IPython debugger
+pdbpp>=0.10.0                      # Enhanced PDB
+pytest-picked>=0.5.0               # Run tests for changed code
+
+################################################################################
+# DOCUMENTATION TESTING
+################################################################################
+
+# Doctest support
+pytest-doctestplus>=1.1.0          # Enhanced doctest support
+
+################################################################################
+# OPTIONAL: VISUAL TESTING (Uncomment if needed)
+################################################################################
+
+# Visual regression testing
+# pytest-playwright>=0.4.0          # Playwright for UI testing
+# pillow>=10.0.0                    # Image processing
+# pixelmatch>=0.3.0                 # Visual diff
+
+################################################################################
+# INSTALLATION NOTES
+################################################################################
+#
+# Quick Install:
+#   pip install -r requirements-test.txt
+#
+# For development with all tools:
+#   pip install -r requirements-test.txt
+#
+# Verify installation:
+#   pytest --version
+#   pytest --co tests/  # Collect tests without running
+#
+# Run complete test suite:
+#   ./scripts/run_all_tests.sh --coverage --html
+#
+# Run parallel tests:
+#   ./scripts/run_tests_parallel.sh --workers 8
+#
+################################################################################
+
+# Platform-specific dependencies
+# Windows-specific (uncomment on Windows)
+# colorama>=0.4.6                  # Colored terminal output on Windows
+
+# Unix-specific (uncomment on Linux/macOS)
+# pytest-xvfb>=3.0.0               # Virtual display for GUI tests
+
+################################################################################
+# VERSION NOTES
+################################################################################
+#
+# Python Version: >=3.11 required
+# Pytest Version: >=8.0.0 required
+# Coverage Target: 90%+
+# Test Count: 975 tests
+# Parallel Workers: Auto-detect CPU cores
+#
+################################################################################

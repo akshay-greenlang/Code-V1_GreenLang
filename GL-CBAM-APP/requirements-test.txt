@@ -1,0 +1,237 @@
+# ============================================================================
+# GL-CBAM-APP - TEST DEPENDENCIES
+# ============================================================================
+#
+# Purpose: Complete test execution environment for GL-CBAM-APP
+#          Supports 320+ tests across CBAM-Importer-Copilot & CBAM-Refactored
+#
+# Installation:
+#   pip install -r requirements-test.txt
+#
+# Or install both runtime + test dependencies:
+#   pip install -r CBAM-Importer-Copilot/requirements.txt
+#   pip install -r requirements-test.txt
+#
+# Version: 1.0.0
+# Python: >=3.9
+#
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# CORE RUNTIME DEPENDENCIES (Must be installed first)
+# ----------------------------------------------------------------------------
+# These are the actual application dependencies
+pandas>=2.0.0
+pydantic>=2.0.0
+jsonschema>=4.0.0
+PyYAML>=6.0
+openpyxl>=3.1.0
+
+# ----------------------------------------------------------------------------
+# TESTING FRAMEWORK
+# ----------------------------------------------------------------------------
+
+# Pytest - Main testing framework
+pytest>=7.4.0
+# - Purpose: Unit tests, integration tests, end-to-end tests
+# - Why this version: Stable, modern API, excellent plugin ecosystem
+
+# Pytest Plugins for Enhanced Functionality
+pytest-cov>=4.1.0
+# - Purpose: Code coverage reporting with branch coverage
+# - Target: 80%+ coverage
+# - Generates HTML and terminal coverage reports
+
+pytest-html>=4.0.0
+# - Purpose: Generate beautiful HTML test reports
+# - Features: Screenshots, test timing, failure details
+
+pytest-xdist>=3.3.0
+# - Purpose: Parallel test execution (faster CI/CD)
+# - Usage: pytest -n auto (uses all CPU cores)
+
+pytest-timeout>=2.1.0
+# - Purpose: Prevent tests from hanging indefinitely
+# - Default: 300 seconds per test
+
+pytest-benchmark>=4.0.0
+# - Purpose: Performance benchmarking and regression detection
+# - Critical for validating 20× speedup claim
+
+pytest-mock>=3.11.0
+# - Purpose: Mocking and patching for unit tests
+# - Better than unittest.mock for pytest
+
+pytest-randomly>=3.13.0
+# - Purpose: Randomize test order to detect order dependencies
+# - Ensures tests are truly independent
+
+pytest-sugar>=0.9.7
+# - Purpose: Better-looking test output with progress bar
+# - Makes test execution more pleasant to watch
+
+# ----------------------------------------------------------------------------
+# CODE COVERAGE & QUALITY
+# ----------------------------------------------------------------------------
+
+coverage[toml]>=7.3.0
+# - Purpose: Underlying coverage library (used by pytest-cov)
+# - Supports pyproject.toml configuration
+
+coverage-badge>=1.1.0
+# - Purpose: Generate coverage badge for README
+# - Shows coverage percentage at a glance
+
+# ----------------------------------------------------------------------------
+# CODE QUALITY & LINTING
+# ----------------------------------------------------------------------------
+
+ruff>=0.1.0
+# - Purpose: Fast Python linter & formatter (replaces flake8, black, isort)
+# - 10-100× faster than alternatives
+# - Auto-fixes many issues
+
+mypy>=1.5.0
+# - Purpose: Static type checking
+# - Catches type errors before runtime
+# - Critical for Pydantic models
+
+# Type stubs for better type checking
+types-PyYAML>=6.0.0
+pandas-stubs>=2.0.0
+
+# ----------------------------------------------------------------------------
+# SECURITY SCANNING
+# ----------------------------------------------------------------------------
+
+bandit>=1.7.5
+# - Purpose: Security vulnerability scanner
+# - Finds common security issues in Python code
+# - CBAM data is sensitive - security is critical
+
+pip-audit>=2.6.0
+# - Purpose: Check dependencies for known vulnerabilities
+# - Scans PyPI packages against CVE database
+# - Compliance requirement
+
+safety>=2.3.0
+# - Purpose: Alternative dependency vulnerability scanner
+# - Checks against Safety DB
+
+# ----------------------------------------------------------------------------
+# PERFORMANCE PROFILING
+# ----------------------------------------------------------------------------
+
+memory-profiler>=0.61.0
+# - Purpose: Memory usage profiling
+# - Ensures we stay under 500 MB for 100K shipments
+# - Line-by-line memory tracking
+
+py-spy>=0.3.14
+# - Purpose: Low-overhead sampling profiler
+# - No code changes needed
+# - Generates flame graphs
+
+# ----------------------------------------------------------------------------
+# DATA GENERATION & FIXTURES
+# ----------------------------------------------------------------------------
+
+faker>=19.0.0
+# - Purpose: Generate realistic test data
+# - Useful for large-scale performance tests
+# - Create 10K, 100K shipment datasets
+
+hypothesis>=6.88.0
+# - Purpose: Property-based testing
+# - Generates edge cases automatically
+# - Catches bugs traditional tests miss
+
+# ----------------------------------------------------------------------------
+# REPORTING & DOCUMENTATION
+# ----------------------------------------------------------------------------
+
+jinja2>=3.1.2
+# - Purpose: Template engine for custom reports
+# - Used by test report generator
+
+markdown>=3.4.0
+# - Purpose: Markdown processing for test reports
+# - Convert test results to readable format
+
+tabulate>=0.9.0
+# - Purpose: Pretty-print tables in terminal
+# - Used for test summary reports
+
+colorama>=0.4.6
+# - Purpose: Cross-platform colored terminal output
+# - Makes test output more readable
+
+# ----------------------------------------------------------------------------
+# CLI TESTING
+# ----------------------------------------------------------------------------
+
+click>=8.1.0
+# - Purpose: CLI testing support
+# - Required for testing 'gl cbam' commands
+# - CliRunner for CLI integration tests
+
+# ----------------------------------------------------------------------------
+# OPTIONAL: CI/CD INTEGRATION
+# ----------------------------------------------------------------------------
+
+# pytest-github-actions-annotate-failures>=0.2.0
+# - Purpose: Better GitHub Actions integration
+# - Annotates PR with test failures
+# - Uncomment if using GitHub Actions
+
+# pytest-azurepipelines>=1.0.0
+# - Purpose: Azure Pipelines integration
+# - Uncomment if using Azure DevOps
+
+# ----------------------------------------------------------------------------
+# DEVELOPMENT UTILITIES
+# ----------------------------------------------------------------------------
+
+ipdb>=0.13.13
+# - Purpose: IPython debugger for interactive debugging
+# - Better than pdb
+
+ipython>=8.15.0
+# - Purpose: Enhanced Python REPL
+# - Useful for interactive testing
+
+# ----------------------------------------------------------------------------
+# NOTES
+# ----------------------------------------------------------------------------
+
+# Installation Order:
+# 1. Install runtime dependencies first:
+#    pip install -r CBAM-Importer-Copilot/requirements.txt
+#
+# 2. Install test dependencies:
+#    pip install -r requirements-test.txt
+#
+# Quick Validation:
+#   python -c "import pytest, pytest_cov, pytest_html; print('Test environment ready!')"
+#
+# Run Full Test Suite:
+#   pytest --cov --cov-report=html --cov-report=term --html=test-report.html
+#
+# Run Performance Benchmarks:
+#   pytest -m performance --benchmark-only
+#
+# Run Compliance Tests Only:
+#   pytest -m compliance
+#
+# Parallel Execution (faster):
+#   pytest -n auto --cov
+#
+# Expected Results:
+#   - 320+ tests executed
+#   - 80%+ code coverage
+#   - Zero critical test failures
+#   - Performance benchmarks validate 20× speedup
+#
+# ============================================================================
+# END OF REQUIREMENTS
+# ============================================================================

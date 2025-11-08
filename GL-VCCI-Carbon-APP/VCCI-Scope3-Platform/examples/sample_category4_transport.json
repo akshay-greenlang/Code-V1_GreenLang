@@ -1,0 +1,9 @@
+{
+  "transport_mode": "road_truck_heavy",
+  "distance_km": 500,
+  "weight_tonnes": 10,
+  "origin": "Los Angeles",
+  "destination": "San Francisco",
+  "shipment_id": "SHIP-2025-001",
+  "shipment_date": "2025-11-05T00:00:00"
+}

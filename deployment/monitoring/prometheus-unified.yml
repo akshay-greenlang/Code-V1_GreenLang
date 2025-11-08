@@ -1,0 +1,168 @@
+# ============================================================================
+# GreenLang Platform - Unified Prometheus Configuration
+# ============================================================================
+# Scrapes metrics from all three applications + infrastructure
+# Version: 1.0.0
+# ============================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'greenlang-platform'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Load alerting rules
+rule_files:
+  - 'alerts.yml'
+
+# Scrape configurations
+scrape_configs:
+  # --------------------------------------------------------------------------
+  # Prometheus self-monitoring
+  # --------------------------------------------------------------------------
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          component: 'monitoring'
+          app: 'prometheus'
+
+  # --------------------------------------------------------------------------
+  # CBAM API Application
+  # --------------------------------------------------------------------------
+  - job_name: 'cbam-app'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['cbam-api:8000']
+        labels:
+          app: 'cbam'
+          component: 'api'
+          tier: 'application'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'cbam-api'
+
+  # --------------------------------------------------------------------------
+  # CSRD Web Application
+  # --------------------------------------------------------------------------
+  - job_name: 'csrd-app'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['csrd-web:8000']
+        labels:
+          app: 'csrd'
+          component: 'web'
+          tier: 'application'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'csrd-web'
+
+  # --------------------------------------------------------------------------
+  # VCCI Backend Application
+  # --------------------------------------------------------------------------
+  - job_name: 'vcci-backend'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['vcci-backend:8000']
+        labels:
+          app: 'vcci'
+          component: 'backend'
+          tier: 'application'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'vcci-backend'
+
+  # --------------------------------------------------------------------------
+  # PostgreSQL Database (via postgres_exporter)
+  # --------------------------------------------------------------------------
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+        labels:
+          app: 'postgres'
+          component: 'database'
+          tier: 'infrastructure'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'greenlang-postgres'
+
+  # --------------------------------------------------------------------------
+  # Redis Cache (via redis_exporter)
+  # --------------------------------------------------------------------------
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+        labels:
+          app: 'redis'
+          component: 'cache'
+          tier: 'infrastructure'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'greenlang-redis'
+
+  # --------------------------------------------------------------------------
+  # RabbitMQ Message Queue
+  # --------------------------------------------------------------------------
+  - job_name: 'rabbitmq'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['rabbitmq:15692']
+        labels:
+          app: 'rabbitmq'
+          component: 'message-queue'
+          tier: 'infrastructure'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'greenlang-rabbitmq'
+
+  # --------------------------------------------------------------------------
+  # Weaviate Vector Database
+  # --------------------------------------------------------------------------
+  - job_name: 'weaviate'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['weaviate:8080']
+        labels:
+          app: 'weaviate'
+          component: 'vector-db'
+          tier: 'infrastructure'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'greenlang-weaviate'
+
+  # --------------------------------------------------------------------------
+  # Docker Container Metrics (if cAdvisor is enabled)
+  # --------------------------------------------------------------------------
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+        labels:
+          app: 'cadvisor'
+          component: 'monitoring'
+          tier: 'infrastructure'
+    scrape_interval: 30s
+
+  # --------------------------------------------------------------------------
+  # Node Exporter (System Metrics)
+  # --------------------------------------------------------------------------
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+        labels:
+          app: 'node-exporter'
+          component: 'monitoring'
+          tier: 'infrastructure'

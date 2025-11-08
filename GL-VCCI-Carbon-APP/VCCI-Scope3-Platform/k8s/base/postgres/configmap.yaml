@@ -1,0 +1,72 @@
+# ==============================================================================
+# GL-VCCI PostgreSQL - ConfigMap
+# ==============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+data:
+  postgresql.conf: |
+    # Connection Settings
+    max_connections = 200
+    superuser_reserved_connections = 3
+
+    # Memory Settings
+    shared_buffers = 4GB
+    effective_cache_size = 12GB
+    work_mem = 64MB
+    maintenance_work_mem = 1GB
+
+    # WAL Settings
+    wal_buffers = 16MB
+    max_wal_size = 4GB
+    min_wal_size = 1GB
+    wal_compression = on
+
+    # Query Tuning
+    random_page_cost = 1.1
+    effective_io_concurrency = 200
+
+    # Logging
+    log_destination = 'stderr'
+    logging_collector = on
+    log_directory = '/var/log/postgresql'
+    log_filename = 'postgresql-%Y-%m-%d.log'
+    log_rotation_age = 1d
+    log_rotation_size = 100MB
+    log_line_prefix = '%t [%p]: [%l-1] user=%u,db=%d,app=%a,client=%h '
+    log_min_duration_statement = 1000
+
+    # Replication (for HA setup)
+    wal_level = replica
+    max_wal_senders = 10
+    max_replication_slots = 10
+    hot_standby = on
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+data:
+  01-init.sql: |
+    -- Create extensions
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+
+    -- Create schemas
+    CREATE SCHEMA IF NOT EXISTS carbon_data;
+    CREATE SCHEMA IF NOT EXISTS audit;
+
+    -- Grant permissions
+    GRANT USAGE ON SCHEMA carbon_data TO vcci;
+    GRANT USAGE ON SCHEMA audit TO vcci;

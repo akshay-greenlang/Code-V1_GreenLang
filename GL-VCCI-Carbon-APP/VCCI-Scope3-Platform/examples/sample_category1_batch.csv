@@ -1,0 +1,6 @@
+product_name,quantity,quantity_unit,region,supplier_pcf,supplier_pcf_uncertainty,supplier_name
+Steel Rebar,1000,kg,US,2.5,0.15,ABC Steel Co.
+Aluminum Sheets,500,kg,US,8.2,0.20,XYZ Aluminum Inc.
+Concrete Mix,2000,kg,US,0.15,0.10,BuildRight Materials
+Copper Wire,100,kg,US,4.8,0.18,Copper Supplies Ltd.
+Plastic Pellets,750,kg,CN,3.2,0.25,Asia Plastics Corp.

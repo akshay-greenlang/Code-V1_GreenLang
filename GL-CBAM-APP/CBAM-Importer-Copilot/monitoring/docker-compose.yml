@@ -1,0 +1,219 @@
+# ============================================================================
+# CBAM IMPORTER COPILOT - MONITORING STACK
+# ============================================================================
+#
+# Complete monitoring stack with:
+# - Prometheus (metrics collection)
+# - Grafana (visualization)
+# - Alertmanager (alerting)
+# - Node Exporter (system metrics)
+# - Pushgateway (batch job metrics)
+#
+# Usage:
+#   docker-compose up -d
+#
+# Access:
+#   - Prometheus: http://localhost:9090
+#   - Grafana: http://localhost:3000 (admin/admin)
+#   - Alertmanager: http://localhost:9093
+#
+# Version: 1.0.0
+# ============================================================================
+
+version: '3.8'
+
+services:
+  # ==========================================================================
+  # PROMETHEUS - METRICS COLLECTION
+  # ==========================================================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: cbam-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=90d'
+      - '--storage.tsdb.retention.size=10GB'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - cbam-monitoring
+
+  # ==========================================================================
+  # GRAFANA - VISUALIZATION
+  # ==========================================================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: cbam-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-provisioning:/etc/grafana/provisioning:ro
+      - ./grafana-dashboard.json:/var/lib/grafana/dashboards/cbam-dashboard.json:ro
+    depends_on:
+      - prometheus
+    networks:
+      - cbam-monitoring
+
+  # ==========================================================================
+  # ALERTMANAGER - ALERTING
+  # ==========================================================================
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: cbam-alertmanager
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--web.external-url=http://localhost:9093'
+    networks:
+      - cbam-monitoring
+
+  # ==========================================================================
+  # NODE EXPORTER - SYSTEM METRICS
+  # ==========================================================================
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: cbam-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/host'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/host:ro
+    networks:
+      - cbam-monitoring
+
+  # ==========================================================================
+  # PUSHGATEWAY - BATCH JOB METRICS
+  # ==========================================================================
+  pushgateway:
+    image: prom/pushgateway:latest
+    container_name: cbam-pushgateway
+    restart: unless-stopped
+    ports:
+      - "9091:9091"
+    command:
+      - '--web.enable-admin-api'
+    networks:
+      - cbam-monitoring
+
+  # ==========================================================================
+  # BLACKBOX EXPORTER - ENDPOINT MONITORING (OPTIONAL)
+  # ==========================================================================
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    container_name: cbam-blackbox-exporter
+    restart: unless-stopped
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    command:
+      - '--config.file=/etc/blackbox_exporter/config.yml'
+    networks:
+      - cbam-monitoring
+
+# ============================================================================
+# VOLUMES
+# ============================================================================
+volumes:
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+  alertmanager-data:
+    driver: local
+
+# ============================================================================
+# NETWORKS
+# ============================================================================
+networks:
+  cbam-monitoring:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+# ============================================================================
+# NOTES
+# ============================================================================
+#
+# Setup Instructions:
+#
+# 1. Create required configuration files:
+#    - alertmanager.yml (Alertmanager configuration)
+#    - blackbox.yml (Blackbox exporter configuration)
+#    - grafana-provisioning/ (Grafana datasource provisioning)
+#
+# 2. Start the stack:
+#    docker-compose up -d
+#
+# 3. Verify services:
+#    docker-compose ps
+#
+# 4. View logs:
+#    docker-compose logs -f
+#
+# 5. Import Grafana dashboard:
+#    - Login to Grafana (http://localhost:3000)
+#    - Default credentials: admin/admin
+#    - Go to Dashboards → Import
+#    - Upload grafana-dashboard.json
+#
+# 6. Configure Prometheus datasource in Grafana:
+#    - Already provisioned if grafana-provisioning/ is configured
+#    - Manual: Configuration → Data Sources → Add Prometheus
+#    - URL: http://prometheus:9090
+#
+# Maintenance:
+#
+# - Stop all services:
+#   docker-compose down
+#
+# - Stop and remove volumes (WARNING: deletes all data):
+#   docker-compose down -v
+#
+# - Restart specific service:
+#   docker-compose restart prometheus
+#
+# - View resource usage:
+#   docker stats
+#
+# Production Considerations:
+#
+# - Change Grafana admin password
+# - Configure proper authentication
+# - Set up TLS/SSL
+# - Configure backup for volumes
+# - Adjust retention policies
+# - Set resource limits
+#
+# ============================================================================

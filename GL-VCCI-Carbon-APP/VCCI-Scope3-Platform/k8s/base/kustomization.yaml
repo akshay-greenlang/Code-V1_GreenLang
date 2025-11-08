@@ -1,0 +1,57 @@
+# ==============================================================================
+# GL-VCCI Kustomize Base Configuration
+# ==============================================================================
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: vcci-production
+
+commonLabels:
+  app.kubernetes.io/name: gl-vcci
+  app.kubernetes.io/managed-by: kustomize
+
+resources:
+  # Namespaces
+  - ../namespace.yaml
+
+  # Backend API
+  - backend/deployment.yaml
+  - backend/service.yaml
+  - backend/configmap.yaml
+
+  # Worker
+  - worker/deployment.yaml
+  - worker/configmap.yaml
+
+  # PostgreSQL
+  - postgres/statefulset.yaml
+  - postgres/service.yaml
+  - postgres/configmap.yaml
+
+  # Redis
+  - redis/statefulset.yaml
+  - redis/service.yaml
+  - redis/configmap.yaml
+
+  # HPA
+  - ../hpa.yaml
+
+  # PDB
+  - ../pdb.yaml
+
+  # Network Policies
+  - ../network-policy.yaml
+
+  # Resource Quotas
+  - ../resource-quota.yaml
+
+  # External Secrets
+  - ../external-secrets.yaml
+
+images:
+  - name: YOUR_REGISTRY/vcci-backend
+    newName: YOUR_REGISTRY/vcci-backend
+    newTag: latest
+  - name: YOUR_REGISTRY/vcci-worker
+    newName: YOUR_REGISTRY/vcci-worker
+    newTag: latest

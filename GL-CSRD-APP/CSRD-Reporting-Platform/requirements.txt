@@ -160,6 +160,8 @@ python-json-logger>=2.0.0     # JSON log formatter
 
 # Application monitoring
 sentry-sdk>=1.40.0            # Error tracking and monitoring
+prometheus-client>=0.19.0     # Prometheus metrics client
+psutil>=5.9.0                 # System and process utilities for health checks
 
 # ----------------------------------------------------------------------------
 # SECURITY & ENCRYPTION
@@ -167,6 +169,9 @@ sentry-sdk>=1.40.0            # Error tracking and monitoring
 
 # Data encryption
 cryptography>=41.0.0          # Cryptographic recipes and primitives (Fernet, AES)
+
+# SECURITY FIX (HIGH-SEC-002): Rate limiting
+slowapi>=0.1.9                # API rate limiting for FastAPI (protects against DoS)
 
 # ----------------------------------------------------------------------------
 # UTILITIES

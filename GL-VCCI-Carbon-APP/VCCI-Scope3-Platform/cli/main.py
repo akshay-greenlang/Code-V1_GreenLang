@@ -20,21 +20,33 @@ Date: 2025-11-08
 
 import sys
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import typer
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TaskProgressColumn
 from rich import box
 from rich.text import Text
 from rich.tree import Tree
 import json
+import csv
+import asyncio
 
 # Import command modules
 from cli.commands.intake import intake_app
 from cli.commands.engage import engage_app
 from cli.commands.pipeline import pipeline_app
+
+# Import calculator services
+try:
+    from services.agents.calculator.agent import Scope3CalculatorAgent
+    from services.agents.calculator.exceptions import CalculatorError
+    from services.factor_broker.broker import FactorBroker
+    CALCULATOR_AVAILABLE = True
+except ImportError as e:
+    CALCULATOR_AVAILABLE = False
+    CALCULATOR_IMPORT_ERROR = str(e)
 
 # Create Typer app
 app = typer.Typer(
@@ -197,6 +209,123 @@ def status(
 
 
 # ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def load_input_data(file_path: Path) -> List[Dict[str, Any]]:
+    """
+    Load input data from JSON, CSV, or Excel file.
+
+    Args:
+        file_path: Path to input file
+
+    Returns:
+        List of data dictionaries
+
+    Raises:
+        ValueError: If file format is unsupported
+    """
+    suffix = file_path.suffix.lower()
+
+    if suffix == '.json':
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            # Handle both single object and array
+            if isinstance(data, dict):
+                return [data]
+            elif isinstance(data, list):
+                return data
+            else:
+                raise ValueError(f"Invalid JSON structure: expected object or array")
+
+    elif suffix == '.csv':
+        records = []
+        with open(file_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # Convert numeric strings to numbers
+                converted_row = {}
+                for key, value in row.items():
+                    # Try to convert to float, then int, otherwise keep as string
+                    if value:
+                        try:
+                            if '.' in value:
+                                converted_row[key] = float(value)
+                            else:
+                                try:
+                                    converted_row[key] = int(value)
+                                except ValueError:
+                                    converted_row[key] = value
+                        except (ValueError, AttributeError):
+                            converted_row[key] = value
+                    else:
+                        converted_row[key] = value
+                records.append(converted_row)
+        return records
+
+    elif suffix in ['.xlsx', '.xls']:
+        try:
+            import openpyxl
+            wb = openpyxl.load_workbook(file_path)
+            ws = wb.active
+
+            # Get headers from first row
+            headers = [cell.value for cell in ws[1]]
+
+            # Get data rows
+            records = []
+            for row in ws.iter_rows(min_row=2, values_only=True):
+                record = dict(zip(headers, row))
+                records.append(record)
+
+            return records
+        except ImportError:
+            raise ValueError(
+                "Excel support requires 'openpyxl'. Install with: pip install openpyxl"
+            )
+    else:
+        raise ValueError(
+            f"Unsupported file format: {suffix}. "
+            f"Supported formats: .json, .csv, .xlsx, .xls"
+        )
+
+
+def save_results(results: Any, output_file: Path):
+    """
+    Save calculation results to JSON file.
+
+    Args:
+        results: Calculation results
+        output_file: Output file path
+    """
+    with open(output_file, 'w', encoding='utf-8') as f:
+        if hasattr(results, 'dict'):
+            json.dump(results.dict(), f, indent=2, default=str)
+        elif hasattr(results, 'model_dump'):
+            json.dump(results.model_dump(), f, indent=2, default=str)
+        else:
+            json.dump(results, f, indent=2, default=str)
+
+
+def format_emissions(emissions_kg: float) -> str:
+    """Format emissions with appropriate units."""
+    if emissions_kg < 1000:
+        return f"{emissions_kg:.2f} kgCO2e"
+    else:
+        return f"{emissions_kg / 1000:.2f} tCO2e"
+
+
+def get_tier_display(tier: str) -> str:
+    """Get formatted tier display string."""
+    tier_map = {
+        "tier_1": "Tier 1 (Supplier-specific)",
+        "tier_2": "Tier 2 (Database averages)",
+        "tier_3": "Tier 3 (Spend-based)"
+    }
+    return tier_map.get(tier, tier)
+
+
+# ============================================================================
 # CALCULATE COMMAND
 # ============================================================================
 
@@ -233,6 +362,23 @@ def calculate(
         True,
         "--mc/--no-mc",
         help="Enable/disable Monte Carlo uncertainty"
+    ),
+    batch: bool = typer.Option(
+        False,
+        "--batch",
+        help="Process file as batch (multiple records)"
+    ),
+    tenant_id: str = typer.Option(
+        "cli-user",
+        "--tenant",
+        "-t",
+        help="Tenant identifier"
+    ),
+    verbose: bool = typer.Option(
+        False,
+        "--verbose",
+        "-v",
+        help="Show detailed processing information"
     )
 ):
     """
@@ -242,52 +388,318 @@ def calculate(
 
     Examples:
 
-      # Calculate Category 1 (Purchased Goods)
-      vcci calculate --category 1 --input procurement.csv
+      # Calculate Category 1 (Purchased Goods) - single record
+      vcci calculate --category 1 --input procurement.json
+
+      # Calculate Category 1 - batch processing
+      vcci calculate --category 1 --input procurement.csv --batch
+
+      # Calculate Category 4 (Transportation) with output
+      vcci calculate --category 4 --input transport.csv --batch --output results.json
 
       # Calculate Category 15 (Investments) with PCAF
       vcci calculate --category 15 --input investments.json --output results.json
 
-      # Disable LLM for faster processing
-      vcci calculate --category 4 --input transport.csv --no-llm
+      # Disable Monte Carlo for faster processing
+      vcci calculate --category 6 --input travel.json --no-mc
     """
     console.print()
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console
-    ) as progress:
-        # Loading task
-        task = progress.add_task(
-            f"[cyan]Calculating Category {category} emissions...",
-            total=None
+    # Check if calculator is available
+    if not CALCULATOR_AVAILABLE:
+        console.print(
+            Panel(
+                f"[red]Error:[/red] Calculator agent not available.\n\n"
+                f"[yellow]Details:[/yellow] {CALCULATOR_IMPORT_ERROR}\n\n"
+                f"Please ensure the calculator module is properly installed.",
+                title="[bold red]Initialization Error[/bold red]",
+                border_style="red"
+            )
         )
+        sys.exit(1)
 
-        # Simulate calculation
-        import time
-        time.sleep(1.5)
+    try:
+        # Load input data
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            load_task = progress.add_task(
+                f"[cyan]Loading data from {input_file.name}...",
+                total=None
+            )
 
-        progress.update(task, completed=True)
+            records = load_input_data(input_file)
+            progress.update(load_task, completed=True)
 
-    # Display results
-    results_panel = Panel(
-        f"[green]✓[/green] Calculation complete\n\n"
-        f"Category: [cyan]{category}[/cyan]\n"
-        f"Input: [yellow]{input_file}[/yellow]\n"
-        f"LLM Enhancement: [{'green' if enable_llm else 'red'}]{'Enabled' if enable_llm else 'Disabled'}[/]\n"
-        f"Monte Carlo: [{'green' if monte_carlo else 'red'}]{'Enabled' if monte_carlo else 'Disabled'}[/]\n\n"
-        f"[bold]Total Emissions:[/bold] [green]1,234.56 tCO2e[/green]\n"
-        f"[bold]Data Quality:[/bold] [yellow]Tier 2 (Good)[/yellow]\n"
-        f"[bold]Uncertainty:[/bold] [cyan]±25%[/cyan]",
-        title=f"[bold cyan]Category {category} Results[/bold cyan]",
-        border_style="green"
-    )
+        if verbose:
+            console.print(f"[green]✓[/green] Loaded {len(records)} record(s)\n")
 
-    console.print(results_panel)
+        # Initialize calculator agent
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
+        ) as progress:
+            init_task = progress.add_task(
+                "[cyan]Initializing calculator agent...",
+                total=None
+            )
 
-    if output_file:
-        console.print(f"\n[green]✓[/green] Results saved to [yellow]{output_file}[/yellow]")
+            # Initialize factor broker
+            factor_broker = FactorBroker()
+
+            # Initialize calculator
+            agent = Scope3CalculatorAgent(
+                factor_broker=factor_broker,
+                industry_mapper=None  # Optional, can be added later
+            )
+
+            # Update config based on CLI options
+            agent.config.enable_monte_carlo = monte_carlo
+            # LLM would be configured at the category calculator level
+
+            progress.update(init_task, completed=True)
+
+        if verbose:
+            console.print(f"[green]✓[/green] Agent initialized\n")
+
+        # Calculate emissions
+        if batch and len(records) > 1:
+            # Batch processing
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                console=console
+            ) as progress:
+                calc_task = progress.add_task(
+                    f"[cyan]Calculating Category {category} emissions (batch)...",
+                    total=len(records)
+                )
+
+                # Run async batch calculation
+                async def run_batch():
+                    return await agent.calculate_batch(records, category)
+
+                batch_result = asyncio.run(run_batch())
+                progress.update(calc_task, completed=len(records))
+
+            console.print()
+
+            # Display batch results
+            summary_table = Table(
+                title=f"Category {category} Batch Results",
+                box=box.ROUNDED,
+                show_header=True,
+                header_style="bold cyan"
+            )
+
+            summary_table.add_column("Metric", style="cyan")
+            summary_table.add_column("Value", justify="right", style="green")
+
+            summary_table.add_row("Total Records", str(batch_result.total_records))
+            summary_table.add_row("Successful", str(batch_result.successful_records))
+            summary_table.add_row("Failed", str(batch_result.failed_records))
+            summary_table.add_row("Total Emissions", format_emissions(batch_result.total_emissions_kgco2e))
+            summary_table.add_row("Avg DQI Score", f"{batch_result.average_dqi_score:.1f}%")
+            summary_table.add_row("Processing Time", f"{batch_result.processing_time_seconds:.2f}s")
+
+            console.print(summary_table)
+
+            # Show individual results if verbose
+            if verbose and batch_result.successful_records > 0:
+                console.print()
+                results_table = Table(
+                    title="Individual Results",
+                    box=box.SIMPLE,
+                    show_header=True,
+                    header_style="bold cyan"
+                )
+
+                results_table.add_column("#", style="dim", width=4)
+                results_table.add_column("Emissions", justify="right", style="green")
+                results_table.add_column("Tier", style="yellow")
+                results_table.add_column("DQI", justify="right", style="cyan")
+
+                for i, result in enumerate(batch_result.results[:20], 1):  # Show first 20
+                    results_table.add_row(
+                        str(i),
+                        format_emissions(result.emissions_kgco2e),
+                        get_tier_display(result.tier) if hasattr(result, 'tier') else "N/A",
+                        f"{result.data_quality.dqi_score:.1f}%" if hasattr(result, 'data_quality') else "N/A"
+                    )
+
+                if len(batch_result.results) > 20:
+                    results_table.add_row("...", f"+{len(batch_result.results) - 20} more", "", "")
+
+                console.print(results_table)
+
+            # Show errors if any
+            if batch_result.failed_records > 0:
+                console.print()
+                console.print(f"[yellow]Warning:[/yellow] {batch_result.failed_records} record(s) failed to process")
+
+                if verbose:
+                    error_table = Table(
+                        title="Failed Records",
+                        box=box.SIMPLE,
+                        show_header=True,
+                        header_style="bold red"
+                    )
+
+                    error_table.add_column("Index", style="dim")
+                    error_table.add_column("Error", style="red")
+
+                    for error in batch_result.errors[:10]:  # Show first 10 errors
+                        error_table.add_row(
+                            str(error.get('record_index', 'N/A')),
+                            error.get('error', 'Unknown error')
+                        )
+
+                    if len(batch_result.errors) > 10:
+                        error_table.add_row("...", f"+{len(batch_result.errors) - 10} more")
+
+                    console.print(error_table)
+
+            # Save output if specified
+            if output_file:
+                save_results(batch_result, output_file)
+                console.print(f"\n[green]✓[/green] Results saved to [yellow]{output_file}[/yellow]")
+
+        else:
+            # Single record processing
+            if len(records) > 1:
+                console.print(
+                    f"[yellow]Note:[/yellow] Input file contains {len(records)} records. "
+                    f"Processing first record only. Use --batch to process all records.\n"
+                )
+
+            data = records[0]
+
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console
+            ) as progress:
+                calc_task = progress.add_task(
+                    f"[cyan]Calculating Category {category} emissions...",
+                    total=None
+                )
+
+                # Run async calculation
+                async def run_single():
+                    return await agent.calculate_by_category(category, data)
+
+                result = asyncio.run(run_single())
+                progress.update(calc_task, completed=True)
+
+            console.print()
+
+            # Display single result
+            result_text = (
+                f"[green]✓[/green] Calculation complete\n\n"
+                f"[bold]Category:[/bold] [cyan]{category}[/cyan]\n"
+                f"[bold]Input:[/bold] [yellow]{input_file.name}[/yellow]\n"
+                f"[bold]Monte Carlo:[/bold] [{'green' if monte_carlo else 'red'}]{'Enabled' if monte_carlo else 'Disabled'}[/]\n\n"
+                f"[bold cyan]Results:[/bold cyan]\n"
+                f"[bold]Total Emissions:[/bold] [green]{format_emissions(result.emissions_kgco2e)}[/green]\n"
+            )
+
+            # Add tier information if available
+            if hasattr(result, 'tier'):
+                result_text += f"[bold]Data Tier:[/bold] [yellow]{get_tier_display(result.tier)}[/yellow]\n"
+
+            # Add data quality if available
+            if hasattr(result, 'data_quality'):
+                dqi_score = result.data_quality.dqi_score
+                dqi_color = "green" if dqi_score >= 75 else "yellow" if dqi_score >= 50 else "red"
+                result_text += f"[bold]Data Quality:[/bold] [{dqi_color}]{dqi_score:.1f}%[/{dqi_color}]\n"
+
+            # Add uncertainty if available
+            if hasattr(result, 'uncertainty') and result.uncertainty:
+                unc = result.uncertainty
+                if hasattr(unc, 'relative_uncertainty_pct'):
+                    result_text += f"[bold]Uncertainty:[/bold] [cyan]±{unc.relative_uncertainty_pct:.1f}%[/cyan]\n"
+
+            results_panel = Panel(
+                result_text,
+                title=f"[bold cyan]Category {category} Results[/bold cyan]",
+                border_style="green"
+            )
+
+            console.print(results_panel)
+
+            # Show detailed breakdown if verbose
+            if verbose:
+                console.print()
+                console.print("[bold cyan]Detailed Breakdown:[/bold cyan]")
+
+                detail_table = Table(box=box.SIMPLE)
+                detail_table.add_column("Field", style="cyan")
+                detail_table.add_column("Value")
+
+                if hasattr(result, 'calculation_date'):
+                    detail_table.add_row("Calculation Date", str(result.calculation_date))
+
+                if hasattr(result, 'provenance') and result.provenance:
+                    prov = result.provenance
+                    if hasattr(prov, 'emission_factor_source'):
+                        detail_table.add_row("Factor Source", prov.emission_factor_source)
+                    if hasattr(prov, 'methodology'):
+                        detail_table.add_row("Methodology", prov.methodology)
+
+                console.print(detail_table)
+
+            # Save output if specified
+            if output_file:
+                save_results(result, output_file)
+                console.print(f"\n[green]✓[/green] Results saved to [yellow]{output_file}[/yellow]")
+
+    except ValueError as e:
+        console.print()
+        console.print(
+            Panel(
+                f"[red]Input Error:[/red] {str(e)}",
+                title="[bold red]Validation Error[/bold red]",
+                border_style="red"
+            )
+        )
+        sys.exit(1)
+
+    except CalculatorError as e:
+        console.print()
+        console.print(
+            Panel(
+                f"[red]Calculation Error:[/red] {str(e)}\n\n"
+                f"[yellow]Category:[/yellow] {category}\n"
+                f"[yellow]Input:[/yellow] {input_file}",
+                title="[bold red]Calculation Failed[/bold red]",
+                border_style="red"
+            )
+        )
+        if verbose:
+            import traceback
+            console.print()
+            console.print("[dim]" + traceback.format_exc() + "[/dim]")
+        sys.exit(1)
+
+    except Exception as e:
+        console.print()
+        console.print(
+            Panel(
+                f"[red]Unexpected Error:[/red] {str(e)}",
+                title="[bold red]Error[/bold red]",
+                border_style="red"
+            )
+        )
+        if verbose:
+            import traceback
+            console.print()
+            console.print("[dim]" + traceback.format_exc() + "[/dim]")
+        sys.exit(1)
 
     console.print()
 

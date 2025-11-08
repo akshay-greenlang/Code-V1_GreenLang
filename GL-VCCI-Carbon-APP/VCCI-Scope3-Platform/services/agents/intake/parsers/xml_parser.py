@@ -3,13 +3,24 @@ XML Parser with XPath Support
 
 XML parsing with XPath queries and namespace handling.
 
+SECURITY: Uses defusedxml to prevent XXE (XML External Entity) attacks.
+
 Version: 1.0.0
 Phase: 3 (Weeks 7-10)
 Date: 2025-10-30
+Security Update: 2025-11-08
 """
 
 import logging
-import xml.etree.ElementTree as ET
+try:
+    # Use defusedxml for secure XML parsing (prevents XXE attacks)
+    import defusedxml.ElementTree as ET
+    DEFUSEDXML_AVAILABLE = True
+except ImportError:
+    # Fallback to standard library with warning
+    import xml.etree.ElementTree as ET
+    DEFUSEDXML_AVAILABLE = False
+
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 
@@ -17,6 +28,13 @@ from ..exceptions import FileParseError, XMLPathError
 from ..config import get_config
 
 logger = logging.getLogger(__name__)
+
+# Warn if defusedxml is not available
+if not DEFUSEDXML_AVAILABLE:
+    logger.warning(
+        "defusedxml not available - using standard xml.etree.ElementTree. "
+        "Install defusedxml for XXE attack protection: pip install defusedxml>=0.7.1"
+    )
 
 
 class XMLParser:

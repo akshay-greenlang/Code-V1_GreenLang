@@ -1,0 +1,118 @@
+---
+# ============================================================================
+# ConfigMap for CSRD/ESRS Platform Configuration
+# ============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: csrd-config
+  namespace: production
+  labels:
+    app: csrd
+    component: config
+data:
+  # Application configuration
+  LOG_LEVEL: "INFO"
+  ENVIRONMENT: "production"
+  WORKERS: "4"
+
+  # Feature flags
+  ENABLE_AI_MATERIALITY: "true"
+  ENABLE_AI_NARRATIVES: "true"
+  ENABLE_XBRL_GENERATION: "true"
+  ENABLE_EMAIL_NOTIFICATIONS: "false"
+
+  # Performance tuning
+  WORKER_PROCESSES: "4"
+  MAX_FILE_SIZE_MB: "500"
+  REQUEST_TIMEOUT: "300"
+
+  # CSRD configuration file
+  csrd_config.yaml: |
+    # ================================================================
+    # CSRD/ESRS Platform Configuration
+    # ================================================================
+
+    application:
+      name: "GL-CSRD-APP"
+      version: "1.0.0"
+      environment: "production"
+      debug: false
+
+    pipeline:
+      max_workers: 4
+      timeout_seconds: 1800
+      batch_size: 1000
+      retry_attempts: 3
+      retry_backoff: 2
+
+    agents:
+      intake:
+        enabled: true
+        validation_strictness: "high"
+        data_quality_threshold: 0.95
+
+      calculator:
+        enabled: true
+        precision: "high"
+        zero_hallucination: true
+        verification_level: "strict"
+
+      materiality:
+        enabled: true
+        ai_enabled: true
+        threshold_impact: 0.7
+        threshold_financial: 0.7
+
+      audit:
+        enabled: true
+        compliance_checks: "all"
+        quality_threshold: 0.90
+
+      reporting:
+        enabled: true
+        formats: ["xbrl", "json", "pdf"]
+        esef_validation: true
+
+      aggregator:
+        enabled: true
+        frameworks: ["CSRD", "GRI", "TCFD", "SASB"]
+
+    logging:
+      level: "INFO"
+      format: "json"
+      output: "stdout"
+      structured: true
+
+    monitoring:
+      prometheus:
+        enabled: true
+        port: 9090
+        path: "/metrics"
+
+      health_check:
+        enabled: true
+        interval_seconds: 30
+
+      tracing:
+        enabled: true
+        sample_rate: 0.1
+
+    security:
+      encryption_enabled: true
+      data_masking: true
+      audit_logging: true
+      rate_limiting:
+        enabled: true
+        requests_per_minute: 100
+
+    cache:
+      enabled: true
+      ttl_seconds: 3600
+      max_size_mb: 512
+
+    database:
+      pool_size: 20
+      max_overflow: 10
+      pool_timeout: 30
+      pool_recycle: 3600

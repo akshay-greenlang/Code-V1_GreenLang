@@ -86,6 +86,73 @@ memory-profiler>=0.61.0
 # - Why: Ensure we stay under 500 MB for 100K shipments
 
 # ----------------------------------------------------------------------------
+# SECURITY DEPENDENCIES (CRITICAL FOR PRODUCTION)
+# ----------------------------------------------------------------------------
+
+# SECURITY FIX (HIGH-SEC-002): Rate limiting
+slowapi>=0.1.9
+# - Used by: backend/app.py
+# - Purpose: API rate limiting to prevent abuse
+# - Why: Protect against DoS attacks and API abuse
+
+# SECURITY: XML security (XXE prevention) - VCCI already uses this
+defusedxml>=0.7.1
+# - Purpose: Secure XML parsing (prevents XXE attacks)
+# - Why: Required for secure XML processing
+
+# SECURITY: JWT and authentication
+python-jose[cryptography]>=3.3.0
+# - Purpose: JWT token handling
+# - Why: Secure authentication mechanism
+
+# SECURITY: Password hashing
+passlib[bcrypt]>=1.7.4
+# - Purpose: Secure password hashing
+# - Why: Never store plaintext passwords
+
+# SECURITY: Encryption
+cryptography>=41.0.0
+# - Purpose: Data encryption and cryptographic operations
+# - Why: Protect sensitive data at rest and in transit
+
+# ----------------------------------------------------------------------------
+# MONITORING & OBSERVABILITY DEPENDENCIES (Production)
+# ----------------------------------------------------------------------------
+
+# Prometheus Metrics Client
+prometheus-client>=0.19.0
+# - Used by: backend/metrics.py
+# - Purpose: Expose Prometheus-compatible metrics
+# - Why: Industry standard for metrics collection and monitoring
+
+# System Resource Monitoring
+psutil>=5.9.0
+# - Used by: backend/metrics.py, backend/health.py
+# - Purpose: Monitor CPU, memory, disk usage
+# - Why: Essential for production resource monitoring
+
+# FastAPI (Optional - for web deployment)
+fastapi>=0.104.0
+# - Used by: backend/health.py, backend/metrics.py (optional)
+# - Purpose: REST API for health checks and metrics endpoints
+# - Why: Production-ready async web framework
+# - Note: Only required if deploying as web service
+
+# ASGI Server (Optional - for production web deployment)
+uvicorn[standard]>=0.24.0
+# - Used by: FastAPI deployment
+# - Purpose: High-performance ASGI server
+# - Why: Production-ready server with auto-reload and WebSocket support
+# - Note: Only required for web deployment
+
+# Error Tracking (Optional - recommended for production)
+# sentry-sdk>=1.38.0
+# - Purpose: Error tracking and performance monitoring
+# - Why: Centralized error tracking for production issues
+# - Note: Requires Sentry account and DSN configuration
+# - Uncomment to enable: pip install sentry-sdk
+
+# ----------------------------------------------------------------------------
 # DOCUMENTATION DEPENDENCIES (Optional)
 # ----------------------------------------------------------------------------
 
@@ -112,6 +179,9 @@ memory-profiler>=0.61.0
 
 # Minimal Installation (runtime only):
 #   pip install pandas>=2.0.0 pydantic>=2.0.0 jsonschema>=4.0.0 PyYAML>=6.0 openpyxl>=3.1.0
+
+# Production Installation (with monitoring):
+#   pip install pandas pydantic jsonschema PyYAML openpyxl prometheus-client psutil fastapi uvicorn[standard]
 
 # Full Installation (development):
 #   pip install -r requirements.txt

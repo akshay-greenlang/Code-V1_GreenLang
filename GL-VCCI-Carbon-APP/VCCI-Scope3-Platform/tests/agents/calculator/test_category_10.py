@@ -16,6 +16,7 @@ import pytest
 import asyncio
 from datetime import datetime
 from unittest.mock import Mock, AsyncMock, patch
+from pydantic import ValidationError
 
 from services.agents.calculator.categories.category_10 import (
     Category10Calculator,
@@ -301,7 +302,7 @@ async def test_validation_negative_quantity(calculator):
         region="US"
     )
 
-    with pytest.raises(Exception):  # Pydantic validation
+    with pytest.raises(ValidationError):  # Pydantic validation
         await calculator.calculate(input_data)
 
 
@@ -329,7 +330,7 @@ async def test_validation_zero_quantity(calculator):
         region="US"
     )
 
-    with pytest.raises(Exception):  # Pydantic validation
+    with pytest.raises(ValidationError):  # Pydantic validation
         await calculator.calculate(input_data)
 
 

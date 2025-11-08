@@ -1,0 +1,98 @@
+# ============================================================================
+# GL-CBAM-APP - Docker Ignore File
+# ============================================================================
+# Files and directories to exclude from Docker build context
+# ============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.cover
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation
+*.md
+docs/
+examples/output/
+
+# Environment files
+.env
+.env.*
+!.env.production.example
+
+# Logs
+*.log
+logs/
+
+# Output and temporary files
+output/
+uploads/
+*.tmp
+*.bak
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Development files
+docker-compose.override.yml
+*.dev.yml
+
+# Large data files
+*.csv
+*.xlsx
+*.json
+!data/cn_codes.json
+!data/emission_factors.json
+
+# Kubernetes manifests (not needed in container)
+k8s/
+helm/
+
+# Build artifacts
+*.tar.gz
+*.zip
+
+# Backup files
+backup/
+backups/
+*.backup

@@ -1,0 +1,249 @@
+# ==============================================================================
+# GL-VCCI Istio Authorization Policies
+# ==============================================================================
+
+# ==============================================================================
+# Default Deny All Policy
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+spec:
+  {}  # Empty spec denies all requests
+
+---
+# ==============================================================================
+# Backend API Authorization Policy
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: vcci-backend-api-policy
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: backend-api
+spec:
+  selector:
+    matchLabels:
+      app: vcci-backend-api
+
+  action: ALLOW
+
+  rules:
+    # Allow from frontend
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/vcci-production/sa/vcci-frontend-sa"
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE"]
+            paths: ["/api/*"]
+
+    # Allow from ingress gateway
+    - from:
+        - source:
+            namespaces: ["istio-system"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE"]
+
+    # Allow health checks from anywhere
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/health/*"]
+
+    # Allow metrics scraping from monitoring namespace
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/metrics"]
+
+---
+# ==============================================================================
+# Worker Authorization Policy
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: vcci-worker-policy
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: worker
+spec:
+  selector:
+    matchLabels:
+      app: vcci-worker
+
+  action: ALLOW
+
+  rules:
+    # Allow from backend API
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/vcci-production/sa/vcci-backend-sa"
+
+    # Allow from monitoring (Flower)
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+      to:
+        - operation:
+            methods: ["GET"]
+
+---
+# ==============================================================================
+# Database Authorization Policy
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: vcci-postgres-policy
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: database
+spec:
+  selector:
+    matchLabels:
+      app: vcci-postgres
+
+  action: ALLOW
+
+  rules:
+    # Allow only from backend and worker
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/vcci-production/sa/vcci-backend-sa"
+              - "cluster.local/ns/vcci-production/sa/vcci-worker-sa"
+
+    # Allow from monitoring for metrics
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+
+---
+# ==============================================================================
+# Redis Authorization Policy
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: vcci-redis-policy
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: cache
+spec:
+  selector:
+    matchLabels:
+      app: vcci-redis
+
+  action: ALLOW
+
+  rules:
+    # Allow from backend, worker, and beat
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/vcci-production/sa/vcci-backend-sa"
+              - "cluster.local/ns/vcci-production/sa/vcci-worker-sa"
+
+---
+# ==============================================================================
+# Weaviate Authorization Policy
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: vcci-weaviate-policy
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: vector-db
+spec:
+  selector:
+    matchLabels:
+      app: vcci-weaviate
+
+  action: ALLOW
+
+  rules:
+    # Allow from backend and worker
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/vcci-production/sa/vcci-backend-sa"
+              - "cluster.local/ns/vcci-production/sa/vcci-worker-sa"
+
+---
+# ==============================================================================
+# JWT Authentication Policy (for API access)
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: vcci-jwt-auth
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+spec:
+  selector:
+    matchLabels:
+      app: vcci-backend-api
+
+  jwtRules:
+    - issuer: "https://auth.vcci.greenlang.ai"
+      jwksUri: "https://auth.vcci.greenlang.ai/.well-known/jwks.json"
+      audiences:
+        - "vcci-api"
+      forwardOriginalToken: true
+
+---
+# ==============================================================================
+# Require JWT for API endpoints
+# ==============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: require-jwt
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+spec:
+  selector:
+    matchLabels:
+      app: vcci-backend-api
+
+  action: ALLOW
+
+  rules:
+    # Public endpoints (no JWT required)
+    - to:
+        - operation:
+            paths:
+              - "/health/*"
+              - "/api/v1/public/*"
+              - "/docs"
+              - "/openapi.json"
+
+    # Protected endpoints (JWT required)
+    - to:
+        - operation:
+            paths:
+              - "/api/*"
+      when:
+        - key: request.auth.claims[iss]
+          values: ["https://auth.vcci.greenlang.ai"]

@@ -1,0 +1,21 @@
+{
+  "flights": [
+    {
+      "distance_km": 3500,
+      "cabin_class": "economy",
+      "num_passengers": 1,
+      "apply_radiative_forcing": true,
+      "origin": "New York",
+      "destination": "London",
+      "travel_date": "2025-11-10T00:00:00"
+    }
+  ],
+  "hotels": [
+    {
+      "nights": 3,
+      "region": "GB",
+      "city": "London"
+    }
+  ],
+  "ground_transport": []
+}

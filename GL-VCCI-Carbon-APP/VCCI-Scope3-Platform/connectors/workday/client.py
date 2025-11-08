@@ -5,14 +5,25 @@ GL-VCCI Scope 3 Platform
 RaaS client for Workday with pagination, error handling, and retry logic.
 Reuses rate limiting utilities from SAP connector for consistency.
 
+SECURITY: Uses defusedxml to prevent XXE (XML External Entity) attacks.
+
 Version: 1.0.0
 Phase: 4 (Weeks 24-26)
 Date: 2025-11-06
+Security Update: 2025-11-08
 """
 
 import logging
 import time
-import xml.etree.ElementTree as ET
+try:
+    # Use defusedxml for secure XML parsing (prevents XXE attacks)
+    import defusedxml.ElementTree as ET
+    DEFUSEDXML_AVAILABLE = True
+except ImportError:
+    # Fallback to standard library with warning
+    import xml.etree.ElementTree as ET
+    DEFUSEDXML_AVAILABLE = False
+
 from typing import Dict, List, Any, Optional, Generator
 from urllib.parse import urlencode
 from datetime import date, datetime
@@ -32,6 +43,13 @@ from .exceptions import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Warn if defusedxml is not available
+if not DEFUSEDXML_AVAILABLE:
+    logger.warning(
+        "defusedxml not available - using standard xml.etree.ElementTree. "
+        "Install defusedxml for XXE attack protection: pip install defusedxml>=0.7.1"
+    )
 
 
 class RateLimiter:

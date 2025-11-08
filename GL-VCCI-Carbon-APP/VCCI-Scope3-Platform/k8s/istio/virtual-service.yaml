@@ -1,0 +1,196 @@
+# ==============================================================================
+# GL-VCCI Istio Virtual Service Configuration
+# ==============================================================================
+
+# ==============================================================================
+# Backend API Virtual Service
+# ==============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vcci-backend-api
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: backend-api
+spec:
+  hosts:
+    - "api.vcci.greenlang.ai"
+    - vcci-backend-api.vcci-production.svc.cluster.local
+  gateways:
+    - vcci-gateway
+    - mesh  # For internal traffic
+
+  http:
+    # Health check endpoints (no retries, fast timeout)
+    - match:
+        - uri:
+            prefix: /health
+      route:
+        - destination:
+            host: vcci-backend-api.vcci-production.svc.cluster.local
+            port:
+              number: 8000
+      timeout: 5s
+      retries:
+        attempts: 0
+
+    # API endpoints with retry logic
+    - match:
+        - uri:
+            prefix: /api/v1
+      route:
+        - destination:
+            host: vcci-backend-api.vcci-production.svc.cluster.local
+            port:
+              number: 8000
+      timeout: 30s
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: 5xx,reset,connect-failure,refused-stream
+
+      # Rate limiting (requires Envoy rate limit service)
+      # mirror:
+      #   host: vcci-backend-api-analytics.vcci-production.svc.cluster.local
+
+      # CORS
+      corsPolicy:
+        allowOrigins:
+          - exact: "https://app.vcci.greenlang.ai"
+        allowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        allowHeaders:
+          - authorization
+          - content-type
+          - x-request-id
+        maxAge: "24h"
+
+    # WebSocket support
+    - match:
+        - uri:
+            prefix: /ws
+      route:
+        - destination:
+            host: vcci-backend-api.vcci-production.svc.cluster.local
+            port:
+              number: 8000
+      timeout: 3600s  # 1 hour for WebSocket connections
+
+---
+# ==============================================================================
+# Frontend Virtual Service
+# ==============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vcci-frontend
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: frontend
+spec:
+  hosts:
+    - "app.vcci.greenlang.ai"
+  gateways:
+    - vcci-gateway
+
+  http:
+    - match:
+        - uri:
+            prefix: /
+      route:
+        - destination:
+            host: vcci-frontend.vcci-production.svc.cluster.local
+            port:
+              number: 3000
+
+      # Caching for static assets
+      headers:
+        response:
+          set:
+            Cache-Control: "public, max-age=31536000"
+      match:
+        - uri:
+            prefix: /static/
+
+---
+# ==============================================================================
+# Canary Deployment Virtual Service
+# ==============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vcci-backend-api-canary
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    app.kubernetes.io/component: backend-api
+    deployment-strategy: canary
+spec:
+  hosts:
+    - vcci-backend-api.vcci-production.svc.cluster.local
+  gateways:
+    - vcci-gateway
+
+  http:
+    # Route beta users to canary
+    - match:
+        - headers:
+            x-user-group:
+              exact: "beta"
+      route:
+        - destination:
+            host: vcci-backend-api.vcci-production.svc.cluster.local
+            subset: canary
+          weight: 100
+
+    # Route 5% of traffic to canary
+    - route:
+        - destination:
+            host: vcci-backend-api.vcci-production.svc.cluster.local
+            subset: stable
+          weight: 95
+        - destination:
+            host: vcci-backend-api.vcci-production.svc.cluster.local
+            subset: canary
+          weight: 5
+
+---
+# ==============================================================================
+# Fault Injection (for testing resilience)
+# ==============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: vcci-backend-api-fault-injection
+  namespace: vcci-production
+  labels:
+    app.kubernetes.io/name: gl-vcci
+    testing: fault-injection
+spec:
+  hosts:
+    - vcci-backend-api.vcci-production.svc.cluster.local
+
+  http:
+    # Inject faults for chaos testing
+    - match:
+        - headers:
+            x-chaos-test:
+              exact: "true"
+      fault:
+        delay:
+          percentage:
+            value: 10  # 10% of requests
+          fixedDelay: 5s
+        abort:
+          percentage:
+            value: 5  # 5% of requests
+          httpStatus: 503
+      route:
+        - destination:
+            host: vcci-backend-api.vcci-production.svc.cluster.local
