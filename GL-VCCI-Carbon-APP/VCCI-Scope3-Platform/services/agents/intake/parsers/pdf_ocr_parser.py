@@ -15,6 +15,7 @@ import re
 
 from ..exceptions import PDFOCRError, FileParseError
 from ..config import get_config
+from greenlang.security.validators import PathTraversalValidator
 
 logger = logging.getLogger(__name__)
 
@@ -47,18 +48,23 @@ class PDFOCRParser:
             List of dictionaries with extracted data
 
         Raises:
-            FileParseError: If parsing fails
+            FileParseError: If parsing fails or path is invalid
         """
         try:
-            logger.info(f"Parsing PDF file: {file_path}")
+            # Validate path to prevent path traversal attacks
+            validated_path = PathTraversalValidator.validate_path(
+                file_path,
+                must_exist=True
+            )
+            logger.info(f"Parsing PDF file: {validated_path}")
 
             # Try text extraction first
-            text = self._extract_text(file_path)
+            text = self._extract_text(validated_path)
 
             if not text or len(text.strip()) < 50:
                 logger.info("Insufficient text extracted, attempting OCR")
                 if self.config.pdf_ocr_enabled:
-                    text = self._ocr_with_tesseract(file_path)
+                    text = self._ocr_with_tesseract(validated_path)
 
             # Parse extracted text
             records = self._parse_extracted_text(text)
@@ -242,6 +248,9 @@ class PDFOCRParser:
         Returns:
             Dictionary with invoice fields
 
+        Raises:
+            PDFOCRError: If extraction fails or path is invalid
+
         Note:
             This is a basic implementation. For production use:
             - Azure Form Recognizer prebuilt-invoice model
@@ -249,14 +258,19 @@ class PDFOCRParser:
             - ML-based field extraction
         """
         try:
-            logger.info(f"Extracting invoice data from: {file_path}")
+            # Validate path to prevent path traversal attacks
+            validated_path = PathTraversalValidator.validate_path(
+                file_path,
+                must_exist=True
+            )
+            logger.info(f"Extracting invoice data from: {validated_path}")
 
             # Extract text
-            text = self._extract_text(file_path)
+            text = self._extract_text(validated_path)
 
             if not text and self.config.pdf_azure_form_recognizer_enabled:
                 # Use Azure Form Recognizer stub
-                return self._ocr_with_azure(file_path)
+                return self._ocr_with_azure(validated_path)
 
             # Extract common invoice fields using regex
             invoice_data = {
@@ -311,12 +325,21 @@ class PDFOCRParser:
         Returns:
             List of tables (each table is a list of rows, each row is a list of cells)
 
+        Raises:
+            FileParseError: If path is invalid
+
         Note:
             This is a stub. For production use:
             - tabula-py library for table extraction
             - pdfplumber for table detection
             - Azure Form Recognizer for table extraction
         """
+        # Validate path to prevent path traversal attacks
+        validated_path = PathTraversalValidator.validate_path(
+            file_path,
+            must_exist=True
+        )
+
         logger.warning(
             "Table extraction is stubbed. Install tabula-py or pdfplumber "
             "for full table extraction support."

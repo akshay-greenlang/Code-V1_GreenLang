@@ -2,10 +2,10 @@
 Factor Cache Implementation
 GL-VCCI Scope 3 Platform
 
-Redis-based caching for emission factors with license compliance (24-hour TTL).
+CacheManager-based caching for emission factors with license compliance (24-hour TTL).
 Implements cache key generation, invalidation, and performance monitoring.
 
-Version: 1.0.0
+Version: 2.0.0 - Migrated to greenlang.cache.CacheManager
 """
 
 import logging
@@ -13,8 +13,8 @@ import json
 from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
 import hashlib
-import redis
-from redis.exceptions import RedisError
+
+from greenlang.cache import CacheManager, CacheLayer
 
 from .models import FactorRequest, FactorResponse
 from .exceptions import CacheError, LicenseViolationError
@@ -26,17 +26,18 @@ logger = logging.getLogger(__name__)
 
 class FactorCache:
     """
-    Redis-based cache for emission factors.
+    CacheManager-based cache for emission factors.
 
     Implements:
     - License-compliant caching (24-hour TTL for ecoinvent)
     - Efficient key generation
     - Pattern-based invalidation
     - Cache statistics tracking
+    - Multi-layer caching (L1 Memory, L2 Redis, L3 Disk)
 
     Attributes:
         config: Cache configuration
-        redis_client: Redis client instance
+        cache_manager: CacheManager instance
         hit_count: Number of cache hits
         miss_count: Number of cache misses
     """
@@ -49,48 +50,57 @@ class FactorCache:
             config: Cache configuration
 
         Raises:
-            CacheError: If Redis connection fails
+            CacheError: If cache initialization fails
         """
         self.config = config
-        self.redis_client: Optional[redis.Redis] = None
+        self.cache_manager: Optional[CacheManager] = None
         self.hit_count = 0
         self.miss_count = 0
 
         if config.enabled:
-            self._connect()
+            self._initialize_cache_manager()
 
-    def _connect(self):
+    def _initialize_cache_manager(self):
         """
-        Connect to Redis server.
+        Initialize CacheManager.
 
         Raises:
-            CacheError: If connection fails
+            CacheError: If initialization fails
         """
         try:
-            self.redis_client = redis.Redis(
-                host=self.config.redis_host,
-                port=self.config.redis_port,
-                db=self.config.redis_db,
-                password=self.config.redis_password,
-                decode_responses=True,  # Decode bytes to strings
-                socket_timeout=5,
-                socket_connect_timeout=5
-            )
-
-            # Test connection
-            self.redis_client.ping()
+            # Create CacheManager with default configuration
+            # This provides L1 (memory), L2 (Redis), and L3 (disk) caching
+            self.cache_manager = CacheManager.create_default()
 
             logger.info(
-                f"Connected to Redis at {self.config.redis_host}:"
-                f"{self.config.redis_port}/{self.config.redis_db}"
+                "Initialized CacheManager with multi-layer caching "
+                "(L1 Memory, L2 Redis, L3 Disk)"
             )
 
-        except RedisError as e:
+        except Exception as e:
             raise CacheError(
-                operation="connect",
-                reason=f"Failed to connect to Redis: {e}",
+                operation="initialize",
+                reason=f"Failed to initialize CacheManager: {e}",
                 original_exception=e
             )
+
+    async def start(self):
+        """
+        Start the cache manager.
+
+        Raises:
+            CacheError: If start fails
+        """
+        if self.cache_manager and self.config.enabled:
+            try:
+                await self.cache_manager.start()
+                logger.info("FactorCache started successfully")
+            except Exception as e:
+                raise CacheError(
+                    operation="start",
+                    reason=f"Failed to start CacheManager: {e}",
+                    original_exception=e
+                )
 
     def _generate_cache_key(
         self,
@@ -99,7 +109,7 @@ class FactorCache:
         """
         Generate cache key from factor request.
 
-        Format: {prefix}:factor:{product}:{region}:{gwp}:{unit}:{year}
+        Format: factor:{product}:{region}:{gwp}:{unit}:{year}
 
         Args:
             request: Factor request
@@ -114,9 +124,9 @@ class FactorCache:
         unit = (request.unit or "default").lower().replace("/", "_per_")
         year = request.year or "latest"
 
-        # Generate key
+        # Generate key (CacheManager will add its own prefix)
         key = (
-            f"{self.config.key_prefix}:factor:"
+            f"factor:"
             f"{product}:{region}:{gwp}:{unit}:{year}"
         )
 
@@ -145,20 +155,20 @@ class FactorCache:
 
         key_hash = hashlib.sha256(key_data.encode()).hexdigest()[:16]
 
-        return f"{self.config.key_prefix}:factor:hash:{key_hash}"
+        return f"factor:hash:{key_hash}"
 
     def _serialize_response(
         self,
         response: FactorResponse
-    ) -> str:
+    ) -> Dict[str, Any]:
         """
-        Serialize factor response to JSON.
+        Serialize factor response to dict for caching.
 
         Args:
             response: Factor response
 
         Returns:
-            JSON string
+            Dictionary representation
         """
         # Convert to dict and handle datetime serialization
         data = response.dict()
@@ -166,7 +176,7 @@ class FactorCache:
         # Convert datetime objects to ISO format strings
         self._convert_datetimes_to_iso(data)
 
-        return json.dumps(data)
+        return data
 
     def _convert_datetimes_to_iso(self, obj: Any):
         """
@@ -190,19 +200,18 @@ class FactorCache:
 
     def _deserialize_response(
         self,
-        data: str
+        data: Dict[str, Any]
     ) -> FactorResponse:
         """
-        Deserialize JSON to factor response.
+        Deserialize dict to factor response.
 
         Args:
-            data: JSON string
+            data: Dictionary representation
 
         Returns:
             FactorResponse instance
         """
-        response_dict = json.loads(data)
-        return FactorResponse(**response_dict)
+        return FactorResponse(**data)
 
     def _check_ttl_compliance(self, ttl_seconds: Optional[int] = None):
         """
@@ -246,15 +255,18 @@ class FactorCache:
         Raises:
             CacheError: If cache operation fails
         """
-        if not self.config.enabled or not self.redis_client:
+        if not self.config.enabled or not self.cache_manager:
             return None
 
         try:
             # Generate cache key
             key = self._generate_cache_key(request)
 
-            # Get from Redis
-            cached_data = self.redis_client.get(key)
+            # Get from CacheManager (tries L1 -> L2 -> L3)
+            cached_data = await self.cache_manager.get(
+                key,
+                namespace="emission_factors"
+            )
 
             if cached_data:
                 # Cache hit
@@ -272,13 +284,9 @@ class FactorCache:
                 logger.debug(f"Cache miss for key: {key}")
                 return None
 
-        except RedisError as e:
+        except Exception as e:
             # Log error but don't fail - cache is not critical
             logger.error(f"Cache get error: {e}", exc_info=True)
-            return None
-
-        except Exception as e:
-            logger.error(f"Cache deserialization error: {e}", exc_info=True)
             return None
 
     async def set(
@@ -299,7 +307,7 @@ class FactorCache:
             CacheError: If cache operation fails
             LicenseViolationError: If TTL exceeds license terms
         """
-        if not self.config.enabled or not self.redis_client:
+        if not self.config.enabled or not self.cache_manager:
             return
 
         try:
@@ -313,16 +321,17 @@ class FactorCache:
             # Serialize response
             serialized = self._serialize_response(response)
 
-            # Set in Redis with TTL
-            self.redis_client.setex(
-                name=key,
-                time=ttl,
-                value=serialized
+            # Set in CacheManager (writes to all layers)
+            await self.cache_manager.set(
+                key,
+                serialized,
+                ttl=ttl,
+                namespace="emission_factors"
             )
 
             logger.debug(f"Cached factor for key: {key} (TTL: {ttl}s)")
 
-        except (RedisError, LicenseViolationError) as e:
+        except LicenseViolationError as e:
             raise CacheError(
                 operation="set",
                 reason=str(e),
@@ -333,7 +342,7 @@ class FactorCache:
             logger.error(f"Cache set error: {e}", exc_info=True)
             raise CacheError(
                 operation="set",
-                reason="Serialization error",
+                reason="Cache operation error",
                 original_exception=e
             )
 
@@ -350,15 +359,18 @@ class FactorCache:
         Raises:
             CacheError: If cache operation fails
         """
-        if not self.config.enabled or not self.redis_client:
+        if not self.config.enabled or not self.cache_manager:
             return
 
         try:
             key = self._generate_cache_key(request)
-            self.redis_client.delete(key)
+            await self.cache_manager.invalidate(
+                key,
+                namespace="emission_factors"
+            )
             logger.info(f"Invalidated cache for key: {key}")
 
-        except RedisError as e:
+        except Exception as e:
             raise CacheError(
                 operation="invalidate",
                 reason=str(e),
@@ -373,7 +385,7 @@ class FactorCache:
         Invalidate all cache entries matching pattern.
 
         Args:
-            pattern: Redis key pattern (e.g., "factor:steel:*")
+            pattern: Key pattern (e.g., "factor:steel:*")
 
         Returns:
             Number of keys invalidated
@@ -381,27 +393,22 @@ class FactorCache:
         Raises:
             CacheError: If cache operation fails
         """
-        if not self.config.enabled or not self.redis_client:
+        if not self.config.enabled or not self.cache_manager:
             return 0
 
         try:
-            # Build full pattern
-            full_pattern = f"{self.config.key_prefix}:{pattern}"
+            # Use CacheManager's pattern invalidation
+            count = await self.cache_manager.invalidate_pattern(
+                pattern,
+                namespace="emission_factors"
+            )
 
-            # Find matching keys
-            keys = self.redis_client.keys(full_pattern)
+            logger.info(
+                f"Invalidated {count} cache entries matching pattern: {pattern}"
+            )
+            return count
 
-            if keys:
-                # Delete all matching keys
-                count = self.redis_client.delete(*keys)
-                logger.info(
-                    f"Invalidated {count} cache entries matching pattern: {full_pattern}"
-                )
-                return count
-            else:
-                return 0
-
-        except RedisError as e:
+        except Exception as e:
             raise CacheError(
                 operation="invalidate_pattern",
                 reason=str(e),
@@ -425,9 +432,7 @@ class FactorCache:
             CacheError: If cache operation fails
         """
         # Pattern to match all factors from this source
-        # Note: This is approximate - actual implementation would need
-        # source tracking in cache keys
-        pattern = f"factor:*"  # Would need refinement
+        pattern = f"factor:*"
 
         logger.warning(
             f"Source-specific invalidation not fully implemented. "
@@ -470,23 +475,27 @@ class FactorCache:
             "ttl_hours": self.config.ttl_seconds / 3600
         }
 
-        if self.redis_client:
+        # Note: CacheManager stats available via cache_manager.get_analytics()
+        # but requires async call, so we don't include here
+
+        return stats
+
+    async def get_detailed_stats(self) -> Dict[str, Any]:
+        """
+        Get detailed cache statistics including CacheManager analytics.
+
+        Returns:
+            Dictionary with comprehensive cache statistics
+        """
+        stats = self.get_stats()
+
+        if self.cache_manager:
             try:
-                # Get Redis info
-                info = self.redis_client.info()
-                stats["redis_used_memory_mb"] = (
-                    info.get("used_memory", 0) / 1024 / 1024
-                )
-                stats["redis_connected_clients"] = info.get("connected_clients", 0)
-
-                # Count factor keys
-                factor_keys = self.redis_client.keys(
-                    f"{self.config.key_prefix}:factor:*"
-                )
-                stats["cached_factors_count"] = len(factor_keys)
-
-            except RedisError as e:
-                logger.error(f"Error getting Redis stats: {e}")
+                # Get analytics from CacheManager
+                manager_analytics = await self.cache_manager.get_analytics()
+                stats["cache_manager"] = manager_analytics
+            except Exception as e:
+                logger.error(f"Error getting CacheManager analytics: {e}")
 
         return stats
 
@@ -496,16 +505,17 @@ class FactorCache:
         self.miss_count = 0
         logger.info("Cache statistics reset")
 
-    def close(self):
-        """Close Redis connection."""
-        if self.redis_client:
-            self.redis_client.close()
-            logger.info("Redis connection closed")
+    async def close(self):
+        """Close cache manager and all connections."""
+        if self.cache_manager:
+            await self.cache_manager.stop()
+            logger.info("CacheManager stopped")
 
     def __repr__(self) -> str:
         """String representation."""
         return (
             f"FactorCache(enabled={self.config.enabled}, "
             f"ttl={self.config.ttl_seconds}s, "
-            f"hit_rate={self.hit_count}/{self.hit_count + self.miss_count})"
+            f"hit_rate={self.hit_count}/{self.hit_count + self.miss_count}, "
+            f"backend=CacheManager)"
         )

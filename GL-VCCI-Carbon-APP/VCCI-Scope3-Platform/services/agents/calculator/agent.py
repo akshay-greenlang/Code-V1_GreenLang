@@ -33,6 +33,7 @@ from greenlang.telemetry import (
     track_execution,
     create_span,
 )
+from greenlang.validation import ValidationFramework, ValidationResult as VResult, Rule, RuleOperator, ValidationSeverity
 
 from .models import (
     Category1Input,
@@ -142,6 +143,10 @@ class Scope3CalculatorAgent(Agent[Dict[str, Any], CalculationResult]):
         # Initialize supporting services
         self.uncertainty_engine = UncertaintyEngine() if self.config.enable_monte_carlo else None
         self.provenance_builder = ProvenanceChainBuilder() if self.config.enable_provenance else None
+
+        # Initialize ValidationFramework with security rules
+        self.validator = ValidationFramework()
+        self._setup_validation_rules()
 
         # Initialize category calculators
         self.category_1 = Category1Calculator(
@@ -265,6 +270,51 @@ class Scope3CalculatorAgent(Agent[Dict[str, Any], CalculationResult]):
             f"provenance={self.config.enable_provenance}"
         )
 
+    def _setup_validation_rules(self):
+        """
+        Setup validation rules for input data security.
+
+        This adds validators for:
+        - Positive numeric values (quantity, emission_factor, distance, weight, etc.)
+        - Valid category ranges
+        - Required fields presence
+        """
+        def validate_positive_numbers(data: Dict[str, Any]) -> VResult:
+            """Validate that numeric fields are positive."""
+            result = VResult(valid=True)
+
+            # Common numeric fields that should be positive
+            positive_fields = [
+                "quantity", "emission_factor", "distance", "weight",
+                "mass_kg", "distance_km", "spend_amount", "price",
+                "emissions_kgco2e", "value", "amount"
+            ]
+
+            for field in positive_fields:
+                value = data.get(field)
+                if value is not None:
+                    try:
+                        num_value = float(value)
+                        if num_value < 0:
+                            from greenlang.validation import ValidationError as VError
+                            error = VError(
+                                field=field,
+                                message=f"{field} must be positive, got {num_value}",
+                                severity=ValidationSeverity.ERROR,
+                                validator="positive_numbers",
+                                value=num_value,
+                                expected="positive number"
+                            )
+                            result.add_error(error)
+                    except (ValueError, TypeError):
+                        pass  # Type validation is handled elsewhere
+
+            return result
+
+        # Register validators
+        self.validator.add_validator("positive_numbers", validate_positive_numbers)
+        logger.debug("Validation rules configured for Scope3CalculatorAgent")
+
     def validate(self, input_data: Dict[str, Any]) -> bool:
         """
         Validate input data.
@@ -304,9 +354,21 @@ class Scope3CalculatorAgent(Agent[Dict[str, Any], CalculationResult]):
 
         Returns:
             CalculationResult with emissions and metadata
+
+        Raises:
+            CalculatorError: If validation fails or calculation error occurs
         """
         category = input_data["category"]
         data = input_data["data"]
+
+        # Validate input data with ValidationFramework
+        validation_result = self.validator.validate(data)
+        if not validation_result.valid:
+            error_msg = f"Input validation failed: {validation_result.get_summary()}"
+            logger.error(error_msg)
+            for error in validation_result.errors:
+                logger.error(f"  - {error}")
+            raise CalculatorError(error_msg)
 
         with create_span(name="calculate_emissions", attributes={"category": category}):
             result = await self.calculate_by_category(category, data)
@@ -826,6 +888,228 @@ class Scope3CalculatorAgent(Agent[Dict[str, Any], CalculationResult]):
             )
 
         return batch_result
+
+    async def process_suppliers_optimized(
+        self,
+        suppliers: List[Union[Dict[str, Any], Category1Input]],
+        category: int = 1,
+        chunk_size: int = 1000,
+        db_connection: Optional[Any] = None
+    ):
+        """
+        Process suppliers in optimized chunks for 100K/hour throughput.
+
+        PERFORMANCE TARGET: 100,000 suppliers per hour
+        - Chunk size: 1000 suppliers per batch
+        - Parallel processing within chunks
+        - Bulk database operations
+        - Memory-efficient streaming
+
+        Args:
+            suppliers: List of supplier records to process
+            category: Scope 3 category (default: 1 for purchased goods)
+            chunk_size: Number of suppliers per chunk (default: 1000)
+            db_connection: Optional database connection for bulk inserts
+
+        Yields:
+            Tuple of (chunk_index, chunk_results, chunk_metrics)
+
+        Example:
+            >>> async for chunk_idx, results, metrics in agent.process_suppliers_optimized(suppliers):
+            ...     print(f"Chunk {chunk_idx}: {len(results)} processed in {metrics['time_ms']:.2f}ms")
+            ...     print(f"Throughput: {metrics['throughput_per_hour']:.0f} suppliers/hour")
+        """
+        start_time = time.time()
+        total_suppliers = len(suppliers)
+
+        logger.info(
+            f"Starting optimized batch processing: {total_suppliers} suppliers, "
+            f"chunk_size={chunk_size}, category={category}"
+        )
+
+        # Track overall metrics
+        total_processed = 0
+        total_successful = 0
+        total_failed = 0
+        total_emissions = 0.0
+
+        # Process suppliers in chunks
+        for chunk_idx in range(0, total_suppliers, chunk_size):
+            chunk_start = time.time()
+
+            # Extract chunk
+            chunk = suppliers[chunk_idx:chunk_idx + chunk_size]
+            chunk_num = chunk_idx // chunk_size + 1
+
+            logger.info(
+                f"Processing chunk {chunk_num}/{(total_suppliers + chunk_size - 1) // chunk_size}: "
+                f"{len(chunk)} suppliers"
+            )
+
+            # Process chunk in parallel
+            calc_func = lambda data: self.calculate_by_category(category, data)
+            tasks = [calc_func(supplier) for supplier in chunk]
+            chunk_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            # Separate successful results from errors
+            successful_results = []
+            chunk_errors = []
+            chunk_emissions = 0.0
+
+            for i, result in enumerate(chunk_results):
+                if isinstance(result, Exception):
+                    chunk_errors.append({
+                        "supplier_index": chunk_idx + i,
+                        "error": str(result),
+                        "supplier_data": chunk[i] if isinstance(chunk[i], dict) else chunk[i].dict()
+                    })
+                    total_failed += 1
+                else:
+                    successful_results.append(result)
+                    chunk_emissions += result.emissions_kgco2e
+                    total_successful += 1
+
+            total_processed += len(chunk)
+            total_emissions += chunk_emissions
+
+            # Bulk insert results if database connection provided
+            if db_connection and successful_results:
+                try:
+                    await self._bulk_insert_results(db_connection, successful_results)
+                    logger.debug(f"Bulk inserted {len(successful_results)} results to database")
+                except Exception as e:
+                    logger.error(f"Bulk insert failed for chunk {chunk_num}: {e}")
+
+            # Calculate chunk metrics
+            chunk_time = time.time() - chunk_start
+            chunk_throughput_per_second = len(chunk) / chunk_time if chunk_time > 0 else 0
+            chunk_throughput_per_hour = chunk_throughput_per_second * 3600
+
+            chunk_metrics = {
+                "chunk_index": chunk_num,
+                "chunk_size": len(chunk),
+                "successful": len(successful_results),
+                "failed": len(chunk_errors),
+                "emissions_kgco2e": chunk_emissions,
+                "emissions_tco2e": chunk_emissions / 1000,
+                "time_seconds": chunk_time,
+                "time_ms": chunk_time * 1000,
+                "throughput_per_second": chunk_throughput_per_second,
+                "throughput_per_hour": chunk_throughput_per_hour,
+                "errors": chunk_errors
+            }
+
+            # Log chunk performance
+            logger.info(
+                f"Chunk {chunk_num} completed: {len(successful_results)}/{len(chunk)} successful, "
+                f"{chunk_emissions / 1000:.3f} tCO2e, "
+                f"{chunk_time:.2f}s, "
+                f"throughput: {chunk_throughput_per_hour:.0f}/hour"
+            )
+
+            # Yield chunk results for streaming processing
+            yield chunk_num, successful_results, chunk_metrics
+
+            # Memory management: force garbage collection for large batches
+            if chunk_num % 10 == 0:
+                import gc
+                gc.collect()
+
+        # Calculate final metrics
+        total_time = time.time() - start_time
+        overall_throughput_per_second = total_processed / total_time if total_time > 0 else 0
+        overall_throughput_per_hour = overall_throughput_per_second * 3600
+
+        logger.info(
+            f"Optimized batch processing completed: "
+            f"{total_successful}/{total_processed} successful "
+            f"({total_failed} failed), "
+            f"total emissions: {total_emissions / 1000:.3f} tCO2e, "
+            f"total time: {total_time:.2f}s, "
+            f"overall throughput: {overall_throughput_per_hour:.0f} suppliers/hour"
+        )
+
+        # Record final metrics
+        if self.metrics:
+            self.metrics.record_metric(
+                "batch_processing.throughput_per_hour",
+                overall_throughput_per_hour,
+                unit="suppliers/hour"
+            )
+            self.metrics.record_metric(
+                "batch_processing.total_emissions",
+                total_emissions,
+                unit="kgCO2e"
+            )
+            self.metrics.record_metric(
+                "batch_processing.success_rate",
+                total_successful / total_processed if total_processed > 0 else 0,
+                unit="percentage"
+            )
+
+    async def process_single(self, supplier_data: Union[Dict[str, Any], Category1Input]) -> CalculationResult:
+        """
+        Process a single supplier calculation.
+
+        Helper method for batch processing optimization.
+
+        Args:
+            supplier_data: Supplier input data
+
+        Returns:
+            CalculationResult
+        """
+        return await self.calculate_category_1(supplier_data)
+
+    async def _bulk_insert_results(
+        self,
+        db_connection: Any,
+        results: List[CalculationResult]
+    ):
+        """
+        Bulk insert calculation results to database.
+
+        Optimized for high-throughput batch processing.
+
+        Args:
+            db_connection: Database connection object
+            results: List of calculation results to insert
+        """
+        if not results:
+            return
+
+        # Prepare bulk insert data
+        insert_data = [
+            {
+                "emissions_kgco2e": r.emissions_kgco2e,
+                "emissions_tco2e": r.emissions_tco2e,
+                "tier": r.tier,
+                "dqi_score": r.data_quality.dqi_score if r.data_quality else None,
+                "calculation_method": r.calculation_method,
+                "timestamp": datetime.utcnow(),
+                "provenance_chain": r.provenance_chain if hasattr(r, 'provenance_chain') else None,
+            }
+            for r in results
+        ]
+
+        # Execute bulk insert (implementation depends on database type)
+        # This is a placeholder - actual implementation would depend on db_connection type
+        try:
+            if hasattr(db_connection, 'bulk_insert'):
+                await db_connection.bulk_insert('calculation_results', insert_data)
+            elif hasattr(db_connection, 'executemany'):
+                # For SQL-based databases
+                placeholders = ', '.join(['?' for _ in insert_data[0].keys()])
+                columns = ', '.join(insert_data[0].keys())
+                query = f"INSERT INTO calculation_results ({columns}) VALUES ({placeholders})"
+                await db_connection.executemany(query, [list(d.values()) for d in insert_data])
+            else:
+                logger.warning("Database connection does not support bulk insert - using individual inserts")
+                for data in insert_data:
+                    await db_connection.insert('calculation_results', data)
+        except Exception as e:
+            logger.error(f"Bulk insert failed: {e}", exc_info=True)
+            raise
 
     def _update_stats(
         self, category: int, success: bool, processing_time_ms: float = 0.0

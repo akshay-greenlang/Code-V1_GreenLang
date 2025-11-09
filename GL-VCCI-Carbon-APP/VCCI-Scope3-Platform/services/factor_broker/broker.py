@@ -448,12 +448,20 @@ class FactorBroker:
         # For now, return empty list
         return []
 
+    async def start(self):
+        """
+        Start the broker and initialize cache.
+        """
+        # Start cache manager
+        await self.cache.start()
+        logger.info("FactorBroker started")
+
     async def close(self):
         """
         Close all connections and cleanup resources.
         """
         # Close cache
-        self.cache.close()
+        await self.cache.close()
 
         # Close all source connections
         for source in self.sources.values():
@@ -464,6 +472,7 @@ class FactorBroker:
 
     async def __aenter__(self):
         """Async context manager entry."""
+        await self.start()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):

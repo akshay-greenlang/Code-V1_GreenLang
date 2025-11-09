@@ -290,9 +290,16 @@ async def remove_from_blacklist(token: str) -> bool:
         >>> await remove_from_blacklist(access_token)
     """
     try:
-        # Decode token to get JTI
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        jti = payload.get("jti", token[-16:])
+        auth_mgr = get_auth_manager()
+
+        # Validate token to get JTI
+        auth_token = auth_mgr.validate_token(token)
+
+        if not auth_token:
+            logger.warning(f"Failed to validate token for removal")
+            return False
+
+        jti = auth_token.token_id
 
         # Remove from Redis
         redis_client = await get_redis_client()
@@ -304,10 +311,6 @@ async def remove_from_blacklist(token: str) -> bool:
             logger.info(f"Removed token from blacklist: {jti}")
             return True
 
-        return False
-
-    except JWTError as e:
-        logger.warning(f"Failed to decode token for removal: {str(e)}")
         return False
 
     except Exception as e:
@@ -365,9 +368,15 @@ async def get_blacklist_info(token: str) -> Optional[dict]:
         ...     print(f"Token blacklisted: {info['reason']}")
     """
     try:
-        # Decode token to get JTI
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        jti = payload.get("jti", token[-16:])
+        auth_mgr = get_auth_manager()
+
+        # Validate token to get JTI
+        auth_token = auth_mgr.validate_token(token)
+
+        if not auth_token:
+            return None
+
+        jti = auth_token.token_id
 
         # Get from Redis
         redis_client = await get_redis_client()
@@ -378,9 +387,6 @@ async def get_blacklist_info(token: str) -> Optional[dict]:
         if data:
             return dict(data)
 
-        return None
-
-    except JWTError:
         return None
 
     except Exception as e:

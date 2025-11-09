@@ -329,16 +329,27 @@ async def refresh_access_token(
         >>> new_tokens = await refresh_access_token(old_refresh_token)
     """
     try:
-        # Decode refresh token
-        payload = jwt.decode(refresh_token, REFRESH_SECRET, algorithms=[JWT_ALGORITHM])
+        auth_mgr = get_auth_manager()
+
+        # Validate refresh token using AuthManager
+        auth_token = auth_mgr.validate_token(refresh_token)
+
+        if not auth_token:
+            raise RefreshTokenError("Invalid or expired refresh token")
 
         # Validate token type
-        if payload.get("type") != "refresh":
+        if auth_token.token_type != "refresh":
             raise RefreshTokenError("Invalid token type")
 
-        user_id = payload.get("sub")
-        jti = payload.get("jti")
-        device_id = payload.get("device_id")
+        user_id = auth_token.user_id
+        jti = auth_token.token_id
+
+        # Get device_id from token scopes if available
+        device_id = None
+        for scope in auth_token.scopes:
+            if scope.startswith("device:"):
+                device_id = scope.split(":", 1)[1]
+                break
 
         if not user_id or not jti:
             raise RefreshTokenError("Invalid token claims")
@@ -391,10 +402,6 @@ async def refresh_access_token(
                 refresh_token=refresh_token,
             )
 
-    except JWTError as e:
-        logger.warning(f"JWT validation failed during refresh: {str(e)}")
-        raise RefreshTokenError("Invalid or expired refresh token")
-
     except RefreshTokenError:
         raise
 
@@ -417,12 +424,21 @@ async def revoke_refresh_token(refresh_token: str) -> bool:
         >>> await revoke_refresh_token(user_refresh_token)
     """
     try:
-        # Decode token to get JTI
-        payload = jwt.decode(refresh_token, REFRESH_SECRET, algorithms=[JWT_ALGORITHM])
-        jti = payload.get("jti")
+        auth_mgr = get_auth_manager()
+
+        # Validate token to get JTI
+        auth_token = auth_mgr.validate_token(refresh_token)
+
+        if not auth_token:
+            return False
+
+        jti = auth_token.token_id
 
         if not jti:
             return False
+
+        # Revoke in AuthManager
+        auth_mgr.revoke_token(refresh_token, by="system", reason="logout")
 
         # Delete from Redis
         redis_client = await get_redis_client()
@@ -433,9 +449,6 @@ async def revoke_refresh_token(refresh_token: str) -> bool:
             logger.info(f"Revoked refresh token: {jti}")
             return True
 
-        return False
-
-    except JWTError:
         return False
 
     except Exception as e:
@@ -516,15 +529,6 @@ async def get_user_active_tokens(user_id: str) -> list:
 # Validate configuration on module import
 def validate_refresh_config():
     """Validate refresh token configuration."""
-    if not JWT_SECRET:
-        raise ValueError("JWT_SECRET is required for refresh token system")
-
-    if not REFRESH_SECRET:
-        logger.warning(
-            "REFRESH_SECRET not set, using JWT_SECRET. "
-            "Consider using separate secrets for access and refresh tokens."
-        )
-
     logger.info(
         f"Refresh token system configured: "
         f"access_ttl={ACCESS_TOKEN_EXPIRE_SECONDS}s, "
