@@ -1,0 +1,504 @@
+# Security Configuration
+# GL-VCCI Scope 3 Platform
+# Version: 1.0.0
+# Last Updated: 2025-11-09
+
+# ============================================================================
+# JWT AUTHENTICATION
+# ============================================================================
+jwt:
+  # Access token configuration
+  access_token:
+    expiration_seconds: 3600  # 1 hour
+    algorithm: HS256
+    issuer: "vcci-scope3-platform"
+    audience: "vcci-api"
+
+  # Refresh token configuration
+  refresh_token:
+    expiration_seconds: 604800  # 7 days
+    rotation_enabled: true  # Rotate refresh token on each use
+    algorithm: HS256
+    # Use separate secret for refresh tokens (recommended)
+    # Set REFRESH_SECRET environment variable
+
+  # Token validation
+  validation:
+    verify_expiration: true
+    verify_signature: true
+    verify_issuer: true
+    verify_audience: true
+    leeway_seconds: 60  # Clock skew tolerance
+
+# ============================================================================
+# API KEY AUTHENTICATION
+# ============================================================================
+api_keys:
+  enabled: true
+
+  # Rate limiting
+  rate_limit:
+    default_requests_per_hour: 1000
+    burst_limit: 50  # Max requests in short burst
+
+  # API key scopes/permissions
+  scopes:
+    - read  # Read-only access
+    - write  # Read and write access
+    - admin  # Full administrative access
+    - calculate  # Calculation endpoints only
+    - report  # Reporting endpoints only
+    - export  # Data export access
+
+  # Key format: vcci_{environment}_{random_32_chars}
+  key_prefix: "vcci"
+  key_length: 32
+
+  # Key rotation policy
+  rotation:
+    max_age_days: 90  # Recommend rotation every 90 days
+    warning_days: 14  # Warn 14 days before expiration
+
+# ============================================================================
+# TOKEN BLACKLIST
+# ============================================================================
+blacklist:
+  enabled: true
+
+  # Storage configuration (Redis)
+  storage:
+    type: redis
+    # Keys expire automatically when token would have expired
+    auto_expire: true
+
+  # Events that trigger blacklisting
+  triggers:
+    - logout
+    - password_change
+    - account_disabled
+    - security_incident
+    - manual_revocation
+
+# ============================================================================
+# REQUEST SIGNING
+# ============================================================================
+request_signing:
+  enabled: true
+  algorithm: hmac-sha256
+
+  # Timestamp validation
+  timestamp:
+    tolerance_seconds: 300  # 5 minutes
+    format: "iso8601"
+
+  # Nonce configuration
+  nonce:
+    length: 32
+    ttl_seconds: 600  # 10 minutes
+    storage: redis
+
+  # Endpoints requiring signed requests
+  required_endpoints:
+    - /api/batch-upload
+    - /api/export/*
+    - /api/config/*
+    - /api/admin/*
+    - /api/reports/generate
+
+# ============================================================================
+# SECURITY HEADERS
+# ============================================================================
+security_headers:
+  # HSTS (HTTP Strict Transport Security)
+  hsts:
+    enabled: true
+    max_age_seconds: 31536000  # 1 year
+    include_subdomains: true
+    preload: true
+
+  # Content Security Policy
+  csp:
+    enabled: true
+    report_only: false  # Set to true for testing
+    report_uri: /api/security/csp-report
+    directives:
+      default_src: ["'self'"]
+      script_src: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"]
+      style_src: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"]
+      img_src: ["'self'", "data:", "https:"]
+      font_src: ["'self'", "data:", "https://fonts.gstatic.com"]
+      connect_src: ["'self'", "https://api.anthropic.com", "https://api.openai.com"]
+      frame_ancestors: ["'none'"]
+      base_uri: ["'self'"]
+      form_action: ["'self'"]
+      upgrade_insecure_requests: true
+
+  # Expect-CT (Certificate Transparency)
+  expect_ct:
+    enabled: true
+    max_age_seconds: 86400  # 24 hours
+    enforce: false  # Set to true in production
+    report_uri: /api/security/ct-report
+
+  # Network Error Logging
+  nel:
+    enabled: true
+    report_to: "default"
+    max_age_seconds: 2592000  # 30 days
+    include_subdomains: true
+
+  # Other headers
+  x_frame_options: DENY
+  x_content_type_options: nosniff
+  x_xss_protection: "1; mode=block"
+  referrer_policy: strict-origin-when-cross-origin
+
+  # Permissions Policy (formerly Feature Policy)
+  permissions_policy:
+    geolocation: []
+    microphone: []
+    camera: []
+    payment: []
+    usb: []
+    magnetometer: []
+    gyroscope: []
+    accelerometer: []
+    ambient_light_sensor: []
+
+# ============================================================================
+# AUDIT LOGGING
+# ============================================================================
+audit:
+  enabled: true
+
+  # Storage configuration
+  storage:
+    type: both  # local, s3, both
+    local:
+      directory: ./logs/audit
+      format: jsonl  # JSON Lines format
+      rotation:
+        max_size_mb: 100
+        max_files: 90  # Keep 90 days
+    s3:
+      bucket: vcci-audit-logs
+      prefix: production/audit
+      region: us-east-1
+      encryption: AES256
+      # Object lock for immutability (7 years retention)
+      object_lock:
+        enabled: true
+        mode: COMPLIANCE
+        retention_days: 2555  # 7 years
+
+  # Integrity verification
+  integrity:
+    enabled: true
+    algorithm: sha256
+    hash_chain: true  # Link events with hash chain
+
+  # Events to log
+  events:
+    authentication:
+      - login_success
+      - login_failure
+      - logout
+      - token_refresh
+      - token_revocation
+    authorization:
+      - access_granted
+      - access_denied
+      - permission_change
+    data_access:
+      - data_export
+      - data_import
+      - data_delete
+      - report_generated
+    configuration:
+      - config_change
+      - user_created
+      - user_modified
+      - user_deleted
+      - role_assigned
+    security:
+      - suspicious_activity
+      - brute_force_detected
+      - rate_limit_exceeded
+      - signature_failure
+      - blacklist_hit
+
+  # Retention policy
+  retention:
+    days: 2555  # 7 years (compliance requirement)
+    archive_after_days: 90
+
+  # SIEM integration
+  siem:
+    enabled: false  # Enable for production
+    format: cef  # Common Event Format
+    endpoints:
+      - type: splunk
+        url: https://splunk.example.com/services/collector
+        # Set SPLUNK_TOKEN in environment
+      - type: elasticsearch
+        url: https://elasticsearch.example.com
+        index: vcci-audit
+        # Set ES_API_KEY in environment
+
+# ============================================================================
+# RATE LIMITING
+# ============================================================================
+rate_limiting:
+  enabled: true
+
+  # Global rate limits (per IP)
+  global:
+    requests_per_minute: 60
+    requests_per_hour: 1000
+    requests_per_day: 10000
+
+  # Endpoint-specific limits
+  endpoints:
+    /api/auth/login:
+      requests_per_minute: 5
+      requests_per_hour: 20
+    /api/auth/register:
+      requests_per_minute: 3
+      requests_per_hour: 10
+    /api/calculate:
+      requests_per_minute: 30
+      requests_per_hour: 500
+    /api/export:
+      requests_per_minute: 5
+      requests_per_hour: 50
+
+  # Response headers
+  headers:
+    include_limit: true
+    include_remaining: true
+    include_reset: true
+
+# ============================================================================
+# PASSWORD POLICY
+# ============================================================================
+password_policy:
+  # Complexity requirements
+  min_length: 12
+  require_uppercase: true
+  require_lowercase: true
+  require_numbers: true
+  require_special_chars: true
+  special_chars: "!@#$%^&*()_+-=[]{}|;:,.<>?"
+
+  # Password history
+  prevent_reuse: true
+  history_count: 5  # Don't allow last 5 passwords
+
+  # Password expiration
+  max_age_days: 90
+  warn_before_days: 14
+
+  # Lockout policy
+  max_failed_attempts: 5
+  lockout_duration_minutes: 30
+  reset_after_minutes: 60  # Reset failed count after 60 min
+
+# ============================================================================
+# SESSION MANAGEMENT
+# ============================================================================
+session:
+  # Session timeout
+  idle_timeout_minutes: 30
+  absolute_timeout_hours: 8
+
+  # Concurrent sessions
+  max_concurrent_sessions: 3
+
+  # Session security
+  secure_cookie: true
+  http_only_cookie: true
+  same_site: strict
+
+  # Device tracking
+  track_devices: true
+  max_devices_per_user: 5
+
+# ============================================================================
+# ENCRYPTION
+# ============================================================================
+encryption:
+  # Data at rest
+  at_rest:
+    algorithm: AES-256-GCM
+    key_rotation_days: 90
+
+  # Data in transit
+  in_transit:
+    tls_version: "1.3"
+    tls_min_version: "1.2"
+    cipher_suites:
+      - TLS_AES_256_GCM_SHA384
+      - TLS_CHACHA20_POLY1305_SHA256
+      - TLS_AES_128_GCM_SHA256
+
+  # Sensitive field encryption
+  sensitive_fields:
+    - api_key
+    - secret
+    - password
+    - token
+    - ssn
+    - credit_card
+
+# ============================================================================
+# IP WHITELISTING / BLACKLISTING
+# ============================================================================
+ip_access:
+  # Whitelist for admin endpoints
+  whitelist:
+    enabled: false
+    endpoints:
+      /api/admin/*: []
+      # - 192.168.1.0/24
+      # - 10.0.0.0/8
+
+  # Blacklist for known bad actors
+  blacklist:
+    enabled: true
+    auto_block:
+      enabled: true
+      threshold_requests: 1000  # Block after 1000 requests in 1 minute
+      duration_minutes: 60
+
+# ============================================================================
+# SECURITY MONITORING
+# ============================================================================
+monitoring:
+  # Real-time alerts
+  alerts:
+    enabled: true
+    channels:
+      - email
+      - slack
+      # - pagerduty
+
+    # Alert conditions
+    conditions:
+      - type: brute_force
+        threshold: 10  # 10 failed attempts
+        window_minutes: 5
+      - type: rate_limit_exceeded
+        threshold: 3  # 3 rate limit violations
+        window_minutes: 10
+      - type: suspicious_activity
+        threshold: 1  # Immediate alert
+      - type: data_export
+        size_mb: 100  # Alert on large exports
+
+  # Security metrics
+  metrics:
+    enabled: true
+    collect:
+      - auth_success_rate
+      - auth_failure_rate
+      - token_refresh_rate
+      - api_key_usage
+      - rate_limit_hits
+      - blacklist_hits
+      - signature_failures
+
+# ============================================================================
+# VULNERABILITY SCANNING
+# ============================================================================
+vulnerability_scanning:
+  # Dependency scanning
+  dependencies:
+    enabled: true
+    frequency: daily
+    auto_update: false  # Manual review required
+
+  # Code scanning
+  code:
+    enabled: true
+    tools:
+      - bandit  # Python security linter
+      - safety  # Dependency vulnerability checker
+      - semgrep  # Static analysis
+
+  # Container scanning
+  containers:
+    enabled: true
+    scan_on_build: true
+    scan_on_deploy: true
+
+# ============================================================================
+# INCIDENT RESPONSE
+# ============================================================================
+incident_response:
+  # Automated responses
+  automated:
+    enabled: true
+    actions:
+      brute_force:
+        - block_ip
+        - alert_security_team
+      suspicious_activity:
+        - revoke_tokens
+        - alert_security_team
+      rate_limit_abuse:
+        - temporary_block
+        - log_incident
+
+  # Manual response procedures
+  contacts:
+    security_team: security@example.com
+    incident_hotline: "+1-555-SECURITY"
+
+  # Escalation
+  escalation:
+    critical: 0  # Immediate
+    high: 15  # 15 minutes
+    medium: 60  # 1 hour
+    low: 240  # 4 hours
+
+# ============================================================================
+# COMPLIANCE
+# ============================================================================
+compliance:
+  # Regulatory frameworks
+  frameworks:
+    - GDPR
+    - SOC2
+    - ISO27001
+    - NIST
+
+  # Data retention
+  data_retention:
+    user_data_days: 2555  # 7 years
+    audit_logs_days: 2555  # 7 years
+    backups_days: 90
+
+  # Privacy
+  privacy:
+    pii_encryption: true
+    right_to_erasure: true
+    data_portability: true
+    consent_tracking: true
+
+# ============================================================================
+# SECURITY TESTING
+# ============================================================================
+security_testing:
+  # Penetration testing
+  penetration_testing:
+    frequency: quarterly
+    scope:
+      - api_endpoints
+      - authentication
+      - authorization
+      - data_access
+
+  # Security audits
+  audits:
+    frequency: annual
+    external: true

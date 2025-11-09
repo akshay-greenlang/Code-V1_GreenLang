@@ -21,6 +21,8 @@ from typing import List, Dict, Any, Optional
 from pathlib import Path
 import chardet
 
+from greenlang.security.validators import PathTraversalValidator
+
 from ..exceptions import (
     FileParseError,
     EncodingDetectionError,
@@ -70,8 +72,11 @@ class CSVParser:
             EncodingDetectionError: If encoding cannot be detected
         """
         try:
+            # Validate path for security
+            validated_path = PathTraversalValidator.validate_path(file_path, must_exist=True)
+
             # Read first 100KB for detection
-            with open(file_path, 'rb') as f:
+            with open(validated_path, 'rb') as f:
                 raw_data = f.read(100000)
 
             result = chardet.detect(raw_data)
@@ -121,7 +126,10 @@ class CSVParser:
             Detected delimiter character
         """
         try:
-            with open(file_path, 'r', encoding=encoding) as f:
+            # Validate path for security
+            validated_path = PathTraversalValidator.validate_path(file_path, must_exist=True)
+
+            with open(validated_path, 'r', encoding=encoding) as f:
                 # Read first 3 lines
                 sample = ''.join([f.readline() for _ in range(3)])
 
@@ -179,7 +187,7 @@ class CSVParser:
         delimiter: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """
-        Parse CSV file into list of dictionaries.
+        Parse CSV file into list of dictionaries with path traversal protection.
 
         Args:
             file_path: Path to CSV file
@@ -193,19 +201,22 @@ class CSVParser:
             FileParseError: If parsing fails
         """
         try:
-            logger.info(f"Parsing CSV file: {file_path}")
+            # Validate path for security (prevent path traversal)
+            validated_path = PathTraversalValidator.validate_path(file_path, must_exist=True)
+
+            logger.info(f"Parsing CSV file: {validated_path}")
 
             # Detect encoding if not provided
             if encoding is None:
-                encoding = self.detect_encoding(file_path)
+                encoding = self.detect_encoding(validated_path)
 
             # Detect delimiter if not provided
             if delimiter is None:
-                delimiter = self.detect_delimiter(file_path, encoding)
+                delimiter = self.detect_delimiter(validated_path, encoding)
 
             # Parse CSV
             records = []
-            with open(file_path, 'r', encoding=encoding, newline='') as f:
+            with open(validated_path, 'r', encoding=encoding, newline='') as f:
                 # Skip initial rows if configured
                 for _ in range(self.config.csv_skip_rows):
                     next(f, None)

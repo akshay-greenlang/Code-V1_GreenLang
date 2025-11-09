@@ -1,0 +1,166 @@
+# GreenLang Monitoring System Configuration
+# ==========================================
+
+# Prometheus Configuration
+prometheus:
+  url: "http://localhost:9090"
+  pushgateway_url: "localhost:9091"
+  scrape_interval: "30s"
+  retention: "30d"
+
+# Grafana Configuration
+grafana:
+  url: "http://localhost:3000"
+  api_key: "${GRAFANA_API_KEY}"
+  org_id: 1
+  dashboards_folder: "GreenLang"
+
+# Alert Configuration
+alerting:
+  slack:
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+    channel: "#greenlang-alerts"
+    username: "GreenLang Monitor"
+
+  email:
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    use_tls: true
+    from: "alerts@greenlang.io"
+    to:
+      - "platform-team@greenlang.io"
+      - "akshay@greenlang.io"
+    username: "${EMAIL_USERNAME}"
+    password: "${EMAIL_PASSWORD}"
+
+  pagerduty:
+    integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+
+# Services to Monitor
+services:
+  factor-broker:
+    url: "http://localhost:8001"
+    health_endpoint: "/health"
+    timeout: 5
+    critical: true
+
+  entity-mdm:
+    url: "http://localhost:8002"
+    health_endpoint: "/health"
+    timeout: 5
+    critical: true
+
+  form-builder:
+    url: "http://localhost:8003"
+    health_endpoint: "/health"
+    timeout: 5
+    critical: false
+
+  api-gateway:
+    url: "http://localhost:8000"
+    health_endpoint: "/health"
+    timeout: 5
+    critical: true
+
+  redis-cache:
+    url: "redis://localhost:6379"
+    timeout: 3
+    critical: true
+
+  postgresql:
+    url: "postgresql://localhost:5432/greenlang"
+    timeout: 5
+    critical: true
+
+# Data Collection
+collectors:
+  metrics_collector:
+    enabled: true
+    interval: "5m"
+    codebase_path: "C:\\Users\\aksha\\Code-V1_GreenLang"
+
+  log_aggregator:
+    enabled: true
+    interval: "5m"
+    log_sources:
+      - "/var/log/greenlang/factor-broker.log"
+      - "/var/log/greenlang/entity-mdm.log"
+      - "/var/log/greenlang/csrd-app.log"
+      - "/var/log/greenlang/vcci-app.log"
+    elasticsearch:
+      url: "http://localhost:9200"
+      index: "greenlang-logs"
+
+  violation_scanner:
+    enabled: true
+    interval: "1h"
+    codebase_path: "C:\\Users\\aksha\\Code-V1_GreenLang"
+
+  health_checker:
+    enabled: true
+    interval: "1m"
+
+# Reporting
+reporting:
+  output_dir: "C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\monitoring\\reports\\output"
+
+  weekly_summary:
+    enabled: true
+    schedule: "MON 09:00"
+    recipients:
+      - "platform-team@greenlang.io"
+
+  monthly_executive:
+    enabled: true
+    schedule: "1st 09:00"
+    recipients:
+      - "executives@greenlang.io"
+      - "platform-team@greenlang.io"
+
+  quarterly_roi:
+    enabled: true
+    schedule: "quarterly"
+    recipients:
+      - "executives@greenlang.io"
+
+# Analytics API
+api:
+  host: "0.0.0.0"
+  port: 8080
+  api_keys:
+    - "${API_KEY_PROD}"
+    - "${API_KEY_DEV}"
+  cors_origins:
+    - "http://localhost:3000"
+    - "https://grafana.greenlang.io"
+
+# IUM Thresholds
+ium:
+  target: 95.0
+  warning_threshold: 90.0
+  critical_threshold: 80.0
+
+# Performance Thresholds
+performance:
+  p95_latency_target_ms: 500
+  p95_latency_critical_ms: 1000
+  error_rate_target_percent: 0.5
+  error_rate_critical_percent: 1.0
+  cache_hit_rate_target: 0.75
+
+# Cost Tracking
+cost:
+  llm_providers:
+    openai:
+      cost_per_1k_tokens: 0.002
+    anthropic:
+      cost_per_1k_tokens: 0.008
+    google:
+      cost_per_1k_tokens: 0.001
+  developer_hourly_rate: 100
+
+# Compliance
+compliance:
+  adr_required_lines: 100
+  test_coverage_target: 85.0
+  security_scan_interval: "6h"

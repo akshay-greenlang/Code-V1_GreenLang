@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Main application
+  app:
+    build: .
+    container_name: data-intake-app
+    volumes:
+      - ./data:/app/data
+      - ./config:/app/config
+      - ./logs:/app/logs
+    environment:
+      - GREENLANG_ENV=production
+      - DATABASE_URL=postgresql://greenlang:greenlang@postgres:5432/greenlang
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: data-intake-postgres
+    environment:
+      - POSTGRES_DB=greenlang
+      - POSTGRES_USER=greenlang
+      - POSTGRES_PASSWORD=greenlang
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: data-intake-redis
+    volumes:
+      - redis-data:/data
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  # Optional: Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: data-intake-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  # Optional: Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: data-intake-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  greenlang-network:
+    driver: bridge

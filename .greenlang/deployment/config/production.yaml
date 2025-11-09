@@ -1,0 +1,403 @@
+# GreenLang-First Production Environment Configuration
+# Environment: Production
+# Purpose: Live production enforcement system
+# SLA: 99.9% uptime
+
+environment: production
+
+# Kubernetes configuration
+kubernetes:
+  namespace: greenlang-enforcement
+  context: production-cluster
+  replicas:
+    opa: 5  # High availability
+    prometheus: 2  # HA with leader election
+    grafana: 2
+    alertmanager: 3  # Cluster for HA
+  resources:
+    opa:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    prometheus:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+    grafana:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+
+# Enforcement settings - STRICT
+enforcement:
+  mode: strict  # Full blocking enforcement
+  ium_threshold: 95  # Production quality
+  require_adr: true  # Always required
+  block_on_violation: true  # Hard block
+  allow_override: false  # No overrides without ADR
+  emergency_override_contact: 'sre-oncall@greenlang.io'
+
+# Linting configuration - STRICT
+linting:
+  enabled: true
+  auto_fix: false  # Manual verification required
+  fail_on_error: true
+  fail_on_warning: true  # Even warnings fail in prod
+  tools:
+    pylint:
+      enabled: true
+      max_line_length: 100
+      score_threshold: 9.0  # High bar
+      fail_under: 9.0
+    eslint:
+      enabled: true
+      max_warnings: 0
+      strict: true
+    terraform:
+      enabled: true
+      fmt_check: true
+      validate: true
+      security_scan: true
+    docker:
+      enabled: true
+      hadolint: true
+      security_scan: true
+      base_image_check: true
+    yaml:
+      enabled: true
+      strict: true
+      schema_validation: true
+
+# OPA configuration - PRODUCTION
+opa:
+  server: http://opa-service:8181
+  policies_path: /policies
+  cache_enabled: true
+  cache_ttl: 300  # 5 minutes (balance freshness vs. performance)
+  log_level: warn  # Reduce log noise
+  decision_logging: true
+  distributed: true
+  high_availability: true
+  circuit_breaker:
+    enabled: true
+    threshold: 5
+    timeout: 60000  # 60s
+    reset_timeout: 30000  # 30s
+
+# Monitoring configuration - COMPREHENSIVE
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    scrape_interval: 15s
+    retention: 90d  # Long retention for prod
+    remote_write:
+      enabled: true
+      endpoint: https://prometheus-remote.greenlang.io
+  grafana:
+    enabled: true
+    default_dashboard: greenlang-overview
+    anonymous_access: false
+    ssl_enabled: true
+  alertmanager:
+    enabled: true
+    cluster_mode: true
+  log_level: warn
+  metrics_retention: 90d
+  trace_sampling: 0.1  # 10% sampling
+
+# Alerting configuration - PRODUCTION
+alerting:
+  enabled: true
+  channels:
+    slack:
+      enabled: true
+      channels:
+        critical: '#greenlang-critical'
+        warning: '#greenlang-alerts'
+        info: '#greenlang-info'
+      webhook_url_secret: alertmanager-secrets
+    email:
+      enabled: true
+      recipients:
+        - devops@greenlang.io
+        - sre@greenlang.io
+    pagerduty:
+      enabled: true  # Page for critical issues
+      service_key_secret: pagerduty-service-key
+      severity_threshold: critical
+      escalation_policy: sre-oncall
+
+  # Alert thresholds - PRODUCTION
+  thresholds:
+    ium_score_warning: 95
+    ium_score_critical: 93
+    policy_latency_warning: 50   # ms (tight)
+    policy_latency_critical: 100  # ms
+    error_rate_warning: 0.001  # 0.1%
+    error_rate_critical: 0.01  # 1%
+    availability_warning: 99.9  # %
+    availability_critical: 99.5  # %
+
+# Performance settings - OPTIMIZED
+performance:
+  policy_timeout: 500  # 500ms (fast)
+  max_concurrent_checks: 100
+  cache_size: 2GB
+  connection_pool_size: 200
+  request_queue_size: 1000
+  worker_threads: 8
+
+# Security settings - MAXIMUM
+security:
+  tls_enabled: true
+  tls_min_version: "1.3"
+  cert_issuer: letsencrypt-prod
+  authentication: true
+  authorization: true
+  rbac_enabled: true
+  pod_security_policy: restricted
+  network_policy_enabled: true
+  secret_scanning: true
+  dependency_scanning: true
+  sast_enabled: true
+  container_scanning: true
+  runtime_security: true
+  vulnerability_scanning: true
+  penetration_testing: quarterly
+
+# Database configuration - PRODUCTION
+database:
+  enabled: true
+  type: postgresql
+  host: postgres-primary.greenlang.io
+  port: 5432
+  database: greenlang_production
+  ssl_mode: require
+  connection_pool: 100
+  max_connections: 200
+  read_replicas:
+    enabled: true
+    count: 2
+  backup:
+    enabled: true
+    schedule: "0 */6 * * *"  # Every 6 hours
+    retention: 90  # days
+    point_in_time_recovery: true
+
+# Feature flags - PRODUCTION
+features:
+  ai_suggestions: false  # Not yet in prod
+  auto_remediation: false  # Manual only in prod
+  advanced_analytics: true
+  policy_simulation: false  # No simulation in prod
+  canary_deployments: true
+  blue_green_deployments: true
+
+# Developer experience
+dx:
+  show_warnings: true
+  colorized_output: true
+  interactive_mode: false
+  detailed_errors: false  # Security: Don't leak details
+  suggestion_level: minimal
+
+# Integration settings - PRODUCTION
+integrations:
+  github:
+    enabled: true
+    webhook_secret: github-webhook-secret
+    rate_limit: 5000
+  gitlab:
+    enabled: false
+  slack:
+    enabled: true
+    bot_token_secret: slack-bot-token
+    rate_limit: 1000
+  jira:
+    enabled: true
+    api_token_secret: jira-api-token
+    project_key: GREENLANG
+  datadog:
+    enabled: true
+    api_key_secret: datadog-api-key
+  newrelic:
+    enabled: false
+
+# Logging - PRODUCTION
+logging:
+  level: WARN  # Reduce noise
+  format: json  # Structured logging
+  output: stdout
+  aggregation:
+    enabled: true
+    backend: elasticsearch
+    endpoint: https://logs.greenlang.io
+    index: greenlang-prod-logs
+  rotation: true
+  retention_days: 90
+  sampling: 1.0  # 100% in prod
+
+# Audit logging
+audit:
+  enabled: true
+  log_all_decisions: true
+  log_overrides: true
+  log_policy_changes: true
+  retention: 365  # 1 year for compliance
+
+# Cache configuration - PRODUCTION
+cache:
+  enabled: true
+  backend: redis
+  mode: cluster  # Redis cluster
+  nodes:
+    - redis-0.redis-service:6379
+    - redis-1.redis-service:6379
+    - redis-2.redis-service:6379
+  ttl: 300  # 5 minutes
+  max_size: 5GB
+  eviction_policy: lru
+  sentinel:
+    enabled: true
+    quorum: 2
+
+# Rate limiting - PRODUCTION
+rate_limiting:
+  enabled: true
+  requests_per_minute: 1000
+  burst: 100
+  strategy: token_bucket
+  per_user_limit: 100
+  per_ip_limit: 500
+
+# Deployment settings - PRODUCTION
+deployment:
+  strategy: RollingUpdate
+  max_surge: 1
+  max_unavailable: 0  # Zero downtime
+  health_check_timeout: 600  # 10 min for large deployments
+  rollback_enabled: true
+  auto_rollback_on_error: true
+  auto_rollback_threshold: 0.05  # 5% error rate
+  progressive_delivery: true
+  canary_percentage: 10
+  canary_duration: 3600  # 1 hour
+
+# High availability - MAXIMUM
+high_availability:
+  enabled: true
+  min_replicas: 5
+  max_replicas: 20
+  target_cpu_utilization: 60  # Conservative
+  target_memory_utilization: 70
+  scale_up_stabilization: 60  # 1 min
+  scale_down_stabilization: 300  # 5 min
+  pod_disruption_budget:
+    min_available: 3
+
+# Backup and disaster recovery - COMPREHENSIVE
+backup:
+  enabled: true
+  schedule: "0 */3 * * *"  # Every 3 hours
+  retention: 90  # days
+  storage: s3://greenlang-prod-backups
+  encryption: true
+  cross_region_replication: true
+  disaster_recovery:
+    enabled: true
+    rto: 3600  # 1 hour
+    rpo: 900   # 15 minutes
+    failover_region: us-west-2
+
+# Network policies - STRICT
+network:
+  ingress_allowed_cidrs:
+    - 10.0.0.0/8  # Internal network only
+  egress_allowed_destinations:
+    - github.com
+    - api.slack.com
+    - hooks.slack.com
+    - api.pagerduty.com
+  egress_restricted: true
+  network_segmentation: true
+
+# Compliance - FULL
+compliance:
+  audit_logging: true
+  encryption_at_rest: true
+  encryption_in_transit: true
+  data_retention_days: 365  # 1 year
+  gdpr_compliant: true
+  hipaa_compliant: false  # Not applicable
+  sox_compliant: true
+  pci_compliant: false  # Not applicable
+  iso27001_compliant: true
+  regular_audits: quarterly
+  vulnerability_scans: weekly
+  penetration_tests: quarterly
+
+# SLO/SLA - PRODUCTION
+slo:
+  availability: 99.9  # 43.2 min downtime/month
+  latency_p50: 20  # ms
+  latency_p95: 50  # ms
+  latency_p99: 100  # ms
+  error_budget: 0.1  # %
+
+sla:
+  availability: 99.9
+  support_response_time:
+    critical: 15  # minutes
+    high: 1  # hour
+    medium: 4  # hours
+    low: 24  # hours
+
+# Cost optimization
+cost:
+  auto_scaling: true
+  spot_instances: false  # No spot for prod
+  reserved_instances: true
+  cost_alerts_enabled: true
+  budget_threshold: 10000  # USD/month
+
+# Observability
+observability:
+  tracing:
+    enabled: true
+    backend: jaeger
+    sampling_rate: 0.1  # 10%
+  profiling:
+    enabled: true
+    continuous: true
+  metrics:
+    enabled: true
+    detailed: true
+  logging:
+    enabled: true
+    structured: true
+
+# Debugging - LIMITED (Security)
+debug:
+  enabled: false  # Never in production
+  profiling: false
+  trace_requests: false
+  dump_policies: false
+  verbose_errors: false  # Don't leak details
+
+# Emergency procedures
+emergency:
+  kill_switch_enabled: true
+  degraded_mode_enabled: true
+  read_only_mode_enabled: true
+  maintenance_mode_enabled: true
+  circuit_breaker_enabled: true

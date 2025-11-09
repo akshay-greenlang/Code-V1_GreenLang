@@ -13,8 +13,9 @@ Features:
 - Batch processing
 - Performance optimization
 
-Version: 1.0.0
-Date: 2025-10-30
+Version: 2.0.0 - Enhanced with GreenLang SDK
+Phase: 5 (Agent Architecture Compliance)
+Date: 2025-11-09
 """
 
 import logging
@@ -22,6 +23,16 @@ import asyncio
 from typing import Optional, List, Dict, Any, Union
 from datetime import datetime
 import time
+
+# GreenLang SDK Integration
+from greenlang.sdk.base import Agent, Metadata, Result
+from greenlang.cache import CacheManager, get_cache_manager
+from greenlang.telemetry import (
+    MetricsCollector,
+    get_logger,
+    track_execution,
+    create_span,
+)
 
 from .models import (
     Category1Input,
@@ -64,10 +75,10 @@ from .calculations import UncertaintyEngine
 from .provenance import ProvenanceChainBuilder
 from .exceptions import CalculatorError, BatchProcessingError
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
-class Scope3CalculatorAgent:
+class Scope3CalculatorAgent(Agent[Dict[str, Any], CalculationResult]):
     """
     Main Scope 3 emissions calculator agent.
 
@@ -111,8 +122,22 @@ class Scope3CalculatorAgent:
             industry_mapper: IndustryMapper instance for product categorization
             config: Calculator configuration
         """
+        # Initialize base Agent with metadata
+        metadata = Metadata(
+            id="scope3_calculator_agent",
+            name="Scope3CalculatorAgent",
+            version="2.0.0",
+            description="Production-ready Scope 3 emissions calculator for all 15 categories",
+            tags=["scope3", "emissions", "calculator", "ghg-protocol"],
+        )
+        super().__init__(metadata)
+
         self.config = config or get_config()
         self.factor_broker = factor_broker
+
+        # Initialize GreenLang infrastructure
+        self.cache_manager = get_cache_manager() if self.config.enable_caching else None
+        self.metrics = MetricsCollector(namespace="vcci.calculator")
 
         # Initialize supporting services
         self.uncertainty_engine = UncertaintyEngine() if self.config.enable_monte_carlo else None
@@ -239,6 +264,62 @@ class Scope3CalculatorAgent:
             f"monte_carlo={self.config.enable_monte_carlo}, "
             f"provenance={self.config.enable_provenance}"
         )
+
+    def validate(self, input_data: Dict[str, Any]) -> bool:
+        """
+        Validate input data.
+
+        Args:
+            input_data: Input data containing category and calculation data
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not isinstance(input_data, dict):
+            logger.error("Input data must be a dictionary")
+            return False
+
+        if "category" not in input_data:
+            logger.error("Input data must contain 'category' field")
+            return False
+
+        category = input_data.get("category")
+        if not isinstance(category, int) or category < 1 or category > 15:
+            logger.error(f"Invalid category: {category}. Must be 1-15")
+            return False
+
+        if "data" not in input_data:
+            logger.error("Input data must contain 'data' field")
+            return False
+
+        return True
+
+    @track_execution(metric_name="calculator_process")
+    async def process(self, input_data: Dict[str, Any]) -> CalculationResult:
+        """
+        Process calculation request.
+
+        Args:
+            input_data: Dictionary with 'category' and 'data' fields
+
+        Returns:
+            CalculationResult with emissions and metadata
+        """
+        category = input_data["category"]
+        data = input_data["data"]
+
+        with create_span(name="calculate_emissions", attributes={"category": category}):
+            result = await self.calculate_by_category(category, data)
+
+        # Record metrics
+        if self.metrics:
+            self.metrics.record_metric(
+                f"emissions.category_{category}",
+                result.emissions_kgco2e,
+                unit="kgCO2e"
+            )
+
+        return result
 
     async def calculate_category_1(
         self, data: Union[Category1Input, Dict[str, Any]]

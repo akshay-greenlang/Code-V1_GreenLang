@@ -1,0 +1,164 @@
+# GreenLang-First Development Environment Configuration
+# Environment: Development (Local/Dev Cluster)
+# Purpose: Developer workstations and dev cluster testing
+
+environment: development
+
+# Kubernetes configuration
+kubernetes:
+  namespace: greenlang-dev
+  context: dev-cluster
+  replicas:
+    opa: 1  # Single replica for dev
+    prometheus: 1
+    grafana: 1
+  resources:
+    opa:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    prometheus:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# Enforcement settings
+enforcement:
+  mode: warning  # Don't block in dev
+  ium_threshold: 80  # Lower threshold for dev
+  require_adr: false  # Optional in dev
+  block_on_violation: false
+  allow_override: true  # Always allow override in dev
+
+# Linting configuration
+linting:
+  enabled: true
+  auto_fix: true  # Auto-fix in dev
+  fail_on_error: false  # Don't fail builds
+  tools:
+    pylint:
+      enabled: true
+      max_line_length: 100
+    eslint:
+      enabled: true
+    terraform:
+      enabled: true
+    docker:
+      enabled: true
+    yaml:
+      enabled: true
+
+# OPA configuration
+opa:
+  server: http://localhost:8181
+  policies_path: .greenlang/enforcement/opa-policies
+  cache_enabled: true
+  cache_ttl: 300  # 5 minutes
+  log_level: debug  # Verbose logging in dev
+  decision_logging: true
+
+# Monitoring configuration
+monitoring:
+  enabled: false  # No telemetry in dev by default
+  prometheus:
+    enabled: false
+    scrape_interval: 30s
+    retention: 7d
+  grafana:
+    enabled: false
+  alertmanager:
+    enabled: false
+  log_level: info
+
+# Alerting configuration
+alerting:
+  enabled: false  # No alerts in dev
+  channels:
+    slack: false
+    email: false
+    pagerduty: false
+
+# Performance settings
+performance:
+  policy_timeout: 5000  # 5 seconds (lenient)
+  max_concurrent_checks: 5
+  cache_size: 100MB
+
+# Security settings
+security:
+  tls_enabled: false  # HTTP only in dev
+  authentication: false  # No auth in dev
+  secret_scanning: true
+  dependency_scanning: true
+
+# Database configuration
+database:
+  enabled: false  # Use in-memory in dev
+  type: sqlite
+  path: /tmp/greenlang-dev.db
+
+# Feature flags
+features:
+  ai_suggestions: false  # Not ready yet
+  auto_remediation: true  # Enable in dev for testing
+  advanced_analytics: false
+  policy_simulation: true
+
+# Developer experience
+dx:
+  show_warnings: true
+  colorized_output: true
+  interactive_mode: true
+  detailed_errors: true
+  suggestion_level: verbose
+
+# Integration settings
+integrations:
+  github:
+    enabled: false
+  gitlab:
+    enabled: false
+  slack:
+    enabled: false
+  jira:
+    enabled: false
+
+# Logging
+logging:
+  level: DEBUG
+  format: text
+  output: stdout
+  file: /tmp/greenlang-dev.log
+  rotation: false
+
+# Cache configuration
+cache:
+  enabled: true
+  backend: memory
+  ttl: 300  # 5 minutes
+  max_size: 100MB
+
+# Rate limiting (very relaxed in dev)
+rate_limiting:
+  enabled: false
+  requests_per_minute: 1000
+  burst: 100
+
+# Deployment settings
+deployment:
+  strategy: Recreate  # Simple in dev
+  health_check_timeout: 60
+  rollback_enabled: true
+
+# Debugging
+debug:
+  enabled: true
+  profiling: false
+  trace_requests: true
+  dump_policies: false

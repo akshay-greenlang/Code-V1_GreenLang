@@ -1,11 +1,25 @@
 """
-SupplierEngagementAgent v1 - Consent-aware supplier engagement and data collection.
+SupplierEngagementAgent - Consent-aware supplier engagement and data collection.
 
 Main agent orchestrating consent management, campaigns, portal, and email delivery.
+
+Version: 2.0.0 - Enhanced with GreenLang SDK
+Phase: 5 (Agent Architecture Compliance)
+Date: 2025-11-09
 """
 import logging
 from typing import Dict, List, Optional, Any
 from datetime import datetime
+
+# GreenLang SDK Integration
+from greenlang.sdk.base import Agent, Metadata, Result
+from greenlang.cache import CacheManager, get_cache_manager
+from greenlang.telemetry import (
+    MetricsCollector,
+    get_logger,
+    track_execution,
+    create_span,
+)
 
 from .models import (
     Campaign,
@@ -36,10 +50,10 @@ from .exceptions import (
 )
 
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
-class SupplierEngagementAgent:
+class SupplierEngagementAgent(Agent[Dict[str, Any], Dict[str, Any]]):
     """
     Consent-aware supplier engagement and data collection agent.
 
@@ -60,7 +74,21 @@ class SupplierEngagementAgent:
         Args:
             config: Optional configuration dictionary
         """
+        # Initialize base Agent with metadata
+        metadata = Metadata(
+            id="supplier_engagement_agent",
+            name="SupplierEngagementAgent",
+            version="2.0.0",
+            description="Consent-aware supplier engagement and data collection agent",
+            tags=["engagement", "supplier", "consent", "gdpr", "campaigns"],
+        )
+        super().__init__(metadata)
+
         self.config = config or {}
+
+        # Initialize GreenLang infrastructure
+        self.cache_manager = get_cache_manager()
+        self.metrics = MetricsCollector(namespace="vcci.engagement")
 
         # Initialize core components
         self.consent_registry = ConsentRegistry(
@@ -87,7 +115,74 @@ class SupplierEngagementAgent:
         email_provider = self.config.get("email_provider", EMAIL_SERVICE_CONFIG["default_provider"])
         self.email_service = self._init_email_service(email_provider)
 
-        logger.info("SupplierEngagementAgent v1 initialized")
+        logger.info("SupplierEngagementAgent v2.0 initialized")
+
+    def validate(self, input_data: Dict[str, Any]) -> bool:
+        """
+        Validate input data for engagement operations.
+
+        Args:
+            input_data: Input data containing operation and parameters
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not isinstance(input_data, dict):
+            logger.error("Input data must be a dictionary")
+            return False
+
+        if "operation" not in input_data:
+            logger.error("Input data must contain 'operation' field")
+            return False
+
+        operation = input_data.get("operation")
+        valid_operations = ["create_campaign", "send_email", "validate_upload", "get_analytics"]
+
+        if operation not in valid_operations:
+            logger.error(f"Invalid operation: {operation}. Must be one of {valid_operations}")
+            return False
+
+        return True
+
+    @track_execution(metric_name="engagement_process")
+    def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process engagement operation.
+
+        Args:
+            input_data: Dictionary with operation and parameters
+
+        Returns:
+            Dictionary with operation results
+        """
+        operation = input_data["operation"]
+        params = input_data.get("params", {})
+
+        with create_span(name="engagement_operation", attributes={"operation": operation}):
+            if operation == "create_campaign":
+                campaign = self.create_campaign(**params)
+                result = {"campaign_id": campaign.campaign_id, "status": "created"}
+            elif operation == "send_email":
+                email_result = self.send_email(**params)
+                result = {"success": email_result.success, "message_id": email_result.message_id}
+            elif operation == "validate_upload":
+                validation = self.validate_upload(**params)
+                result = {"valid": validation.is_valid, "errors": validation.errors}
+            elif operation == "get_analytics":
+                analytics = self.get_campaign_analytics(**params)
+                result = analytics.__dict__
+            else:
+                raise ValueError(f"Unknown operation: {operation}")
+
+        # Record metrics
+        if self.metrics:
+            self.metrics.record_metric(
+                f"engagement.{operation}",
+                1,
+                unit="count"
+            )
+
+        return result
 
     def _init_email_service(self, provider: str):
         """Initialize email service provider."""

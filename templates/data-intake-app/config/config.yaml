@@ -1,0 +1,117 @@
+# Data Intake Application Configuration
+
+# Application Settings
+application:
+  name: "data-intake-app"
+  version: "1.0.0"
+  environment: "development"
+  log_level: "INFO"
+
+# Cache Configuration
+cache:
+  enable_l1: true   # In-memory cache
+  enable_l2: false  # Redis cache (requires Redis)
+  enable_l3: false  # Disk cache
+
+  l1:
+    max_size: 1000
+    ttl: 3600  # 1 hour
+
+  l2:
+    host: "localhost"
+    port: 6379
+    db: 0
+    ttl: 7200  # 2 hours
+
+  l3:
+    directory: "./cache"
+    max_size_gb: 10
+    ttl: 86400  # 24 hours
+
+# Database Configuration
+database:
+  url: "sqlite:///data/data_intake.db"
+  # For PostgreSQL:
+  # url: "postgresql://user:password@localhost:5432/greenlang"
+
+  pool_size: 5
+  max_overflow: 10
+  echo: false  # Set to true for SQL debugging
+
+# Validation Configuration
+validation:
+  enable_schema_validation: true
+  enable_business_rules: true
+  enable_quality_checks: true
+
+  quality:
+    completeness_threshold: 0.95
+    consistency_checks: true
+    outlier_detection: true
+    outlier_std_threshold: 3.0
+
+# Telemetry Configuration
+telemetry:
+  enable_logging: true
+  enable_metrics: true
+  enable_tracing: true
+
+  logging:
+    format: "json"
+    output: "console"  # console, file, both
+    file_path: "./logs/app.log"
+    rotation: "daily"
+    retention_days: 30
+
+  metrics:
+    enable_prometheus: false
+    prometheus_port: 9090
+
+  tracing:
+    enable_opentelemetry: false
+    jaeger_endpoint: "http://localhost:14268/api/traces"
+
+# Provenance Configuration
+provenance:
+  enable: true
+  store_records: true
+  storage_path: "./provenance"
+
+  tracking:
+    track_operations: true
+    track_data_lineage: true
+    track_environment: true
+    include_metadata: true
+
+# Intake Configuration
+intake:
+  supported_formats:
+    - "csv"
+    - "excel"
+    - "json"
+    - "xml"
+    - "parquet"
+
+  csv:
+    delimiter: ","
+    encoding: "utf-8"
+    skip_blank_lines: true
+
+  excel:
+    engine: "openpyxl"
+    read_only: true
+
+  batch:
+    max_parallel_files: 10
+    chunk_size: 10000
+
+# Performance Configuration
+performance:
+  batch_processing:
+    enable: true
+    max_batch_size: 1000
+    parallel_workers: 4
+
+  memory:
+    max_memory_mb: 2048
+    enable_memory_monitoring: true

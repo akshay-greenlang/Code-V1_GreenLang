@@ -43,9 +43,7 @@ import logging
 import time
 from typing import Dict, Optional
 
-import redis
-from redis import Redis
-from redis.exceptions import RedisError
+from greenlang.cache import get_cache_manager, initialize_cache_manager, CacheManager
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -63,9 +61,10 @@ class RateLimiter:
         self,
         rate: int = 10,
         per: int = 60,
-        redis_client: Optional[Redis] = None,
-        redis_url: str = "redis://localhost:6379/0",
+        redis_client: Optional[object] = None,  # Deprecated, kept for compatibility
+        redis_url: str = "redis://localhost:6379/0",  # Deprecated
         key_prefix: str = "sap:ratelimit",
+        cache_manager: Optional[CacheManager] = None,
     ):
         """
         Initialize the rate limiter.
@@ -73,32 +72,30 @@ class RateLimiter:
         Args:
             rate: Number of requests allowed per period
             per: Time period in seconds (default: 60)
-            redis_client: Existing Redis client (optional)
-            redis_url: Redis connection URL (default: localhost)
-            key_prefix: Prefix for Redis keys (default: "sap:ratelimit")
+            redis_client: Deprecated - kept for compatibility
+            redis_url: Deprecated - kept for compatibility
+            key_prefix: Prefix for cache keys (default: "sap:ratelimit")
+            cache_manager: Optional CacheManager instance (will use global if not provided)
         """
         self.rate = rate
         self.per = per
         self.key_prefix = key_prefix
+        self._namespace = "rate_limiter"
 
-        # Initialize Redis client
-        if redis_client:
-            self.redis = redis_client
+        # Initialize CacheManager
+        if cache_manager:
+            self.cache_manager = cache_manager
         else:
-            try:
-                self.redis = redis.from_url(
-                    redis_url,
-                    decode_responses=True,
-                    socket_connect_timeout=5,
+            self.cache_manager = get_cache_manager()
+            if self.cache_manager is None:
+                logger.warning(
+                    "CacheManager not initialized. Rate limiter functionality may be limited. "
+                    "Consider initializing CacheManager at application startup."
                 )
-                # Test connection
-                self.redis.ping()
-                logger.info(f"Connected to Redis at {redis_url}")
-            except RedisError as e:
-                logger.error(f"Failed to connect to Redis: {e}")
-                raise
 
-    def acquire(self, endpoint: str, tokens: int = 1) -> bool:
+        logger.info(f"Rate limiter initialized: {rate} requests per {per}s")
+
+    async def acquire(self, endpoint: str, tokens: int = 1) -> bool:
         """
         Attempt to acquire tokens from the bucket.
 
@@ -109,21 +106,21 @@ class RateLimiter:
         Returns:
             True if tokens acquired successfully, False if rate limited
         """
+        if not self.cache_manager:
+            logger.warning("CacheManager not available, allowing request")
+            return True
+
         key = f"{self.key_prefix}:{endpoint}"
         now = time.time()
 
         try:
-            # Use Redis pipeline for atomic operations
-            pipe = self.redis.pipeline()
-
-            # Get current bucket state
-            bucket_data = self.redis.get(key)
+            # Get current bucket state from cache
+            bucket_data = await self.cache_manager.get(key, namespace=self._namespace)
 
             if bucket_data:
                 # Parse existing bucket state
-                last_refill_str, tokens_str = bucket_data.split(":")
-                last_refill = float(last_refill_str)
-                available_tokens = float(tokens_str)
+                last_refill = bucket_data.get("last_refill", now)
+                available_tokens = bucket_data.get("tokens", float(self.rate))
             else:
                 # Initialize new bucket
                 last_refill = now
@@ -144,10 +141,17 @@ class RateLimiter:
                 # Not enough tokens
                 success = False
 
-            # Update bucket state in Redis
-            bucket_value = f"{last_refill}:{available_tokens}"
-            pipe.set(key, bucket_value, ex=self.per * 2)  # TTL: 2x the period
-            pipe.execute()
+            # Update bucket state in cache
+            bucket_value = {
+                "last_refill": last_refill,
+                "tokens": available_tokens
+            }
+            await self.cache_manager.set(
+                key,
+                bucket_value,
+                ttl=self.per * 2,  # TTL: 2x the period
+                namespace=self._namespace
+            )
 
             if success:
                 logger.debug(
@@ -162,12 +166,12 @@ class RateLimiter:
 
             return success
 
-        except RedisError as e:
-            logger.error(f"Redis error in rate limiter: {e}")
-            # Fail open - allow request if Redis is down
+        except Exception as e:
+            logger.error(f"Error in rate limiter: {e}")
+            # Fail open - allow request if cache is down
             return True
 
-    def get_status(self, endpoint: str) -> Dict[str, float]:
+    async def get_status(self, endpoint: str) -> Dict[str, float]:
         """
         Get current rate limit status for an endpoint.
 
@@ -180,16 +184,22 @@ class RateLimiter:
             - tokens_max: Maximum tokens
             - reset_time: Time until bucket is full (seconds)
         """
+        if not self.cache_manager:
+            return {
+                "tokens_remaining": float(self.rate),
+                "tokens_max": float(self.rate),
+                "reset_time": 0.0,
+            }
+
         key = f"{self.key_prefix}:{endpoint}"
         now = time.time()
 
         try:
-            bucket_data = self.redis.get(key)
+            bucket_data = await self.cache_manager.get(key, namespace=self._namespace)
 
             if bucket_data:
-                last_refill_str, tokens_str = bucket_data.split(":")
-                last_refill = float(last_refill_str)
-                available_tokens = float(tokens_str)
+                last_refill = bucket_data.get("last_refill", now)
+                available_tokens = bucket_data.get("tokens", float(self.rate))
 
                 # Calculate current tokens with refill
                 time_passed = now - last_refill
@@ -218,15 +228,15 @@ class RateLimiter:
                     "reset_time": 0.0,
                 }
 
-        except RedisError as e:
-            logger.error(f"Redis error getting rate limit status: {e}")
+        except Exception as e:
+            logger.error(f"Error getting rate limit status: {e}")
             return {
                 "tokens_remaining": float(self.rate),
                 "tokens_max": float(self.rate),
                 "reset_time": 0.0,
             }
 
-    def wait_if_needed(self, endpoint: str, timeout: float = 60.0) -> bool:
+    async def wait_if_needed(self, endpoint: str, timeout: float = 60.0) -> bool:
         """
         Wait until rate limit allows the request.
 
@@ -237,10 +247,11 @@ class RateLimiter:
         Returns:
             True if acquired within timeout, False if timeout exceeded
         """
+        import asyncio
         start_time = time.time()
 
         while True:
-            if self.acquire(endpoint):
+            if await self.acquire(endpoint):
                 return True
 
             # Check timeout
@@ -252,25 +263,28 @@ class RateLimiter:
                 return False
 
             # Get status to determine wait time
-            status = self.get_status(endpoint)
+            status = await self.get_status(endpoint)
             wait_time = min(status["reset_time"] / 2, 5.0)  # Wait up to 5s at a time
 
             logger.info(
                 f"Rate limited for {endpoint}. "
                 f"Waiting {wait_time:.2f}s. Tokens remaining: {status['tokens_remaining']:.2f}"
             )
-            time.sleep(wait_time)
+            await asyncio.sleep(wait_time)
 
-    def reset(self, endpoint: str) -> None:
+    async def reset(self, endpoint: str) -> None:
         """
         Reset rate limit for an endpoint (for testing/admin).
 
         Args:
             endpoint: API endpoint identifier
         """
+        if not self.cache_manager:
+            return
+
         key = f"{self.key_prefix}:{endpoint}"
         try:
-            self.redis.delete(key)
+            await self.cache_manager.invalidate(key, namespace=self._namespace)
             logger.info(f"Rate limit reset for {endpoint}")
-        except RedisError as e:
-            logger.error(f"Redis error resetting rate limit: {e}")
+        except Exception as e:
+            logger.error(f"Error resetting rate limit: {e}")

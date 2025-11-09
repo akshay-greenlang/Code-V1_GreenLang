@@ -5,15 +5,25 @@ GL-VCCI Scope 3 Platform
 Main agent for emissions hotspot analysis and scenario modeling.
 Orchestrates Pareto analysis, segmentation, ROI calculation, and insight generation.
 
-Version: 1.0.0
-Phase: 3 (Weeks 14-16)
-Date: 2025-10-30
+Version: 2.0.0 - Enhanced with GreenLang SDK
+Phase: 5 (Agent Architecture Compliance)
+Date: 2025-11-09
 """
 
 import logging
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 import time
+
+# GreenLang SDK Integration
+from greenlang.sdk.base import Agent, Metadata, Result
+from greenlang.cache import CacheManager, get_cache_manager
+from greenlang.telemetry import (
+    MetricsCollector,
+    get_logger,
+    track_execution,
+    create_span,
+)
 
 from .models import (
     EmissionRecord,
@@ -39,10 +49,10 @@ from .roi import ROICalculator, AbatementCurveGenerator
 from .insights import HotspotDetector, RecommendationEngine
 from .exceptions import HotspotAnalysisError, InsufficientDataError
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
-class HotspotAnalysisAgent:
+class HotspotAnalysisAgent(Agent[List[Dict[str, Any]], Dict[str, Any]]):
     """
     Emissions Hotspot Analysis Agent.
 
@@ -68,7 +78,21 @@ class HotspotAnalysisAgent:
         Args:
             config: Agent configuration (uses defaults if not provided)
         """
+        # Initialize base Agent with metadata
+        metadata = Metadata(
+            id="hotspot_analysis_agent",
+            name="HotspotAnalysisAgent",
+            version="2.0.0",
+            description="Emissions hotspot analysis and scenario modeling agent",
+            tags=["hotspot", "analysis", "pareto", "abatement"],
+        )
+        super().__init__(metadata)
+
         self.config = config or DEFAULT_CONFIG
+
+        # Initialize GreenLang infrastructure
+        self.cache_manager = get_cache_manager()
+        self.metrics = MetricsCollector(namespace="vcci.hotspot")
 
         # Initialize analyzers
         self.pareto_analyzer = ParetoAnalyzer(self.config.pareto_config)
@@ -87,10 +111,64 @@ class HotspotAnalysisAgent:
         self.recommendation_engine = RecommendationEngine()
 
         logger.info(
-            "Initialized HotspotAnalysisAgent v1.0 with config: "
+            "Initialized HotspotAnalysisAgent v2.0 with config: "
             f"max_records={self.config.max_records_in_memory}, "
             f"parallel={self.config.enable_parallel_processing}"
         )
+
+    def validate(self, input_data: List[Dict[str, Any]]) -> bool:
+        """
+        Validate input emissions data.
+
+        Args:
+            input_data: List of emission records
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not isinstance(input_data, list):
+            logger.error("Input data must be a list")
+            return False
+
+        if not input_data:
+            logger.warning("Empty input data")
+            return True
+
+        # Validate each record has required fields
+        for i, record in enumerate(input_data):
+            if not isinstance(record, dict):
+                logger.error(f"Record {i} is not a dictionary")
+                return False
+
+            if "emissions_tco2e" not in record:
+                logger.error(f"Record {i} missing 'emissions_tco2e' field")
+                return False
+
+        return True
+
+    @track_execution(metric_name="hotspot_process")
+    def process(self, input_data: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Process emissions data for comprehensive hotspot analysis.
+
+        Args:
+            input_data: List of emission records
+
+        Returns:
+            Dictionary with all analysis results
+        """
+        with create_span(name="hotspot_analysis", attributes={"record_count": len(input_data)}):
+            result = self.analyze_comprehensive(input_data)
+
+        # Record metrics
+        if self.metrics:
+            self.metrics.record_metric(
+                "hotspots.total",
+                result.get("summary", {}).get("n_hotspots", 0),
+                unit="count"
+            )
+
+        return result
 
     # ========================================================================
     # PARETO ANALYSIS

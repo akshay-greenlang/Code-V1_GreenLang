@@ -12,9 +12,9 @@ Capabilities:
 - Gap analysis reporting
 - Performance: 100K records in <1 hour
 
-Version: 1.0.0
-Phase: 3 (Weeks 7-10)
-Date: 2025-10-30
+Version: 2.0.0 - Enhanced with GreenLang SDK
+Phase: 5 (Enhancement to 55% custom code)
+Date: 2025-11-09
 """
 
 import logging
@@ -23,6 +23,20 @@ from typing import List, Dict, Any, Optional
 from pathlib import Path
 from datetime import datetime
 import time
+
+# GreenLang SDK Integration
+from greenlang.sdk.base import Agent, Metadata, Result
+from greenlang.cache import CacheManager, get_cache_manager
+from greenlang.db import get_engine, get_session, DatabaseConnectionPool
+from greenlang.telemetry import (
+    MetricsCollector,
+    StructuredLogger,
+    get_logger,
+    track_execution,
+    create_span,
+)
+from greenlang.validation import ValidationFramework, ValidationRule, ValidationResult
+from greenlang.security.validators import PathTraversalValidator, validate_safe_path
 
 from .models import (
     IngestionRecord,
@@ -55,16 +69,18 @@ from .entity_resolution import EntityResolver
 # Review Queue
 from .review_queue import ReviewQueue, ReviewActions
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # ============================================================================
-# MAIN AGENT CLASS
+# MAIN AGENT CLASS (Enhanced with GreenLang SDK)
 # ============================================================================
 
-class ValueChainIntakeAgent:
+class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
     """
     Multi-format data ingestion agent for Scope 3 value chain data.
+
+    Now inherits from greenlang.sdk.base.Agent for framework integration.
 
     Features:
     - Multi-format parsing (CSV, JSON, Excel, XML, PDF)
@@ -73,6 +89,7 @@ class ValueChainIntakeAgent:
     - Human review queue for low-confidence matches
     - Data quality assessment (DQI calculation)
     - Gap analysis reporting
+    - Integrated caching, telemetry, and database pooling
 
     Example:
         >>> agent = ValueChainIntakeAgent(tenant_id="tenant-acme-corp")
@@ -98,8 +115,25 @@ class ValueChainIntakeAgent:
             entity_db: Entity master database for resolution
             config: Optional configuration override
         """
+        # Initialize base Agent with metadata
+        metadata = Metadata(
+            id=f"intake_agent_{tenant_id}",
+            name="ValueChainIntakeAgent",
+            version="2.0.0",
+            description="Multi-format data ingestion agent for Scope 3 value chain data",
+            tags=["scope3", "ingestion", "entity-resolution"],
+        )
+        super().__init__(metadata)
+
         self.tenant_id = tenant_id
         self.config = config or get_config()
+
+        # Initialize GreenLang infrastructure
+        self.cache_manager = get_cache_manager() if self.config.enable_caching else None
+        self.metrics = MetricsCollector(namespace=f"vcci.intake.{tenant_id}")
+
+        # Initialize ValidationFramework
+        self.validator = self._initialize_validation_framework()
 
         # Initialize parsers
         self.csv_parser = CSVParser(self.config.parser)
@@ -126,8 +160,110 @@ class ValueChainIntakeAgent:
         }
 
         logger.info(
-            f"Initialized ValueChainIntakeAgent for tenant: {tenant_id}"
+            f"Initialized ValueChainIntakeAgent for tenant: {tenant_id} with validation framework"
         )
+
+    def _initialize_validation_framework(self) -> ValidationFramework:
+        """Initialize validation framework with rules for ingestion records."""
+        framework = ValidationFramework()
+
+        # Add schema validation
+        def schema_validator(data):
+            result = ValidationResult(valid=True)
+            if not isinstance(data, list):
+                from greenlang.validation.framework import ValidationError as VError
+                result.add_error(VError(
+                    field="input_data",
+                    message="Input must be a list of records",
+                    severity="error",
+                    validator="schema_validator"
+                ))
+            return result
+
+        # Add record type validation
+        def record_type_validator(data):
+            from greenlang.validation.framework import ValidationError as VError
+            result = ValidationResult(valid=True)
+            if isinstance(data, list):
+                for i, record in enumerate(data):
+                    if not isinstance(record, IngestionRecord):
+                        result.add_error(VError(
+                            field=f"record[{i}]",
+                            message=f"Invalid record type: {type(record).__name__}",
+                            severity="error",
+                            validator="record_type_validator",
+                            expected="IngestionRecord"
+                        ))
+            return result
+
+        # Add entity name validation
+        def entity_name_validator(data):
+            from greenlang.validation.framework import ValidationError as VError
+            result = ValidationResult(valid=True)
+            if isinstance(data, list):
+                for i, record in enumerate(data):
+                    if isinstance(record, IngestionRecord):
+                        if not record.entity_name or not record.entity_name.strip():
+                            result.add_error(VError(
+                                field=f"record[{i}].entity_name",
+                                message="Entity name cannot be empty",
+                                severity="error",
+                                validator="entity_name_validator"
+                            ))
+            return result
+
+        framework.add_validator("schema", schema_validator)
+        framework.add_validator("record_type", record_type_validator)
+        framework.add_validator("entity_name", entity_name_validator)
+
+        return framework
+
+    def validate(self, input_data: List[IngestionRecord]) -> bool:
+        """
+        Validate input records using ValidationFramework.
+
+        Args:
+            input_data: List of ingestion records
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not input_data:
+            logger.warning("Empty input data")
+            return True
+
+        # Use ValidationFramework for comprehensive validation
+        validation_result = self.validator.validate(input_data)
+
+        if not validation_result.valid:
+            logger.error(f"Validation failed: {validation_result.get_summary()}")
+            for error in validation_result.errors:
+                logger.error(f"  - {error}")
+            return False
+
+        if validation_result.warnings:
+            for warning in validation_result.warnings:
+                logger.warning(f"  - {warning}")
+
+        return True
+
+    @track_execution(metric_name="intake_process")
+    def process(self, input_data: List[IngestionRecord]) -> IngestionResult:
+        """
+        Process input records with entity resolution and DQI.
+
+        Args:
+            input_data: List of ingestion records
+
+        Returns:
+            IngestionResult with comprehensive statistics
+        """
+        with create_span(name="intake_process_batch", attributes={"record_count": len(input_data)}):
+            return self.process_batch(
+                records=input_data,
+                batch_id=f"BATCH-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+                start_time=datetime.utcnow()
+            )
 
     def ingest_file(
         self,
@@ -138,7 +274,7 @@ class ValueChainIntakeAgent:
         column_mapping: Optional[Dict[str, str]] = None,
     ) -> IngestionResult:
         """
-        Ingest data from file.
+        Ingest data from file with path traversal protection.
 
         Args:
             file_path: Path to file
@@ -155,16 +291,28 @@ class ValueChainIntakeAgent:
             IntakeAgentError: If ingestion fails
         """
         try:
+            # Validate file path for security (prevent path traversal)
+            try:
+                validated_path = PathTraversalValidator.validate_path(
+                    file_path,
+                    must_exist=True
+                )
+            except Exception as e:
+                raise IntakeAgentError(
+                    f"Path validation failed: {str(e)}",
+                    details={"file_path": str(file_path), "error": str(e)}
+                ) from e
+
             logger.info(
-                f"Starting file ingestion: {file_path} "
+                f"Starting file ingestion: {validated_path} "
                 f"(format={format}, entity_type={entity_type})"
             )
 
             start_time = datetime.utcnow()
             batch_id = f"BATCH-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
 
-            # Parse file
-            parsed_records = self._parse_file(file_path, format, column_mapping)
+            # Parse file (using validated path)
+            parsed_records = self._parse_file(validated_path, format, column_mapping)
 
             # Convert to ingestion records
             ingestion_records = self._create_ingestion_records(

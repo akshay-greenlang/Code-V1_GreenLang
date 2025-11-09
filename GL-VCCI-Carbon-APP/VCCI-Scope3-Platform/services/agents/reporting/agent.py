@@ -4,9 +4,9 @@ GL-VCCI Scope 3 Platform
 
 Multi-standard sustainability reporting agent for Scope 3 emissions.
 
-Version: 1.0.0
-Phase: 3 (Weeks 16-18)
-Date: 2025-10-30
+Version: 2.0.0 - Enhanced with GreenLang SDK
+Phase: 5 (Agent Architecture Compliance)
+Date: 2025-11-09
 """
 
 import logging
@@ -14,6 +14,16 @@ import uuid
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 from pathlib import Path
+
+# GreenLang SDK Integration
+from greenlang.sdk.base import Agent, Metadata, Result
+from greenlang.cache import CacheManager, get_cache_manager
+from greenlang.telemetry import (
+    MetricsCollector,
+    get_logger,
+    track_execution,
+    create_span,
+)
 
 from .models import (
     CompanyInfo,
@@ -44,10 +54,10 @@ from .components import ChartGenerator, TableGenerator, NarrativeGenerator
 from .standards import ESRSE1Generator, CDPGenerator, IFRSS2Generator, ISO14083Generator
 from .exporters import PDFExporter, ExcelExporter, JSONExporter
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
-class Scope3ReportingAgent:
+class Scope3ReportingAgent(Agent[Dict[str, Any], ReportResult]):
     """
     Multi-standard sustainability reporting agent.
 
@@ -79,8 +89,22 @@ class Scope3ReportingAgent:
         Args:
             config: Optional configuration overrides
         """
+        # Initialize base Agent with metadata
+        metadata = Metadata(
+            id="scope3_reporting_agent",
+            name="Scope3ReportingAgent",
+            version="2.0.0",
+            description="Multi-standard sustainability reporting agent for Scope 3 emissions",
+            tags=["reporting", "esrs", "cdp", "ifrs", "iso14083"],
+        )
+        super().__init__(metadata)
+
         self.config = {**DEFAULT_CONFIG, **(config or {})}
         self.validation_level = self.config.get("validation_level", ValidationLevel.STANDARD)
+
+        # Initialize GreenLang infrastructure
+        self.cache_manager = get_cache_manager()
+        self.metrics = MetricsCollector(namespace="vcci.reporting")
 
         # Initialize components
         self.validator = ComplianceValidator(self.validation_level)
@@ -100,7 +124,94 @@ class Scope3ReportingAgent:
         self.excel_exporter = ExcelExporter()
         self.json_exporter = JSONExporter()
 
-        logger.info(f"Scope3ReportingAgent initialized (v{self.config['version']})")
+        logger.info(f"Scope3ReportingAgent initialized (v2.0.0)")
+
+    def validate(self, input_data: Dict[str, Any]) -> bool:
+        """
+        Validate input data for report generation.
+
+        Args:
+            input_data: Input data containing report parameters
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not isinstance(input_data, dict):
+            logger.error("Input data must be a dictionary")
+            return False
+
+        if "standard" not in input_data:
+            logger.error("Input data must contain 'standard' field")
+            return False
+
+        if "emissions_data" not in input_data:
+            logger.error("Input data must contain 'emissions_data' field")
+            return False
+
+        if "company_info" not in input_data:
+            logger.error("Input data must contain 'company_info' field")
+            return False
+
+        return True
+
+    @track_execution(metric_name="reporting_process")
+    def process(self, input_data: Dict[str, Any]) -> ReportResult:
+        """
+        Process report generation request.
+
+        Args:
+            input_data: Dictionary with standard, emissions_data, company_info, etc.
+
+        Returns:
+            ReportResult with generated report
+        """
+        standard = input_data["standard"]
+        emissions_data = input_data["emissions_data"]
+        company_info = input_data["company_info"]
+
+        with create_span(name="generate_report", attributes={"standard": standard}):
+            if standard == "ESRS_E1":
+                result = self.generate_esrs_e1_report(
+                    emissions_data=emissions_data,
+                    company_info=company_info,
+                    energy_data=input_data.get("energy_data"),
+                    intensity_metrics=input_data.get("intensity_metrics"),
+                    export_format=input_data.get("export_format", "pdf"),
+                    output_path=input_data.get("output_path"),
+                )
+            elif standard == "CDP":
+                result = self.generate_cdp_report(
+                    emissions_data=emissions_data,
+                    company_info=company_info,
+                    energy_data=input_data.get("energy_data"),
+                    export_format=input_data.get("export_format", "excel"),
+                    output_path=input_data.get("output_path"),
+                )
+            elif standard == "IFRS_S2":
+                result = self.generate_ifrs_s2_report(
+                    emissions_data=emissions_data,
+                    company_info=company_info,
+                    risks_opportunities=input_data.get("risks_opportunities"),
+                    export_format=input_data.get("export_format", "pdf"),
+                    output_path=input_data.get("output_path"),
+                )
+            elif standard == "ISO_14083":
+                result = self.generate_iso_14083_certificate(
+                    transport_data=input_data.get("transport_data"),
+                    output_path=input_data.get("output_path"),
+                )
+            else:
+                raise ValueError(f"Unknown standard: {standard}")
+
+        # Record metrics
+        if self.metrics:
+            self.metrics.record_metric(
+                f"reports.{standard}",
+                1,
+                unit="count"
+            )
+
+        return result
 
     # ========================================================================
     # MAIN REPORT GENERATION METHODS

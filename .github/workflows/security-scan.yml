@@ -1,0 +1,324 @@
+name: Security Scan
+
+on:
+  # Run on every PR
+  pull_request:
+    branches: [ main, master, develop ]
+
+  # Run daily at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install safety pip-audit pip-licenses
+          pip install -r requirements.txt
+
+      - name: Run Safety scan
+        continue-on-error: true
+        run: |
+          safety check --json --output safety-results.json || true
+
+      - name: Run pip-audit
+        continue-on-error: true
+        run: |
+          pip-audit --format json --output pip-audit-results.json || true
+
+      - name: Check licenses
+        continue-on-error: true
+        run: |
+          pip-licenses --format json --output licenses.json || true
+
+      - name: Run custom dependency scanner
+        run: |
+          python security/scripts/scan_dependencies.py --report-only || true
+
+      - name: Upload dependency scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-scan-results
+          path: |
+            safety-results.json
+            pip-audit-results.json
+            licenses.json
+            security/reports/DEPENDENCY_VULNERABILITIES.json
+
+      - name: Check for critical vulnerabilities
+        run: |
+          # Fail build if critical/high vulnerabilities found
+          python security/scripts/scan_dependencies.py
+
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Full history for git scanning
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install secret scanning tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install detect-secrets
+
+      - name: Run custom secret scanner
+        run: |
+          python security/scripts/scan_secrets.py
+
+      - name: Run detect-secrets
+        continue-on-error: true
+        run: |
+          detect-secrets scan --baseline .secrets.baseline || true
+
+      - name: Upload secret scan results
+        uses: actions/upload-artifact@v3
+        with:
+          name: secret-scan-results
+          path: security/reports/SECRET_SCAN_RESULTS.json
+
+      - name: Fail on secrets
+        run: |
+          # Fail if secrets detected
+          if [ -f security/reports/SECRET_SCAN_RESULTS.json ]; then
+            SECRETS_COUNT=$(jq '.total_secrets_found' security/reports/SECRET_SCAN_RESULTS.json)
+            if [ "$SECRETS_COUNT" -gt 0 ]; then
+              echo "ERROR: $SECRETS_COUNT secrets detected!"
+              exit 1
+            fi
+          fi
+
+  sast-scan:
+    name: Static Application Security Testing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install SAST tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit semgrep
+
+      - name: Run Bandit
+        continue-on-error: true
+        run: |
+          bandit -r greenlang/ -f json -o bandit-results.json || true
+
+      - name: Run Semgrep
+        continue-on-error: true
+        run: |
+          semgrep --config=auto --json --output=semgrep-results.json greenlang/ || true
+
+      - name: Upload SAST results
+        uses: actions/upload-artifact@v3
+        with:
+          name: sast-results
+          path: |
+            bandit-results.json
+            semgrep-results.json
+
+      - name: Check SAST results
+        run: |
+          # Fail on high-severity issues
+          if [ -f bandit-results.json ]; then
+            HIGH_COUNT=$(jq '[.results[] | select(.issue_severity=="HIGH" or .issue_severity=="CRITICAL")] | length' bandit-results.json)
+            if [ "$HIGH_COUNT" -gt 0 ]; then
+              echo "ERROR: $HIGH_COUNT high/critical issues found by Bandit"
+              exit 1
+            fi
+          fi
+
+  container-scan:
+    name: Container Security Scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: |
+          if [ -f Dockerfile ]; then
+            docker build -t greenlang:scan .
+          fi
+
+      - name: Run Trivy scan
+        if: success()
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'greenlang:scan'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-licenses
+          pip install -r requirements.txt
+
+      - name: Check licenses
+        run: |
+          pip-licenses --format json --output licenses.json
+
+      - name: Verify license compliance
+        run: |
+          # Forbidden licenses (GPL, AGPL, etc.)
+          FORBIDDEN="GPL|AGPL|LGPL|SSPL"
+
+          # Check for forbidden licenses
+          if grep -iE "$FORBIDDEN" licenses.json; then
+            echo "ERROR: Forbidden license detected!"
+            echo "Found GPL/AGPL/LGPL licensed dependency"
+            exit 1
+          fi
+
+      - name: Upload license report
+        uses: actions/upload-artifact@v3
+        with:
+          name: license-report
+          path: licenses.json
+
+  security-report:
+    name: Generate Security Report
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, secret-scan, sast-scan]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Generate summary report
+        run: |
+          cat > security-summary.md << 'EOF'
+          # Security Scan Summary
+
+          ## Scan Date
+          $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+
+          ## Results
+
+          ### Dependency Vulnerabilities
+          $(cat dependency-scan-results/DEPENDENCY_VULNERABILITIES.json 2>/dev/null || echo "No results")
+
+          ### Secrets Detected
+          $(cat secret-scan-results/SECRET_SCAN_RESULTS.json 2>/dev/null || echo "No results")
+
+          ### SAST Issues
+          $(cat sast-results/bandit-results.json 2>/dev/null || echo "No results")
+
+          ## Actions Required
+          - Review all HIGH and CRITICAL findings
+          - Update vulnerable dependencies
+          - Rotate any exposed secrets
+          - Fix code security issues
+
+          EOF
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const summary = fs.readFileSync('security-summary.md', 'utf8');
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
+
+  security-gate:
+    name: Security Gate
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, secret-scan, sast-scan]
+    if: always()
+
+    steps:
+      - name: Check security status
+        run: |
+          echo "Checking security scan results..."
+
+          # This will fail the workflow if any security job failed
+          if [ "${{ needs.dependency-scan.result }}" != "success" ]; then
+            echo "ERROR: Dependency scan failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.secret-scan.result }}" != "success" ]; then
+            echo "ERROR: Secret scan failed"
+            exit 1
+          fi
+
+          if [ "${{ needs.sast-scan.result }}" != "success" ]; then
+            echo "ERROR: SAST scan failed"
+            exit 1
+          fi
+
+          echo "All security checks passed!"
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Security gate failed! Review findings before merging."

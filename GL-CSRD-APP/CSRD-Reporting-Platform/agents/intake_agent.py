@@ -35,6 +35,9 @@ import yaml
 from jsonschema import Draft7Validator, ValidationError as JsonSchemaValidationError
 from pydantic import BaseModel, Field, validator
 
+# Import GreenLang infrastructure
+from greenlang.sdk.base import Agent, Result, Metadata
+
 # Import validation utilities
 import sys
 from pathlib import Path as PathLib
@@ -162,12 +165,18 @@ class EnrichedDataPoint(BaseModel):
 
 
 # ============================================================================
-# INTAKE AGENT
+# INTAKE AGENT (Using GreenLang SDK)
 # ============================================================================
 
-class IntakeAgent:
+class IntakeAgent(Agent[Dict[str, Any], Dict[str, Any]]):
     """
     Ingests, validates, and enriches ESG data for CSRD reporting.
+
+    Inherits from greenlang.sdk.base.Agent for:
+    - Standard validate() and process() interface
+    - Consistent error handling via Result
+    - Agent metadata and provenance tracking
+    - Integration with GreenLang pipelines
 
     This agent follows a tool-first architecture with ZERO LLM usage.
     All processing is deterministic and reproducible.
@@ -194,6 +203,18 @@ class IntakeAgent:
             company_profile_schema_path: Path to company profile schema (optional)
             quality_threshold: Minimum data quality score (0.0-1.0)
         """
+        # Initialize GreenLang Agent base class
+        super().__init__(
+            metadata=Metadata(
+                id="intake_agent",
+                name="CSRD IntakeAgent",
+                version="1.0.0",
+                description="ESG data ingestion, validation, and enrichment for CSRD reporting",
+                author="GreenLang CSRD Team",
+                tags=["csrd", "esg", "validation", "intake", "deterministic"]
+            )
+        )
+
         self.esrs_data_points_path = Path(esrs_data_points_path)
         self.data_quality_rules_path = Path(data_quality_rules_path)
         self.esg_data_schema_path = Path(esg_data_schema_path) if esg_data_schema_path else None
@@ -712,10 +733,55 @@ class IntakeAgent:
         return data_point, warnings
 
     # ========================================================================
-    # MAIN PROCESSING
+    # GREENLANG AGENT INTERFACE
     # ========================================================================
 
-    def process(
+    def validate(self, input_data: Dict[str, Any]) -> bool:
+        """
+        Validate input data for IntakeAgent (GreenLang Agent interface).
+
+        Args:
+            input_data: Dict with 'input_file' and optionally 'company_profile'
+
+        Returns:
+            True if valid, False otherwise
+        """
+        if not isinstance(input_data, dict):
+            self.logger.error("Input must be a dictionary")
+            return False
+
+        if "input_file" not in input_data:
+            self.logger.error("Missing required 'input_file' in input_data")
+            return False
+
+        input_file = Path(input_data["input_file"])
+        if not input_file.exists():
+            self.logger.error(f"Input file not found: {input_file}")
+            return False
+
+        return True
+
+    def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process input data (GreenLang Agent interface).
+
+        Args:
+            input_data: Dict with 'input_file', 'company_profile', 'output_file'
+
+        Returns:
+            Processed result dictionary
+        """
+        input_file = input_data["input_file"]
+        company_profile = input_data.get("company_profile")
+        output_file = input_data.get("output_file")
+
+        return self.process_file(input_file, company_profile, output_file)
+
+    # ========================================================================
+    # MAIN PROCESSING (Original implementation)
+    # ========================================================================
+
+    def process_file(
         self,
         input_file: Union[str, Path],
         company_profile: Optional[Dict[str, Any]] = None,

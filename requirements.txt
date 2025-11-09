@@ -21,3 +21,43 @@ psutil>=5.9.0
 #
 # For all features:
 # pip install -e ".[all]"
+
+# Shared Services Dependencies
+# ============================================================================
+
+# Factor Broker Service
+redis>=5.0.0  # Caching layer (license-compliant 24h TTL)
+pandas>=2.0.0  # Data handling
+
+# Entity MDM Service
+sentence-transformers>=2.2.0  # Vector embeddings for entity matching
+weaviate-client>=3.24.0  # Vector database for entity storage
+torch>=2.0.0  # PyTorch for BERT models
+transformers>=4.30.0  # BERT re-ranking models
+scikit-learn>=1.3.0  # ML utilities
+
+# Methodologies Service
+scipy>=1.11.0  # Statistical distributions for Monte Carlo
+numpy>=1.24.0  # Numerical computations
+matplotlib>=3.7.0  # Visualization (optional)
+seaborn>=0.12.0  # Statistical visualization (optional)
+
+# PCF Exchange Service
+httpx>=0.24.0  # Already included (async HTTP client)
+
+# Agent Templates
+openpyxl>=3.1.0  # Excel file handling
+xlrd>=2.0.0  # Legacy Excel support
+lxml>=4.9.0  # XML parsing
+pdfplumber>=0.9.0  # PDF text extraction (optional)
+reportlab>=4.0.0  # PDF generation (optional)
+
+# Optional: Full ML/AI stack
+# transformers[torch]>=4.30.0  # For GPU acceleration
+# faiss-cpu>=1.7.4  # For faster vector search (alternative to Weaviate)
+
+# Development dependencies moved to setup.py extras_require
+# ============================================================================
+# Resilience and Fault Tolerance
+# ============================================================================
+pybreaker>=1.0.0  # Circuit breaker pattern for external service protection

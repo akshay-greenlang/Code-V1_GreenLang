@@ -1,0 +1,503 @@
+name: GreenLang-First Enforcement Pipeline
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main, master, develop]
+  workflow_dispatch:
+
+env:
+  GREENLANG_VERSION: '1.0.0'
+  IUM_THRESHOLD_DEV: 80
+  IUM_THRESHOLD_STAGING: 90
+  IUM_THRESHOLD_PROD: 95
+  OPA_VERSION: '0.59.0'
+
+jobs:
+  pre-commit-check:
+    name: Pre-commit Hooks Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install pre-commit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit
+
+      - name: Cache pre-commit hooks
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-
+
+      - name: Run pre-commit hooks
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
+        continue-on-error: false
+
+      - name: Upload pre-commit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-commit-results
+          path: .pre-commit.log
+          retention-days: 30
+
+  static-analysis:
+    name: Static Analysis & IUM Score
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      ium-score: ${{ steps.ium.outputs.score }}
+      violations: ${{ steps.ium.outputs.violations }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r .greenlang/cli/requirements.txt
+          pip install -e .greenlang/cli
+
+      - name: Run infrastructure linter
+        id: infrastructure-lint
+        run: |
+          echo "::group::Linting Terraform files"
+          find . -name "*.tf" -exec terraform fmt -check {} \; || echo "::warning::Terraform formatting issues found"
+          echo "::endgroup::"
+
+          echo "::group::Linting Dockerfiles"
+          find . -name "Dockerfile*" -exec hadolint {} \; || echo "::warning::Dockerfile issues found"
+          echo "::endgroup::"
+
+          echo "::group::Linting YAML files"
+          yamllint -c .yamllint . || echo "::warning::YAML issues found"
+          echo "::endgroup::"
+
+          echo "::group::Linting Shell scripts"
+          find . -name "*.sh" -exec shellcheck {} \; || echo "::warning::Shell script issues found"
+          echo "::endgroup::"
+
+      - name: Calculate IUM score
+        id: ium
+        run: |
+          set -e
+
+          # Calculate IUM score
+          SCORE=$(greenlang ium calculate --format json | jq -r '.score')
+          VIOLATIONS=$(greenlang ium calculate --format json | jq -r '.violations | length')
+
+          echo "score=$SCORE" >> $GITHUB_OUTPUT
+          echo "violations=$VIOLATIONS" >> $GITHUB_OUTPUT
+
+          # Determine threshold based on branch
+          THRESHOLD=${{ env.IUM_THRESHOLD_DEV }}
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            THRESHOLD=${{ env.IUM_THRESHOLD_PROD }}
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            THRESHOLD=${{ env.IUM_THRESHOLD_STAGING }}
+          fi
+
+          echo "IUM Score: $SCORE% (Threshold: $THRESHOLD%)"
+          echo "Violations: $VIOLATIONS"
+
+          # Create summary
+          cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## Infrastructure-as-Code Utilization Metric (IUM)
+
+          **Score:** $SCORE% (Required: $THRESHOLD%)
+          **Violations:** $VIOLATIONS
+
+          $(greenlang ium calculate --format markdown)
+          EOF
+
+          # Fail if below threshold
+          if (( $(echo "$SCORE < $THRESHOLD" | bc -l) )); then
+            echo "::error::IUM score $SCORE% is below required threshold of $THRESHOLD%"
+            exit 1
+          fi
+
+      - name: Check for ADRs
+        id: adr-check
+        run: |
+          # Check if significant changes require ADR
+          CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | wc -l)
+
+          if [ $CHANGED_FILES -gt 10 ]; then
+            echo "::notice::Large changeset detected ($CHANGED_FILES files). Checking for ADR..."
+
+            # Check if ADR exists for this PR
+            ADR_EXISTS=$(greenlang adr check --pr ${{ github.event.pull_request.number }} || echo "false")
+
+            if [ "$ADR_EXISTS" == "false" ]; then
+              echo "::warning::No ADR found for significant changes. Consider creating one."
+              # Don't fail, just warn
+            fi
+          fi
+
+      - name: Generate static analysis report
+        if: always()
+        run: |
+          greenlang report \
+            --type static-analysis \
+            --format html \
+            --output static-analysis-report.html
+
+      - name: Upload analysis report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-analysis-report
+          path: static-analysis-report.html
+          retention-days: 30
+
+  opa-policy-test:
+    name: OPA Policy Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install OPA
+        run: |
+          curl -L -o opa https://openpolicyagent.org/downloads/v${{ env.OPA_VERSION }}/opa_linux_amd64
+          chmod +x opa
+          sudo mv opa /usr/local/bin/
+          opa version
+
+      - name: Test OPA policies
+        run: |
+          cd .greenlang/enforcement/opa-policies
+          echo "::group::Running OPA policy tests"
+          opa test . -v
+          echo "::endgroup::"
+
+      - name: Validate policy syntax
+        run: |
+          cd .greenlang/enforcement/opa-policies
+          for policy in $(find . -name "*.rego"); do
+            echo "Checking $policy"
+            opa check $policy
+          done
+
+      - name: Start OPA server
+        run: |
+          opa run --server --addr localhost:8181 .greenlang/enforcement/opa-policies &
+          sleep 3
+
+          # Health check
+          curl -f http://localhost:8181/health || exit 1
+
+      - name: Validate runtime rules
+        run: |
+          # Test sample policies
+          echo '{"action": "deploy", "environment": "production", "ium_score": 97}' | \
+            curl -X POST http://localhost:8181/v1/data/greenlang/deployment/allow \
+            -H 'Content-Type: application/json' -d @- | jq -r '.result'
+
+          # Test should pass (IUM > 95%)
+          RESULT=$(echo '{"action": "deploy", "environment": "production", "ium_score": 97}' | \
+            curl -s -X POST http://localhost:8181/v1/data/greenlang/deployment/allow \
+            -H 'Content-Type: application/json' -d @- | jq -r '.result')
+
+          if [ "$RESULT" != "true" ]; then
+            echo "::error::Production deployment policy failed for valid input"
+            exit 1
+          fi
+
+          # Test should fail (IUM < 95%)
+          RESULT=$(echo '{"action": "deploy", "environment": "production", "ium_score": 85}' | \
+            curl -s -X POST http://localhost:8181/v1/data/greenlang/deployment/allow \
+            -H 'Content-Type: application/json' -d @- | jq -r '.result')
+
+          if [ "$RESULT" != "false" ]; then
+            echo "::error::Production deployment policy should block low IUM scores"
+            exit 1
+          fi
+
+          echo "::notice::OPA policy validation successful"
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      security-events: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Dependency scan (Python)
+        run: |
+          pip install safety
+          echo "::group::Python dependency scan"
+          safety check --json || echo "::warning::Vulnerabilities found in Python dependencies"
+          echo "::endgroup::"
+
+      - name: Dependency scan (Node.js)
+        if: hashFiles('package.json') != ''
+        run: |
+          npm audit --json || echo "::warning::Vulnerabilities found in Node.js dependencies"
+
+      - name: Secret scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --json --only-verified
+
+      - name: SAST with Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/ci
+
+      - name: Container image scan
+        if: hashFiles('**/Dockerfile*') != ''
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-results.sarif
+
+  performance-check:
+    name: Performance Benchmarking
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-benchmark
+
+      - name: Download baseline benchmarks
+        uses: actions/cache@v4
+        with:
+          path: .benchmarks
+          key: benchmarks-${{ github.base_ref }}
+          restore-keys: |
+            benchmarks-
+
+      - name: Run benchmarks
+        run: |
+          pytest --benchmark-only \
+            --benchmark-autosave \
+            --benchmark-compare=0001 \
+            --benchmark-compare-fail=mean:10% \
+            tests/benchmarks/
+
+      - name: Compare against baseline
+        id: benchmark-compare
+        run: |
+          set +e
+          COMPARISON=$(pytest --benchmark-only --benchmark-compare=0001 --benchmark-json=benchmark.json tests/benchmarks/ 2>&1)
+          EXITCODE=$?
+          set -e
+
+          if [ $EXITCODE -ne 0 ]; then
+            echo "::warning::Performance regression detected"
+            echo "regression=true" >> $GITHUB_OUTPUT
+
+            # Create summary
+            cat >> $GITHUB_STEP_SUMMARY <<EOF
+          ## Performance Regression Detected
+
+          \`\`\`
+          $COMPARISON
+          \`\`\`
+          EOF
+          else
+            echo "regression=false" >> $GITHUB_OUTPUT
+            echo "::notice::Performance within acceptable range"
+          fi
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: |
+            .benchmarks/
+            benchmark.json
+          retention-days: 30
+
+      - name: Fail on regression
+        if: steps.benchmark-compare.outputs.regression == 'true'
+        run: |
+          echo "::error::Performance regression >10% detected. Review and optimize before merging."
+          exit 1
+
+  generate-report:
+    name: Generate Enforcement Report
+    runs-on: ubuntu-latest
+    needs: [pre-commit-check, static-analysis, opa-policy-test, security-scan, performance-check]
+    if: always() && github.event_name == 'pull_request'
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r .greenlang/cli/requirements.txt
+          pip install -e .greenlang/cli
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Generate comprehensive report
+        run: |
+          greenlang report \
+            --type enforcement \
+            --pr ${{ github.event.pull_request.number }} \
+            --ium-score ${{ needs.static-analysis.outputs.ium-score }} \
+            --artifacts-dir artifacts/ \
+            --format markdown \
+            --output enforcement-report.md
+
+      - name: Post report to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('enforcement-report.md', 'utf8');
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('GreenLang-First Enforcement Report')
+            );
+
+            const commentBody = `## GreenLang-First Enforcement Report
+
+            ${report}
+
+            ---
+            *Generated by GreenLang-First Enforcement Pipeline v${{ env.GREENLANG_VERSION }}*`;
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody,
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: commentBody,
+              });
+            }
+
+      - name: Update metrics dashboard
+        if: github.event_name == 'push'
+        run: |
+          # Push metrics to monitoring system
+          greenlang metrics push \
+            --ium-score ${{ needs.static-analysis.outputs.ium-score }} \
+            --violations ${{ needs.static-analysis.outputs.violations }} \
+            --commit ${{ github.sha }} \
+            --branch ${{ github.ref_name }}
+        env:
+          PROMETHEUS_PUSHGATEWAY: ${{ secrets.PROMETHEUS_PUSHGATEWAY }}
+
+  enforce-status-check:
+    name: Enforcement Status
+    runs-on: ubuntu-latest
+    needs: [pre-commit-check, static-analysis, opa-policy-test, security-scan, performance-check]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Check all jobs passed
+        run: |
+          RESULTS='${{ toJSON(needs) }}'
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+
+          # Check if any job failed
+          FAILED=$(echo "$RESULTS" | jq -r 'to_entries[] | select(.value.result == "failure") | .key' | wc -l)
+
+          if [ $FAILED -gt 0 ]; then
+            echo "::error::$FAILED enforcement check(s) failed"
+            exit 1
+          else
+            echo "::notice::All enforcement checks passed"
+          fi

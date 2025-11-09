@@ -14,6 +14,8 @@ from typing import List, Dict, Any, Optional
 from pathlib import Path
 import jsonschema
 
+from greenlang.security.validators import PathTraversalValidator
+
 from ..exceptions import FileParseError, SchemaValidationError
 from ..config import get_config
 
@@ -38,7 +40,7 @@ class JSONParser:
 
     def parse(self, file_path: Path) -> List[Dict[str, Any]]:
         """
-        Parse JSON file.
+        Parse JSON file with path traversal protection.
 
         Args:
             file_path: Path to JSON file
@@ -50,9 +52,12 @@ class JSONParser:
             FileParseError: If parsing fails
         """
         try:
-            logger.info(f"Parsing JSON file: {file_path}")
+            # Validate path for security
+            validated_path = PathTraversalValidator.validate_path(file_path, must_exist=True)
 
-            with open(file_path, 'r', encoding='utf-8') as f:
+            logger.info(f"Parsing JSON file: {validated_path}")
+
+            with open(validated_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
 
             # Convert single object to list

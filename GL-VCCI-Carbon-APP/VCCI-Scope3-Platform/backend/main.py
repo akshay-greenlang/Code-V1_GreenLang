@@ -327,6 +327,199 @@ async def startup_probe():
     return {"status": "started", "service": "gl-vcci-api"}
 
 
+@app.get("/health/detailed", tags=["Health"])
+async def detailed_health_check():
+    """
+    Detailed health check endpoint with dependency status.
+
+    Returns comprehensive health information including:
+    - Overall health status
+    - Database connectivity and latency
+    - Redis connectivity and latency
+    - Circuit breaker states for external dependencies
+    - Timestamp of health check
+
+    Used for:
+    - Detailed monitoring dashboards
+    - Troubleshooting dependency issues
+    - Pre-deployment health verification
+    - Circuit breaker state monitoring
+    """
+    import time
+    from datetime import datetime, timezone
+
+    health_data = {
+        "status": "healthy",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "service": "gl-vcci-api",
+        "version": settings.API_VERSION,
+        "dependencies": {}
+    }
+
+    overall_healthy = True
+
+    # Check Database
+    db_start = time.time()
+    try:
+        db = await get_db()
+        await db.execute("SELECT 1")
+        db_latency = (time.time() - db_start) * 1000  # ms
+        health_data["dependencies"]["database"] = {
+            "status": "healthy",
+            "latency_ms": round(db_latency, 2),
+            "type": "postgresql"
+        }
+    except Exception as e:
+        overall_healthy = False
+        health_data["dependencies"]["database"] = {
+            "status": "unhealthy",
+            "error": str(e),
+            "type": "postgresql"
+        }
+        logger.error(f"Database health check failed: {str(e)}")
+
+    # Check Redis
+    redis_start = time.time()
+    try:
+        redis = await get_redis()
+        await redis.ping()
+        redis_latency = (time.time() - redis_start) * 1000  # ms
+        health_data["dependencies"]["redis"] = {
+            "status": "healthy",
+            "latency_ms": round(redis_latency, 2),
+            "type": "cache"
+        }
+    except Exception as e:
+        overall_healthy = False
+        health_data["dependencies"]["redis"] = {
+            "status": "unhealthy",
+            "error": str(e),
+            "type": "cache"
+        }
+        logger.error(f"Redis health check failed: {str(e)}")
+
+    # Check Circuit Breaker States for External Dependencies
+    try:
+        # Import circuit breaker utilities
+        from greenlang.intelligence.providers.resilience import get_resilient_client
+
+        # Check Factor Broker circuit breaker
+        try:
+            factor_broker_client = get_resilient_client("factor_broker")
+            fb_stats = factor_broker_client.get_stats()
+
+            # Determine status based on circuit state
+            if fb_stats.state.value == "open":
+                status = "degraded"
+                overall_healthy = False
+            elif fb_stats.state.value == "half_open":
+                status = "degraded"
+            else:
+                status = "healthy"
+
+            health_data["dependencies"]["factor_broker"] = {
+                "status": status,
+                "circuit_breaker": fb_stats.state.value,
+                "failure_count": fb_stats.failure_count,
+                "success_count": fb_stats.success_count,
+                "total_calls": fb_stats.total_calls,
+                "type": "external_api"
+            }
+        except Exception as e:
+            health_data["dependencies"]["factor_broker"] = {
+                "status": "unknown",
+                "circuit_breaker": "unknown",
+                "error": str(e),
+                "type": "external_api"
+            }
+
+        # Check LLM Provider circuit breaker
+        try:
+            llm_client = get_resilient_client("llm_provider")
+            llm_stats = llm_client.get_stats()
+
+            if llm_stats.state.value == "open":
+                status = "degraded"
+                # LLM degradation doesn't fail entire service
+            elif llm_stats.state.value == "half_open":
+                status = "degraded"
+            else:
+                status = "healthy"
+
+            health_data["dependencies"]["llm_provider"] = {
+                "status": status,
+                "circuit_breaker": llm_stats.state.value,
+                "failure_count": llm_stats.failure_count,
+                "success_count": llm_stats.success_count,
+                "total_calls": llm_stats.total_calls,
+                "type": "external_api"
+            }
+        except Exception as e:
+            health_data["dependencies"]["llm_provider"] = {
+                "status": "unknown",
+                "circuit_breaker": "unknown",
+                "error": str(e),
+                "type": "external_api"
+            }
+
+        # Check ERP SAP circuit breaker
+        try:
+            erp_client = get_resilient_client("erp_sap")
+            erp_stats = erp_client.get_stats()
+
+            if erp_stats.state.value == "open":
+                status = "degraded"
+                # ERP degradation doesn't fail entire service
+            elif erp_stats.state.value == "half_open":
+                status = "degraded"
+            else:
+                status = "healthy"
+
+            health_data["dependencies"]["erp_sap"] = {
+                "status": status,
+                "circuit_breaker": erp_stats.state.value,
+                "failure_count": erp_stats.failure_count,
+                "success_count": erp_stats.success_count,
+                "total_calls": erp_stats.total_calls,
+                "type": "external_api"
+            }
+        except Exception as e:
+            health_data["dependencies"]["erp_sap"] = {
+                "status": "unknown",
+                "circuit_breaker": "unknown",
+                "error": str(e),
+                "type": "external_api"
+            }
+
+    except Exception as e:
+        logger.error(f"Circuit breaker health check failed: {str(e)}")
+        health_data["dependencies"]["circuit_breakers"] = {
+            "status": "unknown",
+            "error": str(e)
+        }
+
+    # Set overall status
+    if not overall_healthy:
+        health_data["status"] = "unhealthy"
+    elif any(
+        dep.get("status") == "degraded"
+        for dep in health_data["dependencies"].values()
+    ):
+        health_data["status"] = "degraded"
+
+    # Return appropriate HTTP status code
+    status_code = status.HTTP_200_OK
+    if health_data["status"] == "unhealthy":
+        status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    elif health_data["status"] == "degraded":
+        status_code = status.HTTP_200_OK  # Still accepting traffic
+
+    return JSONResponse(
+        status_code=status_code,
+        content=health_data
+    )
+
+
 @app.get("/", tags=["Root"])
 async def root():
     """Root endpoint with API information."""
@@ -339,6 +532,7 @@ async def root():
             "liveness": "/health/live",
             "readiness": "/health/ready",
             "startup": "/health/startup",
+            "detailed": "/health/detailed",
         },
     }
 

@@ -1,0 +1,382 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasources
+  namespace: greenlang-enforcement
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        access: proxy
+        url: http://prometheus-service:9090
+        isDefault: true
+        editable: true
+        jsonData:
+          timeInterval: 15s
+
+      - name: Elasticsearch
+        type: elasticsearch
+        access: proxy
+        url: http://elasticsearch-service:9200
+        database: "greenlang-logs-*"
+        jsonData:
+          esVersion: "8.0.0"
+          timeField: "@timestamp"
+          logMessageField: message
+          logLevelField: level
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards-config
+  namespace: greenlang-enforcement
+data:
+  dashboards.yaml: |
+    apiVersion: 1
+    providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboards
+  namespace: greenlang-enforcement
+data:
+  greenlang-overview.json: |
+    {
+      "dashboard": {
+        "title": "GreenLang-First Enforcement Overview",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "IUM Score",
+            "type": "gauge",
+            "targets": [
+              {
+                "expr": "greenlang_ium_score",
+                "legendFormat": "IUM Score"
+              }
+            ],
+            "fieldConfig": {
+              "defaults": {
+                "min": 0,
+                "max": 100,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"value": 0, "color": "red"},
+                    {"value": 80, "color": "yellow"},
+                    {"value": 90, "color": "green"}
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "id": 2,
+            "title": "Policy Violations (24h)",
+            "type": "stat",
+            "targets": [
+              {
+                "expr": "sum(increase(greenlang_policy_violations_total[24h]))",
+                "legendFormat": "Violations"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "Deployment Success Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(rate(greenlang_deployments_success_total[5m])) / sum(rate(greenlang_deployments_total[5m])) * 100",
+                "legendFormat": "Success Rate %"
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "title": "OPA Policy Decision Latency",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.50, rate(http_request_duration_seconds_bucket{job=\"opa\"}[5m]))",
+                "legendFormat": "p50"
+              },
+              {
+                "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\"opa\"}[5m]))",
+                "legendFormat": "p95"
+              },
+              {
+                "expr": "histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{job=\"opa\"}[5m]))",
+                "legendFormat": "p99"
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "title": "Enforcement Actions by Type",
+            "type": "piechart",
+            "targets": [
+              {
+                "expr": "sum by (action_type) (greenlang_enforcement_actions_total)",
+                "legendFormat": "{{action_type}}"
+              }
+            ]
+          },
+          {
+            "id": 6,
+            "title": "ADR Coverage",
+            "type": "gauge",
+            "targets": [
+              {
+                "expr": "greenlang_adr_coverage_percent",
+                "legendFormat": "ADR Coverage %"
+              }
+            ]
+          },
+          {
+            "id": 7,
+            "title": "Infrastructure Drift Events",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(increase(greenlang_infrastructure_drift_total[1h]))",
+                "legendFormat": "Drift Events"
+              }
+            ]
+          },
+          {
+            "id": 8,
+            "title": "Security Violations by Severity",
+            "type": "bargauge",
+            "targets": [
+              {
+                "expr": "sum by (severity) (greenlang_security_violations_total)",
+                "legendFormat": "{{severity}}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+  opa-performance.json: |
+    {
+      "dashboard": {
+        "title": "OPA Policy Engine Performance",
+        "timezone": "browser",
+        "panels": [
+          {
+            "id": 1,
+            "title": "OPA Request Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{job=\"opa\"}[5m]))",
+                "legendFormat": "Requests/sec"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "title": "OPA Error Rate",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{job=\"opa\",code=~\"5..\"}[5m])) / sum(rate(http_requests_total{job=\"opa\"}[5m])) * 100",
+                "legendFormat": "Error Rate %"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "title": "OPA CPU Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"opa-.*\"}[5m])) * 100",
+                "legendFormat": "CPU %"
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "title": "OPA Memory Usage",
+            "type": "graph",
+            "targets": [
+              {
+                "expr": "sum(container_memory_working_set_bytes{pod=~\"opa-.*\"}) / 1024 / 1024",
+                "legendFormat": "Memory MB"
+              }
+            ]
+          }
+        ]
+      }
+    }
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: greenlang-enforcement
+  labels:
+    app: grafana
+    component: dashboard
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      protocol: TCP
+  selector:
+    app: grafana
+    component: dashboard
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-deployment
+  namespace: greenlang-enforcement
+  labels:
+    app: grafana
+    component: dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+      component: dashboard
+  template:
+    metadata:
+      labels:
+        app: grafana
+        component: dashboard
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 472
+        fsGroup: 472
+
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.2.2
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+
+          env:
+            - name: GF_SECURITY_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secrets
+                  key: admin-user
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: grafana-secrets
+                  key: admin-password
+            - name: GF_INSTALL_PLUGINS
+              value: "grafana-piechart-panel,grafana-clock-panel"
+            - name: GF_SERVER_ROOT_URL
+              value: "https://grafana.greenlang.io"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "false"
+            - name: GF_USERS_ALLOW_SIGN_UP
+              value: "false"
+            - name: GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH
+              value: "/var/lib/grafana/dashboards/greenlang-overview.json"
+
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 3
+
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          volumeMounts:
+            - name: grafana-storage
+              mountPath: /var/lib/grafana
+            - name: datasources
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+            - name: dashboards-config
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            - name: dashboards
+              mountPath: /var/lib/grafana/dashboards
+              readOnly: true
+
+      volumes:
+        - name: grafana-storage
+          persistentVolumeClaim:
+            claimName: grafana-storage
+        - name: datasources
+          configMap:
+            name: grafana-datasources
+        - name: dashboards-config
+          configMap:
+            name: grafana-dashboards-config
+        - name: dashboards
+          configMap:
+            name: grafana-dashboards
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-storage
+  namespace: greenlang-enforcement
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-secrets
+  namespace: greenlang-enforcement
+type: Opaque
+stringData:
+  admin-user: admin
+  admin-password: changeme-in-production  # CHANGE THIS IN PRODUCTION

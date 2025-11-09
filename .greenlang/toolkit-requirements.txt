@@ -1,0 +1,12 @@
+# GreenLang Migration Toolkit - Python Dependencies
+# Install with: pip install -r .greenlang/toolkit-requirements.txt
+
+# Core dependencies (required)
+astor>=0.8.1        # AST manipulation for code rewriting
+
+# Web framework for dashboard (recommended)
+flask>=2.3.0        # Dashboard server
+
+# Optional enhancements
+# matplotlib>=3.7.0  # Advanced visualizations
+# plotly>=5.14.0     # Interactive charts

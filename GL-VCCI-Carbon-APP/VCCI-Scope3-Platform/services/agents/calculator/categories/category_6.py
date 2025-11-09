@@ -76,7 +76,7 @@ class Category6Calculator:
             input_data: Category 6 input with flights, hotels, ground transport
 
         Returns:
-            CalculationResult with total emissions
+            CalculationResult with total emissions and uncertainty
         """
         total_emissions = 0.0
         components = []
@@ -121,6 +121,27 @@ class Category6Calculator:
                 "details": ground_details
             })
 
+        # Monte Carlo uncertainty propagation
+        uncertainty = None
+        if self.config.enable_monte_carlo and total_emissions > 0:
+            # Combined uncertainty for business travel
+            # Flight distances: ±8%, Hotel nights: exact, Ground transport: ±10%
+            # Emission factors: ±15% typical for business travel
+            combined_uncertainty = 0.12  # Combined relative uncertainty for business travel
+
+            uncertainty = await self.uncertainty_engine.propagate(
+                quantity=total_emissions,
+                quantity_uncertainty=combined_uncertainty,
+                emission_factor=1.0,  # Already baked into total
+                factor_uncertainty=0.15,
+                iterations=self.config.monte_carlo_iterations
+            )
+
+            logger.debug(
+                f"Category 6 uncertainty: mean={uncertainty.mean:.2f}, "
+                f"P5={uncertainty.p5:.2f}, P95={uncertainty.p95:.2f}"
+            )
+
         # Data quality (business travel is typically Tier 2-3)
         avg_dqi = 65.0  # Typical for business travel data
 
@@ -151,7 +172,7 @@ class Category6Calculator:
             emissions_tco2e=total_emissions / 1000,
             category=6,
             tier=TierType.TIER_2,
-            uncertainty=None,
+            uncertainty=uncertainty,
             data_quality=data_quality,
             provenance=provenance,
             calculation_method="business_travel_combined",

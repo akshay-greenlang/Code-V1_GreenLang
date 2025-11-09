@@ -1,0 +1,20 @@
+# AI-Powered Developer Tools Requirements
+
+# Semantic search and embeddings
+sentence-transformers>=2.2.0
+numpy>=1.24.0
+
+# Web interface
+streamlit>=1.28.0
+
+# Data visualization
+matplotlib>=3.7.0
+plotly>=5.17.0
+
+# Performance profiling
+cProfile
+pstats
+
+# Optional: For enhanced features
+# openai>=1.0.0  # For actual LLM integration
+# anthropic>=0.7.0  # For Claude integration

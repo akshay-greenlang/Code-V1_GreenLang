@@ -230,6 +230,22 @@ class Category8Calculator:
 
             logger.info(f"Cat8 Tier2: Total energy emissions = {emissions_kgco2e:.2f} kgCO2e")
 
+            # Monte Carlo uncertainty propagation
+            uncertainty = None
+            if self.config.enable_monte_carlo and emissions_kgco2e > 0:
+                # Energy meter data: ±3-5%, Emission factors: ±10-15%
+                uncertainty = await self.uncertainty_engine.propagate(
+                    quantity=emissions_kgco2e,
+                    quantity_uncertainty=0.04,  # 4% for metered energy data
+                    emission_factor=1.0,  # Already baked in
+                    factor_uncertainty=0.12,  # 12% for regional grid factors
+                    iterations=self.config.monte_carlo_iterations
+                )
+                logger.debug(
+                    f"Category 8 (energy) uncertainty: mean={uncertainty.mean:.2f}, "
+                    f"P5={uncertainty.p5:.2f}, P95={uncertainty.p95:.2f}"
+                )
+
             # Get primary emission factor (electricity for metadata)
             electricity_ef = await self._get_electricity_factor(input_data.region)
             ef_info = self._build_emission_factor_info(electricity_ef)
@@ -265,7 +281,7 @@ class Category8Calculator:
                 emissions_tco2e=emissions_kgco2e / 1000,
                 category=8,
                 tier=TierType.TIER_2,
-                uncertainty=None,
+                uncertainty=uncertainty,
                 data_quality=data_quality,
                 provenance=provenance,
                 calculation_method="actual_energy_consumption",
@@ -322,6 +338,24 @@ class Category8Calculator:
                 f"{emissions_kgco2e:.2f} kgCO2e"
             )
 
+            # Monte Carlo uncertainty propagation
+            uncertainty = None
+            if self.config.enable_monte_carlo and emissions_kgco2e > 0:
+                # Floor area: ±2%, Intensity factor: ±25%, EF: ±12%
+                # Combined using quadrature
+                combined_uncertainty = 0.28  # sqrt(0.02^2 + 0.25^2 + 0.12^2)
+                uncertainty = await self.uncertainty_engine.propagate(
+                    quantity=emissions_kgco2e,
+                    quantity_uncertainty=combined_uncertainty,
+                    emission_factor=1.0,
+                    factor_uncertainty=0.15,
+                    iterations=self.config.monte_carlo_iterations
+                )
+                logger.debug(
+                    f"Category 8 (intensity) uncertainty: mean={uncertainty.mean:.2f}, "
+                    f"P5={uncertainty.p5:.2f}, P95={uncertainty.p95:.2f}"
+                )
+
             warnings = [
                 f"Calculated using energy intensity factor ({intensity} kWh/m²/year)",
                 "Actual energy consumption data would improve accuracy"
@@ -359,7 +393,7 @@ class Category8Calculator:
                 emissions_tco2e=emissions_kgco2e / 1000,
                 category=8,
                 tier=TierType.TIER_2,
-                uncertainty=None,
+                uncertainty=uncertainty,
                 data_quality=data_quality,
                 provenance=provenance,
                 calculation_method="floor_area_intensity",

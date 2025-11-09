@@ -13,6 +13,18 @@
 
 ## ✅ Acceptance Checklist
 
+### Infrastructure-First Requirements (MANDATORY)
+
+- [ ] **I checked if GreenLang infrastructure can be used** - Reviewed all code changes for opportunities to use existing GreenLang modules
+- [ ] **ADR created if custom code needed** - Created Architecture Decision Record in `.greenlang/adrs/` if custom implementation is required
+- [ ] **Infrastructure usage metrics checked** - Ran `python .greenlang/scripts/calculate_ium.py` and IUM score is >= 95%
+- [ ] **All agents inherit from greenlang.sdk.base.Agent** - No custom agent base classes without ADR approval
+- [ ] **All LLM calls use greenlang.intelligence.ChatSession** - No direct OpenAI/Anthropic client usage
+- [ ] **All auth uses greenlang.auth** - No custom JWT/password handling without ADR
+- [ ] **No forbidden imports** - Ran `python .greenlang/linters/infrastructure_first.py` with 0 violations
+
+See `.greenlang/ENFORCEMENT_GUIDE.md` for details.
+
 ### Core Functionality
 
 #### 1. Pack Scaffolding ⏱️

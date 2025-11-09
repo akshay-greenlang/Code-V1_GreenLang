@@ -35,6 +35,12 @@ from .records import ProvenanceRecord, ProvenanceContext
 from .validation import validate_provenance, verify_integrity
 from .reporting import generate_audit_report, generate_markdown_report
 from .decorators import traced, track_provenance
+from .tracker import (
+    ProvenanceTracker,
+    track_with_provenance,
+    get_global_tracker,
+    reset_global_tracker
+)
 
 __all__ = [
     # Supply chain security (existing)
@@ -69,6 +75,12 @@ __all__ = [
     # Decorators
     "traced",
     "track_provenance",
+
+    # Tracker
+    "ProvenanceTracker",
+    "track_with_provenance",
+    "get_global_tracker",
+    "reset_global_tracker",
 ]
 
 __version__ = "1.0.0"

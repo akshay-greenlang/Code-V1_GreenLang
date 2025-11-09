@@ -1,0 +1,690 @@
+{
+  "dashboard": {
+    "title": "Circuit Breaker Monitoring - VCCI Platform",
+    "tags": ["vcci", "circuit-breaker", "resilience", "dependencies"],
+    "timezone": "utc",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "version": 1,
+    "uid": "vcci-circuit-breakers",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Circuit Breaker Overview",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "title": "Circuit Breaker States",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 1},
+        "targets": [
+          {
+            "expr": "greenlang_circuit_breaker_state",
+            "legendFormat": "{{ service }}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"type": "value", "value": "0", "text": "CLOSED", "color": "green"},
+              {"type": "value", "value": "1", "text": "OPEN", "color": "red"},
+              {"type": "value", "value": "2", "text": "HALF_OPEN", "color": "yellow"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "red"},
+                {"value": 2, "color": "yellow"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Dependency Health Status",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 1},
+        "targets": [
+          {
+            "expr": "greenlang_dependency_health_status",
+            "legendFormat": "{{ dependency }}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"type": "value", "value": "0", "text": "UNHEALTHY", "color": "red"},
+              {"type": "value", "value": "1", "text": "DEGRADED", "color": "yellow"},
+              {"type": "value", "value": "2", "text": "HEALTHY", "color": "green"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "yellow"},
+                {"value": 2, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Circuit Breaker Success Rate",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 1},
+        "targets": [
+          {
+            "expr": "sum(rate(greenlang_circuit_breaker_successes_total[5m])) by (service) / (sum(rate(greenlang_circuit_breaker_successes_total[5m])) by (service) + sum(rate(greenlang_circuit_breaker_failures_total[5m])) by (service))",
+            "legendFormat": "{{ service }}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.8, "color": "yellow"},
+                {"value": 0.95, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Active Circuit Breakers by State",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 1},
+        "targets": [
+          {
+            "expr": "count(greenlang_circuit_breaker_state == 0)",
+            "legendFormat": "Closed",
+            "refId": "A"
+          },
+          {
+            "expr": "count(greenlang_circuit_breaker_state == 1)",
+            "legendFormat": "Open",
+            "refId": "B"
+          },
+          {
+            "expr": "count(greenlang_circuit_breaker_state == 2)",
+            "legendFormat": "Half-Open",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            }
+          },
+          "overrides": [
+            {"matcher": {"id": "byName", "options": "Closed"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]},
+            {"matcher": {"id": "byName", "options": "Open"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]},
+            {"matcher": {"id": "byName", "options": "Half-Open"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "yellow"}}]}
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "pieType": "pie",
+          "displayLabels": ["percent"]
+        }
+      },
+      {
+        "id": 10,
+        "title": "Circuit Breaker State Timeline",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 7},
+        "collapsed": false
+      },
+      {
+        "id": 11,
+        "title": "Circuit Breaker State Changes Over Time",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "greenlang_circuit_breaker_state{service=\"factor_broker\"}",
+            "legendFormat": "Factor Broker",
+            "refId": "A"
+          },
+          {
+            "expr": "greenlang_circuit_breaker_state{service=\"llm_provider\"}",
+            "legendFormat": "LLM Provider",
+            "refId": "B"
+          },
+          {
+            "expr": "greenlang_circuit_breaker_state{service=\"erp_sap\"}",
+            "legendFormat": "ERP SAP",
+            "refId": "C"
+          },
+          {
+            "expr": "greenlang_circuit_breaker_state{service=\"database\"}",
+            "legendFormat": "Database",
+            "refId": "D"
+          },
+          {
+            "expr": "greenlang_circuit_breaker_state{service=\"redis\"}",
+            "legendFormat": "Redis",
+            "refId": "E"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "State",
+            "format": "short",
+            "min": 0,
+            "max": 2,
+            "decimals": 0
+          },
+          {"label": "", "format": "short"}
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": false,
+          "current": true,
+          "max": false,
+          "min": false,
+          "rightSide": true,
+          "values": true
+        },
+        "tooltip": {
+          "shared": true,
+          "sort": 0,
+          "value_type": "individual"
+        },
+        "thresholds": [
+          {"value": 0, "colorMode": "custom", "fill": false, "line": true, "op": "gt", "lineColor": "green"},
+          {"value": 1, "colorMode": "custom", "fill": true, "line": true, "op": "gt", "fillColor": "rgba(255, 0, 0, 0.2)", "lineColor": "red"},
+          {"value": 2, "colorMode": "custom", "fill": true, "line": true, "op": "gt", "fillColor": "rgba(255, 255, 0, 0.2)", "lineColor": "yellow"}
+        ]
+      },
+      {
+        "id": 20,
+        "title": "Failure Rate Monitoring",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 16},
+        "collapsed": false
+      },
+      {
+        "id": 21,
+        "title": "Failure Rate by Service",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 17},
+        "targets": [
+          {
+            "expr": "rate(greenlang_circuit_breaker_failures_total[5m])",
+            "legendFormat": "{{ service }} - Failures/sec",
+            "refId": "A"
+          },
+          {
+            "expr": "rate(greenlang_circuit_breaker_successes_total[5m])",
+            "legendFormat": "{{ service }} - Successes/sec",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Requests/sec", "format": "reqps"},
+          {"label": "", "format": "short"}
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": false,
+          "rightSide": false,
+          "values": true
+        },
+        "alert": {
+          "name": "High Failure Rate",
+          "conditions": [
+            {
+              "evaluator": {"type": "gt", "params": [0.5]},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "1m",
+          "handler": 1,
+          "message": "Circuit breaker failure rate exceeds threshold",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 22,
+        "title": "Success vs Failure Breakdown",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 17},
+        "targets": [
+          {
+            "expr": "sum(increase(greenlang_circuit_breaker_successes_total[1h]))",
+            "legendFormat": "Successes",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(increase(greenlang_circuit_breaker_failures_total[1h]))",
+            "legendFormat": "Failures",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            }
+          },
+          "overrides": [
+            {"matcher": {"id": "byName", "options": "Successes"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]},
+            {"matcher": {"id": "byName", "options": "Failures"}, "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]}
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          },
+          "pieType": "donut",
+          "displayLabels": ["percent"]
+        }
+      },
+      {
+        "id": 30,
+        "title": "Latency & Performance",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 25},
+        "collapsed": false
+      },
+      {
+        "id": 31,
+        "title": "Circuit Breaker Request Latency (P95)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(greenlang_circuit_breaker_latency_seconds_bucket{status=\"success\"}[5m]))",
+            "legendFormat": "{{ service }} - P95 Success",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(greenlang_circuit_breaker_latency_seconds_bucket{status=\"failure\"}[5m]))",
+            "legendFormat": "{{ service }} - P95 Failure",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {"label": "Latency", "format": "s"},
+          {"label": "", "format": "short"}
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": false,
+          "rightSide": false,
+          "values": true
+        },
+        "thresholds": [
+          {"value": 1.0, "colorMode": "custom", "fill": false, "line": true, "op": "gt", "lineColor": "orange"},
+          {"value": 5.0, "colorMode": "custom", "fill": true, "line": true, "op": "gt", "fillColor": "rgba(255, 0, 0, 0.2)", "lineColor": "red"}
+        ]
+      },
+      {
+        "id": 32,
+        "title": "Dependency Latency",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26},
+        "targets": [
+          {
+            "expr": "greenlang_dependency_latency_ms",
+            "legendFormat": "{{ dependency }}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Latency (ms)", "format": "ms"},
+          {"label": "", "format": "short"}
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": false,
+          "rightSide": false,
+          "values": true
+        },
+        "thresholds": [
+          {"value": 100, "colorMode": "custom", "fill": false, "line": true, "op": "gt", "lineColor": "yellow"},
+          {"value": 1000, "colorMode": "custom", "fill": true, "line": true, "op": "gt", "fillColor": "rgba(255, 0, 0, 0.2)", "lineColor": "red"}
+        ]
+      },
+      {
+        "id": 40,
+        "title": "Circuit Breaker Rejections & Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 34},
+        "collapsed": false
+      },
+      {
+        "id": 41,
+        "title": "Circuit Breaker Rejections",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 35},
+        "targets": [
+          {
+            "expr": "rate(greenlang_circuit_breaker_rejection_total[5m])",
+            "legendFormat": "{{ service }} - Rejections/sec",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Rejections/sec", "format": "reqps"},
+          {"label": "", "format": "short"}
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": false,
+          "rightSide": false,
+          "values": true
+        },
+        "alert": {
+          "name": "Circuit Breaker Rejecting Requests",
+          "conditions": [
+            {
+              "evaluator": {"type": "gt", "params": [0.1]},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "1m",
+          "handler": 1,
+          "message": "Circuit breaker is open and rejecting requests",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 42,
+        "title": "Consecutive Failures",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 35},
+        "targets": [
+          {
+            "expr": "greenlang_circuit_breaker_consecutive_failures",
+            "legendFormat": "{{ service }}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "Consecutive Failures", "format": "short"},
+          {"label": "", "format": "short"}
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": false,
+          "current": true,
+          "max": true,
+          "min": false,
+          "rightSide": false,
+          "values": true
+        },
+        "thresholds": [
+          {"value": 3, "colorMode": "custom", "fill": false, "line": true, "op": "gt", "lineColor": "yellow"},
+          {"value": 5, "colorMode": "custom", "fill": true, "line": true, "op": "gt", "fillColor": "rgba(255, 0, 0, 0.2)", "lineColor": "red"}
+        ]
+      },
+      {
+        "id": 50,
+        "title": "State Transition Analytics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 43},
+        "collapsed": false
+      },
+      {
+        "id": 51,
+        "title": "Circuit Breaker State Changes (Rate)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 44},
+        "targets": [
+          {
+            "expr": "rate(greenlang_circuit_breaker_state_changes_total[5m])",
+            "legendFormat": "{{ service }}: {{ from_state }} → {{ to_state }}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"label": "State Changes/sec", "format": "short"},
+          {"label": "", "format": "short"}
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "current": true,
+          "max": true,
+          "min": false,
+          "rightSide": false,
+          "values": true
+        }
+      },
+      {
+        "id": 52,
+        "title": "Time Since Last State Change",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 44},
+        "targets": [
+          {
+            "expr": "time() - greenlang_circuit_breaker_last_state_change_timestamp",
+            "legendFormat": "{{ service }}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 300, "color": "yellow"},
+                {"value": 3600, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto",
+          "orientation": "horizontal",
+          "reduceOptions": {
+            "values": false,
+            "fields": "",
+            "calcs": ["lastNotNull"]
+          }
+        }
+      },
+      {
+        "id": 60,
+        "title": "Detailed Service Metrics",
+        "type": "row",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 52},
+        "collapsed": true,
+        "panels": [
+          {
+            "id": 61,
+            "title": "Factor Broker Circuit Breaker Metrics",
+            "type": "table",
+            "datasource": "Prometheus",
+            "gridPos": {"h": 8, "w": 24, "x": 0, "y": 53},
+            "targets": [
+              {
+                "expr": "greenlang_circuit_breaker_state{service=\"factor_broker\"}",
+                "legendFormat": "State",
+                "refId": "A",
+                "format": "table",
+                "instant": true
+              },
+              {
+                "expr": "greenlang_circuit_breaker_failures_total{service=\"factor_broker\"}",
+                "legendFormat": "Total Failures",
+                "refId": "B",
+                "format": "table",
+                "instant": true
+              },
+              {
+                "expr": "greenlang_circuit_breaker_successes_total{service=\"factor_broker\"}",
+                "legendFormat": "Total Successes",
+                "refId": "C",
+                "format": "table",
+                "instant": true
+              },
+              {
+                "expr": "greenlang_circuit_breaker_consecutive_failures{service=\"factor_broker\"}",
+                "legendFormat": "Consecutive Failures",
+                "refId": "D",
+                "format": "table",
+                "instant": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "service",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(greenlang_circuit_breaker_state, service)",
+          "multi": true,
+          "includeAll": true,
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          }
+        },
+        {
+          "name": "dependency",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(greenlang_dependency_health_status, dependency)",
+          "multi": true,
+          "includeAll": true,
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          }
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(greenlang_application_info[5m]) > 0",
+          "iconColor": "blue",
+          "tagKeys": "version"
+        },
+        {
+          "name": "Circuit Opened",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "increase(greenlang_circuit_breaker_state_changes_total{to_state=\"open\"}[1m]) > 0",
+          "iconColor": "red",
+          "tagKeys": "service"
+        },
+        {
+          "name": "Circuit Closed",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "increase(greenlang_circuit_breaker_state_changes_total{to_state=\"closed\"}[1m]) > 0",
+          "iconColor": "green",
+          "tagKeys": "service"
+        }
+      ]
+    }
+  },
+  "overwrite": true,
+  "message": "Circuit Breaker Monitoring Dashboard - Comprehensive visibility into resilience patterns",
+  "folderId": 0,
+  "folderUid": ""
+}

@@ -162,12 +162,44 @@ uvicorn[standard]>=0.24.0
 # - Status: Not yet implemented
 
 # ----------------------------------------------------------------------------
+# GREENLANG FRAMEWORK DEPENDENCIES (v2 REFACTORING)
+# ----------------------------------------------------------------------------
+
+# GreenLang SDK Core (REQUIRED for v2 agents)
+# greenlang-sdk>=0.3.0
+# - Used by: All v2 agents (ShipmentIntakeAgent_v2, EmissionsCalculatorAgent_v2, ReportingPackagerAgent_v2)
+# - Purpose: Agent base classes, Pipeline orchestration, Result containers
+# - Why: Reduces custom code from 98% to 45% through framework adoption
+# - Status: Framework is local (not yet published to PyPI)
+# - Install: Add parent directory to PYTHONPATH or use local import
+
+# GreenLang Telemetry (REQUIRED for cbam_pipeline_v2)
+# greenlang-telemetry>=0.3.0
+# - Used by: cbam_pipeline_v2
+# - Purpose: Metrics collection, performance tracking, health monitoring
+# - Why: Production-ready observability without custom code
+# - Status: Part of local GreenLang SDK
+
+# GreenLang Agent Templates (REQUIRED for ReportingPackagerAgent_v2)
+# greenlang-agents>=0.3.0
+# - Used by: ReportingPackagerAgent_v2
+# - Purpose: ReportingAgent template for multi-format export
+# - Why: Reusable reporting patterns (JSON, Excel, CSV, PDF)
+# - Status: Part of local GreenLang SDK
+
+# NOTE: The GreenLang SDK is currently local in the parent directory.
+# To use v2 agents, ensure the parent directory is in your PYTHONPATH:
+#   export PYTHONPATH=$PYTHONPATH:/path/to/Code-V1_GreenLang
+# Or use the provided run scripts that set this automatically.
+
+# ----------------------------------------------------------------------------
 # NOTES
 # ----------------------------------------------------------------------------
 
 # GreenLang Integration:
-# If using GreenLang CLI (gl cbam report), install GreenLang:
-#   pip install greenlang-cli>=0.3.0
+# - v1 agents: Standalone (no framework dependencies)
+# - v2 agents: Require GreenLang SDK (see above)
+# - CLI: pip install greenlang-cli>=0.3.0 (optional)
 
 # Platform Compatibility:
 # - All dependencies are cross-platform (Windows, macOS, Linux)

@@ -1,0 +1,255 @@
+# GreenLang-First Staging Environment Configuration
+# Environment: Staging (Pre-production)
+# Purpose: Production-like testing before release
+
+environment: staging
+
+# Kubernetes configuration
+kubernetes:
+  namespace: greenlang-enforcement
+  context: staging-cluster
+  replicas:
+    opa: 3  # HA setup
+    prometheus: 1
+    grafana: 1
+    alertmanager: 2
+  resources:
+    opa:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+    prometheus:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+    grafana:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+
+# Enforcement settings
+enforcement:
+  mode: soft  # Warn but allow override
+  ium_threshold: 90  # Production-like
+  require_adr: true  # Required for significant changes
+  block_on_violation: true
+  allow_override: true  # Manual override allowed with justification
+
+# Linting configuration
+linting:
+  enabled: true
+  auto_fix: false  # Manual fixes in staging
+  fail_on_error: true  # Fail builds on errors
+  tools:
+    pylint:
+      enabled: true
+      max_line_length: 100
+      score_threshold: 8.0
+    eslint:
+      enabled: true
+      max_warnings: 0
+    terraform:
+      enabled: true
+      fmt_check: true
+    docker:
+      enabled: true
+      hadolint: true
+    yaml:
+      enabled: true
+      strict: true
+
+# OPA configuration
+opa:
+  server: http://opa-service:8181
+  policies_path: /policies
+  cache_enabled: true
+  cache_ttl: 600  # 10 minutes
+  log_level: info
+  decision_logging: true
+  distributed: true  # Distributed cache across replicas
+  high_availability: true
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    scrape_interval: 15s
+    retention: 30d
+    remote_write: false
+  grafana:
+    enabled: true
+    default_dashboard: greenlang-overview
+    anonymous_access: false
+  alertmanager:
+    enabled: true
+  log_level: info
+
+# Alerting configuration
+alerting:
+  enabled: true
+  channels:
+    slack:
+      enabled: true
+      channel: '#greenlang-staging-alerts'
+      webhook_url_secret: alertmanager-secrets
+    email:
+      enabled: true
+      recipients:
+        - devops-staging@greenlang.io
+    pagerduty:
+      enabled: false  # No pages for staging
+
+  # Alert thresholds (staging-specific)
+  thresholds:
+    ium_score_warning: 90
+    ium_score_critical: 85
+    policy_latency_warning: 100  # ms
+    policy_latency_critical: 500  # ms
+    error_rate_warning: 0.01  # 1%
+    error_rate_critical: 0.05  # 5%
+
+# Performance settings
+performance:
+  policy_timeout: 1000  # 1 second
+  max_concurrent_checks: 20
+  cache_size: 500MB
+  connection_pool_size: 50
+
+# Security settings
+security:
+  tls_enabled: true
+  cert_issuer: letsencrypt-staging
+  authentication: true
+  rbac_enabled: true
+  secret_scanning: true
+  dependency_scanning: true
+  sast_enabled: true
+  container_scanning: true
+
+# Database configuration
+database:
+  enabled: true
+  type: postgresql
+  host: postgres-service
+  port: 5432
+  database: greenlang_staging
+  ssl_mode: require
+  connection_pool: 20
+
+# Feature flags
+features:
+  ai_suggestions: true  # Test in staging
+  auto_remediation: false  # Manual remediation
+  advanced_analytics: true
+  policy_simulation: true
+  canary_deployments: true
+
+# Developer experience
+dx:
+  show_warnings: true
+  colorized_output: true
+  interactive_mode: false
+  detailed_errors: true
+  suggestion_level: normal
+
+# Integration settings
+integrations:
+  github:
+    enabled: true
+    webhook_secret: github-webhook-secret
+  gitlab:
+    enabled: false
+  slack:
+    enabled: true
+    bot_token_secret: slack-bot-token
+  jira:
+    enabled: true
+    api_token_secret: jira-api-token
+
+# Logging
+logging:
+  level: INFO
+  format: json
+  output: stdout
+  aggregation:
+    enabled: true
+    backend: elasticsearch
+    endpoint: http://elasticsearch-service:9200
+  rotation: true
+  retention_days: 30
+
+# Cache configuration
+cache:
+  enabled: true
+  backend: redis
+  host: redis-service
+  port: 6379
+  ttl: 600  # 10 minutes
+  max_size: 1GB
+  eviction_policy: lru
+
+# Rate limiting
+rate_limiting:
+  enabled: true
+  requests_per_minute: 500
+  burst: 50
+  strategy: token_bucket
+
+# Deployment settings
+deployment:
+  strategy: RollingUpdate
+  max_surge: 1
+  max_unavailable: 0
+  health_check_timeout: 300
+  rollback_enabled: true
+  auto_rollback_on_error: true
+
+# High availability
+high_availability:
+  enabled: true
+  min_replicas: 2
+  max_replicas: 10
+  target_cpu_utilization: 70
+  target_memory_utilization: 80
+
+# Backup and disaster recovery
+backup:
+  enabled: true
+  schedule: "0 2 * * *"  # 2 AM daily
+  retention: 30  # days
+  storage: s3://greenlang-staging-backups
+
+# Network policies
+network:
+  ingress_allowed_cidrs:
+    - 10.0.0.0/8  # Internal network
+    - 172.16.0.0/12
+  egress_allowed_destinations:
+    - github.com
+    - api.slack.com
+    - hooks.slack.com
+
+# Compliance
+compliance:
+  audit_logging: true
+  encryption_at_rest: true
+  encryption_in_transit: true
+  data_retention_days: 90
+  gdpr_compliant: true
+
+# Debugging
+debug:
+  enabled: false
+  profiling: true  # Profile in staging
+  trace_requests: false
+  dump_policies: false

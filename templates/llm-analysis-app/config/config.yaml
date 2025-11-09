@@ -1,0 +1,36 @@
+application:
+  name: "llm-analysis-app"
+  version: "1.0.0"
+
+llm:
+  provider: "openai"
+  model: "gpt-4"
+  temperature: 0.7
+  max_tokens: 2000
+
+  # API Keys (use environment variables in production)
+  openai_api_key: "${OPENAI_API_KEY}"
+  anthropic_api_key: "${ANTHROPIC_API_KEY}"
+
+  # Budget
+  daily_budget_usd: 100.0
+  monthly_budget_usd: 3000.0
+
+  # Semantic caching
+  semantic_cache_threshold: 0.85
+  embedding_model: "text-embedding-ada-002"
+
+  # RAG
+  enable_rag: true
+  chunk_size: 1000
+  chunk_overlap: 200
+  rag_top_k: 3
+
+cache:
+  enable_l1: true
+  enable_l2: false
+
+telemetry:
+  enable_logging: true
+  enable_metrics: true
+  log_level: "INFO"

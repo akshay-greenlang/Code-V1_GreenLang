@@ -46,26 +46,28 @@ pyarrow>=14.0.0               # Apache Arrow, Parquet support
 fastparquet>=2024.2.0         # Alternative Parquet implementation
 
 # ----------------------------------------------------------------------------
-# AI/ML & LLM INTEGRATION
+# GREENLANG INTELLIGENCE FRAMEWORK (REPLACES CUSTOM LLM/RAG)
 # ----------------------------------------------------------------------------
 
-# LLM orchestration
-langchain>=0.1.0              # LLM application framework
-langchain-community>=0.0.10   # Community integrations
-langchain-openai>=0.0.5       # OpenAI integration
-langchain-anthropic>=0.1.0    # Anthropic Claude integration
+# GreenLang Core SDK
+# NOTE: Install from local path or GitHub:
+# pip install -e ../../../core
+# OR: pip install git+https://github.com/akshay-greenlang/Code-V1_GreenLang.git#subdirectory=core
 
-# LLM APIs
-openai>=1.10.0                # OpenAI GPT-4 API client
-anthropic>=0.18.0             # Anthropic Claude API client
+# GreenLang Intelligence (includes ChatSession, RAGEngine, providers)
+# NOTE: Install from local path or GitHub:
+# pip install -e ../../../greenlang
+# OR: pip install git+https://github.com/akshay-greenlang/Code-V1_GreenLang.git#subdirectory=greenlang
 
-# Vector databases (RAG)
-pinecone-client>=3.0.0        # Pinecone vector database client
-weaviate-client>=4.4.0        # Weaviate vector database (alternative)
-
-# Embeddings
-sentence-transformers>=2.3.0  # Sentence embeddings for semantic search
+# Required by GreenLang (if not already in greenlang dependencies)
+openai>=1.10.0                # OpenAI GPT-4 API client (used by greenlang.intelligence.providers.OpenAI)
+anthropic>=0.18.0             # Anthropic Claude API client (used by greenlang.intelligence.providers.Anthropic)
+sentence-transformers>=2.3.0  # Sentence embeddings (used by greenlang.intelligence.rag.embeddings)
+faiss-cpu>=1.7.4              # FAISS vector store (used by greenlang.intelligence.rag.vector_stores)
 tiktoken>=0.6.0               # OpenAI tokenizer
+
+# REMOVED: langchain, langchain-*, pinecone-client, weaviate-client
+# REASON: Replaced by greenlang.intelligence.runtime.ChatSession and greenlang.intelligence.rag.RAGEngine
 
 # ----------------------------------------------------------------------------
 # WEB FRAMEWORK & API

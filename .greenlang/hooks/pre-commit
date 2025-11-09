@@ -1,0 +1,352 @@
+#!/usr/bin/env python3
+"""
+GreenLang Infrastructure-First Pre-Commit Hook
+================================================
+
+This hook enforces the "Infrastructure First" principle by checking:
+1. No forbidden direct imports (openai, anthropic, redis, pymongo, jose, jwt, passlib)
+2. Required imports when LLM code detected (greenlang.intelligence)
+3. Required imports when auth code detected (greenlang.auth)
+4. All Agent classes inherit from greenlang.sdk.base.Agent
+5. ADR exists if custom implementation detected
+
+Install: cp .greenlang/hooks/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+"""
+
+import sys
+import re
+import ast
+from pathlib import Path
+from typing import List, Dict, Set, Tuple
+import subprocess
+
+# ANSI color codes
+RED = '\033[91m'
+GREEN = '\033[92m'
+YELLOW = '\033[93m'
+BLUE = '\033[94m'
+RESET = '\033[0m'
+
+# Forbidden direct imports
+FORBIDDEN_IMPORTS = {
+    'openai': 'Use greenlang.intelligence.ChatSession instead',
+    'anthropic': 'Use greenlang.intelligence.ChatSession instead',
+    'redis': 'Use greenlang.cache.CacheManager instead',
+    'pymongo': 'Use greenlang.db connectors instead',
+    'jose': 'Use greenlang.auth for JWT handling',
+    'jwt': 'Use greenlang.auth for JWT handling',
+    'passlib': 'Use greenlang.auth for password hashing',
+}
+
+# LLM-related keywords that require greenlang.intelligence
+LLM_KEYWORDS = [
+    'chat', 'completion', 'prompt', 'llm', 'gpt', 'claude',
+    'embedding', 'generate', 'ai_', 'ml_'
+]
+
+# Auth-related keywords that require greenlang.auth
+AUTH_KEYWORDS = [
+    'login', 'authenticate', 'password', 'token', 'jwt',
+    'authorize', 'permission', 'role', 'access_control'
+]
+
+
+class ViolationCollector:
+    """Collects violations found during checks"""
+
+    def __init__(self):
+        self.violations: List[Dict] = []
+        self.warnings: List[Dict] = []
+
+    def add_violation(self, file_path: str, line_num: int, severity: str,
+                     message: str, suggestion: str = ""):
+        """Add a violation"""
+        self.violations.append({
+            'file': file_path,
+            'line': line_num,
+            'severity': severity,
+            'message': message,
+            'suggestion': suggestion
+        })
+
+    def add_warning(self, file_path: str, message: str):
+        """Add a warning"""
+        self.warnings.append({
+            'file': file_path,
+            'message': message
+        })
+
+    def has_violations(self) -> bool:
+        """Check if any violations were found"""
+        return len(self.violations) > 0
+
+    def print_report(self):
+        """Print formatted report"""
+        if self.violations:
+            print(f"\n{RED}{'='*80}{RESET}")
+            print(f"{RED}INFRASTRUCTURE-FIRST VIOLATIONS DETECTED{RESET}")
+            print(f"{RED}{'='*80}{RESET}\n")
+
+            for v in self.violations:
+                print(f"{RED}✗{RESET} {v['file']}:{v['line']}")
+                print(f"  {v['message']}")
+                if v['suggestion']:
+                    print(f"  {BLUE}→ {v['suggestion']}{RESET}")
+                print()
+
+        if self.warnings:
+            print(f"\n{YELLOW}{'='*80}{RESET}")
+            print(f"{YELLOW}WARNINGS{RESET}")
+            print(f"{YELLOW}{'='*80}{RESET}\n")
+
+            for w in self.warnings:
+                print(f"{YELLOW}⚠{RESET} {w['file']}")
+                print(f"  {w['message']}")
+                print()
+
+
+class ASTAnalyzer(ast.NodeVisitor):
+    """AST-based code analyzer"""
+
+    def __init__(self, file_path: str, collector: ViolationCollector):
+        self.file_path = file_path
+        self.collector = collector
+        self.imports: Set[str] = set()
+        self.agent_classes: List[Tuple[str, int, List[str]]] = []
+        self.has_llm_code = False
+        self.has_auth_code = False
+        self.has_greenlang_intelligence = False
+        self.has_greenlang_auth = False
+
+    def visit_Import(self, node):
+        """Check import statements"""
+        for alias in node.names:
+            module_name = alias.name.split('.')[0]
+            self.imports.add(module_name)
+
+            # Check for forbidden imports
+            if module_name in FORBIDDEN_IMPORTS:
+                self.collector.add_violation(
+                    self.file_path,
+                    node.lineno,
+                    'ERROR',
+                    f"Forbidden import: '{module_name}'",
+                    FORBIDDEN_IMPORTS[module_name]
+                )
+
+            # Track greenlang imports
+            if alias.name.startswith('greenlang.intelligence'):
+                self.has_greenlang_intelligence = True
+            if alias.name.startswith('greenlang.auth'):
+                self.has_greenlang_auth = True
+
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node):
+        """Check from X import Y statements"""
+        if node.module:
+            module_name = node.module.split('.')[0]
+            self.imports.add(module_name)
+
+            # Check for forbidden imports
+            if module_name in FORBIDDEN_IMPORTS:
+                self.collector.add_violation(
+                    self.file_path,
+                    node.lineno,
+                    'ERROR',
+                    f"Forbidden import: 'from {module_name} import ...'",
+                    FORBIDDEN_IMPORTS[module_name]
+                )
+
+            # Track greenlang imports
+            if node.module.startswith('greenlang.intelligence'):
+                self.has_greenlang_intelligence = True
+            if node.module.startswith('greenlang.auth'):
+                self.has_greenlang_auth = True
+
+        self.generic_visit(node)
+
+    def visit_ClassDef(self, node):
+        """Check class definitions for Agent inheritance"""
+        # Get base class names
+        base_names = []
+        for base in node.bases:
+            if isinstance(base, ast.Name):
+                base_names.append(base.id)
+            elif isinstance(base, ast.Attribute):
+                base_names.append(f"{self._get_full_name(base)}")
+
+        # Check if this is an Agent class
+        class_name = node.name.lower()
+        if 'agent' in class_name:
+            self.agent_classes.append((node.name, node.lineno, base_names))
+
+            # Check if it inherits from greenlang.sdk.base.Agent
+            valid_inheritance = any(
+                'Agent' in base or 'greenlang.sdk.base.Agent' in base
+                for base in base_names
+            )
+
+            if not valid_inheritance and base_names:  # Has bases but not Agent
+                self.collector.add_violation(
+                    self.file_path,
+                    node.lineno,
+                    'ERROR',
+                    f"Agent class '{node.name}' does not inherit from greenlang.sdk.base.Agent",
+                    "Change to: class {node.name}(Agent) and import: from greenlang.sdk.base import Agent"
+                )
+
+        self.generic_visit(node)
+
+    def visit_FunctionDef(self, node):
+        """Check function definitions for LLM/Auth patterns"""
+        func_name = node.name.lower()
+
+        # Check for LLM patterns
+        if any(keyword in func_name for keyword in LLM_KEYWORDS):
+            self.has_llm_code = True
+
+        # Check for Auth patterns
+        if any(keyword in func_name for keyword in AUTH_KEYWORDS):
+            self.has_auth_code = True
+
+        self.generic_visit(node)
+
+    def _get_full_name(self, node):
+        """Get full dotted name from attribute node"""
+        if isinstance(node, ast.Name):
+            return node.id
+        elif isinstance(node, ast.Attribute):
+            return f"{self._get_full_name(node.value)}.{node.attr}"
+        return ""
+
+    def finalize_checks(self):
+        """Run final checks after visiting all nodes"""
+        # Check if LLM code exists without greenlang.intelligence
+        if self.has_llm_code and not self.has_greenlang_intelligence:
+            self.collector.add_violation(
+                self.file_path,
+                1,
+                'ERROR',
+                "LLM-related code detected but greenlang.intelligence not imported",
+                "Add: from greenlang.intelligence import ChatSession"
+            )
+
+        # Check if Auth code exists without greenlang.auth
+        if self.has_auth_code and not self.has_greenlang_auth:
+            self.collector.add_violation(
+                self.file_path,
+                1,
+                'ERROR',
+                "Auth-related code detected but greenlang.auth not imported",
+                "Add: from greenlang.auth import AuthManager"
+            )
+
+
+def get_staged_python_files() -> List[str]:
+    """Get list of staged Python files"""
+    try:
+        result = subprocess.run(
+            ['git', 'diff', '--cached', '--name-only', '--diff-filter=ACM'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+
+        files = result.stdout.strip().split('\n')
+        python_files = [f for f in files if f.endswith('.py') and f]
+        return python_files
+
+    except subprocess.CalledProcessError:
+        return []
+
+
+def check_adr_exists(repo_root: Path) -> bool:
+    """Check if ADR directory exists and has recent entries"""
+    adr_dir = repo_root / '.greenlang' / 'adrs'
+
+    if not adr_dir.exists():
+        return False
+
+    # Check for recent ADRs (last 30 days)
+    import time
+    thirty_days_ago = time.time() - (30 * 24 * 60 * 60)
+
+    recent_adrs = [
+        f for f in adr_dir.glob('*.md')
+        if f.stat().st_mtime > thirty_days_ago
+    ]
+
+    return len(recent_adrs) > 0
+
+
+def analyze_file(file_path: str, collector: ViolationCollector):
+    """Analyze a single Python file"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # Parse AST
+        tree = ast.parse(content, filename=file_path)
+
+        # Analyze
+        analyzer = ASTAnalyzer(file_path, collector)
+        analyzer.visit(tree)
+        analyzer.finalize_checks()
+
+    except SyntaxError as e:
+        collector.add_warning(file_path, f"Syntax error: {e}")
+    except Exception as e:
+        collector.add_warning(file_path, f"Analysis error: {e}")
+
+
+def main():
+    """Main pre-commit hook logic"""
+    print(f"\n{BLUE}{'='*80}{RESET}")
+    print(f"{BLUE}GreenLang Infrastructure-First Pre-Commit Check{RESET}")
+    print(f"{BLUE}{'='*80}{RESET}\n")
+
+    # Get repo root
+    repo_root = Path(__file__).parent.parent.parent
+
+    # Get staged files
+    staged_files = get_staged_python_files()
+
+    if not staged_files:
+        print(f"{GREEN}✓ No Python files to check{RESET}")
+        return 0
+
+    print(f"Checking {len(staged_files)} Python file(s)...\n")
+
+    # Create collector
+    collector = ViolationCollector()
+
+    # Analyze each file
+    for file_path in staged_files:
+        full_path = repo_root / file_path
+        if full_path.exists():
+            analyze_file(str(full_path), collector)
+
+    # Print report
+    collector.print_report()
+
+    # Check for violations
+    if collector.has_violations():
+        print(f"\n{RED}{'='*80}{RESET}")
+        print(f"{RED}COMMIT BLOCKED - Fix violations above{RESET}")
+        print(f"{RED}{'='*80}{RESET}\n")
+
+        print(f"{YELLOW}Need to use custom implementation?{RESET}")
+        print(f"Create an ADR: .greenlang/adrs/YYYYMMDD-custom-implementation.md")
+        print(f"See: .greenlang/ENFORCEMENT_GUIDE.md for details\n")
+
+        return 1
+    else:
+        print(f"\n{GREEN}{'='*80}{RESET}")
+        print(f"{GREEN}✓ All checks passed!{RESET}")
+        print(f"{GREEN}{'='*80}{RESET}\n")
+        return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

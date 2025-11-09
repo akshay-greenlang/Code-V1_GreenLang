@@ -5,9 +5,10 @@ GL-VCCI Scope 3 Platform
 Provides JWT-based authentication for API endpoints.
 
 SECURITY FIX (CRIT-003): Implements authentication middleware to protect all API endpoints.
+MIGRATION (2025-11-09): Migrated from jose to greenlang.auth.AuthManager
 
-Version: 2.0.0
-Security Update: 2025-11-08
+Version: 3.0.0
+Security Update: 2025-11-09
 """
 
 import os
@@ -17,17 +18,27 @@ from datetime import datetime, timedelta
 
 from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError, jwt
+from greenlang.auth import AuthManager, AuthToken
 
 logger = logging.getLogger(__name__)
 
 # Security scheme
 security = HTTPBearer()
 
-# JWT configuration from environment
-JWT_SECRET = os.getenv("JWT_SECRET")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-JWT_EXPIRATION_SECONDS = int(os.getenv("JWT_EXPIRATION_SECONDS", "3600"))
+# Initialize GreenLang Auth Manager
+_auth_manager = None
+
+def get_auth_manager() -> AuthManager:
+    """Get or create global auth manager instance."""
+    global _auth_manager
+    if _auth_manager is None:
+        config = {
+            "secret_key": os.getenv("JWT_SECRET"),
+            "token_expiry": int(os.getenv("JWT_EXPIRATION_SECONDS", "3600")),
+        }
+        _auth_manager = AuthManager(config=config)
+        logger.info("GreenLang AuthManager initialized")
+    return _auth_manager
 
 
 class AuthenticationError(HTTPException):
@@ -48,68 +59,99 @@ def validate_jwt_config():
     Raises:
         ValueError: If JWT configuration is invalid
     """
-    if not JWT_SECRET:
+    jwt_secret = os.getenv("JWT_SECRET")
+    if not jwt_secret:
         raise ValueError(
             "JWT_SECRET environment variable is required. "
             "Generate a strong secret: python -c 'import secrets; print(secrets.token_urlsafe(32))'"
         )
 
-    if len(JWT_SECRET) < 32:
+    if len(jwt_secret) < 32:
         raise ValueError(
-            "JWT_SECRET must be at least 32 characters long for security. "
-            "Current length: {len(JWT_SECRET)}"
+            f"JWT_SECRET must be at least 32 characters long for security. "
+            f"Current length: {len(jwt_secret)}"
         )
 
-    logger.info(f"JWT authentication configured (algorithm: {JWT_ALGORITHM})")
+    # Initialize auth manager to validate configuration
+    auth_mgr = get_auth_manager()
+    logger.info(f"GreenLang auth configured (token_expiry: {auth_mgr.token_expiry}s)")
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
     """
-    Create a JWT access token.
+    Create a JWT access token using GreenLang AuthManager.
 
     Args:
         data: Payload data to encode in the token
         expires_delta: Optional custom expiration time
 
     Returns:
-        Encoded JWT token
+        Token value string
 
     Example:
         >>> token = create_access_token({"sub": "user@example.com"})
     """
-    to_encode = data.copy()
+    auth_mgr = get_auth_manager()
 
+    # Extract user info from data
+    user_id = data.get("sub", "")
+    tenant_id = data.get("tenant_id", "default")
+
+    # Calculate expiry
+    expires_in = None
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(seconds=JWT_EXPIRATION_SECONDS)
+        expires_in = int(expires_delta.total_seconds())
 
-    to_encode.update({"exp": expire})
+    # Create token using AuthManager
+    auth_token = auth_mgr.create_token(
+        tenant_id=tenant_id,
+        user_id=user_id,
+        name=f"Access token for {user_id}",
+        token_type="bearer",
+        expires_in=expires_in,
+        # Store additional claims as metadata
+        scopes=data.get("scopes", []),
+        roles=data.get("roles", []),
+    )
 
-    encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    return encoded_jwt
+    return auth_token.token_value
 
 
 def decode_access_token(token: str) -> dict:
     """
-    Decode and validate a JWT access token.
+    Decode and validate a JWT access token using GreenLang AuthManager.
 
     Args:
-        token: JWT token to decode
+        token: Token value to decode
 
     Returns:
-        Decoded payload
+        Decoded payload as dict
 
     Raises:
         AuthenticationError: If token is invalid or expired
     """
-    try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return payload
+    auth_mgr = get_auth_manager()
 
-    except JWTError as e:
-        logger.warning(f"JWT validation failed: {str(e)}")
+    # Validate token
+    auth_token = auth_mgr.validate_token(token)
+
+    if not auth_token:
+        logger.warning(f"Token validation failed: token not found or invalid")
         raise AuthenticationError(detail="Invalid or expired token")
+
+    # Convert AuthToken to dict payload (compatible with old format)
+    payload = {
+        "sub": auth_token.user_id,
+        "tenant_id": auth_token.tenant_id,
+        "token_id": auth_token.token_id,
+        "token_type": auth_token.token_type,
+        "scopes": auth_token.scopes,
+        "roles": auth_token.roles,
+        "exp": auth_token.expires_at.timestamp() if auth_token.expires_at else None,
+        "iat": auth_token.created_at.timestamp() if auth_token.created_at else None,
+    }
+
+    return payload
 
 
 async def verify_token(

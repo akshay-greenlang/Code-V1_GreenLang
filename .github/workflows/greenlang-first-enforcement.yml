@@ -1,0 +1,224 @@
+name: GreenLang Infrastructure-First Enforcement
+
+on:
+  pull_request:
+    branches: [ master, main, develop ]
+  push:
+    branches: [ master, main ]
+
+jobs:
+  infrastructure-enforcement:
+    name: Infrastructure Usage Enforcement
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e .
+        pip install pytest coverage
+
+    - name: Run Static Analysis (Forbidden Imports)
+      id: static-analysis
+      run: |
+        echo "Running infrastructure-first linter..."
+        python .greenlang/linters/infrastructure_first.py --output=json > violations.json
+
+        # Check exit code
+        if [ $? -ne 0 ]; then
+          echo "::error::Static analysis found violations"
+          echo "violations_found=true" >> $GITHUB_OUTPUT
+        else
+          echo "violations_found=false" >> $GITHUB_OUTPUT
+        fi
+      continue-on-error: true
+
+    - name: Calculate Infrastructure Usage Metrics (IUM)
+      id: ium
+      run: |
+        echo "Calculating Infrastructure Usage Metrics..."
+        python .greenlang/scripts/calculate_ium.py \
+          --output=json \
+          --output-file=ium_report.json \
+          --markdown-file=ium_report.md
+
+        # Extract IUM score
+        IUM_SCORE=$(cat ium_report.json | python -c "import sys, json; print(json.load(sys.stdin)['overall']['percentage'])")
+        echo "ium_score=$IUM_SCORE" >> $GITHUB_OUTPUT
+
+        # Check if IUM meets threshold
+        if (( $(echo "$IUM_SCORE < 95.0" | bc -l) )); then
+          echo "::warning::IUM score $IUM_SCORE% is below 95% threshold"
+          echo "ium_pass=false" >> $GITHUB_OUTPUT
+        else
+          echo "::notice::IUM score: $IUM_SCORE%"
+          echo "ium_pass=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check for ADRs (if custom code detected)
+      id: adr-check
+      run: |
+        echo "Checking for Architecture Decision Records..."
+
+        # Check if ADR directory exists
+        if [ ! -d ".greenlang/adrs" ]; then
+          echo "::warning::No ADR directory found at .greenlang/adrs"
+          echo "adr_exists=false" >> $GITHUB_OUTPUT
+        else
+          # Count ADRs from last 30 days
+          ADR_COUNT=$(find .greenlang/adrs -name "*.md" -mtime -30 | wc -l)
+          echo "Found $ADR_COUNT recent ADR(s)"
+
+          if [ "$ADR_COUNT" -gt 0 ]; then
+            echo "adr_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "adr_exists=false" >> $GITHUB_OUTPUT
+          fi
+        fi
+
+    - name: Run OPA Policy Check
+      id: opa-check
+      run: |
+        echo "Running OPA policy validation..."
+
+        # Install OPA if not present
+        if ! command -v opa &> /dev/null; then
+          echo "Installing OPA..."
+          curl -L -o opa https://openpolicyagent.org/downloads/latest/opa_linux_amd64
+          chmod +x opa
+          sudo mv opa /usr/local/bin/
+        fi
+
+        # Run OPA tests
+        opa test .greenlang/policies/infrastructure-first.rego
+
+        echo "opa_pass=true" >> $GITHUB_OUTPUT
+      continue-on-error: true
+
+    - name: Generate Infrastructure Usage Report
+      if: always()
+      run: |
+        echo "Generating comprehensive report..."
+
+        cat > infrastructure_report.md <<EOF
+        # Infrastructure-First Enforcement Report
+
+        ## Summary
+
+        - **Infrastructure Usage Metric (IUM):** ${{ steps.ium.outputs.ium_score }}%
+        - **Static Analysis:** ${{ steps.static-analysis.outputs.violations_found == 'true' && '❌ Violations found' || '✅ Passed' }}
+        - **OPA Policy:** ${{ steps.opa-check.outputs.opa_pass == 'true' && '✅ Passed' || '❌ Failed' }}
+        - **ADR Present:** ${{ steps.adr-check.outputs.adr_exists == 'true' && '✅ Yes' || '⚠️ No' }}
+
+        ## Infrastructure Usage Details
+
+        $(cat ium_report.md)
+
+        ## Violations
+
+        $(if [ -f violations.json ]; then
+          python -c "
+import json
+with open('violations.json') as f:
+    data = json.load(f)
+    if data['violations']:
+        for v in data['violations']:
+            print(f\"- **{v['file']}:{v['line']}** - {v['message']}\")
+            if v['suggestion']:
+                print(f\"  → {v['suggestion']}\")
+    else:
+        print('No violations found')
+"
+        else
+          echo "No violations file generated"
+        fi)
+
+        ## Recommendations
+
+        $(if [ "${{ steps.ium.outputs.ium_pass }}" != "true" ]; then
+          echo "- ⚠️ **IUM below 95%** - Consider using more GreenLang infrastructure"
+          echo "  - Replace direct imports with GreenLang equivalents"
+          echo "  - Use \`greenlang.intelligence.ChatSession\` instead of OpenAI/Anthropic clients"
+          echo "  - Use \`greenlang.auth\` instead of custom auth implementations"
+        fi)
+
+        $(if [ "${{ steps.adr-check.outputs.adr_exists }}" != "true" ] && [ "${{ steps.static-analysis.outputs.violations_found }}" == "true" ]; then
+          echo "- ⚠️ **Custom implementation without ADR** - If you need custom code:"
+          echo "  - Create an ADR in \`.greenlang/adrs/\`"
+          echo "  - Document why GreenLang infrastructure cannot be used"
+          echo "  - Get approval before merging"
+        fi)
+
+        ## Next Steps
+
+        1. Review violations above
+        2. Fix by using GreenLang infrastructure
+        3. If custom code needed, create ADR
+        4. Re-run checks
+
+        ---
+
+        📚 **Documentation:** See \`.greenlang/ENFORCEMENT_GUIDE.md\` for detailed guidance
+        EOF
+
+        cat infrastructure_report.md
+
+    - name: Upload Artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: infrastructure-reports
+        path: |
+          violations.json
+          ium_report.json
+          ium_report.md
+          infrastructure_report.md
+
+    - name: Comment PR with Results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+
+          let report = 'Unable to read report';
+          try {
+            report = fs.readFileSync('infrastructure_report.md', 'utf8');
+          } catch (err) {
+            console.error('Error reading report:', err);
+          }
+
+          await github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: report
+          });
+
+    - name: Check Final Status
+      run: |
+        echo "Evaluating final status..."
+
+        # Fail if violations found
+        if [ "${{ steps.static-analysis.outputs.violations_found }}" == "true" ]; then
+          echo "::error::Static analysis violations found"
+          exit 1
+        fi
+
+        # Fail if IUM below threshold and no ADR
+        if [ "${{ steps.ium.outputs.ium_pass }}" != "true" ] && [ "${{ steps.adr-check.outputs.adr_exists }}" != "true" ]; then
+          echo "::error::IUM below 95% and no ADR found. Either increase IUM or create an ADR."
+          exit 1
+        fi
+
+        echo "::notice::All checks passed!"
