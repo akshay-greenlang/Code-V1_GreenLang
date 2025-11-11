@@ -69,7 +69,7 @@
 **Afternoon (2-4 PM): All-Hands Meeting Planning**
 - [ ] Schedule all-hands for Friday 2 PM
 - [ ] Prepare slides:
-  - Where we are (58.7% complete)
+  - Where we are (89% complete - 1.77M lines)
   - Where we're going (5 apps by Dec 2026, 45 engineers)
   - How we'll get there (the resource plan)
   - What we need from you (execution, hiring referrals)
@@ -164,7 +164,7 @@
 **2 PM: All-Hands Meeting** (ALL TEAM MEMBERS REQUIRED)
 - [ ] Executive introduction (CEO)
 - [ ] "State of GreenLang" (CTO)
-  - What we've built (172K LOC, 58.7% complete)
+  - What we've built (1.77M LOC, 89% complete)
   - What we're building (6 apps by 2027)
   - Where we're going ($500M ARR by 2030)
 - [ ] Resource allocation plan overview (15 min)

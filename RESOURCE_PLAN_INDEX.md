@@ -610,7 +610,7 @@ At that point:
 
 ---
 
-*"From 58.7% complete to 100% v1.0.0 GA. From 10 to 45 engineers. From $0 to $18M ARR. From a great idea to the Climate OS that the world needs."*
+*"From 89% complete to 100% v1.0.0 GA. From 185K to 1.77M lines. From 10 to 45 engineers. From $0 to $18M ARR. From a great idea to the Climate OS that the world needs."*
 
 *"We do this together. We start Monday."*
 
