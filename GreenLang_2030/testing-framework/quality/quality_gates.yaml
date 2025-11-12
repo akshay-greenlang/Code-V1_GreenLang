@@ -1,0 +1,280 @@
+# Quality Gates Configuration for GreenLang
+# Defines quality thresholds that must be met for code to be deployed
+
+quality_dimensions:
+  functional_correctness:
+    description: "Business logic and calculation accuracy"
+    metrics:
+      - name: "unit_test_pass_rate"
+        threshold: 100  # All unit tests must pass
+        enforcement: "blocking"
+      - name: "integration_test_pass_rate"
+        threshold: 100  # All integration tests must pass
+        enforcement: "blocking"
+      - name: "calculation_accuracy"
+        threshold: 99.99  # 99.99% calculation accuracy
+        enforcement: "blocking"
+
+  performance:
+    description: "Latency and throughput requirements"
+    metrics:
+      - name: "p50_latency_ms"
+        threshold: 50
+        enforcement: "warning"
+      - name: "p95_latency_ms"
+        threshold: 100
+        enforcement: "blocking"
+      - name: "p99_latency_ms"
+        threshold: 500
+        enforcement: "blocking"
+      - name: "throughput_tps"
+        threshold: 1000  # Minimum 1000 transactions per second
+        enforcement: "blocking"
+
+  security:
+    description: "Security vulnerability scanning"
+    metrics:
+      - name: "critical_vulnerabilities"
+        threshold: 0  # Zero critical vulnerabilities allowed
+        enforcement: "blocking"
+      - name: "high_vulnerabilities"
+        threshold: 0  # Zero high vulnerabilities allowed
+        enforcement: "blocking"
+      - name: "medium_vulnerabilities"
+        threshold: 5  # Max 5 medium vulnerabilities
+        enforcement: "warning"
+      - name: "dependency_check_pass"
+        threshold: true
+        enforcement: "blocking"
+
+  reliability:
+    description: "System stability and uptime"
+    metrics:
+      - name: "error_rate_percent"
+        threshold: 0.1  # Max 0.1% error rate
+        enforcement: "blocking"
+      - name: "crash_rate_percent"
+        threshold: 0.01  # Max 0.01% crash rate
+        enforcement: "blocking"
+      - name: "mtbf_hours"
+        threshold: 720  # Mean time between failures > 30 days
+        enforcement: "warning"
+
+  scalability:
+    description: "Horizontal and vertical scaling capabilities"
+    metrics:
+      - name: "horizontal_scaling_tested"
+        threshold: true
+        enforcement: "blocking"
+      - name: "load_test_passed"
+        threshold: true
+        enforcement: "blocking"
+      - name: "resource_utilization_percent"
+        threshold: 80  # Max 80% resource utilization
+        enforcement: "warning"
+
+  maintainability:
+    description: "Code quality and maintainability"
+    metrics:
+      - name: "cyclomatic_complexity"
+        threshold: 10  # Max complexity of 10
+        enforcement: "warning"
+      - name: "code_duplication_percent"
+        threshold: 5  # Max 5% code duplication
+        enforcement: "warning"
+      - name: "technical_debt_days"
+        threshold: 30  # Max 30 days of technical debt
+        enforcement: "warning"
+      - name: "documentation_coverage_percent"
+        threshold: 80  # Min 80% documentation coverage
+        enforcement: "warning"
+
+  testability:
+    description: "Test coverage and quality"
+    metrics:
+      - name: "unit_test_coverage_percent"
+        threshold: 85  # Minimum 85% unit test coverage
+        enforcement: "blocking"
+      - name: "integration_test_coverage_percent"
+        threshold: 70  # Minimum 70% integration test coverage
+        enforcement: "blocking"
+      - name: "mutation_test_score_percent"
+        threshold: 75  # Minimum 75% mutation score
+        enforcement: "warning"
+      - name: "test_flakiness_percent"
+        threshold: 1  # Max 1% flaky tests
+        enforcement: "blocking"
+
+  usability:
+    description: "API usability and developer experience"
+    metrics:
+      - name: "api_documentation_complete"
+        threshold: true
+        enforcement: "blocking"
+      - name: "openapi_spec_valid"
+        threshold: true
+        enforcement: "blocking"
+      - name: "sdk_examples_provided"
+        threshold: true
+        enforcement: "warning"
+
+  compliance:
+    description: "Regulatory and standards compliance"
+    metrics:
+      - name: "ghg_protocol_compliant"
+        threshold: true
+        enforcement: "blocking"
+      - name: "iso_14064_compliant"
+        threshold: true
+        enforcement: "blocking"
+      - name: "cbam_requirements_met"
+        threshold: true
+        enforcement: "blocking"
+      - name: "audit_trail_complete"
+        threshold: true
+        enforcement: "blocking"
+
+  observability:
+    description: "Monitoring and logging coverage"
+    metrics:
+      - name: "metrics_coverage_percent"
+        threshold: 90  # Min 90% metrics coverage
+        enforcement: "warning"
+      - name: "logging_coverage_percent"
+        threshold: 95  # Min 95% logging coverage
+        enforcement: "warning"
+      - name: "tracing_enabled"
+        threshold: true
+        enforcement: "blocking"
+      - name: "alerting_configured"
+        threshold: true
+        enforcement: "blocking"
+
+  determinism:
+    description: "Reproducibility and consistency"
+    metrics:
+      - name: "determinism_test_pass"
+        threshold: true  # All determinism tests must pass
+        enforcement: "blocking"
+      - name: "hash_consistency_percent"
+        threshold: 100  # 100% hash consistency required
+        enforcement: "blocking"
+      - name: "seed_management_implemented"
+        threshold: true
+        enforcement: "blocking"
+
+  documentation:
+    description: "Code and API documentation quality"
+    metrics:
+      - name: "api_docs_coverage_percent"
+        threshold: 100  # 100% API documentation
+        enforcement: "blocking"
+      - name: "code_comments_percent"
+        threshold: 30  # Min 30% code comments
+        enforcement: "warning"
+      - name: "readme_complete"
+        threshold: true
+        enforcement: "blocking"
+      - name: "changelog_updated"
+        threshold: true
+        enforcement: "warning"
+
+# Enforcement levels
+enforcement_levels:
+  blocking:
+    description: "Must pass before deployment"
+    action: "block_deployment"
+    notification: ["team_lead", "qa_lead", "dev_team"]
+
+  warning:
+    description: "Should be addressed but won't block deployment"
+    action: "warn"
+    notification: ["dev_team"]
+
+  info:
+    description: "Informational only"
+    action: "log"
+    notification: []
+
+# Environment-specific overrides
+environments:
+  development:
+    overrides:
+      unit_test_coverage_percent: 70
+      integration_test_coverage_percent: 50
+      performance.p99_latency_ms: 1000
+
+  staging:
+    overrides:
+      unit_test_coverage_percent: 80
+      integration_test_coverage_percent: 65
+
+  production:
+    overrides: {}  # Use default thresholds
+
+# Quality gate evaluation pipeline
+pipeline:
+  stages:
+    - name: "static_analysis"
+      tools: ["sonarqube", "pylint", "mypy", "black"]
+      timeout: 300  # 5 minutes
+
+    - name: "unit_tests"
+      tools: ["pytest"]
+      parallel: true
+      timeout: 600  # 10 minutes
+
+    - name: "integration_tests"
+      tools: ["pytest", "postman"]
+      timeout: 1200  # 20 minutes
+
+    - name: "performance_tests"
+      tools: ["k6", "jmeter"]
+      timeout: 1800  # 30 minutes
+
+    - name: "security_scan"
+      tools: ["sonarqube", "dependabot", "snyk", "trivy"]
+      timeout: 600  # 10 minutes
+
+    - name: "compliance_check"
+      tools: ["custom_validators"]
+      timeout: 300  # 5 minutes
+
+    - name: "documentation_check"
+      tools: ["swagger", "sphinx"]
+      timeout: 300  # 5 minutes
+
+# Reporting configuration
+reporting:
+  formats: ["json", "html", "junit"]
+  storage: "s3://greenlang-quality-reports"
+  retention_days: 90
+
+  dashboards:
+    - name: "quality_overview"
+      url: "https://grafana.greenlang.io/d/quality"
+      refresh_interval: 300  # 5 minutes
+
+    - name: "test_results"
+      url: "https://grafana.greenlang.io/d/tests"
+      refresh_interval: 60  # 1 minute
+
+# Notifications
+notifications:
+  channels:
+    slack:
+      webhook: "${SLACK_WEBHOOK_URL}"
+      channels:
+        - "#qa-alerts"
+        - "#dev-team"
+
+    email:
+      smtp_server: "smtp.greenlang.io"
+      from: "qa@greenlang.io"
+
+    pagerduty:
+      integration_key: "${PAGERDUTY_KEY}"
+      severity_mapping:
+        blocking: "critical"
+        warning: "warning"
+        info: "info"

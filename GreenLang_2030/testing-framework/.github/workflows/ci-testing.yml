@@ -1,0 +1,427 @@
+name: GreenLang CI Testing Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: '0 0 * * *'  # Daily regression tests
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '18'
+  POSTGRES_VERSION: '15'
+  REDIS_VERSION: '7'
+  COVERAGE_THRESHOLD: 85
+
+jobs:
+  # Static Analysis and Linting
+  static-analysis:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+
+      - name: Run Black formatter check
+        run: black --check .
+
+      - name: Run isort import checker
+        run: isort --check-only .
+
+      - name: Run Flake8 linter
+        run: flake8 . --max-line-length=100
+
+      - name: Run MyPy type checker
+        run: mypy . --ignore-missing-imports
+
+      - name: Run Bandit security linter
+        run: bandit -r . -ll
+
+      - name: Run SonarQube scan
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=greenlang \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=https://sonarqube.greenlang.io \
+            -Dsonar.login=$SONAR_TOKEN
+
+  # Unit Tests
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: static-analysis
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11']
+
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: greenlang_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+
+      - name: Run unit tests with coverage
+        env:
+          DATABASE_URL: postgresql://postgres:test@localhost:5432/greenlang_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/unit/ \
+            --cov=greenlang \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
+            --junit-xml=junit.xml \
+            --maxfail=5 \
+            -v
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          fail_ci_if_error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-unit-${{ matrix.python-version }}
+          path: |
+            junit.xml
+            htmlcov/
+
+  # Integration Tests
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    services:
+      postgres:
+        image: postgres:${{ env.POSTGRES_VERSION }}
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: greenlang_test
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:${{ env.REDIS_VERSION }}
+        ports:
+          - 6379:6379
+
+      minio:
+        image: minio/minio:latest
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+        options: server /data
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:test@localhost:5432/greenlang_test
+          REDIS_URL: redis://localhost:6379/0
+          MINIO_URL: localhost:9000
+        run: |
+          pytest tests/integration/ \
+            --junit-xml=junit-integration.xml \
+            --maxfail=10 \
+            -v
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-integration
+          path: junit-integration.xml
+
+  # End-to-End Tests
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Start application
+        run: |
+          docker-compose up -d
+          sleep 10  # Wait for services to be ready
+
+      - name: Run E2E tests
+        run: |
+          pytest tests/e2e/ \
+            --junit-xml=junit-e2e.xml \
+            -v
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-e2e
+          path: junit-e2e.xml
+
+      - name: Stop application
+        if: always()
+        run: docker-compose down
+
+  # Performance Tests
+  performance-tests:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    needs: integration-tests
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up k6
+        run: |
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Start application
+        run: |
+          docker-compose up -d
+          sleep 10
+
+      - name: Run k6 load tests
+        run: |
+          k6 run testing-framework/performance/k6_load_test.js \
+            --out json=results.json \
+            --summary-export=summary.json
+
+      - name: Check performance thresholds
+        run: |
+          python scripts/check_performance_thresholds.py summary.json
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v3
+        with:
+          name: performance-results
+          path: |
+            results.json
+            summary.json
+
+  # Security Tests
+  security-tests:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    needs: static-analysis
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/python@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: Run OWASP dependency check
+        run: |
+          docker run --rm \
+            -v $(pwd):/src \
+            owasp/dependency-check \
+            --scan /src \
+            --format "ALL" \
+            --project "GreenLang"
+
+  # Determinism Tests
+  determinism-tests:
+    name: Determinism Validation
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+
+      - name: Run determinism tests
+        run: |
+          pytest tests/determinism/ \
+            --junit-xml=junit-determinism.xml \
+            -v
+
+      - name: Validate multi-run consistency
+        run: |
+          python scripts/validate_determinism.py \
+            --runs 5 \
+            --tolerance 0.0
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-determinism
+          path: junit-determinism.xml
+
+  # Quality Gates Check
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs:
+      - unit-tests
+      - integration-tests
+      - e2e-tests
+      - performance-tests
+      - security-tests
+      - determinism-tests
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+
+      - name: Check quality gates
+        run: |
+          python scripts/check_quality_gates.py \
+            --config testing-framework/quality/quality_gates.yaml \
+            --results-dir .
+
+      - name: Generate quality report
+        run: |
+          python scripts/generate_quality_report.py \
+            --output quality-report.html
+
+      - name: Upload quality report
+        uses: actions/upload-artifact@v3
+        with:
+          name: quality-report
+          path: quality-report.html
+
+      - name: Post results to Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Quality gates check completed'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Deploy to staging (if all tests pass)
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: quality-gates
+    if: github.ref == 'refs/heads/develop'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add deployment scripts here
+
+      - name: Run smoke tests on staging
+        run: |
+          pytest tests/smoke/ \
+            --base-url https://staging.greenlang.io \
+            -v
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'success'
+          text: 'Deployed to staging successfully'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

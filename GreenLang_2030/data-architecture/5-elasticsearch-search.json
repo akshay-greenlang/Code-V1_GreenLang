@@ -1,0 +1,877 @@
+{
+  "elasticsearch_architecture": {
+    "cluster": {
+      "name": "greenlang-search-production",
+      "version": "8.10.0",
+      "nodes": {
+        "master_nodes": [
+          {
+            "name": "es-master-1",
+            "host": "es-master-1.greenlang.internal",
+            "roles": ["master"],
+            "heap_size": "4g"
+          },
+          {
+            "name": "es-master-2",
+            "host": "es-master-2.greenlang.internal",
+            "roles": ["master"],
+            "heap_size": "4g"
+          },
+          {
+            "name": "es-master-3",
+            "host": "es-master-3.greenlang.internal",
+            "roles": ["master"],
+            "heap_size": "4g"
+          }
+        ],
+        "data_nodes": [
+          {
+            "name": "es-data-1",
+            "host": "es-data-1.greenlang.internal",
+            "roles": ["data", "data_hot"],
+            "heap_size": "31g",
+            "disk": "2TB SSD"
+          },
+          {
+            "name": "es-data-2",
+            "host": "es-data-2.greenlang.internal",
+            "roles": ["data", "data_hot"],
+            "heap_size": "31g",
+            "disk": "2TB SSD"
+          },
+          {
+            "name": "es-data-3",
+            "host": "es-data-3.greenlang.internal",
+            "roles": ["data", "data_warm"],
+            "heap_size": "31g",
+            "disk": "8TB HDD"
+          },
+          {
+            "name": "es-data-4",
+            "host": "es-data-4.greenlang.internal",
+            "roles": ["data", "data_cold"],
+            "heap_size": "16g",
+            "disk": "16TB HDD"
+          }
+        ],
+        "coordinating_nodes": [
+          {
+            "name": "es-coord-1",
+            "host": "es-coord-1.greenlang.internal",
+            "roles": [],
+            "heap_size": "8g"
+          },
+          {
+            "name": "es-coord-2",
+            "host": "es-coord-2.greenlang.internal",
+            "roles": [],
+            "heap_size": "8g"
+          }
+        ],
+        "ml_nodes": [
+          {
+            "name": "es-ml-1",
+            "host": "es-ml-1.greenlang.internal",
+            "roles": ["ml", "remote_cluster_client"],
+            "heap_size": "16g"
+          }
+        ]
+      },
+      "settings": {
+        "cluster.routing.allocation.awareness.attributes": "rack_id,zone",
+        "cluster.routing.allocation.disk.watermark.low": "85%",
+        "cluster.routing.allocation.disk.watermark.high": "90%",
+        "cluster.routing.allocation.disk.watermark.flood_stage": "95%",
+        "indices.recovery.max_bytes_per_sec": "100mb",
+        "indices.memory.index_buffer_size": "30%",
+        "thread_pool.write.queue_size": 1000,
+        "thread_pool.search.queue_size": 1000
+      }
+    },
+    "indices": {
+      "emissions_data": {
+        "settings": {
+          "number_of_shards": 6,
+          "number_of_replicas": 1,
+          "refresh_interval": "5s",
+          "codec": "best_compression",
+          "index.lifecycle.name": "emissions-ilm-policy",
+          "index.lifecycle.rollover_alias": "emissions-current"
+        },
+        "mappings": {
+          "properties": {
+            "organization_id": {
+              "type": "keyword"
+            },
+            "timestamp": {
+              "type": "date",
+              "format": "strict_date_time"
+            },
+            "source_id": {
+              "type": "keyword"
+            },
+            "source_name": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "scope_category": {
+              "type": "keyword"
+            },
+            "emissions": {
+              "properties": {
+                "co2": {
+                  "type": "float"
+                },
+                "ch4": {
+                  "type": "float"
+                },
+                "n2o": {
+                  "type": "float"
+                },
+                "co2e_total": {
+                  "type": "float"
+                }
+              }
+            },
+            "activity_data": {
+              "type": "float"
+            },
+            "activity_unit": {
+              "type": "keyword"
+            },
+            "location": {
+              "type": "geo_point"
+            },
+            "facility": {
+              "type": "keyword"
+            },
+            "data_quality_score": {
+              "type": "byte"
+            },
+            "tags": {
+              "type": "keyword"
+            },
+            "metadata": {
+              "type": "object",
+              "enabled": false
+            }
+          }
+        }
+      },
+      "csrd_documents": {
+        "settings": {
+          "number_of_shards": 3,
+          "number_of_replicas": 2,
+          "analysis": {
+            "analyzer": {
+              "csrd_analyzer": {
+                "type": "custom",
+                "tokenizer": "standard",
+                "filter": [
+                  "lowercase",
+                  "stop",
+                  "synonym_filter",
+                  "stemmer"
+                ]
+              }
+            },
+            "filter": {
+              "synonym_filter": {
+                "type": "synonym",
+                "synonyms": [
+                  "ghg,greenhouse gas",
+                  "co2,carbon dioxide",
+                  "esg,environmental social governance",
+                  "csrd,corporate sustainability reporting directive"
+                ]
+              }
+            }
+          }
+        },
+        "mappings": {
+          "properties": {
+            "document_id": {
+              "type": "keyword"
+            },
+            "organization_id": {
+              "type": "keyword"
+            },
+            "title": {
+              "type": "text",
+              "analyzer": "csrd_analyzer",
+              "fields": {
+                "keyword": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "content": {
+              "type": "text",
+              "analyzer": "csrd_analyzer"
+            },
+            "document_type": {
+              "type": "keyword"
+            },
+            "reporting_period": {
+              "properties": {
+                "start_date": {
+                  "type": "date"
+                },
+                "end_date": {
+                  "type": "date"
+                }
+              }
+            },
+            "esrs_standards": {
+              "type": "keyword"
+            },
+            "status": {
+              "type": "keyword"
+            },
+            "created_at": {
+              "type": "date"
+            },
+            "updated_at": {
+              "type": "date"
+            },
+            "attachments": {
+              "type": "nested",
+              "properties": {
+                "file_name": {
+                  "type": "keyword"
+                },
+                "content_type": {
+                  "type": "keyword"
+                },
+                "file_content": {
+                  "type": "text"
+                }
+              }
+            },
+            "suggest": {
+              "type": "completion"
+            }
+          }
+        }
+      },
+      "suppliers": {
+        "settings": {
+          "number_of_shards": 2,
+          "number_of_replicas": 1,
+          "analysis": {
+            "analyzer": {
+              "name_analyzer": {
+                "type": "custom",
+                "tokenizer": "standard",
+                "filter": [
+                  "lowercase",
+                  "asciifolding"
+                ]
+              }
+            },
+            "normalizer": {
+              "lowercase_normalizer": {
+                "type": "custom",
+                "filter": ["lowercase", "asciifolding"]
+              }
+            }
+          }
+        },
+        "mappings": {
+          "properties": {
+            "supplier_id": {
+              "type": "keyword"
+            },
+            "organization_id": {
+              "type": "keyword"
+            },
+            "supplier_name": {
+              "type": "text",
+              "analyzer": "name_analyzer",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "normalizer": "lowercase_normalizer"
+                },
+                "ngram": {
+                  "type": "text",
+                  "analyzer": "ngram_analyzer"
+                }
+              }
+            },
+            "country": {
+              "type": "keyword"
+            },
+            "tier_level": {
+              "type": "byte"
+            },
+            "category": {
+              "type": "keyword"
+            },
+            "risk_score": {
+              "type": "byte"
+            },
+            "sustainability_score": {
+              "type": "byte"
+            },
+            "certifications": {
+              "type": "keyword"
+            },
+            "products": {
+              "type": "nested",
+              "properties": {
+                "product_id": {
+                  "type": "keyword"
+                },
+                "product_name": {
+                  "type": "text"
+                },
+                "carbon_footprint": {
+                  "type": "float"
+                }
+              }
+            },
+            "location": {
+              "type": "geo_point"
+            },
+            "last_assessment_date": {
+              "type": "date"
+            }
+          }
+        }
+      },
+      "audit_logs": {
+        "settings": {
+          "number_of_shards": 4,
+          "number_of_replicas": 1,
+          "index.lifecycle.name": "audit-ilm-policy",
+          "index.lifecycle.rollover_alias": "audit-current",
+          "index.codec": "best_compression"
+        },
+        "mappings": {
+          "properties": {
+            "timestamp": {
+              "type": "date",
+              "format": "strict_date_time"
+            },
+            "organization_id": {
+              "type": "keyword"
+            },
+            "user_id": {
+              "type": "keyword"
+            },
+            "action": {
+              "type": "keyword"
+            },
+            "resource": {
+              "type": "keyword"
+            },
+            "resource_id": {
+              "type": "keyword"
+            },
+            "ip_address": {
+              "type": "ip"
+            },
+            "user_agent": {
+              "type": "text"
+            },
+            "request_method": {
+              "type": "keyword"
+            },
+            "request_path": {
+              "type": "keyword"
+            },
+            "response_code": {
+              "type": "short"
+            },
+            "duration_ms": {
+              "type": "integer"
+            },
+            "changes": {
+              "type": "object",
+              "enabled": false
+            }
+          }
+        }
+      },
+      "kpi_metrics": {
+        "settings": {
+          "number_of_shards": 2,
+          "number_of_replicas": 1,
+          "refresh_interval": "30s"
+        },
+        "mappings": {
+          "properties": {
+            "organization_id": {
+              "type": "keyword"
+            },
+            "kpi_id": {
+              "type": "keyword"
+            },
+            "kpi_name": {
+              "type": "keyword"
+            },
+            "timestamp": {
+              "type": "date"
+            },
+            "value": {
+              "type": "float"
+            },
+            "target_value": {
+              "type": "float"
+            },
+            "unit": {
+              "type": "keyword"
+            },
+            "category": {
+              "type": "keyword"
+            },
+            "tags": {
+              "type": "keyword"
+            }
+          }
+        }
+      },
+      "iot_telemetry": {
+        "settings": {
+          "number_of_shards": 8,
+          "number_of_replicas": 1,
+          "refresh_interval": "1s",
+          "index.lifecycle.name": "iot-ilm-policy",
+          "index.lifecycle.rollover_alias": "iot-current"
+        },
+        "mappings": {
+          "properties": {
+            "device_id": {
+              "type": "keyword"
+            },
+            "timestamp": {
+              "type": "date",
+              "format": "epoch_millis"
+            },
+            "metrics": {
+              "type": "object",
+              "dynamic": true
+            },
+            "location": {
+              "type": "geo_point"
+            },
+            "facility_id": {
+              "type": "keyword"
+            },
+            "alert_triggered": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "index_lifecycle_policies": {
+      "emissions-ilm-policy": {
+        "phases": {
+          "hot": {
+            "min_age": "0ms",
+            "actions": {
+              "rollover": {
+                "max_size": "50GB",
+                "max_age": "7d"
+              },
+              "set_priority": {
+                "priority": 100
+              }
+            }
+          },
+          "warm": {
+            "min_age": "7d",
+            "actions": {
+              "set_priority": {
+                "priority": 50
+              },
+              "allocate": {
+                "require": {
+                  "data": "warm"
+                }
+              },
+              "forcemerge": {
+                "max_num_segments": 1
+              },
+              "shrink": {
+                "number_of_shards": 1
+              }
+            }
+          },
+          "cold": {
+            "min_age": "30d",
+            "actions": {
+              "set_priority": {
+                "priority": 0
+              },
+              "allocate": {
+                "require": {
+                  "data": "cold"
+                }
+              }
+            }
+          },
+          "delete": {
+            "min_age": "365d",
+            "actions": {
+              "delete": {}
+            }
+          }
+        }
+      },
+      "audit-ilm-policy": {
+        "phases": {
+          "hot": {
+            "actions": {
+              "rollover": {
+                "max_size": "100GB",
+                "max_age": "30d"
+              }
+            }
+          },
+          "warm": {
+            "min_age": "30d",
+            "actions": {
+              "forcemerge": {
+                "max_num_segments": 1
+              }
+            }
+          },
+          "cold": {
+            "min_age": "90d",
+            "actions": {
+              "freeze": {}
+            }
+          },
+          "delete": {
+            "min_age": "2555d",
+            "actions": {
+              "delete": {}
+            }
+          }
+        }
+      }
+    },
+    "search_templates": {
+      "emissions_search": {
+        "script": {
+          "lang": "mustache",
+          "source": {
+            "query": {
+              "bool": {
+                "must": [
+                  {
+                    "term": {
+                      "organization_id": "{{org_id}}"
+                    }
+                  },
+                  {
+                    "range": {
+                      "timestamp": {
+                        "gte": "{{start_date}}",
+                        "lte": "{{end_date}}"
+                      }
+                    }
+                  }
+                ],
+                "filter": [
+                  "{{#scope}}",
+                  {
+                    "term": {
+                      "scope_category": "{{scope}}"
+                    }
+                  },
+                  "{{/scope}}"
+                ]
+              }
+            },
+            "aggs": {
+              "total_emissions": {
+                "sum": {
+                  "field": "emissions.co2e_total"
+                }
+              },
+              "by_scope": {
+                "terms": {
+                  "field": "scope_category"
+                },
+                "aggs": {
+                  "scope_total": {
+                    "sum": {
+                      "field": "emissions.co2e_total"
+                    }
+                  }
+                }
+              },
+              "emissions_over_time": {
+                "date_histogram": {
+                  "field": "timestamp",
+                  "calendar_interval": "{{interval|day}}"
+                },
+                "aggs": {
+                  "emissions": {
+                    "sum": {
+                      "field": "emissions.co2e_total"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "supplier_risk_search": {
+        "script": {
+          "lang": "mustache",
+          "source": {
+            "query": {
+              "bool": {
+                "must": [
+                  {
+                    "range": {
+                      "risk_score": {
+                        "gte": "{{min_risk|0}}"
+                      }
+                    }
+                  }
+                ],
+                "filter": [
+                  "{{#country}}",
+                  {
+                    "term": {
+                      "country": "{{country}}"
+                    }
+                  },
+                  "{{/country}}",
+                  "{{#category}}",
+                  {
+                    "term": {
+                      "category": "{{category}}"
+                    }
+                  },
+                  "{{/category}}"
+                ]
+              }
+            },
+            "sort": [
+              {
+                "risk_score": {
+                  "order": "desc"
+                }
+              }
+            ],
+            "aggs": {
+              "risk_distribution": {
+                "histogram": {
+                  "field": "risk_score",
+                  "interval": 10
+                }
+              },
+              "by_country": {
+                "terms": {
+                  "field": "country",
+                  "size": 10
+                },
+                "aggs": {
+                  "avg_risk": {
+                    "avg": {
+                      "field": "risk_score"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "pipelines": {
+      "emissions_enrichment": {
+        "description": "Enrich emissions data with calculated fields",
+        "processors": [
+          {
+            "script": {
+              "source": "ctx.emissions.co2e_total = ctx.emissions.co2 + (ctx.emissions.ch4 * 25) + (ctx.emissions.n2o * 298)"
+            }
+          },
+          {
+            "set": {
+              "field": "quality_category",
+              "value": "high",
+              "if": "ctx.data_quality_score >= 80"
+            }
+          },
+          {
+            "set": {
+              "field": "quality_category",
+              "value": "medium",
+              "if": "ctx.data_quality_score >= 60 && ctx.data_quality_score < 80"
+            }
+          },
+          {
+            "set": {
+              "field": "quality_category",
+              "value": "low",
+              "if": "ctx.data_quality_score < 60"
+            }
+          }
+        ]
+      },
+      "document_extraction": {
+        "description": "Extract text from attachments",
+        "processors": [
+          {
+            "foreach": {
+              "field": "attachments",
+              "processor": {
+                "attachment": {
+                  "field": "_ingest._value.data",
+                  "target_field": "_ingest._value.content",
+                  "indexed_chars": 100000,
+                  "indexed_chars_field": "_ingest._value.indexed_chars"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    "query_examples": {
+      "complex_emissions_query": {
+        "size": 0,
+        "query": {
+          "bool": {
+            "must": [
+              {
+                "term": {
+                  "organization_id": "org-123"
+                }
+              },
+              {
+                "range": {
+                  "timestamp": {
+                    "gte": "2024-01-01",
+                    "lte": "2024-12-31"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        "aggs": {
+          "emissions_by_month": {
+            "date_histogram": {
+              "field": "timestamp",
+              "calendar_interval": "month"
+            },
+            "aggs": {
+              "by_scope": {
+                "terms": {
+                  "field": "scope_category"
+                },
+                "aggs": {
+                  "total": {
+                    "sum": {
+                      "field": "emissions.co2e_total"
+                    }
+                  },
+                  "avg_quality": {
+                    "avg": {
+                      "field": "data_quality_score"
+                    }
+                  }
+                }
+              },
+              "cumulative_emissions": {
+                "cumulative_sum": {
+                  "buckets_path": "by_scope>total"
+                }
+              }
+            }
+          },
+          "top_sources": {
+            "terms": {
+              "field": "source_id",
+              "size": 10,
+              "order": {
+                "total_emissions": "desc"
+              }
+            },
+            "aggs": {
+              "total_emissions": {
+                "sum": {
+                  "field": "emissions.co2e_total"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ml_anomaly_detection": {
+        "ml": {
+          "anomaly_detectors": [
+            {
+              "job_id": "emissions_anomaly_detector",
+              "analysis_config": {
+                "bucket_span": "1h",
+                "detectors": [
+                  {
+                    "function": "high_mean",
+                    "field_name": "emissions.co2e_total",
+                    "partition_field_name": "source_id"
+                  }
+                ],
+                "influencers": [
+                  "source_id",
+                  "facility"
+                ]
+              },
+              "data_description": {
+                "time_field": "timestamp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "security": {
+      "xpack.security.enabled": true,
+      "xpack.security.transport.ssl.enabled": true,
+      "xpack.security.transport.ssl.verification_mode": "certificate",
+      "xpack.security.http.ssl.enabled": true,
+      "roles": {
+        "emissions_reader": {
+          "indices": [
+            {
+              "names": ["emissions_data*"],
+              "privileges": ["read", "view_index_metadata"]
+            }
+          ]
+        },
+        "csrd_editor": {
+          "indices": [
+            {
+              "names": ["csrd_documents*"],
+              "privileges": ["read", "write", "create_index"]
+            }
+          ]
+        },
+        "admin": {
+          "cluster": ["all"],
+          "indices": [
+            {
+              "names": ["*"],
+              "privileges": ["all"]
+            }
+          ]
+        }
+      }
+    }
+  }
+}

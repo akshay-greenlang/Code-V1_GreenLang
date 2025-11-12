@@ -1,0 +1,490 @@
+# GreenLang Master CI/CD Pipeline - GitHub Actions
+# Supports 100+ workflows, multi-environment deployments
+
+name: GreenLang Master Pipeline
+on:
+  push:
+    branches: [main, develop, release/*, hotfix/*]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: '0 2 * * *'  # Nightly builds
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment Environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+          - disaster-recovery
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: greenlang
+  TERRAFORM_VERSION: 1.6.0
+  KUBECTL_VERSION: 1.28.0
+  HELM_VERSION: 3.13.0
+  NODE_VERSION: 20
+  PYTHON_VERSION: 3.11
+  GO_VERSION: 1.21
+  JAVA_VERSION: 17
+
+jobs:
+  # Security Scanning Job
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: Snyk Security Scan
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: GitGuardian scan
+        uses: GitGuardian/ggshield-action@master
+        env:
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+
+  # Code Quality Analysis
+  code-quality:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [javascript, python, go, java]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup language environment
+        uses: actions/setup-node@v4
+        if: matrix.language == 'javascript'
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        if: matrix.language == 'python'
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        if: matrix.language == 'go'
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        if: matrix.language == 'java'
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+
+      - name: Run linters
+        run: |
+          case "${{ matrix.language }}" in
+            javascript)
+              npm ci
+              npm run lint
+              npm run format:check
+              ;;
+            python)
+              pip install black flake8 pylint mypy
+              black --check .
+              flake8 .
+              pylint **/*.py
+              mypy .
+              ;;
+            go)
+              go fmt ./...
+              go vet ./...
+              golangci-lint run
+              ;;
+            java)
+              mvn checkstyle:check
+              mvn pmd:check
+              mvn spotbugs:check
+              ;;
+          esac
+
+  # Unit Testing
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: [security-scan, code-quality]
+    strategy:
+      matrix:
+        service:
+          - carbon-accounting
+          - scope3-emissions
+          - csrd-reporting
+          - esg-analytics
+          - supply-chain
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup test environment
+        run: |
+          docker-compose -f docker-compose.test.yml up -d
+          sleep 10
+
+      - name: Run unit tests
+        run: |
+          cd services/${{ matrix.service }}
+          npm test -- --coverage --watchAll=false
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./services/${{ matrix.service }}/coverage/lcov.info
+          flags: ${{ matrix.service }}
+
+  # Integration Testing
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start test environment
+        run: |
+          docker-compose -f docker-compose.integration.yml up -d
+          ./scripts/wait-for-services.sh
+
+      - name: Run integration tests
+        run: |
+          npm run test:integration
+
+      - name: Run API tests
+        run: |
+          newman run postman/GreenLang-API.json \
+            --environment postman/test-env.json \
+            --reporters cli,json,html
+
+      - name: Database migration tests
+        run: |
+          npm run db:migrate:test
+          npm run db:seed:test
+
+  # Performance Testing
+  performance-tests:
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup K6
+        run: |
+          sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6
+
+      - name: Run load tests
+        run: |
+          k6 run tests/performance/load-test.js \
+            --out influxdb=http://metrics.greenlang.io/k6
+
+      - name: Run stress tests
+        run: |
+          k6 run tests/performance/stress-test.js \
+            --out influxdb=http://metrics.greenlang.io/k6
+
+      - name: Analyze results
+        run: |
+          python scripts/analyze-performance.py \
+            --threshold-p95 200 \
+            --threshold-p99 500
+
+  # Build Docker Images
+  build-images:
+    runs-on: ubuntu-latest
+    needs: [integration-tests]
+    strategy:
+      matrix:
+        service:
+          - api-gateway
+          - carbon-service
+          - reporting-service
+          - analytics-service
+          - ml-service
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}/${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services/${{ matrix.service }}
+          file: ./services/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            VERSION=${{ github.sha }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+
+  # Terraform Planning
+  terraform-plan:
+    runs-on: ubuntu-latest
+    needs: build-images
+    strategy:
+      matrix:
+        environment: [development, staging, production]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Terraform Init
+        run: |
+          cd terraform/environments/${{ matrix.environment }}
+          terraform init
+
+      - name: Terraform Validate
+        run: |
+          cd terraform/environments/${{ matrix.environment }}
+          terraform validate
+
+      - name: Terraform Plan
+        run: |
+          cd terraform/environments/${{ matrix.environment }}
+          terraform plan -out=tfplan
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v3
+        with:
+          name: terraform-plan-${{ matrix.environment }}
+          path: terraform/environments/${{ matrix.environment }}/tfplan
+
+  # Deploy to Development
+  deploy-development:
+    runs-on: ubuntu-latest
+    needs: terraform-plan
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: development
+      url: https://dev.greenlang.io
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name greenlang-dev
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install greenlang ./helm/greenlang \
+            --namespace greenlang-development \
+            --values helm/values/development.yaml \
+            --set image.tag=${{ github.sha }} \
+            --wait --timeout 10m
+
+      - name: Run smoke tests
+        run: |
+          ./scripts/smoke-tests.sh development
+
+  # Deploy to Staging (Blue-Green)
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: deploy-development
+    if: github.ref == 'refs/heads/release/*'
+    environment:
+      name: staging
+      url: https://staging.greenlang.io
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name greenlang-staging
+
+      - name: Deploy Blue environment
+        run: |
+          helm upgrade --install greenlang-blue ./helm/greenlang \
+            --namespace greenlang-staging \
+            --values helm/values/staging.yaml \
+            --set image.tag=${{ github.sha }} \
+            --set bluegreen.productionSlot=blue \
+            --wait --timeout 10m
+
+      - name: Run integration tests on Blue
+        run: |
+          ./scripts/integration-tests.sh staging-blue
+
+      - name: Switch traffic to Blue
+        run: |
+          kubectl patch service greenlang-service \
+            -n greenlang-staging \
+            -p '{"spec":{"selector":{"slot":"blue"}}}'
+
+      - name: Monitor metrics
+        run: |
+          ./scripts/monitor-deployment.sh staging 300
+
+  # Deploy to Production (Canary)
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://api.greenlang.io
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig --region us-east-1 --name greenlang-prod
+
+      - name: Deploy Canary (10%)
+        run: |
+          helm upgrade --install greenlang-canary ./helm/greenlang \
+            --namespace greenlang-production \
+            --values helm/values/production.yaml \
+            --set image.tag=${{ github.sha }} \
+            --set canary.enabled=true \
+            --set canary.weight=10 \
+            --wait --timeout 10m
+
+      - name: Monitor Canary metrics
+        run: |
+          ./scripts/monitor-canary.sh 600
+
+      - name: Promote Canary (50%)
+        run: |
+          helm upgrade greenlang-canary ./helm/greenlang \
+            --namespace greenlang-production \
+            --reuse-values \
+            --set canary.weight=50 \
+            --wait
+
+      - name: Monitor 50% deployment
+        run: |
+          ./scripts/monitor-canary.sh 600
+
+      - name: Full deployment (100%)
+        run: |
+          helm upgrade greenlang ./helm/greenlang \
+            --namespace greenlang-production \
+            --values helm/values/production.yaml \
+            --set image.tag=${{ github.sha }} \
+            --set canary.enabled=false \
+            --wait --timeout 10m
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: Release v${{ github.run_number }}
+          body: |
+            Production deployment completed
+            Commit: ${{ github.sha }}
+
+  # Rollback Procedure
+  rollback:
+    runs-on: ubuntu-latest
+    if: failure()
+    needs: [deploy-production]
+    steps:
+      - name: Rollback production
+        run: |
+          helm rollback greenlang -n greenlang-production
+
+      - name: Send alert
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              text: "Production deployment failed and rolled back",
+              attachments: [{
+                color: 'danger',
+                text: 'Deployment ${{ github.sha }} failed'
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # Notification
+  notify:
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [deploy-production]
+    steps:
+      - name: Notify Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Deployment to production ${{ job.status }}'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}

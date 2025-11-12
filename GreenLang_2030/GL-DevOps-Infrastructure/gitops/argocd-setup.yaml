@@ -1,0 +1,529 @@
+# GreenLang GitOps Implementation with ArgoCD
+# Complete GitOps architecture for automated deployments
+
+---
+# ArgoCD Installation and Configuration
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: argocd
+  labels:
+    name: argocd
+    part-of: gitops
+---
+# ArgoCD Server Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-server-config
+  namespace: argocd
+data:
+  url: "https://argocd.greenlang.io"
+  dex.config: |
+    connectors:
+    - type: github
+      id: github
+      name: GitHub
+      config:
+        clientID: $dex.github.clientID
+        clientSecret: $dex.github.clientSecret
+        orgs:
+        - name: greenlang-io
+          teams:
+          - platform
+          - developers
+          - sre
+
+  policy.csv: |
+    p, role:admin, applications, *, */*, allow
+    p, role:admin, clusters, *, *, allow
+    p, role:admin, repositories, *, *, allow
+    p, role:developer, applications, get, */*, allow
+    p, role:developer, applications, sync, */*, allow
+    p, role:developer, applications, action/*, */*, allow
+    p, role:sre, applications, *, */*, allow
+    p, role:sre, clusters, get, *, allow
+    g, greenlang-io:platform, role:admin
+    g, greenlang-io:developers, role:developer
+    g, greenlang-io:sre, role:sre
+
+  resource.customizations: |
+    admissionregistration.k8s.io/MutatingWebhookConfiguration:
+      ignoreDifferences: |
+        jsonPointers:
+        - /webhooks/0/clientConfig/caBundle
+    apps/Deployment:
+      actions: |
+        discovery.lua: |
+          actions = {}
+          actions["restart"] = {}
+          return actions
+      restart: |
+        kubectl rollout restart deployment/$RESOURCE_NAME -n $RESOURCE_NAMESPACE
+
+  application.instanceLabelKey: argocd.argoproj.io/instance
+
+  repositories: |
+    - url: https://github.com/greenlang-io/infrastructure
+      type: git
+      name: infrastructure
+    - url: https://github.com/greenlang-io/applications
+      type: git
+      name: applications
+    - url: https://github.com/greenlang-io/configurations
+      type: git
+      name: configurations
+---
+# ArgoCD RBAC Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-rbac-cm
+  namespace: argocd
+data:
+  policy.default: role:readonly
+  policy.csv: |
+    p, role:readonly, applications, get, *, allow
+    p, role:readonly, clusters, get, *, allow
+    p, role:readonly, repositories, get, *, allow
+    p, role:admin, *, *, *, allow
+    g, argocd-admins, role:admin
+---
+# Root Application - App of Apps Pattern
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-application
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/greenlang-io/infrastructure
+    targetRevision: HEAD
+    path: applications
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+    - CreateNamespace=true
+    - PrunePropagationPolicy=foreground
+    - PruneLast=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+---
+# Production Applications
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: production
+  namespace: argocd
+spec:
+  description: Production environment applications
+  sourceRepos:
+  - 'https://github.com/greenlang-io/*'
+  destinations:
+  - namespace: 'greenlang-*'
+    server: https://kubernetes.default.svc
+  - namespace: 'gl-*'
+    server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  namespaceResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  roles:
+  - name: production-admin
+    policies:
+    - p, proj:production:production-admin, applications, *, production/*, allow
+    groups:
+    - greenlang-io:platform
+  - name: production-developer
+    policies:
+    - p, proj:production:production-developer, applications, get, production/*, allow
+    - p, proj:production:production-developer, applications, sync, production/*, allow
+    groups:
+    - greenlang-io:developers
+---
+# Carbon Service Application
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: carbon-service
+  namespace: argocd
+  labels:
+    app: carbon-service
+    environment: production
+spec:
+  project: production
+  source:
+    repoURL: https://github.com/greenlang-io/carbon-service
+    targetRevision: main
+    path: k8s/overlays/production
+    kustomize:
+      images:
+      - gcr.io/greenlang/carbon-service:v1.0.0
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gl-carbon-accounting
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  revisionHistoryLimit: 10
+---
+# Reporting Service Application
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: reporting-service
+  namespace: argocd
+spec:
+  project: production
+  source:
+    repoURL: https://github.com/greenlang-io/reporting-service
+    targetRevision: main
+    path: k8s/overlays/production
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gl-csrd-reporting
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Analytics Service with Helm
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: analytics-service
+  namespace: argocd
+spec:
+  project: production
+  source:
+    repoURL: https://github.com/greenlang-io/helm-charts
+    targetRevision: main
+    path: charts/analytics-service
+    helm:
+      valueFiles:
+      - values.yaml
+      - values-production.yaml
+      parameters:
+      - name: image.tag
+        value: v2.3.4
+      - name: replicaCount
+        value: "5"
+      - name: resources.requests.memory
+        value: "512Mi"
+      - name: resources.requests.cpu
+        value: "250m"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gl-esg-analytics
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Multi-Cluster Application Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: multi-cluster-apps
+  namespace: argocd
+spec:
+  generators:
+  - clusters:
+      selector:
+        matchLabels:
+          environment: production
+  template:
+    metadata:
+      name: '{{name}}-greenlang-app'
+    spec:
+      project: production
+      source:
+        repoURL: https://github.com/greenlang-io/applications
+        targetRevision: HEAD
+        path: manifests
+      destination:
+        server: '{{server}}'
+        namespace: greenlang-production
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+---
+# Progressive Delivery with Flagger
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: flagger
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: flagger
+    repoURL: https://flagger.app
+    targetRevision: 1.35.0
+    helm:
+      values: |
+        meshProvider: istio
+        metricsServer: http://prometheus.monitoring:9090
+        slack:
+          url: https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK
+          channel: deployments
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: istio-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Canary Deployment Configuration
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: greenlang-api
+  namespace: greenlang-production
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-api
+  service:
+    port: 8080
+    targetPort: 8080
+    gateways:
+    - public-gateway.istio-system.svc.cluster.local
+    hosts:
+    - api.greenlang.io
+  analysis:
+    interval: 1m
+    threshold: 10
+    maxWeight: 50
+    stepWeight: 10
+    metrics:
+    - name: request-success-rate
+      thresholdRange:
+        min: 99
+      interval: 1m
+    - name: request-duration
+      thresholdRange:
+        max: 500
+      interval: 1m
+    webhooks:
+    - name: load-test
+      url: http://flagger-loadtester.flagger/
+      metadata:
+        cmd: "hey -z 2m -q 10 -c 2 https://api.greenlang.io"
+---
+# Secret Management with Sealed Secrets
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sealed-secrets
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: sealed-secrets
+    repoURL: https://bitnami-labs.github.io/sealed-secrets
+    targetRevision: 2.13.0
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+# Image Updater Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-image-updater-config
+  namespace: argocd
+data:
+  registries.conf: |
+    registries:
+    - name: Docker Hub
+      prefix: docker.io
+      api_url: https://registry-1.docker.io
+      credentials: secret:argocd/dockerhub-creds#token
+    - name: GCR
+      prefix: gcr.io
+      api_url: https://gcr.io
+      credentials: secret:argocd/gcr-creds#token
+    - name: ECR
+      prefix: public.ecr.aws
+      api_url: https://public.ecr.aws
+      credentials: secret:argocd/ecr-creds#token
+---
+# Notification Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-notifications-cm
+  namespace: argocd
+data:
+  service.slack: |
+    token: $slack-token
+  template.app-deployed: |
+    message: |
+      {{if eq .serviceType "slack"}}:white_check_mark:{{end}} Application {{.app.metadata.name}} is now running new version.
+    slack:
+      attachments: |
+        [{
+          "title": "{{ .app.metadata.name}}",
+          "title_link":"{{.context.argocdUrl}}/applications/{{.app.metadata.name}}",
+          "color": "#18be52",
+          "fields": [
+          {
+            "title": "Sync Status",
+            "value": "{{.app.status.sync.status}}",
+            "short": true
+          },
+          {
+            "title": "Repository",
+            "value": "{{.app.spec.source.repoURL}}",
+            "short": true
+          },
+          {
+            "title": "Revision",
+            "value": "{{.app.status.sync.revision}}",
+            "short": true
+          }
+          {{range $index, $c := .app.status.conditions}}
+          {{if not $index}},{{end}}
+          {{if $index}},{{end}}
+          {
+            "title": "{{$c.type}}",
+            "value": "{{$c.message}}",
+            "short": true
+          }
+          {{end}}
+          ]
+        }]
+  template.app-health-degraded: |
+    message: |
+      {{if eq .serviceType "slack"}}:exclamation:{{end}} Application {{.app.metadata.name}} has degraded.
+    slack:
+      attachments: |
+        [{
+          "color": "#f4c030",
+          "fields": [
+          {
+            "title": "Health Status",
+            "value": "{{.app.status.health.status}}",
+            "short": true
+          }
+          ]
+        }]
+  trigger.on-deployed: |
+    - when: app.status.operationState.phase in ['Succeeded']
+      send: [app-deployed]
+  trigger.on-health-degraded: |
+    - when: app.status.health.status == 'Degraded'
+      send: [app-health-degraded]
+  subscriptions: |
+    - recipients:
+      - slack:deployments
+      triggers:
+      - on-deployed
+      - on-health-degraded
+---
+# Metrics and Monitoring
+apiVersion: v1
+kind: Service
+metadata:
+  name: argocd-metrics
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: argocd-metrics
+    app.kubernetes.io/part-of: argocd
+spec:
+  ports:
+  - name: metrics
+    port: 8082
+    protocol: TCP
+    targetPort: 8082
+  selector:
+    app.kubernetes.io/name: argocd-server
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: argocd-metrics
+  namespace: argocd
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-metrics
+  endpoints:
+  - port: metrics
+---
+# Repository Structure ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitops-repository-structure
+  namespace: argocd
+data:
+  structure.yaml: |
+    # GreenLang GitOps Repository Structure
+    repositories:
+      infrastructure:
+        path: /
+        structure:
+          - applications/         # App of Apps definitions
+          - clusters/            # Cluster configurations
+            - production/
+            - staging/
+            - development/
+          - platform/            # Platform services
+            - monitoring/
+            - logging/
+            - security/
+          - terraform/           # Infrastructure as Code
+
+      applications:
+        path: /
+        structure:
+          - services/            # Microservices
+            - carbon-service/
+              - base/           # Base Kustomize configs
+              - overlays/       # Environment-specific
+                - production/
+                - staging/
+                - development/
+          - helm-charts/        # Helm charts
+          - configurations/     # ConfigMaps and Secrets
+
+      configurations:
+        path: /
+        structure:
+          - sealed-secrets/     # Encrypted secrets
+          - configmaps/         # Configuration data
+          - policies/           # OPA policies
+          - certificates/       # TLS certificates

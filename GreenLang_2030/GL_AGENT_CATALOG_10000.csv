@@ -1,0 +1,171 @@
+Agent_ID,Agent_Name,Domain,Category,Type,Complexity,Priority,Market_Size,Carbon_Impact,Payback_Years,Development_Timeline,Description
+IND-001,ProcessHeatOrchestrator,Industrial,Process Heat,Coordinator,High,P0,$20B,2.5 Gt/yr,3-5,Q4 2025,Master coordinator for industrial process heat optimization across multiple systems
+IND-002,BoilerEfficiencyOptimizer,Industrial,Process Heat,Optimizer,Medium,P0,$15B,1.8 Gt/yr,2-4,Q4 2025,Optimizes boiler operations for maximum efficiency and minimum emissions
+IND-003,SteamSystemAnalyzer,Industrial,Process Heat,Monitor,Medium,P1,$10B,1.2 Gt/yr,2-3,Q1 2026,Monitors and analyzes steam distribution systems for losses and inefficiencies
+IND-004,BurnerOptimizationAgent,Industrial,Process Heat,Optimizer,Low,P1,$5B,0.6 Gt/yr,1-2,Q1 2026,Optimizes combustion parameters for industrial burners
+IND-005,CombustionControlAgent,Industrial,Process Heat,Automator,Medium,P1,$8B,0.9 Gt/yr,2-3,Q2 2026,Automates combustion control for optimal air-fuel ratios
+IND-006,FurnaceEfficiencyAgent,Industrial,Process Heat,Optimizer,High,P1,$12B,1.5 Gt/yr,3-5,Q2 2026,Comprehensive furnace optimization including heat recovery
+IND-007,ThermalInsulationAgent,Industrial,Process Heat,Calculator,Low,P2,$3B,0.3 Gt/yr,0.5-1,Q2 2026,Calculates optimal insulation requirements and payback
+IND-008,HeatLossDetectionAgent,Industrial,Process Heat,Monitor,Medium,P1,$4B,0.4 Gt/yr,1-2,Q2 2026,Detects and quantifies heat losses in industrial processes
+IND-009,ProcessSchedulingAgent,Industrial,Process Heat,Optimizer,High,P1,$7B,0.8 Gt/yr,2-4,Q3 2026,Optimizes production scheduling for energy efficiency
+IND-010,PreheatingOptimizer,Industrial,Process Heat,Optimizer,Medium,P2,$5B,0.5 Gt/yr,1-3,Q3 2026,Optimizes preheating strategies for materials and air
+IND-101,WasteHeatRecoveryMaster,Industrial,Heat Recovery,Coordinator,High,P0,$15B,1.8 Gt/yr,1-3,Q4 2025,Coordinates waste heat recovery across entire facility
+IND-102,HeatExchangerOptimizer,Industrial,Heat Recovery,Optimizer,Medium,P0,$10B,1.2 Gt/yr,2-4,Q1 2026,Optimizes heat exchanger networks for maximum recovery
+IND-103,ThermalStorageManager,Industrial,Heat Recovery,Monitor,Medium,P1,$8B,0.9 Gt/yr,3-5,Q1 2026,Manages thermal energy storage systems
+IND-104,PinchAnalysisAgent,Industrial,Heat Recovery,Calculator,High,P1,$5B,0.6 Gt/yr,2-3,Q2 2026,Performs pinch analysis for process integration
+IND-105,ORCSystemAgent,Industrial,Heat Recovery,Optimizer,High,P2,$4B,0.5 Gt/yr,4-6,Q2 2026,Optimizes Organic Rankine Cycle systems
+IND-106,RecuperatorDesigner,Industrial,Heat Recovery,Calculator,Medium,P2,$3B,0.3 Gt/yr,2-4,Q3 2026,Designs recuperative heat exchangers
+IND-107,RegeneratorOptimizer,Industrial,Heat Recovery,Optimizer,Medium,P2,$3B,0.3 Gt/yr,2-4,Q3 2026,Optimizes regenerative heat recovery systems
+IND-108,EconomizerAgent,Industrial,Heat Recovery,Calculator,Low,P1,$5B,0.5 Gt/yr,1-2,Q1 2026,Calculates economizer benefits and sizing
+IND-109,AirPreheaterAgent,Industrial,Heat Recovery,Optimizer,Medium,P1,$4B,0.4 Gt/yr,1-3,Q2 2026,Optimizes combustion air preheating systems
+IND-110,CondensateRecoveryAgent,Industrial,Heat Recovery,Monitor,Low,P2,$2B,0.2 Gt/yr,0.5-1,Q3 2026,Monitors and optimizes condensate recovery
+IND-201,IndustrialHeatPumpMaster,Industrial,Heat Pumps,Coordinator,High,P0,$18B,2.2 Gt/yr,3-6,Q4 2025,Master controller for industrial heat pump systems
+IND-202,HighTempHeatPumpAgent,Industrial,Heat Pumps,Optimizer,High,P1,$12B,1.5 Gt/yr,4-7,Q1 2026,Optimizes high-temperature heat pumps (>100C)
+IND-203,HeatPumpSizingCalculator,Industrial,Heat Pumps,Calculator,Medium,P1,$5B,0.6 Gt/yr,3-5,Q1 2026,Calculates optimal heat pump capacity and configuration
+IND-204,RefrigerantOptimizer,Industrial,Heat Pumps,Optimizer,Low,P2,$3B,0.3 Gt/yr,2-4,Q2 2026,Optimizes refrigerant selection and charge
+IND-205,MVRSystemAgent,Industrial,Heat Pumps,Optimizer,High,P1,$6B,0.7 Gt/yr,2-5,Q2 2026,Mechanical Vapor Recompression optimization
+IND-206,HybridHeatPumpAgent,Industrial,Heat Pumps,Coordinator,High,P2,$4B,0.5 Gt/yr,3-6,Q3 2026,Manages hybrid heat pump-boiler systems
+IND-207,COPMaximizationAgent,Industrial,Heat Pumps,Optimizer,Medium,P1,$5B,0.5 Gt/yr,2-4,Q2 2026,Maximizes Coefficient of Performance
+IND-208,HeatSourceAnalyzer,Industrial,Heat Pumps,Calculator,Low,P2,$2B,0.2 Gt/yr,1-3,Q3 2026,Analyzes available heat sources for heat pumps
+IND-209,TranscriticalCO2Agent,Industrial,Heat Pumps,Optimizer,High,P2,$3B,0.4 Gt/yr,4-8,Q4 2026,Optimizes transcritical CO2 heat pump systems
+IND-210,AmmoniaHeatPumpAgent,Industrial,Heat Pumps,Optimizer,High,P2,$3B,0.4 Gt/yr,4-8,Q4 2026,Manages ammonia-based heat pump systems
+IND-301,FlatPlateDesigner,Industrial,Solar Thermal,Calculator,Medium,P1,$3B,0.3 Gt/yr,5-8,Q2 2026,Designs flat plate solar collector systems
+IND-302,CollectorEfficiencyOptimizer,Industrial,Solar Thermal,Optimizer,Low,P2,$2B,0.2 Gt/yr,4-7,Q3 2026,Optimizes solar collector efficiency and orientation
+IND-303,EvacuatedTubeAgent,Industrial,Solar Thermal,Calculator,Medium,P2,$2B,0.2 Gt/yr,5-9,Q3 2026,Designs evacuated tube collector systems
+IND-304,SolarFieldLayoutAgent,Industrial,Solar Thermal,Optimizer,High,P2,$3B,0.3 Gt/yr,6-10,Q4 2026,Optimizes solar field layout and piping
+IND-305,ThermalOilSystemAgent,Industrial,Solar Thermal,Monitor,Medium,P2,$2B,0.2 Gt/yr,5-8,Q4 2026,Monitors thermal oil heat transfer systems
+IND-351,ParabolicTroughMaster,Industrial,Solar Thermal,Coordinator,High,P1,$5B,0.6 Gt/yr,6-10,Q2 2026,Manages parabolic trough solar systems
+IND-352,TrackingSystemOptimizer,Industrial,Solar Thermal,Optimizer,Medium,P2,$3B,0.3 Gt/yr,5-8,Q3 2026,Optimizes solar tracking algorithms
+IND-353,LinearFresnelAgent,Industrial,Solar Thermal,Calculator,High,P2,$3B,0.4 Gt/yr,7-12,Q4 2026,Designs linear Fresnel reflector systems
+IND-354,MoltenSaltStorageAgent,Industrial,Solar Thermal,Monitor,High,P2,$4B,0.5 Gt/yr,8-12,Q4 2026,Manages molten salt thermal storage
+IND-355,DNIForecastAgent,Industrial,Solar Thermal,Predictor,Medium,P2,$2B,0.2 Gt/yr,5-8,Q3 2026,Forecasts Direct Normal Irradiance
+IND-701,HENOptimizationMaster,Industrial,Process Integration,Coordinator,High,P1,$8B,1.0 Gt/yr,2-4,Q2 2026,Master heat exchanger network optimizer
+IND-702,StreamMatchingAgent,Industrial,Process Integration,Optimizer,Medium,P1,$5B,0.6 Gt/yr,2-3,Q2 2026,Matches hot and cold process streams
+IND-703,TemperaturePinchAgent,Industrial,Process Integration,Calculator,Medium,P2,$3B,0.3 Gt/yr,1-3,Q3 2026,Calculates temperature pinch points
+IND-704,GrandCompositeAgent,Industrial,Process Integration,Calculator,High,P2,$2B,0.2 Gt/yr,2-4,Q3 2026,Creates grand composite curves
+IND-705,UtilityTargetingAgent,Industrial,Process Integration,Optimizer,Medium,P2,$3B,0.3 Gt/yr,2-3,Q3 2026,Optimizes utility consumption targets
+IND-1001,FoodProcessingMaster,Industrial,Food & Beverage,Coordinator,High,P0,$15B,1.5 Gt/yr,2-5,Q1 2026,Master coordinator for food processing facilities
+IND-1002,BreweryOptimizer,Industrial,Food & Beverage,Optimizer,Medium,P1,$8B,0.8 Gt/yr,2-4,Q1 2026,Optimizes brewery energy and water use
+IND-1003,DairyEnergyAgent,Industrial,Food & Beverage,Monitor,Medium,P1,$7B,0.7 Gt/yr,2-4,Q2 2026,Monitors dairy processing energy consumption
+IND-1004,BakeryEfficiencyAgent,Industrial,Food & Beverage,Optimizer,Low,P2,$4B,0.4 Gt/yr,1-3,Q2 2026,Optimizes bakery oven operations
+IND-1005,RefrigerationOptimizer,Industrial,Food & Beverage,Optimizer,High,P1,$6B,0.7 Gt/yr,2-5,Q2 2026,Optimizes industrial refrigeration systems
+IND-1006,PasteurizationAgent,Industrial,Food & Beverage,Optimizer,Medium,P2,$3B,0.3 Gt/yr,2-4,Q3 2026,Optimizes pasteurization processes
+IND-1007,EvaporatorOptimizer,Industrial,Food & Beverage,Optimizer,Medium,P2,$3B,0.3 Gt/yr,3-5,Q3 2026,Optimizes evaporation and concentration
+IND-1008,DryerEfficiencyAgent,Industrial,Food & Beverage,Optimizer,Medium,P1,$5B,0.5 Gt/yr,2-4,Q2 2026,Optimizes industrial drying processes
+IND-1009,PackagingLineAgent,Industrial,Food & Beverage,Monitor,Low,P2,$2B,0.2 Gt/yr,1-2,Q3 2026,Monitors packaging line energy use
+IND-1010,WaterRecyclingAgent,Industrial,Food & Beverage,Optimizer,Medium,P1,$4B,0.3 Gt/yr,1-3,Q2 2026,Optimizes water recycling in food processing
+IND-1101,ChemicalProcessMaster,Industrial,Chemical,Coordinator,High,P0,$20B,2.5 Gt/yr,3-6,Q1 2026,Master coordinator for chemical plants
+IND-1102,ReactorOptimizer,Industrial,Chemical,Optimizer,High,P1,$12B,1.5 Gt/yr,3-5,Q2 2026,Optimizes chemical reactor operations
+IND-1103,DistillationAgent,Industrial,Chemical,Optimizer,Medium,P1,$8B,1.0 Gt/yr,2-4,Q2 2026,Optimizes distillation column operations
+IND-1104,CatalystMonitor,Industrial,Chemical,Monitor,Medium,P2,$4B,0.5 Gt/yr,2-4,Q3 2026,Monitors catalyst performance and lifetime
+IND-1105,CrackingOptimizer,Industrial,Chemical,Optimizer,High,P1,$10B,1.2 Gt/yr,3-6,Q2 2026,Optimizes cracking furnace operations
+IND-1106,PolymerizationAgent,Industrial,Chemical,Monitor,High,P2,$5B,0.6 Gt/yr,3-5,Q3 2026,Monitors polymerization processes
+IND-1107,SeparationOptimizer,Industrial,Chemical,Optimizer,Medium,P2,$4B,0.4 Gt/yr,2-4,Q3 2026,Optimizes separation processes
+IND-1108,HydrogenProductionAgent,Industrial,Chemical,Optimizer,High,P1,$8B,1.0 Gt/yr,4-7,Q2 2026,Optimizes hydrogen production
+IND-1109,AmmoniaPlantAgent,Industrial,Chemical,Coordinator,High,P1,$7B,0.9 Gt/yr,3-6,Q2 2026,Manages ammonia plant operations
+IND-1110,ChlorAlkaliAgent,Industrial,Chemical,Optimizer,Medium,P2,$3B,0.3 Gt/yr,2-4,Q3 2026,Optimizes chlor-alkali processes
+IND-2501,SteelProductionMaster,Industrial,Steel,Coordinator,High,P0,$25B,3.0 Gt/yr,4-8,Q1 2026,Master coordinator for steel production
+IND-2502,BlastFurnaceOptimizer,Industrial,Steel,Optimizer,High,P0,$15B,2.0 Gt/yr,3-6,Q1 2026,Optimizes blast furnace operations
+IND-2503,ElectricArcFurnaceAgent,Industrial,Steel,Optimizer,High,P1,$10B,1.2 Gt/yr,3-5,Q2 2026,Optimizes electric arc furnace operations
+IND-2504,DirectReductionAgent,Industrial,Steel,Optimizer,High,P1,$8B,1.0 Gt/yr,4-7,Q2 2026,Manages direct reduction of iron ore
+IND-2505,CokingOptimizer,Industrial,Steel,Optimizer,Medium,P2,$5B,0.6 Gt/yr,3-5,Q3 2026,Optimizes coking operations
+IND-2506,RollingMillAgent,Industrial,Steel,Monitor,Medium,P2,$4B,0.4 Gt/yr,2-4,Q3 2026,Monitors rolling mill energy consumption
+IND-2507,SinteringOptimizer,Industrial,Steel,Optimizer,Medium,P2,$4B,0.5 Gt/yr,3-5,Q3 2026,Optimizes sintering processes
+IND-2508,ScrapOptimizer,Industrial,Steel,Calculator,Low,P2,$3B,0.3 Gt/yr,1-3,Q3 2026,Optimizes scrap metal usage
+IND-2509,HydrogenSteelAgent,Industrial,Steel,Optimizer,High,P1,$12B,1.5 Gt/yr,5-10,Q4 2026,Manages hydrogen-based steel production
+IND-2510,CCUSIntegrationAgent,Industrial,Steel,Integrator,High,P2,$6B,0.8 Gt/yr,5-8,Q4 2026,Integrates carbon capture in steel plants
+HVAC-001,ChillerPlantMaster,HVAC & Buildings,HVAC Core,Coordinator,High,P0,$8B,0.8 Gt/yr,3-5,Q1 2026,Master coordinator for chiller plant operations
+HVAC-002,ChillerSequencingAgent,HVAC & Buildings,HVAC Core,Optimizer,Medium,P0,$5B,0.5 Gt/yr,2-4,Q1 2026,Optimizes chiller staging and sequencing
+HVAC-003,CondenserOptimizer,HVAC & Buildings,HVAC Core,Optimizer,Medium,P1,$3B,0.3 Gt/yr,2-3,Q2 2026,Optimizes condenser water temperature
+HVAC-004,EvaporatorEfficiencyAgent,HVAC & Buildings,HVAC Core,Monitor,Low,P2,$2B,0.2 Gt/yr,1-2,Q2 2026,Monitors evaporator performance
+HVAC-005,CoolingTowerOptimizer,HVAC & Buildings,HVAC Core,Optimizer,Medium,P1,$4B,0.4 Gt/yr,2-3,Q2 2026,Optimizes cooling tower operations
+HVAC-006,PumpingOptimizer,HVAC & Buildings,HVAC Core,Optimizer,Medium,P1,$3B,0.3 Gt/yr,1-3,Q2 2026,Optimizes chilled water pumping
+HVAC-007,FreeCollingAgent,HVAC & Buildings,HVAC Core,Automator,Medium,P1,$3B,0.3 Gt/yr,2-4,Q2 2026,Manages free cooling operations
+HVAC-008,ThermalStorageAgent,HVAC & Buildings,HVAC Core,Monitor,High,P2,$4B,0.4 Gt/yr,3-6,Q3 2026,Manages ice or chilled water storage
+HVAC-009,RefrigerantMonitor,HVAC & Buildings,HVAC Core,Monitor,Low,P2,$1B,0.1 Gt/yr,1-2,Q3 2026,Monitors refrigerant levels and leaks
+HVAC-010,ChillerMaintenanceAgent,HVAC & Buildings,HVAC Core,Predictor,Medium,P2,$2B,0.2 Gt/yr,2-3,Q3 2026,Predicts chiller maintenance needs
+HVAC-081,AHUControlMaster,HVAC & Buildings,HVAC Core,Coordinator,High,P0,$6B,0.6 Gt/yr,2-4,Q1 2026,Master controller for air handling units
+HVAC-082,SupplyAirOptimizer,HVAC & Buildings,HVAC Core,Optimizer,Medium,P1,$4B,0.4 Gt/yr,2-3,Q2 2026,Optimizes supply air temperature and flow
+HVAC-083,ReturnAirDamperAgent,HVAC & Buildings,HVAC Core,Automator,Low,P2,$2B,0.2 Gt/yr,1-2,Q2 2026,Controls return air damper positions
+HVAC-084,EconomizerControlAgent,HVAC & Buildings,HVAC Core,Automator,Medium,P1,$3B,0.3 Gt/yr,1-2,Q2 2026,Manages economizer operations
+HVAC-085,StaticPressureAgent,HVAC & Buildings,HVAC Core,Monitor,Low,P2,$1B,0.1 Gt/yr,1-2,Q3 2026,Monitors duct static pressure
+HVAC-086,FilterMonitorAgent,HVAC & Buildings,HVAC Core,Monitor,Low,P2,$1B,0.1 Gt/yr,0.5-1,Q3 2026,Monitors filter differential pressure
+HVAC-087,HumidityControlAgent,HVAC & Buildings,HVAC Core,Automator,Medium,P2,$2B,0.2 Gt/yr,2-3,Q3 2026,Controls humidity levels
+HVAC-088,HeatRecoveryAgent,HVAC & Buildings,HVAC Core,Optimizer,Medium,P1,$3B,0.3 Gt/yr,2-4,Q2 2026,Optimizes heat recovery ventilation
+HVAC-089,DemandControlVentilation,HVAC & Buildings,HVAC Core,Automator,Medium,P1,$3B,0.3 Gt/yr,1-3,Q2 2026,Controls ventilation based on CO2
+HVAC-090,CoilOptimizer,HVAC & Buildings,HVAC Core,Optimizer,Low,P2,$2B,0.2 Gt/yr,2-3,Q3 2026,Optimizes heating/cooling coil operations
+HVAC-801,OfficeEnergyMaster,HVAC & Buildings,Building Types,Coordinator,High,P0,$10B,1.0 Gt/yr,3-5,Q1 2026,Master energy coordinator for office buildings
+HVAC-802,OpenOfficeOptimizer,HVAC & Buildings,Building Types,Optimizer,Medium,P1,$5B,0.5 Gt/yr,2-4,Q2 2026,Optimizes open office space conditioning
+HVAC-803,ConferenceRoomAgent,HVAC & Buildings,Building Types,Monitor,Low,P2,$2B,0.2 Gt/yr,1-2,Q3 2026,Monitors conference room occupancy and energy
+HVAC-804,LobbyComfortAgent,HVAC & Buildings,Building Types,Automator,Low,P2,$1B,0.1 Gt/yr,1-2,Q3 2026,Manages lobby area comfort
+HVAC-805,ParkingGarageAgent,HVAC & Buildings,Building Types,Monitor,Low,P2,$1B,0.1 Gt/yr,1-2,Q3 2026,Monitors parking garage ventilation
+HVAC-861,HospitalEnergyMaster,HVAC & Buildings,Building Types,Coordinator,High,P0,$12B,1.2 Gt/yr,3-6,Q1 2026,Master coordinator for hospital energy systems
+HVAC-862,OperatingRoomAgent,HVAC & Buildings,Building Types,Monitor,High,P0,$5B,0.5 Gt/yr,2-4,Q1 2026,Monitors OR environmental conditions
+HVAC-863,PatientRoomOptimizer,HVAC & Buildings,Building Types,Optimizer,Medium,P1,$4B,0.4 Gt/yr,2-3,Q2 2026,Optimizes patient room comfort and efficiency
+HVAC-864,PharmacyEnvironmentAgent,HVAC & Buildings,Building Types,Monitor,Medium,P1,$2B,0.2 Gt/yr,1-2,Q2 2026,Monitors pharmacy environmental conditions
+HVAC-865,LaboratoryAirAgent,HVAC & Buildings,Building Types,Automator,High,P1,$3B,0.3 Gt/yr,2-4,Q2 2026,Manages laboratory air exchange rates
+HVAC-1401,RLControlMaster,HVAC & Buildings,Smart Control,Coordinator,High,P1,$8B,0.8 Gt/yr,3-5,Q2 2026,Reinforcement learning master controller
+HVAC-1402,DeepQLearningAgent,HVAC & Buildings,Smart Control,Optimizer,High,P1,$5B,0.5 Gt/yr,3-5,Q3 2026,Deep Q-learning optimization agent
+HVAC-1403,PolicyGradientAgent,HVAC & Buildings,Smart Control,Optimizer,High,P2,$3B,0.3 Gt/yr,3-5,Q3 2026,Policy gradient optimization agent
+HVAC-1404,ModelPredictiveControl,HVAC & Buildings,Smart Control,Optimizer,High,P1,$6B,0.6 Gt/yr,2-4,Q2 2026,Model predictive control optimization
+HVAC-1405,OccupancyPredictorAgent,HVAC & Buildings,Smart Control,Predictor,Medium,P1,$4B,0.4 Gt/yr,1-3,Q2 2026,Predicts building occupancy patterns
+HVAC-1406,LoadForecastingAgent,HVAC & Buildings,Smart Control,Predictor,Medium,P1,$4B,0.4 Gt/yr,2-3,Q2 2026,Forecasts building load profiles
+HVAC-1407,FaultDetectionAgent,HVAC & Buildings,Smart Control,Monitor,High,P1,$5B,0.5 Gt/yr,1-2,Q2 2026,Detects HVAC faults and anomalies
+HVAC-1408,PredictiveMaintenanceAgent,HVAC & Buildings,Smart Control,Predictor,High,P1,$5B,0.5 Gt/yr,2-3,Q3 2026,Predicts equipment maintenance needs
+HVAC-1409,DemandResponseAgent,HVAC & Buildings,Smart Control,Automator,Medium,P1,$4B,0.4 Gt/yr,1-2,Q2 2026,Manages utility demand response events
+HVAC-1410,GridInteractiveAgent,HVAC & Buildings,Smart Control,Integrator,High,P2,$3B,0.3 Gt/yr,2-4,Q3 2026,Enables grid-interactive efficient buildings
+TRANS-001,EVFleetMaster,Transportation,Electric Vehicles,Coordinator,High,P0,$15B,1.2 Gt/yr,3-5,Q2 2026,Master coordinator for EV fleet operations
+TRANS-002,ChargingScheduleOptimizer,Transportation,Electric Vehicles,Optimizer,Medium,P0,$8B,0.6 Gt/yr,2-3,Q2 2026,Optimizes EV charging schedules
+TRANS-003,BatteryHealthMonitor,Transportation,Electric Vehicles,Monitor,Medium,P1,$5B,0.4 Gt/yr,2-4,Q3 2026,Monitors EV battery health and degradation
+TRANS-004,RouteEnergyOptimizer,Transportation,Electric Vehicles,Calculator,Medium,P1,$4B,0.3 Gt/yr,1-2,Q3 2026,Calculates energy-optimal routes
+TRANS-005,V2GCoordinator,Transportation,Electric Vehicles,Integrator,High,P2,$6B,0.5 Gt/yr,3-5,Q4 2026,Manages vehicle-to-grid operations
+TRANS-006,TelemanticsAnalyzer,Transportation,Electric Vehicles,Monitor,Low,P2,$2B,0.2 Gt/yr,1-2,Q3 2026,Analyzes vehicle telematics data
+TRANS-007,FleetRightSizingAgent,Transportation,Electric Vehicles,Calculator,Medium,P1,$3B,0.2 Gt/yr,2-3,Q3 2026,Optimizes fleet vehicle types and sizes
+TRANS-008,ChargingInfraPlanner,Transportation,Electric Vehicles,Calculator,High,P1,$5B,0.4 Gt/yr,2-4,Q3 2026,Plans optimal charging infrastructure
+TRANS-009,EVTCOCalculator,Transportation,Electric Vehicles,Calculator,Low,P2,$2B,0.1 Gt/yr,1-2,Q4 2026,Calculates EV total cost of ownership
+TRANS-010,RegenerativeBrakingAgent,Transportation,Electric Vehicles,Optimizer,Low,P2,$2B,0.2 Gt/yr,1-2,Q4 2026,Optimizes regenerative braking systems
+TRANS-101,ChargingNetworkMaster,Transportation,Charging Infrastructure,Coordinator,High,P0,$10B,0.8 Gt/yr,3-5,Q2 2026,Master coordinator for charging networks
+TRANS-102,DCFCOptimizer,Transportation,Charging Infrastructure,Optimizer,Medium,P1,$6B,0.5 Gt/yr,2-4,Q3 2026,Optimizes DC fast charging operations
+TRANS-103,Level2ChargingAgent,Transportation,Charging Infrastructure,Monitor,Low,P2,$3B,0.2 Gt/yr,1-2,Q3 2026,Manages Level 2 charging stations
+TRANS-104,LoadBalancingAgent,Transportation,Charging Infrastructure,Optimizer,Medium,P1,$4B,0.3 Gt/yr,2-3,Q3 2026,Balances charging loads across network
+TRANS-105,PaymentSystemAgent,Transportation,Charging Infrastructure,Integrator,Low,P2,$2B,0.1 Gt/yr,1-2,Q4 2026,Manages charging payment systems
+TRANS-701,RouteOptimizationMaster,Transportation,Logistics,Coordinator,High,P0,$12B,1.0 Gt/yr,2-4,Q3 2026,Master route optimization coordinator
+TRANS-702,DynamicRoutingAgent,Transportation,Logistics,Optimizer,High,P1,$8B,0.7 Gt/yr,2-3,Q3 2026,Dynamic real-time route optimization
+TRANS-703,TrafficPredictionAgent,Transportation,Logistics,Predictor,Medium,P1,$5B,0.4 Gt/yr,1-2,Q4 2026,Predicts traffic patterns and congestion
+TRANS-704,LastMileOptimizer,Transportation,Logistics,Optimizer,Medium,P1,$6B,0.5 Gt/yr,2-3,Q4 2026,Optimizes last-mile delivery routes
+TRANS-705,ConsolidationAgent,Transportation,Logistics,Optimizer,Medium,P2,$4B,0.3 Gt/yr,2-3,Q4 2026,Consolidates shipments for efficiency
+AGRI-001,CropMonitoringMaster,Agriculture,Precision Agriculture,Coordinator,High,P1,$5B,0.5 Gt/yr,3-5,Q3 2026,Master coordinator for crop monitoring
+AGRI-002,SatelliteImageryAgent,Agriculture,Precision Agriculture,Monitor,Medium,P1,$3B,0.3 Gt/yr,2-4,Q3 2026,Analyzes satellite imagery for crop health
+AGRI-003,DroneInspectionAgent,Agriculture,Precision Agriculture,Monitor,Medium,P2,$2B,0.2 Gt/yr,2-3,Q4 2026,Manages agricultural drone inspections
+AGRI-004,NDVIAnalyzer,Agriculture,Precision Agriculture,Calculator,Low,P2,$1B,0.1 Gt/yr,1-2,Q4 2026,Calculates normalized difference vegetation index
+AGRI-005,YieldPredictionAgent,Agriculture,Precision Agriculture,Predictor,High,P1,$4B,0.4 Gt/yr,2-4,Q3 2026,Predicts crop yields using ML
+AGRI-081,IrrigationMaster,Agriculture,Irrigation,Coordinator,High,P1,$4B,0.4 Gt/yr,2-4,Q3 2026,Master irrigation system coordinator
+AGRI-082,SoilMoistureOptimizer,Agriculture,Irrigation,Optimizer,Medium,P1,$2.5B,0.2 Gt/yr,1-3,Q4 2026,Optimizes irrigation based on soil moisture
+AGRI-083,DripIrrigationAgent,Agriculture,Irrigation,Automator,Low,P2,$1.5B,0.1 Gt/yr,1-2,Q4 2026,Manages drip irrigation systems
+AGRI-084,ETCalculator,Agriculture,Irrigation,Calculator,Medium,P2,$1B,0.1 Gt/yr,1-2,Q4 2026,Calculates evapotranspiration rates
+AGRI-085,WaterBudgetAgent,Agriculture,Irrigation,Calculator,Low,P2,$1B,0.1 Gt/yr,1-2,Q4 2026,Manages farm water budgets
+ENERGY-001,GridBalancingMaster,Energy Systems,Grid Optimization,Coordinator,High,P0,$10B,1.5 Gt/yr,3-5,Q2 2026,Master grid balancing coordinator
+ENERGY-002,DemandResponseAgent,Energy Systems,Grid Optimization,Automator,Medium,P0,$6B,0.8 Gt/yr,1-2,Q2 2026,Manages demand response programs
+ENERGY-003,PeakShavingOptimizer,Energy Systems,Grid Optimization,Optimizer,Medium,P1,$4B,0.5 Gt/yr,1-3,Q3 2026,Optimizes peak demand reduction
+ENERGY-004,VoltageControlAgent,Energy Systems,Grid Optimization,Automator,Medium,P1,$3B,0.3 Gt/yr,2-3,Q3 2026,Controls grid voltage levels
+ENERGY-005,FrequencyRegulationAgent,Energy Systems,Grid Optimization,Automator,High,P1,$4B,0.4 Gt/yr,2-4,Q3 2026,Manages grid frequency regulation
+ENERGY-201,SolarIntegrationMaster,Energy Systems,Renewable Integration,Coordinator,High,P0,$15B,2.0 Gt/yr,4-7,Q2 2026,Master solar PV integration coordinator
+ENERGY-202,InverterOptimizer,Energy Systems,Renewable Integration,Optimizer,Medium,P1,$8B,1.0 Gt/yr,3-5,Q3 2026,Optimizes inverter operations
+ENERGY-203,MPPTTrackingAgent,Energy Systems,Renewable Integration,Automator,Low,P2,$3B,0.3 Gt/yr,2-3,Q3 2026,Maximum power point tracking optimization
+ENERGY-204,SolarForecastAgent,Energy Systems,Renewable Integration,Predictor,Medium,P1,$4B,0.4 Gt/yr,2-3,Q3 2026,Forecasts solar generation
+ENERGY-205,CurtailmentMinimizer,Energy Systems,Renewable Integration,Optimizer,Medium,P1,$5B,0.5 Gt/yr,2-4,Q3 2026,Minimizes renewable curtailment
+SUPPLY-001,SupplierAssessmentMaster,Supply Chain,Supplier Emissions,Coordinator,High,P0,$8B,1.0 Gt/yr,2-4,Q3 2026,Master supplier assessment coordinator
+SUPPLY-002,Tier1EmissionsAgent,Supply Chain,Supplier Emissions,Calculator,Medium,P0,$5B,0.6 Gt/yr,1-3,Q3 2026,Calculates Tier 1 supplier emissions
+SUPPLY-003,Tier2MappingAgent,Supply Chain,Supplier Emissions,Monitor,Medium,P1,$3B,0.4 Gt/yr,2-3,Q4 2026,Maps Tier 2 supplier networks
+SUPPLY-004,SupplierEngagementAgent,Supply Chain,Supplier Emissions,Communicator,Low,P1,$2B,0.2 Gt/yr,1-2,Q4 2026,Manages supplier engagement programs
+SUPPLY-005,DataCollectionAgent,Supply Chain,Supplier Emissions,Integrator,Medium,P1,$3B,0.3 Gt/yr,1-2,Q4 2026,Collects supplier emissions data
+FIN-001,PhysicalRiskMaster,Finance,Climate Risk,Coordinator,High,P0,$10B,N/A,N/A,Q4 2026,Master physical risk assessment coordinator
+FIN-002,FloodRiskCalculator,Finance,Climate Risk,Calculator,Medium,P1,$5B,N/A,N/A,Q4 2026,Calculates flood risk exposure
+FIN-003,HeatStressAnalyzer,Finance,Climate Risk,Calculator,Medium,P1,$3B,N/A,N/A,Q1 2027,Analyzes heat stress impacts
+FIN-004,TransitionRiskAgent,Finance,Climate Risk,Calculator,High,P1,$6B,N/A,N/A,Q1 2027,Assesses transition risk exposure
+FIN-005,PortfolioAnalyzer,Finance,Climate Risk,Calculator,High,P1,$5B,N/A,N/A,Q1 2027,Analyzes portfolio climate risk
+REG-001,CSRDComplianceMaster,Regulatory,Corporate Reporting,Coordinator,High,P0,$5B,N/A,N/A,Q4 2025,Master CSRD compliance coordinator
+REG-002,ESRSMappingAgent,Regulatory,Corporate Reporting,Compliance,Medium,P0,$3B,N/A,N/A,Q4 2025,Maps data to ESRS standards
+REG-003,DoubleMaterialityAgent,Regulatory,Corporate Reporting,Calculator,High,P0,$2B,N/A,N/A,Q4 2025,Performs double materiality assessment
+REG-004,XBRLFormatterAgent,Regulatory,Corporate Reporting,Reporter,Medium,P0,$1B,N/A,N/A,Q4 2025,Formats reports in XBRL taxonomy
+REG-005,AuditTrailAgent,Regulatory,Corporate Reporting,Monitor,Medium,P0,$2B,N/A,N/A,Q4 2025,Maintains complete audit trails

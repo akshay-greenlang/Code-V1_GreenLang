@@ -1,0 +1,584 @@
+# ==============================================
+# GreenLang Kafka Event Streaming Architecture
+# Version: 1.0.0
+# Topics: 50+ event streams
+# Throughput: 1M+ events/second
+# ==============================================
+
+---
+# KAFKA CLUSTER CONFIGURATION
+kafka_cluster:
+  name: greenlang-kafka-production
+  version: "3.5.0"
+
+  brokers:
+    - id: 1
+      host: kafka-broker-1.greenlang.internal
+      port: 9092
+      rack: us-east-1a
+    - id: 2
+      host: kafka-broker-2.greenlang.internal
+      port: 9092
+      rack: us-east-1b
+    - id: 3
+      host: kafka-broker-3.greenlang.internal
+      port: 9092
+      rack: us-east-1c
+    - id: 4
+      host: kafka-broker-4.greenlang.internal
+      port: 9092
+      rack: us-west-2a
+    - id: 5
+      host: kafka-broker-5.greenlang.internal
+      port: 9092
+      rack: us-west-2b
+    - id: 6
+      host: kafka-broker-6.greenlang.internal
+      port: 9092
+      rack: eu-west-1a
+
+  zookeeper:
+    ensemble:
+      - host: zk-1.greenlang.internal
+        port: 2181
+      - host: zk-2.greenlang.internal
+        port: 2181
+      - host: zk-3.greenlang.internal
+        port: 2181
+    session_timeout_ms: 18000
+    connection_timeout_ms: 6000
+
+  server_properties:
+    num.network.threads: 8
+    num.io.threads: 16
+    socket.send.buffer.bytes: 102400
+    socket.receive.buffer.bytes: 102400
+    socket.request.max.bytes: 104857600
+    log.dirs: /var/kafka-logs
+    num.partitions: 3
+    num.recovery.threads.per.data.dir: 2
+    offsets.topic.replication.factor: 3
+    transaction.state.log.replication.factor: 3
+    transaction.state.log.min.isr: 2
+    log.retention.hours: 168
+    log.segment.bytes: 1073741824
+    log.retention.check.interval.ms: 300000
+    zookeeper.connection.timeout.ms: 6000
+    group.initial.rebalance.delay.ms: 0
+    compression.type: snappy
+    min.insync.replicas: 2
+    unclean.leader.election.enable: false
+    default.replication.factor: 3
+
+  security:
+    inter.broker.protocol: SSL
+    ssl.keystore.location: /var/ssl/kafka.server.keystore.jks
+    ssl.truststore.location: /var/ssl/kafka.server.truststore.jks
+    ssl.key.password: ${SSL_KEY_PASSWORD}
+    ssl.keystore.password: ${SSL_KEYSTORE_PASSWORD}
+    ssl.truststore.password: ${SSL_TRUSTSTORE_PASSWORD}
+    ssl.client.auth: required
+    authorizer.class.name: kafka.security.auth.SimpleAclAuthorizer
+    super.users: "User:admin;User:kafka"
+
+# ==============================================
+# SCHEMA REGISTRY CONFIGURATION
+# ==============================================
+
+schema_registry:
+  url: http://schema-registry.greenlang.internal:8081
+  compatibility_level: BACKWARD
+
+  schemas:
+    - name: emissions-event-value
+      type: AVRO
+      schema: |
+        {
+          "type": "record",
+          "name": "EmissionsEvent",
+          "namespace": "com.greenlang.events",
+          "fields": [
+            {"name": "event_id", "type": "string"},
+            {"name": "timestamp", "type": "long", "logicalType": "timestamp-millis"},
+            {"name": "organization_id", "type": "string"},
+            {"name": "source_id", "type": "string"},
+            {"name": "scope_category", "type": {"type": "enum", "name": "Scope", "symbols": ["SCOPE1", "SCOPE2", "SCOPE3"]}},
+            {"name": "emission_value", "type": "double"},
+            {"name": "unit", "type": "string"},
+            {"name": "data_quality_score", "type": ["null", "int"], "default": null},
+            {"name": "metadata", "type": ["null", {"type": "map", "values": "string"}], "default": null}
+          ]
+        }
+
+    - name: supply-chain-event-value
+      type: AVRO
+      schema: |
+        {
+          "type": "record",
+          "name": "SupplyChainEvent",
+          "namespace": "com.greenlang.events",
+          "fields": [
+            {"name": "event_id", "type": "string"},
+            {"name": "timestamp", "type": "long"},
+            {"name": "organization_id", "type": "string"},
+            {"name": "supplier_id", "type": "string"},
+            {"name": "event_type", "type": "string"},
+            {"name": "purchase_order", "type": ["null", "string"]},
+            {"name": "amount", "type": ["null", "double"]},
+            {"name": "currency", "type": ["null", "string"]},
+            {"name": "sustainability_metrics", "type": ["null", {"type": "map", "values": "double"}]}
+          ]
+        }
+
+# ==============================================
+# KAFKA TOPICS CONFIGURATION
+# ==============================================
+
+topics:
+  # EMISSIONS TOPICS (10 topics)
+  - name: emissions.raw
+    partitions: 12
+    replication_factor: 3
+    retention_ms: 2592000000  # 30 days
+    segment_ms: 86400000      # 1 day
+    compression_type: snappy
+    min_in_sync_replicas: 2
+    cleanup_policy: delete
+
+  - name: emissions.calculated
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 7776000000  # 90 days
+
+  - name: emissions.aggregated
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 31536000000  # 1 year
+
+  - name: emissions.alerts
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 604800000  # 7 days
+
+  - name: emissions.anomalies
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 2592000000  # 30 days
+
+  # SUPPLY CHAIN TOPICS (10 topics)
+  - name: supply-chain.orders
+    partitions: 12
+    replication_factor: 3
+    retention_ms: 7776000000  # 90 days
+
+  - name: supply-chain.shipments
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 2592000000  # 30 days
+
+  - name: supply-chain.inventory
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 604800000  # 7 days
+    compaction: true
+
+  - name: supply-chain.supplier-updates
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 31536000000  # 1 year
+
+  - name: supply-chain.risk-events
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 7776000000  # 90 days
+
+  # IOT TOPICS (8 topics)
+  - name: iot.sensor-readings
+    partitions: 24
+    replication_factor: 3
+    retention_ms: 86400000  # 1 day
+    segment_bytes: 536870912  # 512MB
+    compression_type: lz4
+
+  - name: iot.device-status
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 604800000  # 7 days
+    cleanup_policy: compact
+
+  - name: iot.alerts
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 2592000000  # 30 days
+
+  - name: iot.commands
+    partitions: 12
+    replication_factor: 3
+    retention_ms: 86400000  # 1 day
+
+  # CSRD REPORTING TOPICS (6 topics)
+  - name: csrd.data-collection
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 31536000000  # 1 year
+
+  - name: csrd.validations
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 7776000000  # 90 days
+
+  - name: csrd.approvals
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 31536000000  # 1 year
+
+  - name: csrd.publications
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 63072000000  # 2 years
+
+  # AUDIT & COMPLIANCE TOPICS (5 topics)
+  - name: audit.events
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 189216000000  # 6 years
+    compression_type: gzip
+
+  - name: audit.changes
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 189216000000  # 6 years
+
+  - name: compliance.violations
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 94608000000  # 3 years
+
+  # INTEGRATION TOPICS (6 topics)
+  - name: integration.sap
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 604800000  # 7 days
+
+  - name: integration.oracle
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 604800000  # 7 days
+
+  - name: integration.workday
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 604800000  # 7 days
+
+  - name: integration.errors
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 2592000000  # 30 days
+
+  # ANALYTICS TOPICS (5 topics)
+  - name: analytics.kpi-updates
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 31536000000  # 1 year
+
+  - name: analytics.benchmarks
+    partitions: 3
+    replication_factor: 3
+    retention_ms: 94608000000  # 3 years
+
+  - name: analytics.ml-predictions
+    partitions: 6
+    replication_factor: 3
+    retention_ms: 7776000000  # 90 days
+
+# ==============================================
+# KAFKA CONNECT CONFIGURATION
+# ==============================================
+
+kafka_connect:
+  workers:
+    - name: connect-cluster-1
+      hosts:
+        - connect-1.greenlang.internal:8083
+        - connect-2.greenlang.internal:8083
+        - connect-3.greenlang.internal:8083
+
+  connectors:
+    # PostgreSQL CDC Connector
+    - name: postgres-cdc-connector
+      class: io.debezium.connector.postgresql.PostgresConnector
+      config:
+        database.hostname: postgres-primary.greenlang.internal
+        database.port: 5432
+        database.user: debezium
+        database.password: ${DB_PASSWORD}
+        database.dbname: greenlang
+        database.server.name: greenlang-pg
+        table.include.list: >
+          core.organizations,
+          emissions.emissions_data,
+          supply_chain.suppliers,
+          csrd.data_points
+        plugin.name: pgoutput
+        publication.autocreate.mode: filtered
+        decimal.handling.mode: double
+        transforms: unwrap
+        transforms.unwrap.type: io.debezium.transforms.ExtractNewRecordState
+
+    # MongoDB CDC Connector
+    - name: mongodb-cdc-connector
+      class: io.debezium.connector.mongodb.MongoDbConnector
+      config:
+        mongodb.hosts: rs0/mongo-1:27017,mongo-2:27017,mongo-3:27017
+        mongodb.name: greenlang-mongo
+        collection.include.list: >
+          greenlang_documents.csrd_reports,
+          greenlang_analytics.emissions_analytics
+        capture.mode: change_streams_update_full
+
+    # S3 Sink Connector
+    - name: s3-sink-connector
+      class: io.confluent.connect.s3.S3SinkConnector
+      config:
+        s3.region: us-east-1
+        s3.bucket.name: greenlang-data-lake
+        s3.part.size: 5242880
+        flush.size: 1000
+        rotate.interval.ms: 600000
+        format.class: io.confluent.connect.s3.format.parquet.ParquetFormat
+        partitioner.class: io.confluent.connect.storage.partitioner.TimeBasedPartitioner
+        path.format: "'year'=YYYY/'month'=MM/'day'=dd/'hour'=HH"
+        locale: en-US
+        timezone: UTC
+        topics: >
+          emissions.raw,
+          emissions.calculated,
+          supply-chain.orders
+
+    # Elasticsearch Sink Connector
+    - name: elasticsearch-sink-connector
+      class: io.confluent.connect.elasticsearch.ElasticsearchSinkConnector
+      config:
+        connection.url: http://elastic-1:9200,http://elastic-2:9200,http://elastic-3:9200
+        type.name: _doc
+        topics: >
+          emissions.aggregated,
+          csrd.publications,
+          audit.events
+        key.ignore: true
+        schema.ignore: false
+        transforms: TimestampRouter
+        transforms.TimestampRouter.type: org.apache.kafka.connect.transforms.TimestampRouter
+        transforms.TimestampRouter.topic.format: ${topic}-${timestamp}
+        transforms.TimestampRouter.timestamp.format: yyyy-MM
+
+# ==============================================
+# KAFKA STREAMS APPLICATIONS
+# ==============================================
+
+kafka_streams:
+  applications:
+    - name: emissions-aggregator
+      class: com.greenlang.streams.EmissionsAggregator
+      input_topics:
+        - emissions.raw
+      output_topics:
+        - emissions.calculated
+        - emissions.aggregated
+      state_stores:
+        - name: emissions-state-store
+          type: rocksdb
+          retention_ms: 86400000
+      config:
+        application.id: emissions-aggregator
+        num.stream.threads: 4
+        processing.guarantee: exactly_once_v2
+        cache.max.bytes.buffering: 10485760
+        commit.interval.ms: 30000
+
+    - name: supply-chain-analyzer
+      class: com.greenlang.streams.SupplyChainAnalyzer
+      input_topics:
+        - supply-chain.orders
+        - supply-chain.shipments
+      output_topics:
+        - supply-chain.risk-events
+        - analytics.kpi-updates
+      state_stores:
+        - name: supplier-state-store
+          type: rocksdb
+      config:
+        application.id: supply-chain-analyzer
+        num.stream.threads: 2
+
+    - name: iot-anomaly-detector
+      class: com.greenlang.streams.IoTAnomalyDetector
+      input_topics:
+        - iot.sensor-readings
+      output_topics:
+        - iot.alerts
+        - emissions.anomalies
+      config:
+        application.id: iot-anomaly-detector
+        num.stream.threads: 6
+
+    - name: real-time-kpi-calculator
+      class: com.greenlang.streams.RealTimeKPICalculator
+      input_topics:
+        - emissions.calculated
+        - supply-chain.orders
+      output_topics:
+        - analytics.kpi-updates
+      windows:
+        - type: tumbling
+          size_ms: 300000  # 5 minutes
+        - type: hopping
+          size_ms: 3600000  # 1 hour
+          advance_ms: 300000  # 5 minutes
+        - type: session
+          inactivity_gap_ms: 1800000  # 30 minutes
+
+# ==============================================
+# CONSUMER GROUPS
+# ==============================================
+
+consumer_groups:
+  - group_id: emissions-processor-group
+    topics:
+      - emissions.raw
+      - emissions.calculated
+    num_consumers: 6
+    auto_offset_reset: earliest
+    enable_auto_commit: false
+    max_poll_records: 500
+    fetch_min_bytes: 1024
+    fetch_max_wait_ms: 500
+
+  - group_id: csrd-reporting-group
+    topics:
+      - csrd.data-collection
+      - csrd.validations
+    num_consumers: 3
+    auto_offset_reset: latest
+
+  - group_id: audit-compliance-group
+    topics:
+      - audit.events
+      - compliance.violations
+    num_consumers: 2
+    auto_offset_reset: earliest
+
+  - group_id: analytics-pipeline-group
+    topics:
+      - analytics.kpi-updates
+      - analytics.ml-predictions
+    num_consumers: 4
+    auto_offset_reset: latest
+
+  - group_id: integration-sync-group
+    topics:
+      - integration.sap
+      - integration.oracle
+      - integration.workday
+    num_consumers: 3
+    auto_offset_reset: latest
+    isolation_level: read_committed
+
+# ==============================================
+# MONITORING & METRICS
+# ==============================================
+
+monitoring:
+  jmx:
+    enabled: true
+    port: 9999
+
+  metrics_reporters:
+    - class: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      config:
+        confluent.metrics.reporter.bootstrap.servers: kafka-broker-1:9092
+        confluent.metrics.reporter.topic.replicas: 3
+
+  prometheus:
+    enabled: true
+    port: 9090
+    scrape_interval: 15s
+
+  alerts:
+    - name: high-lag-alert
+      condition: consumer_lag > 10000
+      severity: warning
+
+    - name: broker-down-alert
+      condition: broker_count < 6
+      severity: critical
+
+    - name: disk-usage-alert
+      condition: disk_usage_percent > 80
+      severity: warning
+
+    - name: under-replicated-partitions
+      condition: under_replicated_partitions > 0
+      severity: critical
+
+# ==============================================
+# PERFORMANCE TUNING
+# ==============================================
+
+performance:
+  producer_configs:
+    acks: all
+    compression.type: snappy
+    batch.size: 16384
+    linger.ms: 10
+    buffer.memory: 33554432
+    max.request.size: 1048576
+    retries: 2147483647
+    max.in.flight.requests.per.connection: 5
+    enable.idempotence: true
+
+  consumer_configs:
+    fetch.min.bytes: 1
+    fetch.max.wait.ms: 500
+    max.partition.fetch.bytes: 1048576
+    session.timeout.ms: 30000
+    heartbeat.interval.ms: 3000
+    auto.offset.reset: earliest
+    enable.auto.commit: false
+    max.poll.records: 500
+    max.poll.interval.ms: 300000
+
+  stream_configs:
+    num.stream.threads: 4
+    cache.max.bytes.buffering: 10485760
+    commit.interval.ms: 30000
+    processing.guarantee: exactly_once_v2
+    state.dir: /var/kafka-streams
+    replication.factor: 3
+    num.standby.replicas: 1
+
+# ==============================================
+# DISASTER RECOVERY
+# ==============================================
+
+disaster_recovery:
+  mirror_maker:
+    enabled: true
+    source_cluster: greenlang-kafka-production
+    target_cluster: greenlang-kafka-dr
+    topics_pattern: ".*"
+    groups_pattern: ".*"
+
+  backup:
+    enabled: true
+    type: s3
+    bucket: greenlang-kafka-backups
+    schedule: "0 2 * * *"  # Daily at 2 AM
+    retention_days: 30
+
+  replication:
+    type: active-passive
+    primary_region: us-east-1
+    secondary_region: us-west-2
+    rpo_minutes: 15
+    rto_minutes: 60

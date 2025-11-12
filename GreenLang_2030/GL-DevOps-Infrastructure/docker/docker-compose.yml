@@ -1,0 +1,456 @@
+# GreenLang Docker Compose - Full Stack Development Environment
+version: '3.9'
+
+x-common-variables: &common-variables
+  NODE_ENV: development
+  LOG_LEVEL: debug
+  REDIS_URL: redis://redis:6379
+  POSTGRES_URL: postgresql://greenlang:password@postgres:5432/greenlang
+  KAFKA_BROKERS: kafka:9092
+  ELASTICSEARCH_URL: http://elasticsearch:9200
+
+services:
+  # ==========================================
+  # CORE SERVICES
+  # ==========================================
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: gl-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      <<: *common-variables
+      SERVICE_NAME: api-gateway
+      PORT: 8080
+    volumes:
+      - ./services/api-gateway:/app
+      - /app/node_modules
+    networks:
+      - greenlang-network
+    depends_on:
+      - redis
+      - postgres
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+
+  carbon-service:
+    build:
+      context: ./services/carbon-service
+      dockerfile: Dockerfile.dev
+    container_name: gl-carbon-service
+    ports:
+      - "8081:8081"
+    environment:
+      <<: *common-variables
+      SERVICE_NAME: carbon-service
+      PORT: 8081
+    volumes:
+      - ./services/carbon-service:/app
+      - /app/node_modules
+    networks:
+      - greenlang-network
+    depends_on:
+      - postgres
+      - redis
+      - kafka
+    restart: unless-stopped
+
+  reporting-service:
+    build:
+      context: ./services/reporting-service
+      dockerfile: Dockerfile.dev
+    container_name: gl-reporting-service
+    ports:
+      - "8082:8082"
+    environment:
+      <<: *common-variables
+      SERVICE_NAME: reporting-service
+      PORT: 8082
+    volumes:
+      - ./services/reporting-service:/app
+    networks:
+      - greenlang-network
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  analytics-service:
+    build:
+      context: ./services/analytics-service
+      dockerfile: Dockerfile.dev
+    container_name: gl-analytics-service
+    ports:
+      - "8083:8083"
+    environment:
+      <<: *common-variables
+      SERVICE_NAME: analytics-service
+      PORT: 8083
+    volumes:
+      - ./services/analytics-service:/app
+    networks:
+      - greenlang-network
+    depends_on:
+      - postgres
+      - elasticsearch
+    restart: unless-stopped
+
+  # ==========================================
+  # MACHINE LEARNING SERVICES
+  # ==========================================
+
+  ml-training:
+    build:
+      context: ./services/ml-training
+      dockerfile: Dockerfile.dev
+    container_name: gl-ml-training
+    ports:
+      - "8084:8084"
+    environment:
+      <<: *common-variables
+      SERVICE_NAME: ml-training
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+    volumes:
+      - ./services/ml-training:/app
+      - ml-models:/models
+    networks:
+      - greenlang-network
+    depends_on:
+      - postgres
+      - mlflow
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+
+  ml-inference:
+    build:
+      context: ./services/ml-inference
+      dockerfile: Dockerfile.dev
+    container_name: gl-ml-inference
+    ports:
+      - "8085:8085"
+    environment:
+      <<: *common-variables
+      SERVICE_NAME: ml-inference
+      MODEL_PATH: /models
+    volumes:
+      - ml-models:/models:ro
+    networks:
+      - greenlang-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # ==========================================
+  # DATA INFRASTRUCTURE
+  # ==========================================
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: gl-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: greenlang
+      POSTGRES_USER: greenlang
+      POSTGRES_PASSWORD: password
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./scripts/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - greenlang-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U greenlang"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: gl-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass password
+    volumes:
+      - redis-data:/data
+    networks:
+      - greenlang-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:6
+    container_name: gl-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: greenlang
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: greenlang
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  # ==========================================
+  # MESSAGING INFRASTRUCTURE
+  # ==========================================
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: gl-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-logs:/var/lib/zookeeper/log
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: gl-kafka
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: localhost
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - greenlang-network
+    depends_on:
+      - zookeeper
+    restart: unless-stopped
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: gl-kafka-ui
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - greenlang-network
+    depends_on:
+      - kafka
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: gl-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: greenlang
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  # ==========================================
+  # OBSERVABILITY STACK
+  # ==========================================
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: gl-elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.2
+    container_name: gl-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    networks:
+      - greenlang-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.2
+    container_name: gl-logstash
+    ports:
+      - "5000:5000"
+      - "9600:9600"
+    volumes:
+      - ./config/logstash/pipeline:/usr/share/logstash/pipeline
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+    networks:
+      - greenlang-network
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gl-prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./config/prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gl-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./config/grafana/provisioning:/etc/grafana/provisioning
+    networks:
+      - greenlang-network
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: gl-jaeger
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14250:14250"
+      - "14268:14268"
+      - "14269:14269"
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+    networks:
+      - greenlang-network
+    restart: unless-stopped
+
+  # ==========================================
+  # DEVELOPMENT TOOLS
+  # ==========================================
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: gl-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@greenlang.io
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    networks:
+      - greenlang-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  redisinsight:
+    image: redislabs/redisinsight:latest
+    container_name: gl-redisinsight
+    ports:
+      - "8001:8001"
+    volumes:
+      - redisinsight-data:/db
+    networks:
+      - greenlang-network
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: gl-mlflow
+    ports:
+      - "5001:5000"
+    environment:
+      MLFLOW_BACKEND_STORE_URI: postgresql://greenlang:password@postgres:5432/mlflow
+      MLFLOW_DEFAULT_ARTIFACT_ROOT: s3://mlflow-artifacts/
+    networks:
+      - greenlang-network
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  greenlang-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  postgres-data:
+  redis-data:
+  mongodb-data:
+  elasticsearch-data:
+  kafka-data:
+  zookeeper-data:
+  zookeeper-logs:
+  rabbitmq-data:
+  prometheus-data:
+  grafana-data:
+  pgadmin-data:
+  redisinsight-data:
+  ml-models:

@@ -1,0 +1,468 @@
+# GreenLang Namespace Design - 50+ Namespaces
+# Organized by business domain, environment, and compliance requirements
+
+---
+# Core Platform Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-carbon-accounting
+  labels:
+    domain: carbon
+    tier: backend
+    compliance: iso-14064
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-scope3-emissions
+  labels:
+    domain: emissions
+    tier: backend
+    compliance: ghg-protocol
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-csrd-reporting
+  labels:
+    domain: reporting
+    tier: backend
+    compliance: csrd
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-esg-analytics
+  labels:
+    domain: analytics
+    tier: backend
+    compliance: gri-standards
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-supply-chain
+  labels:
+    domain: supply-chain
+    tier: backend
+    compliance: sbti
+---
+# API Gateway Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-api-gateway-public
+  labels:
+    domain: api
+    exposure: public
+    tier: edge
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-api-gateway-internal
+  labels:
+    domain: api
+    exposure: internal
+    tier: edge
+---
+# Data Processing Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-data-ingestion
+  labels:
+    domain: data
+    function: ingestion
+    tier: data-plane
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-data-processing
+  labels:
+    domain: data
+    function: processing
+    tier: data-plane
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-data-warehouse
+  labels:
+    domain: data
+    function: storage
+    tier: data-plane
+---
+# Machine Learning Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-ml-training
+  labels:
+    domain: ml
+    function: training
+    gpu-enabled: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-ml-inference
+  labels:
+    domain: ml
+    function: inference
+    gpu-enabled: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-ml-pipelines
+  labels:
+    domain: ml
+    function: orchestration
+---
+# Security and Compliance Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-security-scanning
+  labels:
+    domain: security
+    function: scanning
+    privileged: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-compliance-audit
+  labels:
+    domain: compliance
+    function: audit
+    retention: long-term
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-secrets-management
+  labels:
+    domain: security
+    function: secrets
+    encryption: required
+---
+# Customer-Facing Application Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-web-frontend
+  labels:
+    domain: frontend
+    exposure: public
+    tier: presentation
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-mobile-backend
+  labels:
+    domain: mobile
+    exposure: public
+    tier: api
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-customer-portal
+  labels:
+    domain: customer
+    exposure: public
+    tier: presentation
+---
+# Integration Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-sap-integration
+  labels:
+    domain: integration
+    system: sap
+    tier: middleware
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-salesforce-sync
+  labels:
+    domain: integration
+    system: salesforce
+    tier: middleware
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-erp-connectors
+  labels:
+    domain: integration
+    system: erp
+    tier: middleware
+---
+# Monitoring and Observability Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-monitoring
+  labels:
+    domain: observability
+    function: monitoring
+    tier: platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-logging
+  labels:
+    domain: observability
+    function: logging
+    tier: platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-tracing
+  labels:
+    domain: observability
+    function: tracing
+    tier: platform
+---
+# Environment-Specific Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-development
+  labels:
+    environment: development
+    tier: all
+    cost-optimization: aggressive
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-staging
+  labels:
+    environment: staging
+    tier: all
+    cost-optimization: moderate
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-qa
+  labels:
+    environment: qa
+    tier: all
+    cost-optimization: moderate
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-performance
+  labels:
+    environment: performance
+    tier: all
+    cost-optimization: none
+---
+# Regional Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-eu-west
+  labels:
+    region: eu-west-1
+    data-residency: eu
+    gdpr: compliant
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-us-east
+  labels:
+    region: us-east-1
+    data-residency: us
+    sox: compliant
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-ap-south
+  labels:
+    region: ap-south-1
+    data-residency: apac
+---
+# Batch Processing Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-batch-jobs
+  labels:
+    domain: batch
+    function: processing
+    scheduling: cron
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-etl-pipelines
+  labels:
+    domain: etl
+    function: transformation
+    scheduling: airflow
+---
+# Messaging and Event Streaming
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-kafka
+  labels:
+    domain: messaging
+    system: kafka
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-rabbitmq
+  labels:
+    domain: messaging
+    system: rabbitmq
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-event-bus
+  labels:
+    domain: events
+    system: eventbridge
+    tier: infrastructure
+---
+# Database Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-postgresql
+  labels:
+    domain: database
+    engine: postgresql
+    tier: data
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-mongodb
+  labels:
+    domain: database
+    engine: mongodb
+    tier: data
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-redis
+  labels:
+    domain: cache
+    engine: redis
+    tier: data
+---
+# CI/CD and DevOps Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-jenkins
+  labels:
+    domain: cicd
+    system: jenkins
+    tier: platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-argocd
+  labels:
+    domain: gitops
+    system: argocd
+    tier: platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-tekton
+  labels:
+    domain: cicd
+    system: tekton
+    tier: platform
+---
+# Backup and Disaster Recovery
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-backup
+  labels:
+    domain: backup
+    function: storage
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-disaster-recovery
+  labels:
+    domain: dr
+    function: recovery
+    tier: infrastructure
+---
+# Testing Namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-load-testing
+  labels:
+    domain: testing
+    function: performance
+    tier: quality
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-chaos-engineering
+  labels:
+    domain: testing
+    function: chaos
+    tier: quality
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-security-testing
+  labels:
+    domain: testing
+    function: security
+    tier: quality
+---
+# Cost Management
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-cost-analytics
+  labels:
+    domain: finops
+    function: analytics
+    tier: platform
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gl-spot-instances
+  labels:
+    domain: compute
+    optimization: spot
+    tier: infrastructure

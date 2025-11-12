@@ -1,0 +1,573 @@
+# ==============================================
+# GreenLang Data Lake Architecture
+# Version: 1.0.0
+# Storage: Multi-PB scale
+# Format: Delta Lake, Parquet, Avro
+# ==============================================
+
+---
+# DATA LAKE CONFIGURATION
+data_lake:
+  name: greenlang-data-lake
+  cloud_provider: multi-cloud
+  primary_region: us-east-1
+  secondary_regions:
+    - us-west-2
+    - eu-west-1
+    - ap-southeast-1
+
+  storage_accounts:
+    aws:
+      s3_buckets:
+        - name: greenlang-raw-data
+          region: us-east-1
+          versioning: enabled
+          lifecycle_rules:
+            - transition_to_ia: 30  # days
+            - transition_to_glacier: 90
+            - expiration: 2555  # 7 years
+          encryption:
+            type: SSE-KMS
+            kms_key_id: arn:aws:kms:us-east-1:123456789:key/xxx
+
+        - name: greenlang-processed-data
+          region: us-east-1
+          versioning: enabled
+          lifecycle_rules:
+            - transition_to_ia: 60
+            - transition_to_glacier: 180
+
+        - name: greenlang-curated-data
+          region: us-east-1
+          versioning: enabled
+          replication:
+            destination: greenlang-curated-data-replica
+            region: us-west-2
+
+    azure:
+      storage_accounts:
+        - name: greenlangdatalake
+          resource_group: greenlang-rg
+          location: eastus
+          account_tier: Standard
+          replication_type: GRS
+          hierarchical_namespace: true  # ADLS Gen2
+          containers:
+            - raw
+            - processed
+            - curated
+            - archive
+
+    gcp:
+      storage_buckets:
+        - name: greenlang-gcs-data
+          location: US
+          storage_class: STANDARD
+          lifecycle_rules:
+            - action: SetStorageClass
+              storage_class: NEARLINE
+              age: 30
+            - action: SetStorageClass
+              storage_class: COLDLINE
+              age: 90
+            - action: SetStorageClass
+              storage_class: ARCHIVE
+              age: 365
+
+# ==============================================
+# DATA ZONES
+# ==============================================
+
+data_zones:
+  # RAW ZONE - Original data as ingested
+  raw:
+    description: "Landing zone for raw data from all sources"
+    path_pattern: "raw/{source_system}/{entity}/{year}/{month}/{day}/{hour}/"
+    retention_days: 2555  # 7 years
+    formats:
+      - json
+      - csv
+      - xml
+      - avro
+      - parquet
+
+    sources:
+      erp_systems:
+        - sap:
+            path: raw/sap/
+            entities:
+              - purchase_orders
+              - invoices
+              - material_master
+              - vendor_master
+        - oracle:
+            path: raw/oracle/
+            entities:
+              - ap_invoices
+              - gl_balances
+              - suppliers
+        - workday:
+            path: raw/workday/
+            entities:
+              - workers
+              - expenses
+              - purchase_orders
+
+      iot_devices:
+        path: raw/iot/{device_type}/{year}/{month}/{day}/{hour}/
+        format: parquet
+        compression: snappy
+        partition_size_mb: 128
+
+      external_data:
+        - weather:
+            path: raw/external/weather/
+            update_frequency: hourly
+        - market_data:
+            path: raw/external/market/
+            update_frequency: daily
+
+  # BRONZE ZONE - Cleansed and standardized
+  bronze:
+    description: "Cleansed data with basic transformations"
+    path_pattern: "bronze/{domain}/{entity}/{year}/{month}/{day}/"
+    retention_days: 1095  # 3 years
+    format: delta
+
+    quality_checks:
+      - null_check
+      - duplicate_removal
+      - data_type_validation
+      - referential_integrity
+
+    domains:
+      - emissions:
+          entities:
+            - emission_activities
+            - emission_factors
+            - carbon_footprint
+      - supply_chain:
+          entities:
+            - suppliers
+            - purchase_orders
+            - shipments
+      - sustainability:
+          entities:
+            - csrd_metrics
+            - esg_scores
+            - compliance_data
+
+  # SILVER ZONE - Conformed and enriched
+  silver:
+    description: "Business-ready conformed data"
+    path_pattern: "silver/{domain}/{entity}/{version}/{year}/{month}/"
+    retention_days: 730  # 2 years
+    format: delta
+
+    transformations:
+      - data_enrichment
+      - business_logic_application
+      - aggregations
+      - feature_engineering
+
+    schemas:
+      emissions_fact:
+        columns:
+          - name: emission_id
+            type: string
+            nullable: false
+          - name: organization_id
+            type: string
+            nullable: false
+          - name: emission_date
+            type: date
+            nullable: false
+          - name: source_id
+            type: string
+            nullable: false
+          - name: scope_category
+            type: string
+            nullable: false
+          - name: co2e_amount
+            type: decimal(20,6)
+            nullable: false
+          - name: data_quality_score
+            type: integer
+            nullable: true
+
+      supplier_dimension:
+        columns:
+          - name: supplier_id
+            type: string
+            nullable: false
+          - name: supplier_name
+            type: string
+            nullable: false
+          - name: country
+            type: string
+            nullable: false
+          - name: risk_score
+            type: integer
+            nullable: true
+          - name: sustainability_score
+            type: integer
+            nullable: true
+
+  # GOLD ZONE - Aggregated for consumption
+  gold:
+    description: "Optimized datasets for analytics and reporting"
+    path_pattern: "gold/{use_case}/{dataset}/{version}/"
+    retention_days: 365  # 1 year
+    format: parquet
+
+    use_cases:
+      csrd_reporting:
+        datasets:
+          - monthly_emissions_summary
+          - scope_emissions_breakdown
+          - supply_chain_metrics
+          - sustainability_kpis
+
+      executive_dashboard:
+        datasets:
+          - organization_scorecard
+          - emissions_trends
+          - supplier_performance
+          - compliance_status
+
+      ml_features:
+        datasets:
+          - emissions_forecast_features
+          - anomaly_detection_features
+          - supplier_risk_features
+
+# ==============================================
+# DATA CATALOG
+# ==============================================
+
+data_catalog:
+  platform: AWS Glue / Azure Purview / GCP Dataplex
+
+  databases:
+    - name: greenlang_raw
+      description: "Raw data from all sources"
+      location: s3://greenlang-raw-data/
+
+    - name: greenlang_bronze
+      description: "Cleansed and standardized data"
+      location: s3://greenlang-processed-data/bronze/
+
+    - name: greenlang_silver
+      description: "Conformed business data"
+      location: s3://greenlang-processed-data/silver/
+
+    - name: greenlang_gold
+      description: "Analytics-ready datasets"
+      location: s3://greenlang-curated-data/gold/
+
+  metadata:
+    business_glossary:
+      - term: CO2e
+        definition: "Carbon dioxide equivalent"
+        formula: "CO2 + (CH4 × 25) + (N2O × 298)"
+
+      - term: Scope 1
+        definition: "Direct GHG emissions from owned sources"
+
+      - term: Scope 2
+        definition: "Indirect emissions from purchased energy"
+
+      - term: Scope 3
+        definition: "All other indirect emissions in value chain"
+
+    data_lineage:
+      enabled: true
+      tracking_level: column
+      tools:
+        - Apache Atlas
+        - DataHub
+        - Monte Carlo
+
+    data_quality:
+      monitoring_enabled: true
+      quality_dimensions:
+        - completeness
+        - accuracy
+        - consistency
+        - timeliness
+        - validity
+        - uniqueness
+
+# ==============================================
+# DATA PROCESSING
+# ==============================================
+
+processing:
+  compute_engines:
+    spark:
+      deployment: EMR / Databricks / Dataproc
+      version: "3.4.0"
+      configuration:
+        spark.sql.adaptive.enabled: true
+        spark.sql.adaptive.coalescePartitions.enabled: true
+        spark.sql.adaptive.skewJoin.enabled: true
+        spark.sql.files.maxPartitionBytes: "134217728"  # 128MB
+        spark.sql.shuffle.partitions: 200
+        spark.dynamicAllocation.enabled: true
+        spark.dynamicAllocation.minExecutors: 2
+        spark.dynamicAllocation.maxExecutors: 100
+
+    presto:
+      deployment: AWS Athena / Presto
+      version: "0.280"
+      catalogs:
+        - hive
+        - postgresql
+        - mongodb
+
+    dbt:
+      version: "1.5.0"
+      projects:
+        - emissions_transformations
+        - supply_chain_models
+        - csrd_reporting
+
+  orchestration:
+    airflow:
+      dag_folder: s3://greenlang-airflow/dags/
+
+    data_pipelines:
+      - name: daily_emissions_pipeline
+        schedule: "0 1 * * *"
+        steps:
+          - extract_from_erp
+          - validate_data
+          - transform_to_bronze
+          - enrich_to_silver
+          - aggregate_to_gold
+          - update_catalog
+
+      - name: monthly_csrd_pipeline
+        schedule: "0 0 1 * *"
+        steps:
+          - collect_monthly_data
+          - calculate_metrics
+          - generate_reports
+          - publish_to_portal
+
+# ==============================================
+# DELTA LAKE CONFIGURATION
+# ==============================================
+
+delta_lake:
+  enabled: true
+  version: "2.4.0"
+
+  features:
+    - ACID_transactions: true
+    - time_travel: true
+    - schema_evolution: true
+    - z_ordering: true
+    - data_skipping: true
+    - compaction: true
+    - vacuum: true
+
+  tables:
+    emissions_delta:
+      location: s3://greenlang-processed-data/delta/emissions/
+      partition_columns:
+        - organization_id
+        - year
+        - month
+      z_order_columns:
+        - emission_date
+        - source_id
+      properties:
+        delta.autoOptimize.optimizeWrite: true
+        delta.autoOptimize.autoCompact: true
+        delta.dataSkippingNumIndexedCols: 32
+        delta.deletedFileRetentionDuration: "interval 7 days"
+
+    supplier_delta:
+      location: s3://greenlang-processed-data/delta/suppliers/
+      partition_columns:
+        - country
+        - tier_level
+      z_order_columns:
+        - supplier_id
+        - last_updated
+
+  maintenance:
+    optimize:
+      schedule: "0 2 * * *"  # Daily at 2 AM
+      max_file_size: "1GB"
+
+    vacuum:
+      schedule: "0 3 * * 0"  # Weekly on Sunday
+      retention_hours: 168  # 7 days
+
+# ==============================================
+# DATA GOVERNANCE
+# ==============================================
+
+governance:
+  data_classification:
+    levels:
+      - public
+      - internal
+      - confidential
+      - restricted
+
+  access_control:
+    authentication: SSO / OAuth2
+    authorization: RBAC / ABAC
+
+    roles:
+      data_engineer:
+        permissions:
+          - read: ["raw", "bronze", "silver", "gold"]
+          - write: ["bronze", "silver", "gold"]
+          - delete: ["bronze"]
+
+      data_scientist:
+        permissions:
+          - read: ["bronze", "silver", "gold"]
+          - write: ["gold/ml_features"]
+
+      business_analyst:
+        permissions:
+          - read: ["gold"]
+
+      data_steward:
+        permissions:
+          - read: ["*"]
+          - write: ["*"]
+          - admin: true
+
+  privacy_compliance:
+    gdpr:
+      enabled: true
+      pii_detection: true
+      data_masking: true
+      retention_policies: true
+      right_to_be_forgotten: true
+
+    encryption:
+      at_rest: AES-256
+      in_transit: TLS 1.3
+      key_management: AWS KMS / Azure Key Vault / GCP KMS
+
+  audit_logging:
+    enabled: true
+    log_location: s3://greenlang-audit-logs/
+    retention_days: 2555  # 7 years
+    logged_events:
+      - data_access
+      - data_modification
+      - schema_changes
+      - permission_changes
+
+# ==============================================
+# DISASTER RECOVERY
+# ==============================================
+
+disaster_recovery:
+  backup_strategy:
+    frequency: daily
+    retention:
+      daily: 7
+      weekly: 4
+      monthly: 12
+      yearly: 7
+
+  replication:
+    cross_region:
+      enabled: true
+      source_region: us-east-1
+      target_regions:
+        - us-west-2
+        - eu-west-1
+
+    cross_cloud:
+      enabled: true
+      primary: aws
+      secondary: azure
+      sync_frequency: hourly
+
+  recovery_targets:
+    rpo: 1 hour  # Recovery Point Objective
+    rto: 4 hours  # Recovery Time Objective
+
+# ==============================================
+# MONITORING AND ALERTING
+# ==============================================
+
+monitoring:
+  metrics:
+    storage:
+      - total_size_bytes
+      - object_count
+      - storage_cost
+      - access_frequency
+
+    processing:
+      - job_success_rate
+      - processing_time
+      - data_volume_processed
+      - compute_cost
+
+    quality:
+      - completeness_score
+      - accuracy_score
+      - freshness_lag
+
+  alerting:
+    channels:
+      - email
+      - slack
+      - pagerduty
+
+    rules:
+      - name: storage_limit_alert
+        condition: storage_size > 100TB
+        severity: warning
+
+      - name: processing_failure_alert
+        condition: job_failure_rate > 0.05
+        severity: critical
+
+      - name: data_freshness_alert
+        condition: data_lag > 24 hours
+        severity: high
+
+# ==============================================
+# COST OPTIMIZATION
+# ==============================================
+
+cost_optimization:
+  storage:
+    lifecycle_management: enabled
+    intelligent_tiering: enabled
+    compression: enabled
+    deduplication: enabled
+
+  compute:
+    spot_instances: enabled
+    auto_scaling: enabled
+    reserved_instances: true
+    idle_timeout: 10 minutes
+
+  data_transfer:
+    optimize_cross_region: true
+    use_private_endpoints: true
+    compress_transfers: true
+
+  budgets:
+    monthly_limit: 100000  # USD
+    alerts:
+      - threshold: 80%
+        action: notify
+      - threshold: 95%
+        action: throttle
+      - threshold: 100%
+        action: stop
