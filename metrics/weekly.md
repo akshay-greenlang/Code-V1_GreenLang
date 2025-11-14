@@ -1,6 +1,6 @@
 # GreenLang Weekly Metrics Report
 
-**Week ending:** 2025-11-07
+**Week ending:** 2025-11-14
 
 ## Distribution Metrics
 
@@ -53,4 +53,4 @@
 
 ---
 
-*Generated: 2025-11-07 11:40:02 UTC*
+*Generated: 2025-11-14 11:39:41 UTC*
