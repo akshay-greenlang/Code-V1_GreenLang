@@ -1,0 +1,82 @@
+# ============================================================================
+# GreenLang AI Agent Foundation - Example Terraform Variables
+# ============================================================================
+# Copy this file to terraform.tfvars and customize for your environment
+
+# ============================================================================
+# General Configuration
+# ============================================================================
+
+environment = "dev"  # Options: dev, staging, production
+aws_region  = "us-east-1"
+project_name = "greenlang-agent"
+
+# ============================================================================
+# VPC Configuration
+# ============================================================================
+
+vpc_cidr = "10.0.0.0/16"
+
+allowed_cidr_blocks = [
+  "0.0.0.0/0"  # Adjust this for production security
+]
+
+# ============================================================================
+# EKS Configuration
+# ============================================================================
+
+kubernetes_version = "1.28"
+
+eks_node_instance_types = ["m5.xlarge"]
+
+eks_min_nodes     = 3
+eks_max_nodes     = 10
+eks_desired_nodes = 3
+
+# ============================================================================
+# RDS Configuration
+# ============================================================================
+
+db_instance_class       = "db.t3.medium"  # Production: db.r6g.xlarge
+db_allocated_storage    = 100
+db_max_allocated_storage = 1000
+db_backup_retention_days = 7              # Production: 30
+
+# ============================================================================
+# ElastiCache Redis Configuration
+# ============================================================================
+
+redis_node_type       = "cache.t3.medium"  # Production: cache.r6g.large
+redis_num_cache_nodes = 1                  # Production: 3
+
+# ============================================================================
+# Monitoring & Logging
+# ============================================================================
+
+log_retention_days        = 30
+enable_enhanced_monitoring = true
+
+# ============================================================================
+# Cost Optimization
+# ============================================================================
+
+enable_spot_instances = false  # Set true for dev/staging
+enable_auto_scaling   = true
+
+# ============================================================================
+# Security
+# ============================================================================
+
+enable_encryption          = true
+enable_deletion_protection = false  # Set true for production
+
+# ============================================================================
+# Additional Tags
+# ============================================================================
+
+tags = {
+  Team        = "DevOps"
+  CostCenter  = "Engineering"
+  Compliance  = "SOC2"
+  DataClass   = "Confidential"
+}

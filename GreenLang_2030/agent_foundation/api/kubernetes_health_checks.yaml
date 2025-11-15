@@ -1,0 +1,322 @@
+---
+# Kubernetes Deployment with Health Check Probes
+# GreenLang Agent Foundation API
+#
+# This configuration demonstrates how to configure Kubernetes health probes
+# for the GreenLang API with appropriate timeouts and thresholds.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-api
+  namespace: greenlang-production
+  labels:
+    app: greenlang-api
+    version: v1.0.0
+    component: agent-foundation
+spec:
+  replicas: 3  # High availability with 3 replicas
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero-downtime deployments
+  selector:
+    matchLabels:
+      app: greenlang-api
+  template:
+    metadata:
+      labels:
+        app: greenlang-api
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/metrics"
+    spec:
+      # Service account for RBAC
+      serviceAccountName: greenlang-api
+
+      # Pod anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - greenlang-api
+                topologyKey: kubernetes.io/hostname
+
+      # Init containers for dependency checks
+      initContainers:
+        - name: wait-for-postgres
+          image: postgres:15-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgres-service -p 5432 -U greenlang; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+
+        - name: wait-for-redis
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until redis-cli -h redis-service -p 6379 ping; do
+                echo "Waiting for Redis..."
+                sleep 2
+              done
+
+      containers:
+        - name: greenlang-api
+          image: greenlang/agent-foundation-api:1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+
+          # Environment variables
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+
+            - name: LOG_LEVEL
+              value: "INFO"
+
+            - name: POSTGRES_HOST
+              value: "postgres-service"
+
+            - name: POSTGRES_PORT
+              value: "5432"
+
+            - name: POSTGRES_DATABASE
+              value: "greenlang"
+
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: username
+
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: password
+
+            - name: REDIS_HOST
+              value: "redis-service"
+
+            - name: REDIS_PORT
+              value: "6379"
+
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: llm-credentials
+                  key: anthropic-api-key
+
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: llm-credentials
+                  key: openai-api-key
+
+          # Resource limits
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "2000m"
+              memory: "4Gi"
+
+          # ====================
+          # STARTUP PROBE
+          # ====================
+          # Protects slow-starting containers
+          # Delays liveness/readiness checks until startup succeeds
+          startupProbe:
+            httpGet:
+              path: /startup
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 0        # Start checking immediately
+            periodSeconds: 5               # Check every 5 seconds
+            timeoutSeconds: 3              # 3-second timeout per check
+            failureThreshold: 30           # Allow up to 150 seconds for startup (30 * 5s)
+            successThreshold: 1            # Must succeed once
+
+          # ====================
+          # LIVENESS PROBE
+          # ====================
+          # Restarts container if process becomes unresponsive
+          # Fast check with no external dependencies
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 10        # Wait 10s after startup probe succeeds
+            periodSeconds: 5               # Check every 5 seconds
+            timeoutSeconds: 1              # 1-second timeout (should be <10ms)
+            failureThreshold: 3            # Restart after 3 consecutive failures (15s)
+            successThreshold: 1            # Must succeed once to be considered healthy
+
+          # ====================
+          # READINESS PROBE
+          # ====================
+          # Removes pod from service endpoints if not ready
+          # Comprehensive dependency checks
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 30        # Wait 30s after startup probe succeeds
+            periodSeconds: 10              # Check every 10 seconds
+            timeoutSeconds: 5              # 5-second timeout (should be <1s)
+            failureThreshold: 3            # Remove from service after 3 failures (30s)
+            successThreshold: 1            # Add back to service after 1 success
+
+          # Security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          # Volume mounts for tmp files
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/.cache
+
+      # Volumes
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+
+      # DNS policy
+      dnsPolicy: ClusterFirst
+
+      # Restart policy
+      restartPolicy: Always
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 30
+
+---
+# Service for load balancing
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-api-service
+  namespace: greenlang-production
+  labels:
+    app: greenlang-api
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+  selector:
+    app: greenlang-api
+
+---
+# HorizontalPodAutoscaler for auto-scaling
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-api-hpa
+  namespace: greenlang-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-api
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+
+---
+# PodDisruptionBudget for high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-api-pdb
+  namespace: greenlang-production
+spec:
+  minAvailable: 2  # Always keep at least 2 pods running
+  selector:
+    matchLabels:
+      app: greenlang-api
+
+---
+# ServiceMonitor for Prometheus metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: greenlang-api-metrics
+  namespace: greenlang-production
+  labels:
+    app: greenlang-api
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s

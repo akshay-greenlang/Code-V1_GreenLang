@@ -1,0 +1,232 @@
+# GreenLang Agent Foundation - Development Dependencies
+# Security Hardened with Pinned Versions
+# Generated: 2025-01-15
+# Includes all production dependencies + development tools
+
+# Include production dependencies
+-r requirements.txt
+
+# =============================================================================
+# TESTING FRAMEWORKS
+# =============================================================================
+# Pytest - Testing framework
+pytest==7.4.4
+pytest-asyncio==0.23.3
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-timeout==2.2.0
+pytest-xdist==3.5.0
+pytest-env==1.1.3
+pytest-benchmark==4.0.0
+pytest-html==4.1.1
+
+# Test data generation
+faker==22.6.0
+hypothesis==6.98.3
+factory-boy==3.3.0
+
+# HTTP mocking
+responses==0.24.1
+httpretty==1.1.7
+
+# Async testing utilities
+pytest-aiohttp==1.0.5
+aioresponses==0.7.6
+
+# Test containers for integration tests
+testcontainers==3.7.1
+
+# Time mocking
+freezegun==1.4.0
+
+# =============================================================================
+# CODE QUALITY & FORMATTING
+# =============================================================================
+# Black - Code formatter
+black==24.1.1
+
+# isort - Import sorting
+isort==5.13.2
+
+# Flake8 - Linting
+flake8==7.0.0
+flake8-bugbear==24.1.17
+flake8-comprehensions==3.14.0
+flake8-simplify==0.21.0
+
+# Pylint - Advanced linting
+pylint==3.0.3
+
+# MyPy - Static type checking
+mypy==1.8.0
+types-requests==2.31.0.20240125
+types-redis==4.6.0.20240106
+types-PyYAML==6.0.12.12
+types-python-dateutil==2.8.19.20240106
+types-toml==0.10.8.7
+
+# Ruff - Fast Python linter (alternative to flake8)
+ruff==0.1.15
+
+# =============================================================================
+# SECURITY SCANNING
+# =============================================================================
+# Safety - Dependency vulnerability scanner
+safety==3.0.1
+
+# pip-audit - PyPI vulnerability scanner
+pip-audit==2.7.0
+
+# Bandit - Security issue scanner for Python code
+bandit==1.7.6
+
+# Semgrep - Static analysis security scanner
+semgrep==1.56.0
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+# Sphinx - Documentation generator
+sphinx==7.2.6
+sphinx-rtd-theme==2.0.0
+sphinx-autodoc-typehints==1.25.2
+sphinxcontrib-mermaid==0.9.2
+
+# MkDocs - Modern documentation
+mkdocs==1.5.3
+mkdocs-material==9.5.6
+mkdocstrings==0.24.0
+mkdocstrings-python==1.8.0
+
+# =============================================================================
+# PROFILING & PERFORMANCE
+# =============================================================================
+# py-spy - Sampling profiler
+py-spy==0.3.14
+
+# memory-profiler - Memory usage profiler
+memory-profiler==0.61.0
+
+# line-profiler - Line-by-line profiler
+line-profiler==4.1.2
+
+# scalene - CPU/GPU/memory profiler
+scalene==1.5.38
+
+# =============================================================================
+# DEBUGGING
+# =============================================================================
+# ipdb - IPython debugger
+ipdb==0.13.13
+
+# ipython - Enhanced Python shell
+ipython==8.20.0
+
+# pdbpp - Better Python debugger
+pdbpp==0.10.3
+
+# =============================================================================
+# CODE COVERAGE
+# =============================================================================
+# coverage - Code coverage measurement
+coverage==7.4.0
+coverage-badge==1.1.0
+
+# =============================================================================
+# PRE-COMMIT HOOKS
+# =============================================================================
+# pre-commit - Git hook framework
+pre-commit==3.6.0
+
+# =============================================================================
+# API DEVELOPMENT
+# =============================================================================
+# httpie - Modern CLI HTTP client
+httpie==3.2.2
+
+# =============================================================================
+# DATABASE TOOLS
+# =============================================================================
+# pgcli - PostgreSQL CLI with autocomplete
+pgcli==4.0.1
+
+# redis-cli alternative
+iredis==1.14.0
+
+# =============================================================================
+# MONITORING & DEBUGGING
+# =============================================================================
+# Locust - Load testing
+locust==2.20.1
+
+# Tavern - API testing
+tavern==2.9.2
+
+# =============================================================================
+# CONTAINER & DEPLOYMENT
+# =============================================================================
+# Docker SDK for Python
+docker==7.0.0
+
+# Kubernetes client
+kubernetes==29.0.0
+
+# =============================================================================
+# UTILITIES
+# =============================================================================
+# watchdog - File system monitoring
+watchdog==3.0.0
+
+# python-magic - File type identification
+python-magic==0.4.27
+
+# colorlog - Colored logging
+colorlog==6.8.2
+
+# tqdm - Progress bars
+tqdm==4.66.1
+
+# tabulate - Pretty tables
+tabulate==0.9.0
+
+# =============================================================================
+# GRAPH VISUALIZATION
+# =============================================================================
+# pydot - Graphviz interface
+pydot==2.0.0
+
+# graphviz - Graph visualization
+graphviz==0.20.1
+
+# =============================================================================
+# NOTEBOOK SUPPORT (OPTIONAL)
+# =============================================================================
+# Jupyter - Interactive notebooks
+jupyter==1.0.0
+jupyterlab==4.0.11
+notebook==7.0.7
+
+# =============================================================================
+# DEVELOPMENT NOTES
+# =============================================================================
+# INSTALLATION:
+#   pip install -r requirements-dev.txt
+#
+# PRE-COMMIT SETUP:
+#   pre-commit install
+#
+# SECURITY SCANNING:
+#   safety check --json
+#   pip-audit --format json
+#   bandit -r . -f json
+#
+# CODE QUALITY:
+#   black .
+#   isort .
+#   flake8 .
+#   pylint src/
+#   mypy src/
+#
+# TESTING:
+#   pytest --cov=. --cov-report=html
+#   pytest -n auto  # Parallel testing

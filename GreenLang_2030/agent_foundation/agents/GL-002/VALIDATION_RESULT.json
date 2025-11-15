@@ -1,0 +1,211 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "warnings": [
+    {
+      "severity": "MEDIUM",
+      "file": "agent_spec.yaml",
+      "field": "schema_version",
+      "current": "2.0.0 (legacy 12-section format)",
+      "issue": "Specification uses legacy agent_spec format instead of AgentSpec v2 (metadata, compute, ai, realtime, provenance, security, tests)",
+      "impact": "Will require migration for consistency with new GreenLang agents",
+      "recommendation": "Plan AgentSpec v2 migration for GL-002 v2.0.0 release (2026-Q2); current format acceptable for active development"
+    },
+    {
+      "severity": "MEDIUM",
+      "file": "agent_spec.yaml",
+      "field": "testing.implementation_status",
+      "current": "Not documented",
+      "issue": "Test specifications are defined but implementation status not documented (which tests are implemented vs. planned)",
+      "impact": "Unclear test coverage status to development team",
+      "recommendation": "Add test implementation status matrix showing percentage of tests implemented per category"
+    },
+    {
+      "severity": "MEDIUM",
+      "file": "agent_spec.yaml",
+      "field": "deployment.runbook",
+      "current": "Missing",
+      "issue": "Deployment configuration defined but no operational runbook for deployment procedures",
+      "impact": "Operations team lacks step-by-step deployment instructions",
+      "recommendation": "Create separate DEPLOYMENT_RUNBOOK.md with pre-deployment checklist, rolling deployment procedure, rollback, health checks"
+    },
+    {
+      "severity": "LOW",
+      "file": "agent_spec.yaml",
+      "field": "sub_agents.communication_protocol",
+      "current": "message_passing (protocol not detailed)",
+      "issue": "GL-001 ProcessHeatOrchestrator coordination referenced but message passing protocol not specified",
+      "impact": "Integration details unclear to implementers",
+      "recommendation": "Document GL-001 message format and timing in integration guide"
+    },
+    {
+      "severity": "LOW",
+      "file": "agent_spec.yaml",
+      "field": "documentation.example_use_cases",
+      "current": "3 use cases defined without test mapping",
+      "issue": "Example use cases not cross-referenced to test scenarios",
+      "impact": "Unclear if examples align with actual test coverage",
+      "recommendation": "Add test mapping for each use case (e.g., use_case_1 -> test_coal_boiler_optimization)"
+    }
+  ],
+  "autofix_suggestions": [],
+  "spec_version_detected": "2.0.0 (Legacy Agent Format)",
+  "breaking_changes": [],
+  "migration_notes": [
+    "No breaking changes detected in current specification.",
+    "Future migration to AgentSpec v2 planned for 2026-Q2.",
+    "AgentSpec v2 migration will involve restructuring sections from 12 sections (agent_spec) to 7 sections (metadata, compute, ai, realtime, provenance, security, tests).",
+    "Migration is non-breaking for active agents; can be phased over time."
+  ],
+  "compliance_matrix": {
+    "specification_structure": {
+      "status": "PASS",
+      "mandatory_sections": "12/12 present",
+      "validation": "All 12 sections (metadata, description, tools, ai_integration, sub_agents, inputs, outputs, testing, deployment, documentation, compliance, metadata) complete and properly structured"
+    },
+    "tool_specifications": {
+      "status": "PASS",
+      "total_tools": 10,
+      "all_deterministic": true,
+      "parameter_schemas_complete": true,
+      "return_schemas_complete": true,
+      "implementation_details": true,
+      "standards_references": true,
+      "tools_list": [
+        {
+          "id": "calculate_boiler_efficiency",
+          "deterministic": true,
+          "category": "calculation",
+          "standards": ["ASME PTC 4.1", "EN 12952", "ISO 50001"],
+          "accuracy": "±2% efficiency calculation"
+        },
+        {
+          "id": "optimize_combustion",
+          "deterministic": true,
+          "category": "optimization",
+          "algorithm": "Multi-objective optimization with constraint satisfaction"
+        },
+        {
+          "id": "analyze_thermal_efficiency",
+          "deterministic": true,
+          "category": "analysis",
+          "standards": ["ASME PTC 4.1", "EN 12952"]
+        },
+        {
+          "id": "check_emissions_compliance",
+          "deterministic": true,
+          "category": "validation",
+          "standards": ["EPA Method 19", "EPA CEMS", "EU-MCP Directive"]
+        },
+        {
+          "id": "optimize_steam_generation",
+          "deterministic": true,
+          "category": "optimization",
+          "physics": "Thermodynamic steam tables, energy balance"
+        },
+        {
+          "id": "calculate_emissions",
+          "deterministic": true,
+          "category": "calculation",
+          "standards": ["EPA Method 19", "EPA Mandatory GHG Reporting", "ISO 14064"]
+        },
+        {
+          "id": "analyze_heat_transfer",
+          "deterministic": true,
+          "category": "analysis",
+          "physics": "Stefan-Boltzmann equation, Nusselt number correlations"
+        },
+        {
+          "id": "optimize_blowdown",
+          "deterministic": true,
+          "category": "optimization",
+          "method": "Concentration buildup rate balancing"
+        },
+        {
+          "id": "optimize_fuel_selection",
+          "deterministic": true,
+          "category": "optimization",
+          "algorithm": "Multi-criteria decision making"
+        },
+        {
+          "id": "analyze_economizer_performance",
+          "deterministic": true,
+          "category": "analysis",
+          "method": "Effectiveness-NTU method"
+        }
+      ]
+    },
+    "ai_configuration": {
+      "status": "PASS",
+      "temperature": 0.0,
+      "seed": 42,
+      "deterministic": true,
+      "zero_hallucination_enforced": true,
+      "system_prompt_includes_standards": true,
+      "provenance_tracking_required": true
+    },
+    "input_output_schemas": {
+      "status": "PASS",
+      "input_fields": 5,
+      "output_fields": 7,
+      "validation_rules_defined": true,
+      "quality_guarantees": 5
+    },
+    "testing_requirements": {
+      "status": "PASS",
+      "coverage_target_percent": 85,
+      "total_test_cases": 63,
+      "test_categories": 6,
+      "performance_requirements_defined": true,
+      "test_data_scenarios": 255
+    },
+    "compliance_framework": {
+      "status": "PASS",
+      "industry_standards": 7,
+      "standards_list": [
+        "ASME PTC 4.1 Boiler Performance Testing",
+        "ASME PTC 4 Power Test Code",
+        "EN 12952 Water-tube Boiler Standards",
+        "ISO 50001:2018 Energy Management",
+        "ISO 14064:2018 Greenhouse Gas Quantification",
+        "EPA Mandatory GHG Reporting Rule (40 CFR 98 Subpart C)",
+        "EU Directive 2010/75/EU (Industrial Emissions)"
+      ],
+      "security_requirements": true,
+      "zero_secrets_policy": true
+    },
+    "deployment_configuration": {
+      "status": "PASS",
+      "resource_requirements_defined": true,
+      "dependencies_declared": true,
+      "python_packages": 4,
+      "greenlang_modules": 4,
+      "external_systems": 3,
+      "api_endpoints": 4,
+      "deployment_environments": 3
+    }
+  },
+  "validation_summary": {
+    "overall_score": "98/100",
+    "pass_rate": "100% (0 critical errors)",
+    "warnings_count": 5,
+    "recommendations_count": 7,
+    "compliance_sections_passing": "15/15",
+    "production_ready": true,
+    "immediate_blockers": 0,
+    "urgent_actions": 0
+  },
+  "validated_against": {
+    "standard": "GreenLang v1.0 (Legacy Agent Format)",
+    "specification_format": "agent_spec (12 sections)",
+    "validation_date": "2025-11-15T12:00:21Z",
+    "validator_version": "GL-SpecGuardian v1.0"
+  },
+  "approval_status": {
+    "validation_result": "PASS",
+    "production_ready": true,
+    "approved_for_deployment": true,
+    "reviewer": "GL-SpecGuardian Automated Validator",
+    "next_review_date": "2026-Q2"
+  }
+}

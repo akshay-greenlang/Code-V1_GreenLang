@@ -1,0 +1,351 @@
+# GL-001 ProcessHeatOrchestrator - Network Policy
+# Zero-trust network segmentation for production security
+# Implements principle of least privilege for network access
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-001-process-heat-netpol
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+  annotations:
+    description: "Network policy for GL-001 ProcessHeatOrchestrator"
+
+spec:
+  # Apply to all GL-001 pods
+  podSelector:
+    matchLabels:
+      app: gl-001-process-heat
+      agent: "GL-001"
+
+  # Policy types
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # ============================================================================
+  # INGRESS RULES (Incoming Traffic)
+  # ============================================================================
+  ingress:
+    # Rule 1: Allow traffic from Ingress Controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000  # HTTP API
+
+    # Rule 2: Allow metrics scraping from Prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8001  # Metrics
+
+    # Rule 3: Allow internal pod-to-pod communication (agent coordination)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gl-001-process-heat
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8001
+        - protocol: TCP
+          port: 8002
+
+    # Rule 4: Allow from other GreenLang agents (sub-agent communication)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - podSelector:
+            matchExpressions:
+              - key: agent
+                operator: In
+                values: ["GL-002", "GL-003", "GL-004", "GL-005", "GL-006", "GL-007", "GL-008", "GL-009", "GL-010"]
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Rule 5: Allow health checks from kubelet
+    - from:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000  # /health, /ready endpoints
+
+  # ============================================================================
+  # EGRESS RULES (Outgoing Traffic)
+  # ============================================================================
+  egress:
+    # Rule 1: Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Rule 2: Allow PostgreSQL database access
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Rule 3: Allow Redis cache access
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Rule 4: Allow SCADA integration (OPC UA)
+    - to:
+        - ipBlock:
+            cidr: 10.100.0.0/16  # SCADA network range
+      ports:
+        - protocol: TCP
+          port: 4840  # OPC UA
+
+    # Rule 5: Allow SCADA integration (Modbus TCP)
+    - to:
+        - ipBlock:
+            cidr: 10.100.0.0/16  # SCADA network range
+      ports:
+        - protocol: TCP
+          port: 502  # Modbus TCP
+
+    # Rule 6: Allow SCADA integration (MQTT)
+    - to:
+        - ipBlock:
+            cidr: 10.100.0.0/16  # SCADA network range
+      ports:
+        - protocol: TCP
+          port: 1883  # MQTT
+        - protocol: TCP
+          port: 8883  # MQTT over TLS
+
+    # Rule 7: Allow ERP integration (HTTPS)
+    - to:
+        - ipBlock:
+            cidr: 10.200.0.0/16  # ERP network range
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS
+
+    # Rule 8: Allow communication to other GreenLang agents
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+        - podSelector:
+            matchExpressions:
+              - key: agent
+                operator: Exists
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Rule 9: Allow external API calls (limited)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS only
+
+---
+# Deny-all NetworkPolicy (baseline security)
+# Apply this first, then layer allow rules on top
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-001-deny-all
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+  annotations:
+    description: "Deny-all baseline policy for GL-001"
+
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-001-process-heat
+
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # Empty rules = deny all
+  ingress: []
+  egress: []
+
+---
+# NetworkPolicy for database access (specific)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-001-database-access
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+  annotations:
+    description: "Database access policy for GL-001"
+
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-001-process-heat
+
+  policyTypes:
+    - Egress
+
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# NetworkPolicy for SCADA integration (specific)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-001-scada-access
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+  annotations:
+    description: "SCADA network access policy for GL-001"
+
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-001-process-heat
+
+  policyTypes:
+    - Egress
+
+  egress:
+    # OPC UA protocol
+    - to:
+        - ipBlock:
+            cidr: 10.100.0.0/16
+      ports:
+        - protocol: TCP
+          port: 4840
+
+    # Modbus TCP
+    - to:
+        - ipBlock:
+            cidr: 10.100.0.0/16
+      ports:
+        - protocol: TCP
+          port: 502
+
+    # MQTT and MQTT/TLS
+    - to:
+        - ipBlock:
+            cidr: 10.100.0.0/16
+      ports:
+        - protocol: TCP
+          port: 1883
+        - protocol: TCP
+          port: 8883
+
+---
+# NetworkPolicy for ERP integration (specific)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-001-erp-access
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+  annotations:
+    description: "ERP network access policy for GL-001"
+
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-001-process-heat
+
+  policyTypes:
+    - Egress
+
+  egress:
+    # HTTPS to ERP systems
+    - to:
+        - ipBlock:
+            cidr: 10.200.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 8443
+
+---
+# Network Policy Validation and Testing
+# ============================================================================
+# TESTING NETWORK POLICIES:
+#
+# 1. Test DNS resolution:
+#    kubectl run -it --rm debug --image=busybox --restart=Never -- nslookup kubernetes.default
+#
+# 2. Test database connectivity:
+#    kubectl run -it --rm debug --image=postgres:14 --restart=Never -- psql -h postgresql.database.svc.cluster.local -U postgres
+#
+# 3. Test Redis connectivity:
+#    kubectl run -it --rm debug --image=redis:7 --restart=Never -- redis-cli -h redis.greenlang.svc.cluster.local ping
+#
+# 4. Test SCADA connectivity (OPC UA):
+#    kubectl run -it --rm debug --image=nicolargo/opcua-client --restart=Never -- opcua-client opc.tcp://10.100.1.100:4840
+#
+# 5. Test blocked traffic:
+#    kubectl run -it --rm debug --image=curlimages/curl --restart=Never -- curl https://google.com
+#    (Should be blocked if not explicitly allowed)
+#
+# MONITORING NETWORK POLICIES:
+# - List all policies: kubectl get networkpolicies -n greenlang
+# - Describe policy: kubectl describe networkpolicy gl-001-process-heat-netpol -n greenlang
+# - Check pod labels: kubectl get pods -n greenlang --show-labels
+# - View events: kubectl get events -n greenlang --field-selector involvedObject.kind=NetworkPolicy
+# ============================================================================

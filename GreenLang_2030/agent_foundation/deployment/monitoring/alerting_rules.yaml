@@ -1,0 +1,248 @@
+# Alerting Rules for GreenLang Agent Foundation
+# ==============================================
+# Critical alerts for production monitoring
+
+groups:
+  - name: agent_alerts
+    interval: 30s
+    rules:
+      # High Error Rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(greenlang_agents_error_rate[5m])) by (agent_type)
+            / sum(rate(greenlang_agents_messages_processed[5m])) by (agent_type)
+          ) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+          team: agent-platform
+        annotations:
+          summary: "High error rate for {{ $labels.agent_type }} agents"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.agent_type }} agents (threshold: 1%)"
+          runbook: "https://wiki.greenlang.io/runbooks/high-error-rate"
+
+      # Agent Failures
+      - alert: AgentFailures
+        expr: |
+          increase(greenlang_agents_agent_count{state="failed"}[5m]) > 5
+        for: 2m
+        labels:
+          severity: warning
+          team: agent-platform
+        annotations:
+          summary: "Multiple agent failures detected"
+          description: "{{ $value }} agents have failed in the last 5 minutes"
+
+      # Memory Leak
+      - alert: PotentialMemoryLeak
+        expr: |
+          (
+            rate(greenlang_agents_memory_usage_bytes[30m]) > 0
+            and
+            greenlang_agents_memory_usage_bytes > 4294967296
+          )
+        for: 30m
+        labels:
+          severity: warning
+          team: agent-platform
+        annotations:
+          summary: "Potential memory leak in agent {{ $labels.agent_id }}"
+          description: "Memory usage is continuously growing and now at {{ $value | humanize1024 }}B"
+
+  - name: performance_alerts
+    interval: 30s
+    rules:
+      # High Latency
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(greenlang_agents_task_completion_time_bucket[5m])) by (le, agent_type)
+          ) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          team: agent-platform
+        annotations:
+          summary: "High P95 latency for {{ $labels.agent_type }}"
+          description: "P95 latency is {{ $value }}s (threshold: 500ms)"
+
+      # Low Throughput
+      - alert: LowThroughput
+        expr: |
+          sum(rate(greenlang_agents_messages_processed[5m])) < 100
+        for: 15m
+        labels:
+          severity: warning
+          team: agent-platform
+        annotations:
+          summary: "Low message throughput"
+          description: "Processing only {{ $value }} messages per second (expected: >100)"
+
+      # SLA Breach
+      - alert: SLABreach
+        expr: |
+          (
+            avg_over_time(up[30m]) < 0.9999
+            or
+            histogram_quantile(0.99,
+              sum(rate(greenlang_agents_task_completion_time_bucket[30m])) by (le)
+            ) > 2
+          )
+        for: 5m
+        labels:
+          severity: critical
+          team: agent-platform
+          sla: true
+        annotations:
+          summary: "SLA breach detected"
+          description: "System is not meeting SLA requirements"
+          dashboard: "https://grafana.greenlang.io/d/ops-dashboard"
+
+  - name: resource_alerts
+    interval: 30s
+    rules:
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          avg(greenlang_agents_cpu_utilization) by (agent_id) > 80
+        for: 10m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "High CPU usage for agent {{ $labels.agent_id }}"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+      # Database Connection Pool Exhausted
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          greenlang_agents_database_connections{status="active"}
+          / greenlang_agents_database_connections{status="total"} > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "{{ $value | humanizePercentage }} of connections are in use"
+
+      # Cache Hit Rate Low
+      - alert: LowCacheHitRate
+        expr: |
+          greenlang_agents_cache_hit_rate < 0.7
+        for: 15m
+        labels:
+          severity: warning
+          team: agent-platform
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} (expected: >70%)"
+
+  - name: business_alerts
+    interval: 1m
+    rules:
+      # No Reports Generated
+      - alert: NoReportsGenerated
+        expr: |
+          increase(greenlang_agents_reports_generated[1h]) == 0
+        for: 1h
+        labels:
+          severity: warning
+          team: business
+        annotations:
+          summary: "No reports generated in the last hour"
+          description: "The system has not generated any reports for 1 hour"
+
+      # High API Costs
+      - alert: HighAPICosts
+        expr: |
+          sum(increase(greenlang_agents_api_calls{api="llm"}[1h])) * 0.002 > 100
+        for: 5m
+        labels:
+          severity: warning
+          team: finance
+        annotations:
+          summary: "High LLM API costs"
+          description: "Estimated cost in last hour: ${{ $value }}"
+
+      # Compliance Check Failures
+      - alert: ComplianceCheckFailures
+        expr: |
+          increase(greenlang_agents_compliance_checks{status="failed"}[1h]) > 10
+        for: 5m
+        labels:
+          severity: critical
+          team: compliance
+        annotations:
+          summary: "Multiple compliance check failures"
+          description: "{{ $value }} compliance checks failed in the last hour"
+
+  - name: quality_alerts
+    interval: 5m
+    rules:
+      # Quality Score Drop
+      - alert: QualityScoreDrop
+        expr: |
+          greenlang_agents_quality_score_overall < 85
+        for: 30m
+        labels:
+          severity: warning
+          team: quality
+        annotations:
+          summary: "Overall quality score below threshold"
+          description: "Quality score is {{ $value }}% (threshold: 85%)"
+
+      # Test Coverage Drop
+      - alert: TestCoverageDrop
+        expr: |
+          greenlang_agents_test_coverage < 80
+        for: 1h
+        labels:
+          severity: warning
+          team: quality
+        annotations:
+          summary: "Test coverage below threshold"
+          description: "Test coverage is {{ $value }}% (threshold: 80%)"
+
+  - name: infrastructure_alerts
+    interval: 30s
+    rules:
+      # Pod Restart
+      - alert: PodRestartingTooOften
+        expr: |
+          increase(kube_pod_container_status_restarts_total{namespace="greenlang"}[1h]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "Pod {{ $labels.pod }} restarting frequently"
+          description: "Pod has restarted {{ $value }} times in the last hour"
+
+      # Disk Space Low
+      - alert: DiskSpaceLow
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/"}
+            / node_filesystem_size_bytes{mountpoint="/"}
+          ) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: infrastructure
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+
+      # Certificate Expiry
+      - alert: CertificateExpiringSoon
+        expr: |
+          probe_ssl_earliest_cert_expiry - time() < 7 * 24 * 3600
+        for: 1h
+        labels:
+          severity: warning
+          team: infrastructure
+        annotations:
+          summary: "SSL certificate expiring soon for {{ $labels.instance }}"
+          description: "Certificate expires in {{ $value | humanizeDuration }}"

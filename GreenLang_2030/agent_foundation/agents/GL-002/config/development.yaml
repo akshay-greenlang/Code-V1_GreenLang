@@ -1,0 +1,121 @@
+# GL-002 BoilerEfficiencyOptimizer - Development Configuration
+# Local development environment with comprehensive logging
+# Optimized for fast iteration and debugging
+
+application:
+  name: GL-002 BoilerEfficiencyOptimizer
+  version: 1.0.0-dev
+  environment: development
+  debug: true
+  log_level: DEBUG
+
+api:
+  host: 127.0.0.1
+  port: 8000
+  workers: 1
+  timeout: 600
+  max_request_size: 52428800  # 50 MB for testing large payloads
+
+database:
+  engine: postgresql
+  url: postgresql://devuser:devpassword@localhost:5432/greenlang_dev
+  pool_size: 5
+  max_overflow: 10
+  pool_pre_ping: true
+  echo: true  # Log SQL queries
+  timeout: 30
+
+cache:
+  enabled: true
+  backend: redis
+  url: redis://localhost:6379/1
+  default_ttl: 60
+  socket_timeout: 10
+
+auth:
+  jwt_enabled: true
+  jwt_secret: dev-secret-key-minimum-32-characters-long
+  jwt_algorithm: HS256
+  jwt_expiration_hours: 24
+
+security:
+  tls_enabled: false
+  rate_limiting_enabled: false  # Disabled for development
+  https_redirect_enabled: false
+
+logging:
+  level: DEBUG
+  format: json
+  file_enabled: true
+  file_path: /app/logs/gl-002-dev.log
+  file_max_size_mb: 10
+  file_backup_count: 3
+  file_retention_days: 1
+  structured_logging: true
+
+monitoring:
+  enabled: true
+  metrics_port: 8001
+  metrics_path: /api/v1/metrics
+  prometheus_enabled: false
+  health_check_interval: 10
+
+optimization:
+  default_strategy: fuel_efficiency
+  constraints:
+    max_concurrent_optimizations: 5
+    optimization_timeout_seconds: 600
+
+emissions:
+  monitoring_interval_seconds: 30
+  limits:
+    nox_ppm: 30
+    co_ppm: 100
+    so2_ppm: 75
+
+features:
+  economizer_analysis: true
+  fuel_switching: true
+  blowdown_optimization: true
+  predictive_maintenance: false
+
+integrations:
+  scada:
+    enabled: false
+  fuel_management:
+    enabled: false
+  emissions_monitoring:
+    enabled: false
+  gl_001:
+    enabled: false
+
+alerting:
+  pagerduty:
+    enabled: false
+  slack:
+    enabled: false
+  email:
+    enabled: false
+
+kubernetes:
+  enabled: false
+  replicas: 1
+
+# Development-specific settings
+development:
+  # Mock data for testing
+  mock_boiler_data: true
+  mock_sensor_readings: true
+  mock_external_api_responses: true
+
+  # Testing utilities
+  enable_test_endpoints: true
+  enable_debug_endpoints: true
+  enable_performance_profiling: true
+
+  # Hot reload
+  auto_reload: true
+  auto_reload_path: .
+
+  # Seed data
+  load_seed_data: true

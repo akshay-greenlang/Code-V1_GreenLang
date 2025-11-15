@@ -1,0 +1,107 @@
+# GreenLang Messaging System Configuration
+# Production-ready settings for distributed agent communication
+
+# Broker selection: "redis" (MVP, up to 10K agents) or "kafka" (scale, 100K+ agents)
+broker_type: redis
+
+# Redis Streams Configuration (Recommended for MVP)
+redis:
+  # Connection
+  host: localhost
+  port: 6379
+  db: 0
+  password: null  # Set for production
+  username: null  # Redis 6+ ACL support
+
+  # Connection Pool
+  max_connections: 50
+  socket_timeout: 5.0
+  socket_connect_timeout: 5.0
+
+  # Performance
+  decode_responses: false
+  encoding: utf-8
+
+  # Persistence
+  aof_enabled: true  # Append-only file for durability
+  rdb_enabled: true  # RDB snapshots for backup
+
+  # Streams Configuration
+  max_stream_length: 100000  # Keep last 100K messages
+  consumer_timeout_ms: 5000  # 5 second poll timeout
+  batch_size: 10  # Messages per batch
+
+  # Reliability
+  message_ttl_days: 7  # Message retention
+  dlq_ttl_days: 30  # Dead letter queue retention
+  max_retries: 3  # Retry attempts before DLQ
+
+# Kafka Configuration (Optional - for scale)
+kafka:
+  # Connection
+  bootstrap_servers: localhost:9092
+  security_protocol: PLAINTEXT
+
+  # Authentication (uncomment for production)
+  # sasl_mechanism: PLAIN
+  # sasl_username: your_username
+  # sasl_password: your_password
+
+  # Producer Settings
+  acks: all  # Wait for all replicas
+  compression_type: snappy  # Fast compression
+  batch_size: 16384  # 16KB batches
+  linger_ms: 10  # Batch for 10ms
+
+  # Consumer Settings
+  group_id: greenlang_agents
+  auto_offset_reset: earliest  # Start from beginning
+  max_poll_records: 500
+  session_timeout_ms: 10000
+
+  # Topics
+  num_partitions: 10  # Parallelism
+  replication_factor: 3  # High availability
+  retention_hours: 168  # 7 days
+
+  # Performance
+  max_in_flight_requests: 5
+  buffer_memory: 33554432  # 32MB
+
+# Monitoring & Observability
+metrics_enabled: true
+prometheus_port: 9090
+health_check_interval_seconds: 30
+
+# Logging
+log_level: INFO  # DEBUG, INFO, WARNING, ERROR
+log_messages: false  # Set true for verbose message logging
+
+# Reliability Patterns
+circuit_breaker_enabled: true
+circuit_breaker_threshold: 5  # Failures before opening
+circuit_breaker_timeout_seconds: 60  # Seconds before retry
+
+# Environment-Specific Configurations
+# Override with environment variables:
+#   GREENLANG_BROKER_TYPE
+#   GREENLANG_REDIS_HOST
+#   GREENLANG_REDIS_PORT
+#   GREENLANG_REDIS_PASSWORD
+#   GREENLANG_KAFKA_BOOTSTRAP_SERVERS
+#   GREENLANG_LOG_LEVEL
+
+# Performance Targets
+# Redis Streams:
+#   - Throughput: 10,000 msg/s
+#   - Latency P95: < 10ms
+#   - Max Consumers: 100
+#   - Message Size: 1MB
+#   - Retention: 7 days
+#
+# Kafka:
+#   - Throughput: 100,000 msg/s
+#   - Latency P95: < 50ms
+#   - Max Consumers: 1000+
+#   - Message Size: 10MB
+#   - Retention: 30 days

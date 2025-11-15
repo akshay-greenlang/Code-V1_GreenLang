@@ -1,0 +1,45 @@
+# GreenLang Health Check API Requirements
+# Production-ready health check endpoints for Kubernetes orchestration
+
+# Core FastAPI dependencies
+fastapi>=0.104.0          # FastAPI framework
+uvicorn[standard]>=0.24.0 # ASGI server with performance extras
+pydantic>=2.5.0           # Data validation and settings
+pydantic-settings>=2.1.0  # Settings management
+
+# HTTP client for testing
+httpx>=0.25.0             # Async HTTP client
+
+# Database drivers
+asyncpg>=0.29.0           # PostgreSQL async driver
+
+# Redis
+redis[hiredis]>=5.0.0     # Redis client with hiredis for performance
+
+# Testing
+pytest>=7.4.0             # Testing framework
+pytest-asyncio>=0.21.0    # Async test support
+pytest-cov>=4.1.0         # Coverage reporting
+pytest-mock>=3.12.0       # Mocking support
+
+# Type checking
+mypy>=1.7.0               # Static type checker
+
+# Code quality
+ruff>=0.1.0               # Fast Python linter
+black>=23.11.0            # Code formatter
+
+# Monitoring and observability
+prometheus-client>=0.19.0 # Prometheus metrics
+
+# Security
+python-jose[cryptography]>=3.3.0  # JWT tokens
+passlib[bcrypt]>=1.7.4            # Password hashing
+python-multipart>=0.0.6           # Form data parsing
+
+# Logging
+structlog>=23.2.0         # Structured logging
+python-json-logger>=2.0.7 # JSON logging
+
+# Environment variables
+python-dotenv>=1.0.0      # .env file support

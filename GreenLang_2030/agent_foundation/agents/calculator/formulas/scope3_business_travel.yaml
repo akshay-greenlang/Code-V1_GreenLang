@@ -1,0 +1,71 @@
+---
+formula_id: "scope3_business_travel"
+name: "Scope 3 Business Travel Emissions"
+standard: "GHG Protocol"
+version: "1.0"
+description: "Calculate CO2e emissions from business travel (flights, rail, vehicles)"
+
+parameters:
+  - name: distance_km
+    type: float
+    unit: km
+    required: true
+    validation:
+      min: 0
+      max: 1000000
+    description: "Distance traveled in kilometers"
+
+  - name: travel_mode
+    type: string
+    required: true
+    validation:
+      allowed_values: ["flight_short_haul", "flight_long_haul", "rail", "car_petrol", "car_diesel", "car_electric"]
+    description: "Mode of transportation"
+
+  - name: region
+    type: string
+    required: false
+    default: "GLOBAL"
+    description: "Geographic region for emission factors"
+
+calculation:
+  steps:
+    - step: 1
+      description: "Lookup emission factor for travel mode"
+      operation: lookup
+      table: emission_factors
+      lookup_keys:
+        category: "scope3"
+        activity_type: "business_travel"
+        material_or_fuel: "{travel_mode}"
+        region: "{region}"
+      output: emission_factor_kg_co2e_per_km
+
+    - step: 2
+      description: "Calculate total emissions (distance × emission factor)"
+      operation: multiply
+      operands:
+        - distance_km
+        - emission_factor_kg_co2e_per_km
+      output: total_emissions_kg_co2e
+
+    - step: 3
+      description: "Convert to tonnes CO2e"
+      operation: divide
+      operands:
+        - total_emissions_kg_co2e
+        - 1000
+      output: total_emissions_t_co2e
+
+output:
+  value: total_emissions_t_co2e
+  unit: "t_co2e"
+  precision: 3
+
+metadata:
+  category: "Scope 3"
+  subcategory: "Category 6 - Business Travel"
+  ghg_protocol_category: "3.6"
+  iso_14064_category: "Indirect GHG emissions from transportation"
+  created_at: "2025-01-15"
+  last_updated: "2025-01-15"

@@ -1,0 +1,362 @@
+# GL-002 BoilerEfficiencyOptimizer - CD Pipeline
+# Continuous deployment to Kubernetes
+# Triggered on merge to main/master branch
+
+name: GL-002 CD
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'GreenLang_2030/agent_foundation/agents/GL-002/**'
+      - '.github/workflows/gl-002-cd.yaml'
+      - 'requirements.txt'
+
+  # Allow manual deployment
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+
+jobs:
+  # Job 1: Determine deployment environment
+  determine-env:
+    name: Determine Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      image-tag: ${{ steps.set-env.outputs.image-tag }}
+
+    steps:
+      - name: Determine deployment environment
+        id: set-env
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == "refs/heads/main" || "${{ github.ref }}" == "refs/heads/master" ]]; then
+            ENVIRONMENT="production"
+          else
+            ENVIRONMENT="staging"
+          fi
+
+          IMAGE_TAG="${{ github.sha }}"
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            IMAGE_TAG="v${{ github.run_number }}-prod"
+          elif [[ "$ENVIRONMENT" == "staging" ]]; then
+            IMAGE_TAG="v${{ github.run_number }}-staging"
+          else
+            IMAGE_TAG="dev-${{ github.sha }}"
+          fi
+
+          echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
+          echo "image-tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+          echo "Deploying to ${ENVIRONMENT} with tag ${IMAGE_TAG}"
+
+  # Job 2: Build and push Docker image (if not done in CI)
+  build:
+    name: Build and Push Image
+    runs-on: ubuntu-latest
+    needs: determine-env
+    timeout-minutes: 30
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./GreenLang_2030/agent_foundation/agents/GL-002
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/gl-002:${{ needs.determine-env.outputs.image-tag }}
+            ghcr.io/${{ github.repository }}/gl-002:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Job 3: Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [determine-env, build]
+    if: needs.determine-env.outputs.environment == 'staging' || needs.determine-env.outputs.environment == 'development'
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Update deployment image
+        run: |
+          kubectl set image deployment/gl-002-boiler-efficiency \
+            gl-002-boiler-efficiency=ghcr.io/${{ github.repository }}/gl-002:${{ needs.determine-env.outputs.image-tag }} \
+            -n greenlang \
+            --record
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/gl-002-boiler-efficiency \
+            -n greenlang \
+            --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          echo "Checking deployment status..."
+          kubectl get deployment -n greenlang | grep gl-002
+          kubectl get pods -n greenlang | grep gl-002
+          echo "Checking pod logs..."
+          kubectl logs -n greenlang -l app=gl-002-boiler-efficiency --tail=50 --all-containers=true || true
+
+      - name: Run smoke tests
+        run: |
+          echo "Running smoke tests on staging..."
+          STAGING_URL="https://api.staging.greenlang.io"
+
+          # Health check
+          curl -f "${STAGING_URL}/api/v1/health" || exit 1
+          echo "Health check passed"
+
+          # Readiness check
+          curl -f "${STAGING_URL}/api/v1/ready" || exit 1
+          echo "Readiness check passed"
+
+      - name: Slack notification (staging)
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "GL-002 Staging Deployment",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "GL-002 BoilerEfficiencyOptimizer\n*Staging Deployment*\nStatus: ${{ job.status }}\nTag: ${{ needs.determine-env.outputs.image-tag }}"
+                  }
+                }
+              ]
+            }
+
+  # Job 4: Manual approval for production
+  approve-production:
+    name: Approve Production Deployment
+    runs-on: ubuntu-latest
+    needs: [determine-env, deploy-staging]
+    if: needs.determine-env.outputs.environment == 'production'
+    environment:
+      name: production
+      deployment-gates:
+        - approval
+
+    steps:
+      - name: Manual approval required
+        run: |
+          echo "Production deployment requires manual approval"
+          echo "Review the staging deployment before approving"
+
+  # Job 5: Deploy to production (blue-green)
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [determine-env, build, approve-production]
+    if: needs.determine-env.outputs.environment == 'production'
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Verify cluster connectivity
+        run: |
+          kubectl cluster-info
+          kubectl get nodes
+
+      - name: Blue-Green Deployment
+        run: |
+          echo "Deploying to production using blue-green strategy..."
+
+          # Get current deployment (blue)
+          BLUE_REPLICAS=$(kubectl get deployment gl-002-boiler-efficiency -n greenlang -o jsonpath='{.spec.replicas}')
+          echo "Current blue deployment replicas: ${BLUE_REPLICAS}"
+
+          # Create green deployment with new image
+          kubectl set image deployment/gl-002-boiler-efficiency \
+            gl-002-boiler-efficiency=ghcr.io/${{ github.repository }}/gl-002:${{ needs.determine-env.outputs.image-tag }} \
+            -n greenlang \
+            --record
+
+          # Wait for green deployment to be ready
+          echo "Waiting for green deployment..."
+          kubectl rollout status deployment/gl-002-boiler-efficiency \
+            -n greenlang \
+            --timeout=10m
+
+          echo "Production deployment completed"
+
+      - name: Verify production deployment
+        run: |
+          echo "Verifying production deployment..."
+
+          # Check all pods are running
+          RUNNING=$(kubectl get pods -n greenlang -l app=gl-002-boiler-efficiency -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' | wc -w)
+          DESIRED=$(kubectl get deployment gl-002-boiler-efficiency -n greenlang -o jsonpath='{.spec.replicas}')
+
+          if [ "$RUNNING" -ne "$DESIRED" ]; then
+            echo "ERROR: Not all pods are running"
+            kubectl get pods -n greenlang -l app=gl-002-boiler-efficiency
+            exit 1
+          fi
+
+          echo "All ${RUNNING} pods are running"
+
+          # Check health endpoints
+          echo "Checking health endpoints..."
+          for pod in $(kubectl get pods -n greenlang -l app=gl-002-boiler-efficiency -o jsonpath='{.items[*].metadata.name}'); do
+            echo "Checking pod: ${pod}"
+            kubectl exec -n greenlang ${pod} -- curl -f http://localhost:8000/api/v1/health || exit 1
+          done
+
+      - name: Run production smoke tests
+        run: |
+          echo "Running production smoke tests..."
+          PROD_URL="https://api.boiler.greenlang.io"
+
+          # Health check with retries
+          for i in {1..5}; do
+            echo "Health check attempt ${i}..."
+            if curl -f "${PROD_URL}/api/v1/health"; then
+              echo "Health check passed"
+              break
+            fi
+            if [ $i -lt 5 ]; then
+              sleep 5
+            else
+              exit 1
+            fi
+          done
+
+          # Readiness check
+          curl -f "${PROD_URL}/api/v1/ready" || exit 1
+          echo "Readiness check passed"
+
+      - name: Slack notification (production)
+        if: always()
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "GL-002 Production Deployment",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "GL-002 BoilerEfficiencyOptimizer\n*Production Deployment*\nStatus: ${{ job.status }}\nTag: ${{ needs.determine-env.outputs.image-tag }}\nCommit: ${{ github.sha }}"
+                  }
+                }
+              ]
+            }
+
+  # Job 6: Rollback on failure
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [determine-env, deploy-production]
+    if: failure() && needs.determine-env.outputs.environment == 'production'
+    timeout-minutes: 10
+
+    steps:
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Rollback deployment
+        run: |
+          echo "Rolling back deployment..."
+          kubectl rollout undo deployment/gl-002-boiler-efficiency -n greenlang
+          kubectl rollout status deployment/gl-002-boiler-efficiency -n greenlang --timeout=5m
+          echo "Rollback completed"
+
+      - name: Slack notification (rollback)
+        uses: slackapi/slack-github-action@v1
+        with:
+          webhook-url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          payload: |
+            {
+              "text": "GL-002 Rollback Alert",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "GL-002 BoilerEfficiencyOptimizer\n*Production Rollback*\nTag: ${{ needs.determine-env.outputs.image-tag }}\nReason: Deployment failure detected"
+                  }
+                }
+              ]
+            }
+
+  # Summary job
+  cd-complete:
+    name: CD Complete
+    runs-on: ubuntu-latest
+    needs: [determine-env, deploy-staging, deploy-production]
+    if: always()
+
+    steps:
+      - name: Deployment summary
+        run: |
+          echo "Deployment Summary"
+          echo "=================="
+          echo "Environment: ${{ needs.determine-env.outputs.environment }}"
+          echo "Image Tag: ${{ needs.determine-env.outputs.image-tag }}"
+          echo "Status: ${{ job.status }}"

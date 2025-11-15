@@ -1,0 +1,92 @@
+# GL-002 BoilerEfficiencyOptimizer - Staging Configuration
+# Pre-production testing environment with production-like setup
+# Includes debug logging and monitoring for validation
+
+application:
+  name: GL-002 BoilerEfficiencyOptimizer
+  version: 1.0.0
+  environment: staging
+  debug: false
+  log_level: DEBUG
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  workers: 2
+  timeout: 60
+  max_request_size: 10485760
+
+database:
+  engine: postgresql
+  url: ${DATABASE_URL}
+  pool_size: 10
+  max_overflow: 20
+  pool_pre_ping: true
+  echo: false
+  timeout: 30
+
+cache:
+  enabled: true
+  backend: redis
+  url: ${REDIS_URL}
+  default_ttl: 300
+  socket_timeout: 5
+
+auth:
+  jwt_enabled: true
+  jwt_secret: ${JWT_SECRET}
+  jwt_algorithm: HS256
+  jwt_expiration_hours: 24
+
+security:
+  tls_enabled: false
+  rate_limiting_enabled: true
+  rate_limit_per_minute: 200
+
+logging:
+  level: DEBUG
+  format: json
+  file_enabled: true
+  file_path: /app/logs/gl-002-staging.log
+  file_max_size_mb: 50
+  file_backup_count: 5
+  file_retention_days: 7
+
+monitoring:
+  enabled: true
+  metrics_port: 8001
+  metrics_path: /api/v1/metrics
+  prometheus_enabled: true
+
+optimization:
+  default_strategy: fuel_efficiency
+  constraints:
+    max_concurrent_optimizations: 10
+    optimization_timeout_seconds: 300
+
+emissions:
+  monitoring_interval_seconds: 60
+  limits:
+    nox_ppm: 30
+    co_ppm: 100
+    so2_ppm: 75
+
+features:
+  economizer_analysis: true
+  fuel_switching: true
+  blowdown_optimization: true
+  predictive_maintenance: false
+
+kubernetes:
+  enabled: true
+  namespace: greenlang-staging
+  replicas: 2
+  min_replicas: 1
+  max_replicas: 3
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 500m

@@ -1,0 +1,396 @@
+{
+  "dashboard": {
+    "uid": "ops-dashboard",
+    "title": "Operations Dashboard - GreenLang Agent Foundation",
+    "description": "Real-time system health, performance metrics, and operational status",
+    "tags": ["operations", "monitoring", "performance"],
+    "timezone": "browser",
+    "refresh": "10s",
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Service Health Matrix",
+        "type": "table",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "up{job=~\"greenlang.*\"}",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true
+              },
+              "renameByName": {
+                "job": "Service",
+                "instance": "Instance",
+                "Value": "Status"
+              }
+            }
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "displayMode": "color-background",
+              "align": "center"
+            },
+            "mappings": [
+              {"type": "value", "value": "1", "text": "UP", "color": "green"},
+              {"type": "value", "value": "0", "text": "DOWN", "color": "red"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Request Latency (P50, P95, P99)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.5, sum(rate(greenlang_agents_task_completion_time_bucket[5m])) by (le))",
+            "legendFormat": "P50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(greenlang_agents_task_completion_time_bucket[5m])) by (le))",
+            "legendFormat": "P95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(greenlang_agents_task_completion_time_bucket[5m])) by (le))",
+            "legendFormat": "P99",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "gradientMode": "opacity",
+              "spanNulls": false,
+              "showPoints": "never"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.5},
+                {"color": "red", "value": 2}
+              ]
+            }
+          }
+        },
+        "options": {
+          "tooltip": {"mode": "multi"},
+          "legend": {"displayMode": "list", "placement": "bottom"}
+        }
+      },
+      {
+        "id": 3,
+        "title": "Error Rate by Type",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(greenlang_agents_error_rate[5m])) by (error_type)",
+            "legendFormat": "{{error_type}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 20,
+              "gradientMode": "opacity"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.001},
+                {"color": "red", "value": 0.01}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Throughput (Requests/sec)",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(greenlang_agents_messages_processed[5m]))",
+            "legendFormat": "Total Throughput",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(rate(greenlang_agents_messages_processed[5m])) by (agent_type)",
+            "legendFormat": "{{agent_type}}",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 10
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Resource Utilization",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "avg(greenlang_agents_cpu_utilization)",
+            "legendFormat": "CPU %",
+            "refId": "A"
+          },
+          {
+            "expr": "(avg(greenlang_agents_memory_usage_bytes) / 1024 / 1024 / 1024)",
+            "legendFormat": "Memory GB",
+            "refId": "B"
+          },
+          {
+            "expr": "sum(greenlang_agents_database_connections{status=\"active\"})",
+            "legendFormat": "DB Connections",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "show": true},
+          {"format": "decbytes", "show": true}
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 20,
+              "gradientMode": "opacity"
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Active Alerts",
+        "type": "table",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "ALERTS{alertstate=\"firing\"}",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "job": true
+              },
+              "renameByName": {
+                "alertname": "Alert",
+                "severity": "Severity",
+                "team": "Team"
+              }
+            }
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "displayMode": "color-background",
+              "align": "left"
+            },
+            "mappings": [
+              {"type": "value", "value": "critical", "text": "CRITICAL", "color": "red"},
+              {"type": "value", "value": "warning", "text": "WARNING", "color": "yellow"},
+              {"type": "value", "value": "info", "text": "INFO", "color": "blue"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "SLA Compliance",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 30},
+        "targets": [
+          {
+            "expr": "(1 - (sum(rate(greenlang_agents_error_rate[5m])) / sum(rate(greenlang_agents_messages_processed[5m])))) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "displayName": "Success Rate",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 99},
+                {"color": "green", "value": 99.9}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Queue Depth",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 30},
+        "targets": [
+          {
+            "expr": "sum(greenlang_agents_queue_depth)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "displayName": "Messages in Queue",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 1000},
+                {"color": "red", "value": 5000}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Cache Hit Rate",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 30},
+        "targets": [
+          {
+            "expr": "avg(greenlang_agents_cache_hit_rate) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 85}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Pod Status",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 30},
+        "targets": [
+          {
+            "expr": "sum(greenlang_agents_pod_count{status=\"running\"})",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "displayName": "Running Pods",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 3},
+                {"color": "green", "value": 5}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "agent_type",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(greenlang_agents_agent_count, type)",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "includeAll": true
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": false,
+          "iconColor": "rgba(255, 96, 96, 1)",
+          "name": "Deployments",
+          "type": "tags",
+          "tags": ["deployment"]
+        }
+      ]
+    },
+    "schemaVersion": 38,
+    "version": 1
+  },
+  "overwrite": true
+}

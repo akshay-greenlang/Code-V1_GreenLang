@@ -1,0 +1,109 @@
+# GL-002 BoilerEfficiencyOptimizer - ConfigMap
+# Non-sensitive configuration values
+# Updated via CI/CD pipeline - DO NOT hardcode secrets here
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-002-config
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+
+data:
+  # Environment configuration
+  environment: "production"
+  log_level: "INFO"
+
+  # Application configuration
+  app_name: "GL-002 BoilerEfficiencyOptimizer"
+  app_version: "1.0.0"
+
+  # API configuration
+  api_host: "0.0.0.0"
+  api_port: "8000"
+  api_prefix: "/api/v1"
+
+  # Metrics configuration
+  metrics_enabled: "true"
+  metrics_port: "8001"
+  metrics_path: "/api/v1/metrics"
+
+  # Optimization configuration
+  optimization_default_strategy: "fuel_efficiency"
+  optimization_timeout_seconds: "300"
+  max_concurrent_optimizations: "10"
+
+  # Boiler configuration defaults
+  boiler_default_excess_air_percent: "3.0"
+  boiler_default_min_load_percent: "25.0"
+  boiler_default_max_load_percent: "100.0"
+
+  # Emissions compliance
+  emissions_nox_limit_ppm: "30"
+  emissions_co_limit_ppm: "100"
+  emissions_so2_limit_ppm: "75"
+  emissions_monitoring_interval_seconds: "60"
+
+  # Performance tuning
+  cache_enabled: "true"
+  cache_ttl_seconds: "300"
+  batch_processing_enabled: "true"
+  batch_size: "100"
+
+  # Feature flags
+  feature_economizer_analysis: "true"
+  feature_fuel_switching: "true"
+  feature_blowdown_optimization: "true"
+  feature_predictive_maintenance: "false"
+
+  # Logging configuration
+  logging_format: "json"
+  logging_to_file: "true"
+  log_file_path: "/app/logs/gl-002.log"
+  log_rotation_size_mb: "100"
+  log_retention_days: "30"
+
+  # Security configuration
+  security_tls_enabled: "false"  # Use TLS at Ingress level
+  security_cors_enabled: "true"
+  security_cors_origins: "https://app.greenlang.ai"
+
+  # Database configuration (non-sensitive)
+  database_pool_size: "10"
+  database_pool_max_overflow: "20"
+  database_echo: "false"
+  database_timeout_seconds: "30"
+
+  # Redis configuration (non-sensitive)
+  redis_default_db: "0"
+  redis_socket_timeout_seconds: "5"
+  redis_socket_connect_timeout_seconds: "5"
+
+  # Monitoring and alerting
+  monitoring_enabled: "true"
+  monitoring_interval_seconds: "30"
+  alerting_enabled: "true"
+  alert_threshold_efficiency_percent: "5"
+  alert_threshold_emissions_exceedance_percent: "10"
+
+---
+# Example ConfigMap for environment-specific settings
+# Copy and modify for staging/development
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-002-config-staging
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+    environment: "staging"
+
+data:
+  environment: "staging"
+  log_level: "DEBUG"
+  cache_ttl_seconds: "60"
+  optimization_timeout_seconds: "600"
+  feature_predictive_maintenance: "true"

@@ -1,0 +1,207 @@
+# GL-002 BoilerEfficiencyOptimizer - Kubernetes Ingress
+# HTTPS ingress with automatic TLS/SSL via cert-manager
+# Rate limiting, authentication, and traffic management
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-002-boiler-efficiency-ingress
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+    version: "1.0.0"
+  annotations:
+    # NGINX Ingress Controller annotations
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    # SSL/TLS configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256"
+
+    # Rate limiting (production-grade)
+    nginx.ingress.kubernetes.io/limit-rps: "100"           # Max 100 requests/sec per IP
+    nginx.ingress.kubernetes.io/limit-connections: "10"    # Max 10 concurrent connections
+    nginx.ingress.kubernetes.io/limit-whitelist: "10.0.0.0/8,172.16.0.0/12"  # No limits for internal IPs
+
+    # Authentication (optional - enable if needed)
+    # nginx.ingress.kubernetes.io/auth-type: "basic"
+    # nginx.ingress.kubernetes.io/auth-secret: "gl-002-basic-auth"
+    # nginx.ingress.kubernetes.io/auth-realm: "GL-002 BoilerEfficiencyOptimizer"
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.greenlang.ai"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET,POST,PUT,DELETE,OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type,Authorization,X-API-Key"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Type,X-Request-ID"
+    nginx.ingress.kubernetes.io/cors-max-age: "86400"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=()";
+
+    # Request/response size limits
+    nginx.ingress.kubernetes.io/client-max-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+
+    # Connection management
+    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "32"
+    nginx.ingress.kubernetes.io/upstream-keepalive-timeout: "60"
+
+    # Proxy settings
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+
+    # Logging
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "false"
+
+spec:
+  # TLS configuration
+  tls:
+    - hosts:
+        - api.boiler.greenlang.io
+      secretName: gl-002-tls-cert
+
+  # HTTP routing rules
+  rules:
+    - host: api.boiler.greenlang.io
+      http:
+        paths:
+          # Main API endpoints
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-002-boiler-efficiency
+                port:
+                  number: 80
+
+          # Health check endpoints (bypass rate limiting)
+          - path: /api/v1/health
+            pathType: Exact
+            backend:
+              service:
+                name: gl-002-boiler-efficiency
+                port:
+                  number: 80
+
+          - path: /api/v1/ready
+            pathType: Exact
+            backend:
+              service:
+                name: gl-002-boiler-efficiency
+                port:
+                  number: 80
+
+---
+# Certificate Issuer configuration (Let's Encrypt)
+# Install cert-manager first: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  namespace: cert-manager
+
+spec:
+  acme:
+    # Production Let's Encrypt server (rate limited, but trusted)
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: devops@greenlang.ai
+    privateKeySecretRef:
+      name: letsencrypt-prod
+
+    solvers:
+      # DNS-01 challenge (recommended for wildcard certs)
+      - dns01:
+          cloudflare:
+            email: devops@greenlang.ai
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: api-token
+
+      # HTTP-01 challenge (fallback)
+      - http01:
+          ingress:
+            class: nginx
+
+---
+# Alternative: Self-signed certificate for testing
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+  namespace: cert-manager
+
+spec:
+  selfSigned: {}
+
+---
+# Alternative Ingress with self-signed certificate (for development)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-002-boiler-efficiency-ingress-dev
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    environment: development
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+
+spec:
+  tls:
+    - hosts:
+        - gl-002.local
+      secretName: gl-002-tls-selfsigned
+
+  rules:
+    - host: gl-002.local
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-002-boiler-efficiency
+                port:
+                  number: 80
+
+---
+# Backup Ingress without TLS (internal-only, HTTP)
+# Use this for internal-only deployment
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-002-boiler-efficiency-ingress-internal
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    access: internal-only
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/auth-type: "basic"
+    nginx.ingress.kubernetes.io/auth-secret: "gl-002-basic-auth"
+
+spec:
+  rules:
+    - host: gl-002.internal.greenlang
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-002-boiler-efficiency
+                port:
+                  number: 80

@@ -1,0 +1,216 @@
+# Persistent Volume Claims for GreenLang AI Agents
+
+---
+# PVC for AI Models storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-models-pvc
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    component: storage
+spec:
+  accessModes:
+  - ReadOnlyMany  # Multiple pods can read simultaneously
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: fast-ssd
+  volumeMode: Filesystem
+
+---
+# PVC for Vector Database storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-vectordb-pvc
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    component: vector-db
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: fast-ssd
+  volumeMode: Filesystem
+
+---
+# PVC for shared data/documents
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-data-pvc
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    component: storage
+spec:
+  accessModes:
+  - ReadWriteMany  # Multiple pods can read/write
+  resources:
+    requests:
+      storage: 200Gi
+  storageClassName: standard-nfs
+  volumeMode: Filesystem
+
+---
+# PVC for logs (if not using centralized logging)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: greenlang-logs-pvc
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    component: logging
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: standard-hdd
+  volumeMode: Filesystem
+
+---
+# PVC for Redis persistence
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data-pvc
+  namespace: greenlang-ai
+  labels:
+    app: redis
+    component: cache
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: fast-ssd
+  volumeMode: Filesystem
+
+---
+# PVC for PostgreSQL database
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-data-pvc
+  namespace: greenlang-ai
+  labels:
+    app: postgres
+    component: database
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: fast-ssd
+  volumeMode: Filesystem
+
+---
+# Storage Classes for different performance tiers
+
+# Fast SSD StorageClass (for models, databases)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+  labels:
+    tier: performance
+provisioner: kubernetes.io/aws-ebs  # Change based on cloud provider
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+  fsType: ext4
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+
+---
+# Standard NFS StorageClass (for shared data)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard-nfs
+  labels:
+    tier: shared
+provisioner: nfs.csi.k8s.io
+parameters:
+  server: nfs-server.greenlang-ai.svc.cluster.local
+  share: /exports/shared
+mountOptions:
+- hard
+- nfsvers=4.1
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+reclaimPolicy: Retain
+
+---
+# Standard HDD StorageClass (for logs, backups)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard-hdd
+  labels:
+    tier: standard
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: st1  # Throughput optimized HDD
+  fsType: ext4
+  encrypted: "true"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+reclaimPolicy: Delete
+
+---
+# CSI Driver for S3 (for object storage)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: s3-storage
+  labels:
+    tier: object-storage
+provisioner: s3.csi.aws.com
+parameters:
+  mounter: geesefs
+  options: "--memory-limit 1000 --dir-mode 0777 --file-mode 0666"
+  bucket: greenlang-ai-storage
+  region: us-east-1
+volumeBindingMode: Immediate
+reclaimPolicy: Delete
+
+---
+# Volume Snapshot Class for backups
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: greenlang-snapshot-class
+  labels:
+    app: greenlang-agent
+driver: ebs.csi.aws.com
+deletionPolicy: Retain
+parameters:
+  encrypted: "true"
+
+---
+# Volume Snapshot for models backup
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: greenlang-models-snapshot
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+spec:
+  volumeSnapshotClassName: greenlang-snapshot-class
+  source:
+    persistentVolumeClaimName: greenlang-models-pvc

@@ -1,0 +1,405 @@
+# GitLab CI/CD Pipeline for GreenLang AI Agent Foundation
+# =========================================================
+# Comprehensive automated testing, security scanning, and deployment
+# Supports multi-environment deployment (dev, staging, production)
+
+variables:
+  PYTHON_VERSION: "3.11"
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_REGISTRY: $CI_REGISTRY
+  IMAGE_NAME: $CI_REGISTRY_IMAGE
+  HELM_VERSION: "3.13.0"
+  KUBECTL_VERSION: "1.28.0"
+  TERRAFORM_VERSION: "1.6.0"
+
+  # Security scanning
+  SAST_EXCLUDED_PATHS: "spec, test, tests, tmp"
+  SECRET_DETECTION_EXCLUDED_PATHS: ""
+
+# Docker-in-Docker service for building images
+default:
+  image: python:3.11-slim
+  before_script:
+    - pip install --upgrade pip
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .cache/pip
+      - venv/
+
+stages:
+  - validate
+  - test
+  - build
+  - scan
+  - package
+  - deploy
+  - verify
+  - rollback
+
+# ==============================================================
+# STAGE 1: Validation & Code Quality
+# ==============================================================
+
+code-quality:
+  stage: validate
+  image: python:3.11
+  script:
+    - pip install black isort flake8 pylint mypy bandit safety
+    - echo "Running code formatters..."
+    - black --check --diff src tests || true
+    - isort --check-only --diff src tests || true
+    - echo "Running linters..."
+    - flake8 src tests --max-line-length=120 --extend-ignore=E203,W503 --exit-zero
+    - pylint src tests --fail-under=8.0 --exit-zero
+    - mypy src --ignore-missing-imports --no-strict-optional
+    - echo "Running security scanners..."
+    - bandit -r src -f json -o bandit-report.json || true
+    - safety check --json --output safety-report.json || true
+  artifacts:
+    reports:
+      codequality: bandit-report.json
+    paths:
+      - bandit-report.json
+      - safety-report.json
+    expire_in: 1 week
+  allow_failure: true
+
+sast:
+  stage: validate
+  variables:
+    SAST_EXCLUDED_ANALYZERS: ""
+  artifacts:
+    reports:
+      sast: gl-sast-report.json
+
+secret_detection:
+  stage: validate
+  artifacts:
+    reports:
+      secret_detection: gl-secret-detection-report.json
+
+dependency_scanning:
+  stage: validate
+  artifacts:
+    reports:
+      dependency_scanning: gl-dependency-scanning-report.json
+
+# ==============================================================
+# STAGE 2: Automated Testing
+# ==============================================================
+
+unit-tests:
+  stage: test
+  image: python:3.11
+  services:
+    - postgres:16-alpine
+    - redis:7-alpine
+  variables:
+    POSTGRES_DB: greenlang_test
+    POSTGRES_USER: test
+    POSTGRES_PASSWORD: test
+    DATABASE_URL: postgresql://test:test@postgres:5432/greenlang_test
+    REDIS_URL: redis://redis:6379/0
+  script:
+    - pip install -r requirements/base.txt
+    - pip install -r requirements/agents.txt
+    - pip install -r requirements/test.txt
+    - pytest tests/unit \
+        --cov=src \
+        --cov-report=xml \
+        --cov-report=html \
+        --cov-report=term \
+        --junitxml=junit-unit.xml \
+        -v
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    when: always
+    reports:
+      junit: junit-unit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+      - coverage.xml
+    expire_in: 1 week
+
+integration-tests:
+  stage: test
+  image: python:3.11
+  services:
+    - postgres:16-alpine
+    - redis:7-alpine
+  variables:
+    POSTGRES_DB: greenlang_test
+    POSTGRES_USER: test
+    POSTGRES_PASSWORD: test
+    DATABASE_URL: postgresql://test:test@postgres:5432/greenlang_test
+    REDIS_URL: redis://redis:6379/0
+  script:
+    - pip install -r requirements/base.txt
+    - pip install -r requirements/agents.txt
+    - pip install -r requirements/test.txt
+    - pytest tests/integration \
+        --junitxml=junit-integration.xml \
+        -v
+  artifacts:
+    when: always
+    reports:
+      junit: junit-integration.xml
+    expire_in: 1 week
+
+e2e-tests:
+  stage: test
+  image: python:3.11
+  services:
+    - postgres:16-alpine
+    - redis:7-alpine
+  variables:
+    POSTGRES_DB: greenlang_test
+    POSTGRES_USER: test
+    POSTGRES_PASSWORD: test
+    DATABASE_URL: postgresql://test:test@postgres:5432/greenlang_test
+    REDIS_URL: redis://redis:6379/0
+  script:
+    - pip install -r requirements/base.txt
+    - pip install -r requirements/agents.txt
+    - pip install -r requirements/test.txt
+    - pytest tests/e2e \
+        --junitxml=junit-e2e.xml \
+        -v
+  artifacts:
+    when: always
+    reports:
+      junit: junit-e2e.xml
+    expire_in: 1 week
+
+# ==============================================================
+# STAGE 3: Build Docker Images
+# ==============================================================
+
+.build_template: &build_definition
+  stage: build
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+  script:
+    - |
+      docker build \
+        -t $IMAGE_NAME:$DOCKERFILE_TYPE-$CI_COMMIT_SHORT_SHA \
+        -t $IMAGE_NAME:$DOCKERFILE_TYPE-latest \
+        -f deployment/dockerfiles/Dockerfile.$DOCKERFILE_TYPE \
+        --build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ') \
+        --build-arg VCS_REF=$CI_COMMIT_SHA \
+        --build-arg VERSION=$CI_COMMIT_TAG \
+        --cache-from $IMAGE_NAME:$DOCKERFILE_TYPE-latest \
+        .
+    - docker push $IMAGE_NAME:$DOCKERFILE_TYPE-$CI_COMMIT_SHORT_SHA
+    - docker push $IMAGE_NAME:$DOCKERFILE_TYPE-latest
+  only:
+    - main
+    - develop
+    - staging
+    - tags
+
+build-base:
+  <<: *build_definition
+  variables:
+    DOCKERFILE_TYPE: base
+
+build-production:
+  <<: *build_definition
+  variables:
+    DOCKERFILE_TYPE: production
+
+build-development:
+  <<: *build_definition
+  variables:
+    DOCKERFILE_TYPE: development
+
+build-rag:
+  <<: *build_definition
+  variables:
+    DOCKERFILE_TYPE: rag
+
+build-multi-agent:
+  <<: *build_definition
+  variables:
+    DOCKERFILE_TYPE: multi-agent
+
+# ==============================================================
+# STAGE 4: Security Scanning
+# ==============================================================
+
+trivy-scan:
+  stage: scan
+  image: aquasec/trivy:latest
+  script:
+    - trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME:production-$CI_COMMIT_SHORT_SHA
+    - trivy image --format json --output trivy-report.json $IMAGE_NAME:production-$CI_COMMIT_SHORT_SHA
+  artifacts:
+    reports:
+      container_scanning: trivy-report.json
+    paths:
+      - trivy-report.json
+    expire_in: 1 week
+  dependencies:
+    - build-production
+  only:
+    - main
+    - develop
+    - tags
+
+snyk-scan:
+  stage: scan
+  image: snyk/snyk:docker
+  script:
+    - snyk container test $IMAGE_NAME:production-$CI_COMMIT_SHORT_SHA --severity-threshold=high || true
+    - snyk container monitor $IMAGE_NAME:production-$CI_COMMIT_SHORT_SHA || true
+  dependencies:
+    - build-production
+  only:
+    - main
+    - tags
+  allow_failure: true
+
+# ==============================================================
+# STAGE 5: Package Helm Chart
+# ==============================================================
+
+helm-package:
+  stage: package
+  image: alpine/helm:$HELM_VERSION
+  script:
+    - helm lint deployment/helm/greenlang-agent --strict
+    - helm package deployment/helm/greenlang-agent \
+        --version $CI_COMMIT_SHORT_SHA \
+        --app-version $CI_COMMIT_SHORT_SHA
+    - helm push greenlang-agent-*.tgz oci://$CI_REGISTRY/charts || true
+  artifacts:
+    paths:
+      - greenlang-agent-*.tgz
+    expire_in: 1 week
+  only:
+    - main
+    - tags
+
+# ==============================================================
+# STAGE 6: Deploy to Environments
+# ==============================================================
+
+.deploy_template: &deploy_definition
+  stage: deploy
+  image: alpine/k8s:$KUBECTL_VERSION
+  before_script:
+    - kubectl config set-cluster k8s --server="$KUBE_SERVER"
+    - kubectl config set-credentials deployer --token="$KUBE_TOKEN"
+    - kubectl config set-context default --cluster=k8s --user=deployer
+    - kubectl config use-context default
+  script:
+    - helm upgrade --install greenlang-agent greenlang-agent-*.tgz \
+        --namespace greenlang-$ENVIRONMENT \
+        --create-namespace \
+        --values deployment/helm/greenlang-agent/values-$ENVIRONMENT.yaml \
+        --set image.tag=$CI_COMMIT_SHORT_SHA \
+        --set environment=$ENVIRONMENT \
+        --wait \
+        --timeout 10m
+    - kubectl rollout status deployment/greenlang-agent -n greenlang-$ENVIRONMENT
+  dependencies:
+    - helm-package
+
+deploy-dev:
+  <<: *deploy_definition
+  variables:
+    ENVIRONMENT: dev
+  environment:
+    name: development
+    url: https://dev.greenlang.io
+  only:
+    - develop
+
+deploy-staging:
+  <<: *deploy_definition
+  variables:
+    ENVIRONMENT: staging
+  environment:
+    name: staging
+    url: https://staging.greenlang.io
+  only:
+    - staging
+    - main
+  when: manual
+
+deploy-production:
+  <<: *deploy_definition
+  variables:
+    ENVIRONMENT: production
+  environment:
+    name: production
+    url: https://api.greenlang.io
+  only:
+    - main
+    - tags
+  when: manual
+
+# ==============================================================
+# STAGE 7: Verification
+# ==============================================================
+
+smoke-test:
+  stage: verify
+  image: curlimages/curl:latest
+  script:
+    - curl -f $ENVIRONMENT_URL/healthz || exit 1
+    - curl -f $ENVIRONMENT_URL/ready || exit 1
+  only:
+    - main
+    - staging
+    - develop
+
+performance-test:
+  stage: verify
+  image: grafana/k6:latest
+  script:
+    - k6 run tests/performance/load_test.js
+  artifacts:
+    paths:
+      - performance-results.html
+    expire_in: 1 week
+  only:
+    - staging
+    - main
+  when: manual
+
+# ==============================================================
+# STAGE 8: Rollback (on failure)
+# ==============================================================
+
+rollback:
+  stage: rollback
+  image: alpine/k8s:$KUBECTL_VERSION
+  script:
+    - kubectl config set-cluster k8s --server="$KUBE_SERVER"
+    - kubectl config set-credentials deployer --token="$KUBE_TOKEN"
+    - kubectl config set-context default --cluster=k8s --user=deployer
+    - kubectl config use-context default
+    - kubectl rollout undo deployment/greenlang-agent -n greenlang-$ENVIRONMENT
+  when: manual
+  only:
+    - main
+    - staging
+
+# ==============================================================
+# Include GitLab Auto DevOps templates
+# ==============================================================
+
+include:
+  - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml

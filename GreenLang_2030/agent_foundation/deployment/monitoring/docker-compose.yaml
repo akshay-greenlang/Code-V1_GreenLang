@@ -1,0 +1,300 @@
+# Docker Compose for GreenLang Observability Stack
+# =================================================
+# Local development setup for monitoring infrastructure
+
+version: '3.8'
+
+networks:
+  monitoring:
+    driver: bridge
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  elasticsearch_data:
+  jaeger_data:
+
+services:
+  # Prometheus - Metrics collection and storage
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: greenlang-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yaml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--storage.tsdb.retention.time=30d'
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
+      - ./alerting_rules.yaml:/etc/prometheus/alerting_rules.yaml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Grafana - Visualization and dashboards
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: greenlang-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3000
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana_dashboards:/etc/grafana/provisioning/dashboards
+      - ./grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Jaeger - Distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:1.51
+    container_name: greenlang-jaeger
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "5775:5775/udp"  # Zipkin compact
+      - "6831:6831/udp"  # Jaeger compact
+      - "6832:6832/udp"  # Jaeger binary
+      - "5778:5778"      # Config endpoint
+      - "16686:16686"    # UI
+      - "14268:14268"    # Collector HTTP
+      - "14250:14250"    # gRPC
+      - "9411:9411"      # Zipkin
+      - "4317:4317"      # OTLP gRPC
+      - "4318:4318"      # OTLP HTTP
+    networks:
+      - monitoring
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:14269/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Elasticsearch - Log storage and search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: greenlang-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=true
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Kibana - Log visualization
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: greenlang-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - SERVER_NAME=kibana
+      - SERVER_HOST=0.0.0.0
+    ports:
+      - "5601:5601"
+    networks:
+      - monitoring
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5601/api/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # AlertManager - Alert routing and notification
+  alertmanager:
+    image: prom/alertmanager:v0.26.0
+    container_name: greenlang-alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/config.yaml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./alertmanager-config.yaml:/etc/alertmanager/config.yaml
+    ports:
+      - "9093:9093"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Node Exporter - Infrastructure metrics
+  node-exporter:
+    image: prom/node-exporter:v1.7.0
+    container_name: greenlang-node-exporter
+    command:
+      - '--path.rootfs=/host'
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Postgres Exporter - Database metrics
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.15.0
+    container_name: greenlang-postgres-exporter
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:password@postgres:5432/greenlang?sslmode=disable
+    ports:
+      - "9187:9187"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Redis Exporter - Cache metrics
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.55.0
+    container_name: greenlang-redis-exporter
+    environment:
+      - REDIS_ADDR=redis:6379
+    ports:
+      - "9121:9121"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Blackbox Exporter - Endpoint monitoring
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.24.0
+    container_name: greenlang-blackbox-exporter
+    command:
+      - '--config.file=/etc/blackbox/config.yaml'
+    volumes:
+      - ./blackbox-config.yaml:/etc/blackbox/config.yaml
+    ports:
+      - "9115:9115"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # OpenTelemetry Collector - Telemetry aggregation
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.91.0
+    container_name: greenlang-otel-collector
+    command:
+      - '--config=/etc/otel-collector-config.yaml'
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+      - "8888:8888"   # Prometheus metrics
+      - "8889:8889"   # Prometheus exporter
+      - "13133:13133" # Health check
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Fluent Bit - Log forwarding
+  fluent-bit:
+    image: fluent/fluent-bit:2.2.0
+    container_name: greenlang-fluent-bit
+    volumes:
+      - ./fluent-bit-config.conf:/fluent-bit/etc/fluent-bit.conf
+      - /var/log:/var/log:ro
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - monitoring
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+
+  # Mock Database (PostgreSQL)
+  postgres:
+    image: postgres:16-alpine
+    container_name: greenlang-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=greenlang
+    ports:
+      - "5432:5432"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+  # Mock Cache (Redis)
+  redis:
+    image: redis:7-alpine
+    container_name: greenlang-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - monitoring
+    restart: unless-stopped
+
+# Health check script
+  healthcheck:
+    image: curlimages/curl:8.5.0
+    container_name: greenlang-healthcheck
+    depends_on:
+      - prometheus
+      - grafana
+      - jaeger
+      - elasticsearch
+      - kibana
+    networks:
+      - monitoring
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 30 &&
+        echo 'Checking Prometheus...' && curl -f http://prometheus:9090/-/healthy &&
+        echo 'Checking Grafana...' && curl -f http://grafana:3000/api/health &&
+        echo 'Checking Jaeger...' && curl -f http://jaeger:14269/ &&
+        echo 'Checking Elasticsearch...' && curl -f http://elasticsearch:9200/_cluster/health &&
+        echo 'All services healthy!' ||
+        echo 'Some services failed health check'
+      "
+    restart: "no"

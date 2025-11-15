@@ -1,0 +1,374 @@
+{
+  "dashboard": {
+    "uid": "agent-perf-dashboard",
+    "title": "Agent Performance Dashboard - GreenLang",
+    "description": "Detailed agent metrics, lifecycle tracking, and performance analysis",
+    "tags": ["agents", "performance", "llm"],
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-3h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Agent State Distribution",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(greenlang_agents_agent_count) by (state)",
+            "legendFormat": "{{state}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "pieType": "donut",
+          "displayLabels": ["name", "percent"],
+          "legendDisplayMode": "table",
+          "legendPlacement": "right",
+          "legendValues": ["value", "percent"]
+        }
+      },
+      {
+        "id": 2,
+        "title": "Agent Lifecycle Transitions",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 16, "x": 8, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(rate(greenlang_agents_agent_count[5m])) by (state)",
+            "legendFormat": "{{state}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 20,
+              "gradientMode": "opacity",
+              "spanNulls": false,
+              "showPoints": "never",
+              "stacking": {
+                "mode": "normal",
+                "group": "A"
+              }
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Inter-Agent Communication Flow",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(greenlang_agents_messages_processed[5m])) by (agent_type, message_type)",
+            "legendFormat": "{{agent_type}} - {{message_type}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "msg/s",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "gradientMode": "opacity"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {"mode": "multi"},
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["lastNotNull", "mean"]
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Task Success Rate by Agent Type",
+        "type": "bargauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "(1 - (sum(rate(greenlang_agents_error_rate[5m])) by (agent_type) / sum(rate(greenlang_agents_messages_processed[5m])) by (agent_type))) * 100",
+            "legendFormat": "{{agent_type}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "valueMode": "color",
+          "showUnfilled": true,
+          "minVizWidth": 0,
+          "minVizHeight": 10
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 95},
+                {"color": "green", "value": 99}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "LLM API Usage",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 18},
+        "targets": [
+          {
+            "expr": "sum(rate(greenlang_agents_api_calls{api=\"llm\"}[5m])) by (method)",
+            "legendFormat": "{{method}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {"format": "reqps", "show": true},
+          {"format": "currencyUSD", "show": true}
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "custom": {
+              "drawStyle": "bars",
+              "lineInterpolation": "smooth",
+              "barAlignment": -1,
+              "lineWidth": 1,
+              "fillOpacity": 50,
+              "gradientMode": "opacity"
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Token Usage & Costs",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 18},
+        "targets": [
+          {
+            "expr": "sum(increase(greenlang_agents_api_calls{api=\"llm\"}[1h])) * 1000",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "displayName": "Tokens Used (1h)",
+            "decimals": 0
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "LLM Cost Rate",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 18},
+        "targets": [
+          {
+            "expr": "sum(rate(greenlang_agents_api_calls{api=\"llm\"}[5m])) * 0.002 * 3600",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "displayName": "$/hour",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 10},
+                {"color": "red", "value": 50}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Agent Memory Usage Heatmap",
+        "type": "heatmap",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 26},
+        "targets": [
+          {
+            "expr": "greenlang_agents_memory_usage_bytes / 1024 / 1024",
+            "format": "heatmap",
+            "legendFormat": "{{agent_id}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "calculate": false,
+          "cellGap": 1,
+          "cellValues": {"decimals": 0},
+          "color": {
+            "mode": "scheme",
+            "scheme": "Spectral",
+            "steps": 128,
+            "reverse": false
+          },
+          "exemplars": {"color": "rgba(255,0,255,0.7)"},
+          "filterValues": {"le": 1e-9},
+          "tooltip": {"show": true, "yHistogram": true},
+          "yAxis": {
+            "axisPlacement": "left",
+            "reverse": false,
+            "unit": "decmbytes"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Agent Task Completion Time Distribution",
+        "type": "histogram",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 36},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(greenlang_agents_task_completion_time_bucket[5m])) by (le, agent_type))",
+            "legendFormat": "{{agent_type}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "bucketDataBound": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "lineWidth": 1,
+              "fillOpacity": 80,
+              "gradientMode": "none"
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Agent Performance Metrics",
+        "type": "table",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 36},
+        "targets": [
+          {
+            "expr": "topk(10, greenlang_agents_memory_usage_bytes) by (agent_id)",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true
+              },
+              "renameByName": {
+                "agent_id": "Agent ID",
+                "Value": "Memory (MB)"
+              }
+            }
+          },
+          {
+            "id": "calculateField",
+            "options": {
+              "mode": "binary",
+              "reduce": {
+                "reducer": "lastNotNull"
+              },
+              "binary": {
+                "left": "Memory (MB)",
+                "operator": "/",
+                "right": "1048576"
+              },
+              "alias": "Memory MB"
+            }
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "displayMode": "auto",
+              "align": "auto"
+            },
+            "unit": "decmbytes"
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "agent_type",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(greenlang_agents_agent_count, type)",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "includeAll": true,
+          "multi": true
+        },
+        {
+          "name": "agent_id",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(greenlang_agents_memory_usage_bytes, agent_id)",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "includeAll": true
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(greenlang_agents_agent_count[5m]) > 0",
+          "iconColor": "orange",
+          "name": "Agent State Changes",
+          "step": "10s"
+        }
+      ]
+    },
+    "schemaVersion": 38,
+    "version": 1
+  },
+  "overwrite": true
+}

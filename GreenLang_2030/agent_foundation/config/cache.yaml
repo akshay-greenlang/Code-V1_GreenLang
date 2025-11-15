@@ -1,0 +1,425 @@
+# GreenLang Cache Configuration
+# Production-ready 4-tier caching system
+
+# ==============================================================================
+# REDIS CLUSTER CONFIGURATION
+# ==============================================================================
+
+redis:
+  # Deployment mode: standalone, sentinel, cluster
+  mode: standalone
+
+  # Standalone configuration
+  standalone:
+    host: localhost
+    port: 6379
+    password: null
+    db: 0
+
+  # Sentinel configuration (for high availability)
+  sentinel:
+    enabled: false
+    master_name: mymaster
+    hosts:
+      - host: localhost
+        port: 26379
+      - host: localhost
+        port: 26380
+      - host: localhost
+        port: 26381
+
+  # Cluster configuration (for horizontal scaling)
+  cluster:
+    enabled: false
+    nodes:
+      - host: localhost
+        port: 7000
+      - host: localhost
+        port: 7001
+      - host: localhost
+        port: 7002
+
+  # Connection pool settings
+  connection_pool:
+    max_connections: 50
+    socket_timeout: 5.0
+    socket_connect_timeout: 5.0
+    retry_on_timeout: true
+    max_retries: 3
+
+  # Health check settings
+  health_check:
+    enabled: true
+    interval_seconds: 30
+
+  # Persistence settings
+  persistence:
+    enabled: true
+    rdb:
+      enabled: true
+      # Save if at least 1 key changed in 900s, 10 keys in 300s, or 10000 keys in 60s
+      save_rules:
+        - seconds: 900
+          changes: 1
+        - seconds: 300
+          changes: 10
+        - seconds: 60
+          changes: 10000
+    aof:
+      enabled: true
+      fsync: everysec  # always, everysec, no
+      rewrite_percentage: 100
+      rewrite_min_size_mb: 64
+
+  # Eviction policy
+  eviction:
+    policy: allkeys-lru  # allkeys-lru, volatile-lru, allkeys-lfu, volatile-lfu, allkeys-random, volatile-random, volatile-ttl, noeviction
+    max_memory_mb: 2048
+
+
+# ==============================================================================
+# L1 CACHE - IN-MEMORY (FASTEST)
+# ==============================================================================
+
+cache_l1:
+  enabled: true
+  description: "In-memory LRU cache for ultra-fast access"
+
+  # Size limits
+  max_size_mb: 5.0
+  max_entries: 1000
+
+  # TTL settings
+  ttl_seconds: 60
+
+  # Eviction policy
+  eviction_policy: lru  # lru, lfu
+
+  # Serialization
+  serialization_format: pickle  # pickle for Python objects
+  compression_enabled: false
+
+  # Use cases
+  use_cases:
+    - "Hot data (accessed >10 times/min)"
+    - "Session data"
+    - "Rate limiting counters"
+    - "Temporary computation results"
+
+
+# ==============================================================================
+# L2 CACHE - LOCAL REDIS (FAST)
+# ==============================================================================
+
+cache_l2:
+  enabled: true
+  description: "Local Redis cache for fast cross-process access"
+
+  # Size limits
+  max_size_mb: 100.0
+  max_entries: 10000
+
+  # TTL settings
+  ttl_seconds: 300
+
+  # Eviction policy
+  eviction_policy: lru
+
+  # Serialization
+  serialization_format: json  # json for portability
+  compression_enabled: false
+
+  # Use cases
+  use_cases:
+    - "User profiles"
+    - "Configuration data"
+    - "API responses"
+    - "Lookup tables"
+
+
+# ==============================================================================
+# L3 CACHE - REDIS CLUSTER (SCALABLE)
+# ==============================================================================
+
+cache_l3:
+  enabled: true
+  description: "Redis cluster cache for scalable distributed caching"
+
+  # Size limits
+  max_size_mb: 10240.0  # 10GB
+  max_entries: 100000
+
+  # TTL settings
+  ttl_seconds: 3600  # 1 hour
+
+  # Eviction policy
+  eviction_policy: allkeys-lru
+
+  # Serialization
+  serialization_format: json
+  compression_enabled: true  # Enable compression for large data
+  compression_level: 6  # gzip compression level (1-9)
+
+  # Use cases
+  use_cases:
+    - "Historical data"
+    - "Report caches"
+    - "Materialized query results"
+    - "Large datasets"
+
+
+# ==============================================================================
+# L4 CACHE - POSTGRESQL MATERIALIZED VIEWS (PERSISTENT)
+# ==============================================================================
+
+cache_l4:
+  enabled: false
+  description: "PostgreSQL materialized views for persistent caching"
+
+  # Refresh strategy
+  refresh:
+    strategy: on_demand  # on_demand, scheduled, incremental
+    schedule_cron: "0 */6 * * *"  # Every 6 hours
+    incremental_enabled: true
+
+  # Materialized views
+  views:
+    - name: mv_emission_factors_by_region
+      description: "Cached emission factors grouped by region"
+      refresh_interval_hours: 24
+
+    - name: mv_user_activity_summary
+      description: "Aggregated user activity data"
+      refresh_interval_hours: 6
+
+    - name: mv_report_metadata
+      description: "Report metadata for fast lookups"
+      refresh_interval_hours: 12
+
+  # Use cases
+  use_cases:
+    - "Aggregated reports"
+    - "Historical analytics"
+    - "Data warehouse queries"
+    - "Regulatory reports"
+
+
+# ==============================================================================
+# CACHE WARMING CONFIGURATION
+# ==============================================================================
+
+cache_warming:
+  enabled: true
+  description: "Preload frequently accessed data on startup"
+
+  # Warming strategy
+  strategy: priority_based  # all, priority_based, pattern_based
+
+  # Warming patterns (key patterns to preload)
+  patterns:
+    - pattern: "emission_factor:*"
+      priority: high
+      tier: l3
+
+    - pattern: "config:*"
+      priority: high
+      tier: l2
+
+    - pattern: "user_profile:active:*"
+      priority: medium
+      tier: l2
+
+    - pattern: "regulatory_rules:*"
+      priority: high
+      tier: l3
+
+  # Batch settings
+  batch_size: 100
+  max_warming_time_seconds: 300  # 5 minutes max
+
+  # Parallel warming
+  parallel_workers: 4
+
+
+# ==============================================================================
+# CACHE INVALIDATION CONFIGURATION
+# ==============================================================================
+
+invalidation:
+  # Default strategy
+  default_strategy: ttl_based  # ttl_based, write_through, event_driven, pattern_based
+
+  # TTL-based invalidation
+  ttl_based:
+    enabled: true
+    grace_period_seconds: 10  # Allow stale reads for this period
+
+  # Write-through invalidation
+  write_through:
+    enabled: true
+    invalidate_related: true
+    related_patterns:
+      user_update:
+        - "user:{user_id}:*"
+        - "session:{user_id}:*"
+      emission_factor_update:
+        - "emission_factor:*"
+        - "calculation:*:emission_factor"
+
+  # Event-driven invalidation
+  event_driven:
+    enabled: false
+    events:
+      - event: user.updated
+        invalidate_patterns:
+          - "user:{user_id}:*"
+      - event: data.imported
+        invalidate_patterns:
+          - "report:*"
+          - "calculation:*"
+
+  # Pattern-based invalidation
+  pattern_based:
+    enabled: true
+    # Patterns that invalidate together
+    invalidation_groups:
+      - name: user_data
+        patterns:
+          - "user:{user_id}:*"
+          - "profile:{user_id}:*"
+          - "preferences:{user_id}:*"
+      - name: calculation_data
+        patterns:
+          - "calculation:*"
+          - "emission_factor:*"
+          - "activity_data:*"
+
+
+# ==============================================================================
+# MONITORING AND METRICS
+# ==============================================================================
+
+monitoring:
+  enabled: true
+
+  # Metrics collection
+  metrics:
+    enabled: true
+    collection_interval_seconds: 60
+
+    # Target metrics
+    targets:
+      hit_rate_l1: 0.85  # Target 85% hit rate for L1
+      hit_rate_l2: 0.80  # Target 80% hit rate for L2
+      hit_rate_l3: 0.70  # Target 70% hit rate for L3
+      avg_get_time_l1_ms: 1.0  # Target <1ms for L1
+      avg_get_time_l2_ms: 5.0  # Target <5ms for L2
+      avg_get_time_l3_ms: 20.0  # Target <20ms for L3
+
+  # Alerting
+  alerts:
+    enabled: true
+
+    # Alert thresholds
+    thresholds:
+      - metric: hit_rate_l1
+        operator: less_than
+        value: 0.70
+        severity: warning
+        message: "L1 cache hit rate below 70%"
+
+      - metric: hit_rate_l2
+        operator: less_than
+        value: 0.60
+        severity: warning
+        message: "L2 cache hit rate below 60%"
+
+      - metric: redis_memory_usage_percent
+        operator: greater_than
+        value: 90
+        severity: critical
+        message: "Redis memory usage above 90%"
+
+      - metric: redis_latency_ms
+        operator: greater_than
+        value: 100
+        severity: warning
+        message: "Redis latency above 100ms"
+
+
+# ==============================================================================
+# PRODUCTION SETTINGS
+# ==============================================================================
+
+production:
+  # Enable production optimizations
+  optimizations_enabled: true
+
+  # Connection pooling
+  connection_pooling:
+    enabled: true
+    min_connections: 10
+    max_connections: 50
+    idle_timeout_seconds: 300
+
+  # Retry settings
+  retry:
+    enabled: true
+    max_retries: 3
+    backoff_strategy: exponential
+    initial_backoff_ms: 100
+    max_backoff_ms: 5000
+
+  # Circuit breaker (prevent cascading failures)
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5  # Open circuit after 5 failures
+    recovery_timeout_seconds: 60
+    half_open_max_requests: 3
+
+  # Rate limiting (prevent cache stampede)
+  rate_limiting:
+    enabled: true
+    max_requests_per_second: 10000
+    burst_size: 1000
+
+
+# ==============================================================================
+# DEVELOPMENT SETTINGS
+# ==============================================================================
+
+development:
+  # Disable production features in dev
+  circuit_breaker_enabled: false
+  rate_limiting_enabled: false
+
+  # Enable debug logging
+  debug_logging: true
+  log_cache_operations: true
+
+  # Shorter TTLs for testing
+  override_ttls:
+    l1: 10  # 10 seconds
+    l2: 30  # 30 seconds
+    l3: 60  # 1 minute
+
+
+# ==============================================================================
+# TESTING SETTINGS
+# ==============================================================================
+
+testing:
+  # Use in-memory Redis for tests
+  use_fakeredis: true
+
+  # Disable persistence in tests
+  persistence_enabled: false
+
+  # Disable cache warming in tests
+  cache_warming_enabled: false
+
+  # Shorter TTLs
+  ttl_seconds: 1
+
+  # Enable detailed metrics
+  detailed_metrics: true

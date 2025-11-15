@@ -1,0 +1,261 @@
+# GL-001 ProcessHeatOrchestrator - Kubernetes Service
+# Production-grade service configuration with multiple endpoints
+# Provides stable endpoint for load balancing across pods
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-process-heat
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    version: "1.0.0"
+    component: "orchestration"
+    tier: "backend"
+  annotations:
+    description: "Service for GL-001 ProcessHeatOrchestrator"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"  # Network Load Balancer for AWS
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"  # Internal LB only
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8001"
+    prometheus.io/path: "/api/v1/metrics"
+
+spec:
+  # ClusterIP for internal-only service
+  # External access via Ingress controller
+  type: ClusterIP
+
+  # Selector matches deployment labels
+  selector:
+    app: gl-001-process-heat
+    agent: "GL-001"
+
+  # Port configuration
+  ports:
+    # Main API endpoint
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+      appProtocol: http
+
+    # Metrics endpoint for Prometheus scraping
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+      appProtocol: http
+
+    # Admin interface (internal only)
+    - name: admin
+      port: 8002
+      targetPort: 8002
+      protocol: TCP
+      appProtocol: http
+
+  # Session affinity for stateful connections
+  # Important for maintaining agent state across requests
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+  # IP family policy (dual-stack support)
+  ipFamilyPolicy: PreferDualStack
+  ipFamilies:
+    - IPv4
+    - IPv6
+
+---
+# Headless Service for StatefulSet and service discovery
+# Allows direct pod-to-pod communication for agent coordination
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-process-heat-headless
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    version: "1.0.0"
+    service-type: "headless"
+  annotations:
+    description: "Headless service for GL-001 agent discovery and coordination"
+
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service - returns pod IPs directly
+  publishNotReadyAddresses: true  # Include non-ready pods for coordination
+
+  selector:
+    app: gl-001-process-heat
+    agent: "GL-001"
+
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+    - name: admin
+      port: 8002
+      targetPort: 8002
+      protocol: TCP
+
+---
+# External LoadBalancer Service (for production external access)
+# Comment out if using Ingress controller instead
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-process-heat-lb
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    version: "1.0.0"
+    service-type: "loadbalancer"
+  annotations:
+    description: "External LoadBalancer for GL-001 (production)"
+    # AWS-specific annotations
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-internal: "false"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-connection-draining-timeout: "60"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "2"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "2"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "10"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "5"
+    # Azure-specific annotations
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+    # GCP-specific annotations
+    cloud.google.com/load-balancer-type: "Internal"
+
+spec:
+  type: LoadBalancer
+
+  selector:
+    app: gl-001-process-heat
+    agent: "GL-001"
+
+  ports:
+    # HTTPS endpoint (TLS termination at LB)
+    - name: https
+      port: 443
+      targetPort: 8000
+      protocol: TCP
+
+    # Metrics endpoint (internal monitoring only)
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+
+  # Preserve client source IP
+  externalTrafficPolicy: Local
+
+  # Session affinity
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+  # Load balancer source IP ranges (restrict access)
+  loadBalancerSourceRanges:
+    - 10.0.0.0/8     # Internal VPC
+    - 172.16.0.0/12  # Private network
+    - 192.168.0.0/16 # Local network
+
+---
+# NodePort Service (for development/testing environments)
+# Allows access via node IP:port
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-001-process-heat-nodeport
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    version: "1.0.0"
+    service-type: "nodeport"
+    environment: "development"
+  annotations:
+    description: "NodePort service for GL-001 (development only)"
+
+spec:
+  type: NodePort
+
+  selector:
+    app: gl-001-process-heat
+    agent: "GL-001"
+
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      nodePort: 30001  # Fixed node port for predictability
+      protocol: TCP
+
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      nodePort: 30002
+      protocol: TCP
+
+    - name: admin
+      port: 8002
+      targetPort: 8002
+      nodePort: 30003
+      protocol: TCP
+
+  sessionAffinity: ClientIP
+
+---
+# Service Monitor for Prometheus Operator
+# Automatically configures Prometheus to scrape metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-001-process-heat
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    prometheus: kube-prometheus
+
+spec:
+  selector:
+    matchLabels:
+      app: gl-001-process-heat
+      agent: "GL-001"
+
+  endpoints:
+    - port: metrics
+      interval: 15s
+      path: /api/v1/metrics
+      scheme: http
+
+      # Metric relabeling
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'go_.*'
+          action: drop  # Drop Go runtime metrics to reduce noise
+
+      # Relabel instance to pod name
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+
+  # Namespace selector
+  namespaceSelector:
+    matchNames:
+      - greenlang

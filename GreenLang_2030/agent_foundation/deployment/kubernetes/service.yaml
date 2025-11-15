@@ -1,0 +1,194 @@
+# Kubernetes Services for GreenLang AI Agents
+
+---
+# ClusterIP Service for internal communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-agent-service
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    component: ai-agent
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+  selector:
+    app: greenlang-agent
+    component: ai-agent
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+  - name: grpc
+    port: 50051
+    targetPort: 50051
+    protocol: TCP
+
+---
+# Headless Service for StatefulSet (if using multi-agent)
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-agent-headless
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    component: ai-agent
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app: greenlang-agent
+    component: ai-agent
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    protocol: TCP
+  - name: grpc
+    port: 50051
+    targetPort: 50051
+    protocol: TCP
+
+---
+# Network Load Balancer (NLB) for Multi-AZ High Availability
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-agent-lb
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    component: ai-agent
+  annotations:
+    # AWS Network Load Balancer - Layer 4 TCP
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
+    service.beta.kubernetes.io/aws-load-balancer-scheme: "internet-facing"
+
+    # Cross-zone load balancing for Multi-AZ HA
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+    # TLS termination at load balancer
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-east-1:123456789:certificate/abcd"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "https"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-negotiation-policy: "ELBSecurityPolicy-TLS-1-2-2017-01"
+
+    # Health check configuration
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: "http"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "8000"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/healthz"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "30"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-timeout: "10"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-healthy-threshold: "2"
+    service.beta.kubernetes.io/aws-load-balancer-healthcheck-unhealthy-threshold: "2"
+
+    # Connection draining
+    service.beta.kubernetes.io/aws-load-balancer-connection-draining-enabled: "true"
+    service.beta.kubernetes.io/aws-load-balancer-connection-draining-timeout: "60"
+
+    # Additional attributes
+    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: "Environment=production,Service=greenlang-agent,HA=multi-az"
+
+    # GCP LoadBalancer annotations (alternative)
+    cloud.google.com/load-balancer-type: "External"
+    cloud.google.com/neg: '{"ingress": true}'
+
+    # Azure LoadBalancer annotations (alternative)
+    service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+spec:
+  type: LoadBalancer
+
+  # Session affinity - ClientIP for 3 hours (10800 seconds)
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+  # Source IP ranges (adjust for production)
+  loadBalancerSourceRanges:
+  - 0.0.0.0/0  # Open to internet (adjust for production security)
+
+  selector:
+    app: greenlang-agent
+    component: ai-agent
+
+  ports:
+  - name: https
+    port: 443
+    targetPort: 8000
+    protocol: TCP
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: grpc
+    port: 50051
+    targetPort: 50051
+    protocol: TCP
+
+---
+# Service for metrics endpoint
+apiVersion: v1
+kind: Service
+metadata:
+  name: greenlang-agent-metrics
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    component: metrics
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: greenlang-agent
+  ports:
+  - name: metrics
+    port: 9090
+    targetPort: 9090
+    protocol: TCP
+
+---
+# Service Monitor for Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: greenlang-agent-monitor
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-agent
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+    scheme: http
+    scrapeTimeout: 10s
+    relabelings:
+    - sourceLabels: [__meta_kubernetes_pod_name]
+      targetLabel: pod
+    - sourceLabels: [__meta_kubernetes_namespace]
+      targetLabel: namespace
+    - sourceLabels: [__meta_kubernetes_pod_label_version]
+      targetLabel: version

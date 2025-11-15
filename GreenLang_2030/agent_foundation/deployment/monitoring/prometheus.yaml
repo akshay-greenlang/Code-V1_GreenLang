@@ -1,0 +1,152 @@
+# Prometheus Configuration for GreenLang Agent Foundation
+# ========================================================
+# Production-grade Prometheus setup with service discovery,
+# recording rules, and alerting configuration
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'greenlang-prod'
+    environment: 'production'
+    team: 'agent-platform'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Recording and alerting rules
+rule_files:
+  - "/etc/prometheus/alerting_rules.yaml"
+  - "/etc/prometheus/recording_rules.yaml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # GreenLang Agent metrics
+  - job_name: 'greenlang-agents'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - greenlang
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+        target_label: __address__
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: kubernetes_namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: kubernetes_pod_name
+
+  # Node Exporter for infrastructure metrics
+  - job_name: 'node-exporter'
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - source_labels: [__address__]
+        regex: '(.*):10250'
+        replacement: '${1}:9100'
+        target_label: __address__
+
+  # Kubernetes API server
+  - job_name: 'kubernetes-apiservers'
+    kubernetes_sd_configs:
+      - role: endpoints
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+
+  # Database metrics (PostgreSQL)
+  - job_name: 'postgresql'
+    static_configs:
+      - targets:
+          - 'postgres-exporter:9187'
+        labels:
+          database: 'greenlang'
+          instance_type: 'primary'
+
+  # Redis metrics
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+          - 'redis-exporter:9121'
+        labels:
+          cache_type: 'redis'
+          cluster: 'greenlang-cache'
+
+  # Application-specific endpoints
+  - job_name: 'greenlang-api'
+    metrics_path: '/api/v1/metrics'
+    static_configs:
+      - targets:
+          - 'api.greenlang.io:443'
+        labels:
+          service: 'api'
+          tier: 'frontend'
+
+  # Blackbox exporter for endpoint monitoring
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://api.greenlang.io/health
+          - https://api.greenlang.io/api/v1/agents
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+# Remote write for long-term storage
+remote_write:
+  - url: "https://prometheus-storage.greenlang.io/api/v1/write"
+    basic_auth:
+      username: greenlang
+      password_file: /etc/prometheus/remote_write_password
+    write_relabel_configs:
+      # Only write important metrics for long-term storage
+      - source_labels: [__name__]
+        regex: 'greenlang_.*|up|.*_error_rate|.*_latency_.*'
+        action: keep
+
+# Remote read for querying historical data
+remote_read:
+  - url: "https://prometheus-storage.greenlang.io/api/v1/read"
+    basic_auth:
+      username: greenlang
+      password_file: /etc/prometheus/remote_read_password
+    read_recent: true

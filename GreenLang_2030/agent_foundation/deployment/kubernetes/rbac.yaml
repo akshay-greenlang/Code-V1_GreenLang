@@ -1,0 +1,245 @@
+# RBAC Configuration for GreenLang AI Agents
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-ai
+  labels:
+    name: greenlang-ai
+    istio-injection: enabled  # Enable Istio sidecar injection
+
+---
+# Service Account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-agent-sa
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+  annotations:
+    # AWS IAM Role annotation (for IRSA)
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789:role/greenlang-agent-role
+    # GCP Workload Identity annotation
+    iam.gke.io/gcp-service-account: greenlang-agent@project-id.iam.gserviceaccount.com
+    # Azure Workload Identity annotation
+    azure.workload.identity/client-id: "12345678-1234-1234-1234-123456789012"
+
+---
+# Role for agent pods
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-agent-role
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+rules:
+# Allow reading ConfigMaps
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+
+# Allow reading Secrets
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list"]
+
+# Allow reading Services
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list"]
+
+# Allow reading Pods (for multi-agent discovery)
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+# Allow creating Events (for logging)
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+
+# Allow reading Endpoints (for service discovery)
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["get", "list", "watch"]
+
+# Allow updating own status
+- apiGroups: [""]
+  resources: ["pods/status"]
+  verbs: ["patch"]
+
+---
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-agent-rolebinding
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+subjects:
+- kind: ServiceAccount
+  name: greenlang-agent-sa
+  namespace: greenlang-ai
+roleRef:
+  kind: Role
+  name: greenlang-agent-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ClusterRole for cross-namespace operations
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: greenlang-agent-cluster-role
+  labels:
+    app: greenlang-agent
+rules:
+# Allow reading nodes (for resource awareness)
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+
+# Allow reading namespaces
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list"]
+
+# Allow reading custom resource definitions
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["get", "list"]
+
+---
+# ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: greenlang-agent-cluster-rolebinding
+  labels:
+    app: greenlang-agent
+subjects:
+- kind: ServiceAccount
+  name: greenlang-agent-sa
+  namespace: greenlang-ai
+roleRef:
+  kind: ClusterRole
+  name: greenlang-agent-cluster-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# PodSecurityPolicy (deprecated in K8s 1.25+, use PodSecurityStandard instead)
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: greenlang-agent-psp
+  labels:
+    app: greenlang-agent
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+  - ALL
+  allowedCapabilities:
+  - NET_BIND_SERVICE
+  volumes:
+  - 'configMap'
+  - 'emptyDir'
+  - 'projected'
+  - 'secret'
+  - 'downwardAPI'
+  - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'RunAsAny'
+  readOnlyRootFilesystem: true
+
+---
+# Role for PSP
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-agent-psp-role
+  namespace: greenlang-ai
+rules:
+- apiGroups: ['policy']
+  resources: ['podsecuritypolicies']
+  verbs: ['use']
+  resourceNames:
+  - greenlang-agent-psp
+
+---
+# RoleBinding for PSP
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-agent-psp-rolebinding
+  namespace: greenlang-ai
+roleRef:
+  kind: Role
+  name: greenlang-agent-psp-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: greenlang-agent-sa
+  namespace: greenlang-ai
+
+---
+# ResourceQuota for namespace
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-ai-quota
+  namespace: greenlang-ai
+spec:
+  hard:
+    requests.cpu: "50"
+    requests.memory: "100Gi"
+    requests.storage: "500Gi"
+    limits.cpu: "100"
+    limits.memory: "200Gi"
+    persistentvolumeclaims: "10"
+    pods: "50"
+    services: "20"
+    secrets: "50"
+    configmaps: "50"
+
+---
+# LimitRange for default resource constraints
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-ai-limitrange
+  namespace: greenlang-ai
+spec:
+  limits:
+  - max:
+      cpu: "4"
+      memory: "8Gi"
+    min:
+      cpu: "100m"
+      memory: "128Mi"
+    default:
+      cpu: "500m"
+      memory: "1Gi"
+    defaultRequest:
+      cpu: "250m"
+      memory: "512Mi"
+    type: Container
+  - max:
+      storage: "100Gi"
+    min:
+      storage: "1Gi"
+    type: PersistentVolumeClaim

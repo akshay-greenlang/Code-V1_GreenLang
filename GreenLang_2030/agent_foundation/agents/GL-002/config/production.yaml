@@ -1,0 +1,448 @@
+# GL-002 BoilerEfficiencyOptimizer - Production Configuration
+# Optimized for performance, reliability, and security
+# High availability with redundancy and monitoring
+
+application:
+  name: GL-002 BoilerEfficiencyOptimizer
+  version: 1.0.0
+  environment: production
+  debug: false
+  log_level: INFO
+
+# ==============================================================================
+# API CONFIGURATION
+# ==============================================================================
+
+api:
+  host: 0.0.0.0
+  port: 8000
+  workers: 4
+  timeout: 30
+  max_request_size: 10485760  # 10 MB
+  request_timeout: 60
+
+# ==============================================================================
+# DATABASE CONFIGURATION
+# ==============================================================================
+
+database:
+  # Primary PostgreSQL database
+  engine: postgresql
+  url: ${DATABASE_URL}
+  pool_size: 20
+  max_overflow: 40
+  pool_pre_ping: true
+  pool_recycle: 3600
+  echo: false
+  timeout: 30
+
+  # Connection pooling
+  connection_timeout: 30
+  idle_timeout: 900
+  max_lifetime: 3600
+
+  # Backup database (read-only replica for load distribution)
+  replica_url: ${DATABASE_REPLICA_URL}
+  replica_enabled: true
+
+  # SSL/TLS for database connections
+  ssl_mode: require
+  ssl_ca: /etc/ssl/certs/ca-certificates.crt
+
+# ==============================================================================
+# CACHE CONFIGURATION (Redis)
+# ==============================================================================
+
+cache:
+  enabled: true
+  backend: redis
+  url: ${REDIS_URL}
+  default_ttl: 300
+
+  # Connection pool
+  socket_timeout: 5
+  socket_connect_timeout: 5
+  max_connections: 50
+
+  # Sentinel (for high availability)
+  sentinel_enabled: false
+  sentinel_master: mymaster
+  sentinel_nodes:
+    - host: sentinel-1.greenlang.io
+      port: 26379
+    - host: sentinel-2.greenlang.io
+      port: 26379
+    - host: sentinel-3.greenlang.io
+      port: 26379
+
+  # Redis Cluster
+  cluster_enabled: false
+  cluster_nodes:
+    - host: redis-1.greenlang.io
+      port: 6379
+    - host: redis-2.greenlang.io
+      port: 6379
+    - host: redis-3.greenlang.io
+      port: 6379
+
+# ==============================================================================
+# AUTHENTICATION & SECURITY
+# ==============================================================================
+
+auth:
+  # JWT Configuration
+  jwt_enabled: true
+  jwt_secret: ${JWT_SECRET}
+  jwt_algorithm: HS256
+  jwt_expiration_hours: 24
+  jwt_refresh_enabled: true
+  jwt_refresh_token_ttl_days: 30
+
+  # API Key Authentication
+  api_key_enabled: true
+  api_key_header: X-API-Key
+  api_key_validation_cache_ttl: 3600
+
+  # OAuth2 (if needed)
+  oauth2_enabled: false
+  oauth2_provider: auth0
+  oauth2_client_id: ${OAUTH2_CLIENT_ID}
+  oauth2_client_secret: ${OAUTH2_CLIENT_SECRET}
+
+  # CORS
+  cors_enabled: true
+  cors_origins:
+    - https://app.greenlang.ai
+    - https://admin.greenlang.ai
+  cors_allow_credentials: true
+  cors_allow_methods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  cors_max_age: 86400
+
+# ==============================================================================
+# SECURITY & TLS
+# ==============================================================================
+
+security:
+  # TLS/SSL
+  tls_enabled: false  # Use Kubernetes Ingress for TLS termination
+  tls_cert_path: /etc/ssl/certs/tls.crt
+  tls_key_path: /etc/ssl/private/tls.key
+  tls_min_version: "1.2"
+
+  # Security Headers
+  security_headers:
+    X-Frame-Options: DENY
+    X-Content-Type-Options: nosniff
+    X-XSS-Protection: "1; mode=block"
+    Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+    Referrer-Policy: strict-origin-when-cross-origin
+    Permissions-Policy: "geolocation=(), microphone=(), camera=()"
+
+  # Rate limiting
+  rate_limiting_enabled: true
+  rate_limit_per_minute: 100
+  rate_limit_burst: 20
+
+  # Input validation
+  input_validation_enabled: true
+  max_json_request_size: 10485760  # 10 MB
+
+  # HTTPS redirect
+  https_redirect_enabled: true
+
+# ==============================================================================
+# LOGGING & MONITORING
+# ==============================================================================
+
+logging:
+  level: INFO
+  format: json
+
+  # File logging
+  file_enabled: true
+  file_path: /app/logs/gl-002.log
+  file_max_size_mb: 100
+  file_backup_count: 10
+  file_retention_days: 30
+
+  # Structured logging
+  structured_logging: true
+  include_timestamp: true
+  include_request_id: true
+  include_user_id: true
+
+  # Log aggregation
+  syslog_enabled: false
+  syslog_host: localhost
+  syslog_port: 514
+
+# Monitoring and metrics
+monitoring:
+  enabled: true
+  metrics_port: 8001
+  metrics_path: /api/v1/metrics
+
+  # Prometheus
+  prometheus_enabled: true
+  prometheus_scrape_interval: 30
+
+  # Custom metrics
+  track_request_latency: true
+  track_error_rates: true
+  track_business_metrics: true
+
+  # Health checks
+  health_check_interval: 30
+  readiness_check_interval: 10
+
+# ==============================================================================
+# BOILER OPTIMIZATION CONFIGURATION
+# ==============================================================================
+
+optimization:
+  # Default strategy
+  default_strategy: fuel_efficiency
+
+  # Optimization strategies
+  strategies:
+    fuel_efficiency:
+      weight: 0.5
+      min_improvement: 1.0
+      max_optimization_time: 300
+
+    emissions_reduction:
+      weight: 0.3
+      min_improvement: 0.5
+      max_optimization_time: 300
+
+    cost_optimization:
+      weight: 0.2
+      min_improvement: 2.0
+      max_optimization_time: 300
+
+  # Constraints and limits
+  constraints:
+    max_concurrent_optimizations: 10
+    optimization_timeout_seconds: 300
+    min_load_percent: 25.0
+    max_load_percent: 100.0
+
+  # Performance tuning
+  batch_processing_enabled: true
+  batch_size: 100
+  caching_enabled: true
+  cache_ttl_seconds: 300
+
+# ==============================================================================
+# BOILER PARAMETERS
+# ==============================================================================
+
+boiler:
+  # Default operating parameters
+  default_excess_air_percent: 3.0
+  default_min_load_percent: 25.0
+  default_max_load_percent: 100.0
+
+  # Safety limits
+  safety:
+    max_combustion_temp_c: 1200
+    min_combustion_temp_c: 400
+    max_pressure_bar: 200
+    min_pressure_bar: 1
+
+# ==============================================================================
+# EMISSIONS COMPLIANCE
+# ==============================================================================
+
+emissions:
+  monitoring_interval_seconds: 60
+  compliance_check_interval_seconds: 300
+
+  # Regulatory limits
+  limits:
+    nox_ppm: 30
+    co_ppm: 100
+    so2_ppm: 75
+    co2_intensity_kg_mwh: 800
+
+  # Compliance alerts
+  alert_on_approach: true
+  alert_threshold_percent: 90
+
+# ==============================================================================
+# FEATURE FLAGS
+# ==============================================================================
+
+features:
+  economizer_analysis: true
+  fuel_switching: true
+  blowdown_optimization: true
+  predictive_maintenance: false
+  heat_recovery_analysis: true
+  multi_fuel_optimization: true
+
+# ==============================================================================
+# EXTERNAL INTEGRATIONS
+# ==============================================================================
+
+integrations:
+  # SCADA/DCS
+  scada:
+    enabled: true
+    protocol: OPC_UA
+    host: ${SCADA_HOST}
+    port: 4840
+    timeout: 30
+    retry_count: 3
+
+  # Fuel Management System
+  fuel_management:
+    enabled: true
+    api_url: ${FUEL_MANAGEMENT_API_URL}
+    api_key: ${FUEL_MANAGEMENT_API_KEY}
+    timeout: 30
+
+  # Emissions Monitoring
+  emissions_monitoring:
+    enabled: true
+    broker: ${EMISSIONS_MONITORING_BROKER}
+    port: 8883
+    topic: emissions/boiler/+
+
+  # GL-001 ProcessHeatOrchestrator
+  gl_001:
+    enabled: true
+    api_url: ${GL_001_API_URL}
+    api_key: ${GL_001_API_KEY}
+    timeout: 30
+
+# ==============================================================================
+# ALERTING & NOTIFICATIONS
+# ==============================================================================
+
+alerting:
+  # PagerDuty
+  pagerduty:
+    enabled: true
+    api_key: ${PAGERDUTY_API_KEY}
+    service_id: ${PAGERDUTY_SERVICE_ID}
+
+  # Slack
+  slack:
+    enabled: true
+    webhook_url: ${SLACK_WEBHOOK_URL}
+    alert_channel: "#boiler-alerts"
+    mention_on_critical: true
+
+  # Email
+  email:
+    enabled: true
+    smtp_host: ${EMAIL_SMTP_HOST}
+    smtp_port: 587
+    smtp_user: ${EMAIL_SMTP_USER}
+    smtp_password: ${EMAIL_SMTP_PASSWORD}
+    from_address: ${EMAIL_FROM_ADDRESS}
+    recipients:
+      - ops@greenlang.ai
+      - sustainability@greenlang.ai
+
+  # Alert thresholds
+  thresholds:
+    efficiency_degradation_percent: 5.0
+    emissions_exceedance_percent: 10.0
+    fuel_cost_increase_percent: 15.0
+
+# ==============================================================================
+# KUBERNETES DEPLOYMENT
+# ==============================================================================
+
+kubernetes:
+  enabled: true
+  namespace: greenlang
+
+  # Pod configuration
+  replicas: 3
+  min_replicas: 2
+  max_replicas: 5
+
+  # Resource limits
+  resources:
+    requests:
+      memory: 512Mi
+      cpu: 500m
+    limits:
+      memory: 1024Mi
+      cpu: 1000m
+
+  # Probes
+  liveness_probe:
+    initial_delay: 40
+    period: 10
+    timeout: 5
+
+  readiness_probe:
+    initial_delay: 10
+    period: 5
+    timeout: 3
+
+# ==============================================================================
+# PERFORMANCE OPTIMIZATION
+# ==============================================================================
+
+performance:
+  # Connection pooling
+  db_connection_pool_size: 20
+  redis_connection_pool_size: 50
+
+  # Request processing
+  max_concurrent_requests: 100
+  request_queue_size: 1000
+
+  # Caching
+  enable_request_caching: true
+  enable_response_caching: true
+  cache_ttl_seconds: 300
+
+  # Compression
+  enable_gzip_compression: true
+  gzip_min_size_bytes: 1024
+
+# ==============================================================================
+# MAINTENANCE & UPDATES
+# ==============================================================================
+
+maintenance:
+  # Graceful shutdown
+  graceful_shutdown_timeout: 30
+
+  # Database migrations
+  auto_migrate: true
+  migration_timeout: 300
+
+  # Health checks
+  health_check_enabled: true
+  health_check_interval: 30
+
+# ==============================================================================
+# DISASTER RECOVERY
+# ==============================================================================
+
+disaster_recovery:
+  # Backup configuration
+  backup_enabled: true
+  backup_interval_hours: 1
+  backup_retention_days: 7
+  backup_location: s3://greenlang-backups/gl-002/
+
+  # Replication
+  replication_enabled: true
+  replication_lag_threshold_seconds: 5
+
+  # Recovery
+  rto_hours: 4  # Recovery Time Objective
+  rpo_hours: 1  # Recovery Point Objective

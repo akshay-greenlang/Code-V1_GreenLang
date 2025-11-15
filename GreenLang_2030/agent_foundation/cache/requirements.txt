@@ -1,0 +1,22 @@
+# GreenLang Cache Infrastructure Requirements
+# Production-ready Redis and 4-tier caching system
+
+# Redis client with AsyncIO support
+redis[hiredis]>=5.0.0,<6.0.0  # AsyncIO Redis client with hiredis parser (faster)
+
+# In-memory caching
+cachetools>=5.3.0,<6.0.0  # LRU/TTL cache implementations
+
+# Data validation and serialization
+pydantic>=2.5.0,<3.0.0  # Type-safe data models
+
+# Configuration
+pyyaml>=6.0.1,<7.0.0  # YAML configuration files
+
+# Optional: High-performance serialization
+# msgpack>=1.0.7,<2.0.0  # Faster than JSON for binary data
+
+# Optional: Compression
+# python-snappy>=0.6.1,<1.0.0  # Fast compression for large values
+
+# Development and testing dependencies (install with: pip install -r requirements-dev.txt)

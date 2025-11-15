@@ -1,0 +1,233 @@
+# GL-002 BoilerEfficiencyOptimizer - Network Policy
+# Zero-trust networking with explicit ingress/egress rules
+# Restricts pod communication to only required services
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-002-boiler-efficiency-netpol
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+  annotations:
+    description: "Network policy for GL-002 BoilerEfficiencyOptimizer"
+
+spec:
+  # Apply to GL-002 pods
+  podSelector:
+    matchLabels:
+      app: gl-002-boiler-efficiency
+      agent: "GL-002"
+
+  # Define both ingress and egress
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # INGRESS: Allow traffic into GL-002
+  ingress:
+    # Allow from Ingress controller (NGINX, etc.)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000  # HTTP port
+
+    # Allow from Prometheus for metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8001  # Metrics port
+
+    # Allow from GL-001 ProcessHeatOrchestrator (parent agent)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gl-001-process-heat
+              agent: "GL-001"
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow from other GL agents (GL-003, GL-004, GL-012)
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: agent
+                operator: In
+                values:
+                  - "GL-003"
+                  - "GL-004"
+                  - "GL-012"
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow from load balancer/service mesh (if Istio)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow DNS queries (from kube-dns)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+  # EGRESS: Allow traffic out of GL-002
+  egress:
+    # Allow to PostgreSQL database
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+          podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow to Redis cache
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: cache
+          podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow to external APIs (if needed)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS for external APIs
+
+    # Allow DNS queries
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow to Kubernetes API server
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: default
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# NetworkPolicy for database access (PostgreSQL)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-002-database-access
+  namespace: database
+  labels:
+    app: postgresql
+    policy: gl-002-access
+
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: gl-002-boiler-efficiency
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# NetworkPolicy for Redis access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-002-redis-access
+  namespace: cache
+  labels:
+    app: redis
+    policy: gl-002-access
+
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: gl-002-boiler-efficiency
+      ports:
+        - protocol: TCP
+          port: 6379
+
+---
+# Default deny all traffic (after permitting required traffic)
+# This ensures "default deny, whitelist allow" policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-default-deny
+  namespace: greenlang
+  labels:
+    app: default-policy
+
+spec:
+  podSelector: {}  # Apply to all pods
+  policyTypes:
+    - Ingress
+    - Egress
+
+# Note: This is permissive for other GreenLang agents
+# For maximum security, use explicit whitelist above

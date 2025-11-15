@@ -1,0 +1,289 @@
+# Kubernetes Ingress for GreenLang AI Agents
+
+---
+# NGINX Ingress Controller
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-agent-ingress
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+  annotations:
+    # NGINX configuration
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+    nginx.ingress.kubernetes.io/limit-connections: "10"
+
+    # Timeout configuration
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+
+    # Load balancing
+    nginx.ingress.kubernetes.io/load-balance: "ewma"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains";
+
+    # TLS
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/acme-challenge-type: "http01"
+
+    # Monitoring
+    nginx.ingress.kubernetes.io/enable-metrics: "true"
+    nginx.ingress.kubernetes.io/enable-opentelemetry: "true"
+
+spec:
+  tls:
+  - hosts:
+    - api.greenlang.io
+    - agents.greenlang.io
+    secretName: greenlang-tls-cert
+
+  rules:
+  - host: api.greenlang.io
+    http:
+      paths:
+      - path: /api/v1/agents
+        pathType: Prefix
+        backend:
+          service:
+            name: greenlang-agent-service
+            port:
+              number: 80
+
+      - path: /api/v1/health
+        pathType: Prefix
+        backend:
+          service:
+            name: greenlang-agent-service
+            port:
+              number: 80
+
+  - host: agents.greenlang.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: greenlang-agent-service
+            port:
+              number: 80
+
+---
+# Ingress for gRPC traffic
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: greenlang-agent-grpc-ingress
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - grpc.greenlang.io
+    secretName: greenlang-grpc-tls-cert
+  rules:
+  - host: grpc.greenlang.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: greenlang-agent-service
+            port:
+              number: 50051
+
+---
+# Istio VirtualService (for service mesh)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-agent-vs
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+spec:
+  hosts:
+  - api.greenlang.io
+  - greenlang-agent-service
+  gateways:
+  - greenlang-gateway
+  - mesh  # For internal traffic
+  http:
+  # Canary deployment (10% to v2, 90% to v1)
+  - match:
+    - headers:
+        x-version:
+          exact: v2
+    route:
+    - destination:
+        host: greenlang-agent-service
+        subset: v2
+  - route:
+    - destination:
+        host: greenlang-agent-service
+        subset: v1
+      weight: 90
+    - destination:
+        host: greenlang-agent-service
+        subset: v2
+      weight: 10
+    timeout: 300s
+    retries:
+      attempts: 3
+      perTryTimeout: 60s
+      retryOn: 5xx,reset,connect-failure,refused-stream
+
+---
+# Istio Gateway
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: greenlang-gateway
+  namespace: greenlang-ai
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: greenlang-tls-cert
+    hosts:
+    - api.greenlang.io
+    - agents.greenlang.io
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    tls:
+      httpsRedirect: true
+    hosts:
+    - api.greenlang.io
+    - agents.greenlang.io
+
+---
+# Istio DestinationRule
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-agent-dr
+  namespace: greenlang-ai
+spec:
+  host: greenlang-agent-service
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 2
+    loadBalancer:
+      consistentHash:
+        httpHeaderName: x-user-id
+    outlierDetection:
+      consecutiveErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minHealthPercent: 50
+  subsets:
+  - name: v1
+    labels:
+      version: v1.0.0
+  - name: v2
+    labels:
+      version: v2.0.0
+
+---
+# Traefik IngressRoute (alternative to NGINX)
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: greenlang-agent-traefik
+  namespace: greenlang-ai
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - match: Host(`api.greenlang.io`) && PathPrefix(`/api/v1`)
+    kind: Rule
+    services:
+    - name: greenlang-agent-service
+      port: 80
+    middlewares:
+    - name: rate-limit
+    - name: compress
+    - name: security-headers
+  tls:
+    secretName: greenlang-tls-cert
+
+---
+# Traefik Middlewares
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: rate-limit
+  namespace: greenlang-ai
+spec:
+  rateLimit:
+    average: 100
+    burst: 200
+    period: 1m
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: compress
+  namespace: greenlang-ai
+spec:
+  compress: {}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: security-headers
+  namespace: greenlang-ai
+spec:
+  headers:
+    customResponseHeaders:
+      X-Frame-Options: "DENY"
+      X-Content-Type-Options: "nosniff"
+      X-XSS-Protection: "1; mode=block"
+      Strict-Transport-Security: "max-age=31536000; includeSubDomains"
+    sslRedirect: true
+    sslForceHost: true

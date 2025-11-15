@@ -1,0 +1,88 @@
+# RAG-Enabled Agent Dockerfile for GreenLang
+# Includes vector databases and embedding models
+
+# Use base agent image
+ARG BASE_IMAGE=greenlang/agent-base:latest
+FROM ${BASE_IMAGE} as base
+
+# Switch to root for installation
+USER root
+
+# Stage 1: Install vector database clients and tools
+RUN apt-get update && apt-get install -y \
+    postgresql-client \
+    redis-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install RAG-specific Python packages
+RUN pip install --no-cache-dir \
+    chromadb==0.4.22 \
+    qdrant-client==1.7.0 \
+    weaviate-client==4.4.1 \
+    pinecone-client==3.0.0 \
+    pgvector==0.2.4 \
+    faiss-cpu==1.7.4 \
+    sentence-transformers==2.2.2 \
+    langchain==0.1.0 \
+    langchain-community==0.0.10 \
+    llama-index==0.9.29 \
+    tiktoken==0.5.2 \
+    unstructured==0.11.6 \
+    pypdf==3.17.4 \
+    python-docx==1.1.0 \
+    markdown==3.5.1 \
+    beautifulsoup4==4.12.2
+
+# Stage 2: Download and cache embedding models
+ENV TRANSFORMERS_CACHE=/app/models/transformers \
+    SENTENCE_TRANSFORMERS_HOME=/app/models/sentence-transformers \
+    HF_HOME=/app/models/huggingface
+
+# Create model directories
+RUN mkdir -p ${TRANSFORMERS_CACHE} ${SENTENCE_TRANSFORMERS_HOME} ${HF_HOME} && \
+    chown -R greenlang:greenlang /app/models
+
+# Pre-download popular embedding models
+RUN python -c "from sentence_transformers import SentenceTransformer; \
+    SentenceTransformer('all-MiniLM-L6-v2'); \
+    SentenceTransformer('all-mpnet-base-v2')"
+
+# Stage 3: Configure RAG components
+COPY --chown=greenlang:greenlang configs/rag_config.yaml /app/configs/
+COPY --chown=greenlang:greenlang src/rag /app/src/rag
+COPY --chown=greenlang:greenlang scripts/rag_init.py /app/scripts/
+
+# Create data directories for RAG
+RUN mkdir -p /app/data/documents /app/data/embeddings /app/data/indices && \
+    chown -R greenlang:greenlang /app/data
+
+# Switch back to non-root user
+USER greenlang
+
+# Environment variables for RAG
+ENV RAG_ENABLED=true \
+    EMBEDDING_MODEL=all-MiniLM-L6-v2 \
+    VECTOR_DB_TYPE=chromadb \
+    CHUNK_SIZE=512 \
+    CHUNK_OVERLAP=50 \
+    MAX_RETRIEVAL_RESULTS=5 \
+    SIMILARITY_THRESHOLD=0.7
+
+# Volume mounts for persistent data
+VOLUME ["/app/data/documents", "/app/data/embeddings", "/app/models"]
+
+# Expose additional ports for vector databases
+EXPOSE 8000 8001 6333 8080
+
+# Health check for RAG services
+HEALTHCHECK --interval=30s --timeout=15s --start-period=90s --retries=3 \
+    CMD python /app/scripts/rag_health_check.py || exit 1
+
+# Override default command for RAG agent
+CMD ["python", "-m", "greenlang.rag.server", "--config", "/app/configs/rag_config.yaml"]
+
+# Metadata
+LABEL description="RAG-enabled GreenLang AI Agent with vector database support" \
+      rag.enabled="true" \
+      rag.models="all-MiniLM-L6-v2,all-mpnet-base-v2" \
+      rag.vectordb="chromadb,qdrant,weaviate,pinecone"

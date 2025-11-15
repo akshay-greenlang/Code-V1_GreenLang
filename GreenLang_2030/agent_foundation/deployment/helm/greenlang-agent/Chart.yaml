@@ -1,0 +1,58 @@
+apiVersion: v2
+name: greenlang-agent
+description: A Helm chart for deploying GreenLang AI Agents on Kubernetes
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - ai
+  - agent
+  - llm
+  - greenlang
+  - chatbot
+  - rag
+
+home: https://github.com/greenlang/agent-foundation
+sources:
+  - https://github.com/greenlang/agent-foundation
+
+maintainers:
+  - name: GreenLang DevOps Team
+    email: devops@greenlang.io
+    url: https://greenlang.io
+
+icon: https://greenlang.io/images/logo.png
+
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
+    tags:
+      - database
+
+  - name: redis
+    version: "17.x.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+    tags:
+      - cache
+
+  - name: prometheus
+    version: "15.x.x"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus.enabled
+    tags:
+      - monitoring
+
+  - name: grafana
+    version: "6.x.x"
+    repository: https://grafana.github.io/helm-charts
+    condition: grafana.enabled
+    tags:
+      - monitoring
+
+annotations:
+  category: AI/ML
+  licenses: Apache-2.0

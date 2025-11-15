@@ -1,0 +1,520 @@
+{
+  "dashboard": {
+    "uid": "quality-dashboard",
+    "title": "Quality Dashboard - GreenLang",
+    "description": "Code quality metrics, test coverage, and 12-dimension quality framework",
+    "tags": ["quality", "testing", "compliance"],
+    "timezone": "browser",
+    "refresh": "1h",
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Overall Quality Score",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 8, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "greenlang_agents_quality_score_overall",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "displayName": "Quality Score",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "orange", "value": 60},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 85}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true,
+          "text": {
+            "titleSize": 24,
+            "valueSize": 40
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "12-Dimension Quality Framework",
+        "type": "bargauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 16, "x": 8, "y": 0},
+        "targets": [
+          {
+            "expr": "greenlang_agents_quality_functional_quality",
+            "legendFormat": "Functional Quality",
+            "refId": "A"
+          },
+          {
+            "expr": "greenlang_agents_quality_performance_efficiency",
+            "legendFormat": "Performance",
+            "refId": "B"
+          },
+          {
+            "expr": "greenlang_agents_quality_compatibility",
+            "legendFormat": "Compatibility",
+            "refId": "C"
+          },
+          {
+            "expr": "greenlang_agents_quality_usability",
+            "legendFormat": "Usability",
+            "refId": "D"
+          },
+          {
+            "expr": "greenlang_agents_quality_reliability",
+            "legendFormat": "Reliability",
+            "refId": "E"
+          },
+          {
+            "expr": "greenlang_agents_quality_security",
+            "legendFormat": "Security",
+            "refId": "F"
+          },
+          {
+            "expr": "greenlang_agents_quality_maintainability",
+            "legendFormat": "Maintainability",
+            "refId": "G"
+          },
+          {
+            "expr": "greenlang_agents_quality_portability",
+            "legendFormat": "Portability",
+            "refId": "H"
+          },
+          {
+            "expr": "greenlang_agents_quality_scalability",
+            "legendFormat": "Scalability",
+            "refId": "I"
+          },
+          {
+            "expr": "greenlang_agents_quality_interoperability",
+            "legendFormat": "Interoperability",
+            "refId": "J"
+          },
+          {
+            "expr": "greenlang_agents_quality_reusability",
+            "legendFormat": "Reusability",
+            "refId": "K"
+          },
+          {
+            "expr": "greenlang_agents_quality_testability",
+            "legendFormat": "Testability",
+            "refId": "L"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "valueMode": "color",
+          "showUnfilled": true,
+          "minVizWidth": 0,
+          "minVizHeight": 20
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 0.7},
+                {"color": "green", "value": 0.85}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Test Coverage",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 10},
+        "targets": [
+          {
+            "expr": "greenlang_agents_test_coverage{test_type=\"unit\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "displayName": "Unit Test Coverage",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 85}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Integration Test Coverage",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 10},
+        "targets": [
+          {
+            "expr": "greenlang_agents_test_coverage{test_type=\"integration\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "displayName": "Integration Tests",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 60},
+                {"color": "green", "value": 80}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "E2E Test Coverage",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 10},
+        "targets": [
+          {
+            "expr": "greenlang_agents_test_coverage{test_type=\"e2e\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "displayName": "E2E Tests",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 50},
+                {"color": "green", "value": 70}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Test Automation",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 10},
+        "targets": [
+          {
+            "expr": "(sum(greenlang_agents_test_coverage{test_type=~\"unit|integration|e2e\"}) / 3)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "displayName": "Automation Rate",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 90},
+                {"color": "green", "value": 95}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Quality Trends Over Time",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 14},
+        "targets": [
+          {
+            "expr": "greenlang_agents_quality_score_overall",
+            "legendFormat": "Overall Score",
+            "refId": "A"
+          },
+          {
+            "expr": "greenlang_agents_quality_security",
+            "legendFormat": "Security",
+            "refId": "B"
+          },
+          {
+            "expr": "greenlang_agents_quality_reliability",
+            "legendFormat": "Reliability",
+            "refId": "C"
+          },
+          {
+            "expr": "greenlang_agents_quality_maintainability",
+            "legendFormat": "Maintainability",
+            "refId": "D"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "gradientMode": "opacity",
+              "spanNulls": false,
+              "showPoints": "never"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {"mode": "multi"},
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["lastNotNull", "mean", "min", "max"]
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Test Execution Time",
+        "type": "histogram",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(greenlang_agents_test_execution_time_bucket[24h])) by (le, test_suite))",
+            "legendFormat": "{{test_suite}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "bucketDataBound": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "lineWidth": 1,
+              "fillOpacity": 70,
+              "gradientMode": "none"
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Code Quality Metrics",
+        "type": "table",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+        "targets": [
+          {
+            "expr": "greenlang_agents_quality_maintainability",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true
+              }
+            }
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "displayMode": "color-background",
+              "align": "center"
+            },
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 0.7},
+                {"color": "green", "value": 0.85}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Security Vulnerabilities",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 32},
+        "targets": [
+          {
+            "expr": "sum(greenlang_agents_quality_security{metric=\"vulnerabilities\", status=\"critical\"})",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "displayName": "Critical Vulns",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 1},
+                {"color": "red", "value": 5}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Technical Debt",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 32},
+        "targets": [
+          {
+            "expr": "(1 - greenlang_agents_quality_maintainability) * 100",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "displayName": "Tech Debt",
+            "min": 0,
+            "max": 30,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 10},
+                {"color": "red", "value": 20}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 12,
+        "title": "Compliance Status",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 32},
+        "targets": [
+          {
+            "expr": "greenlang_agents_quality_security{metric=\"compliance\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "displayName": "Compliance",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 0.95},
+                {"color": "green", "value": 1}
+              ]
+            },
+            "mappings": [
+              {"type": "value", "value": 1, "text": "COMPLIANT"},
+              {"type": "value", "value": 0, "text": "NON-COMPLIANT"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Documentation Coverage",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 32},
+        "targets": [
+          {
+            "expr": "greenlang_agents_quality_usability{metric=\"documentation\"}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "displayName": "Doc Coverage",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 90}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "custom",
+          "current": {
+            "text": "production",
+            "value": "production"
+          },
+          "options": [
+            {"text": "production", "value": "production"},
+            {"text": "staging", "value": "staging"},
+            {"text": "development", "value": "development"}
+          ]
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(greenlang_agents_quality_score_overall[1h]) < -5",
+          "iconColor": "red",
+          "name": "Quality Drops",
+          "step": "1h"
+        }
+      ]
+    },
+    "schemaVersion": 38,
+    "version": 1
+  },
+  "overwrite": true
+}

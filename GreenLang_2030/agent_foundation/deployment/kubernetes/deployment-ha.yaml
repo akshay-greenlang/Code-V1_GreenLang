@@ -1,0 +1,877 @@
+# ============================================================================
+# GreenLang AI Agent - Multi-AZ High Availability Deployment
+# ============================================================================
+#
+# PRODUCTION CONFIGURATION FOR MULTI-AZ HIGH AVAILABILITY
+#
+# Architecture:
+# - 9 pods distributed across 3 availability zones (3 pods per AZ)
+# - Hard pod anti-affinity ensures zone-level fault tolerance
+# - Zero-downtime rolling updates with maxUnavailable=0
+# - Horizontal Pod Autoscaler: 9-100 pods based on CPU/Memory
+# - Network Load Balancer (Layer 4) with cross-zone load balancing
+# - Session affinity (ClientIP, 3 hours) for stateful connections
+# - TLS termination at load balancer
+#
+# Deployment Strategy:
+# 1. Apply ConfigMap and Secrets first
+# 2. Deploy StatefulSet dependencies (PostgreSQL, Redis)
+# 3. Apply this deployment manifest
+# 4. Apply HPA and PDB manifests
+# 5. Verify pod distribution across zones: kubectl get pods -o wide
+#
+# ============================================================================
+
+---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-ai
+  labels:
+    name: greenlang-ai
+    environment: production
+    ha-enabled: "true"
+
+---
+# ServiceAccount with IRSA (IAM Roles for Service Accounts)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-agent-sa
+  namespace: greenlang-ai
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789:role/greenlang-agent-role
+    # GCP Workload Identity
+    iam.gke.io/gcp-service-account: greenlang-agent@project-id.iam.gserviceaccount.com
+    # Azure Workload Identity
+    azure.workload.identity/client-id: "00000000-0000-0000-0000-000000000000"
+
+---
+# RBAC - Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-agent-role
+  namespace: greenlang-ai
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list"]
+
+---
+# RBAC - RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-agent-rolebinding
+  namespace: greenlang-ai
+subjects:
+- kind: ServiceAccount
+  name: greenlang-agent-sa
+  namespace: greenlang-ai
+roleRef:
+  kind: Role
+  name: greenlang-agent-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# ConfigMap - Application Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-config
+  namespace: greenlang-ai
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  MAX_WORKERS: "4"
+  ENABLE_METRICS: "true"
+  ENABLE_TRACING: "true"
+  ENABLE_PROFILING: "false"
+
+  # Multi-AZ Configuration
+  MULTI_AZ_ENABLED: "true"
+  AVAILABILITY_ZONES: "us-east-1a,us-east-1b,us-east-1c"
+  ZONE_AWARE_ROUTING: "true"
+
+  # Performance tuning
+  CONNECTION_POOL_SIZE: "20"
+  MAX_CONNECTIONS: "1000"
+  REQUEST_TIMEOUT: "30"
+  GRACEFUL_SHUTDOWN_TIMEOUT: "60"
+
+  # Health check endpoints
+  STARTUP_ENDPOINT: "/startup"
+  LIVENESS_ENDPOINT: "/healthz"
+  READINESS_ENDPOINT: "/ready"
+
+---
+# ============================================================================
+# DEPLOYMENT - Multi-AZ High Availability Configuration
+# ============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-agent
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    version: v1.0.0
+    component: ai-agent
+    tier: backend
+    ha-enabled: "true"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    description: "Multi-AZ HA deployment with 9 pods across 3 availability zones"
+spec:
+  # ========================================
+  # REPLICA CONFIGURATION - Multi-AZ HA
+  # ========================================
+  replicas: 9  # 3 pods per availability zone (3 AZs × 3 pods = 9 total)
+  revisionHistoryLimit: 10
+
+  # ========================================
+  # ROLLING UPDATE STRATEGY
+  # ========================================
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Add 1 new pod before removing old ones
+      maxUnavailable: 0  # ZERO-DOWNTIME: Never have unavailable pods during update
+
+  selector:
+    matchLabels:
+      app: greenlang-agent
+      component: ai-agent
+
+  template:
+    metadata:
+      labels:
+        app: greenlang-agent
+        version: v1.0.0
+        component: ai-agent
+        tier: backend
+        ha-enabled: "true"
+      annotations:
+        # Prometheus scraping
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+
+        # Logging
+        fluentd.io/parser: "json"
+
+        # Force pod recreation on config change
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+
+    spec:
+      serviceAccountName: greenlang-agent-sa
+
+      # ========================================
+      # SECURITY CONTEXT - Pod Level
+      # ========================================
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+        fsGroupChangePolicy: OnRootMismatch
+
+      # ========================================
+      # AFFINITY RULES - MULTI-AZ HIGH AVAILABILITY
+      # ========================================
+      affinity:
+        # HARD ANTI-AFFINITY: Pods MUST be in different availability zones
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - greenlang-agent
+            # CRITICAL: topology.kubernetes.io/zone ensures AZ-level distribution
+            topologyKey: topology.kubernetes.io/zone
+
+          # SOFT ANTI-AFFINITY: Prefer different nodes within same zone
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - greenlang-agent
+              topologyKey: kubernetes.io/hostname
+
+        # Node affinity for compute-optimized instances
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                - m5.xlarge
+                - m5.2xlarge
+                - m5.4xlarge
+                - m6i.xlarge
+                - m6i.2xlarge
+                - m6i.4xlarge
+              - key: topology.kubernetes.io/zone
+                operator: In
+                values:
+                - us-east-1a
+                - us-east-1b
+                - us-east-1c
+
+          # Prefer on-demand instances over spot
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: kubernetes.io/lifecycle
+                operator: In
+                values:
+                - on-demand
+
+      # ========================================
+      # TOLERATIONS
+      # ========================================
+      tolerations:
+      # GPU nodes (if needed)
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+
+      # Node not ready - wait 5 minutes before eviction
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+
+      # Node unreachable - wait 5 minutes before eviction
+      - key: node.kubernetes.io/unreachable
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+
+      # Spot instance interruption - immediate eviction
+      - key: node.kubernetes.io/instance-interruption
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 0
+
+      # ========================================
+      # TOPOLOGY SPREAD CONSTRAINTS (Additional layer)
+      # ========================================
+      topologySpreadConstraints:
+      # Spread across zones
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: greenlang-agent
+
+      # Spread across nodes
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: greenlang-agent
+
+      # ========================================
+      # PRIORITY AND PREEMPTION
+      # ========================================
+      priorityClassName: high-priority  # Ensure critical workload priority
+
+      # ========================================
+      # INIT CONTAINERS
+      # ========================================
+      initContainers:
+      # Wait for PostgreSQL
+      - name: wait-for-db
+        image: busybox:1.36
+        command: ['sh', '-c']
+        args:
+        - |
+          until nc -z postgres-service 5432; do
+            echo "Waiting for database...";
+            sleep 2;
+          done;
+          echo "Database is ready!"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+
+      # Wait for Redis
+      - name: wait-for-redis
+        image: busybox:1.36
+        command: ['sh', '-c']
+        args:
+        - |
+          until nc -z redis-service 6379; do
+            echo "Waiting for Redis...";
+            sleep 2;
+          done;
+          echo "Redis is ready!"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+
+      # Database migrations
+      - name: migrate-database
+        image: greenlang/agent:v1.0.0
+        command: ['python', '-m', 'greenlang.migrations.run']
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: greenlang-secrets
+              key: database-url
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+
+      # ========================================
+      # MAIN CONTAINER - GreenLang AI Agent
+      # ========================================
+      containers:
+      - name: greenlang-agent
+        image: greenlang/agent:v1.0.0
+        imagePullPolicy: Always
+
+        # Security context - Container level
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+
+        # Ports
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        - name: grpc
+          containerPort: 50051
+          protocol: TCP
+        - name: health
+          containerPort: 8080
+          protocol: TCP
+
+        # ========================================
+        # ENVIRONMENT VARIABLES
+        # ========================================
+        env:
+        # Pod metadata
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+
+        # Availability zone (for zone-aware routing)
+        - name: AVAILABILITY_ZONE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['topology.kubernetes.io/zone']
+
+        # Application settings from ConfigMap
+        envFrom:
+        - configMapRef:
+            name: greenlang-config
+        - secretRef:
+            name: greenlang-secrets
+
+        # ========================================
+        # RESOURCE LIMITS - Production optimized
+        # ========================================
+        resources:
+          requests:
+            memory: "2Gi"     # Increased for production
+            cpu: "1000m"      # 1 CPU core
+            ephemeral-storage: "2Gi"
+          limits:
+            memory: "4Gi"     # Increased limit
+            cpu: "2000m"      # 2 CPU cores max
+            ephemeral-storage: "4Gi"
+            # nvidia.com/gpu: 1  # Uncomment for GPU support
+
+        # ========================================
+        # HEALTH CHECKS - Multi-AZ HA Configuration
+        # ========================================
+
+        # Startup probe - prevents premature liveness/readiness checks
+        startupProbe:
+          httpGet:
+            path: /startup
+            port: 8000
+            scheme: HTTP
+            httpHeaders:
+            - name: X-Probe-Type
+              value: Startup
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 30  # Allow up to 5 minutes for startup
+
+        # Liveness probe - restart if unhealthy
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8000
+            scheme: HTTP
+            httpHeaders:
+            - name: X-Probe-Type
+              value: Liveness
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3  # Restart after 90 seconds of failures
+
+        # Readiness probe - remove from load balancer if not ready
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+            scheme: HTTP
+            httpHeaders:
+            - name: X-Probe-Type
+              value: Readiness
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3  # Remove from LB after 30 seconds
+
+        # ========================================
+        # LIFECYCLE HOOKS
+        # ========================================
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Gracefully shutting down...";
+                kill -SIGTERM 1;
+                sleep 60;  # Wait for connections to drain
+
+          postStart:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Pod started in zone: $AVAILABILITY_ZONE";
+                echo "Pod name: $POD_NAME";
+
+        # ========================================
+        # VOLUME MOUNTS
+        # ========================================
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+          readOnly: false
+        - name: cache
+          mountPath: /app/.cache
+          readOnly: false
+        - name: models
+          mountPath: /app/models
+          readOnly: true
+        - name: config
+          mountPath: /app/configs
+          readOnly: true
+        - name: tls-certs
+          mountPath: /app/certs
+          readOnly: true
+        - name: app-logs
+          mountPath: /var/log/app
+          readOnly: false
+
+      # ========================================
+      # SIDECAR CONTAINERS
+      # ========================================
+
+      # Fluent Bit - Log forwarding
+      - name: log-forwarder
+        image: fluent/fluent-bit:2.2
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - name: app-logs
+          mountPath: /var/log/app
+          readOnly: true
+        - name: fluent-bit-config
+          mountPath: /fluent-bit/etc/
+          readOnly: true
+
+      # Prometheus Node Exporter
+      - name: metrics-exporter
+        image: prom/node-exporter:v1.7.0
+        ports:
+        - containerPort: 9100
+          name: node-metrics
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "25m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+
+      # OpenTelemetry Collector (for distributed tracing)
+      - name: otel-collector
+        image: otel/opentelemetry-collector:0.91.0
+        ports:
+        - containerPort: 4317
+          name: otlp-grpc
+        - containerPort: 4318
+          name: otlp-http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        volumeMounts:
+        - name: otel-config
+          mountPath: /etc/otel/
+          readOnly: true
+
+      # ========================================
+      # VOLUMES
+      # ========================================
+      volumes:
+      # Temporary storage
+      - name: tmp
+        emptyDir:
+          sizeLimit: 2Gi
+          medium: Memory  # Use RAM for /tmp (faster)
+
+      # Cache storage
+      - name: cache
+        emptyDir:
+          sizeLimit: 4Gi
+
+      # Application logs
+      - name: app-logs
+        emptyDir:
+          sizeLimit: 1Gi
+
+      # Persistent volume for ML models
+      - name: models
+        persistentVolumeClaim:
+          claimName: greenlang-models-pvc
+
+      # ConfigMap
+      - name: config
+        configMap:
+          name: greenlang-config
+          defaultMode: 0444
+
+      # TLS certificates
+      - name: tls-certs
+        secret:
+          secretName: greenlang-tls
+          defaultMode: 0400
+
+      # Fluent Bit configuration
+      - name: fluent-bit-config
+        configMap:
+          name: fluent-bit-config
+
+      # OpenTelemetry configuration
+      - name: otel-config
+        configMap:
+          name: otel-collector-config
+
+      # ========================================
+      # IMAGE PULL SECRETS
+      # ========================================
+      imagePullSecrets:
+      - name: greenlang-registry-secret
+
+      # ========================================
+      # DNS & NETWORKING
+      # ========================================
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+        - name: ndots
+          value: "2"
+        - name: edns0
+
+      # ========================================
+      # RESTART & TERMINATION
+      # ========================================
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60  # Allow 60 seconds for graceful shutdown
+
+---
+# ============================================================================
+# HORIZONTAL POD AUTOSCALER - Multi-AZ HA
+# ============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-agent-hpa
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-agent
+
+  # Scale from 9 to 100 pods (maintain 3 per AZ at minimum)
+  minReplicas: 9    # 3 pods per AZ × 3 AZs
+  maxReplicas: 100  # Scale up to 100 pods for high traffic
+
+  # Scaling behavior
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # Wait 5 minutes before scaling down
+      policies:
+      - type: Percent
+        value: 50     # Max 50% reduction per period
+        periodSeconds: 60
+      - type: Pods
+        value: 3      # Max 3 pods removed per period (1 per AZ)
+        periodSeconds: 60
+      selectPolicy: Min  # Choose the policy that scales down least
+
+    scaleUp:
+      stabilizationWindowSeconds: 60  # Wait 1 minute before scaling up
+      policies:
+      - type: Percent
+        value: 100    # Max 100% increase per period
+        periodSeconds: 30
+      - type: Pods
+        value: 6      # Max 6 pods added per period (2 per AZ)
+        periodSeconds: 30
+      selectPolicy: Max  # Choose the policy that scales up most
+
+  # Metrics for autoscaling
+  metrics:
+  # CPU utilization
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70  # Scale when CPU > 70%
+
+  # Memory utilization
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80  # Scale when memory > 80%
+
+---
+# ============================================================================
+# POD DISRUPTION BUDGET - Ensure availability during maintenance
+# ============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-agent-pdb
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+spec:
+  minAvailable: 6  # At least 2 pods per AZ (6 out of 9 minimum)
+  selector:
+    matchLabels:
+      app: greenlang-agent
+      component: ai-agent
+
+---
+# ============================================================================
+# NETWORK POLICY - Security
+# ============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-agent-netpol
+  namespace: greenlang-ai
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-agent
+  policyTypes:
+  - Ingress
+  - Egress
+
+  ingress:
+  # Allow from load balancer
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+
+  # Allow from Prometheus
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 9090
+
+  egress:
+  # Allow to PostgreSQL
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres
+    ports:
+    - protocol: TCP
+      port: 5432
+
+  # Allow to Redis
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          k8s-app: kube-dns
+    ports:
+    - protocol: UDP
+      port: 53
+
+  # Allow HTTPS egress for external APIs
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 443
+
+---
+# ============================================================================
+# PRIORITY CLASS - Ensure critical workload scheduling
+# ============================================================================
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 1000000
+globalDefault: false
+description: "High priority for critical GreenLang AI workloads"
+
+---
+# ============================================================================
+# DEPLOYMENT INSTRUCTIONS
+# ============================================================================
+#
+# Prerequisites:
+# 1. Kubernetes cluster with 3+ availability zones
+# 2. Node labels: topology.kubernetes.io/zone must be set
+# 3. Storage class for PersistentVolumeClaims
+# 4. Secrets: greenlang-secrets, greenlang-tls, greenlang-registry-secret
+# 5. ConfigMaps: greenlang-config, fluent-bit-config, otel-collector-config
+#
+# Deployment Steps:
+#
+# 1. Verify cluster has 3 AZs:
+#    kubectl get nodes -L topology.kubernetes.io/zone
+#
+# 2. Create namespace:
+#    kubectl apply -f - <<EOF
+#    apiVersion: v1
+#    kind: Namespace
+#    metadata:
+#      name: greenlang-ai
+#    EOF
+#
+# 3. Create secrets (replace with actual values):
+#    kubectl create secret generic greenlang-secrets \
+#      --from-literal=database-url="postgresql://user:pass@host:5432/db" \
+#      --from-literal=redis-url="redis://host:6379/0" \
+#      -n greenlang-ai
+#
+# 4. Apply this manifest:
+#    kubectl apply -f deployment-ha.yaml
+#
+# 5. Verify pod distribution across zones:
+#    kubectl get pods -n greenlang-ai -o wide \
+#      -L topology.kubernetes.io/zone
+#
+# 6. Check HPA status:
+#    kubectl get hpa -n greenlang-ai
+#
+# 7. Monitor deployment:
+#    kubectl rollout status deployment/greenlang-agent -n greenlang-ai
+#
+# Rollback (if needed):
+#    kubectl rollout undo deployment/greenlang-agent -n greenlang-ai
+#
+# Scale manually (testing):
+#    kubectl scale deployment/greenlang-agent --replicas=27 -n greenlang-ai
+#
+# ============================================================================

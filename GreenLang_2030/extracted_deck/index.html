@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenLang Series B Pitch Deck - The Climate Operating System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0A3A2A;
+            --secondary: #1A1A1A;
+            --accent: #C6FF00;
+            --neutral: #F5F5F5;
+            --white: #FFFFFF;
+            --dark-overlay: rgba(0, 0, 0, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--secondary);
+            color: var(--white);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: var(--secondary);
+            overflow: hidden;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        .nav-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 26, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-top: 1px solid rgba(198, 255, 0, 0.2);
+        }
+
+        .slide-dots {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .dot:hover {
+            background: rgba(198, 255, 0, 0.5);
+            transform: scale(1.2);
+        }
+
+        .dot.active {
+            background: var(--accent);
+            width: 30px;
+            border-radius: 5px;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 16px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: var(--white);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            color: var(--secondary);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        /* Slide 1: Title */
+        #slide-1 {
+            background: linear-gradient(135deg, #0A3A2A 0%, #1A1A1A 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .earth-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(198, 255, 0, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        .title-content {
+            z-index: 10;
+            text-align: center;
+            max-width: 1200px;
+        }
+
+        .main-title {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 15px;
+            line-height: 1.1;
+            animation: fadeInUp 1s ease 0.3s both;
+        }
+
+        .subtitle {
+            font-size: 20px;
+            font-weight: 400;
+            color: var(--accent);
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+
+        .tagline {
+            font-size: 16px;
+            margin-top: 15px;
+            opacity: 0.8;
+            animation: fadeInUp 1s ease 0.9s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Slide 2: The Problem */
+        .problem-headline {
+            font-size: 36px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+
+        .pain-points {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pain-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(198, 255, 0, 0.2);
+            border-radius: 16px;
+            padding: 20px 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            animation: slideInUp 0.6s ease both;
+        }
+
+        .pain-card:nth-child(2) { animation-delay: 0.2s; }
+        .pain-card:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .pain-card:hover {
+            transform: translateY(-10px);
+            border-color: var(--accent);
+            background: rgba(198, 255, 0, 0.1);
+        }
+
+        .pain-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .pain-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .pain-desc {
+            font-size: 14px;
+            opacity: 0.8;
+            line-height: 1.3;
+        }
+
+        /* Slide 3: Why Now */
+        .venn-container {
+            position: relative;
+            width: 700px;
+            height: 500px;
+            margin: 0 auto;
+        }
+
+        .venn-circle {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 25px;
+            line-height: 1.3;
+            animation: circleAppear 1s ease both;
+            opacity: 0.85;
+        }
+
+        @keyframes circleAppear {
+            from {
+                opacity: 0;
+                transform: scale(0);
+            }
+            to {
+                opacity: 0.85;
+                transform: scale(1);
+            }
+        }
+
+        .circle-1 {
+            background: rgba(220, 38, 38, 0.4);
+            border: 3px solid rgba(220, 38, 38, 0.8);
+            top: 0;
+            left: 50px;
+            animation-delay: 0.2s;
+        }
+
+        .circle-2 {
+            background: rgba(37, 99, 235, 0.4);
+            border: 3px solid rgba(37, 99, 235, 0.8);
+            top: 0;
+            right: 50px;
+            animation-delay: 0.4s;
+        }
+
+        .circle-3 {
+            background: rgba(34, 197, 94, 0.4);
+            border: 3px solid rgba(34, 197, 94, 0.8);
+            bottom: 0;
+            left: 50px;
+            animation-delay: 0.6s;
+        }
+
+        .circle-4 {
+            background: rgba(234, 179, 8, 0.4);
+            border: 3px solid rgba(234, 179, 8, 0.8);
+            bottom: 0;
+            right: 50px;
+            animation-delay: 0.8s;
+        }
+
+        .venn-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--accent);
+            color: var(--secondary);
+            padding: 20px 30px;
+            border-radius: 16px;
+            font-size: 20px;
+            font-weight: 900;
+            box-shadow: 0 0 40px rgba(198, 255, 0, 0.6);
+            animation: glow 2s ease-in-out 1s both;
+            z-index: 10;
+        }
+
+        @keyframes glow {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* Slide 4: Products */
+        .product-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .product-card {
+            background: linear-gradient(135deg, rgba(10, 58, 42, 0.6) 0%, rgba(26, 26, 26, 0.8) 100%);
+            border: 2px solid rgba(198, 255, 0, 0.3);
+            border-radius: 16px;
+            padding: 25px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            animation: slideInLeft 0.8s ease both;
+        }
+
+        .product-card:nth-child(2) { animation-delay: 0.2s; }
+        .product-card:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .product-card:hover {
+            transform: translateY(-15px) scale(1.05);
+            border-color: var(--accent);
+            box-shadow: 0 20px 60px rgba(198, 255, 0, 0.3);
+        }
+
+        .product-name {
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .product-desc {
+            font-size: 16px;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .product-status {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--secondary);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 45vh;
+            max-height: 400px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .chart-container canvas {
+            max-height: 45vh;
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(198, 255, 0, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            animation: fadeIn 1s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .metric-number {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--accent);
+            margin-bottom: 8px;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .metric-label {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        /* Section Header */
+        .section-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 32px;
+            font-weight: 900;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        /* Comparison Split */
+        .comparison-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .comparison-side {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(198, 255, 0, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            animation: fadeIn 1s ease both;
+        }
+
+        .comparison-side.left { animation-delay: 0.2s; }
+        .comparison-side.right { animation-delay: 0.4s; }
+
+        .comparison-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .hash-display {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px;
+            border-radius: 8px;
+            word-break: break-all;
+            margin-top: 10px;
+        }
+
+        /* World Map */
+        .world-map-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .impact-bubble {
+            position: absolute;
+            background: rgba(198, 255, 0, 0.3);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: bubblePop 1s ease both;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .impact-bubble:hover {
+            transform: scale(1.1);
+            background: rgba(198, 255, 0, 0.5);
+        }
+
+        @keyframes bubblePop {
+            from {
+                opacity: 0;
+                transform: scale(0);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .bubble-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .bubble-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        /* Final Ask */
+        .ask-container {
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .ask-amount {
+            font-size: 56px;
+            font-weight: 900;
+            color: var(--accent);
+            margin: 15px 0;
+            animation: scaleIn 1s ease 0.3s both;
+            line-height: 1;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .ask-detail {
+            font-size: 24px;
+            margin: 10px 0;
+            animation: fadeInUp 1s ease both;
+        }
+
+        .ask-detail:nth-child(3) { animation-delay: 0.5s; }
+        .ask-detail:nth-child(4) { animation-delay: 0.7s; }
+
+        .vision-statement {
+            font-size: 28px;
+            font-weight: 700;
+            margin-top: 25px;
+            line-height: 1.3;
+            animation: fadeInUp 1s ease 1s both;
+        }
+
+        .rocket {
+            font-size: 40px;
+            animation: rocketLaunch 2s ease 1.5s both;
+        }
+
+        @keyframes rocketLaunch {
+            from {
+                opacity: 0;
+                transform: translateY(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .mb-40 { margin-bottom: 40px; }
+        .mt-40 { margin-top: 40px; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-title { font-size: 48px; }
+            .subtitle { font-size: 24px; }
+            .pain-points, .product-cards, .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            .comparison-split {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(198, 255, 0, 0.3);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container" id="presentation">
+        <!-- Slide 1: Title -->
+        <div class="slide active" id="slide-1">
+            <div class="earth-bg"></div>
+            <div class="particles" id="particles"></div>
+            <div class="title-content">
+                <h1 class="main-title">GreenLang</h1>
+                <h2 class="subtitle">The Climate Operating System</h2>
+                <p class="tagline">Save the planet at scale. One API call at a time.</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: The Problem -->
+        <div class="slide" id="slide-2">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="problem-headline">$17.5B in Fines. 50,000 Companies. 18 Months.</h1>
+            </div>
+            <div class="pain-points">
+                <div class="pain-card">
+                    <div class="pain-icon">📊</div>
+                    <h3 class="pain-title">Data Chaos</h3>
+                    <p class="pain-desc">Supply chain emissions scattered across spreadsheets</p>
+                </div>
+                <div class="pain-card">
+                    <div class="pain-icon">💰</div>
+                    <h3 class="pain-title">$500K Consultant Fees</h3>
+                    <p class="pain-desc">6-month engagements for one report</p>
+                </div>
+                <div class="pain-card">
+                    <div class="pain-icon">⚠️</div>
+                    <h3 class="pain-title">Audit Risk</h3>
+                    <p class="pain-desc">Fines up to 5% of revenue. Execs liable.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Why Now -->
+        <div class="slide" id="slide-3">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="section-title">The Perfect Storm</h1>
+            </div>
+            <div class="venn-container">
+                <div class="venn-circle circle-1">2025-26 Regs</div>
+                <div class="venn-circle circle-2">AI Ready</div>
+                <div class="venn-circle circle-3">Budget Unlocked</div>
+                <div class="venn-circle circle-4">No Zero-H Competitor</div>
+                <div class="venn-center">Perfect Timing</div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Product Portfolio -->
+        <div class="slide" id="slide-4">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="section-title">3 Apps. 1 Platform. Infinite Possibilities.</h1>
+            </div>
+            <div class="product-cards">
+                <div class="product-card">
+                    <h2 class="product-name">GL-VCCI</h2>
+                    <p class="product-desc">CA carbon reporting</p>
+                    <span class="product-status">PRODUCTION</span>
+                </div>
+                <div class="product-card">
+                    <h2 class="product-name">GL-CSRD</h2>
+                    <p class="product-desc">EU sustainability</p>
+                    <span class="product-status">PRODUCTION</span>
+                </div>
+                <div class="product-card">
+                    <h2 class="product-name">GL-CBAM</h2>
+                    <p class="product-desc">EU carbon tax</p>
+                    <span class="product-status">PRODUCTION</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Zero-Hallucination Moat -->
+        <div class="slide" id="slide-5">
+            <div class="section-header" style="margin-bottom: 15px;">
+                <h1 class="section-title">Zero-Hallucination Moat</h1>
+            </div>
+            <div class="comparison-split">
+                <div class="comparison-side left">
+                    <h3 class="comparison-title">ChatGPT Output</h3>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Run 1: Different result</p>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Run 2: Different result</p>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Run 3: Different result</p>
+                    <div class="hash-display" style="opacity: 0.5;">⚠️ Non-deterministic</div>
+                </div>
+                <div class="comparison-side right">
+                    <h3 class="comparison-title">GreenLang Output 🔒</h3>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Run 1: Identical SHA-256</p>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Run 2: Identical SHA-256</p>
+                    <p style="font-size: 14px; margin-bottom: 8px;">Run 3: Identical SHA-256</p>
+                    <div class="hash-display" style="color: var(--accent);">✓ 3f8a2c9e1d...<br>Compliant</div>
+                </div>
+            </div>
+            <div class="chart-container" style="margin-top: 60px;">
+                <canvas id="competitorChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 6: Traction Metrics -->
+        <div class="slide" id="slide-6">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="section-title">Built in 3 Months</h1>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-number" data-target="240000">0</div>
+                    <div class="metric-label">Lines of Code</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" data-target="3">0</div>
+                    <div class="metric-label">Production Apps</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" data-target="3">0</div>
+                    <div class="metric-label">Months to Build</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 25px;">
+                <div style="font-size: 36px; font-weight: 900; color: var(--accent);">8-10× Faster Than Industry</div>
+                <div style="font-size: 16px; margin-top: 10px; opacity: 0.8;">Typical: 24 months | GreenLang: 3 months</div>
+            </div>
+        </div>
+
+        <!-- Slide 7: Platform Architecture -->
+        <div class="slide" id="slide-7">
+            <div class="section-header" style="margin-bottom: 15px;">
+                <h1 class="section-title">The Climate Operating System</h1>
+            </div>
+            <div style="text-align: center; margin: 25px 0;">
+                <div style="font-size: 48px; margin-bottom: 15px;">🌐</div>
+                <div style="font-size: 32px; font-weight: 900; color: var(--accent); margin-bottom: 15px;">Climate OS Core</div>
+                <div style="font-size: 16px; opacity: 0.8; line-height: 1.4;">
+                    Multi-agent orchestration powering deterministic climate intelligence
+                </div>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-number" data-target="59">0</div>
+                    <div class="metric-label">AI Agents</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" data-target="1050">0</div>
+                    <div class="metric-label">Packs</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" data-target="66">0</div>
+                    <div class="metric-label">ERP Modules</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 8: Live Demo Teaser -->
+        <div class="slide" id="slide-8">
+            <div class="section-header" style="margin-bottom: 25px;">
+                <h1 class="section-title">Live Demo: Speed &amp; Accuracy</h1>
+            </div>
+            <div style="max-width: 900px; margin: 0 auto;">
+                <div style="background: rgba(255, 255, 255, 0.05); border: 2px solid var(--accent); border-radius: 16px; padding: 35px; text-align: center;">
+                    <div style="font-size: 20px; margin-bottom: 20px; line-height: 1.5;">
+                        📄 Upload 10,000 supplier CSV<br>
+                        ⚡ Agent pipeline processes<br>
+                        📊 GHG Protocol report generated<br>
+                        <span style="color: var(--accent); font-weight: 900; font-size: 36px; display: block; margin-top: 20px;">⏱️ 58 seconds</span>
+                    </div>
+                    <div style="border-top: 2px solid rgba(198, 255, 0, 0.3); padding-top: 20px; margin-top: 20px;">
+                        <div style="font-size: 18px; font-weight: 700; margin-bottom: 12px;">The Alternative:</div>
+                        <div style="font-size: 16px; opacity: 0.8;">
+                            Consultants: <span style="color: #dc2626;">6 months, $500K</span><br>
+                            GreenLang: <span style="color: var(--accent);">60 seconds</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Market Size -->
+        <div class="slide" id="slide-9">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="section-title">$50B → $120B TAM by 2030</h1>
+                <p class="section-subtitle">40% CAGR</p>
+            </div>
+            <div class="chart-container">
+                <canvas id="marketChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 10: Competitive Moats -->
+        <div class="slide" id="slide-10">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="section-title">5 Unbeatable Moats</h1>
+            </div>
+            <div class="chart-container">
+                <canvas id="radarChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Slide 11: Go-To-Market -->
+        <div class="slide" id="slide-11">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="section-title">3 Channels. 10× Reach.</h1>
+            </div>
+            <div class="pain-points">
+                <div class="pain-card">
+                    <div class="pain-icon">🎯</div>
+                    <h3 class="pain-title">Direct Sales</h3>
+                    <p class="pain-desc">Fortune 500 enterprises</p>
+                    <div class="metric-number" style="font-size: 48px; margin-top: 20px;" data-target="50">0</div>
+                </div>
+                <div class="pain-card">
+                    <div class="pain-icon">🤝</div>
+                    <h3 class="pain-title">ERP Partnerships</h3>
+                    <p class="pain-desc">SAP, Oracle, Microsoft</p>
+                    <div class="metric-number" style="font-size: 48px; margin-top: 20px;" data-target="750">0</div>
+                </div>
+                <div class="pain-card">
+                    <div class="pain-icon">💼</div>
+                    <h3 class="pain-title">Consulting Firms</h3>
+                    <p class="pain-desc">Big 4, Accenture</p>
+                    <div class="metric-number" style="font-size: 48px; margin-top: 20px;" data-target="10000">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 12: Revenue Model -->
+        <div class="slide" id="slide-12">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="section-title">$18M → $500M ARR (2026-2030)</h1>
+            </div>
+            <div class="chart-container">
+                <canvas id="revenueChart"></canvas>
+            </div>
+            <div class="metrics-grid" style="margin-top: 20px;">
+                <div class="metric-card">
+                    <div class="metric-number">40:1</div>
+                    <div class="metric-label">LTV:CAC Ratio</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">85%</div>
+                    <div class="metric-label">Gross Margin</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number" style="font-size: 36px;">Nov 2026</div>
+                    <div class="metric-label">EBITDA+</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 13: Team -->
+        <div class="slide" id="slide-13">
+            <div class="section-header">
+                <h1 class="section-title">Team &amp; Execution</h1>
+            </div>
+            <div style="text-align: center; margin: 60px 0;">
+                <div style="font-size: 96px; font-weight: 900; color: var(--accent);">8-10×</div>
+                <div style="font-size: 32px; margin-top: 20px;">Faster Than Industry Average</div>
+                <div style="font-size: 24px; margin-top: 40px; opacity: 0.8; line-height: 1.8;">
+                    Zero technical debt • 98.5% test coverage<br>
+                    Battle-tested in production • SOC 2 &amp; ISO 27001 ready
+                </div>
+            </div>
+            <div class="comparison-split" style="margin-top: 15px;">
+                <div class="comparison-side">
+                    <h3 class="comparison-title">GreenLang Velocity</h3>
+                    <div style="height: 80px; background: var(--accent); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: var(--secondary);">10/10</div>
+                </div>
+                <div class="comparison-side">
+                    <h3 class="comparison-title">Industry Average</h3>
+                    <div style="height: 80px; background: rgba(255, 255, 255, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; width: 10%;">1/10</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 14: Climate Impact -->
+        <div class="slide" id="slide-14">
+            <div class="section-header" style="margin-bottom: 20px;">
+                <h1 class="section-title">1.6 Gt CO2e by 2028</h1>
+                <p class="section-subtitle">Bigger than Japan's 2023 emissions</p>
+            </div>
+            <div class="world-map-container" style="height: 350px; position: relative; margin: 30px auto;">
+                <div class="impact-bubble" style="width: 220px; height: 220px; top: 70px; left: 180px;">
+                    <div class="bubble-value">0.8 Gt</div>
+                    <div class="bubble-label">Europe</div>
+                </div>
+                <div class="impact-bubble" style="width: 160px; height: 160px; top: 60px; left: 40px;">
+                    <div class="bubble-value">0.3 Gt</div>
+                    <div class="bubble-label">North America</div>
+                </div>
+                <div class="impact-bubble" style="width: 150px; height: 150px; top: 150px; left: 520px;">
+                    <div class="bubble-value">0.2 Gt</div>
+                    <div class="bubble-label">India</div>
+                </div>
+                <div class="impact-bubble" style="width: 160px; height: 160px; top: 110px; left: 700px;">
+                    <div class="bubble-value">0.3 Gt</div>
+                    <div class="bubble-label">APAC</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 30px;">
+                <div style="font-size: 32px; font-weight: 900; color: var(--accent);">🌍 Total: 1.6 Gt CO2e</div>
+                <div style="font-size: 16px; margin-top: 10px; opacity: 0.8;">4.5% of global emissions</div>
+            </div>
+        </div>
+
+        <!-- Slide 15: The Ask -->
+        <div class="slide" id="slide-15">
+            <div class="ask-container">
+                <h1 class="section-title" style="margin-bottom: 15px;">The Ask</h1>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; max-width: 900px; margin: 0 auto 20px;">
+                    <div>
+                        <div class="ask-amount">$50M</div>
+                        <div style="font-size: 16px; opacity: 0.8;">Series B</div>
+                    </div>
+                    <div>
+                        <div class="ask-amount">$200M</div>
+                        <div style="font-size: 16px; opacity: 0.8;">Pre-Money</div>
+                    </div>
+                    <div>
+                        <div class="ask-amount">100×</div>
+                        <div style="font-size: 16px; opacity: 0.8;">Return</div>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 35vh; max-height: 280px; margin: 20px auto;">
+                    <canvas id="fundsChart"></canvas>
+                </div>
+                <div class="vision-statement">
+                    Save the planet at scale. One API call at a time. <span class="rocket">🚀</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <div class="nav-bar">
+        <div class="slide-dots" id="slideDots"></div>
+        <div class="nav-controls">
+            <button class="nav-btn" id="prevBtn">← Previous</button>
+            <button class="nav-btn" id="nextBtn">Next →</button>
+            <button class="nav-btn" id="fullscreenBtn">Fullscreen</button>
+        </div>
+    </div>
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

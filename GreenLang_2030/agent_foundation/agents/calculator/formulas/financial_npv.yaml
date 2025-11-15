@@ -1,0 +1,67 @@
+---
+formula_id: "financial_npv"
+name: "Net Present Value (NPV) Calculation"
+standard: "Financial Analysis"
+version: "1.0"
+description: "Calculate Net Present Value for investment analysis"
+
+parameters:
+  - name: initial_investment
+    type: float
+    unit: currency
+    required: true
+    validation:
+      min: 0
+    description: "Initial investment amount (negative cash flow)"
+
+  - name: annual_cash_flows
+    type: list
+    required: true
+    description: "List of annual cash flows (can be positive or negative)"
+
+  - name: discount_rate
+    type: float
+    required: true
+    validation:
+      min: 0
+      max: 1
+    description: "Discount rate as decimal (e.g., 0.1 for 10%)"
+
+  - name: periods
+    type: int
+    required: true
+    validation:
+      min: 1
+      max: 50
+    description: "Number of periods (years)"
+
+calculation:
+  steps:
+    - step: 1
+      description: "Calculate present value of cash flows"
+      operation: expression
+      expression: "sum([cf / (1 + discount_rate)**i for i, cf in enumerate(annual_cash_flows, 1)])"
+      output: pv_cash_flows
+
+    - step: 2
+      description: "Calculate NPV (PV of cash flows - initial investment)"
+      operation: subtract
+      operands:
+        - pv_cash_flows
+        - initial_investment
+      output: npv
+
+output:
+  value: npv
+  unit: "currency"
+  precision: 2
+
+metadata:
+  category: "Financial Analysis"
+  subcategory: "Investment Analysis"
+  use_cases:
+    - "Renewable energy project evaluation"
+    - "Energy efficiency investment analysis"
+    - "Carbon offset project assessment"
+  created_at: "2025-01-15"
+  last_updated: "2025-01-15"

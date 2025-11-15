@@ -1,0 +1,1238 @@
+# GL-002 BoilerEfficiencyOptimizer Agent Specification
+# Version: 2.0.0
+# Date: 2025-11-15
+# Status: PRODUCTION-READY
+
+# ============================================================================
+# SECTION 1: AGENT METADATA
+# ============================================================================
+
+agent_metadata:
+  agent_id: "GL-002"
+  name: "BoilerEfficiencyOptimizer"
+  version: "1.0.0"
+  category: "Boiler Systems"
+  domain: "Industrial Boiler Optimization"
+  type: "Optimizer"
+  complexity: "Medium"
+  priority: "P0"  # Critical for enterprise sustainability
+  market_size_usd: "$15B"
+  target_deployment: "Q4 2025"
+  regulatory_frameworks:
+    - "ASME PTC 4.1 Performance Test Codes"
+    - "EPA Mandatory Greenhouse Gas Reporting Rule"
+    - "ISO 50001:2018 Energy Management"
+    - "EN 12952 Water-tube Boiler Standards"
+    - "EPA CEMS (Continuous Emissions Monitoring)"
+
+  business_metrics:
+    total_addressable_market: "$15B annually"
+    realistic_market_capture: "12% by 2030 ($1.8B)"
+    carbon_reduction_potential: "200 Mt CO2e/year"
+    average_cost_savings: "15-25% fuel costs"
+    average_efficiency_gain: "5-10 percentage points"
+    roi_range: "1.5-3 years payback"
+
+  technical_classification:
+    agent_type: "specialized_optimizer"
+    optimization_scope: "single_facility_multi_boiler"
+    sub_agent_coordination: false  # Operates independently
+    integration_complexity: "high"
+    real_time_requirements: true
+
+# ============================================================================
+# SECTION 2: DESCRIPTION
+# ============================================================================
+
+description:
+  purpose: |
+    Optimizes boiler operations for maximum fuel efficiency and minimal emissions.
+    Analyzes combustion parameters, steam generation, heat transfer, and operational
+    constraints to deliver real-time optimization recommendations. Ensures compliance
+    with ASME PTC 4.1, EPA, ISO 50001, and facility-specific regulations while maintaining
+    safe operation and steam quality.
+
+  strategic_context:
+    global_impact: "Boilers account for 15% of global industrial energy use (1.5% of total CO2)"
+    market_opportunity: "70% of industrial boilers operate 10+ points below design efficiency"
+    technology_readiness: "TRL 9 - Commercial deployment with proven savings"
+    competitive_advantage: "Only platform combining ASME-grade thermodynamics with real-time AI optimization"
+
+  capabilities:
+    - "Real-time combustion optimization (excess air, temperature, fuel flow)"
+    - "Thermal efficiency calculation with loss component analysis"
+    - "Emissions compliance monitoring (NOx, CO, SO2, CO2)"
+    - "Steam generation optimization (flow, pressure, quality, blowdown)"
+    - "Heat transfer analysis (radiation, convection, conduction)"
+    - "Economizer and preheater performance optimization"
+    - "Fuel switching and dual-fuel operation coordination"
+    - "Blowdown optimization for water chemistry and efficiency"
+    - "Load following and part-load efficiency optimization"
+    - "Predictive maintenance scheduling"
+
+  dependencies:
+    - system: "SCADA/DCS"
+      relationship: "receives_data_from"
+      data_type: "real-time sensor readings"
+      frequency: "every 5-60 seconds"
+
+    - system: "Fuel Management System"
+      relationship: "integrates_with"
+      data_type: "fuel cost, type, composition"
+
+    - system: "Emissions Monitoring System"
+      relationship: "integrates_with"
+      data_type: "actual emissions measurements"
+
+    - system: "Maintenance Management System"
+      relationship: "coordinates_with"
+      data_type: "maintenance schedules, equipment condition"
+
+    - system: "GL-001 ProcessHeatOrchestrator"
+      relationship: "receives_commands_from"
+      data_type: "optimization directives, multi-boiler coordination"
+
+# ============================================================================
+# SECTION 3: TOOLS (Deterministic, Zero-Hallucination)
+# ============================================================================
+
+tools:
+  tool_architecture:
+    design_pattern: "tool_first"
+    deterministic: true
+    hallucination_prevention: "all_numeric_calculations_via_tools"
+    provenance_tracking: true
+
+  tools_list:
+    # Tool 1: Boiler Efficiency Calculator
+    - tool_id: "calculate_boiler_efficiency"
+      name: "calculate_boiler_efficiency"
+      category: "calculation"
+      deterministic: true
+
+      description: "Calculates overall boiler thermal efficiency using ASME PTC 4.1 indirect method with loss analysis"
+
+      parameters:
+        type: "object"
+        properties:
+          boiler_data:
+            type: "object"
+            properties:
+              fuel_type: {type: "string", enum: ["natural_gas", "coal", "oil", "biomass", "hydrogen"]}
+              fuel_heating_value_mj_kg: {type: "number", minimum: 1}
+              steam_capacity_kg_hr: {type: "number", minimum: 100}
+              design_pressure_bar: {type: "number", minimum: 1}
+              heating_surface_area_m2: {type: "number", minimum: 10}
+
+          sensor_readings:
+            type: "object"
+            properties:
+              fuel_flow_rate_kg_hr: {type: "number", minimum: 0}
+              combustion_air_temp_c: {type: "number"}
+              flue_gas_temp_c: {type: "number"}
+              steam_flow_rate_kg_hr: {type: "number", minimum: 0}
+              feedwater_temp_c: {type: "number"}
+              inlet_pressure_bar: {type: "number"}
+              outlet_pressure_bar: {type: "number"}
+              o2_percent_dry: {type: "number", minimum: 0, maximum: 21}
+              co2_percent_dry: {type: "number", minimum: 0, maximum: 15}
+              co_ppm: {type: "number", minimum: 0}
+              nox_ppm: {type: "number", minimum: 0}
+
+        required: ["boiler_data", "sensor_readings"]
+
+      returns:
+        type: "object"
+        properties:
+          thermal_efficiency_percent: {type: "number"}
+          combustion_efficiency_percent: {type: "number"}
+          boiler_efficiency_percent: {type: "number"}
+          heat_input_mw: {type: "number"}
+          heat_output_mw: {type: "number"}
+          stack_temperature_c: {type: "number"}
+          excess_air_percent: {type: "number"}
+          losses:
+            type: "object"
+            properties:
+              dry_gas_loss_percent: {type: "number"}
+              moisture_loss_percent: {type: "number"}
+              unburnt_fuel_loss_percent: {type: "number"}
+              radiation_loss_percent: {type: "number"}
+              blowdown_loss_percent: {type: "number"}
+              total_losses_percent: {type: "number"}
+          co2_emissions_kg_hr: {type: "number"}
+          improvement_potential_percent: {type: "number"}
+
+      implementation:
+        physics_formula: |
+          η_boiler = (Useful Heat Output / Fuel Heat Input) × 100
+          Loss Method: Stack Loss + Radiation Loss + Unburnt Loss
+          Stack Loss = (T_flue - T_air) × K × (% CO2 / 13.86 - 3.16) × (1 - 0.0048 × (T_air - 15.6))
+        standards: ["ASME PTC 4.1", "EN 12952", "ISO 50001"]
+        accuracy: "±2% efficiency calculation"
+
+    # Tool 2: Combustion Optimization
+    - tool_id: "optimize_combustion"
+      name: "optimize_combustion"
+      category: "optimization"
+      deterministic: true
+
+      description: "Optimizes combustion parameters (excess air, temperature, fuel flow) for maximum efficiency within safety limits"
+
+      parameters:
+        type: "object"
+        properties:
+          current_conditions:
+            type: "object"
+            properties:
+              fuel_flow_kg_hr: {type: "number", minimum: 0}
+              combustion_temp_c: {type: "number"}
+              excess_air_percent: {type: "number"}
+              o2_flue_percent: {type: "number"}
+              steam_demand_kg_hr: {type: "number"}
+
+          operational_constraints:
+            type: "object"
+            properties:
+              min_excess_air_percent: {type: "number", minimum: 0}
+              max_excess_air_percent: {type: "number", minimum: 0}
+              min_combustion_temp_c: {type: "number"}
+              max_combustion_temp_c: {type: "number"}
+              max_co_ppm: {type: "number"}
+              max_nox_ppm: {type: "number"}
+
+          optimization_objectives:
+            type: "object"
+            properties:
+              primary: {type: "string", enum: ["efficiency", "emissions", "cost"]}
+              efficiency_weight: {type: "number", minimum: 0, maximum: 1}
+              emissions_weight: {type: "number", minimum: 0, maximum: 1}
+              cost_weight: {type: "number", minimum: 0, maximum: 1}
+
+        required: ["current_conditions", "operational_constraints"]
+
+      returns:
+        type: "object"
+        properties:
+          optimal_excess_air_percent: {type: "number"}
+          optimal_fuel_flow_kg_hr: {type: "number"}
+          optimal_combustion_temp_c: {type: "number"}
+          optimal_o2_percent: {type: "number"}
+          combustion_efficiency_percent: {type: "number"}
+          fuel_efficiency_percent: {type: "number"}
+          flame_stability_index: {type: "number"}
+          fuel_savings_usd_hr: {type: "number"}
+          fuel_saved_kg_hr: {type: "number"}
+          emission_reduction_kg_hr: {type: "number"}
+          confidence_score: {type: "number"}
+
+      implementation:
+        algorithm: "Multi-objective combustion optimization with constraint satisfaction"
+        physics: "First Law of Thermodynamics, combustion stoichiometry"
+        method: "Iterative calculation of excess air effect on efficiency"
+
+    # Tool 3: Thermal Efficiency Analysis
+    - tool_id: "analyze_thermal_efficiency"
+      name: "analyze_thermal_efficiency"
+      category: "analysis"
+      deterministic: true
+
+      description: "Analyzes thermal efficiency components and identifies loss reduction opportunities"
+
+      parameters:
+        type: "object"
+        properties:
+          boiler_configuration:
+            type: "object"
+            properties:
+              boiler_type: {type: "string"}
+              fuel_type: {type: "string"}
+              steam_capacity_kg_hr: {type: "number"}
+              age_years: {type: "integer"}
+
+          measured_data:
+            type: "object"
+            properties:
+              fuel_input_mw: {type: "number"}
+              useful_heat_output_mw: {type: "number"}
+              flue_gas_temp_c: {type: "number"}
+              ambient_temp_c: {type: "number"}
+              insulation_thickness_mm: {type: "number"}
+
+          comparison_baseline:
+            type: "string"
+            enum: ["design", "historical_average", "similar_units", "best_in_class"]
+
+        required: ["boiler_configuration", "measured_data"]
+
+      returns:
+        type: "object"
+        properties:
+          current_efficiency_percent: {type: "number"}
+          design_efficiency_percent: {type: "number"}
+          efficiency_degradation_percent: {type: "number"}
+          loss_breakdown:
+            type: "object"
+            properties:
+              stack_loss_percent: {type: "number"}
+              radiation_loss_percent: {type: "number"}
+              convection_loss_percent: {type: "number"}
+              blowdown_loss_percent: {type: "number"}
+              unburnt_loss_percent: {type: "number"}
+          improvement_opportunities:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                opportunity: {type: "string"}
+                potential_gain_percent: {type: "number"}
+                implementation_cost_usd: {type: "number"}
+                payback_months: {type: "number"}
+
+      implementation:
+        method: "Component-based loss analysis"
+        standards: ["ASME PTC 4.1", "EN 12952"]
+
+    # Tool 4: Emissions Compliance Checker
+    - tool_id: "check_emissions_compliance"
+      name: "check_emissions_compliance"
+      category: "validation"
+      deterministic: true
+
+      description: "Validates actual emissions against regulatory limits and generates compliance status"
+
+      parameters:
+        type: "object"
+        properties:
+          measured_emissions:
+            type: "object"
+            properties:
+              co2_kg_hr: {type: "number", minimum: 0}
+              nox_ppm: {type: "number", minimum: 0}
+              co_ppm: {type: "number", minimum: 0}
+              so2_ppm: {type: "number", minimum: 0}
+              particulate_matter_mg_nm3: {type: "number", minimum: 0}
+
+          regulatory_limits:
+            type: "object"
+            properties:
+              nox_limit_ppm: {type: "number"}
+              nox_limit_mg_nm3: {type: "number"}
+              co_limit_ppm: {type: "number"}
+              so2_limit_ppm: {type: "number"}
+              pm_limit_mg_nm3: {type: "number"}
+              co2_intensity_target_kg_mwh: {type: "number"}
+
+          measurement_timestamp:
+            type: "string"
+            format: "date-time"
+
+        required: ["measured_emissions", "regulatory_limits"]
+
+      returns:
+        type: "object"
+        properties:
+          compliance_status: {type: "string", enum: ["compliant", "warning", "violation"]}
+          violations:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                pollutant: {type: "string"}
+                measured_value: {type: "number"}
+                limit_value: {type: "number"}
+                exceedance_percent: {type: "number"}
+          required_actions: {type: "array", items: {type: "string"}}
+          recommended_adjustments: {type: "array", items: {type: "string"}}
+          penalty_risk_usd: {type: "number"}
+          time_to_compliance_hours: {type: "number"}
+
+      implementation:
+        standards: ["EPA Method 19", "EPA CEMS", "EU-MCP Directive"]
+        method: "Real-time comparison with rolling averages"
+
+    # Tool 5: Steam Generation Optimizer
+    - tool_id: "optimize_steam_generation"
+      name: "optimize_steam_generation"
+      category: "optimization"
+      deterministic: true
+
+      description: "Optimizes steam generation parameters (flow, pressure, quality, blowdown)"
+
+      parameters:
+        type: "object"
+        properties:
+          steam_demand:
+            type: "object"
+            properties:
+              required_flow_kg_hr: {type: "number"}
+              required_pressure_bar: {type: "number"}
+              required_temperature_c: {type: "number"}
+              required_quality: {type: "number", minimum: 0.8, maximum: 1.0}
+
+          boiler_capability:
+            type: "object"
+            properties:
+              max_steam_capacity_kg_hr: {type: "number"}
+              design_pressure_bar: {type: "number"}
+              design_temperature_c: {type: "number"}
+
+          water_chemistry:
+            type: "object"
+            properties:
+              feedwater_quality: {type: "string"}
+              dissolved_oxygen_ppb: {type: "number"}
+              tds_ppm: {type: "number"}
+              conductivity_us_cm: {type: "number"}
+
+        required: ["steam_demand", "boiler_capability"]
+
+      returns:
+        type: "object"
+        properties:
+          optimal_steam_flow_kg_hr: {type: "number"}
+          optimal_pressure_bar: {type: "number"}
+          optimal_temperature_c: {type: "number"}
+          optimal_blowdown_rate_percent: {type: "number"}
+          feedwater_temperature_c: {type: "number"}
+          steam_quality_index: {type: "number"}
+          heat_input_mw: {type: "number"}
+          heat_output_mw: {type: "number"}
+          efficiency_gain_percent: {type: "number"}
+          water_quality_compliance: {type: "boolean"}
+
+      implementation:
+        physics: "Thermodynamic steam tables, energy balance"
+        method: "Multi-parameter optimization under constraints"
+
+    # Tool 6: Emissions Calculator
+    - tool_id: "calculate_emissions"
+      name: "calculate_emissions"
+      category: "calculation"
+      deterministic: true
+
+      description: "Calculates emissions (CO2, NOx, CO, SO2) based on fuel type and combustion parameters"
+
+      parameters:
+        type: "object"
+        properties:
+          fuel_data:
+            type: "object"
+            properties:
+              fuel_type: {type: "string"}
+              flow_rate_kg_hr: {type: "number"}
+              carbon_percent: {type: "number"}
+              hydrogen_percent: {type: "number"}
+              sulfur_percent: {type: "number"}
+              nitrogen_percent: {type: "number"}
+              heating_value_mj_kg: {type: "number"}
+
+          combustion_conditions:
+            type: "object"
+            properties:
+              combustion_temp_c: {type: "number"}
+              o2_flue_percent: {type: "number"}
+              excess_air_percent: {type: "number"}
+              nox_formation_model: {type: "string", enum: ["thermal", "prompt", "fuel"]}
+
+        required: ["fuel_data", "combustion_conditions"]
+
+      returns:
+        type: "object"
+        properties:
+          co2_emissions_kg_hr: {type: "number"}
+          co2_intensity_kg_mwh: {type: "number"}
+          nox_emissions_ppm: {type: "number"}
+          nox_emissions_kg_hr: {type: "number"}
+          co_emissions_ppm: {type: "number"}
+          so2_emissions_ppm: {type: "number"}
+          particulate_matter_mg_nm3: {type: "number"}
+          total_emissions_factor_kg_gj: {type: "number"}
+          reduction_vs_baseline_percent: {type: "number"}
+
+      implementation:
+        method: "EPA Method 19, Stoichiometric combustion calculations"
+        standards: ["EPA Mandatory GHG Reporting", "ISO 14064"]
+
+    # Tool 7: Heat Transfer Analysis
+    - tool_id: "analyze_heat_transfer"
+      name: "analyze_heat_transfer"
+      category: "analysis"
+      deterministic: true
+
+      description: "Analyzes heat transfer processes (radiation, convection, conduction)"
+
+      parameters:
+        type: "object"
+        properties:
+          boiler_geometry:
+            type: "object"
+            properties:
+              heating_surface_area_m2: {type: "number"}
+              furnace_volume_m3: {type: "number"}
+              insulation_thickness_mm: {type: "number"}
+              insulation_conductivity_w_mk: {type: "number"}
+              emissivity: {type: "number", minimum: 0, maximum: 1}
+
+          operating_conditions:
+            type: "object"
+            properties:
+              furnace_temp_c: {type: "number"}
+              ambient_temp_c: {type: "number"}
+              convection_heat_transfer_coefficient: {type: "number"}
+              fuel_input_mw: {type: "number"}
+
+        required: ["boiler_geometry", "operating_conditions"]
+
+      returns:
+        type: "object"
+        properties:
+          radiation_loss_mw: {type: "number"}
+          convection_loss_mw: {type: "number"}
+          conduction_loss_mw: {type: "number"}
+          total_heat_loss_mw: {type: "number"}
+          loss_percent: {type: "number"}
+          insulation_effectiveness_percent: {type: "number"}
+          improvement_recommendations: {type: "array", items: {type: "string"}}
+
+      implementation:
+        physics: "Stefan-Boltzmann equation, Nusselt number correlations"
+        method: "Component-based heat loss calculation"
+
+    # Tool 8: Blowdown Optimization
+    - tool_id: "optimize_blowdown"
+      name: "optimize_blowdown"
+      category: "optimization"
+      deterministic: true
+
+      description: "Optimizes blowdown rate to maintain water chemistry while minimizing heat loss"
+
+      parameters:
+        type: "object"
+        properties:
+          steam_generation:
+            type: "object"
+            properties:
+              steam_flow_kg_hr: {type: "number"}
+              steam_quality: {type: "number"}
+              feedwater_tds_ppm: {type: "number"}
+
+          water_chemistry_targets:
+            type: "object"
+            properties:
+              max_tds_ppm: {type: "number"}
+              max_conductivity_us_cm: {type: "number"}
+              silica_limit_ppm: {type: "number"}
+
+          blowdown_water_conditions:
+            type: "object"
+            properties:
+              blowdown_temp_c: {type: "number"}
+              blowdown_pressure_bar: {type: "number"}
+
+        required: ["steam_generation", "water_chemistry_targets"]
+
+      returns:
+        type: "object"
+        properties:
+          optimal_blowdown_rate_percent: {type: "number"}
+          blowdown_flow_kg_hr: {type: "number"}
+          water_chemistry_compliance: {type: "boolean"}
+          heat_loss_from_blowdown_mw: {type: "number"}
+          heat_loss_percent: {type: "number"}
+          blowdown_quality_loss_kg_hr: {type: "number"}
+          heat_recovery_potential_mw: {type: "number"}
+          efficiency_gain_percent: {type: "number"}
+
+      implementation:
+        method: "Concentration buildup rate balancing"
+        physics: "Mass balance for dissolved solids"
+
+    # Tool 9: Fuel Optimization
+    - tool_id: "optimize_fuel_selection"
+      name: "optimize_fuel_selection"
+      category: "optimization"
+      deterministic: true
+
+      description: "Optimizes fuel selection and switching for dual-fuel boilers considering cost, emissions, and performance"
+
+      parameters:
+        type: "object"
+        properties:
+          available_fuels:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                fuel_type: {type: "string"}
+                cost_usd_per_unit: {type: "number"}
+                heating_value_mj_kg: {type: "number"}
+                carbon_content_percent: {type: "number"}
+                availability_percent: {type: "number"}
+                emissions_factor: {type: "number"}
+
+          optimization_objective:
+            type: "string"
+            enum: ["minimize_cost", "minimize_emissions", "balanced"]
+
+          demand_forecast:
+            type: "array"
+            items:
+              type: "object"
+              properties:
+                period: {type: "string"}
+                steam_demand_kg_hr: {type: "number"}
+                price_forecast: {type: "object"}
+
+        required: ["available_fuels"]
+
+      returns:
+        type: "object"
+        properties:
+          optimal_fuel_type: {type: "string"}
+          fuel_flow_kg_hr: {type: "number"}
+          estimated_cost_usd_hr: {type: "number"}
+          estimated_emissions_kg_hr: {type: "number"}
+          switching_recommendation: {type: "string"}
+          savings_vs_baseline_usd: {type: "number"}
+          emissions_reduction_percent: {type: "number"}
+          implementation_lead_time_hours: {type: "number"}
+
+      implementation:
+        algorithm: "Multi-criteria decision making"
+        method: "Cost-benefit analysis with emissions weighting"
+
+    # Tool 10: Economizer Performance
+    - tool_id: "analyze_economizer_performance"
+      name: "analyze_economizer_performance"
+      category: "analysis"
+      deterministic: true
+
+      description: "Analyzes economizer (feedwater preheater) performance and optimization potential"
+
+      parameters:
+        type: "object"
+        properties:
+          economizer_specs:
+            type: "object"
+            properties:
+              type: {type: "string"}
+              tube_area_m2: {type: "number"}
+              tube_material: {type: "string"}
+              design_temp_c: {type: "number"}
+              age_years: {type: "integer"}
+
+          flue_gas_conditions:
+            type: "object"
+            properties:
+              flow_rate_kg_s: {type: "number"}
+              inlet_temp_c: {type: "number"}
+              outlet_temp_c: {type: "number"}
+              composition_o2_percent: {type: "number"}
+
+          feedwater_conditions:
+            type: "object"
+            properties:
+              flow_rate_kg_hr: {type: "number"}
+              inlet_temp_c: {type: "number"}
+              outlet_temp_c: {type: "number"}
+
+        required: ["economizer_specs", "flue_gas_conditions", "feedwater_conditions"]
+
+      returns:
+        type: "object"
+        properties:
+          heat_recovery_mw: {type: "number"}
+          effectiveness_percent: {type: "number"}
+          fouling_factor: {type: "number"}
+          tube_cleanliness_percent: {type: "number"}
+          stack_gas_temp_reduction_c: {type: "number"}
+          efficiency_gain_percent: {type: "number"}
+          scaling_risk: {type: "string", enum: ["low", "medium", "high"]}
+          maintenance_required: {type: "boolean"}
+          maintenance_recommendation: {type: "string"}
+
+      implementation:
+        physics: "Heat exchanger analysis, fouling factor estimation"
+        method: "Effectiveness-NTU method"
+
+# ============================================================================
+# SECTION 4: AI INTEGRATION
+# ============================================================================
+
+ai_integration:
+  provider: "anthropic"
+  model: "claude-3-opus-20240229"
+
+  configuration:
+    temperature: 0.0  # CRITICAL: Deterministic (NO randomness)
+    seed: 42         # CRITICAL: Reproducible results
+    max_tokens: 2048
+    tool_choice: "auto"
+    provenance_tracking: true
+    max_iterations: 5
+    budget_usd: 0.25
+
+  system_prompt: |
+    You are the BoilerEfficiencyOptimizer, the AI orchestrator for industrial boiler optimization.
+
+    Your core responsibilities:
+    1. Analyze boiler operational data and sensor readings in real-time
+    2. Perform ALL numeric calculations using deterministic tools (NEVER estimate)
+    3. Optimize combustion, steam generation, and emissions simultaneously
+    4. Ensure compliance with ASME PTC 4.1, EPA, and ISO 50001 standards
+    5. Provide actionable recommendations with quantified benefits
+    6. Maintain complete provenance tracking for all decisions
+
+    Critical constraints:
+    - Temperature: 0.0 (deterministic), Seed: 42 (reproducible)
+    - All efficiency/emissions/cost values come from tool calculations
+    - No approximations in numeric outputs
+    - Safety limits are HARD constraints (never violated)
+    - Compliance status determined by check_emissions_compliance tool
+
+    You optimize for:
+    PRIMARY: Fuel efficiency (15-25% improvement potential)
+    SECONDARY: Emissions reduction (NOx, CO2 compliance)
+    TERTIARY: Operating cost optimization
+
+    Integration context:
+    - Receive real-time data from SCADA/DCS (every 5-60 seconds)
+    - Coordinate with GL-001 ProcessHeatOrchestrator for multi-boiler optimization
+    - Report to Fuel Management and Emissions Monitoring systems
+    - Alert operations team when manual intervention needed
+
+  tool_selection_strategy:
+    primary_tools:
+      - "calculate_boiler_efficiency"
+      - "optimize_combustion"
+      - "calculate_emissions"
+
+    conditional_tools:
+      high_load: "optimize_steam_generation"
+      emissions_concern: "check_emissions_compliance"
+      efficiency_degradation: "analyze_thermal_efficiency"
+      fuel_switching: "optimize_fuel_selection"
+      heat_recovery: "analyze_economizer_performance"
+
+# ============================================================================
+# SECTION 5: SUB-AGENTS
+# ============================================================================
+
+sub_agents:
+  coordination_architecture:
+    pattern: "no_sub_agents"
+    description: "GL-002 operates as specialized optimizer, receives commands from GL-001"
+    interaction_model: "request_response"
+
+  parent_agent:
+    agent_id: "GL-001"
+    relationship: "coordinates_with"
+    communication_protocol: "message_passing"
+    priority: "high"
+
+  external_coordinations:
+    - system: "GL-003 BoilerTubeWallThicknessAnalyzer"
+      relationship: "receives_alerts_from"
+      data_type: "tube degradation status"
+
+    - system: "GL-004 CombustionAnalyzer"
+      relationship: "coordinates_with"
+      data_type: "combustion quality metrics"
+
+    - system: "GL-012 FeedwaterConditioningOptimizer"
+      relationship: "coordinates_with"
+      data_type: "water chemistry targets"
+
+# ============================================================================
+# SECTION 6: INPUTS
+# ============================================================================
+
+inputs:
+  schema:
+    type: "object"
+    properties:
+      operation_mode:
+        type: "string"
+        enum: ["monitor", "optimize", "emergency", "analyze", "report", "maintenance"]
+        description: "Operating mode for the optimizer"
+
+      boiler_identifier:
+        type: "object"
+        properties:
+          site_id: {type: "string"}
+          plant_id: {type: "string"}
+          boiler_id: {type: "string"}
+        required: ["site_id", "plant_id", "boiler_id"]
+
+      sensor_data:
+        type: "object"
+        properties:
+          timestamp: {type: "string", format: "date-time"}
+          fuel_flow_rate_kg_hr: {type: "number"}
+          combustion_air_temp_c: {type: "number"}
+          flue_gas_temp_c: {type: "number"}
+          steam_flow_rate_kg_hr: {type: "number"}
+          feedwater_temp_c: {type: "number"}
+          pressure_bar: {type: "number"}
+          o2_percent: {type: "number"}
+          co2_percent: {type: "number"}
+          co_ppm: {type: "number"}
+          nox_ppm: {type: "number"}
+          tds_ppm: {type: "number"}
+          steam_quality: {type: "number"}
+
+      operational_request:
+        type: "object"
+        properties:
+          steam_demand_kg_hr: {type: "number"}
+          pressure_setpoint_bar: {type: "number"}
+          temperature_setpoint_c: {type: "number"}
+          priority: {type: "string", enum: ["efficiency", "emissions", "reliability", "balanced"]}
+
+      emergency_signals:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            signal_type: {type: "string"}
+            severity: {type: "string", enum: ["warning", "critical", "shutdown"]}
+            description: {type: "string"}
+
+    required: ["operation_mode", "boiler_identifier"]
+
+  validation_rules:
+    - rule: "sensor_data_freshness"
+      check: "timestamp within 60 seconds of current time"
+    - rule: "pressure_range"
+      check: "pressure between min and max operational limits"
+    - rule: "temperature_range"
+      check: "temperature between min and max design limits"
+    - rule: "flow_rate_range"
+      check: "steam flow rate between 20% and 100% of capacity"
+
+# ============================================================================
+# SECTION 7: OUTPUTS
+# ============================================================================
+
+outputs:
+  schema:
+    type: "object"
+    properties:
+      optimization_status:
+        type: "object"
+        properties:
+          operation_mode: {type: "string"}
+          system_status: {type: "string", enum: ["nominal", "warning", "critical"]}
+          timestamp: {type: "string", format: "date-time"}
+
+      efficiency_metrics:
+        type: "object"
+        properties:
+          current_efficiency_percent: {type: "number"}
+          design_efficiency_percent: {type: "number"}
+          efficiency_improvement_potential_percent: {type: "number"}
+          heat_input_mw: {type: "number"}
+          heat_output_mw: {type: "number"}
+          specific_fuel_consumption_kg_mwh: {type: "number"}
+
+      combustion_optimization:
+        type: "object"
+        properties:
+          recommended_excess_air_percent: {type: "number"}
+          recommended_fuel_flow_kg_hr: {type: "number"}
+          recommended_combustion_temp_c: {type: "number"}
+          fuel_savings_usd_hr: {type: "number"}
+          implementation_time_minutes: {type: "integer"}
+
+      emissions_status:
+        type: "object"
+        properties:
+          co2_emissions_kg_hr: {type: "number"}
+          co2_intensity_kg_mwh: {type: "number"}
+          nox_emissions_ppm: {type: "number"}
+          compliance_status: {type: "string", enum: ["compliant", "warning", "violation"]}
+          violations: {type: "array", items: {type: "string"}}
+          reduction_potential_percent: {type: "number"}
+
+      steam_quality_assessment:
+        type: "object"
+        properties:
+          steam_quality: {type: "number"}
+          tds_ppm: {type: "number"}
+          steam_flow_kg_hr: {type: "number"}
+          pressure_bar: {type: "number"}
+          quality_compliance: {type: "boolean"}
+
+      recommendations:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            action: {type: "string"}
+            benefit_type: {type: "string", enum: ["efficiency", "emissions", "cost", "safety"]}
+            quantified_benefit: {type: "number"}
+            unit: {type: "string"}
+            priority: {type: "string", enum: ["low", "medium", "high", "critical"]}
+            implementation_time_minutes: {type: "integer"}
+
+      provenance:
+        type: "object"
+        properties:
+          calculation_hash: {type: "string", description: "SHA-256 hash of calculation"}
+          tool_calls: {type: "array", items: {type: "string"}, description: "Tools used in optimization"}
+          data_sources: {type: "array", items: {type: "string"}, description: "Sources of input data"}
+          confidence_level: {type: "number", minimum: 0, maximum: 1}
+
+  quality_guarantees:
+    - "All numeric outputs calculated via deterministic tools"
+    - "Complete audit trail with SHA-256 provenance hashes"
+    - "Zero hallucinated values in efficiency/emissions calculations"
+    - "All values comply with ASME PTC 4.1 methodology"
+    - "Reproducible results (seed=42, temperature=0.0)"
+
+# ============================================================================
+# SECTION 8: TESTING
+# ============================================================================
+
+testing:
+  test_coverage_target: 0.85  # Minimum 85% code coverage
+
+  test_categories:
+    - category: "unit_tests"
+      description: "Test individual calculation tools"
+      count: 20
+      coverage_target: 0.90
+      examples:
+        - "test_efficiency_calculation_accuracy"
+        - "test_combustion_optimization_convergence"
+        - "test_emissions_calculator_compliance"
+        - "test_steam_generation_constraints"
+        - "test_blowdown_optimization_bounds"
+
+    - category: "integration_tests"
+      description: "Test multi-tool optimization workflows"
+      count: 12
+      coverage_target: 0.85
+      examples:
+        - "test_full_optimization_workflow"
+        - "test_emissions_compliance_check_integration"
+        - "test_economizer_heat_recovery_impact"
+        - "test_fuel_switching_optimization"
+
+    - category: "determinism_tests"
+      description: "Verify reproducible results"
+      count: 5
+      coverage_target: 1.00
+      examples:
+        - "test_seed_42_reproducibility"
+        - "test_identical_inputs_identical_outputs"
+        - "test_no_random_float_operations"
+
+    - category: "performance_tests"
+      description: "Verify speed and resource requirements"
+      count: 8
+      coverage_target: 0.85
+      examples:
+        - "test_single_optimization_latency"
+        - "test_batch_processing_throughput"
+        - "test_memory_usage_under_load"
+
+    - category: "compliance_tests"
+      description: "Test regulatory compliance"
+      count: 10
+      coverage_target: 1.00
+      examples:
+        - "test_asme_ptc_4_1_compliance"
+        - "test_epa_emissions_calculation"
+        - "test_iso_50001_kpi_accuracy"
+
+    - category: "safety_tests"
+      description: "Test safety limit enforcement"
+      count: 8
+      coverage_target: 1.00
+      examples:
+        - "test_pressure_limit_enforcement"
+        - "test_temperature_limit_enforcement"
+        - "test_emergency_shutdown_trigger"
+
+  performance_requirements:
+    max_latency_ms:
+      single_optimization: 500
+      full_calculation_suite: 2000
+      emergency_response: 100
+
+    throughput:
+      optimizations_per_minute: 60
+      sensor_readings_per_second: 1000
+      calculations_per_second: 500
+
+    accuracy_targets:
+      efficiency_calculation: 0.98    # 98% accuracy vs. ASME standard
+      emissions_calculation: 0.99     # 99% accuracy vs. measured
+      optimization_improvement: 0.95  # 95% of theoretical max achieved
+
+  test_data_sets:
+    synthetic_scenarios: 150
+    historical_replays: 50
+    edge_cases: 30
+    compliance_scenarios: 25
+
+# ============================================================================
+# SECTION 9: DEPLOYMENT
+# ============================================================================
+
+deployment:
+  pack_id: "industrial/boiler_systems/efficiency_optimizer"
+  pack_version: "1.0.0"
+
+  resource_requirements:
+    memory_mb: 1024
+    cpu_cores: 2
+    gpu_required: false
+    disk_space_gb: 5
+    network_bandwidth_mbps: 50
+
+  dependencies:
+    python_packages:
+      - "numpy>=1.24,<2.0"
+      - "scipy>=1.10,<2.0"
+      - "pydantic>=2.0,<3.0"
+      - "pandas>=2.0,<3.0"
+
+    greenlang_modules:
+      - "greenlang.agents.base>=2.0"
+      - "greenlang.intelligence>=2.0"
+      - "greenlang.tools.calculations>=1.0"
+      - "greenlang.orchestration>=1.0"
+
+    external_systems:
+      - system: "SCADA/DCS"
+        protocol: "OPC UA"
+        version: "1.04"
+      - system: "Fuel Management System"
+        protocol: "REST API"
+        version: "1.0"
+      - system: "Emissions Monitoring"
+        protocol: "MQTT"
+        version: "3.1.1"
+
+  api_endpoints:
+    - endpoint: "/api/v1/boiler/optimize"
+      method: "POST"
+      authentication: "required"
+      rate_limit: "60 req/min"
+      description: "Execute optimization cycle"
+
+    - endpoint: "/api/v1/boiler/efficiency"
+      method: "GET"
+      authentication: "required"
+      rate_limit: "1000 req/min"
+      description: "Get current efficiency metrics"
+
+    - endpoint: "/api/v1/boiler/emissions"
+      method: "GET"
+      authentication: "required"
+      rate_limit: "500 req/min"
+      description: "Get emissions status"
+
+    - endpoint: "/api/v1/boiler/recommendations"
+      method: "GET"
+      authentication: "required"
+      rate_limit: "100 req/min"
+      description: "Get optimization recommendations"
+
+  deployment_environments:
+    development:
+      replicas: 1
+      auto_scaling: false
+      resource_limits:
+        memory_mb: 512
+        cpu_millicores: 500
+
+    staging:
+      replicas: 2
+      auto_scaling: true
+      min_replicas: 1
+      max_replicas: 3
+      resource_limits:
+        memory_mb: 1024
+        cpu_millicores: 1000
+
+    production:
+      replicas: 3
+      auto_scaling: true
+      min_replicas: 2
+      max_replicas: 5
+      multi_region: true
+      resource_limits:
+        memory_mb: 2048
+        cpu_millicores: 2000
+
+# ============================================================================
+# SECTION 10: DOCUMENTATION
+# ============================================================================
+
+documentation:
+  readme_sections:
+    - "Overview and Purpose"
+    - "Key Features and Capabilities"
+    - "Quick Start Guide"
+    - "Architecture Overview"
+    - "Tool Specifications"
+    - "API Reference"
+    - "Configuration Guide"
+    - "Integration Guide"
+    - "Optimization Examples"
+    - "Troubleshooting Guide"
+
+  example_use_cases:
+    - title: "Efficiency Optimization on Coal Boiler"
+      description: "Optimize coal-fired boiler from 78% to 84% efficiency"
+      input:
+        operation_mode: "optimize"
+        boiler_identifier: {site_id: "SITE-001", plant_id: "PLANT-A", boiler_id: "BOILER-01"}
+        optimization_objective: "efficiency"
+      expected_output:
+        efficiency_improvement_percent: 6.2
+        fuel_savings_usd_hr: 245
+        co2_reduction_kg_hr: 180
+      implementation_time_hours: 2
+
+    - title: "Emissions Compliance During Fuel Switching"
+      description: "Switch from coal to natural gas while maintaining NOx compliance"
+      input:
+        operation_mode: "optimize"
+        fuel_switching_requested: true
+        emissions_target: "NOx < 30 ppm"
+      expected_output:
+        fuel_type: "natural_gas"
+        nox_emissions_ppm: 28
+        compliance_status: "compliant"
+        cost_impact_usd_hr: -15
+
+    - title: "Steam Quality Improvement"
+      description: "Optimize blowdown and feedwater conditioning for high-purity steam"
+      input:
+        operation_mode: "optimize"
+        steam_quality_target: 0.99
+        max_tds_ppm: 2500
+      expected_output:
+        optimal_blowdown_rate_percent: 8.5
+        steam_quality: 0.995
+        water_quality_compliant: true
+        efficiency_gain_percent: 2.1
+
+  api_documentation:
+    format: "OpenAPI 3.0"
+    location: "/docs/api/boiler/optimizer"
+    interactive: true
+
+  troubleshooting_guides:
+    - "Low Efficiency Detection and Recovery"
+    - "Emissions Compliance Issues"
+    - "Steam Quality Problems"
+    - "Sensor Data Quality Issues"
+    - "Fuel Switching Failures"
+
+# ============================================================================
+# SECTION 11: COMPLIANCE
+# ============================================================================
+
+compliance:
+  zero_secrets: true  # No hardcoded credentials
+
+  standards:
+    - "ASME PTC 4.1 Boiler Performance Testing"
+    - "ASME PTC 4 Power Test Code for Steam Generators"
+    - "EN 12952 Water-tube Boilers and Auxiliary Equipment"
+    - "ISO 50001:2018 Energy Management Systems"
+    - "ISO 14064:2018 Greenhouse Gas Quantification"
+    - "EPA Mandatory GHG Reporting Rule (40 CFR 98 Subpart C)"
+    - "EPA CEMS Continuous Emissions Monitoring Standards"
+    - "EU Directive 2010/75/EU (IED) - Industrial Emissions"
+
+  security_requirements:
+    authentication: "JWT with RS256 signature"
+    authorization: "RBAC with principle of least privilege"
+    encryption_at_rest: "AES-256-GCM"
+    encryption_in_transit: "TLS 1.3"
+    audit_logging: "Complete with tamper-proof storage"
+    vulnerability_scanning: "Weekly with zero high/critical"
+
+  data_governance:
+    data_classification: "Confidential"
+    retention_period: "7 years for regulatory compliance"
+    backup_frequency: "Hourly incremental, daily full"
+    disaster_recovery: "RPO 1 hour, RTO 4 hours"
+    gdpr_compliant: true
+
+  regulatory_reporting:
+    - report: "EPA GHG Inventory Report"
+      frequency: "Annual"
+      format: "e-GGRT XML"
+      emissions_scope: "Scope 1 CO2 only"
+
+    - report: "ISO 50001 Energy KPI Report"
+      frequency: "Monthly"
+      format: "Custom JSON/CSV"
+      kpis: ["efficiency_percent", "specific_fuel_consumption", "energy_cost"]
+
+    - report: "Boiler Emissions Compliance Report"
+      frequency: "Daily"
+      format: "HTML/PDF"
+      recipients: ["Operations Manager", "Environmental Compliance Officer"]
+
+# ============================================================================
+# SECTION 12: METADATA
+# ============================================================================
+
+metadata:
+  specification_version: "2.0.0"
+  created_date: "2025-11-15"
+  last_modified: "2025-11-15"
+  authors:
+    - "GreenLang Product Management"
+    - "Industrial Boiler Domain Experts"
+    - "Thermodynamics and Combustion Engineers"
+
+  review_status: "APPROVED"
+  reviewed_by:
+    - "Head of Product"
+    - "Chief Architect"
+    - "Domain Expert - Boiler Systems"
+    - "Sustainability Lead"
+
+  change_log:
+    - version: "1.0.0"
+      date: "2025-11-15"
+      changes: "Initial specification for GL-002 BoilerEfficiencyOptimizer"
+      author: "Product Management Team"
+
+  tags:
+    - "boiler-optimization"
+    - "industrial-efficiency"
+    - "combustion-analysis"
+    - "emissions-compliance"
+    - "energy-management"
+    - "asme-ptc-4-1"
+    - "zero-hallucination"
+    - "deterministic-calculations"
+
+  related_documents:
+    - "GL_agent_requirement.md"
+    - "Boiler_Systems_Domain_Architecture.md"
+    - "ASME_PTC_4_1_Implementation_Guide.md"
+    - "Zero_Hallucination_Design.md"
+    - "Emissions_Compliance_Procedures.md"
+
+  support:
+    team: "Industrial Boiler Systems"
+    email: "boiler-systems@greenlang.ai"
+    slack: "#gl-boiler-systems"
+    documentation: "https://docs.greenlang.ai/agents/GL-002"
+    issue_tracker: "https://github.com/greenlang/agents/issues?label=GL-002"
+
+# ============================================================================
+# END OF SPECIFICATION - GL-002 BoilerEfficiencyOptimizer
+# ============================================================================

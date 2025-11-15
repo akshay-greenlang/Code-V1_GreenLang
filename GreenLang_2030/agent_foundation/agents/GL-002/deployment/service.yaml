@@ -1,0 +1,67 @@
+# GL-002 BoilerEfficiencyOptimizer - Kubernetes Service
+# ClusterIP service for internal communication
+# Provides stable endpoint for load balancing across pods
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-002-boiler-efficiency
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+    version: "1.0.0"
+  annotations:
+    description: "Service for GL-002 BoilerEfficiencyOptimizer"
+
+spec:
+  # ClusterIP for internal-only service (no external access)
+  # Use LoadBalancer or NodePort with Ingress for external access
+  type: ClusterIP
+
+  # Selector matches deployment labels
+  selector:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+
+  # Port configuration
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+
+  # Session affinity for stateful connections (optional)
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+---
+# Headless Service for StatefulSet compatibility (optional)
+# Use this if GL-002 needs StatefulSet instead of Deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-002-boiler-efficiency-headless
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+    version: "1.0.0"
+
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  selector:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP

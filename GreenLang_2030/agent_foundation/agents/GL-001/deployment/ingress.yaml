@@ -1,0 +1,246 @@
+# GL-001 ProcessHeatOrchestrator - Kubernetes Ingress
+# Production-grade HTTPS ingress with TLS, rate limiting, and security headers
+# Automatic certificate management via cert-manager
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-001-process-heat-ingress
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    version: "1.0.0"
+  annotations:
+    # ========================================================================
+    # INGRESS CONTROLLER CONFIGURATION
+    # ========================================================================
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/acme-challenge-type: "http01"
+
+    # ========================================================================
+    # SSL/TLS CONFIGURATION
+    # ========================================================================
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.3"  # Only TLS 1.3 for maximum security
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305"
+    nginx.ingress.kubernetes.io/ssl-prefer-server-ciphers: "true"
+    nginx.ingress.kubernetes.io/hsts: "true"
+    nginx.ingress.kubernetes.io/hsts-max-age: "31536000"  # 1 year
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/hsts-preload: "true"
+
+    # ========================================================================
+    # RATE LIMITING (Production-grade)
+    # ========================================================================
+    nginx.ingress.kubernetes.io/limit-rps: "1000"          # 1000 requests/sec per IP
+    nginx.ingress.kubernetes.io/limit-rpm: "60000"         # 60,000 requests/min per IP
+    nginx.ingress.kubernetes.io/limit-connections: "100"   # 100 concurrent connections per IP
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"  # Allow 5x burst
+    nginx.ingress.kubernetes.io/limit-whitelist: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"  # No limits for internal networks
+
+    # ========================================================================
+    # AUTHENTICATION (Enable if needed)
+    # ========================================================================
+    # Option 1: Basic Auth
+    # nginx.ingress.kubernetes.io/auth-type: "basic"
+    # nginx.ingress.kubernetes.io/auth-secret: "gl-001-basic-auth"
+    # nginx.ingress.kubernetes.io/auth-realm: "GL-001 ProcessHeatOrchestrator - Authentication Required"
+
+    # Option 2: External OAuth2/OIDC
+    # nginx.ingress.kubernetes.io/auth-url: "https://oauth2.greenlang.ai/oauth2/auth"
+    # nginx.ingress.kubernetes.io/auth-signin: "https://oauth2.greenlang.ai/oauth2/start?rd=$scheme://$host$request_uri"
+
+    # ========================================================================
+    # CORS CONFIGURATION
+    # ========================================================================
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.greenlang.ai,https://dashboard.greenlang.ai"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,X-API-Key,X-Request-ID"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Length,Content-Range,X-Request-ID,X-Response-Time"
+    nginx.ingress.kubernetes.io/cors-max-age: "86400"  # 24 hours
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+
+    # ========================================================================
+    # SECURITY HEADERS
+    # ========================================================================
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      # Security headers
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.greenlang.ai";
+
+      # Request ID for tracing
+      more_set_headers "X-Request-ID: $request_id";
+
+      # Server information hiding
+      more_set_headers "Server: GreenLang";
+
+    # ========================================================================
+    # REQUEST/RESPONSE SIZE LIMITS
+    # ========================================================================
+    nginx.ingress.kubernetes.io/client-max-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "1m"
+
+    # ========================================================================
+    # CONNECTION MANAGEMENT
+    # ========================================================================
+    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "64"
+    nginx.ingress.kubernetes.io/upstream-keepalive-timeout: "60"
+    nginx.ingress.kubernetes.io/upstream-keepalive-requests: "100"
+
+    # ========================================================================
+    # PROXY SETTINGS (Timeouts for long-running operations)
+    # ========================================================================
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"      # 2 minutes for optimization operations
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"      # 2 minutes for optimization operations
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "0"
+    nginx.ingress.kubernetes.io/proxy-buffering: "on"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "8k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+
+    # ========================================================================
+    # LOAD BALANCING
+    # ========================================================================
+    nginx.ingress.kubernetes.io/load-balance: "ewma"  # Exponentially weighted moving average (best for varying response times)
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"  # Consistent hashing for caching
+
+    # ========================================================================
+    # LOGGING
+    # ========================================================================
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "false"
+
+    # ========================================================================
+    # MONITORING AND TRACING
+    # ========================================================================
+    nginx.ingress.kubernetes.io/enable-opentracing: "true"
+    nginx.ingress.kubernetes.io/opentracing-trust-incoming-span: "true"
+
+spec:
+  # ============================================================================
+  # TLS CONFIGURATION
+  # ============================================================================
+  tls:
+    - hosts:
+        - api.process-heat.greenlang.ai
+        - gl-001.greenlang.ai
+      secretName: gl-001-tls-cert
+
+  # ============================================================================
+  # HTTP ROUTING RULES
+  # ============================================================================
+  rules:
+    - host: api.process-heat.greenlang.ai
+      http:
+        paths:
+          # Main API endpoints
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-001-process-heat
+                port:
+                  number: 80
+
+          # Health check endpoints (public)
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: gl-001-process-heat
+                port:
+                  number: 80
+
+          # Readiness check
+          - path: /ready
+            pathType: Exact
+            backend:
+              service:
+                name: gl-001-process-heat
+                port:
+                  number: 80
+
+    # Alternative hostname
+    - host: gl-001.greenlang.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-001-process-heat
+                port:
+                  number: 80
+
+---
+# Ingress for metrics endpoint (internal only, no rate limiting)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-001-process-heat-metrics-ingress
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    ingress-type: "internal-metrics"
+  annotations:
+    kubernetes.io/ingress.class: "nginx-internal"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12"  # Internal only
+
+spec:
+  rules:
+    - host: metrics.gl-001.greenlang.internal
+      http:
+        paths:
+          - path: /api/v1/metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-001-process-heat
+                port:
+                  number: 8001
+
+---
+# Certificate for TLS (managed by cert-manager)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gl-001-tls-cert
+  namespace: greenlang
+spec:
+  secretName: gl-001-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: api.process-heat.greenlang.ai
+  dnsNames:
+    - api.process-heat.greenlang.ai
+    - gl-001.greenlang.ai
+  duration: 2160h  # 90 days
+  renewBefore: 360h  # Renew 15 days before expiry
+
+---
+# ClusterIssuer for Let's Encrypt (create once per cluster)
+# apiVersion: cert-manager.io/v1
+# kind: ClusterIssuer
+# metadata:
+#   name: letsencrypt-prod
+# spec:
+#   acme:
+#     server: https://acme-v02.api.letsencrypt.org/directory
+#     email: devops@greenlang.ai
+#     privateKeySecretRef:
+#       name: letsencrypt-prod
+#     solvers:
+#       - http01:
+#           ingress:
+#             class: nginx

@@ -1,0 +1,319 @@
+# Kubernetes Deployment for GreenLang AI Agents
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: greenlang-agent
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+    version: v1.0.0
+    component: ai-agent
+    tier: backend
+spec:
+  replicas: 9  # 3 per AZ for Multi-AZ HA
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # Zero-downtime deployments
+  selector:
+    matchLabels:
+      app: greenlang-agent
+      component: ai-agent
+  template:
+    metadata:
+      labels:
+        app: greenlang-agent
+        version: v1.0.0
+        component: ai-agent
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        fluentd.io/parser: "json"
+    spec:
+      serviceAccountName: greenlang-agent-sa
+
+      # Security context for pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Node selection - Multi-AZ High Availability
+      affinity:
+        podAntiAffinity:
+          # HARD requirement: Spread pods across availability zones
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - greenlang-agent
+            topologyKey: topology.kubernetes.io/zone
+          # SOFT requirement: Prefer different nodes within same zone
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - greenlang-agent
+              topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                - m5.xlarge
+                - m5.2xlarge
+                - m5.4xlarge
+
+      # Tolerations for GPU nodes
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      - key: node.kubernetes.io/not-ready
+        operator: Exists
+        effect: NoExecute
+        tolerationSeconds: 300
+
+      # Init containers
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36
+        command: ['sh', '-c']
+        args:
+        - until nc -z postgres-service 5432; do
+            echo "Waiting for database...";
+            sleep 2;
+          done
+
+      - name: wait-for-redis
+        image: busybox:1.36
+        command: ['sh', '-c']
+        args:
+        - until nc -z redis-service 6379; do
+            echo "Waiting for Redis...";
+            sleep 2;
+          done
+
+      - name: migrate-database
+        image: greenlang/agent:v1.0.0
+        command: ['python', '-m', 'greenlang.migrations.run']
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: greenlang-secrets
+              key: database-url
+
+      # Main container
+      containers:
+      - name: greenlang-agent
+        image: greenlang/agent:v1.0.0
+        imagePullPolicy: Always
+
+        # Container security context
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        - name: grpc
+          containerPort: 50051
+          protocol: TCP
+
+        # Environment variables
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "INFO"
+        - name: MAX_WORKERS
+          value: "4"
+        - name: ENABLE_METRICS
+          value: "true"
+        - name: ENABLE_TRACING
+          value: "true"
+
+        # Secrets
+        envFrom:
+        - configMapRef:
+            name: greenlang-config
+        - secretRef:
+            name: greenlang-secrets
+
+        # Resource limits
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+            ephemeral-storage: "1Gi"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+            ephemeral-storage: "2Gi"
+            # nvidia.com/gpu: 1  # Uncomment for GPU support
+
+        # Health checks - Multi-AZ HA configuration
+        startupProbe:
+          httpGet:
+            path: /startup  # Simplified endpoint
+            port: 8000
+            httpHeaders:
+            - name: X-Probe-Type
+              value: Startup
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 30
+
+        livenessProbe:
+          httpGet:
+            path: /healthz  # Standard Kubernetes convention
+            port: 8000
+            httpHeaders:
+            - name: X-Probe-Type
+              value: Liveness
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          successThreshold: 1
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /ready  # Standard Kubernetes convention
+            port: 8000
+            httpHeaders:
+            - name: X-Probe-Type
+              value: Readiness
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+
+        # Volume mounts
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+          readOnly: false
+        - name: cache
+          mountPath: /app/.cache
+          readOnly: false
+        - name: models
+          mountPath: /app/models
+          readOnly: true
+        - name: config
+          mountPath: /app/configs
+          readOnly: true
+        - name: tls-certs
+          mountPath: /app/certs
+          readOnly: true
+
+      # Sidecar containers
+      - name: log-forwarder
+        image: fluent/fluent-bit:2.2
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - name: logs
+          mountPath: /var/log
+          readOnly: true
+
+      - name: metrics-exporter
+        image: prom/node-exporter:v1.7.0
+        ports:
+        - containerPort: 9100
+          name: metrics
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "25m"
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+
+      # Volumes
+      volumes:
+      - name: tmp
+        emptyDir:
+          sizeLimit: 1Gi
+      - name: cache
+        emptyDir:
+          sizeLimit: 2Gi
+      - name: logs
+        emptyDir:
+          sizeLimit: 500Mi
+      - name: models
+        persistentVolumeClaim:
+          claimName: greenlang-models-pvc
+      - name: config
+        configMap:
+          name: greenlang-config
+          defaultMode: 0444
+      - name: tls-certs
+        secret:
+          secretName: greenlang-tls
+          defaultMode: 0400
+
+      # Image pull secrets
+      imagePullSecrets:
+      - name: greenlang-registry-secret
+
+      # DNS policy
+      dnsPolicy: ClusterFirst
+
+      # Restart policy
+      restartPolicy: Always
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 60

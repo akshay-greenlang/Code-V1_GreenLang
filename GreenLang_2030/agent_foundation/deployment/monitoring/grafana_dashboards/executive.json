@@ -1,0 +1,295 @@
+{
+  "dashboard": {
+    "uid": "exec-dashboard",
+    "title": "Executive Dashboard - GreenLang Agent Foundation",
+    "description": "High-level KPIs and business metrics for executive visibility",
+    "tags": ["executive", "kpi", "business"],
+    "timezone": "browser",
+    "refresh": "1m",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "System Availability",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "avg_over_time(up{job=\"greenlang-agents\"}[24h]) * 100",
+            "refId": "A",
+            "legendFormat": "Availability"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 95},
+                {"color": "green", "value": 99}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 2,
+        "title": "Active Agents",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(greenlang_agents_agent_count)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": null}
+              ]
+            },
+            "unit": "short",
+            "displayName": "Active Agents"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Daily Throughput",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "sum(increase(greenlang_agents_messages_processed[24h]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "displayName": "Messages Processed (24h)",
+            "decimals": 0
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "orientation": "auto",
+          "textMode": "auto",
+          "colorMode": "value"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Cost Efficiency",
+        "type": "stat",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "expr": "(sum(increase(greenlang_agents_api_calls[24h])) * 0.002) / sum(increase(greenlang_agents_reports_generated[24h]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "displayName": "Cost per Report",
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Business Impact - Reports Generated",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 6},
+        "targets": [
+          {
+            "expr": "sum(increase(greenlang_agents_reports_generated[1h])) by (report_type)",
+            "legendFormat": "{{report_type}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "tooltip": {"mode": "multi"},
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "gradientMode": "opacity",
+              "spanNulls": false,
+              "showPoints": "never"
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Cost Trends",
+        "type": "graph",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 6},
+        "targets": [
+          {
+            "expr": "sum(increase(greenlang_agents_api_calls{api=\"llm\"}[1h])) * 0.002",
+            "legendFormat": "LLM Costs",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(greenlang_agents_pod_count) * 0.05 * 24",
+            "legendFormat": "Infrastructure Costs",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 20,
+              "gradientMode": "opacity"
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Compliance Status",
+        "type": "piechart",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "sum(increase(greenlang_agents_compliance_checks[24h])) by (status)",
+            "legendFormat": "{{status}}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "pieType": "donut",
+          "displayLabels": ["name", "percent"],
+          "legendDisplayMode": "list",
+          "legendPlacement": "right"
+        }
+      },
+      {
+        "id": 8,
+        "title": "Quality Score",
+        "type": "gauge",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 16},
+        "targets": [
+          {
+            "expr": "greenlang_agents_quality_score_overall",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": null},
+                {"color": "yellow", "value": 70},
+                {"color": "green", "value": 85}
+              ]
+            },
+            "displayName": "Overall Quality"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Key Performance Indicators",
+        "type": "table",
+        "datasource": "Prometheus",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 16},
+        "targets": [
+          {
+            "expr": "avg_over_time(up[24h]) * 100",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "cellHeight": "sm"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "custom",
+          "current": {
+            "text": "production",
+            "value": "production"
+          },
+          "options": [
+            {"text": "production", "value": "production"},
+            {"text": "staging", "value": "staging"},
+            {"text": "development", "value": "development"}
+          ]
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "type": "dashboard"
+        }
+      ]
+    },
+    "schemaVersion": 38,
+    "version": 1
+  },
+  "overwrite": true
+}

@@ -1,0 +1,452 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "GL-002 BoilerEfficiencyOptimizer - Software Bill of Materials",
+  "documentNamespace": "https://greenlang.ai/sbom/gl-002-boiler-efficiency-optimizer-1.0.0",
+  "creationInfo": {
+    "created": "2025-11-15T12:00:00Z",
+    "creators": [
+      "Tool: GL-SecScan-1.0.0"
+    ],
+    "licenseListVersion": "3.21"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-greenlang-gl-002",
+      "name": "GL-002 BoilerEfficiencyOptimizer",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "version": "1.0.0",
+      "supplier": "Organization: GreenLang",
+      "originator": "Organization: GreenLang",
+      "description": "Industrial boiler efficiency optimization agent with deterministic calculations following zero-hallucination principles"
+    },
+    {
+      "SPDXID": "SPDXRef-typer-0.9.0",
+      "name": "typer",
+      "downloadLocation": "https://pypi.org/project/typer/",
+      "filesAnalyzed": false,
+      "version": "0.9.0",
+      "supplier": "Organization: Sebastián Ramírez",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/typer@0.9.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-pydantic-2.5.3",
+      "name": "pydantic",
+      "downloadLocation": "https://pypi.org/project/pydantic/",
+      "filesAnalyzed": false,
+      "version": "2.5.3",
+      "supplier": "Organization: Pydantic Development Team",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pydantic@2.5.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-pyyaml-6.0.1",
+      "name": "pyyaml",
+      "downloadLocation": "https://pypi.org/project/pyyaml/",
+      "filesAnalyzed": false,
+      "version": "6.0.1",
+      "supplier": "Organization: PyYAML Contributors",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pyyaml@6.0.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-requests-2.31.0",
+      "name": "requests",
+      "downloadLocation": "https://pypi.org/project/requests/",
+      "filesAnalyzed": false,
+      "version": "2.31.0",
+      "supplier": "Organization: Kenneth Reitz",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/requests@2.31.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-httpx-0.26.0",
+      "name": "httpx",
+      "downloadLocation": "https://pypi.org/project/httpx/",
+      "filesAnalyzed": false,
+      "version": "0.26.0",
+      "supplier": "Organization: Tom Christie",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/httpx@0.26.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-cryptography-42.0.5",
+      "name": "cryptography",
+      "downloadLocation": "https://pypi.org/project/cryptography/",
+      "filesAnalyzed": false,
+      "version": "42.0.5",
+      "supplier": "Organization: The Cryptography Project Contributors",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "comment": "SECURITY: Updated from 42.0.2 to fix CVE-2024-0727 (CVSS 9.1) - OpenSSL DoS vulnerability in PKCS#12 processing",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/cryptography@42.0.5"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-PyJWT-2.8.0",
+      "name": "PyJWT",
+      "downloadLocation": "https://pypi.org/project/PyJWT/",
+      "filesAnalyzed": false,
+      "version": "2.8.0",
+      "supplier": "Organization: PyJWT Development Team",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "comment": "JWT token encoding and validation with RS256 signature verification",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/PyJWT@2.8.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-simpleeval-0.9.13",
+      "name": "simpleeval",
+      "downloadLocation": "https://pypi.org/project/simpleeval/",
+      "filesAnalyzed": false,
+      "version": "0.9.13",
+      "supplier": "Organization: danthedeckie",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "comment": "SECURITY: Safe evaluation of Python expressions (replaces eval/exec) - prevents arbitrary code execution",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/simpleeval@0.9.13"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-lxml-5.1.0",
+      "name": "lxml",
+      "downloadLocation": "https://pypi.org/project/lxml/",
+      "filesAnalyzed": false,
+      "version": "5.1.0",
+      "supplier": "Organization: lxml Development Team",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "comment": "Latest with security patches for XML parsing",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/lxml@5.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-pandas-2.1.4",
+      "name": "pandas",
+      "downloadLocation": "https://pypi.org/project/pandas/",
+      "filesAnalyzed": false,
+      "version": "2.1.4",
+      "supplier": "Organization: NumFOCUS",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pandas@2.1.4"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-numpy-1.26.3",
+      "name": "numpy",
+      "downloadLocation": "https://pypi.org/project/numpy/",
+      "filesAnalyzed": false,
+      "version": "1.26.3",
+      "supplier": "Organization: NumPy Developers",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/numpy@1.26.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-scipy-1.12.0",
+      "name": "scipy",
+      "downloadLocation": "https://pypi.org/project/scipy/",
+      "filesAnalyzed": false,
+      "version": "1.12.0",
+      "supplier": "Organization: SciPy Developers",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "comment": "Statistical distributions for Monte Carlo simulations in combustion analysis",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/scipy@1.12.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-redis-5.0.1",
+      "name": "redis",
+      "downloadLocation": "https://pypi.org/project/redis/",
+      "filesAnalyzed": false,
+      "version": "5.0.1",
+      "supplier": "Organization: Redis Inc.",
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "comment": "Caching layer with 24h TTL for license compliance",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/redis@5.0.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-neo4j-5.16.0",
+      "name": "neo4j",
+      "downloadLocation": "https://pypi.org/project/neo4j/",
+      "filesAnalyzed": false,
+      "version": "5.16.0",
+      "supplier": "Organization: Neo4j",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "comment": "Graph database driver for knowledge graph storage and entity relationships",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/neo4j@5.16.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-weaviate-client-4.4.1",
+      "name": "weaviate-client",
+      "downloadLocation": "https://pypi.org/project/weaviate-client/",
+      "filesAnalyzed": false,
+      "version": "4.4.1",
+      "supplier": "Organization: Weaviate",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "comment": "Vector database client for entity storage and similarity search",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/weaviate-client@4.4.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-sentence-transformers-2.3.1",
+      "name": "sentence-transformers",
+      "downloadLocation": "https://pypi.org/project/sentence-transformers/",
+      "filesAnalyzed": false,
+      "version": "2.3.1",
+      "supplier": "Organization: UKP Lab",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "comment": "Vector embeddings for entity matching and similarity analysis",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/sentence-transformers@2.3.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-transformers-4.37.2",
+      "name": "transformers",
+      "downloadLocation": "https://pypi.org/project/transformers/",
+      "filesAnalyzed": false,
+      "version": "4.37.2",
+      "supplier": "Organization: Hugging Face",
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "comment": "BERT re-ranking models for semantic matching",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/transformers@4.37.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-torch-2.1.2",
+      "name": "torch",
+      "downloadLocation": "https://pypi.org/project/torch/",
+      "filesAnalyzed": false,
+      "version": "2.1.2",
+      "supplier": "Organization: Meta",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "comment": "PyTorch for BERT model execution",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/torch@2.1.2"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-scikit-learn-1.4.0",
+      "name": "scikit-learn",
+      "downloadLocation": "https://pypi.org/project/scikit-learn/",
+      "filesAnalyzed": false,
+      "version": "1.4.0",
+      "supplier": "Organization: scikit-learn developers",
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "comment": "Machine learning utilities for optimization algorithms",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/scikit-learn@1.4.0"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-greenlang-gl-002"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-typer-0.9.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pydantic-2.5.3"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pyyaml-6.0.1"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-requests-2.31.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-httpx-0.26.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-cryptography-42.0.5"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-PyJWT-2.8.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-simpleeval-0.9.13"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pandas-2.1.4"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-numpy-1.26.3"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-scipy-1.12.0"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-redis-5.0.1"
+    },
+    {
+      "spdxElementId": "SPDXRef-greenlang-gl-002",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-neo4j-5.16.0"
+    }
+  ]
+}

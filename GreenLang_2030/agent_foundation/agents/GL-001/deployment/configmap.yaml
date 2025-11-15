@@ -1,0 +1,370 @@
+# GL-001 ProcessHeatOrchestrator - ConfigMap
+# Non-sensitive configuration values for production deployment
+# Updated via CI/CD pipeline - DO NOT hardcode secrets here
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-config
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    version: "1.0.0"
+    tier: "orchestration"
+    criticality: "high"
+
+data:
+  # ============================================================================
+  # ENVIRONMENT CONFIGURATION
+  # ============================================================================
+  environment: "production"
+  log_level: "INFO"
+
+  # Application metadata
+  app_name: "GL-001 ProcessHeatOrchestrator"
+  app_version: "1.0.0"
+  deployment_region: "us-east-1"
+
+  # ============================================================================
+  # API CONFIGURATION
+  # ============================================================================
+  api_host: "0.0.0.0"
+  api_port: "8000"
+  api_prefix: "/api/v1"
+  api_timeout_seconds: "30"
+  api_max_request_size_mb: "10"
+
+  # Metrics and monitoring
+  metrics_enabled: "true"
+  metrics_port: "8001"
+  metrics_path: "/api/v1/metrics"
+  metrics_export_interval_seconds: "15"
+
+  # Admin interface
+  admin_enabled: "true"
+  admin_port: "8002"
+  admin_path: "/admin"
+
+  # ============================================================================
+  # OPTIMIZATION CONFIGURATION
+  # ============================================================================
+  optimization_timeout_seconds: "2000"
+  optimization_default_strategy: "thermal_efficiency"
+  max_concurrent_optimizations: "150"
+  optimization_convergence_tolerance: "0.001"
+  optimization_max_iterations: "1000"
+
+  # Heat distribution optimization
+  heat_distribution_algorithm: "network_flow"
+  heat_distribution_pressure_drop_penalty: "0.1"
+  heat_distribution_temperature_penalty: "0.05"
+
+  # Energy balance settings
+  energy_balance_closure_tolerance_percent: "1.0"
+  energy_balance_validation_enabled: "true"
+
+  # ============================================================================
+  # THERMAL EFFICIENCY SETTINGS
+  # ============================================================================
+  thermal_efficiency_target_percent: "88.0"
+  thermal_efficiency_warning_threshold_percent: "85.0"
+  thermal_efficiency_critical_threshold_percent: "80.0"
+  thermal_efficiency_calculation_interval_seconds: "60"
+
+  # Heat recovery
+  heat_recovery_enabled: "true"
+  heat_recovery_min_temperature_c: "150.0"
+  heat_recovery_efficiency_target_percent: "75.0"
+
+  # ============================================================================
+  # EMISSIONS COMPLIANCE
+  # ============================================================================
+  emissions_compliance_mode: "strict"
+  emissions_nox_limit_ppm: "30"
+  emissions_co_limit_ppm: "100"
+  emissions_so2_limit_ppm: "75"
+  emissions_co2_reporting_enabled: "true"
+  emissions_monitoring_interval_seconds: "30"
+  emissions_alert_threshold_percent: "90"
+
+  # Regulatory standards
+  emissions_standard: "EPA_CEMS"
+  emissions_reporting_format: "e-GGRT_XML"
+
+  # ============================================================================
+  # AGENT COORDINATION SETTINGS
+  # ============================================================================
+  agent_coordination_enabled: "true"
+  agent_coordination_mode: "hierarchical"
+  agent_message_timeout_seconds: "10"
+  agent_heartbeat_interval_seconds: "5"
+  agent_max_retry_attempts: "3"
+  agent_backoff_multiplier: "2.0"
+
+  # Sub-agent management
+  subagent_discovery_enabled: "true"
+  subagent_health_check_interval_seconds: "30"
+  subagent_max_concurrent_tasks: "50"
+
+  # Message queue settings
+  message_queue_max_size: "10000"
+  message_queue_consumer_threads: "8"
+  message_queue_batch_size: "100"
+
+  # ============================================================================
+  # SCADA INTEGRATION
+  # ============================================================================
+  scada_integration_enabled: "true"
+  scada_protocol: "OPC_UA"
+  scada_connection_pool_size: "10"
+  scada_connection_timeout_seconds: "30"
+  scada_data_buffer_hours: "24"
+  scada_sampling_rate_hz: "1.0"
+
+  # Circuit breaker configuration
+  scada_circuit_breaker_enabled: "true"
+  scada_circuit_breaker_failure_threshold: "5"
+  scada_circuit_breaker_recovery_timeout_seconds: "60"
+  scada_circuit_breaker_half_open_calls: "3"
+
+  # Data quality
+  scada_data_quality_min_percent: "80"
+  scada_data_validation_enabled: "true"
+  scada_outlier_detection_enabled: "true"
+  scada_outlier_threshold_sigma: "3.0"
+
+  # ============================================================================
+  # ERP INTEGRATION
+  # ============================================================================
+  erp_integration_enabled: "true"
+  erp_sync_interval_seconds: "300"
+  erp_batch_size: "500"
+  erp_timeout_seconds: "60"
+  erp_retry_attempts: "3"
+
+  # Rate limiting
+  erp_rate_limit_enabled: "true"
+  erp_rate_limit_requests_per_minute: "100"
+  erp_rate_limit_burst: "20"
+
+  # Supported ERP systems
+  erp_systems_supported: "SAP,Oracle,Dynamics365,Workday"
+
+  # ============================================================================
+  # PERFORMANCE TUNING
+  # ============================================================================
+  # Caching configuration
+  cache_enabled: "true"
+  cache_backend: "redis"
+  cache_ttl_seconds: "300"
+  cache_max_size_mb: "2048"
+  cache_eviction_policy: "LRU"
+  cache_compression_enabled: "true"
+
+  # Computation caching
+  computation_cache_enabled: "true"
+  computation_cache_ttl_seconds: "3600"
+  computation_cache_key_include_timestamp: "false"
+
+  # Batch processing
+  batch_processing_enabled: "true"
+  batch_size: "100"
+  batch_timeout_seconds: "30"
+
+  # Connection pooling
+  connection_pool_enabled: "true"
+  connection_pool_size: "20"
+  connection_pool_max_overflow: "30"
+  connection_pool_recycle_seconds: "3600"
+
+  # ============================================================================
+  # MEMORY MANAGEMENT
+  # ============================================================================
+  memory_short_term_max_entries: "1000"
+  memory_long_term_max_entries: "10000"
+  memory_persistence_enabled: "true"
+  memory_persistence_interval_seconds: "300"
+  memory_cleanup_enabled: "true"
+  memory_cleanup_interval_seconds: "3600"
+
+  # ============================================================================
+  # SECURITY CONFIGURATION
+  # ============================================================================
+  security_tls_enabled: "false"  # TLS termination at Ingress
+  security_tls_version_min: "1.3"
+  security_cors_enabled: "true"
+  security_cors_origins: "https://app.greenlang.ai,https://dashboard.greenlang.ai"
+  security_cors_methods: "GET,POST,PUT,DELETE"
+  security_cors_headers: "Content-Type,Authorization"
+
+  # Authentication
+  auth_enabled: "true"
+  auth_method: "oauth2_jwt"
+  auth_token_expiry_seconds: "3600"
+  auth_refresh_enabled: "true"
+
+  # Rate limiting (API level)
+  rate_limiting_enabled: "true"
+  rate_limit_requests_per_minute: "1000"
+  rate_limit_burst_size: "100"
+
+  # ============================================================================
+  # DATABASE CONFIGURATION
+  # ============================================================================
+  database_driver: "postgresql"
+  database_pool_size: "20"
+  database_pool_max_overflow: "40"
+  database_pool_timeout_seconds: "30"
+  database_echo: "false"
+  database_connect_timeout_seconds: "10"
+  database_command_timeout_seconds: "60"
+
+  # Connection health
+  database_health_check_enabled: "true"
+  database_health_check_interval_seconds: "30"
+  database_retry_on_failure: "true"
+  database_max_retry_attempts: "3"
+
+  # ============================================================================
+  # REDIS CONFIGURATION
+  # ============================================================================
+  redis_db: "0"
+  redis_socket_timeout_seconds: "5"
+  redis_socket_connect_timeout_seconds: "5"
+  redis_retry_on_timeout: "true"
+  redis_max_connections: "50"
+  redis_decode_responses: "true"
+
+  # ============================================================================
+  # LOGGING CONFIGURATION
+  # ============================================================================
+  logging_format: "json"
+  logging_structured: "true"
+  logging_to_file: "true"
+  logging_to_stdout: "true"
+  log_file_path: "/app/logs/gl-001.log"
+  log_rotation_enabled: "true"
+  log_rotation_size_mb: "100"
+  log_rotation_backup_count: "10"
+  log_retention_days: "365"  # 1 year for compliance
+
+  # Log levels by component
+  log_level_orchestrator: "INFO"
+  log_level_scada: "INFO"
+  log_level_erp: "INFO"
+  log_level_agents: "INFO"
+  log_level_tools: "INFO"
+  log_level_api: "INFO"
+
+  # Sensitive data filtering
+  logging_mask_secrets: "true"
+  logging_mask_pii: "true"
+
+  # ============================================================================
+  # MONITORING AND ALERTING
+  # ============================================================================
+  monitoring_enabled: "true"
+  monitoring_interval_seconds: "15"
+  monitoring_export_prometheus: "true"
+  monitoring_export_statsd: "false"
+
+  # Health checks
+  health_check_enabled: "true"
+  health_check_liveness_interval_seconds: "10"
+  health_check_readiness_interval_seconds: "5"
+
+  # Alert thresholds
+  alerting_enabled: "true"
+  alert_thermal_efficiency_drop_percent: "5.0"
+  alert_emissions_exceedance_percent: "10.0"
+  alert_error_rate_percent: "5.0"
+  alert_latency_p95_ms: "500"
+  alert_cache_hit_rate_percent: "70"
+  alert_memory_usage_percent: "80"
+  alert_cpu_usage_percent: "70"
+
+  # ============================================================================
+  # FEATURE FLAGS
+  # ============================================================================
+  feature_heat_recovery_optimization: "true"
+  feature_predictive_maintenance: "true"
+  feature_digital_twin_sync: "true"
+  feature_whatif_analysis: "true"
+  feature_netzero_planning: "true"
+  feature_agent_auto_discovery: "true"
+  feature_adaptive_learning: "false"  # Beta feature
+  feature_advanced_analytics: "true"
+
+  # ============================================================================
+  # DETERMINISM CONFIGURATION
+  # ============================================================================
+  determinism_enabled: "true"
+  determinism_validation_enabled: "true"
+  determinism_seed: "42"
+  determinism_temperature: "0.0"
+  determinism_provenance_tracking: "true"
+  determinism_hash_algorithm: "SHA256"
+
+  # ============================================================================
+  # AUDIT AND COMPLIANCE
+  # ============================================================================
+  audit_trail_enabled: "true"
+  audit_trail_retention_days: "2555"  # 7 years for compliance
+  audit_trail_immutable: "true"
+  audit_trail_include_calculations: "true"
+  audit_trail_include_decisions: "true"
+
+  # Regulatory compliance
+  compliance_mode: "strict"
+  compliance_standards: "ISO50001,ISO14001,ASME_PTC4,EPA_GHG,EU_ETS"
+  compliance_reporting_enabled: "true"
+  compliance_report_interval_days: "30"
+
+---
+# GL-001 ConfigMap for Staging Environment
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-config-staging
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    environment: "staging"
+
+data:
+  environment: "staging"
+  log_level: "DEBUG"
+  cache_ttl_seconds: "60"
+  optimization_timeout_seconds: "300"
+  max_concurrent_optimizations: "50"
+  feature_adaptive_learning: "true"
+  monitoring_interval_seconds: "10"
+  scada_data_buffer_hours: "4"
+  erp_sync_interval_seconds: "60"
+  audit_trail_retention_days: "90"
+
+---
+# GL-001 ConfigMap for Development Environment
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-001-config-dev
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat
+    agent: "GL-001"
+    environment: "development"
+
+data:
+  environment: "development"
+  log_level: "DEBUG"
+  cache_enabled: "false"
+  optimization_timeout_seconds: "600"
+  max_concurrent_optimizations: "10"
+  scada_integration_enabled: "false"  # Use mock data
+  erp_integration_enabled: "false"  # Use mock data
+  monitoring_enabled: "false"
+  audit_trail_enabled: "false"
+  determinism_validation_enabled: "true"

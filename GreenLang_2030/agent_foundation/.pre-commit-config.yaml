@@ -1,0 +1,236 @@
+# Pre-commit hooks for GreenLang Agent Foundation
+# Security, code quality, and dependency scanning
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # =============================================================================
+  # SECURITY SCANNING
+  # =============================================================================
+
+  # Python security scanner - Bandit
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml']
+        additional_dependencies: ["bandit[toml]"]
+
+  # Dependency vulnerability scanner - Safety
+  - repo: local
+    hooks:
+      - id: safety-check
+        name: Safety Check (Dependency Vulnerabilities)
+        entry: safety
+        args: ['check', '--json', '--output', 'safety-report.json']
+        language: system
+        pass_filenames: false
+        always_run: true
+
+      # pip-audit - PyPI vulnerability database
+      - id: pip-audit
+        name: Pip Audit (CVE Scanner)
+        entry: pip-audit
+        args: ['--format', 'json', '--output', 'pip-audit-report.json']
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  # =============================================================================
+  # CODE QUALITY & FORMATTING
+  # =============================================================================
+
+  # Black - Code formatter
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        language_version: python3.11
+
+  # isort - Import sorting
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile", "black"]
+
+  # Flake8 - Linting
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: ['--max-line-length=120', '--extend-ignore=E203,W503']
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-comprehensions
+          - flake8-simplify
+
+  # MyPy - Static type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - types-requests
+          - types-redis
+          - types-PyYAML
+          - types-python-dateutil
+        args: ['--strict', '--ignore-missing-imports']
+
+  # =============================================================================
+  # GENERAL CODE QUALITY
+  # =============================================================================
+
+  # Standard pre-commit hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # Prevent large files from being committed
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+
+      # Ensure files end with newline
+      - id: end-of-file-fixer
+
+      # Remove trailing whitespace
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+      # Check YAML syntax
+      - id: check-yaml
+        args: ['--safe']
+
+      # Check JSON syntax
+      - id: check-json
+
+      # Check TOML syntax
+      - id: check-toml
+
+      # Detect private keys
+      - id: detect-private-key
+
+      # Check for merge conflicts
+      - id: check-merge-conflict
+
+      # Check for debug statements
+      - id: debug-statements
+
+      # Check that scripts have shebang
+      - id: check-shebang-scripts-are-executable
+
+      # Check for case conflicts
+      - id: check-case-conflict
+
+      # Validate Python AST
+      - id: check-ast
+
+      # Check for mixed line endings
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # =============================================================================
+  # SECRETS DETECTION
+  # =============================================================================
+
+  # Detect-secrets - Prevent credential leaks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: |
+          (?x)^(
+            .*\.lock$|
+            .*requirements.*\.txt$|
+            \.secrets\.baseline$
+          )$
+
+  # =============================================================================
+  # DOCUMENTATION
+  # =============================================================================
+
+  # Documentation linting
+  - repo: https://github.com/markdownlint/markdownlint
+    rev: v0.12.0
+    hooks:
+      - id: markdownlint
+        args: ['--config', '.markdownlint.json']
+
+  # =============================================================================
+  # DOCKER
+  # =============================================================================
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        args: ['--ignore', 'DL3008']
+
+  # =============================================================================
+  # CONFIGURATION
+  # =============================================================================
+
+# Global exclusions
+exclude: |
+  (?x)^(
+    \.git/|
+    \.github/|
+    \.venv/|
+    venv/|
+    __pycache__/|
+    .*\.pyc$|
+    .*\.pyo$|
+    \.pytest_cache/|
+    \.mypy_cache/|
+    \.coverage$|
+    htmlcov/|
+    dist/|
+    build/|
+    .*\.egg-info/|
+    node_modules/|
+    \.DS_Store$|
+    nul$
+  )$
+
+# Fail fast: stop on first failure
+fail_fast: false
+
+# Concurrency
+default_stages: [commit, push]
+
+# CI settings
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [safety-check, pip-audit]
+  submodules: false
+
+# =============================================================================
+# USAGE INSTRUCTIONS
+# =============================================================================
+#
+# Installation:
+#   pip install pre-commit
+#   pre-commit install
+#   pre-commit install --hook-type commit-msg
+#
+# Run manually:
+#   pre-commit run --all-files
+#   pre-commit run --files file1.py file2.py
+#
+# Update hooks:
+#   pre-commit autoupdate
+#
+# Bypass (use sparingly):
+#   git commit --no-verify -m "message"
+#
+# Security baseline (first-time setup):
+#   detect-secrets scan > .secrets.baseline
+#
+# =============================================================================

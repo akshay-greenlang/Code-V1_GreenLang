@@ -1,0 +1,73 @@
+---
+formula_id: "scope2_purchased_electricity"
+name: "Scope 2 Purchased Electricity Emissions"
+standard: "GHG Protocol"
+version: "1.0"
+description: "Calculate CO2e emissions from purchased electricity (location-based method)"
+
+parameters:
+  - name: electricity_kwh
+    type: float
+    unit: kWh
+    required: true
+    validation:
+      min: 0
+      max: 100000000
+    description: "Electricity consumed in kWh"
+
+  - name: region
+    type: string
+    required: true
+    description: "Geographic region for grid emission factors (ISO country code)"
+
+  - name: reporting_year
+    type: int
+    required: false
+    default: 2024
+    validation:
+      min: 2020
+      max: 2030
+    description: "Reporting year for emission factors"
+
+calculation:
+  steps:
+    - step: 1
+      description: "Lookup grid electricity emission factor"
+      operation: lookup
+      table: emission_factors
+      lookup_keys:
+        category: "scope2"
+        activity_type: "electricity"
+        material_or_fuel: "grid_electricity"
+        region: "{region}"
+      output: emission_factor_kg_co2e_per_kwh
+
+    - step: 2
+      description: "Calculate total emissions (electricity × grid factor)"
+      operation: multiply
+      operands:
+        - electricity_kwh
+        - emission_factor_kg_co2e_per_kwh
+      output: total_emissions_kg_co2e
+
+    - step: 3
+      description: "Convert to tonnes CO2e"
+      operation: divide
+      operands:
+        - total_emissions_kg_co2e
+        - 1000
+      output: total_emissions_t_co2e
+
+output:
+  value: total_emissions_t_co2e
+  unit: "t_co2e"
+  precision: 3
+
+metadata:
+  category: "Scope 2"
+  subcategory: "Purchased Electricity"
+  ghg_protocol_category: "2"
+  methodology: "Location-based"
+  iso_14064_category: "Indirect GHG emissions from imported energy"
+  created_at: "2025-01-15"
+  last_updated: "2025-01-15"

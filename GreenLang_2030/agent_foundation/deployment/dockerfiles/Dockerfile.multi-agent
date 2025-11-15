@@ -1,0 +1,148 @@
+# Multi-Agent System Dockerfile for GreenLang
+# Orchestrates multiple AI agents with coordination capabilities
+
+ARG BASE_IMAGE=greenlang/agent-base:latest
+FROM ${BASE_IMAGE} as builder
+
+# Switch to root for installation
+USER root
+
+# Install additional system dependencies for multi-agent coordination
+RUN apt-get update && apt-get install -y \
+    supervisor \
+    nginx \
+    haproxy \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install multi-agent specific Python packages
+RUN pip install --no-cache-dir \
+    celery==5.3.4 \
+    redis==5.0.1 \
+    kombu==5.3.4 \
+    flower==2.0.1 \
+    dramatiq==1.15.0 \
+    apscheduler==3.10.4 \
+    ray==2.9.0 \
+    pydantic==2.5.3 \
+    fastapi==0.108.0 \
+    uvicorn[standard]==0.25.0 \
+    httpx==0.25.2 \
+    aioredis==2.0.1 \
+    aiokafka==0.10.0 \
+    confluent-kafka==2.3.0 \
+    networkx==3.2.1 \
+    graphviz==0.20.1
+
+# Final stage
+FROM ${BASE_IMAGE} as runtime
+
+# Copy installed packages from builder
+COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /usr/bin/supervisor* /usr/bin/
+COPY --from=builder /usr/sbin/nginx /usr/sbin/
+COPY --from=builder /usr/sbin/haproxy /usr/sbin/
+
+# Switch to root for setup
+USER root
+
+# Create directories for multi-agent system
+RUN mkdir -p /app/agents \
+             /app/orchestrator \
+             /app/communication \
+             /app/shared_memory \
+             /app/logs/agents \
+             /var/log/supervisor \
+             /var/run/supervisor \
+             /etc/supervisor/conf.d && \
+    chown -R greenlang:greenlang /app /var/log/supervisor /var/run/supervisor
+
+# Copy multi-agent configurations
+COPY --chown=greenlang:greenlang configs/multi_agent_config.yaml /app/configs/
+COPY --chown=greenlang:greenlang configs/supervisor /etc/supervisor/conf.d/
+COPY --chown=greenlang:greenlang configs/nginx/agent-proxy.conf /etc/nginx/sites-available/
+COPY --chown=greenlang:greenlang configs/haproxy/haproxy.cfg /etc/haproxy/
+
+# Copy multi-agent source code
+COPY --chown=greenlang:greenlang src/multi_agent /app/src/multi_agent
+COPY --chown=greenlang:greenlang src/orchestrator /app/src/orchestrator
+COPY --chown=greenlang:greenlang src/communication /app/src/communication
+COPY --chown=greenlang:greenlang scripts/multi_agent_init.py /app/scripts/
+
+# Configure supervisor for process management
+COPY --chown=greenlang:greenlang scripts/supervisord.conf /etc/supervisor/supervisord.conf
+
+# Environment variables for multi-agent system
+ENV MULTI_AGENT_MODE=true \
+    MAX_AGENTS=10 \
+    AGENT_COMMUNICATION=redis \
+    ORCHESTRATOR_TYPE=centralized \
+    COORDINATION_PROTOCOL=consensus \
+    MESSAGE_BROKER=redis://localhost:6379 \
+    TASK_QUEUE=celery \
+    AGENT_DISCOVERY=automatic \
+    LOAD_BALANCING=round_robin \
+    FAULT_TOLERANCE=enabled \
+    AGENT_HEARTBEAT_INTERVAL=30 \
+    AGENT_TIMEOUT=300
+
+# Create startup script
+RUN cat > /app/start_multi_agent.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "Starting GreenLang Multi-Agent System..."
+
+# Start Redis (if using embedded)
+if [ "$USE_EMBEDDED_REDIS" = "true" ]; then
+    redis-server --daemonize yes
+fi
+
+# Start message broker (if using embedded)
+if [ "$USE_EMBEDDED_BROKER" = "true" ]; then
+    python /app/scripts/start_broker.py &
+fi
+
+# Initialize shared memory and communication channels
+python /app/scripts/multi_agent_init.py
+
+# Start supervisor to manage all agents
+/usr/bin/supervisord -c /etc/supervisor/supervisord.conf
+
+# Start orchestrator
+python -m greenlang.orchestrator.main --config /app/configs/multi_agent_config.yaml
+
+EOF
+
+RUN chmod +x /app/start_multi_agent.sh && \
+    chown greenlang:greenlang /app/start_multi_agent.sh
+
+# Switch back to non-root user
+USER greenlang
+
+# Expose ports for multi-agent communication
+# 8000-8010: Agent HTTP APIs
+# 9000: Orchestrator API
+# 9001: Agent Registry
+# 9002: Monitoring Dashboard
+# 6379: Redis
+# 5672: RabbitMQ (if used)
+# 9092: Kafka (if used)
+EXPOSE 8000-8010 9000 9001 9002 6379 5672 9092
+
+# Volume mounts for shared state
+VOLUME ["/app/shared_memory", "/app/logs/agents", "/app/data"]
+
+# Health check for multi-agent system
+HEALTHCHECK --interval=30s --timeout=20s --start-period=120s --retries=5 \
+    CMD python /app/scripts/multi_agent_health.py || exit 1
+
+# Use custom startup script
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["/app/start_multi_agent.sh"]
+
+# Metadata
+LABEL description="Multi-Agent System for GreenLang with orchestration and coordination" \
+      multi_agent.enabled="true" \
+      multi_agent.max_agents="10" \
+      multi_agent.orchestrator="centralized" \
+      multi_agent.communication="redis,kafka,rabbitmq"

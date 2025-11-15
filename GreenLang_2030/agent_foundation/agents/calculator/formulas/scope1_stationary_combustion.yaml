@@ -1,0 +1,70 @@
+---
+formula_id: "scope1_stationary_combustion"
+name: "Scope 1 Stationary Combustion Emissions"
+standard: "GHG Protocol"
+version: "1.0"
+description: "Calculate CO2e emissions from stationary fuel combustion (boilers, furnaces, etc.)"
+
+parameters:
+  - name: fuel_quantity
+    type: float
+    unit: liters
+    required: true
+    validation:
+      min: 0
+      max: 10000000
+    description: "Quantity of fuel consumed"
+
+  - name: fuel_type
+    type: string
+    required: true
+    validation:
+      allowed_values: ["diesel", "natural_gas", "coal", "biomass", "fuel_oil", "lpg"]
+    description: "Type of fuel combusted"
+
+  - name: region
+    type: string
+    required: true
+    description: "Geographic region for emission factors (ISO country code)"
+
+calculation:
+  steps:
+    - step: 1
+      description: "Lookup emission factor from database"
+      operation: lookup
+      table: emission_factors
+      lookup_keys:
+        category: "scope1"
+        activity_type: "fuel_combustion"
+        material_or_fuel: "{fuel_type}"
+        region: "{region}"
+      output: emission_factor_kg_co2e_per_liter
+
+    - step: 2
+      description: "Calculate total emissions (fuel quantity × emission factor)"
+      operation: multiply
+      operands:
+        - fuel_quantity
+        - emission_factor_kg_co2e_per_liter
+      output: total_emissions_kg_co2e
+
+    - step: 3
+      description: "Convert to tonnes CO2e"
+      operation: divide
+      operands:
+        - total_emissions_kg_co2e
+        - 1000
+      output: total_emissions_t_co2e
+
+output:
+  value: total_emissions_t_co2e
+  unit: "t_co2e"
+  precision: 3
+
+metadata:
+  category: "Scope 1"
+  subcategory: "Stationary Combustion"
+  ghg_protocol_category: "1"
+  iso_14064_category: "Direct GHG emissions"
+  created_at: "2025-01-15"
+  last_updated: "2025-01-15"

@@ -1,0 +1,518 @@
+# GitHub Actions CI/CD Pipeline for GreenLang AI Agent Foundation
+# ==================================================================
+# Comprehensive automated testing, security scanning, and deployment
+# Supports multi-environment deployment (dev, staging, production)
+
+name: GreenLang AI Agent - CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, staging]
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - 'LICENSE'
+  pull_request:
+    branches: [main, develop]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip tests (not recommended)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  PYTHON_VERSION: '3.11'
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: greenlang/agent
+  HELM_VERSION: '3.13.0'
+  KUBECTL_VERSION: '1.28.0'
+  TERRAFORM_VERSION: '1.6.0'
+
+# Concurrency control - cancel in-progress runs on same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ==============================================================
+  # JOB 1: Code Quality and Security Analysis
+  # ==============================================================
+  code-quality:
+    name: Code Quality & Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for SonarQube
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install black isort flake8 pylint mypy bandit safety
+
+      - name: Run Black (code formatting)
+        run: black --check --diff src tests
+
+      - name: Run isort (import sorting)
+        run: isort --check-only --diff src tests
+
+      - name: Run Flake8 (linting)
+        run: flake8 src tests --max-line-length=120 --extend-ignore=E203,W503
+
+      - name: Run Pylint (static analysis)
+        run: pylint src tests --fail-under=8.0 --exit-zero
+
+      - name: Run MyPy (type checking)
+        run: mypy src --ignore-missing-imports --no-strict-optional
+
+      - name: Run Bandit (security issues)
+        run: bandit -r src -f json -o bandit-report.json || true
+
+      - name: Run Safety (dependency vulnerabilities)
+        run: safety check --json --output safety-report.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        if: github.event_name == 'push'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.projectKey=greenlang-agent-foundation
+            -Dsonar.python.version=3.11
+            -Dsonar.sources=src
+            -Dsonar.tests=tests
+
+  # ==============================================================
+  # JOB 2: Automated Testing (Unit, Integration, E2E)
+  # ==============================================================
+  test:
+    name: Automated Testing Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ !inputs.skip_tests }}
+
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11', '3.12']
+      fail-fast: false
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: greenlang_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements/base.txt
+          pip install -r requirements/agents.txt
+          pip install -r requirements/test.txt
+
+      - name: Run unit tests
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/greenlang_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/unit \
+            --cov=src \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term \
+            --junitxml=junit-unit.xml \
+            -v
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/greenlang_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/integration \
+            --cov=src \
+            --cov-append \
+            --cov-report=xml \
+            --junitxml=junit-integration.xml \
+            -v
+
+      - name: Run E2E tests
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/greenlang_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/e2e \
+            --junitxml=junit-e2e.xml \
+            -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-${{ matrix.python-version }}
+          fail_ci_if_error: false
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: |
+            junit-*.xml
+            htmlcov/
+            coverage.xml
+
+  # ==============================================================
+  # JOB 3: Build and Push Docker Images
+  # ==============================================================
+  build-docker:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: [code-quality, test]
+    if: github.event_name == 'push' || github.event_name == 'release'
+    timeout-minutes: 45
+
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    strategy:
+      matrix:
+        dockerfile: [base, production, development, rag, multi-agent]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.DOCKER_REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ matrix.dockerfile }}-latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: deployment/dockerfiles/Dockerfile.${{ matrix.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ steps.meta.outputs.version }}
+
+      - name: Run Trivy security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          format: 'sarif'
+          output: 'trivy-results-${{ matrix.dockerfile }}.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results-${{ matrix.dockerfile }}.sarif'
+
+      - name: Run Snyk container scan
+        uses: snyk/actions/docker@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
+          args: --severity-threshold=high
+
+  # ==============================================================
+  # JOB 4: Helm Chart Validation and Packaging
+  # ==============================================================
+  helm-package:
+    name: Helm Chart Package & Publish
+    runs-on: ubuntu-latest
+    needs: [build-docker]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Lint Helm chart
+        run: |
+          helm lint deployment/helm/greenlang-agent \
+            --strict \
+            --values deployment/helm/greenlang-agent/values.yaml
+
+      - name: Package Helm chart
+        run: |
+          helm package deployment/helm/greenlang-agent \
+            --version ${{ github.sha }} \
+            --app-version ${{ github.sha }}
+
+      - name: Upload Helm chart
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart
+          path: greenlang-agent-*.tgz
+
+      - name: Publish to Helm repository
+        if: github.event_name == 'release'
+        run: |
+          helm push greenlang-agent-*.tgz oci://${{ env.DOCKER_REGISTRY }}/charts
+
+  # ==============================================================
+  # JOB 5: Deploy to Kubernetes (Multi-Environment)
+  # ==============================================================
+  deploy:
+    name: Deploy to ${{ matrix.environment }}
+    runs-on: ubuntu-latest
+    needs: [helm-package]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 20
+
+    strategy:
+      matrix:
+        environment:
+          - ${{ github.ref == 'refs/heads/main' && 'production' || github.ref == 'refs/heads/staging' && 'staging' || 'dev' }}
+
+    environment:
+      name: ${{ matrix.environment }}
+      url: https://${{ matrix.environment }}.greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: ${{ env.KUBECTL_VERSION }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: ${{ env.HELM_VERSION }}
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+
+      - name: Download Helm chart
+        uses: actions/download-artifact@v4
+        with:
+          name: helm-chart
+
+      - name: Deploy with Helm
+        run: |
+          helm upgrade --install greenlang-agent greenlang-agent-*.tgz \
+            --namespace greenlang-${{ matrix.environment }} \
+            --create-namespace \
+            --values deployment/helm/greenlang-agent/values-${{ matrix.environment }}.yaml \
+            --set image.tag=${{ github.sha }} \
+            --set environment=${{ matrix.environment }} \
+            --wait \
+            --timeout 10m
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/greenlang-agent \
+            -n greenlang-${{ matrix.environment }} \
+            --timeout=5m
+
+      - name: Run smoke tests
+        run: |
+          kubectl run smoke-test-${{ github.sha }} \
+            --image=curlimages/curl:latest \
+            --rm -i --restart=Never \
+            --namespace=greenlang-${{ matrix.environment }} \
+            -- curl -f http://greenlang-agent-service/healthz
+
+      - name: Notify deployment success
+        uses: 8398a7/action-slack@v3
+        if: success()
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "✅ Deployment to ${{ matrix.environment }} successful",
+              "attachments": [{
+                "color": "good",
+                "fields": [
+                  { "title": "Environment", "value": "${{ matrix.environment }}", "short": true },
+                  { "title": "Version", "value": "${{ github.sha }}", "short": true },
+                  { "title": "Branch", "value": "${{ github.ref }}", "short": true }
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ==============================================================
+  # JOB 6: Rollback on Failure
+  # ==============================================================
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: failure()
+    timeout-minutes: 10
+
+    steps:
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > kubeconfig
+          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+
+      - name: Rollback deployment
+        run: |
+          kubectl rollout undo deployment/greenlang-agent \
+            -n greenlang-${{ matrix.environment }}
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": "⚠️ Deployment failed - Rollback initiated",
+              "attachments": [{
+                "color": "danger",
+                "fields": [
+                  { "title": "Environment", "value": "${{ matrix.environment }}", "short": true },
+                  { "title": "Commit", "value": "${{ github.sha }}", "short": true }
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  # ==============================================================
+  # JOB 7: Performance Testing
+  # ==============================================================
+  performance-test:
+    name: Performance & Load Testing
+    runs-on: ubuntu-latest
+    needs: [deploy]
+    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/main'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run k6 load tests
+        uses: grafana/k6-action@v0.3.1
+        with:
+          filename: tests/performance/load_test.js
+          cloud: true
+          token: ${{ secrets.K6_CLOUD_TOKEN }}
+
+      - name: Run Locust load tests
+        run: |
+          pip install locust
+          locust -f tests/performance/locustfile.py \
+            --headless \
+            --users 1000 \
+            --spawn-rate 100 \
+            --run-time 5m \
+            --host https://staging.greenlang.io \
+            --html performance-report.html
+
+      - name: Upload performance results
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-results
+          path: performance-report.html

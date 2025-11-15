@@ -1,0 +1,245 @@
+# Horizontal Pod Autoscaler for GreenLang AI Agents
+
+---
+# HPA based on CPU and Memory
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: greenlang-agent-hpa
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-agent
+  minReplicas: 9  # 3 per AZ for Multi-AZ HA
+  maxReplicas: 100  # Scale up to 100 pods for high traffic
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 5 minutes stabilization before scale down
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+      - type: Pods
+        value: 2
+        periodSeconds: 60
+      selectPolicy: Min
+    scaleUp:
+      stabilizationWindowSeconds: 60  # 1 minute stabilization before scale up
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 4
+        periodSeconds: 30
+      selectPolicy: Max
+  metrics:
+  # CPU utilization
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  # Memory utilization
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  # Custom metrics from Prometheus
+  - type: Pods
+    pods:
+      metric:
+        name: http_requests_per_second
+      target:
+        type: AverageValue
+        averageValue: "1000"
+  - type: Pods
+    pods:
+      metric:
+        name: agent_active_tasks
+      target:
+        type: AverageValue
+        averageValue: "50"
+
+---
+# Vertical Pod Autoscaler (VPA) for resource optimization
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: greenlang-agent-vpa
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: greenlang-agent
+  updatePolicy:
+    updateMode: "Auto"  # Options: Off, Initial, Recreate, Auto
+  resourcePolicy:
+    containerPolicies:
+    - containerName: greenlang-agent
+      minAllowed:
+        cpu: 250m
+        memory: 512Mi
+      maxAllowed:
+        cpu: 4000m
+        memory: 8Gi
+      controlledResources:
+      - cpu
+      - memory
+      mode: Auto
+
+---
+# Custom Metrics for HPA (using Prometheus Adapter)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-adapter-config
+  namespace: greenlang-ai
+data:
+  config.yaml: |
+    rules:
+    # HTTP request rate
+    - seriesQuery: 'http_requests_total{namespace="greenlang-ai",pod=~"greenlang-agent-.*"}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "^(.*)_total"
+        as: "${1}_per_second"
+      metricsQuery: 'sum(rate(<<.Series>>{<<.LabelMatchers>>}[2m])) by (<<.GroupBy>>)'
+
+    # Agent active tasks
+    - seriesQuery: 'agent_active_tasks{namespace="greenlang-ai",pod=~"greenlang-agent-.*"}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "^(.*)$"
+        as: "${1}"
+      metricsQuery: 'avg(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+
+    # Agent queue depth
+    - seriesQuery: 'agent_queue_depth{namespace="greenlang-ai",pod=~"greenlang-agent-.*"}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "^(.*)$"
+        as: "${1}"
+      metricsQuery: 'sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+
+    # Response latency (p95)
+    - seriesQuery: 'http_request_duration_seconds{namespace="greenlang-ai",pod=~"greenlang-agent-.*"}'
+      resources:
+        overrides:
+          namespace: {resource: "namespace"}
+          pod: {resource: "pod"}
+      name:
+        matches: "^(.*)_seconds"
+        as: "${1}_p95"
+      metricsQuery: 'histogram_quantile(0.95, sum(rate(<<.Series>>_bucket{<<.LabelMatchers>>}[2m])) by (le, <<.GroupBy>>))'
+
+---
+# KEDA ScaledObject (event-driven autoscaling)
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: greenlang-agent-keda
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+spec:
+  scaleTargetRef:
+    name: greenlang-agent
+    kind: Deployment
+  pollingInterval: 30
+  cooldownPeriod: 300
+  minReplicaCount: 9  # 3 per AZ for Multi-AZ HA
+  maxReplicaCount: 100
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 300
+          policies:
+          - type: Percent
+            value: 50
+            periodSeconds: 60
+        scaleUp:
+          stabilizationWindowSeconds: 60
+          policies:
+          - type: Percent
+            value: 100
+            periodSeconds: 30
+  triggers:
+  # Redis queue length
+  - type: redis
+    metadata:
+      address: redis-service:6379
+      listName: agent_tasks
+      listLength: "10"
+      databaseIndex: "0"
+    authenticationRef:
+      name: redis-secret
+
+  # Prometheus metrics
+  - type: prometheus
+    metadata:
+      serverAddress: http://prometheus-service:9090
+      metricName: http_requests_per_second
+      threshold: "1000"
+      query: sum(rate(http_requests_total{namespace="greenlang-ai"}[2m]))
+
+  # Kafka topic lag
+  - type: kafka
+    metadata:
+      bootstrapServers: kafka-service:9092
+      consumerGroup: greenlang-agents
+      topic: agent-tasks
+      lagThreshold: "100"
+
+  # RabbitMQ queue
+  - type: rabbitmq
+    metadata:
+      host: "amqp://rabbitmq-service:5672"
+      queueName: "agent_tasks"
+      queueLength: "20"
+    authenticationRef:
+      name: rabbitmq-secret
+
+  # PostgreSQL query
+  - type: postgresql
+    metadata:
+      connectionFromEnv: DATABASE_URL
+      query: "SELECT COUNT(*) FROM pending_tasks WHERE status='pending'"
+      targetQueryValue: "50"
+
+---
+# PodDisruptionBudget to ensure availability during scaling
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-agent-pdb
+  namespace: greenlang-ai
+  labels:
+    app: greenlang-agent
+spec:
+  minAvailable: 6  # At least 2 per AZ (6 out of 9) for Multi-AZ HA
+  # Or use maxUnavailable: 3
+  selector:
+    matchLabels:
+      app: greenlang-agent
+      component: ai-agent

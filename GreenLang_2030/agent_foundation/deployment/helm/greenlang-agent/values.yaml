@@ -1,0 +1,320 @@
+# Default values for greenlang-agent Helm chart
+# ===============================================
+
+# Global configuration
+global:
+  environment: development
+  region: us-east-1
+
+# Image configuration
+image:
+  registry: ghcr.io
+  repository: greenlang/agent
+  tag: latest
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+# Replica configuration
+replicaCount: 3
+
+# Multi-AZ configuration
+multiAZ:
+  enabled: true
+  zones:
+    - us-east-1a
+    - us-east-1b
+    - us-east-1c
+
+# Deployment strategy
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+# Pod configuration
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9090"
+  prometheus.io/path: "/metrics"
+
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  capabilities:
+    drop:
+      - ALL
+    add:
+      - NET_BIND_SERVICE
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8000
+  annotations: {}
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+# LoadBalancer configuration (for production)
+loadBalancer:
+  enabled: false
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+  hosts:
+    - host: api.greenlang.io
+      paths:
+        - path: /api/v1/agents
+          pathType: Prefix
+  tls:
+    - secretName: greenlang-tls-cert
+      hosts:
+        - api.greenlang.io
+
+# Resource limits and requests
+resources:
+  requests:
+    memory: "2Gi"
+    cpu: "1000m"
+    ephemeral-storage: "2Gi"
+  limits:
+    memory: "4Gi"
+    cpu: "2000m"
+    ephemeral-storage: "4Gi"
+
+# Horizontal Pod Autoscaler
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 3
+          periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 6
+          periodSeconds: 30
+
+# Vertical Pod Autoscaler
+verticalPodAutoscaler:
+  enabled: false
+  updateMode: "Auto"
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 6
+
+# Health checks
+healthCheck:
+  liveness:
+    enabled: true
+    path: /healthz
+    port: 8000
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  readiness:
+    enabled: true
+    path: /ready
+    port: 8000
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  startup:
+    enabled: true
+    path: /startup
+    port: 8000
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    failureThreshold: 30
+
+# Environment variables
+env:
+  ENVIRONMENT: development
+  LOG_LEVEL: INFO
+  LOG_FORMAT: json
+  MAX_WORKERS: "4"
+  ENABLE_METRICS: "true"
+  ENABLE_TRACING: "true"
+
+# ConfigMap data
+configMap:
+  create: true
+  data: {}
+
+# Secrets
+secrets:
+  create: true
+  data: {}
+
+# Persistent volumes
+persistence:
+  enabled: true
+  storageClass: "gp3"
+  size: 10Gi
+  accessModes:
+    - ReadWriteOnce
+
+# Service Account
+serviceAccount:
+  create: true
+  annotations: {}
+  name: greenlang-agent-sa
+
+# RBAC
+rbac:
+  create: true
+
+# Network Policy
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+
+# Affinity and tolerations
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - greenlang-agent
+        topologyKey: topology.kubernetes.io/zone
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - greenlang-agent
+          topologyKey: kubernetes.io/hostname
+
+nodeSelector: {}
+
+tolerations: []
+
+# Priority Class
+priorityClassName: high-priority
+
+# Sidecar containers
+sidecars:
+  logForwarder:
+    enabled: true
+    image: fluent/fluent-bit:2.2
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+
+  metricsExporter:
+    enabled: true
+    image: prom/node-exporter:v1.7.0
+    resources:
+      requests:
+        memory: "32Mi"
+        cpu: "25m"
+      limits:
+        memory: "64Mi"
+        cpu: "50m"
+
+  otelCollector:
+    enabled: true
+    image: otel/opentelemetry-collector:0.91.0
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "100m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+# Init containers
+initContainers:
+  waitForDb:
+    enabled: true
+    image: busybox:1.36
+  waitForRedis:
+    enabled: true
+    image: busybox:1.36
+  migrateDatabase:
+    enabled: true
+
+# Monitoring
+monitoring:
+  prometheus:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      interval: 30s
+  grafana:
+    enabled: true
+
+# PostgreSQL dependency
+postgresql:
+  enabled: false
+  auth:
+    username: greenlang
+    database: greenlang
+  primary:
+    persistence:
+      enabled: true
+      size: 100Gi
+
+# Redis dependency
+redis:
+  enabled: false
+  auth:
+    enabled: true
+  master:
+    persistence:
+      enabled: true
+      size: 8Gi
