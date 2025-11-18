@@ -1,0 +1,487 @@
+{
+  "dashboard": {
+    "title": "GL-005 Safety Monitoring & Interlocks",
+    "uid": "gl005-safety",
+    "tags": ["gl-005", "safety", "interlocks", "SIL-2"],
+    "timezone": "UTC",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "5s",
+    "time": {
+      "from": "now-15m",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Safety Status",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 8, "x": 0, "y": 0},
+        "targets": [{
+          "expr": "gl005_safety_status",
+          "legendFormat": "System Safe"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "UNSAFE", "color": "red"},
+              {"value": 1, "text": "SAFE", "color": "green"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "none",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Active Interlocks",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 8, "x": 8, "y": 0},
+        "targets": [{
+          "expr": "sum(gl005_safety_interlocks_active)",
+          "legendFormat": "Active Count"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Safety Risk Score",
+        "type": "gauge",
+        "gridPos": {"h": 4, "w": 8, "x": 16, "y": 0},
+        "targets": [{
+          "expr": "gl005_safety_risk_score",
+          "legendFormat": "Risk Score"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 30, "color": "yellow"},
+                {"value": 60, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Flame Detection Status",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 4},
+        "targets": [{
+          "expr": "gl005_safety_interlocks_flame_presence",
+          "legendFormat": "Flame Detected"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "NO FLAME", "color": "red"},
+              {"value": 1, "text": "FLAME OK", "color": "green"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Temperature Limits Status",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 4},
+        "targets": [{
+          "expr": "gl005_safety_interlocks_temperature_ok",
+          "legendFormat": "Temp OK"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "TEMP HIGH", "color": "red"},
+              {"value": 1, "text": "TEMP OK", "color": "green"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Pressure Limits Status",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 4},
+        "targets": [{
+          "expr": "gl005_safety_interlocks_pressure_ok",
+          "legendFormat": "Pressure OK"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "PRESSURE ALARM", "color": "red"},
+              {"value": 1, "text": "PRESSURE OK", "color": "green"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Fuel Flow Limits Status",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 4},
+        "targets": [{
+          "expr": "gl005_safety_interlocks_fuel_flow_ok",
+          "legendFormat": "Fuel Flow OK"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "FUEL LIMIT", "color": "red"},
+              {"value": 1, "text": "FUEL OK", "color": "green"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Furnace Temperature vs Limit",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+        "targets": [
+          {
+            "expr": "gl005_furnace_temperature_c",
+            "legendFormat": "Actual Temp"
+          },
+          {
+            "expr": "gl005_safety_max_furnace_temp_c",
+            "legendFormat": "Safety Limit"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "celsius"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Safety Limit"},
+              "properties": [
+                {"id": "custom.lineStyle", "value": {"dash": [10, 10]}},
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 9,
+        "title": "Fuel Pressure vs Limits",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+        "targets": [
+          {
+            "expr": "gl005_fuel_pressure_bar",
+            "legendFormat": "Actual Pressure"
+          },
+          {
+            "expr": "gl005_safety_max_fuel_pressure_bar",
+            "legendFormat": "Max Limit"
+          },
+          {
+            "expr": "gl005_safety_min_fuel_pressure_bar",
+            "legendFormat": "Min Limit"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "bar"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Emissions vs Regulatory Limits",
+        "type": "timeseries",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 18},
+        "targets": [
+          {
+            "expr": "gl005_emissions_nox_ppm",
+            "legendFormat": "NOx (ppm)"
+          },
+          {
+            "expr": "50",
+            "legendFormat": "NOx Limit (EPA)"
+          },
+          {
+            "expr": "gl005_emissions_co_ppm",
+            "legendFormat": "CO (ppm)"
+          },
+          {
+            "expr": "100",
+            "legendFormat": "CO Limit (EPA)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "ppm"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Safety Interlock Triggers (24h)",
+        "type": "bargauge",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26},
+        "targets": [{
+          "expr": "increase(gl005_safety_interlocks_triggered_total[24h])",
+          "legendFormat": "{{reason}}"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 5, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient"
+        }
+      },
+      {
+        "id": 12,
+        "title": "Emergency Shutdown Events (7d)",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 26},
+        "targets": [{
+          "expr": "increase(gl005_emergency_shutdowns_total[7d])",
+          "legendFormat": "Shutdowns"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Manual Override Active",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 26},
+        "targets": [{
+          "expr": "gl005_manual_override_active",
+          "legendFormat": "Override Status"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "AUTO", "color": "green"},
+              {"value": 1, "text": "MANUAL", "color": "yellow"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 14,
+        "title": "Purge Cycle Status",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 34},
+        "targets": [{
+          "expr": "gl005_safety_interlocks_purge_complete",
+          "legendFormat": "Purge Complete"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "IN PROGRESS", "color": "yellow"},
+              {"value": 1, "text": "COMPLETE", "color": "green"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 15,
+        "title": "Lockout Status",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 34},
+        "targets": [{
+          "expr": "gl005_safety_interlocks_lockout_active",
+          "legendFormat": "Lockout"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "NOT LOCKED", "color": "green"},
+              {"value": 1, "text": "LOCKED OUT", "color": "red"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 16,
+        "title": "Emergency Stop Button",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 34},
+        "targets": [{
+          "expr": "gl005_safety_interlocks_emergency_stop_pressed",
+          "legendFormat": "E-Stop"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "NORMAL", "color": "green"},
+              {"value": 1, "text": "PRESSED", "color": "red"}
+            ]
+          }
+        }
+      },
+      {
+        "id": 17,
+        "title": "Blowout Risk",
+        "type": "gauge",
+        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 34},
+        "targets": [{
+          "expr": "gl005_blowout_risk_score",
+          "legendFormat": "Risk"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 80, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 18,
+        "title": "Safety Check Duration (ms)",
+        "type": "timeseries",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 40},
+        "targets": [{
+          "expr": "histogram_quantile(0.95, gl005_safety_check_duration_seconds_bucket) * 1000",
+          "legendFormat": "P95 Duration"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"},
+            "unit": "ms",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 15, "color": "yellow"},
+                {"value": 20, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 19,
+        "title": "SIL-2 Compliance Status",
+        "type": "stat",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 40},
+        "targets": [{
+          "expr": "gl005_sil2_compliance_status",
+          "legendFormat": "SIL-2"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"value": 0, "text": "NON-COMPLIANT", "color": "red"},
+              {"value": 1, "text": "COMPLIANT", "color": "green"}
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "name": "Safety Events",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(gl005_safety_interlocks_triggered_total[1m]) > 0",
+          "iconColor": "red",
+          "tagKeys": "reason"
+        },
+        {
+          "name": "Emergency Shutdowns",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(gl005_emergency_shutdowns_total[1m]) > 0",
+          "iconColor": "dark-red"
+        },
+        {
+          "name": "Manual Override",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(gl005_manual_override_active[1m]) > 0",
+          "iconColor": "yellow"
+        }
+      ]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "namespace",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(gl005_safety_status, namespace)",
+          "current": {"value": "greenlang"},
+          "hide": 0
+        }
+      ]
+    }
+  }
+}

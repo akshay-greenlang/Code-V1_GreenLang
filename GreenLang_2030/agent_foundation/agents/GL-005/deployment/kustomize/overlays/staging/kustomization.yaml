@@ -1,0 +1,83 @@
+# Kustomize Staging Overlay for GL-005 CombustionControlAgent
+# Staging environment configuration
+# Medium resources, 2 replicas, production-like setup
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace override for staging
+namespace: greenlang-staging
+
+# Base configuration
+bases:
+  - ../../base
+
+# Common labels for staging environment
+commonLabels:
+  environment: staging
+  tier: pre-production
+
+# Common annotations for staging
+commonAnnotations:
+  environment: "staging"
+  managed-by: "kustomize"
+
+# Image tag override (use staging tag)
+images:
+  - name: gcr.io/greenlang/gl-005-combustion-control
+    newTag: staging
+
+# Name prefix for staging resources
+namePrefix: staging-
+
+# ConfigMap generator for staging-specific config
+configMapGenerator:
+  - name: gl-005-staging-config
+    behavior: merge
+    literals:
+      - environment=staging
+      - log_level=INFO
+      - debug=false
+      - mock_hardware=false
+      - mock_sensors=false
+      - enable_debug_endpoints=false
+
+# Secret generator for staging (use staging credentials)
+secretGenerator:
+  - name: gl-005-staging-secrets
+    type: Opaque
+    literals:
+      - database_url=postgresql+asyncpg://staging_user:staging_pass@postgres-staging:5432/greenlang_staging
+      - redis_url=redis://redis-staging:6379/0
+
+# Patches
+patches:
+  # Replica count patch
+  - path: patches/replica-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Resource limits patch
+  - path: patches/resource-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Environment variables patch
+  - path: patches/env-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Ingress domain patch
+  - path: patches/ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: gl-005-combustion-control-ingress
+
+  # HPA patch
+  - path: patches/hpa-patch.yaml
+    target:
+      kind: HorizontalPodAutoscaler
+      name: gl-005-combustion-control-hpa

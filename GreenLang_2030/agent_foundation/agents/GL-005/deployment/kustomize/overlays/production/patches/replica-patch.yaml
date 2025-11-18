@@ -1,0 +1,10 @@
+# Production Environment - Replica Count Patch
+# 3 replicas minimum for high availability
+# HPA manages scaling from 3 to 15 replicas
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combustion-control
+spec:
+  replicas: 3  # Production minimum for HA

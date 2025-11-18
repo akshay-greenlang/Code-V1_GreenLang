@@ -1,0 +1,83 @@
+# Kustomize Dev Overlay for GL-005 CombustionControlAgent
+# Development environment configuration
+# Reduced resources, single replica, debug enabled
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace override for dev
+namespace: greenlang-dev
+
+# Base configuration
+bases:
+  - ../../base
+
+# Common labels for dev environment
+commonLabels:
+  environment: dev
+  tier: development
+
+# Common annotations for dev
+commonAnnotations:
+  environment: "development"
+  managed-by: "kustomize"
+
+# Image tag override (use dev tag)
+images:
+  - name: gcr.io/greenlang/gl-005-combustion-control
+    newTag: dev
+
+# Name prefix for dev resources
+namePrefix: dev-
+
+# ConfigMap generator for dev-specific config
+configMapGenerator:
+  - name: gl-005-dev-config
+    behavior: merge
+    literals:
+      - environment=dev
+      - log_level=DEBUG
+      - debug=true
+      - mock_hardware=true
+      - mock_sensors=true
+      - enable_debug_endpoints=true
+
+# Secret generator for dev (use dev credentials)
+secretGenerator:
+  - name: gl-005-dev-secrets
+    type: Opaque
+    literals:
+      - database_url=postgresql+asyncpg://dev_user:dev_pass@postgres-dev:5432/greenlang_dev
+      - redis_url=redis://redis-dev:6379/0
+
+# Patches
+patches:
+  # Replica count patch
+  - path: patches/replica-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Resource limits patch
+  - path: patches/resource-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Environment variables patch
+  - path: patches/env-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Ingress domain patch
+  - path: patches/ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: gl-005-combustion-control-ingress
+
+  # HPA patch (disable or reduce)
+  - path: patches/hpa-patch.yaml
+    target:
+      kind: HorizontalPodAutoscaler
+      name: gl-005-combustion-control-hpa

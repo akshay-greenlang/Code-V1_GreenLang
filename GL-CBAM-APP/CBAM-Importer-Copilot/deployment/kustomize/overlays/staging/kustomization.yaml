@@ -1,0 +1,44 @@
+# ============================================================================
+# GL-CBAM-APP - Staging Environment
+# ============================================================================
+# Kustomize overlay for staging environment
+# ============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: gl-cbam-staging
+
+# Base resources
+bases:
+  - ../../base
+
+# Environment-specific labels
+commonLabels:
+  environment: staging
+
+# Patches
+patchesStrategicMerge:
+  - patches/replica-patch.yaml
+  - patches/resource-patch.yaml
+  - patches/ingress-patch.yaml
+
+# ConfigMap generator (environment-specific values)
+configMapGenerator:
+  - name: cbam-api-config
+    behavior: merge
+    literals:
+      - APP_ENV=staging
+      - LOG_LEVEL=INFO
+      - ENABLE_API_DOCS=true
+      - ENABLE_TRACING=true
+      - CORS_ORIGINS=https://cbam-staging.greenlang.io,https://app-staging.greenlang.io
+
+# Image tags
+images:
+  - name: cbam-api
+    newName: ghcr.io/greenlang/gl-cbam-app
+    newTag: staging-latest
+
+# Namespace
+namespace: gl-cbam-staging

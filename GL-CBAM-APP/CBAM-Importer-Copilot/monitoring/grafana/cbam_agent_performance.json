@@ -1,0 +1,638 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "cbam-agent-performance",
+    "title": "CBAM Agent Performance Dashboard",
+    "tags": ["cbam", "agents", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+      "time_options": ["5m", "15m", "1h", "6h", "12h", "24h", "7d", "30d"]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "description": "Comprehensive agent-level performance metrics for CBAM Intake, Calculator, and Packager agents",
+    "links": [],
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "Agent Execution Time Analysis",
+        "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "graph",
+        "title": "Intake Agent - Execution Time (Percentiles)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 1, "w": 8, "h": 8},
+        "description": "Execution time percentiles for CBAM Intake Agent (data ingestion and validation)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"intake\"}[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"intake\"}[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"intake\"}[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Duration",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "min": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 5,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "type": "graph",
+        "title": "Calculator Agent - Execution Time (Percentiles)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 8, "y": 1, "w": 8, "h": 8},
+        "description": "Execution time percentiles for CBAM Calculator Agent (emissions calculations)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"calculator\"}[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"calculator\"}[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"calculator\"}[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Duration",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "min": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 10,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "type": "graph",
+        "title": "Packager Agent - Execution Time (Percentiles)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 1, "w": 8, "h": 8},
+        "description": "Execution time percentiles for CBAM Packager Agent (report generation)",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"packager\"}[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"packager\"}[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(cbam_agent_duration_seconds_bucket{agent=\"packager\"}[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Duration",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "min": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 3,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "type": "row",
+        "title": "Agent Success & Failure Rates",
+        "gridPos": {"x": 0, "y": 9, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 6,
+        "type": "stat",
+        "title": "Intake Agent Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 10, "w": 8, "h": 5},
+        "description": "Success rate for Intake Agent executions (target: >99%)",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_agent_executions_total{agent=\"intake\",status=\"success\"}[5m])) / sum(rate(cbam_agent_executions_total{agent=\"intake\"}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "type": "stat",
+        "title": "Calculator Agent Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 8, "y": 10, "w": 8, "h": 5},
+        "description": "Success rate for Calculator Agent executions (target: >99%)",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_agent_executions_total{agent=\"calculator\",status=\"success\"}[5m])) / sum(rate(cbam_agent_executions_total{agent=\"calculator\"}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "stat",
+        "title": "Packager Agent Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 10, "w": 8, "h": 5},
+        "description": "Success rate for Packager Agent executions (target: >99%)",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_agent_executions_total{agent=\"packager\",status=\"success\"}[5m])) / sum(rate(cbam_agent_executions_total{agent=\"packager\"}[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "type": "row",
+        "title": "Agent Throughput & Processing Speed",
+        "gridPos": {"x": 0, "y": 15, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 10,
+        "type": "graph",
+        "title": "Agent Throughput (Shipments/sec)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 16, "w": 12, "h": 8},
+        "description": "Number of shipments processed per second by each agent",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_agent_shipments_processed_total{agent=\"intake\"}[5m]))",
+            "refId": "A",
+            "legendFormat": "Intake Agent"
+          },
+          {
+            "expr": "sum(rate(cbam_agent_shipments_processed_total{agent=\"calculator\"}[5m]))",
+            "refId": "B",
+            "legendFormat": "Calculator Agent"
+          },
+          {
+            "expr": "sum(rate(cbam_agent_shipments_processed_total{agent=\"packager\"}[5m]))",
+            "refId": "C",
+            "legendFormat": "Packager Agent"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "Shipments/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        }
+      },
+      {
+        "id": 11,
+        "type": "graph",
+        "title": "Agent Processing Speed (ms/record)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 16, "w": 12, "h": 8},
+        "description": "Average time per record processed by each agent",
+        "targets": [
+          {
+            "expr": "cbam_agent_ms_per_record{agent=\"intake\",quantile=\"0.95\"}",
+            "refId": "A",
+            "legendFormat": "Intake Agent (P95)"
+          },
+          {
+            "expr": "cbam_agent_ms_per_record{agent=\"calculator\",quantile=\"0.95\"}",
+            "refId": "B",
+            "legendFormat": "Calculator Agent (P95)"
+          },
+          {
+            "expr": "cbam_agent_ms_per_record{agent=\"packager\",quantile=\"0.95\"}",
+            "refId": "C",
+            "legendFormat": "Packager Agent (P95)"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ms",
+            "label": "Milliseconds per Record",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        }
+      },
+      {
+        "id": 12,
+        "type": "row",
+        "title": "Agent Resource Usage",
+        "gridPos": {"x": 0, "y": 24, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 13,
+        "type": "graph",
+        "title": "Agent CPU Usage (%)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 25, "w": 12, "h": 8},
+        "description": "CPU usage percentage for each agent",
+        "targets": [
+          {
+            "expr": "cbam_agent_cpu_usage_percent{agent=\"intake\"}",
+            "refId": "A",
+            "legendFormat": "Intake Agent"
+          },
+          {
+            "expr": "cbam_agent_cpu_usage_percent{agent=\"calculator\"}",
+            "refId": "B",
+            "legendFormat": "Calculator Agent"
+          },
+          {
+            "expr": "cbam_agent_cpu_usage_percent{agent=\"packager\"}",
+            "refId": "C",
+            "legendFormat": "Packager Agent"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "CPU %",
+            "min": 0,
+            "max": 100
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 80,
+            "colorMode": "custom",
+            "op": "gt",
+            "fill": false,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 14,
+        "type": "graph",
+        "title": "Agent Memory Usage (MB)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 25, "w": 12, "h": 8},
+        "description": "Memory usage in megabytes for each agent",
+        "targets": [
+          {
+            "expr": "cbam_agent_memory_usage_bytes{agent=\"intake\"} / 1024 / 1024",
+            "refId": "A",
+            "legendFormat": "Intake Agent"
+          },
+          {
+            "expr": "cbam_agent_memory_usage_bytes{agent=\"calculator\"} / 1024 / 1024",
+            "refId": "B",
+            "legendFormat": "Calculator Agent"
+          },
+          {
+            "expr": "cbam_agent_memory_usage_bytes{agent=\"packager\"} / 1024 / 1024",
+            "refId": "C",
+            "legendFormat": "Packager Agent"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "decmbytes",
+            "label": "Memory (MB)",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 512,
+            "colorMode": "custom",
+            "op": "gt",
+            "fill": false,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "type": "row",
+        "title": "Agent Failure Analysis",
+        "gridPos": {"x": 0, "y": 33, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 16,
+        "type": "graph",
+        "title": "Agent Failures by Type",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 34, "w": 16, "h": 8},
+        "description": "Agent execution failures broken down by failure type",
+        "targets": [
+          {
+            "expr": "sum by (agent, failure_type) (rate(cbam_agent_failures_total[5m]))",
+            "refId": "A",
+            "legendFormat": "{{agent}} - {{failure_type}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "Failures/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true,
+          "rightSide": false
+        }
+      },
+      {
+        "id": 17,
+        "type": "stat",
+        "title": "Total Agent Failures (Last 1h)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 34, "w": 8, "h": 8},
+        "description": "Total number of agent failures in the last hour",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_agent_failures_total[1h]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 10, "color": "yellow"},
+                {"value": 50, "color": "red"}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "DS_PROMETHEUS",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_agent_executions_total, environment)",
+          "refresh": 1,
+          "multi": false,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "agent",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_agent_executions_total, agent)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "changes(cbam_application_info[5m]) > 0",
+          "name": "Deployments",
+          "tagKeys": "version",
+          "textFormat": "New deployment: {{version}}",
+          "titleFormat": "Deployment"
+        }
+      ]
+    }
+  },
+  "overwrite": true,
+  "message": "CBAM Agent Performance Dashboard v1.0.0"
+}

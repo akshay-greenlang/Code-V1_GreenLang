@@ -1,0 +1,101 @@
+# ============================================================================
+# GL-CBAM-APP - Limit Range
+# ============================================================================
+# Default resource limits and constraints for containers
+# Ensures all pods have appropriate resource requests/limits
+# ============================================================================
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: cbam-limit-range
+  namespace: gl-cbam
+  labels:
+    app.kubernetes.io/name: cbam-api
+    app.kubernetes.io/component: limit-range
+    app.kubernetes.io/part-of: gl-cbam-app
+  annotations:
+    description: "Container resource defaults and constraints"
+    maturity-score-impact: "+1"
+spec:
+  limits:
+    # Container limits
+    - type: Container
+      # Maximum resources a container can request
+      max:
+        cpu: "4000m"        # 4 CPU cores
+        memory: "8Gi"       # 8 GB memory
+
+      # Minimum resources a container must request
+      min:
+        cpu: "100m"         # 0.1 CPU cores
+        memory: "128Mi"     # 128 MB memory
+
+      # Default limits (if not specified in pod spec)
+      default:
+        cpu: "2000m"        # 2 CPU cores
+        memory: "2Gi"       # 2 GB memory
+
+      # Default requests (if not specified in pod spec)
+      defaultRequest:
+        cpu: "1000m"        # 1 CPU core
+        memory: "1Gi"       # 1 GB memory
+
+      # Maximum ratio between limit and request
+      maxLimitRequestRatio:
+        cpu: "4"            # Limit can be max 4x the request
+        memory: "4"         # Limit can be max 4x the request
+
+    # Pod limits (aggregate of all containers)
+    - type: Pod
+      max:
+        cpu: "8000m"        # 8 CPU cores total
+        memory: "16Gi"      # 16 GB memory total
+
+    # PersistentVolumeClaim limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "100Gi"    # Maximum PVC size
+      min:
+        storage: "1Gi"      # Minimum PVC size
+
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# Apply LimitRange:
+#   kubectl apply -f deployment/limitrange.yaml
+#
+# View LimitRange:
+#   kubectl get limitrange -n gl-cbam
+#   kubectl describe limitrange cbam-limit-range -n gl-cbam
+#
+# View detailed configuration:
+#   kubectl get limitrange cbam-limit-range -n gl-cbam -o yaml
+#
+# How LimitRange works:
+#   1. If a pod doesn't specify requests/limits, defaults are applied
+#   2. If requests/limits exceed max, pod creation is rejected
+#   3. If requests/limits are below min, pod creation is rejected
+#   4. If limit/request ratio exceeds max, pod creation is rejected
+#
+# Example scenarios:
+#
+#   Scenario 1: Pod with no resources specified
+#     Result: Gets defaultRequest (1 CPU, 1Gi) and default limits (2 CPU, 2Gi)
+#
+#   Scenario 2: Pod requests 500m CPU
+#     Result: Gets default limit (2 CPU) automatically
+#
+#   Scenario 3: Pod requests 5 CPU
+#     Result: Rejected (exceeds max of 4 CPU)
+#
+#   Scenario 4: Pod requests 50m CPU
+#     Result: Rejected (below min of 100m CPU)
+#
+# Test with sample pod:
+#   kubectl run test-pod --image=nginx --dry-run=client -o yaml -n gl-cbam | kubectl apply -f -
+#   kubectl describe pod test-pod -n gl-cbam
+#   # Check "Limits" and "Requests" sections
+#
+# ============================================================================

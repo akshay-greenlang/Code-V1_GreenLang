@@ -1,0 +1,29 @@
+# ============================================================================
+# Production Environment - Ingress Patch
+# ============================================================================
+# Set production hostname
+# ============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cbam-api-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://cbam.greenlang.io,https://app.greenlang.io"
+spec:
+  tls:
+    - hosts:
+        - cbam.greenlang.io
+      secretName: cbam-api-tls-cert-prod
+  rules:
+    - host: cbam.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cbam-api
+                port:
+                  number: 8000

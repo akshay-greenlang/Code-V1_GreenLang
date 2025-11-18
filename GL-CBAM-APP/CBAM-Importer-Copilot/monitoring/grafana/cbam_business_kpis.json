@@ -1,0 +1,749 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "cbam-business-kpis",
+    "title": "CBAM Business KPIs Dashboard",
+    "tags": ["cbam", "kpi", "business", "metrics"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"],
+      "time_options": ["1h", "6h", "12h", "24h", "7d", "30d", "90d"]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "description": "Executive business KPI dashboard for CBAM Importer Copilot - throughput, success rates, API performance, and business metrics",
+    "links": [],
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "Executive Summary",
+        "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Overall Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 1, "w": 6, "h": 6},
+        "description": "Overall pipeline success rate (target: >95%)",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_pipeline_executions_total{status=\"success\"}[1h])) / sum(rate(cbam_pipeline_executions_total[1h])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 90, "color": "orange"},
+                {"value": 95, "color": "yellow"},
+                {"value": 98, "color": "green"}
+              ]
+            },
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "Shipments Processed (Last 24h)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 6, "y": 1, "w": 6, "h": 6},
+        "description": "Total shipments processed in the last 24 hours",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_shipments_processed_total[24h]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 100, "color": "yellow"},
+                {"value": 500, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "EU Importers Served",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 1, "w": 6, "h": 6},
+        "description": "Number of unique EU importers using the platform",
+        "targets": [
+          {
+            "expr": "count(count by (importer_id) (cbam_shipments_processed_total))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "Reports Generated (Current Quarter)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 18, "y": 1, "w": 6, "h": 6},
+        "description": "Total CBAM reports generated for current quarter",
+        "targets": [
+          {
+            "expr": "sum(cbam_reports_generated_total{period=\"current_quarter\"})",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "row",
+        "title": "Throughput Metrics",
+        "gridPos": {"x": 0, "y": 7, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 7,
+        "type": "graph",
+        "title": "Daily Throughput (Shipments Processed)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 8},
+        "description": "Number of shipments processed per day over time",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_shipments_processed_total{status=\"success\"}[1d]))",
+            "refId": "A",
+            "legendFormat": "Successful"
+          },
+          {
+            "expr": "sum(increase(cbam_shipments_processed_total{status=\"failed\"}[1d]))",
+            "refId": "B",
+            "legendFormat": "Failed"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "Shipments/day",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true,
+          "total": true
+        }
+      },
+      {
+        "id": 8,
+        "type": "stat",
+        "title": "Current Throughput Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 8, "w": 6, "h": 8},
+        "description": "Current shipments processing rate (shipments/sec)",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_shipments_processed_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "decimals": 3,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.1, "color": "yellow"},
+                {"value": 0.5, "color": "green"}
+              ]
+            },
+            "custom": {
+              "displayName": "shipments/sec"
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "type": "stat",
+        "title": "Total Shipments Processed (All Time)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 18, "y": 8, "w": 6, "h": 8},
+        "description": "Cumulative total of all shipments processed",
+        "targets": [
+          {
+            "expr": "sum(cbam_shipments_processed_total)",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "type": "row",
+        "title": "Pipeline Performance",
+        "gridPos": {"x": 0, "y": 16, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 11,
+        "type": "graph",
+        "title": "Pipeline Execution Time Trends (P95, P99)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 17, "w": 16, "h": 8},
+        "description": "Pipeline end-to-end execution time percentiles",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(cbam_pipeline_duration_seconds_bucket[5m])) by (le))",
+            "refId": "A",
+            "legendFormat": "P50 (Median)"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(cbam_pipeline_duration_seconds_bucket[5m])) by (le))",
+            "refId": "B",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(cbam_pipeline_duration_seconds_bucket[5m])) by (le))",
+            "refId": "C",
+            "legendFormat": "P99"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Duration",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "min": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 30,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "type": "stat",
+        "title": "Average Pipeline Duration",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 17, "w": 8, "h": 8},
+        "description": "Average end-to-end pipeline execution time",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_pipeline_duration_seconds_sum[5m])) / sum(rate(cbam_pipeline_duration_seconds_count[5m]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 15, "color": "yellow"},
+                {"value": 30, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 13,
+        "type": "row",
+        "title": "API Performance",
+        "gridPos": {"x": 0, "y": 25, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 14,
+        "type": "graph",
+        "title": "API Latency (P95, P99)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 26, "w": 12, "h": 8},
+        "description": "API response time percentiles for all endpoints",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(cbam_api_latency_seconds_bucket[5m])) by (le, endpoint))",
+            "refId": "A",
+            "legendFormat": "P95 - {{endpoint}}"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(cbam_api_latency_seconds_bucket[5m])) by (le, endpoint))",
+            "refId": "B",
+            "legendFormat": "P99 - {{endpoint}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "s",
+            "label": "Latency",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 1,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "type": "graph",
+        "title": "API Request Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 26, "w": 12, "h": 8},
+        "description": "API request rate by endpoint",
+        "targets": [
+          {
+            "expr": "sum by (endpoint) (rate(cbam_api_requests_total[5m]))",
+            "refId": "A",
+            "legendFormat": "{{endpoint}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "reqps",
+            "label": "Requests/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        }
+      },
+      {
+        "id": 16,
+        "type": "row",
+        "title": "Error Metrics",
+        "gridPos": {"x": 0, "y": 34, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 17,
+        "type": "graph",
+        "title": "Error Rate Trend",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 35, "w": 16, "h": 8},
+        "description": "Overall system error rate over time",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_errors_total[5m])) / sum(rate(cbam_pipeline_executions_total[5m])) * 100",
+            "refId": "A",
+            "legendFormat": "Error Rate %"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "Error Rate",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 5,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "type": "stat",
+        "title": "Total Errors (Last 24h)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 35, "w": 8, "h": 8},
+        "description": "Total number of errors in the last 24 hours",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_errors_total[24h]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 200, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 19,
+        "type": "row",
+        "title": "Business Metrics Summary",
+        "gridPos": {"x": 0, "y": 43, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 20,
+        "type": "graph",
+        "title": "Quarterly Report Generation Trend",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 44, "w": 12, "h": 7},
+        "description": "Reports generated per quarter over time",
+        "targets": [
+          {
+            "expr": "sum by (quarter) (cbam_reports_generated_total)",
+            "refId": "A",
+            "legendFormat": "Q{{quarter}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "short",
+            "label": "Reports",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": false,
+          "max": true,
+          "current": true,
+          "total": true
+        },
+        "bars": true,
+        "lines": false
+      },
+      {
+        "id": 21,
+        "type": "stat",
+        "title": "Average Reports per Importer",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 44, "w": 6, "h": 7},
+        "description": "Average number of reports generated per importer",
+        "targets": [
+          {
+            "expr": "sum(cbam_reports_generated_total) / count(count by (importer_id) (cbam_reports_generated_total))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 22,
+        "type": "stat",
+        "title": "Platform Uptime %",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 18, "y": 44, "w": 6, "h": 7},
+        "description": "Platform uptime percentage (last 7 days)",
+        "targets": [
+          {
+            "expr": "avg_over_time(up{job=\"cbam-importer-copilot\"}[7d]) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            },
+            "min": 0,
+            "max": 100
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "DS_PROMETHEUS",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_pipeline_executions_total, environment)",
+          "refresh": 1,
+          "multi": false,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "importer",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_shipments_processed_total, importer_id)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "changes(cbam_application_info[5m]) > 0",
+          "name": "Deployments",
+          "tagKeys": "version",
+          "textFormat": "New deployment: {{version}}",
+          "titleFormat": "Deployment"
+        },
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "sum(rate(cbam_errors_total[5m])) / sum(rate(cbam_pipeline_executions_total[5m])) > 0.05",
+          "name": "High Error Rate",
+          "textFormat": "Error rate above 5%",
+          "titleFormat": "Error Alert"
+        }
+      ]
+    }
+  },
+  "overwrite": true,
+  "message": "CBAM Business KPIs Dashboard v1.0.0"
+}

@@ -1,0 +1,68 @@
+# ============================================================================
+# GL-CBAM-APP - Pod Disruption Budget
+# ============================================================================
+# Ensures high availability during voluntary disruptions:
+# - Node maintenance
+# - Cluster upgrades
+# - Pod evictions
+# ============================================================================
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cbam-api-pdb
+  namespace: gl-cbam
+  labels:
+    app.kubernetes.io/name: cbam-api
+    app.kubernetes.io/component: disruption-budget
+    app.kubernetes.io/part-of: gl-cbam-app
+  annotations:
+    description: "Ensures at least 2 pods remain available during disruptions"
+    maturity-score-impact: "+1"
+spec:
+  # Minimum number of pods that must be available
+  minAvailable: 2
+
+  # Alternative: Maximum number of pods that can be unavailable
+  # maxUnavailable: 1
+
+  # Selector to match pods
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cbam-api
+      component: backend
+
+  # Unhealthy pod eviction policy
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# Apply PDB:
+#   kubectl apply -f deployment/pdb.yaml
+#
+# View PDB status:
+#   kubectl get pdb -n gl-cbam
+#   kubectl describe pdb cbam-api-pdb -n gl-cbam
+#
+# Check allowed disruptions:
+#   kubectl get pdb cbam-api-pdb -n gl-cbam -o yaml
+#
+# Test disruption (drain node):
+#   kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
+#   # PDB will ensure at least 2 pods remain available
+#
+# Uncordon node after drain:
+#   kubectl uncordon <node-name>
+#
+# View PDB events:
+#   kubectl get events -n gl-cbam | grep PodDisruptionBudget
+#
+# PDB Status Fields:
+#   - currentHealthy: Number of currently healthy pods
+#   - desiredHealthy: Minimum number of healthy pods required
+#   - disruptionsAllowed: Number of pods that can be disrupted
+#   - expectedPods: Total number of pods expected
+#
+# ============================================================================

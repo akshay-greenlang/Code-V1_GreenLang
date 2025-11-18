@@ -1,0 +1,686 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "cbam-compliance",
+    "title": "CBAM Compliance Dashboard",
+    "tags": ["cbam", "compliance", "regulations"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "5m",
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["1m", "5m", "15m", "30m", "1h", "2h", "1d"],
+      "time_options": ["1h", "6h", "12h", "24h", "7d", "30d", "90d"]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "description": "EU CBAM compliance monitoring dashboard - rule violations, complex goods tracking, reporting deadlines",
+    "links": [],
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "CBAM Rule Violations",
+        "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Total Rule Violations (Last 7 Days)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 1, "w": 6, "h": 6},
+        "description": "Total CBAM rule violations detected in the last 7 days",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_rule_violations_total[7d]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 10, "color": "yellow"},
+                {"value": 50, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "bargauge",
+        "title": "Rule Violations by Rule ID",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 6, "y": 1, "w": 10, "h": 6},
+        "description": "Breakdown of violations by specific CBAM rule IDs",
+        "targets": [
+          {
+            "expr": "topk(10, sum by (rule_id, rule_description) (increase(cbam_rule_violations_total[7d])))",
+            "refId": "A",
+            "legendFormat": "{{rule_id}}: {{rule_description}}"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "text": {
+            "valueSize": 14
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 5, "color": "yellow"},
+                {"value": 20, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "piechart",
+        "title": "Violations by Severity",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 1, "w": 8, "h": 6},
+        "description": "Distribution of rule violations by severity level",
+        "targets": [
+          {
+            "expr": "sum by (severity) (increase(cbam_rule_violations_total[7d]))",
+            "refId": "A",
+            "legendFormat": "{{severity}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"],
+            "calcs": ["sum", "percent"]
+          },
+          "pieType": "pie",
+          "tooltip": {
+            "mode": "single"
+          },
+          "displayLabels": ["name", "percent"]
+        }
+      },
+      {
+        "id": 5,
+        "type": "graph",
+        "title": "Rule Violation Trend Over Time",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 7, "w": 24, "h": 8},
+        "description": "Trend of CBAM rule violations by severity",
+        "targets": [
+          {
+            "expr": "sum by (severity) (rate(cbam_rule_violations_total[1h]))",
+            "refId": "A",
+            "legendFormat": "{{severity}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "Violations/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true,
+          "total": true
+        },
+        "stack": true,
+        "fill": 1
+      },
+      {
+        "id": 6,
+        "type": "row",
+        "title": "Complex Goods Monitoring (20% Cap)",
+        "gridPos": {"x": 0, "y": 15, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 7,
+        "type": "gauge",
+        "title": "Complex Goods Percentage (Current Quarter)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 16, "w": 8, "h": 8},
+        "description": "Percentage of complex goods vs total imports - CBAM regulation caps at 20%",
+        "targets": [
+          {
+            "expr": "sum(cbam_complex_goods_total{period=\"current_quarter\"}) / sum(cbam_total_imports{period=\"current_quarter\"}) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "orientation": "auto",
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true,
+          "text": {}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 15, "color": "yellow"},
+                {"value": 18, "color": "orange"},
+                {"value": 20, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "graph",
+        "title": "Complex Goods Trend (Quarterly)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 8, "y": 16, "w": 16, "h": 8},
+        "description": "Trend of complex goods percentage over quarters",
+        "targets": [
+          {
+            "expr": "sum(cbam_complex_goods_total) / sum(cbam_total_imports) * 100",
+            "refId": "A",
+            "legendFormat": "Complex Goods %"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "Percentage",
+            "min": 0,
+            "max": 25
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 20,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "type": "row",
+        "title": "Emissions Calculation Methods",
+        "gridPos": {"x": 0, "y": 24, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 10,
+        "type": "piechart",
+        "title": "Calculation Method Distribution",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 25, "w": 12, "h": 9},
+        "description": "Distribution between supplier-provided actual emissions vs EU default values",
+        "targets": [
+          {
+            "expr": "sum by (calculation_method) (increase(cbam_emissions_calculations_total[7d]))",
+            "refId": "A",
+            "legendFormat": "{{calculation_method}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"],
+            "calcs": ["sum", "percent"]
+          },
+          "pieType": "donut",
+          "tooltip": {
+            "mode": "single"
+          },
+          "displayLabels": ["name", "value", "percent"]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "type": "stat",
+        "title": "Supplier Actual Data Usage Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 25, "w": 12, "h": 9},
+        "description": "Percentage of emissions calculated using supplier-provided actual data (higher is better)",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_emissions_calculations_total{calculation_method=\"supplier_actual\"}[7d])) / sum(increase(cbam_emissions_calculations_total[7d])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 30, "color": "orange"},
+                {"value": 50, "color": "yellow"},
+                {"value": 70, "color": "green"}
+              ]
+            },
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 12,
+        "type": "row",
+        "title": "Quarterly Reporting Deadline",
+        "gridPos": {"x": 0, "y": 34, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 13,
+        "type": "stat",
+        "title": "Days Until Reporting Deadline",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 35, "w": 8, "h": 8},
+        "description": "Days remaining until next quarterly CBAM reporting deadline",
+        "targets": [
+          {
+            "expr": "cbam_days_until_deadline{deadline_type=\"quarterly_report\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "days",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 7, "color": "orange"},
+                {"value": 15, "color": "yellow"},
+                {"value": 30, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 14,
+        "type": "stat",
+        "title": "Current Quarter Completion %",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 8, "y": 35, "w": 8, "h": 8},
+        "description": "Percentage of expected shipments processed for current quarter",
+        "targets": [
+          {
+            "expr": "cbam_quarter_completion_percent{period=\"current\"}",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 70, "color": "yellow"},
+                {"value": 90, "color": "green"}
+              ]
+            },
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 15,
+        "type": "stat",
+        "title": "Reports Ready for Submission",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 35, "w": 8, "h": 8},
+        "description": "Number of reports generated and ready for submission to EU",
+        "targets": [
+          {
+            "expr": "sum(cbam_reports_ready_total{period=\"current_quarter\"})",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "yellow"},
+                {"value": 10, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 16,
+        "type": "row",
+        "title": "Compliance Validation",
+        "gridPos": {"x": 0, "y": 43, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 17,
+        "type": "stat",
+        "title": "Compliance Validation Pass Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 44, "w": 6, "h": 6},
+        "description": "Percentage of shipments passing all CBAM compliance checks",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_compliance_validations_total{result=\"pass\"}[1h])) / sum(rate(cbam_compliance_validations_total[1h])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 90, "color": "yellow"},
+                {"value": 95, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 18,
+        "type": "graph",
+        "title": "Compliance Validation Results Trend",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 6, "y": 44, "w": 18, "h": 6},
+        "description": "Trend of compliance validation pass/fail rates",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_compliance_validations_total{result=\"pass\"}[5m]))",
+            "refId": "A",
+            "legendFormat": "Pass"
+          },
+          {
+            "expr": "sum(rate(cbam_compliance_validations_total{result=\"fail\"}[5m]))",
+            "refId": "B",
+            "legendFormat": "Fail"
+          },
+          {
+            "expr": "sum(rate(cbam_compliance_validations_total{result=\"warning\"}[5m]))",
+            "refId": "C",
+            "legendFormat": "Warning"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "Validations/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        }
+      },
+      {
+        "id": 19,
+        "type": "row",
+        "title": "EU Member State Coverage",
+        "gridPos": {"x": 0, "y": 50, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 20,
+        "type": "bargauge",
+        "title": "Imports by EU Member State",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 51, "w": 16, "h": 9},
+        "description": "Import volume by EU member state destination",
+        "targets": [
+          {
+            "expr": "topk(15, sum by (member_state) (increase(cbam_imports_total[7d])))",
+            "refId": "A",
+            "legendFormat": "{{member_state}}"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "text": {
+            "valueSize": 14
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"},
+                {"value": 100, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 21,
+        "type": "stat",
+        "title": "EU Member States Served",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 51, "w": 8, "h": 9},
+        "description": "Number of unique EU member states with active imports",
+        "targets": [
+          {
+            "expr": "count(count by (member_state) (cbam_imports_total))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 10, "color": "yellow"},
+                {"value": 20, "color": "green"}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "DS_PROMETHEUS",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_rule_violations_total, environment)",
+          "refresh": 1,
+          "multi": false,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "member_state",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_imports_total, member_state)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "changes(cbam_application_info[5m]) > 0",
+          "name": "Deployments",
+          "tagKeys": "version",
+          "textFormat": "New deployment: {{version}}",
+          "titleFormat": "Deployment"
+        },
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "cbam_days_until_deadline{deadline_type=\"quarterly_report\"} == 7",
+          "name": "Deadline Alert",
+          "tagKeys": "deadline_type",
+          "textFormat": "7 days until CBAM reporting deadline!",
+          "titleFormat": "Deadline Warning"
+        }
+      ]
+    }
+  },
+  "overwrite": true,
+  "message": "CBAM Compliance Dashboard v1.0.0"
+}

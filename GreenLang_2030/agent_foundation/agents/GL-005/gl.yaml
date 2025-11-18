@@ -1,0 +1,525 @@
+# GreenLang Agent Manifest v1.0
+# GL-005 CombustionControlAgent
+
+apiVersion: greenlang.io/v1
+kind: Agent
+metadata:
+  name: gl-005-combustion-control-agent
+  agent_id: GL-005
+  agent_name: CombustionControlAgent
+  version: 1.0.0
+  category: combustion
+  type: automator
+  complexity: medium
+  priority: P1
+  business_priority: high
+  market_value: $8B
+  target_date: Q2 2026
+  description: Automated control of combustion processes for consistent heat output
+
+spec:
+  # --------------------------------------------------------------------------
+  # RUNTIME CONFIGURATION
+  # --------------------------------------------------------------------------
+
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: main:app
+    async_mode: true
+
+  # --------------------------------------------------------------------------
+  # DEPENDENCIES
+  # --------------------------------------------------------------------------
+
+  dependencies:
+    required:
+      # Web framework
+      - fastapi>=0.109.0
+      - uvicorn>=0.27.0
+      - pydantic>=2.5.3
+
+      # Industrial protocols
+      - pymodbus>=3.5.4          # Modbus TCP/RTU
+      - asyncua>=1.0.4           # OPC UA async
+
+      # Control algorithms
+      - numpy>=1.26.2
+      - scipy>=1.11.4
+      - simple-pid>=2.0.0        # PID controller
+      - cvxpy>=1.4.1             # Optimization
+
+      # Data processing
+      - pandas>=2.1.4
+
+      # Database
+      - asyncpg>=0.29.0
+      - sqlalchemy>=2.0.23
+      - alembic>=1.13.1
+
+      # Caching
+      - redis>=5.0.1
+
+      # Security
+      - cryptography>=41.0.7
+      - python-jose>=3.3.0
+      - hvac>=2.1.0              # Vault
+
+      # Monitoring
+      - prometheus-client>=0.19.0
+      - opentelemetry-api>=1.21.0
+      - structlog>=23.2.0
+
+    optional:
+      - pytest>=7.4.3
+      - pytest-asyncio>=0.21.1
+      - black>=23.12.0
+      - ruff>=0.1.9
+
+  # --------------------------------------------------------------------------
+  # RESOURCE REQUIREMENTS
+  # --------------------------------------------------------------------------
+
+  resources:
+    cpu:
+      requests: 500m
+      limits: 2000m
+    memory:
+      requests: 512Mi
+      limits: 2Gi
+    storage: 10Gi
+    network:
+      bandwidth_mbps: 100
+      latency_ms: <20
+
+  # --------------------------------------------------------------------------
+  # PORTS
+  # --------------------------------------------------------------------------
+
+  ports:
+    - name: http
+      port: 8000
+      protocol: TCP
+      description: REST API endpoint
+
+    - name: metrics
+      port: 8001
+      protocol: TCP
+      description: Prometheus metrics
+
+    - name: websocket
+      port: 8002
+      protocol: TCP
+      description: Real-time data stream
+
+  # --------------------------------------------------------------------------
+  # INPUTS
+  # --------------------------------------------------------------------------
+
+  inputs:
+    # DCS data
+    - name: fuel_flow_rate
+      type: float
+      unit: kg/hr
+      description: Fuel flow rate from DCS
+      required: true
+      min: 0
+      max: 10000
+
+    - name: air_flow_rate
+      type: float
+      unit: m3/hr
+      description: Combustion air flow rate
+      required: true
+      min: 0
+      max: 100000
+
+    # Temperatures
+    - name: combustion_chamber_temp
+      type: float
+      unit: celsius
+      description: Combustion chamber temperature
+      required: true
+      min: 0
+      max: 2000
+
+    - name: flue_gas_temp
+      type: float
+      unit: celsius
+      description: Flue gas temperature at stack
+      required: true
+      min: 0
+      max: 600
+
+    # Pressures
+    - name: fuel_pressure
+      type: float
+      unit: bar
+      description: Fuel supply pressure
+      required: true
+      min: 0
+      max: 50
+
+    - name: combustion_chamber_pressure
+      type: float
+      unit: bar
+      description: Combustion chamber pressure
+      required: true
+
+    # Emissions (from CEMS)
+    - name: o2_level
+      type: float
+      unit: percent
+      description: O2 concentration in flue gas
+      required: true
+      min: 0
+      max: 21
+
+    - name: co_ppm
+      type: float
+      unit: ppm
+      description: CO concentration in flue gas
+      required: true
+      min: 0
+
+    - name: nox_ppm
+      type: float
+      unit: ppm
+      description: NOx concentration in flue gas
+      required: true
+      min: 0
+
+    # Control setpoints
+    - name: heat_demand
+      type: float
+      unit: MW
+      description: Desired heat output setpoint
+      required: true
+      min: 0
+
+    - name: o2_setpoint
+      type: float
+      unit: percent
+      description: Target O2 concentration
+      required: false
+      default: 3.0
+
+  # --------------------------------------------------------------------------
+  # OUTPUTS
+  # --------------------------------------------------------------------------
+
+  outputs:
+    - name: optimal_fuel_flow
+      type: float
+      unit: kg/hr
+      description: Optimized fuel flow rate setpoint
+
+    - name: optimal_air_damper
+      type: float
+      unit: percent
+      description: Optimized air damper position
+
+    - name: heat_output
+      type: float
+      unit: MW
+      description: Actual heat output
+
+    - name: combustion_efficiency
+      type: float
+      unit: percent
+      description: Combustion efficiency (ASME PTC 4.1)
+
+    - name: thermal_efficiency
+      type: float
+      unit: percent
+      description: Thermal efficiency
+
+    - name: emissions_status
+      type: object
+      description: Emissions compliance status
+      schema:
+        nox_ppm: float
+        co_ppm: float
+        co2_kg_hr: float
+        compliance: string
+
+    - name: control_performance
+      type: object
+      description: Control loop performance metrics
+      schema:
+        setpoint_error_percent: float
+        control_stability_index: float
+        loop_latency_ms: float
+
+    - name: safety_status
+      type: object
+      description: Safety interlock status
+      schema:
+        all_interlocks_ok: boolean
+        active_violations: array
+        emergency_shutdown_required: boolean
+
+  # --------------------------------------------------------------------------
+  # INTEGRATIONS
+  # --------------------------------------------------------------------------
+
+  integrations:
+    - name: dcs_modbus
+      type: modbus_tcp
+      protocol_version: "1.0"
+      description: DCS integration via Modbus TCP
+      required: true
+      config:
+        port: 502
+        timeout_ms: 1000
+        polling_rate_hz: 100
+
+    - name: plc_opcua
+      type: opcua
+      protocol_version: "1.04"
+      description: PLC integration via OPC UA
+      required: true
+      config:
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+
+    - name: cems_analyzers
+      type: modbus_tcp
+      description: CEMS analyzer integration
+      required: true
+      config:
+        port: 502
+        timeout_ms: 2000
+
+    - name: scada
+      type: opcua
+      description: SCADA system integration
+      required: false
+
+  # --------------------------------------------------------------------------
+  # CAPABILITIES
+  # --------------------------------------------------------------------------
+
+  capabilities:
+    - real_time_pid_control
+    - multi_objective_optimization
+    - combustion_efficiency_analysis
+    - emissions_monitoring
+    - flame_stability_monitoring
+    - safety_interlock_management
+    - feedforward_compensation
+    - anti_windup_protection
+    - load_following_control
+    - automatic_tuning
+
+  # --------------------------------------------------------------------------
+  # COMPLIANCE
+  # --------------------------------------------------------------------------
+
+  compliance:
+    - standard: ASME PTC 4.1
+      description: Fired Steam Generators Performance Test Codes
+      scope: Efficiency calculations
+
+    - standard: NFPA 85
+      description: Boiler and Combustion Systems Hazards Code
+      scope: Safety interlocks
+
+    - standard: IEC 61508
+      description: Functional Safety (SIL-2)
+      scope: Safety-critical control
+
+    - standard: EPA 40 CFR Part 60
+      description: New Source Performance Standards
+      scope: Emissions monitoring
+
+    - standard: ISO 50001:2018
+      description: Energy Management Systems
+      scope: Performance KPIs
+
+  # --------------------------------------------------------------------------
+  # MONITORING
+  # --------------------------------------------------------------------------
+
+  monitoring:
+    metrics_enabled: true
+    metrics_port: 8001
+    metrics_path: /metrics
+
+    dashboards:
+      - name: real_time_control_performance
+        description: Real-time control loop performance
+        refresh_interval_sec: 5
+
+      - name: emissions_monitoring
+        description: Emissions compliance monitoring
+        refresh_interval_sec: 10
+
+      - name: safety_systems
+        description: Safety interlock status
+        refresh_interval_sec: 1
+
+    alerts:
+      - name: high_control_latency
+        condition: control_loop_latency_ms > 100
+        severity: warning
+        actions: [email, slack]
+
+      - name: setpoint_deviation
+        condition: setpoint_error_percent > 5
+        severity: critical
+        actions: [email, slack, pagerduty]
+
+      - name: safety_interlock_trip
+        condition: safety_interlocks_ok == false
+        severity: critical
+        actions: [email, slack, pagerduty]
+
+      - name: high_emissions
+        condition: nox_ppm > 50
+        severity: warning
+        actions: [email]
+
+  # --------------------------------------------------------------------------
+  # SECURITY
+  # --------------------------------------------------------------------------
+
+  security:
+    authentication: jwt
+    authorization: rbac
+    encryption: tls_1_3
+    secrets_management: vault
+
+    roles:
+      - name: operator
+        permissions: [read_data, write_setpoints_limited]
+
+      - name: engineer
+        permissions: [read_data, write_setpoints, write_control_parameters]
+
+      - name: admin
+        permissions: [read_data, write_setpoints, write_control_parameters, emergency_stop, delete]
+
+  # --------------------------------------------------------------------------
+  # DEPLOYMENT
+  # --------------------------------------------------------------------------
+
+  deployment:
+    replicas: 3
+    strategy: rolling_update
+    max_unavailable: 1
+    max_surge: 1
+
+    health_check:
+      path: /health
+      interval: 30s
+      timeout: 5s
+      failure_threshold: 3
+
+    readiness_check:
+      path: /readiness
+      interval: 10s
+      timeout: 3s
+      failure_threshold: 3
+
+    liveness_check:
+      path: /health
+      interval: 30s
+      timeout: 5s
+      failure_threshold: 3
+
+    autoscaling:
+      enabled: true
+      min_replicas: 3
+      max_replicas: 10
+      target_cpu_percent: 70
+      target_memory_percent: 80
+      custom_metrics:
+        - name: control_loop_latency_ms
+          target: 80
+
+  # --------------------------------------------------------------------------
+  # PERFORMANCE GUARANTEES
+  # --------------------------------------------------------------------------
+
+  performance:
+    control_loop_cycle_time_ms: 100
+    control_decision_latency_ms: 50
+    pid_calculation_time_ms: 10
+    modbus_read_latency_ms: 20
+    opcua_subscription_delay_ms: 100
+    api_response_time_ms: 50
+    setpoint_tracking_accuracy_percent: 0.5
+    system_uptime_percent: 99.95
+
+  # --------------------------------------------------------------------------
+  # QUALITY GUARANTEES
+  # --------------------------------------------------------------------------
+
+  guarantees:
+    zero_hallucination: true
+    deterministic: true
+    reproducible: true
+    audit_trail: complete
+    safety_rating: SIL-2
+
+  # --------------------------------------------------------------------------
+  # METADATA
+  # --------------------------------------------------------------------------
+
+  authors:
+    - name: GreenLang Industrial Control Systems Team
+      email: gl-005@greenlang.ai
+
+  license: Apache-2.0
+
+  repository: https://github.com/greenlang/agents/gl-005
+
+  documentation: https://docs.greenlang.io/agents/gl-005
+
+  tags:
+    - combustion
+    - control
+    - automation
+    - pid
+    - emissions
+    - industrial
+    - real-time
+    - safety-critical
+
+  # --------------------------------------------------------------------------
+  # VERSION HISTORY
+  # --------------------------------------------------------------------------
+
+  version_history:
+    - version: 1.0.0
+      date: 2026-Q2
+      changes:
+        - Initial production release
+        - Real-time cascade PID control
+        - Multi-objective optimization
+        - SIL-2 safety interlocks
+        - DCS/PLC/CEMS integration
+        - Complete audit trail
+
+  # --------------------------------------------------------------------------
+  # ROADMAP
+  # --------------------------------------------------------------------------
+
+  roadmap:
+    - version: 1.1.0
+      planned_date: 2026-Q3
+      features:
+        - Model predictive control (MPC)
+        - Advanced process control (APC)
+        - AI-based anomaly detection
+        - Predictive maintenance integration
+
+    - version: 1.2.0
+      planned_date: 2026-Q4
+      features:
+        - Multi-unit coordination
+        - Plant-wide optimization
+        - Digital twin integration
+        - Advanced reporting and analytics

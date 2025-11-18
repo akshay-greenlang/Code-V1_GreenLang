@@ -1,0 +1,37 @@
+# Production Environment - Security Patch
+# Additional security hardening for production
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-005-combustion-control
+spec:
+  template:
+    metadata:
+      annotations:
+        # Container security scanning
+        container.apparmor.security.beta.kubernetes.io/gl-005-combustion-control: runtime/default
+    spec:
+      # Security context (pod-level)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+        # Additional pod security
+        supplementalGroups: [1000]
+
+      containers:
+        - name: gl-005-combustion-control
+          # Security context (container-level)
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+              # No capabilities added in production

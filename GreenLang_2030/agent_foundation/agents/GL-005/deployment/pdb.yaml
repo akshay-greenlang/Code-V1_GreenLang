@@ -1,0 +1,101 @@
+# GL-005 CombustionControlAgent - PodDisruptionBudget
+# Ensures minimum availability during voluntary disruptions
+# Critical for real-time control: Maintain 2+ pods during maintenance
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-005-combustion-control-pdb
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    version: "1.0.0"
+  annotations:
+    description: "PDB for GL-005 CombustionControlAgent - Real-time control system"
+    documentation: "https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
+
+spec:
+  # Selector to match GL-005 pods
+  selector:
+    matchLabels:
+      app: gl-005-combustion-control
+      agent: "GL-005"
+
+  # Minimum available pods during disruption
+  # With 3 replicas minimum, this ensures at least 2 are always running
+  minAvailable: 2
+
+  # Alternative: maxUnavailable - maximum pods that can be unavailable
+  # maxUnavailable: 1
+
+  # Unhealthy pod eviction policy (Kubernetes 1.26+)
+  # AlwaysAllow: Evict unhealthy pods even if it violates PDB
+  # IfHealthyBudget: Only evict if budget is met
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+---
+# PodDisruptionBudget for scaled operations
+# Activated when HPA scales to 6+ pods
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-005-combustion-control-pdb-scaled
+  namespace: greenlang
+  labels:
+    app: gl-005-combustion-control
+    agent: "GL-005"
+    version: "1.0.0"
+    scenario: high-load
+  annotations:
+    description: "PDB for scaled GL-005 deployment (6-15 pods)"
+
+spec:
+  selector:
+    matchLabels:
+      app: gl-005-combustion-control
+      agent: "GL-005"
+
+  # When scaled to 6-15 pods, allow up to 3 disruptions
+  # This enables faster node drains while maintaining quorum
+  maxUnavailable: 3
+
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+---
+# Notes on PDB configuration for real-time control:
+#
+# 1. **Why minAvailable: 2?**
+#    - With 3 replicas, ensures 66% availability
+#    - Maintains quorum for control coordination
+#    - Allows graceful node drains without service disruption
+#
+# 2. **Why two PDBs?**
+#    - Default PDB: 3 replicas → minAvailable: 2
+#    - Scaled PDB: 6-15 replicas → maxUnavailable: 3
+#    - Kubernetes uses the most restrictive PDB that matches
+#
+# 3. **Real-time control considerations:**
+#    - Never allow all pods to be disrupted simultaneously
+#    - Maintain control loop continuity during upgrades
+#    - Balance availability with maintenance speed
+#
+# 4. **Testing PDB:**
+#    # Check PDB status
+#    kubectl get pdb -n greenlang
+#    kubectl describe pdb gl-005-combustion-control-pdb -n greenlang
+#
+#    # Test drain (should respect PDB)
+#    kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
+#
+# 5. **PDB and HPA interaction:**
+#    - PDB respects current replica count from HPA
+#    - If HPA scales to 3, PDB ensures 2 remain
+#    - If HPA scales to 10, PDB allows up to 3 disruptions
+#
+# 6. **Emergency override (use with caution):**
+#    kubectl drain <node> --ignore-daemonsets --delete-emptydir-data --disable-eviction
+#    # Bypasses PDB - only for critical emergencies!
+#
+# 7. **Monitoring PDB violations:**
+#    kubectl get events -n greenlang --field-selector reason=EvictionBlocked

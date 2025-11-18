@@ -1,0 +1,38 @@
+# ============================================================================
+# GL-CBAM-APP - Kustomize Base Configuration
+# ============================================================================
+# Base resources for all environments
+# ============================================================================
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: gl-cbam
+
+# Common labels applied to all resources
+commonLabels:
+  app.kubernetes.io/name: cbam-api
+  app.kubernetes.io/part-of: gl-cbam-app
+  app.kubernetes.io/managed-by: kustomize
+
+# Resources to include
+resources:
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+  - ingress.yaml
+  - serviceaccount.yaml
+
+# ConfigMap generator (for environment-specific values)
+configMapGenerator:
+  - name: cbam-api-config
+    behavior: merge
+    literals:
+      - APP_VERSION=1.0.0
+      - API_VERSION=1.0.0
+
+# Images (can be overridden in overlays)
+images:
+  - name: cbam-api
+    newName: ghcr.io/greenlang/gl-cbam-app
+    newTag: v1.0.0

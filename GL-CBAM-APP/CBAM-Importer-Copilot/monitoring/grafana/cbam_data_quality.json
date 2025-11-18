@@ -1,0 +1,707 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "cbam-data-quality",
+    "title": "CBAM Data Quality Dashboard",
+    "tags": ["cbam", "data-quality", "validation"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "1m",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h"],
+      "time_options": ["1h", "6h", "12h", "24h", "7d", "30d"]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "description": "Comprehensive data quality metrics for CBAM shipment validation, enrichment, and compliance",
+    "links": [],
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "Validation Error Overview",
+        "gridPos": {"x": 0, "y": 0, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Overall Data Quality Score",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 1, "w": 6, "h": 6},
+        "description": "Overall data quality score calculated as (1 - error_rate) * 100",
+        "targets": [
+          {
+            "expr": "(1 - (sum(rate(cbam_validation_errors_total[1h])) / sum(rate(cbam_records_processed_total[1h])))) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 90, "color": "orange"},
+                {"value": 95, "color": "yellow"},
+                {"value": 98, "color": "green"}
+              ]
+            },
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "graph",
+        "title": "Validation Error Rate Trend",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 6, "y": 1, "w": 12, "h": 6},
+        "description": "Trend of validation errors over time",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_validation_errors_total[5m])) / sum(rate(cbam_records_processed_total[5m])) * 100",
+            "refId": "A",
+            "legendFormat": "Error Rate %"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "Error Rate",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 2,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Total Validation Errors (Last 24h)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 18, "y": 1, "w": 6, "h": 6},
+        "description": "Total validation errors in the last 24 hours",
+        "targets": [
+          {
+            "expr": "sum(increase(cbam_validation_errors_total[24h]))",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 100, "color": "yellow"},
+                {"value": 500, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "row",
+        "title": "Validation Errors by Error Code",
+        "gridPos": {"x": 0, "y": 7, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 6,
+        "type": "piechart",
+        "title": "Validation Errors Distribution (Last 24h)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 8, "w": 12, "h": 9},
+        "description": "Distribution of validation errors by error code",
+        "targets": [
+          {
+            "expr": "sum by (error_code) (increase(cbam_validation_errors_total[24h]))",
+            "refId": "A",
+            "legendFormat": "{{error_code}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"],
+            "calcs": ["sum", "percent"]
+          },
+          "pieType": "pie",
+          "tooltip": {
+            "mode": "single"
+          },
+          "displayLabels": ["name", "percent"]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "type": "bargauge",
+        "title": "Top 10 Validation Error Codes",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 8, "w": 12, "h": 9},
+        "description": "Top 10 most common validation error codes",
+        "targets": [
+          {
+            "expr": "topk(10, sum by (error_code, error_description) (increase(cbam_validation_errors_total[24h])))",
+            "refId": "A",
+            "legendFormat": "{{error_code}}: {{error_description}}"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "text": {
+            "valueSize": 14
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 50, "color": "yellow"},
+                {"value": 100, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "row",
+        "title": "Validation Error Trends",
+        "gridPos": {"x": 0, "y": 17, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 9,
+        "type": "graph",
+        "title": "Validation Errors Over Time (by Error Category)",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 18, "w": 24, "h": 8},
+        "description": "Validation error trends broken down by error category",
+        "targets": [
+          {
+            "expr": "sum by (error_category) (rate(cbam_validation_errors_total[5m]))",
+            "refId": "A",
+            "legendFormat": "{{error_category}}"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "Errors/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true,
+          "total": true
+        },
+        "stack": true,
+        "fill": 1
+      },
+      {
+        "id": 10,
+        "type": "row",
+        "title": "Supplier Data Quality",
+        "gridPos": {"x": 0, "y": 26, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 11,
+        "type": "heatmap",
+        "title": "Supplier Data Quality Heatmap",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 27, "w": 16, "h": 9},
+        "description": "Heatmap showing data quality scores by supplier",
+        "targets": [
+          {
+            "expr": "cbam_supplier_data_quality_score",
+            "refId": "A",
+            "format": "time_series",
+            "legendFormat": "{{supplier_id}}"
+          }
+        ],
+        "options": {
+          "calculate": false,
+          "cellGap": 2,
+          "cellValues": {},
+          "color": {
+            "mode": "scheme",
+            "scheme": "RdYlGn",
+            "steps": 128
+          },
+          "exemplars": {
+            "color": "rgba(255,0,255,0.7)"
+          },
+          "filterValues": {
+            "le": 1e-9
+          },
+          "legend": {
+            "show": true
+          },
+          "rowsFrame": {
+            "layout": "auto"
+          },
+          "tooltip": {
+            "show": true,
+            "yHistogram": false
+          },
+          "yAxis": {
+            "axisPlacement": "left",
+            "reverse": false
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "min": 0,
+            "max": 100
+          }
+        }
+      },
+      {
+        "id": 12,
+        "type": "stat",
+        "title": "Suppliers with Quality Score > 95%",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 16, "y": 27, "w": 8, "h": 9},
+        "description": "Number of suppliers achieving data quality score above 95%",
+        "targets": [
+          {
+            "expr": "count(cbam_supplier_data_quality_score > 95)",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 10, "color": "yellow"},
+                {"value": 50, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 13,
+        "type": "row",
+        "title": "CN Code Enrichment",
+        "gridPos": {"x": 0, "y": 36, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 14,
+        "type": "stat",
+        "title": "CN Code Enrichment Success Rate",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 37, "w": 8, "h": 6},
+        "description": "Success rate of CN code enrichment from external databases",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_cn_code_enrichment_total{status=\"success\"}[5m])) / sum(rate(cbam_cn_code_enrichment_total[5m])) * 100",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 80, "color": "yellow"},
+                {"value": 95, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 15,
+        "type": "graph",
+        "title": "CN Code Enrichment Trend",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 8, "y": 37, "w": 16, "h": 6},
+        "description": "CN code enrichment success/failure trends over time",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_cn_code_enrichment_total{status=\"success\"}[5m]))",
+            "refId": "A",
+            "legendFormat": "Success"
+          },
+          {
+            "expr": "sum(rate(cbam_cn_code_enrichment_total{status=\"failed\"}[5m]))",
+            "refId": "B",
+            "legendFormat": "Failed"
+          },
+          {
+            "expr": "sum(rate(cbam_cn_code_enrichment_total{status=\"not_found\"}[5m]))",
+            "refId": "C",
+            "legendFormat": "Not Found"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "ops",
+            "label": "Enrichments/sec",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        }
+      },
+      {
+        "id": 16,
+        "type": "row",
+        "title": "Shipment Rejections",
+        "gridPos": {"x": 0, "y": 43, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 17,
+        "type": "piechart",
+        "title": "Shipment Rejection Reasons",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 44, "w": 12, "h": 9},
+        "description": "Breakdown of shipment rejections by reason",
+        "targets": [
+          {
+            "expr": "sum by (rejection_reason) (increase(cbam_shipment_rejections_total[24h]))",
+            "refId": "A",
+            "legendFormat": "{{rejection_reason}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"],
+            "calcs": ["sum", "percent"]
+          },
+          "pieType": "donut",
+          "tooltip": {
+            "mode": "single"
+          },
+          "displayLabels": ["name", "percent"]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 18,
+        "type": "graph",
+        "title": "Shipment Rejection Trend",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 44, "w": 12, "h": 9},
+        "description": "Shipment rejection rate over time",
+        "targets": [
+          {
+            "expr": "sum(rate(cbam_shipment_rejections_total[5m])) / sum(rate(cbam_shipments_processed_total[5m])) * 100",
+            "refId": "A",
+            "legendFormat": "Rejection Rate %"
+          }
+        ],
+        "yaxes": [
+          {
+            "format": "percent",
+            "label": "Rejection Rate",
+            "min": 0
+          },
+          {
+            "format": "short"
+          }
+        ],
+        "legend": {
+          "show": true,
+          "alignAsTable": true,
+          "avg": true,
+          "max": true,
+          "current": true
+        },
+        "thresholds": [
+          {
+            "value": 5,
+            "colorMode": "critical",
+            "op": "gt",
+            "fill": true,
+            "line": true
+          }
+        ]
+      },
+      {
+        "id": 19,
+        "type": "row",
+        "title": "Data Completeness",
+        "gridPos": {"x": 0, "y": 53, "w": 24, "h": 1},
+        "collapsed": false
+      },
+      {
+        "id": 20,
+        "type": "bargauge",
+        "title": "Field Completeness Metrics",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 0, "y": 54, "w": 12, "h": 8},
+        "description": "Completeness percentage for critical CBAM fields",
+        "targets": [
+          {
+            "expr": "cbam_field_completeness_percent{field=\"cn_code\"}",
+            "refId": "A",
+            "legendFormat": "CN Code"
+          },
+          {
+            "expr": "cbam_field_completeness_percent{field=\"origin_country\"}",
+            "refId": "B",
+            "legendFormat": "Origin Country"
+          },
+          {
+            "expr": "cbam_field_completeness_percent{field=\"supplier_id\"}",
+            "refId": "C",
+            "legendFormat": "Supplier ID"
+          },
+          {
+            "expr": "cbam_field_completeness_percent{field=\"emissions_data\"}",
+            "refId": "D",
+            "legendFormat": "Emissions Data"
+          },
+          {
+            "expr": "cbam_field_completeness_percent{field=\"quantity\"}",
+            "refId": "E",
+            "legendFormat": "Quantity"
+          },
+          {
+            "expr": "cbam_field_completeness_percent{field=\"value\"}",
+            "refId": "F",
+            "legendFormat": "Value"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true,
+          "text": {
+            "valueSize": 16
+          }
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 90, "color": "yellow"},
+                {"value": 98, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 21,
+        "type": "stat",
+        "title": "Overall Data Completeness",
+        "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+        "gridPos": {"x": 12, "y": 54, "w": 12, "h": 8},
+        "description": "Overall data completeness across all critical fields",
+        "targets": [
+          {
+            "expr": "avg(cbam_field_completeness_percent)",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 90, "color": "orange"},
+                {"value": 95, "color": "yellow"},
+                {"value": 98, "color": "green"}
+              ]
+            },
+            "min": 0,
+            "max": 100
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "DS_PROMETHEUS",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "environment",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_validation_errors_total, environment)",
+          "refresh": 1,
+          "multi": false,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "error_category",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_validation_errors_total, error_category)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        },
+        {
+          "name": "supplier",
+          "type": "query",
+          "datasource": "${DS_PROMETHEUS}",
+          "query": "label_values(cbam_supplier_data_quality_score, supplier_id)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true,
+          "allValue": ".*"
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "${DS_PROMETHEUS}",
+          "enable": true,
+          "expr": "changes(cbam_application_info[5m]) > 0",
+          "name": "Deployments",
+          "tagKeys": "version",
+          "textFormat": "New deployment: {{version}}",
+          "titleFormat": "Deployment"
+        }
+      ]
+    }
+  },
+  "overwrite": true,
+  "message": "CBAM Data Quality Dashboard v1.0.0"
+}

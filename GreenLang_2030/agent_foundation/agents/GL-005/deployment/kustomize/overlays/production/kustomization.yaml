@@ -1,0 +1,95 @@
+# Kustomize Production Overlay for GL-005 CombustionControlAgent
+# Production environment configuration
+# Full resources, 3 replicas minimum, maximum availability
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace for production
+namespace: greenlang
+
+# Base configuration
+bases:
+  - ../../base
+
+# Common labels for production environment
+commonLabels:
+  environment: production
+  tier: production
+  criticality: high
+
+# Common annotations for production
+commonAnnotations:
+  environment: "production"
+  managed-by: "kustomize"
+  sla.uptime: "99.9%"
+  sla.latency: "<100ms"
+
+# Image tag override (use production tag with version)
+images:
+  - name: gcr.io/greenlang/gl-005-combustion-control
+    newTag: 1.0.0
+
+# Name prefix for production resources (none - cleaner names)
+# namePrefix: ""
+
+# ConfigMap generator for production-specific config
+configMapGenerator:
+  - name: gl-005-production-config
+    behavior: merge
+    literals:
+      - environment=production
+      - log_level=INFO
+      - debug=false
+      - mock_hardware=false
+      - mock_sensors=false
+      - enable_debug_endpoints=false
+      - safety_check_enabled=true
+      - emergency_shutdown_enabled=true
+
+# Secret generator for production
+# IMPORTANT: Use external secret management (Vault, AWS Secrets Manager)
+# This is a placeholder - replace with actual external secrets
+secretGenerator:
+  - name: gl-005-production-secrets
+    type: Opaque
+    literals:
+      - placeholder=REPLACE_WITH_EXTERNAL_SECRETS
+
+# Patches
+patches:
+  # Replica count patch (production HA)
+  - path: patches/replica-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Resource limits patch (full production resources)
+  - path: patches/resource-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Environment variables patch
+  - path: patches/env-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control
+
+  # Ingress domain patch (production domain)
+  - path: patches/ingress-patch.yaml
+    target:
+      kind: Ingress
+      name: gl-005-combustion-control-ingress
+
+  # HPA patch (production autoscaling)
+  - path: patches/hpa-patch.yaml
+    target:
+      kind: HorizontalPodAutoscaler
+      name: gl-005-combustion-control-hpa
+
+  # Security patch (additional production security)
+  - path: patches/security-patch.yaml
+    target:
+      kind: Deployment
+      name: gl-005-combustion-control

@@ -1,0 +1,12 @@
+# ============================================================================
+# Production Environment - Replica Patch
+# ============================================================================
+# Set initial replicas to 3 (HPA will manage scaling)
+# ============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cbam-api
+spec:
+  replicas: 3

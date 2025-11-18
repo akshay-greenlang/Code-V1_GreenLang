@@ -1,0 +1,146 @@
+# ============================================================================
+# GL-CBAM-APP - Horizontal Pod Autoscaler
+# ============================================================================
+# Advanced HPA configuration with:
+# - CPU and Memory targets
+# - Custom metrics (CBAM pipeline runs)
+# - Smart scaling behavior
+# ============================================================================
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: cbam-api-hpa
+  namespace: gl-cbam
+  labels:
+    app.kubernetes.io/name: cbam-api
+    app.kubernetes.io/component: autoscaler
+    app.kubernetes.io/part-of: gl-cbam-app
+  annotations:
+    description: "HPA for CBAM API with multi-metric scaling"
+    maturity-score-impact: "+2"
+spec:
+  # Target deployment
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: cbam-api
+
+  # Replica limits
+  minReplicas: 3
+  maxReplicas: 15
+
+  # Metrics for scaling decisions
+  metrics:
+    # CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom metric: Active CBAM pipeline runs
+    # This requires Prometheus adapter to be installed
+    - type: Pods
+      pods:
+        metric:
+          name: cbam_pipeline_active_runs
+        target:
+          type: AverageValue
+          averageValue: "2"
+
+  # Scaling behavior
+  behavior:
+    # Scale-down behavior
+    scaleDown:
+      # Wait 5 minutes before scaling down after last scale event
+      stabilizationWindowSeconds: 300
+      policies:
+        # Scale down by max 25% of current pods
+        - type: Percent
+          value: 25
+          periodSeconds: 60
+        # Or scale down by 1 pod (whichever is lower)
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      # Use the policy that removes fewer pods
+      selectPolicy: Min
+
+    # Scale-up behavior
+    scaleUp:
+      # Wait 60 seconds before scaling up after last scale event
+      stabilizationWindowSeconds: 60
+      policies:
+        # Scale up by max 50% of current pods
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        # Or scale up by 2 pods (whichever is higher)
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+      # Use the policy that adds more pods
+      selectPolicy: Max
+
+---
+# ============================================================================
+# ServiceMonitor for Custom Metrics
+# ============================================================================
+# Enables Prometheus to scrape CBAM-specific metrics for HPA
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cbam-api-hpa-metrics
+  namespace: gl-cbam
+  labels:
+    app.kubernetes.io/name: cbam-api
+    app.kubernetes.io/component: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cbam-api
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+# ============================================================================
+# USAGE
+# ============================================================================
+#
+# Apply HPA:
+#   kubectl apply -f deployment/hpa.yaml
+#
+# View HPA status:
+#   kubectl get hpa -n gl-cbam
+#   kubectl describe hpa cbam-api-hpa -n gl-cbam
+#
+# Watch HPA in real-time:
+#   kubectl get hpa cbam-api-hpa -n gl-cbam --watch
+#
+# View detailed metrics:
+#   kubectl get hpa cbam-api-hpa -n gl-cbam -o yaml
+#
+# Test autoscaling:
+#   # Generate load
+#   kubectl run -i --tty load-generator --rm --image=busybox --restart=Never -- /bin/sh -c "while sleep 0.01; do wget -q -O- http://cbam-api:8000/api/v1/health; done"
+#
+# View scaling events:
+#   kubectl get events -n gl-cbam --sort-by='.lastTimestamp' | grep HorizontalPodAutoscaler
+#
+# Custom metrics (requires Prometheus Adapter):
+#   kubectl get --raw /apis/custom.metrics.k8s.io/v1beta1/namespaces/gl-cbam/pods/*/cbam_pipeline_active_runs
+#
+# ============================================================================

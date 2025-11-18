@@ -1,0 +1,28 @@
+# ============================================================================
+# GL-CBAM-APP - Base Service
+# ============================================================================
+# ClusterIP service for internal communication
+# ============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cbam-api
+  labels:
+    component: backend
+    tier: application
+  annotations:
+    description: "GL-CBAM-APP Backend API Service"
+spec:
+  type: ClusterIP
+  selector:
+    component: backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800

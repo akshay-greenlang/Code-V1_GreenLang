@@ -1,0 +1,316 @@
+# CBAM IMPORTER COPILOT - PRE-COMMIT HOOKS
+# Automated code quality and security checks before commits
+
+repos:
+  # ===========================================================================
+  # GENERAL FILE FORMATTING
+  # ===========================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # Prevent large files from being committed
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+
+      # Check for merge conflict markers
+      - id: check-merge-conflict
+
+      # Check YAML files are valid
+      - id: check-yaml
+        args: ['--safe']
+        exclude: ^k8s/.*\.yaml$  # Skip k8s templates with variables
+
+      # Check JSON files are valid
+      - id: check-json
+
+      # Check for files that would conflict on case-insensitive filesystems
+      - id: check-case-conflict
+
+      # Ensure files end with newline
+      - id: end-of-file-fixer
+
+      # Trim trailing whitespace
+      - id: trailing-whitespace
+        args: ['--markdown-linebreak-ext=md']
+
+      # Prevent commits to main/master
+      - id: no-commit-to-branch
+        args: ['--branch', 'master', '--branch', 'main']
+
+      # Check for private keys
+      - id: detect-private-key
+
+      # Fix Python encoding pragma
+      - id: fix-encoding-pragma
+        args: ['--remove']
+
+  # ===========================================================================
+  # PYTHON CODE FORMATTING
+  # ===========================================================================
+
+  # Black - Uncompromising Python code formatter
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: ['--line-length=100']
+
+  # isort - Sort Python imports
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ['--profile', 'black', '--line-length', '100']
+
+  # ===========================================================================
+  # PYTHON CODE LINTING
+  # ===========================================================================
+
+  # Ruff - Fast Python linter (replaces flake8, pylint, pyupgrade, etc.)
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        args:
+          - --fix
+          - --exit-non-zero-on-fix
+          - --line-length=100
+        exclude: ^migrations/
+
+  # ===========================================================================
+  # PYTHON TYPE CHECKING
+  # ===========================================================================
+
+  # MyPy - Static type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        args:
+          - --ignore-missing-imports
+          - --warn-redundant-casts
+          - --warn-unused-ignores
+          - --warn-unreachable
+          - --strict-optional
+        additional_dependencies:
+          - types-PyYAML
+          - types-requests
+          - pydantic>=2.0.0
+        exclude: ^(tests/|scripts/|migrations/)
+
+  # ===========================================================================
+  # SECURITY SCANNING
+  # ===========================================================================
+
+  # Bandit - Security linter for Python
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        args: ['-r', '-ll', '-i']  # Recursive, low+low severity, show issue
+        exclude: ^(tests/|scripts/benchmark.py)
+
+  # Detect-secrets - Find secrets accidentally committed
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args:
+          - '--baseline'
+          - '.secrets.baseline'
+          - '--exclude-files'
+          - '.*\.ipynb$'
+          - '--exclude-files'
+          - 'package-lock\.json'
+        exclude: ^(tests/fixtures/|examples/)
+
+  # ===========================================================================
+  # DOCUMENTATION
+  # ===========================================================================
+
+  # pydocstyle - Docstring style checker
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        args:
+          - --convention=google
+          - --add-ignore=D100,D101,D102,D103,D104,D105,D107  # Allow missing docstrings in some cases
+        exclude: ^(tests/|scripts/)
+
+  # ===========================================================================
+  # YAML/JSON LINTING
+  # ===========================================================================
+
+  # yamllint - Lint YAML files
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        args:
+          - --config-data
+          - '{extends: default, rules: {line-length: {max: 120}, document-start: disable, truthy: {check-keys: false}}}'
+        exclude: ^k8s/.*\.yaml$  # Skip k8s templates with variables
+
+  # ===========================================================================
+  # DEPENDENCY SECURITY
+  # ===========================================================================
+
+  # Safety - Check Python dependencies for known security vulnerabilities
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.3
+    hooks:
+      - id: python-safety-dependencies-check
+        files: requirements.*\.txt$
+
+  # ===========================================================================
+  # COMMIT MESSAGE FORMATTING
+  # ===========================================================================
+
+  # Commitizen - Ensure commit messages follow conventional commits
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: 3.13.0
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+
+  # ===========================================================================
+  # JUPYTER NOTEBOOKS
+  # ===========================================================================
+
+  # nbstripout - Strip outputs from Jupyter notebooks
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.6.1
+    hooks:
+      - id: nbstripout
+        files: \.ipynb$
+
+  # ===========================================================================
+  # CBAM-SPECIFIC VALIDATIONS
+  # ===========================================================================
+
+  # Custom hook: Validate CBAM data files
+  - repo: local
+    hooks:
+      # Validate emission factors database
+      - id: validate-emission-factors
+        name: Validate Emission Factors
+        entry: python scripts/validate_emission_factors.py
+        language: python
+        files: ^data/emission_factors\.py$
+        pass_filenames: false
+
+      # Validate CN codes JSON
+      - id: validate-cn-codes
+        name: Validate CN Codes
+        entry: python scripts/validate_cn_codes.py
+        language: python
+        files: ^data/cn_codes\.json$
+        args: ['--file', 'data/cn_codes.json']
+
+      # Validate CBAM rules YAML
+      - id: validate-cbam-rules
+        name: Validate CBAM Rules
+        entry: python scripts/validate_cbam_rules.py
+        language: python
+        files: ^rules/cbam_rules\.yaml$
+        args: ['--file', 'rules/cbam_rules.yaml']
+
+      # Validate JSON schemas
+      - id: validate-json-schemas
+        name: Validate JSON Schemas
+        entry: python scripts/validate_schemas.py
+        language: python
+        files: ^schemas/.*\.schema\.json$
+        pass_filenames: true
+
+      # Check for zero-hallucination compliance
+      - id: check-zero-hallucination
+        name: Check Zero Hallucination Compliance
+        entry: python scripts/check_zero_hallucination.py
+        language: python
+        files: ^agents/.*\.py$
+        args: ['--strict']
+
+      # Ensure calculations are deterministic
+      - id: check-determinism
+        name: Check Calculation Determinism
+        entry: python scripts/check_determinism.py
+        language: python
+        files: ^agents/emissions_calculator.*\.py$
+        pass_filenames: true
+
+# ==============================================================================
+# CONFIGURATION
+# ==============================================================================
+
+# Don't run hooks on files matching these patterns
+exclude: |
+  (?x)^(
+    \.venv/|
+    venv/|
+    __pycache__/|
+    .*\.egg-info/|
+    dist/|
+    build/|
+    \.pytest_cache/|
+    \.mypy_cache/|
+    \.ruff_cache/|
+    migrations/|
+    .*\.pyc$|
+    .*\.pyo$|
+    .*\.min\.js$|
+    .*\.min\.css$|
+    backup/|
+    archives/|
+    exports/|
+    output/
+  )
+
+# Run all hooks on all files (override default staged-only behavior)
+# Set to 'false' for faster commits (only check staged files)
+default_stages: [commit]
+
+# Fail fast: Stop on first failure
+# Set to 'true' to see all failures
+fail_fast: false
+
+# Minimum pre-commit version required
+minimum_pre_commit_version: '3.0.0'
+
+# ==============================================================================
+# INSTALLATION INSTRUCTIONS
+# ==============================================================================
+#
+# 1. Install pre-commit:
+#    pip install pre-commit
+#
+# 2. Install the git hook scripts:
+#    pre-commit install
+#    pre-commit install --hook-type commit-msg
+#
+# 3. (Optional) Run against all files:
+#    pre-commit run --all-files
+#
+# 4. Configure detect-secrets baseline:
+#    detect-secrets scan > .secrets.baseline
+#
+# ==============================================================================
+# USAGE
+# ==============================================================================
+#
+# Pre-commit hooks run automatically on git commit.
+#
+# To run manually:
+#   pre-commit run                    # Run on staged files
+#   pre-commit run --all-files        # Run on all files
+#   pre-commit run <hook-id>          # Run specific hook
+#
+# To skip hooks (emergency only):
+#   git commit --no-verify
+#
+# To update hooks to latest versions:
+#   pre-commit autoupdate
+#
+# ==============================================================================
