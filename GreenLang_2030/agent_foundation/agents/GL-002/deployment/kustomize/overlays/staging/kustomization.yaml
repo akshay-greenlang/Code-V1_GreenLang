@@ -1,0 +1,142 @@
+# Kustomize Overlay - Staging Environment
+# Production-like configuration for pre-release testing
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration
+bases:
+  - ../../base
+
+# Namespace override
+namespace: greenlang-staging
+
+# Name prefix for resources
+namePrefix: staging-
+
+# Common labels for staging environment
+commonLabels:
+  environment: staging
+  tier: staging
+
+# Common annotations
+commonAnnotations:
+  environment: "staging"
+  cost-center: "engineering-staging"
+  purpose: "pre-production-testing"
+
+# ConfigMap overrides
+configMapGenerator:
+  - name: gl-002-config
+    behavior: merge
+    literals:
+      - environment=staging
+      - log_level=INFO
+      - cache_ttl_seconds=180
+      - optimization_timeout_seconds=450
+      - feature_predictive_maintenance=true
+      - metrics_enabled=true
+      - database_echo=false
+
+# Image tag override (staging release candidates)
+images:
+  - name: gcr.io/greenlang/gl-002-boiler-efficiency
+    newTag: staging-1.0.0-rc.1
+
+# Replica count override (2 replicas for HA testing)
+replicas:
+  - name: gl-002-boiler-efficiency
+    count: 2
+
+# Patches for staging-specific changes
+patches:
+  # Patch deployment for staging environment
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-002-boiler-efficiency
+        annotations:
+          deployment-type: "staging"
+          auto-deploy: "true"
+      spec:
+        template:
+          spec:
+            containers:
+            - name: gl-002-boiler-efficiency
+              resources:
+                requests:
+                  cpu: "250m"
+                  memory: "256Mi"
+                limits:
+                  cpu: "750m"
+                  memory: "768Mi"
+              env:
+              - name: GREENLANG_ENV
+                value: "staging"
+              - name: ENABLE_PROFILING
+                value: "true"
+
+  # Patch HPA for staging
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: gl-002-boiler-efficiency-hpa
+      spec:
+        minReplicas: 2
+        maxReplicas: 5
+        metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 70
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 80
+
+  # Patch Ingress for staging domain
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: gl-002-boiler-efficiency-ingress
+        annotations:
+          cert-manager.io/cluster-issuer: "letsencrypt-staging"
+          nginx.ingress.kubernetes.io/limit-rps: "50"
+      spec:
+        tls:
+        - hosts:
+          - staging-api.boiler.greenlang.io
+          secretName: gl-002-tls-staging
+        rules:
+        - host: staging-api.boiler.greenlang.io
+          http:
+            paths:
+            - path: /api/v1
+              pathType: Prefix
+              backend:
+                service:
+                  name: gl-002-boiler-efficiency
+                  port:
+                    number: 80
+
+  # Patch PDB for staging
+  - patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: gl-002-boiler-efficiency-pdb
+      spec:
+        minAvailable: 1
+
+# Resources to add (staging-specific)
+resources:
+  - staging-alerts.yaml  # Staging-specific alert rules
+
+# Note: Create staging-alerts.yaml for staging-specific monitoring

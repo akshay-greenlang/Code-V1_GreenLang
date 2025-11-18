@@ -1,32 +1,30 @@
-# GL-002 BoilerEfficiencyOptimizer - CI Pipeline
-# Runs on every push and pull request to verify quality
-# Includes: tests, linting, type checking, security scans
+# GL-002 BoilerEfficiencyOptimizer - Comprehensive CI Pipeline
+# Zero-manual-intervention quality assurance with automated quality gates
+# Coverage >= 95% | Type Coverage >= 100% | Zero Critical Security Issues
 
-name: GL-002 CI
+name: GL-002 Comprehensive CI
 
 on:
   push:
-    branches:
-      - main
-      - master
-      - develop
+    branches: ['**']
     paths:
       - 'GreenLang_2030/agent_foundation/agents/GL-002/**'
       - '.github/workflows/gl-002-ci.yaml'
-      - 'requirements.txt'
 
   pull_request:
-    branches:
-      - main
-      - master
-      - develop
+    branches: [main, master, develop]
     paths:
       - 'GreenLang_2030/agent_foundation/agents/GL-002/**'
       - '.github/workflows/gl-002-ci.yaml'
-      - 'requirements.txt'
 
-  # Allow manual trigger
   workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  AGENT_PATH: 'GreenLang_2030/agent_foundation/agents/GL-002'
+  COVERAGE_THRESHOLD: 95
+  COMPLEXITY_THRESHOLD: 10
+  MIN_TYPE_COVERAGE: 100
 
 jobs:
   # Job 1: Setup and lint

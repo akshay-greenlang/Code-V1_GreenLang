@@ -1,0 +1,279 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-11-17T00:00:00Z",
+    "tools": [
+      {
+        "vendor": "GreenLang",
+        "name": "SBOM Generator",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "gl002-boiler-optimizer@2.0.0",
+      "name": "GL-002 Boiler Efficiency Optimizer",
+      "version": "2.0.0",
+      "description": "Advanced industrial AI agent for boiler optimization, fuel reduction, and emissions control",
+      "licenses": [
+        {
+          "license": {
+            "id": "Proprietary"
+          }
+        }
+      ],
+      "publisher": "GreenLang Foundation",
+      "authors": [
+        {
+          "name": "GreenLang Engineering Team"
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "anthropic@0.18.1",
+      "name": "anthropic",
+      "version": "0.18.1",
+      "description": "Official Python client for the Anthropic Claude API",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/anthropic@0.18.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "openai@1.12.0",
+      "name": "openai",
+      "version": "1.12.0",
+      "description": "OpenAI Python client library",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/openai@1.12.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "langchain@0.1.9",
+      "name": "langchain",
+      "version": "0.1.9",
+      "description": "Building applications with LLMs through composability",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/langchain@0.1.9"
+    },
+    {
+      "type": "library",
+      "bom-ref": "langchain-core@0.1.27",
+      "name": "langchain-core",
+      "version": "0.1.27",
+      "description": "LangChain core utilities",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/langchain-core@0.1.27"
+    },
+    {
+      "type": "library",
+      "bom-ref": "langchain-community@0.0.24",
+      "name": "langchain-community",
+      "version": "0.0.24",
+      "description": "Community integrations for LangChain",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/langchain-community@0.0.24"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pydantic@2.5.3",
+      "name": "pydantic",
+      "version": "2.5.3",
+      "description": "Data validation using Python type hints",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/pydantic@2.5.3"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pydantic-settings@2.1.0",
+      "name": "pydantic-settings",
+      "version": "2.1.0",
+      "description": "Settings management using Pydantic",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/pydantic-settings@2.1.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "numpy@1.26.3",
+      "name": "numpy",
+      "version": "1.26.3",
+      "description": "Fundamental package for array computing in Python",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "purl": "pkg:pypi/numpy@1.26.3"
+    },
+    {
+      "type": "library",
+      "bom-ref": "scipy@1.12.0",
+      "name": "scipy",
+      "version": "1.12.0",
+      "description": "Scientific computing tools for Python",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "purl": "pkg:pypi/scipy@1.12.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "sentence-transformers@2.3.1",
+      "name": "sentence-transformers",
+      "version": "2.3.1",
+      "description": "State-of-the-art sentence, text and image embeddings",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/sentence-transformers@2.3.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "transformers@4.37.2",
+      "name": "transformers",
+      "version": "4.37.2",
+      "description": "State-of-the-art Machine Learning for PyTorch, TensorFlow, and JAX",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/transformers@4.37.2"
+    },
+    {
+      "type": "library",
+      "bom-ref": "torch@2.1.2",
+      "name": "torch",
+      "version": "2.1.2",
+      "description": "Tensors and Dynamic neural networks in Python with strong GPU acceleration",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "purl": "pkg:pypi/torch@2.1.2"
+    },
+    {
+      "type": "library",
+      "bom-ref": "cryptography@42.0.5",
+      "name": "cryptography",
+      "version": "42.0.5",
+      "description": "Cryptographic recipes and primitives for Python",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/cryptography@42.0.5"
+    },
+    {
+      "type": "library",
+      "bom-ref": "PyJWT@2.8.0",
+      "name": "PyJWT",
+      "version": "2.8.0",
+      "description": "JSON Web Token implementation in Python",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/PyJWT@2.8.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "fastapi@0.109.2",
+      "name": "fastapi",
+      "version": "0.109.2",
+      "description": "FastAPI framework, high performance, easy to learn, fast to code, ready for production",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/fastapi@0.109.2"
+    },
+    {
+      "type": "library",
+      "bom-ref": "uvicorn@0.27.1",
+      "name": "uvicorn",
+      "version": "0.27.1",
+      "description": "The lightning-fast ASGI server",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "purl": "pkg:pypi/uvicorn@0.27.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "httpx@0.26.0",
+      "name": "httpx",
+      "version": "0.26.0",
+      "description": "The next generation HTTP client",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "purl": "pkg:pypi/httpx@0.26.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "aiohttp@3.9.3",
+      "name": "aiohttp",
+      "version": "3.9.3",
+      "description": "Async http client/server framework",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/aiohttp@3.9.3"
+    },
+    {
+      "type": "library",
+      "bom-ref": "requests@2.31.0",
+      "name": "requests",
+      "version": "2.31.0",
+      "description": "Python HTTP for Humans",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/requests@2.31.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "redis@5.0.1",
+      "name": "redis",
+      "version": "5.0.1",
+      "description": "Python client for Redis key-value store",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/redis@5.0.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "asyncpg@0.29.0",
+      "name": "asyncpg",
+      "version": "0.29.0",
+      "description": "Fast PostgreSQL Database Client Library for Python/asyncio",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/asyncpg@0.29.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "sqlalchemy@2.0.25",
+      "name": "sqlalchemy",
+      "version": "2.0.25",
+      "description": "Database Abstraction Library",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/sqlalchemy@2.0.25"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pyyaml@6.0.1",
+      "name": "pyyaml",
+      "version": "6.0.1",
+      "description": "YAML parser and emitter for Python",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/pyyaml@6.0.1"
+    },
+    {
+      "type": "library",
+      "bom-ref": "tenacity@8.2.3",
+      "name": "tenacity",
+      "version": "8.2.3",
+      "description": "Retry library for Python",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/tenacity@8.2.3"
+    },
+    {
+      "type": "library",
+      "bom-ref": "prometheus-client@0.19.0",
+      "name": "prometheus-client",
+      "version": "0.19.0",
+      "description": "Python client for the Prometheus monitoring system",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/prometheus-client@0.19.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "gl002-boiler-optimizer@2.0.0",
+      "dependsOn": [
+        "anthropic@0.18.1",
+        "langchain@0.1.9",
+        "pydantic@2.5.3",
+        "numpy@1.26.3",
+        "scipy@1.12.0",
+        "cryptography@42.0.5",
+        "fastapi@0.109.2",
+        "prometheus-client@0.19.0"
+      ]
+    }
+  ],
+  "vulnerabilities": []
+}

@@ -1,0 +1,44 @@
+# GL-003 SteamSystemAnalyzer - LimitRange
+# Default resource limits for namespace
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-003-limitrange
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+
+spec:
+  limits:
+    # Container limits
+    - type: Container
+      max:
+        cpu: "2000m"
+        memory: "4Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "250m"
+        memory: "256Mi"
+
+    # Pod limits
+    - type: Pod
+      max:
+        cpu: "4000m"
+        memory: "8Gi"
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+
+    # PersistentVolumeClaim limits
+    - type: PersistentVolumeClaim
+      max:
+        storage: "100Gi"
+      min:
+        storage: "1Gi"

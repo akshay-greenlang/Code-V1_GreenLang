@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-004-config
+  namespace: greenlang
+data:
+  APP_NAME: "GL-004-BurnerOptimizationAgent"
+  LOG_LEVEL: "INFO"
+  GREENLANG_ENV: "production"
+  PROMETHEUS_PORT: "8001"
+  METRICS_ENABLED: "true"
+  OPTIMIZATION_INTERVAL_SECONDS: "300"
+  TARGET_EFFICIENCY_PERCENT: "90.0"
+  MAX_NOX_PPM: "50.0"
+  MAX_CO_PPM: "100.0"

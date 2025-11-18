@@ -1,0 +1,321 @@
+{
+  "dashboard": {
+    "title": "GL-003 Feedback & Continuous Improvement Dashboard",
+    "tags": ["gl-003", "feedback", "experiments", "continuous-improvement"],
+    "timezone": "browser",
+    "schemaVersion": 27,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-7d",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "User Satisfaction (NPS Score)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl002_feedback_nps_score{period=\"week\"}",
+            "legendFormat": "Weekly NPS"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": -100, "color": "red"},
+                {"value": 0, "color": "yellow"},
+                {"value": 50, "color": "green"}
+              ]
+            },
+            "unit": "short",
+            "decimals": 1
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Average Rating",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl002_feedback_rating_average{period=\"day\"}",
+            "legendFormat": "Daily Avg"
+          },
+          {
+            "expr": "gl002_feedback_rating_average{period=\"week\"}",
+            "legendFormat": "Weekly Avg"
+          }
+        ],
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        },
+        "yaxes": [
+          {"min": 1, "max": 5, "format": "short"}
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Prediction Accuracy",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl002_feedback_accuracy_average{period=\"week\"}",
+            "legendFormat": "Weekly Accuracy"
+          }
+        ],
+        "gridPos": {
+          "x": 18,
+          "y": 0,
+          "w": 6,
+          "h": 4
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 70, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            },
+            "unit": "percent",
+            "decimals": 1
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Alerts",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(gl002_alerts_active)",
+            "legendFormat": "Total Alerts"
+          }
+        ],
+        "gridPos": {
+          "x": 18,
+          "y": 4,
+          "w": 6,
+          "h": 4
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 5, "color": "red"}
+              ]
+            },
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "Feedback Distribution",
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum by (rating) (gl002_feedback_total)",
+            "legendFormat": "{{rating}} stars"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 4,
+          "w": 6,
+          "h": 8
+        }
+      },
+      {
+        "id": 6,
+        "title": "Active Experiments",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl002_experiments_active",
+            "legendFormat": "Running"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 12,
+          "w": 4,
+          "h": 3
+        }
+      },
+      {
+        "id": 7,
+        "title": "Experiment Performance (Primary Metric)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl002_experiment_metric_value{metric_name=\"primary_metric\"}",
+            "legendFormat": "{{experiment_id}}-{{variant}}"
+          }
+        ],
+        "gridPos": {
+          "x": 4,
+          "y": 12,
+          "w": 14,
+          "h": 8
+        },
+        "yaxes": [
+          {"format": "short", "label": "Metric Value"}
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Experiment User Distribution",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "gl002_experiment_users_total",
+            "legendFormat": "{{experiment_id}}-{{variant}}"
+          }
+        ],
+        "gridPos": {
+          "x": 18,
+          "y": 12,
+          "w": 6,
+          "h": 8
+        }
+      },
+      {
+        "id": 9,
+        "title": "Satisfaction Trend (7-day MA)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "avg_over_time(gl002_feedback_rating_average{period=\"day\"}[7d])",
+            "legendFormat": "7-day Moving Average"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 20,
+          "w": 12,
+          "h": 6
+        },
+        "yaxes": [
+          {"min": 1, "max": 5}
+        ]
+      },
+      {
+        "id": 10,
+        "title": "Alerts by Severity",
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "gl002_alerts_active",
+            "legendFormat": "{{severity}}"
+          }
+        ],
+        "gridPos": {
+          "x": 12,
+          "y": 20,
+          "w": 12,
+          "h": 6
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 3, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Feedback Processing Time (p95)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl002_feedback_processing_seconds_bucket[5m])) by (le))",
+            "legendFormat": "P95 Latency"
+          }
+        ],
+        "gridPos": {
+          "x": 0,
+          "y": 26,
+          "w": 6,
+          "h": 3
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "decimals": 3
+          }
+        }
+      },
+      {
+        "id": 12,
+        "title": "Category Performance",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "avg by (category) (gl002_feedback_rating_average)",
+            "format": "table"
+          }
+        ],
+        "gridPos": {
+          "x": 6,
+          "y": 26,
+          "w": 18,
+          "h": 6
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "experiment",
+          "type": "query",
+          "query": "label_values(gl002_experiment_users_total, experiment_id)",
+          "refresh": 1,
+          "multi": false
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Experiments Started",
+          "datasource": "PostgreSQL",
+          "enable": true,
+          "iconColor": "green",
+          "query": "SELECT start_date as time, name as text FROM experiments WHERE start_date >= $__timeFrom() AND start_date <= $__timeTo()"
+        },
+        {
+          "name": "Critical Alerts",
+          "datasource": "PostgreSQL",
+          "enable": true,
+          "iconColor": "red",
+          "query": "SELECT created_at as time, title as text FROM feedback_alerts WHERE severity='critical' AND created_at >= $__timeFrom() AND created_at <= $__timeTo()"
+        }
+      ]
+    }
+  }
+}

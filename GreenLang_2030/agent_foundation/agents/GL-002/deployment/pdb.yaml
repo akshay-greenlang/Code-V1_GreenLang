@@ -1,0 +1,106 @@
+# GL-002 BoilerEfficiencyOptimizer - PodDisruptionBudget
+# Ensures minimum availability during voluntary disruptions
+# (node drains, cluster upgrades, maintenance operations)
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-002-boiler-efficiency-pdb
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+    version: "1.0.0"
+  annotations:
+    description: "PodDisruptionBudget for GL-002 BoilerEfficiencyOptimizer"
+    documentation: "https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
+
+spec:
+  # Selector to match GL-002 pods
+  selector:
+    matchLabels:
+      app: gl-002-boiler-efficiency
+      agent: "GL-002"
+
+  # Minimum available pods during disruption
+  # With 3 replicas, this ensures at least 2 are always running
+  minAvailable: 2
+
+  # Alternative: maxUnavailable - maximum pods that can be unavailable
+  # maxUnavailable: 1
+
+  # Unhealthy pod eviction policy (Kubernetes 1.26+)
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+---
+# PodDisruptionBudget for scaling operations
+# This PDB is activated during high-load scenarios
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-002-boiler-efficiency-pdb-scaled
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+    version: "1.0.0"
+    scenario: high-load
+  annotations:
+    description: "PDB for scaled GL-002 deployment (> 5 pods)"
+
+spec:
+  selector:
+    matchLabels:
+      app: gl-002-boiler-efficiency
+      agent: "GL-002"
+
+  # When scaled to 6-10 pods, allow up to 2 disruptions
+  # This enables faster node drains during maintenance
+  maxUnavailable: 2
+
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+---
+# Notes on PodDisruptionBudget best practices:
+#
+# 1. **minAvailable vs maxUnavailable**:
+#    - minAvailable: Absolute number or percentage (e.g., "50%")
+#    - maxUnavailable: Maximum pods that can be down simultaneously
+#    - Choose based on your HA requirements
+#
+# 2. **With 3 replicas (default)**:
+#    - minAvailable: 2 → Ensures 66% availability (recommended)
+#    - maxUnavailable: 1 → Same effect, different approach
+#
+# 3. **With 6-10 replicas (scaled)**:
+#    - minAvailable: 4 → Ensures 40-66% availability
+#    - maxUnavailable: 2 → Allows faster maintenance operations
+#
+# 4. **Percentage-based PDB** (alternative):
+#    spec:
+#      minAvailable: "66%"  # Ensures 2/3 of pods are always running
+#
+# 5. **Zero-downtime deployments**:
+#    - PDB works with RollingUpdate strategy
+#    - Prevents Kubernetes from evicting too many pods
+#    - Ensures service continuity during:
+#      * Node drains
+#      * Cluster upgrades
+#      * Autoscaler operations
+#
+# 6. **Monitoring PDB status**:
+#    kubectl get pdb -n greenlang
+#    kubectl describe pdb gl-002-boiler-efficiency-pdb -n greenlang
+#
+# 7. **Testing PDB**:
+#    kubectl drain <node-name> --ignore-daemonsets --delete-emptydir-data
+#    # PDB will block drain if it violates minAvailable constraint
+#
+# 8. **PDB and HPA interaction**:
+#    - PDB respects current replica count from HPA
+#    - If HPA scales to 1 replica, PDB with minAvailable: 2 will block scaling down
+#    - Use maxUnavailable for better compatibility with HPA
+#
+# 9. **Emergency override** (use with caution):
+#    kubectl drain <node> --ignore-daemonsets --delete-emptydir-data --disable-eviction
+#    # Bypasses PDB constraints (use only in emergencies)

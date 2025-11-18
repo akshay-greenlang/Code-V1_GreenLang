@@ -1,0 +1,122 @@
+# Kustomize Overlay - Development Environment
+# Low replicas, verbose logging, relaxed resource limits
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration
+bases:
+  - ../../base
+
+# Namespace override
+namespace: greenlang-dev
+
+# Name prefix for resources
+namePrefix: dev-
+
+# Common labels for dev environment
+commonLabels:
+  environment: development
+  tier: dev
+
+# Common annotations
+commonAnnotations:
+  environment: "development"
+  cost-center: "engineering-dev"
+
+# ConfigMap overrides
+configMapGenerator:
+  - name: gl-002-config
+    behavior: merge
+    literals:
+      - environment=development
+      - log_level=DEBUG
+      - cache_ttl_seconds=60
+      - optimization_timeout_seconds=600
+      - feature_predictive_maintenance=true
+      - metrics_enabled=true
+      - database_echo=true
+
+# Image tag override
+images:
+  - name: gcr.io/greenlang/gl-002-boiler-efficiency
+    newTag: dev-latest
+
+# Replica count override (lower for dev)
+replicas:
+  - name: gl-002-boiler-efficiency
+    count: 1
+
+# Patches for development-specific changes
+patches:
+  # Patch deployment for dev environment
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-002-boiler-efficiency
+      spec:
+        template:
+          spec:
+            containers:
+            - name: gl-002-boiler-efficiency
+              resources:
+                requests:
+                  cpu: "100m"
+                  memory: "128Mi"
+                limits:
+                  cpu: "500m"
+                  memory: "512Mi"
+              env:
+              - name: GREENLANG_ENV
+                value: "development"
+              - name: DEBUG
+                value: "true"
+
+  # Patch HPA for lower thresholds
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: gl-002-boiler-efficiency-hpa
+      spec:
+        minReplicas: 1
+        maxReplicas: 3
+        metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 80
+
+  # Patch Ingress for dev domain
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: gl-002-boiler-efficiency-ingress
+        annotations:
+          cert-manager.io/cluster-issuer: "selfsigned-issuer"
+      spec:
+        tls:
+        - hosts:
+          - gl-002-dev.greenlang.local
+          secretName: gl-002-tls-dev
+        rules:
+        - host: gl-002-dev.greenlang.local
+          http:
+            paths:
+            - path: /api/v1
+              pathType: Prefix
+              backend:
+                service:
+                  name: gl-002-boiler-efficiency
+                  port:
+                    number: 80
+
+# Resources to add (dev-specific)
+resources:
+  - dev-pvc.yaml  # Development-specific persistent volume claims
+
+# Note: Create dev-pvc.yaml if needed for development-specific storage

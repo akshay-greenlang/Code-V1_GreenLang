@@ -1,0 +1,122 @@
+name: GL-003 Scheduled Jobs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+    - cron: '0 */6 * * *'  # Every 6 hours
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  AGENT_PATH: 'GreenLang_2030/agent_foundation/agents/GL-003'
+
+jobs:
+  security-scan:
+    name: Daily Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ${{ env.AGENT_PATH }}
+        run: |
+          pip install -r requirements.txt
+          pip install bandit safety pip-audit
+
+      - name: Bandit scan
+        working-directory: ${{ env.AGENT_PATH }}
+        run: bandit -r . -ll -f json -o bandit-daily.json || true
+
+      - name: Safety check
+        working-directory: ${{ env.AGENT_PATH }}
+        run: safety check --json --output safety-daily.json || true
+
+      - name: pip-audit
+        working-directory: ${{ env.AGENT_PATH }}
+        run: pip-audit --format json --output audit-daily.json || true
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-security-scan
+          path: ${{ env.AGENT_PATH }}/*-daily.json
+          retention-days: 90
+
+  dependency-update:
+    name: Dependency Updates Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check for updates
+        working-directory: ${{ env.AGENT_PATH }}
+        run: |
+          pip list --outdated
+
+  performance-benchmark:
+    name: Weekly Performance Benchmark
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 0 * * 0'
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ${{ env.AGENT_PATH }}
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-benchmark
+
+      - name: Run benchmarks
+        working-directory: ${{ env.AGENT_PATH }}
+        run: pytest tests/test_performance.py --benchmark-only --benchmark-json=benchmark.json || true
+
+      - name: Upload benchmarks
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-benchmarks
+          path: ${{ env.AGENT_PATH }}/benchmark.json
+          retention-days: 365
+
+  coverage-trend:
+    name: Coverage Trend Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ${{ env.AGENT_PATH }}
+        run: pip install -r requirements.txt
+
+      - name: Run tests with coverage
+        working-directory: ${{ env.AGENT_PATH }}
+        run: pytest --cov=. --cov-report=json:coverage-trend.json tests/
+
+      - name: Upload coverage trend
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-trend
+          path: ${{ env.AGENT_PATH }}/coverage-trend.json
+          retention-days: 365

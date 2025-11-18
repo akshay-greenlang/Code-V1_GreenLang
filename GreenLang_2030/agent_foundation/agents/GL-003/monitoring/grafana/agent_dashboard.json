@@ -1,0 +1,497 @@
+{
+  "dashboard": {
+    "title": "GL-003 Agent Dashboard - Tools & Cache Performance",
+    "tags": ["gl-003", "agent", "tools", "cache"],
+    "timezone": "utc",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Cache Hit Rate (%)",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "100 * sum(rate(gl_003_cache_hits_total[5m])) / (sum(rate(gl_003_cache_hits_total[5m])) + sum(rate(gl_003_cache_misses_total[5m])))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 1,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 70, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Tool Execution Rate",
+        "type": "stat",
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_optimization_requests_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "decimals": 2,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"},
+                {"value": 1, "color": "green"},
+                {"value": 5, "color": "yellow"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Tool Success Rate (%)",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "100 * sum(rate(gl_003_optimization_requests_total{status=\"success\"}[5m])) / sum(rate(gl_003_optimization_requests_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Cache Evictions",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_cache_evictions_total[5m]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "decimals": 2,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.5, "color": "yellow"},
+                {"value": 2, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Cache Performance Over Time",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_cache_hits_total[5m])) by (cache_key_pattern)",
+            "refId": "A",
+            "legendFormat": "Hits - {{cache_key_pattern}}"
+          },
+          {
+            "expr": "sum(rate(gl_003_cache_misses_total[5m])) by (cache_key_pattern)",
+            "refId": "B",
+            "legendFormat": "Misses - {{cache_key_pattern}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "lineWidth": 2,
+              "stacking": {"mode": "none"}
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byRegexp", "options": "/Hits.*/"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byRegexp", "options": "/Misses.*/"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}},
+                {"id": "custom.lineStyle", "value": {"dash": [10, 5], "fill": "dash"}}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "last"]
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Tool Execution Latency by Strategy",
+        "type": "timeseries",
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gl_003_optimization_duration_seconds_bucket[5m])) by (le, strategy))",
+            "refId": "A",
+            "legendFormat": "p50 - {{strategy}}"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl_003_optimization_duration_seconds_bucket[5m])) by (le, strategy))",
+            "refId": "B",
+            "legendFormat": "p95 - {{strategy}}"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gl_003_optimization_duration_seconds_bucket[5m])) by (le, strategy))",
+            "refId": "C",
+            "legendFormat": "p99 - {{strategy}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 10,
+              "lineWidth": 2
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "max", "last"]
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Cache Hit Rate by Pattern",
+        "type": "bargauge",
+        "gridPos": {"x": 0, "y": 12, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "100 * sum(rate(gl_003_cache_hits_total[5m])) by (cache_key_pattern) / (sum(rate(gl_003_cache_hits_total[5m])) by (cache_key_pattern) + sum(rate(gl_003_cache_misses_total[5m])) by (cache_key_pattern))",
+            "refId": "A",
+            "legendFormat": "{{cache_key_pattern}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 70, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        }
+      },
+      {
+        "id": 8,
+        "title": "Tool Execution Count by Strategy",
+        "type": "piechart",
+        "gridPos": {"x": 8, "y": 12, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(increase(gl_003_optimization_requests_total{status=\"success\"}[1h])) by (strategy)",
+            "refId": "A",
+            "legendFormat": "{{strategy}}"
+          }
+        ],
+        "options": {
+          "pieType": "donut",
+          "displayLabels": ["name", "percent"],
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Tool Failure Rate by Strategy",
+        "type": "timeseries",
+        "gridPos": {"x": 16, "y": 12, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_optimization_requests_total{status=\"failure\"}[5m])) by (strategy)",
+            "refId": "A",
+            "legendFormat": "{{strategy}}"
+          },
+          {
+            "expr": "sum(rate(gl_003_optimization_requests_total{status=\"timeout\"}[5m])) by (strategy)",
+            "refId": "B",
+            "legendFormat": "{{strategy}} (timeout)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "lineWidth": 2,
+              "stacking": {"mode": "normal"}
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "max"]
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Optimization Efficiency Improvement Distribution",
+        "type": "histogram",
+        "gridPos": {"x": 0, "y": 18, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_optimization_efficiency_improvement_percent_bucket[5m])) by (le)",
+            "refId": "A",
+            "format": "heatmap"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 11,
+        "title": "Tool Execution Statistics",
+        "type": "table",
+        "gridPos": {"x": 12, "y": 18, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_optimization_requests_total[1h])) by (strategy, status)",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl_003_optimization_duration_seconds_bucket[1h])) by (le, strategy))",
+            "refId": "B",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "merge"
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true, "le": true},
+              "renameByName": {
+                "strategy": "Strategy",
+                "status": "Status",
+                "Value #A": "Rate (req/s)",
+                "Value #B": "p95 Latency (s)"
+              }
+            }
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [{"displayName": "Rate (req/s)", "desc": true}]
+        }
+      },
+      {
+        "id": 12,
+        "title": "Cache Eviction Rate Over Time",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 24, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_cache_evictions_total[5m])) by (cache_key_pattern)",
+            "refId": "A",
+            "legendFormat": "{{cache_key_pattern}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ops",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "lineWidth": 2,
+              "stacking": {"mode": "normal"}
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "max", "last"]
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Boiler Operations Heatmap",
+        "type": "timeseries",
+        "gridPos": {"x": 12, "y": 24, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "gl_003_boiler_efficiency_percent",
+            "refId": "A",
+            "legendFormat": "{{boiler_id}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 50,
+              "lineWidth": 1,
+              "gradientMode": "scheme"
+            },
+            "color": {
+              "mode": "continuous-GrYlRd"
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "min", "max"]
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "strategy",
+          "type": "query",
+          "label": "Optimization Strategy",
+          "query": "label_values(gl_003_optimization_requests_total, strategy)",
+          "multi": true,
+          "includeAll": true,
+          "refresh": 1
+        },
+        {
+          "name": "cache_pattern",
+          "type": "query",
+          "label": "Cache Pattern",
+          "query": "label_values(gl_003_cache_hits_total, cache_key_pattern)",
+          "multi": true,
+          "includeAll": true,
+          "refresh": 1
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Cache Evictions",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "rate(gl_003_cache_evictions_total[1m]) > 1",
+          "iconColor": "orange",
+          "tagKeys": "cache_key_pattern"
+        },
+        {
+          "name": "Tool Failures",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "rate(gl_003_optimization_requests_total{status=\"failure\"}[1m]) > 0",
+          "iconColor": "red",
+          "tagKeys": "strategy"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,94 @@
+# GL-004 BurnerOptimizationAgent - Docker Ignore File
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+.tox/
+nosetests.xml
+coverage.xml
+
+# Documentation
+docs/
+*.md
+!README.md
+LICENSE
+
+# Development
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# Logs
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Environment files
+.env
+.env.*
+
+# Security files
+*.pem
+*.key
+*.cert
+secrets/
+
+# Deployment files
+deployment/
+monitoring/
+runbooks/
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# SBOM and security reports
+sbom/
+bandit-report.json
+safety-report.json
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Backup files
+*.backup
+*.bak
+backup/

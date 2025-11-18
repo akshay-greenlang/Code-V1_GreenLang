@@ -172,7 +172,7 @@ class TestEncryptionAndCredentials:
         import os
 
         # Use environment variable for API key in tests
-        api_key = os.getenv("TEST_API_KEY", "sk_live_test_key")
+        api_key = os.getenv("TEST_API_KEY", "mock-test-api-key")
         masked_key = "sk_live_" + "*" * 24
 
         # API key should never be logged in plain text

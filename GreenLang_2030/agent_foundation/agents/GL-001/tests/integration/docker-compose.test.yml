@@ -1,0 +1,316 @@
+version: '3.8'
+
+# Docker Compose configuration for GL-001 integration testing infrastructure
+# Provides all external services required for comprehensive integration tests
+
+services:
+  # ===========================================================================
+  # DATABASE SERVICES
+  # ===========================================================================
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: gl001-test-postgres
+    environment:
+      POSTGRES_DB: gl001_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gl001-test-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: gl001-test-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - gl001-test-network
+
+  # ===========================================================================
+  # MESSAGE BROKER
+  # ===========================================================================
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: gl001-test-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_logs:/mosquitto/log
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 | grep -v Error || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gl001-test-network
+
+  # ===========================================================================
+  # MOCK SCADA SERVICES (Multi-Plant)
+  # ===========================================================================
+
+  mock-scada-plant1:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-scada
+    container_name: gl001-mock-scada-plant1
+    environment:
+      PLANT_ID: PLANT-001
+      OPCUA_PORT: 4840
+      MODBUS_PORT: 502
+    ports:
+      - "4840:4840"
+      - "502:502"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  mock-scada-plant2:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-scada
+    container_name: gl001-mock-scada-plant2
+    environment:
+      PLANT_ID: PLANT-002
+      OPCUA_PORT: 4841
+      MODBUS_PORT: 503
+    ports:
+      - "4841:4841"
+      - "503:503"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  mock-scada-plant3:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-scada
+    container_name: gl001-mock-scada-plant3
+    environment:
+      PLANT_ID: PLANT-003
+      OPCUA_PORT: 4842
+      MODBUS_PORT: 504
+    ports:
+      - "4842:4842"
+      - "504:504"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  # ===========================================================================
+  # MOCK ERP SERVICES
+  # ===========================================================================
+
+  mock-sap:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-erp
+    container_name: gl001-mock-sap
+    environment:
+      ERP_TYPE: SAP
+      RFC_PORT: 3300
+    ports:
+      - "3300:3300"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3300/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  mock-oracle:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-erp
+    container_name: gl001-mock-oracle
+    environment:
+      ERP_TYPE: Oracle
+      API_PORT: 8080
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  # ===========================================================================
+  # MOCK SUB-AGENT SERVICES
+  # ===========================================================================
+
+  mock-gl002:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-agent
+    container_name: gl001-mock-gl002
+    environment:
+      AGENT_ID: GL-002
+      AGENT_TYPE: boiler_efficiency
+      PORT: 5002
+    ports:
+      - "5002:5002"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5002/status || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  mock-gl003:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-agent
+    container_name: gl001-mock-gl003
+    environment:
+      AGENT_ID: GL-003
+      AGENT_TYPE: steam_distribution
+      PORT: 5003
+    ports:
+      - "5003:5003"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5003/status || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  mock-gl004:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-agent
+    container_name: gl001-mock-gl004
+    environment:
+      AGENT_ID: GL-004
+      AGENT_TYPE: heat_recovery
+      PORT: 5004
+    ports:
+      - "5004:5004"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5004/status || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  mock-gl005:
+    build:
+      context: .
+      dockerfile: Dockerfile.mock-agent
+    container_name: gl001-mock-gl005
+    environment:
+      AGENT_ID: GL-005
+      AGENT_TYPE: emissions_monitoring
+      PORT: 5005
+    ports:
+      - "5005:5005"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5005/status || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+    networks:
+      - gl001-test-network
+
+  # ===========================================================================
+  # MONITORING & OBSERVABILITY
+  # ===========================================================================
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gl001-test-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - gl001-test-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gl001-test-grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_INSTALL_PLUGINS=
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana-dashboards:/etc/grafana/provisioning/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - gl001-test-network
+
+# =============================================================================
+# VOLUMES
+# =============================================================================
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  mosquitto_data:
+    driver: local
+  mosquitto_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# =============================================================================
+# NETWORKS
+# =============================================================================
+
+networks:
+  gl001-test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/16

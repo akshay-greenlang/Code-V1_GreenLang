@@ -629,14 +629,17 @@ class TestERPConnector:
     @pytest.mark.asyncio
     async def test_erp_api_authentication(self, erp_connector):
         """Test ERP API authentication."""
+        import os
+        test_token = os.getenv("TEST_AUTH_TOKEN", "mock-auth-token-for-testing")
+
         with patch('requests.post') as mock_post:
             mock_post.return_value.status_code = 200
-            mock_post.return_value.json.return_value = {"token": "auth-token-123"}
+            mock_post.return_value.json.return_value = {"token": test_token}
 
             authenticated = await erp_connector.authenticate()
 
             assert authenticated is True
-            assert erp_connector.auth_token == "auth-token-123"
+            assert erp_connector.auth_token == test_token
 
     @pytest.mark.asyncio
     async def test_erp_fetch_fuel_inventory(self, erp_connector, mock_erp_response):
@@ -876,17 +879,20 @@ class TestCloudAPIConnector:
     @pytest.mark.asyncio
     async def test_cloud_api_authentication(self, cloud_connector):
         """Test cloud API authentication."""
+        import os
+        test_access_token = os.getenv("TEST_CLOUD_ACCESS_TOKEN", "mock-cloud-access-token")
+
         with patch('requests.post') as mock_post:
             mock_post.return_value.status_code = 200
             mock_post.return_value.json.return_value = {
-                "access_token": "token-123",
+                "access_token": test_access_token,
                 "expires_in": 3600,
             }
 
             authenticated = await cloud_connector.authenticate()
 
             assert authenticated is True
-            assert cloud_connector.access_token == "token-123"
+            assert cloud_connector.access_token == test_access_token
 
     @pytest.mark.asyncio
     async def test_cloud_data_upload(self, cloud_connector):

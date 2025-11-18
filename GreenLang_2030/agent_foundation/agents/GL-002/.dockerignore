@@ -1,0 +1,195 @@
+# GL-002 BoilerEfficiencyOptimizer - Docker Build Exclusions
+# Optimize build context by excluding unnecessary files
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+.tox/
+coverage.xml
+.coverage.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Git
+.git/
+.gitignore
+.gitattributes
+.github/
+
+# CI/CD
+.gitlab-ci.yml
+.circleci/
+.travis.yml
+azure-pipelines.yml
+
+# Documentation
+docs/
+*.md
+!README.md
+LICENSE
+CHANGELOG.md
+CONTRIBUTING.md
+
+# Documentation Reports (extensive)
+EXECUTIVE_BRIEFING.md
+FINAL_COMPLIANCE_REPORT.md
+FINAL_PRODUCTION_READINESS_REPORT.md
+FINAL_SECURITY_REPORT.md
+IMPLEMENTATION_SUMMARY.md
+MONITORING_DEPLOYMENT_SUMMARY.md
+PRODUCTION_CERTIFICATION.md
+PRODUCTION_DEPLOYMENT_INDEX.md
+SECURITY_AUDIT_REPORT.md
+SECURITY_REMEDIATION_SUMMARY.md
+TEST_COVERAGE_ACHIEVEMENT_REPORT.md
+TEST_COVERAGE_INDEX.md
+TEST_EXECUTION_GUIDE.md
+THREAD_SAFETY_ANALYSIS.md
+TYPE_HINTS_QUICK_REFERENCE.md
+TYPE_HINTS_SPECIFICATION.md
+TYPE_HINTS_SUMMARY_REPORT.md
+CI_CD_DOCUMENTATION.md
+CI_CD_FILES_MANIFEST.md
+CI_CD_IMPLEMENTATION_SUMMARY.md
+CONTINUOUS_IMPROVEMENT.md
+CONTINUOUS_IMPROVEMENT_IMPLEMENTATION_SUMMARY.md
+CONTINUOUS_IMPROVEMENT_QUICKSTART.md
+COVERAGE_BOOST_SUMMARY.md
+DEPLOYMENT_APPROVAL.md
+DETERMINISM_GUARANTEE.md
+DETERMINISM_IMPLEMENTATION_SUMMARY.md
+DETERMINISM_QUICKSTART.md
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+.eggs/
+wheels/
+
+# Environment files
+.env
+.env.*
+!.env.template
+!.env.example
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Security reports
+bandit-report.json
+safety-report.json
+sbom/
+PRODUCTION_READINESS_SCORE.json
+
+# Deployment files
+deployment/
+kubernetes/
+terraform/
+kustomize/
+
+# Analysis files
+analysis/
+experiments/
+feedback/
+migrations/
+
+# Runbooks
+runbooks/
+
+# Tests
+tests/
+test_*.py
+*_test.py
+conftest.py
+
+# Monitoring
+monitoring/grafana/
+monitoring/alerts/
+
+# Scripts
+scripts/
+add_type_hints.py
+THREAD_SAFE_CACHE_SECTIONS.py
+
+# Pre-commit
+.pre-commit-config.yaml
+.pre-commit-hooks.yaml
+
+# Docker files (exclude other Dockerfiles during build)
+Dockerfile.production
+docker-compose*.yml
+.dockerignore
+
+# Kubernetes manifests
+*.yaml
+!requirements.txt
+
+# Pytest
+pytest.ini
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# Backup files
+*.backup
+*.old
+*.orig

@@ -1,0 +1,35 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "warnings": [
+    "CI pipeline tests continue on failure (|| true) - should fail pipeline on test failures",
+    "Kubernetes manifests missing greenlang.io/pack-version annotation",
+    "Temperature=0.0 rationale not documented in code comments"
+  ],
+  "autofix_suggestions": [
+    {
+      "file": ".github/workflows/gl-002-ci.yaml",
+      "field": "jobs.test.steps[2].run",
+      "current": "pytest ... || true",
+      "suggested": "pytest ... (remove || true)",
+      "reason": "Pipeline should fail on test failures to enforce quality gates"
+    },
+    {
+      "file": "deployment/deployment.yaml",
+      "field": "metadata.annotations",
+      "current": "{}",
+      "suggested": "{'greenlang.io/pack-version': '1.0.0', 'greenlang.io/agent-id': 'GL-002'}",
+      "reason": "Link Kubernetes deployment to GreenLang pack for traceability"
+    },
+    {
+      "file": "boiler_efficiency_orchestrator.py",
+      "field": "ai_integration configuration",
+      "current": "temperature: 0.0",
+      "suggested": "temperature: 0.0  # Zero temperature for deterministic calculations per GreenLang spec",
+      "reason": "Document rationale for determinism requirement"
+    }
+  ],
+  "spec_version_detected": "1.0.0",
+  "breaking_changes": [],
+  "migration_notes": []
+}

@@ -1,0 +1,78 @@
+# GL-003 SteamSystemAnalyzer - Development Environment Overlay
+# Development-specific configuration
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-003-steam-system-analyzer-dev
+
+# Base configuration
+bases:
+  - ../../base
+
+# Namespace override
+namespace: greenlang-dev
+
+# Common labels for dev environment
+commonLabels:
+  environment: dev
+
+# Common annotations
+commonAnnotations:
+  environment: development
+  auto-deploy: "true"
+
+# Replicas override (fewer for dev)
+replicas:
+  - name: gl-003-steam-system-analyzer
+    count: 1
+
+# Images override (use dev tag)
+images:
+  - name: gcr.io/greenlang/gl-003-steam-system-analyzer
+    newTag: dev
+
+# Resource adjustments for dev (lower limits)
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-003-steam-system-analyzer
+      spec:
+        template:
+          spec:
+            containers:
+            - name: gl-003-steam-system-analyzer
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "250m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+
+# ConfigMap patches (dev-specific settings)
+configMapGenerator:
+  - name: gl-003-config
+    behavior: merge
+    literals:
+      - environment=development
+      - log_level=DEBUG
+      - enable_profiling=true
+
+# HPA adjustments (lower for dev)
+patchesJson6902:
+  - target:
+      group: autoscaling
+      version: v2
+      kind: HorizontalPodAutoscaler
+      name: gl-003-steam-system-analyzer-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 3

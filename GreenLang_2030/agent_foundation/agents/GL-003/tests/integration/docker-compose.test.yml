@@ -1,0 +1,318 @@
+version: '3.8'
+
+services:
+  # Mock OPC UA Server for SCADA simulation
+  mock-opcua:
+    image: python:3.10-slim
+    container_name: gl003-mock-opcua
+    working_dir: /app
+    volumes:
+      - ./mock_servers.py:/app/mock_servers.py
+      - ./requirements-test.txt:/app/requirements.txt
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             python -c 'import asyncio; from mock_servers import MockOPCUAServer;
+             async def run():
+               server = MockOPCUAServer(host=\"0.0.0.0\", port=4840);
+               await server.start();
+               await asyncio.sleep(3600);
+             asyncio.run(run())'"
+    ports:
+      - "4840:4840"
+    networks:
+      - gl003-test-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 4840)); s.close()"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # Mock Modbus Server for field devices
+  mock-modbus:
+    image: python:3.10-slim
+    container_name: gl003-mock-modbus
+    working_dir: /app
+    volumes:
+      - ./mock_servers.py:/app/mock_servers.py
+      - ./requirements-test.txt:/app/requirements.txt
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             python -c 'import asyncio; from mock_servers import MockModbusServer;
+             async def run():
+               server = MockModbusServer(host=\"0.0.0.0\", port=502);
+               await server.start();
+               await asyncio.sleep(3600);
+             asyncio.run(run())'"
+    ports:
+      - "502:502"
+    networks:
+      - gl003-test-network
+
+  # Mock Steam Meter 1
+  mock-steam-meter-1:
+    image: python:3.10-slim
+    container_name: gl003-mock-steam-meter-1
+    working_dir: /app
+    volumes:
+      - ./mock_servers.py:/app/mock_servers.py
+      - ./requirements-test.txt:/app/requirements.txt
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             python -c 'import asyncio; from mock_servers import MockSteamMeterServer;
+             async def run():
+               server = MockSteamMeterServer(host=\"0.0.0.0\", port=5020, meter_id=\"SM-001\");
+               await server.start();
+               await asyncio.sleep(3600);
+             asyncio.run(run())'"
+    ports:
+      - "5020:5020"
+    networks:
+      - gl003-test-network
+
+  # Mock Steam Meter 2
+  mock-steam-meter-2:
+    image: python:3.10-slim
+    container_name: gl003-mock-steam-meter-2
+    working_dir: /app
+    volumes:
+      - ./mock_servers.py:/app/mock_servers.py
+      - ./requirements-test.txt:/app/requirements.txt
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             python -c 'import asyncio; from mock_servers import MockSteamMeterServer;
+             async def run():
+               server = MockSteamMeterServer(host=\"0.0.0.0\", port=5021, meter_id=\"SM-002\");
+               await server.start();
+               await asyncio.sleep(3600);
+             asyncio.run(run())'"
+    ports:
+      - "5021:5021"
+    networks:
+      - gl003-test-network
+
+  # Mock Pressure Sensor 1
+  mock-pressure-sensor-1:
+    image: python:3.10-slim
+    container_name: gl003-mock-pressure-sensor-1
+    working_dir: /app
+    volumes:
+      - ./mock_servers.py:/app/mock_servers.py
+      - ./requirements-test.txt:/app/requirements.txt
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             python -c 'import asyncio; from mock_servers import MockPressureSensorServer;
+             async def run():
+               server = MockPressureSensorServer(host=\"0.0.0.0\", port=5030, sensor_id=\"PS-001\");
+               await server.start();
+               await asyncio.sleep(3600);
+             asyncio.run(run())'"
+    ports:
+      - "5030:5030"
+    networks:
+      - gl003-test-network
+
+  # Mock Pressure Sensor 2
+  mock-pressure-sensor-2:
+    image: python:3.10-slim
+    container_name: gl003-mock-pressure-sensor-2
+    working_dir: /app
+    volumes:
+      - ./mock_servers.py:/app/mock_servers.py
+      - ./requirements-test.txt:/app/requirements.txt
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             python -c 'import asyncio; from mock_servers import MockPressureSensorServer;
+             async def run():
+               server = MockPressureSensorServer(host=\"0.0.0.0\", port=5031, sensor_id=\"PS-002\");
+               await server.start();
+               await asyncio.sleep(3600);
+             asyncio.run(run())'"
+    ports:
+      - "5031:5031"
+    networks:
+      - gl003-test-network
+
+  # Mock Temperature Sensor
+  mock-temperature-sensor:
+    image: python:3.10-slim
+    container_name: gl003-mock-temperature-sensor
+    working_dir: /app
+    volumes:
+      - ./mock_servers.py:/app/mock_servers.py
+      - ./requirements-test.txt:/app/requirements.txt
+    command: >
+      sh -c "pip install -q -r requirements.txt &&
+             python -c 'import asyncio; from mock_servers import MockTemperatureSensorServer;
+             async def run():
+               server = MockTemperatureSensorServer(host=\"0.0.0.0\", port=5040, sensor_id=\"TS-001\");
+               await server.start();
+               await asyncio.sleep(3600);
+             asyncio.run(run())'"
+    ports:
+      - "5040:5040"
+    networks:
+      - gl003-test-network
+
+  # Mock MQTT Broker
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: gl003-mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - gl003-test-network
+    healthcheck:
+      test: ["CMD", "mosquitto_sub", "-t", "test", "-E", "-i", "healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # PostgreSQL for test data persistence
+  postgres:
+    image: postgres:15-alpine
+    container_name: gl003-test-db
+    environment:
+      POSTGRES_DB: gl003_test
+      POSTGRES_USER: gl003_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    networks:
+      - gl003-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gl003_user -d gl003_test"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Redis for caching and state management
+  redis:
+    image: redis:7-alpine
+    container_name: gl003-test-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    networks:
+      - gl003-test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  # TimescaleDB for time-series data (optional)
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: gl003-test-timescaledb
+    environment:
+      POSTGRES_DB: gl003_timeseries
+      POSTGRES_USER: gl003_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescale-data:/var/lib/postgresql/data
+    networks:
+      - gl003-test-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gl003_user -d gl003_timeseries"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Test runner container
+  integration-tests:
+    image: python:3.10-slim
+    container_name: gl003-integration-tests
+    working_dir: /app
+    volumes:
+      - ../../:/app
+    environment:
+      # Mock server endpoints
+      - SCADA_HOST=mock-opcua
+      - SCADA_PORT=4840
+      - MODBUS_HOST=mock-modbus
+      - MODBUS_PORT=502
+      - STEAM_METER_1_HOST=mock-steam-meter-1
+      - STEAM_METER_1_PORT=5020
+      - STEAM_METER_2_HOST=mock-steam-meter-2
+      - STEAM_METER_2_PORT=5021
+      - PRESSURE_SENSOR_1_HOST=mock-pressure-sensor-1
+      - PRESSURE_SENSOR_1_PORT=5030
+      - PRESSURE_SENSOR_2_HOST=mock-pressure-sensor-2
+      - PRESSURE_SENSOR_2_PORT=5031
+      - TEMPERATURE_SENSOR_HOST=mock-temperature-sensor
+      - TEMPERATURE_SENSOR_PORT=5040
+      - MQTT_HOST=mosquitto
+      - MQTT_PORT=1883
+      # Database endpoints
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=gl003_test
+      - POSTGRES_USER=gl003_user
+      - POSTGRES_PASSWORD=test_password
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - TIMESCALE_HOST=timescaledb
+      - TIMESCALE_PORT=5432
+      # Test configuration
+      - PYTHONPATH=/app
+      - TEST_TIMEOUT=300
+      - LOG_LEVEL=INFO
+      - PYTEST_ADDOPTS=--color=yes
+    command: >
+      sh -c "apt-get update -qq && apt-get install -y -qq gcc &&
+             pip install -q -r requirements.txt &&
+             pip install -q -r tests/integration/requirements-test.txt &&
+             pytest tests/integration/ -v --tb=short
+             --junitxml=/app/test-results/integration-results.xml
+             --cov=integrations
+             --cov=calculators
+             --cov=steam_system_orchestrator
+             --cov-report=xml:/app/test-results/coverage.xml
+             --cov-report=html:/app/test-results/htmlcov
+             --cov-report=term-missing"
+    depends_on:
+      mock-opcua:
+        condition: service_healthy
+      mock-modbus:
+        condition: service_started
+      mock-steam-meter-1:
+        condition: service_started
+      mock-steam-meter-2:
+        condition: service_started
+      mock-pressure-sensor-1:
+        condition: service_started
+      mock-pressure-sensor-2:
+        condition: service_started
+      mock-temperature-sensor:
+        condition: service_started
+      mosquitto:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      timescaledb:
+        condition: service_healthy
+    networks:
+      - gl003-test-network
+    volumes:
+      - ./test-results:/app/test-results
+
+networks:
+  gl003-test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+
+volumes:
+  postgres-data:
+  timescale-data:

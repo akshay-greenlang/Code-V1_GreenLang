@@ -1,0 +1,78 @@
+# GL-003 SteamSystemAnalyzer - Staging Environment Overlay
+# Staging-specific configuration (production-like)
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-003-steam-system-analyzer-staging
+
+# Base configuration
+bases:
+  - ../../base
+
+# Namespace override
+namespace: greenlang-staging
+
+# Common labels for staging environment
+commonLabels:
+  environment: staging
+
+# Common annotations
+commonAnnotations:
+  environment: staging
+  auto-deploy: "false"
+
+# Replicas override (same as prod for testing)
+replicas:
+  - name: gl-003-steam-system-analyzer
+    count: 2
+
+# Images override (use staging tag)
+images:
+  - name: gcr.io/greenlang/gl-003-steam-system-analyzer
+    newTag: staging
+
+# Resource adjustments for staging (same as prod)
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-003-steam-system-analyzer
+      spec:
+        template:
+          spec:
+            containers:
+            - name: gl-003-steam-system-analyzer
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "500m"
+                limits:
+                  memory: "1024Mi"
+                  cpu: "1000m"
+
+# ConfigMap patches (staging-specific settings)
+configMapGenerator:
+  - name: gl-003-config
+    behavior: merge
+    literals:
+      - environment=staging
+      - log_level=INFO
+      - enable_profiling=false
+
+# HPA adjustments (lower than prod)
+patchesJson6902:
+  - target:
+      group: autoscaling
+      version: v2
+      kind: HorizontalPodAutoscaler
+      name: gl-003-steam-system-analyzer-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 2
+      - op: replace
+        path: /spec/maxReplicas
+        value: 6

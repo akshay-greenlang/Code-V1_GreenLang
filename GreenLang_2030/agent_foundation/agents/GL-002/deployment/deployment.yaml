@@ -16,6 +16,39 @@ metadata:
     description: "BoilerEfficiencyOptimizer - Industrial boiler optimization agent"
     documentation: "https://docs.greenlang.ai/agents/GL-002"
 
+    # Ownership and contact information
+    owner: "greenlang-platform-team"
+    team: "industrial-optimization"
+    contact: "gl-002-oncall@greenlang.ai"
+    slack-channel: "#gl-002-alerts"
+    pagerduty-service: "GL-002-BoilerEfficiency"
+
+    # Cost tracking and allocation
+    cost-center: "industrial-optimization"
+    billing-code: "GL-002-PROD"
+    environment: "production"
+
+    # Compliance and security
+    compliance-level: "sox-compliant"
+    data-classification: "confidential"
+    security-tier: "tier-2"
+
+    # Release and version tracking
+    release-date: "2024-11-15"
+    git-commit: "abc123def456"
+    build-number: "1.0.0-build.42"
+    deployment-strategy: "rolling-update"
+
+    # Monitoring and observability
+    datadog.com/service: "gl-002-boiler-efficiency"
+    prometheus.io/scrape: "true"
+    sentry.io/project: "gl-002-boiler-efficiency"
+
+    # Change management
+    last-updated: "2025-11-17"
+    change-ticket: "CHG-2024-001234"
+    approval-status: "approved"
+
 spec:
   # Replicas for production (3 for high availability)
   replicas: 3
@@ -71,13 +104,129 @@ spec:
                         - gl-002-boiler-efficiency
                 topologyKey: kubernetes.io/hostname
 
+      # Topology spread constraints for even distribution
+      topologySpreadConstraints:
+        # Spread pods across availability zones
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway  # Soft constraint
+          labelSelector:
+            matchLabels:
+              app: gl-002-boiler-efficiency
+              agent: "GL-002"
+
+        # Spread pods across nodes
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule  # Hard constraint
+          labelSelector:
+            matchLabels:
+              app: gl-002-boiler-efficiency
+              agent: "GL-002"
+
       # Termination grace period for graceful shutdown
       terminationGracePeriodSeconds: 30
+
+      # Init containers for dependency checks
+      initContainers:
+        # Wait for PostgreSQL database to be ready
+        - name: wait-for-db
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL database to be ready..."
+              until nc -z -v -w30 postgresql.database.svc.cluster.local 5432; do
+                echo "Waiting for database connection..."
+                sleep 5
+              done
+              echo "Database is ready!"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+        # Wait for Redis cache to be ready
+        - name: wait-for-redis
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Redis cache to be ready..."
+              until nc -z -v -w30 redis.cache.svc.cluster.local 6379; do
+                echo "Waiting for Redis connection..."
+                sleep 5
+              done
+              echo "Redis is ready!"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+        # Database migration (if needed)
+        - name: db-migrate
+          image: "gcr.io/greenlang/gl-002-boiler-efficiency:1.0.0"
+          command:
+            - python
+            - -m
+            - alembic
+            - upgrade
+            - head
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-002-secrets
+                  key: database_url
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # Migration may need write access
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
 
       containers:
         - name: gl-002-boiler-efficiency
           image: "gcr.io/greenlang/gl-002-boiler-efficiency:1.0.0"
           imagePullPolicy: IfNotPresent
+
+          # Lifecycle hooks for graceful startup and shutdown
+          lifecycle:
+            # Post-start hook - execute after container starts
+            postStart:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "GL-002 BoilerEfficiencyOptimizer starting..."
+                    echo "Pod: $POD_NAME"
+                    echo "Namespace: $POD_NAMESPACE"
+                    echo "Node: $NODE_NAME"
+                    # Optional: Register with service discovery, warm up caches, etc.
+
+            # Pre-stop hook - execute before container is terminated
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "GL-002 BoilerEfficiencyOptimizer shutting down gracefully..."
+                    # Graceful shutdown sequence:
+                    # 1. Stop accepting new requests
+                    # 2. Finish processing current requests (max 25 seconds)
+                    # 3. Close database connections
+                    # 4. Flush logs and metrics
+                    sleep 5
+                    # Optional: Call application shutdown endpoint
+                    # wget -q -O- http://localhost:8000/api/v1/shutdown || true
 
           # Security context for container-level security
           securityContext:

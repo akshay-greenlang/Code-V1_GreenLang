@@ -1,0 +1,67 @@
+# GL-003 SteamSystemAnalyzer - Kubernetes Service
+# ClusterIP service for internal communication
+# Provides stable endpoint for load balancing across pods
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-003-steam-system-analyzer
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+    version: "1.0.0"
+  annotations:
+    description: "Service for GL-003 SteamSystemAnalyzer"
+
+spec:
+  # ClusterIP for internal-only service (no external access)
+  # Use LoadBalancer or NodePort with Ingress for external access
+  type: ClusterIP
+
+  # Selector matches deployment labels
+  selector:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+
+  # Port configuration
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+
+  # Session affinity for stateful connections (optional)
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+---
+# Headless Service for StatefulSet compatibility (optional)
+# Use this if GL-003 needs StatefulSet instead of Deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-003-steam-system-analyzer-headless
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+    version: "1.0.0"
+
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  selector:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP

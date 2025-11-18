@@ -288,6 +288,78 @@ optimization_payback_period_months = Gauge(
 )
 
 # ==============================================================================
+# DETERMINISM METRICS
+# ==============================================================================
+
+determinism_verification_failures = Counter(
+    'gl_002_determinism_verification_failures_total',
+    'Total determinism verification failures',
+    ['violation_type']  # ai_config, calculation, provenance_hash, cache_key, seed, random, timestamp
+)
+
+determinism_score = Gauge(
+    'gl_002_determinism_score_percent',
+    'Determinism score (0-100%, target: 100%)',
+    ['component']  # orchestrator, tools, calculators, validators
+)
+
+determinism_verification_duration_seconds = Histogram(
+    'gl_002_determinism_verification_duration_seconds',
+    'Time spent verifying determinism',
+    ['verification_type'],
+    buckets=(0.001, 0.01, 0.1, 0.5, 1.0, 5.0)
+)
+
+provenance_hash_verifications = Counter(
+    'gl_002_provenance_hash_verifications_total',
+    'Total provenance hash verifications',
+    ['status']  # success, failure
+)
+
+cache_key_determinism_checks = Counter(
+    'gl_002_cache_key_determinism_checks_total',
+    'Total cache key determinism checks',
+    ['status']  # deterministic, non_deterministic
+)
+
+ai_config_determinism_checks = Counter(
+    'gl_002_ai_config_determinism_checks_total',
+    'Total AI configuration determinism checks',
+    ['status']  # compliant, violation
+)
+
+seed_propagation_checks = Counter(
+    'gl_002_seed_propagation_checks_total',
+    'Total random seed propagation checks',
+    ['status']  # valid, invalid
+)
+
+unseeded_random_operations_detected = Counter(
+    'gl_002_unseeded_random_operations_detected_total',
+    'Total unseeded random operations detected',
+    ['operation_type']  # random.random, random.randint, random.choice, etc.
+)
+
+timestamp_calculations_detected = Counter(
+    'gl_002_timestamp_calculations_detected_total',
+    'Total timestamp-based calculations detected',
+    ['pattern']  # datetime.now, time.time, etc.
+)
+
+golden_test_results = Counter(
+    'gl_002_golden_test_results_total',
+    'Golden test results',
+    ['test_name', 'status']  # pass, fail
+)
+
+calculation_determinism_runs = Histogram(
+    'gl_002_calculation_determinism_runs',
+    'Number of runs required to verify calculation determinism',
+    ['function_name'],
+    buckets=(1, 2, 3, 5, 10, 20, 50, 100)
+)
+
+# ==============================================================================
 # DECORATOR FOR AUTOMATIC METRICS TRACKING
 # ==============================================================================
 
@@ -489,3 +561,165 @@ class MetricsCollector:
             emissions_compliance_status.labels(boiler_id=boiler_id).set(
                 compliance_value
             )
+
+    @staticmethod
+    def record_cache_operation(operation: str, hit: bool):
+        """Record cache hit/miss."""
+        cache_key_pattern = operation.split('_')[0] if '_' in operation else operation
+        if hit:
+            cache_hits_total.labels(cache_key_pattern=cache_key_pattern).inc()
+        else:
+            cache_misses_total.labels(cache_key_pattern=cache_key_pattern).inc()
+
+    @staticmethod
+    def record_cache_eviction(cache_key_pattern: str):
+        """Record cache eviction."""
+        cache_evictions_total.labels(cache_key_pattern=cache_key_pattern).inc()
+
+    @staticmethod
+    def update_system_metrics(metrics: dict):
+        """Update system resource metrics."""
+        if 'uptime_seconds' in metrics:
+            system_uptime_seconds.set(metrics['uptime_seconds'])
+
+        if 'memory_rss_bytes' in metrics:
+            system_memory_usage_bytes.labels(type='rss').set(metrics['memory_rss_bytes'])
+
+        if 'memory_vms_bytes' in metrics:
+            system_memory_usage_bytes.labels(type='vms').set(metrics['memory_vms_bytes'])
+
+        if 'cpu_percent' in metrics:
+            system_cpu_usage_percent.set(metrics['cpu_percent'])
+
+        if 'disk_usage' in metrics:
+            for mount_point, usage in metrics['disk_usage'].items():
+                system_disk_usage_bytes.labels(mount_point=mount_point).set(usage)
+
+    @staticmethod
+    def record_optimization_result(boiler_id: str, fuel_type: str, strategy: str, result: dict):
+        """Record complete optimization result."""
+        # Efficiency improvement
+        if 'improvement_percent' in result:
+            optimization_efficiency_improvement.labels(strategy=strategy).observe(
+                result['improvement_percent']
+            )
+
+        # Cost savings
+        if 'cost_savings_usd_hr' in result:
+            optimization_cost_savings_usd.labels(fuel_type=fuel_type).observe(
+                result['cost_savings_usd_hr']
+            )
+
+        # Emissions reduction
+        if 'emissions_reduction_kg_hr' in result:
+            optimization_emissions_reduction_kg_hr.labels(boiler_id=boiler_id).set(
+                result['emissions_reduction_kg_hr']
+            )
+
+        # Annual projections
+        if 'annual_savings_usd' in result:
+            optimization_annual_savings_usd.labels(boiler_id=boiler_id).set(
+                result['annual_savings_usd']
+            )
+
+        if 'annual_emissions_reduction_tons' in result:
+            optimization_annual_emissions_reduction_tons.labels(boiler_id=boiler_id).set(
+                result['annual_emissions_reduction_tons']
+            )
+
+    @staticmethod
+    def update_determinism_metrics(component: str, score: float):
+        """
+        Update determinism score metrics.
+
+        Args:
+            component: Component name (orchestrator, tools, calculators, validators)
+            score: Determinism score (0-100%)
+        """
+        determinism_score.labels(component=component).set(score)
+
+    @staticmethod
+    def record_determinism_violation(violation_type: str):
+        """
+        Record determinism verification failure.
+
+        Args:
+            violation_type: Type of violation (ai_config, calculation, provenance_hash, etc.)
+        """
+        determinism_verification_failures.labels(violation_type=violation_type).inc()
+
+    @staticmethod
+    def record_provenance_verification(success: bool):
+        """
+        Record provenance hash verification.
+
+        Args:
+            success: Whether verification succeeded
+        """
+        status = 'success' if success else 'failure'
+        provenance_hash_verifications.labels(status=status).inc()
+
+    @staticmethod
+    def record_cache_key_check(is_deterministic: bool):
+        """
+        Record cache key determinism check.
+
+        Args:
+            is_deterministic: Whether cache key is deterministic
+        """
+        status = 'deterministic' if is_deterministic else 'non_deterministic'
+        cache_key_determinism_checks.labels(status=status).inc()
+
+    @staticmethod
+    def record_ai_config_check(is_compliant: bool):
+        """
+        Record AI configuration determinism check.
+
+        Args:
+            is_compliant: Whether AI config is compliant
+        """
+        status = 'compliant' if is_compliant else 'violation'
+        ai_config_determinism_checks.labels(status=status).inc()
+
+    @staticmethod
+    def record_seed_propagation_check(is_valid: bool):
+        """
+        Record random seed propagation check.
+
+        Args:
+            is_valid: Whether seed propagation is valid
+        """
+        status = 'valid' if is_valid else 'invalid'
+        seed_propagation_checks.labels(status=status).inc()
+
+    @staticmethod
+    def record_unseeded_random_operation(operation_type: str):
+        """
+        Record detected unseeded random operation.
+
+        Args:
+            operation_type: Type of random operation (random.random, etc.)
+        """
+        unseeded_random_operations_detected.labels(operation_type=operation_type).inc()
+
+    @staticmethod
+    def record_timestamp_calculation(pattern: str):
+        """
+        Record detected timestamp-based calculation.
+
+        Args:
+            pattern: Timestamp pattern detected (datetime.now, time.time, etc.)
+        """
+        timestamp_calculations_detected.labels(pattern=pattern).inc()
+
+    @staticmethod
+    def record_golden_test_result(test_name: str, passed: bool):
+        """
+        Record golden test result.
+
+        Args:
+            test_name: Name of golden test
+            passed: Whether test passed
+        """
+        status = 'pass' if passed else 'fail'
+        golden_test_results.labels(test_name=test_name, status=status).inc()

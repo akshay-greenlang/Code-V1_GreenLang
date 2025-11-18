@@ -1,0 +1,188 @@
+# GreenLang Agent Configuration v1.0
+# GL-004 BurnerOptimizationAgent
+
+agent:
+  id: GL-004
+  name: BurnerOptimizationAgent
+  version: 1.0.0
+  type: optimizer
+  category: combustion
+
+configuration:
+  optimization:
+    interval_seconds: 300
+    method: particle_swarm
+    max_iterations: 100
+    convergence_tolerance: 0.001
+
+  objectives:
+    - name: maximize_efficiency
+      weight: 0.5
+      target: 90.0
+    - name: minimize_nox
+      weight: 0.3
+      target: 50.0
+    - name: minimize_co
+      weight: 0.2
+      target: 100.0
+
+  constraints:
+    excess_air:
+      min: 5.0
+      max: 30.0
+      target: 15.0
+    o2_level:
+      min: 2.0
+      max: 6.0
+      target: 3.0
+    fuel_flow:
+      min: 50.0
+      max: 1000.0
+    air_flow:
+      min: 500.0
+      max: 15000.0
+
+  safety:
+    flame_temperature_max: 1800.0
+    furnace_temperature_max: 1400.0
+    flue_gas_temperature_max: 400.0
+    interlocks:
+      - flame_detection
+      - fuel_pressure
+      - air_pressure
+      - temperature_limits
+      - emergency_stop
+
+tools:
+  - name: analyze_combustion_efficiency
+    deterministic: true
+    zero_hallucination: true
+  - name: optimize_air_fuel_ratio
+    deterministic: true
+    zero_hallucination: true
+  - name: monitor_flame_characteristics
+    deterministic: true
+    zero_hallucination: true
+  - name: adjust_burner_settings
+    deterministic: false
+    zero_hallucination: true
+  - name: measure_emissions_levels
+    deterministic: false
+    zero_hallucination: true
+  - name: calculate_stoichiometric_ratio
+    deterministic: true
+    zero_hallucination: true
+  - name: detect_incomplete_combustion
+    deterministic: true
+    zero_hallucination: true
+  - name: optimize_excess_air
+    deterministic: true
+    zero_hallucination: true
+  - name: predict_nox_formation
+    deterministic: true
+    zero_hallucination: true
+  - name: tune_control_parameters
+    deterministic: true
+    zero_hallucination: true
+
+data_sources:
+  - id: burner_controller
+    type: modbus_tcp
+    protocol: modbus_tcp
+    host: ${BURNER_CONTROLLER_HOST}
+    port: ${BURNER_CONTROLLER_PORT}
+    poll_interval: 10
+
+  - id: o2_analyzer
+    type: sensor
+    protocol: modbus_tcp
+    host: ${O2_ANALYZER_HOST}
+    port: ${O2_ANALYZER_PORT}
+    poll_interval: 5
+
+  - id: emissions_monitor
+    type: cems
+    protocol: modbus_tcp
+    host: ${EMISSIONS_MONITOR_HOST}
+    port: ${EMISSIONS_MONITOR_PORT}
+    poll_interval: 10
+
+  - id: flame_scanner
+    type: sensor
+    protocol: modbus_tcp
+    host: ${FLAME_SCANNER_HOST}
+    port: ${FLAME_SCANNER_PORT}
+    poll_interval: 1
+
+data_sinks:
+  - id: scada
+    type: opcua
+    endpoint: ${SCADA_OPC_UA_ENDPOINT}
+    publish_interval: 30
+
+  - id: mqtt_telemetry
+    type: mqtt
+    broker: ${MQTT_BROKER_URL}
+    topic_prefix: ${MQTT_TOPIC_PREFIX}
+    publish_interval: 10
+
+persistence:
+  database:
+    type: postgresql
+    url: ${DATABASE_URL}
+    pool_size: ${DB_POOL_SIZE}
+
+  cache:
+    type: redis
+    url: ${REDIS_URL}
+    ttl: ${CACHE_TTL}
+
+observability:
+  metrics:
+    enabled: true
+    port: 8001
+    path: /metrics
+
+  tracing:
+    enabled: true
+    exporter: otlp
+    endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+
+  logging:
+    level: ${LOG_LEVEL}
+    format: ${LOG_FORMAT}
+    structured: true
+
+policies:
+  retry:
+    max_attempts: 3
+    backoff: exponential
+    initial_delay: 1
+    max_delay: 60
+
+  circuit_breaker:
+    failure_threshold: 5
+    timeout: 30
+    recovery_timeout: 60
+
+  rate_limiting:
+    requests_per_minute: ${RATE_LIMIT_PER_MINUTE}
+    burst: 10
+
+workflows:
+  optimization_cycle:
+    steps:
+      - name: collect_burner_state
+        timeout: 10
+      - name: check_safety_interlocks
+        timeout: 5
+      - name: analyze_combustion
+        timeout: 15
+      - name: optimize_settings
+        timeout: 30
+      - name: implement_settings
+        timeout: 60
+      - name: validate_results
+        timeout: 300
+    on_failure: log_and_retry
+    on_success: publish_results

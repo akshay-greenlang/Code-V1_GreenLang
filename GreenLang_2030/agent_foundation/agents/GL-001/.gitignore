@@ -1,0 +1,535 @@
+# GL-001 ProcessHeatOrchestrator - Git Ignore File
+# Security: Prevent credential exposure and sensitive data leaks
+# Master Orchestrator - Multi-Plant Process Heat Operations
+
+# ============================================================================
+# SECRETS AND CREDENTIALS (CRITICAL - NEVER COMMIT)
+# ============================================================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+.env.development
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials.json
+credentials.yaml
+credentials.yml
+secrets.json
+secrets.yaml
+secrets.yml
+*secret*
+*credential*
+*password*
+*.token
+api_keys.txt
+service-account*.json
+
+# SCADA certificates and keys
+scada/*.pem
+scada/*.key
+scada/certificates/
+
+# ERP credentials
+erp_config/*.secret
+erp_credentials/
+
+# OAuth tokens
+.oauth_tokens/
+oauth_cache/
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.ssh
+
+# Test credentials
+tests/.env
+tests/.env.local
+tests/credentials/
+tests/secrets/
+
+# Kubernetes secrets (local development)
+deployment/secrets/
+k8s/secrets/
+
+# ============================================================================
+# PYTHON
+# ============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+test-results/
+junit.xml
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+virtualenv/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Pytype static type analyzer
+.pytype/
+
+# ============================================================================
+# IDEs AND EDITORS
+# ============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+.vscode-test/
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+.\#*
+.emacs.d/
+
+# Eclipse
+.project
+.pydevproject
+.settings/
+
+# NetBeans
+nbproject/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+
+# ============================================================================
+# OPERATING SYSTEM
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd/
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*/
+
+# ============================================================================
+# LOGS AND TEMPORARY FILES
+# ============================================================================
+*.log
+logs/
+*.tmp
+*.temp
+temp/
+tmp/
+*.bak
+*.backup
+*.old
+
+# Application logs
+gl001.log
+gl001-*.log
+orchestrator.log
+orchestrator-*.log
+
+# Agent coordination logs
+coordination/*.log
+sub-agents/*.log
+
+# Security scan reports
+bandit-report.json
+bandit-report.html
+bandit-report.txt
+safety-report.json
+safety-report.txt
+pip-audit-report.json
+pip-audit-report.txt
+trivy-report.json
+snyk-report.json
+
+# Pre-commit reports
+.pre-commit-*.log
+
+# ============================================================================
+# DATA FILES (SENSITIVE PROCESS HEAT DATA)
+# ============================================================================
+# Large data files
+*.csv
+*.parquet
+*.h5
+*.hdf5
+*.feather
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# SCADA sensor data exports
+scada_data/
+sensor_exports/
+timeseries_data/
+
+# ERP data exports
+erp_exports/
+sap_exports/
+oracle_exports/
+
+# Optimization results (may contain proprietary data)
+optimization_results/
+*.optimization
+
+# Plant operational data
+plant_data/
+operational_data/
+
+# Calculation provenance (large files)
+provenance/*.json
+provenance/*.parquet
+
+# ============================================================================
+# BACKUP FILES
+# ============================================================================
+*.bak
+*.backup
+*.swp
+*.swo
+backup/
+backups/
+*.sql.gz
+*.dump
+
+# Database backups
+db_backups/
+postgres_backups/
+timescaledb_backups/
+
+# ============================================================================
+# CACHE FILES
+# ============================================================================
+.cache/
+*.cache
+__pycache__/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.hypothesis/
+
+# Redis cache exports
+redis_dumps/
+dump.rdb
+
+# Calculation cache
+calc_cache/
+optimization_cache/
+
+# ============================================================================
+# BUILD ARTIFACTS
+# ============================================================================
+dist/
+build/
+*.egg-info/
+.eggs/
+wheels/
+
+# Docker build context
+.dockerignore.tmp
+docker-compose.override.yml
+
+# Terraform state files (infrastructure)
+terraform/
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Kubernetes temporary files
+kustomization.yaml.tmp
+*.yaml.bak
+
+# ============================================================================
+# RUNTIME DATA
+# ============================================================================
+*.pid
+*.seed
+*.pid.lock
+pids/
+
+# Socket files
+*.sock
+
+# Core dumps
+core
+core.*
+
+# ============================================================================
+# MONITORING & METRICS
+# ============================================================================
+# Prometheus data
+prometheus_data/
+metrics_data/
+
+# Grafana provisioning (may contain sensitive dashboards)
+grafana/provisioning/dashboards/*.json
+
+# Performance profiles
+*.prof
+*.pprof
+*.profile
+
+# Memory dumps
+*.hprof
+*.dump
+
+# ============================================================================
+# COMPLIANCE & AUDIT
+# ============================================================================
+# Audit trails (may contain sensitive operations)
+audit/
+audit_logs/
+audit_trail/
+
+# Compliance reports (may contain proprietary data)
+compliance_reports/
+emission_reports/
+
+# ============================================================================
+# SBOM ARTIFACTS
+# ============================================================================
+sbom/
+*.spdx
+*.cdx.json
+cyclonedx-*.json
+spdx-*.json
+
+# ============================================================================
+# DEVELOPMENT & TESTING
+# ============================================================================
+# Test data
+test_data/
+mock_data/
+fixtures/
+
+# Benchmark results
+benchmarks/
+*.benchmark
+
+# Profiling results
+profiling/
+*.prof
+
+# Load testing results
+load_tests/
+*.jmx
+
+# ============================================================================
+# DOCUMENTATION (BUILD ARTIFACTS)
+# ============================================================================
+docs/_build/
+docs/_static/
+docs/_templates/
+site/
+
+# ============================================================================
+# MACHINE LEARNING MODELS (IF ANY)
+# ============================================================================
+models/
+*.pkl
+*.pickle
+*.h5
+*.onnx
+*.pt
+*.pth
+*.pb
+
+# ============================================================================
+# MISCELLANEOUS
+# ============================================================================
+# Node modules (if any JavaScript tools)
+node_modules/
+
+# Package managers
+*.lock
+package-lock.json
+yarn.lock
+
+# Temporary download files
+downloads/
+
+# Screenshots
+screenshots/
+*.png
+*.jpg
+*.jpeg
+
+# ============================================================================
+# ALLOWED FILES (DO NOT IGNORE - EXPLICITLY TRACKED)
+# ============================================================================
+# Configuration templates
+!.env.template
+!.env.example
+!tests/.env.example
+
+# Documentation
+!README.md
+!SECURITY.md
+!DEPLOYMENT_GUIDE.md
+
+# Requirements
+!requirements.txt
+!requirements-dev.txt
+
+# Security reports (sanitized)
+!SECURITY_AUDIT_REPORT.md
+!COMPLIANCE_REPORT.md
+
+# Example configurations
+!examples/*.example.yaml
+!examples/*.example.json
+
+# Test fixtures (non-sensitive)
+!tests/fixtures/*.json
+!tests/fixtures/*.yaml

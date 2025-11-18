@@ -1,0 +1,107 @@
+# GL-001 ProcessHeatOrchestrator Integration Test Dependencies
+# Install with: pip install -r requirements-test.txt
+
+# Core Testing Framework
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-timeout>=2.1.0
+pytest-xdist>=3.3.0  # Parallel test execution
+pytest-mock>=3.11.0
+pytest-benchmark>=4.0.0
+
+# Docker Integration
+pytest-docker>=2.0.0
+docker>=6.1.0
+docker-compose>=1.29.0
+
+# Database Drivers
+psycopg[binary]>=3.1.0  # PostgreSQL async driver
+asyncpg>=0.28.0
+redis[asyncio]>=5.0.0
+aioredis>=2.0.1
+
+# Message Broker
+paho-mqtt>=1.6.0
+aiomqtt>=1.1.0
+
+# HTTP/API Testing
+aiohttp>=3.8.0
+httpx>=0.24.0
+requests>=2.31.0
+
+# SCADA Protocol Libraries (for testing)
+asyncua>=1.0.0  # OPC UA async client
+pymodbus>=3.5.0  # Modbus TCP/RTU
+
+# ERP Mock Libraries
+zeep>=4.2.0  # SOAP/RFC client
+xmltodict>=0.13.0
+
+# Data Generation & Faker
+Faker>=19.0.0
+factory-boy>=3.3.0
+hypothesis>=6.82.0  # Property-based testing
+
+# Performance & Profiling
+pytest-benchmark[histogram]>=4.0.0
+memory-profiler>=0.61.0
+py-spy>=0.3.14
+psutil>=5.9.0
+
+# Monitoring & Metrics
+prometheus-client>=0.17.0
+statsd>=4.0.1
+
+# Utilities
+python-dotenv>=1.0.0
+pyyaml>=6.0
+jsonschema>=4.18.0
+python-dateutil>=2.8.2
+
+# Data Processing
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Async Utilities
+asyncio-mqtt>=0.16.0
+aiojobs>=1.1.0
+
+# Logging & Debugging
+structlog>=23.1.0
+coloredlogs>=15.0.1
+
+# Code Quality (for test development)
+black>=23.7.0
+flake8>=6.0.0
+mypy>=1.4.0
+pylint>=2.17.0
+
+# Test Reporting
+pytest-html>=3.2.0
+pytest-json-report>=1.5.0
+allure-pytest>=2.13.0
+
+# Load Testing
+locust>=2.15.0  # For performance load tests
+
+# Security Testing
+safety>=2.3.0
+bandit>=1.7.5
+
+# Time & Date Utilities
+freezegun>=1.2.2  # Time mocking for tests
+python-dateutil>=2.8.2
+
+# Network Testing
+responses>=0.23.0
+requests-mock>=1.11.0
+
+# Chaos Engineering (optional)
+# chaostoolkit>=1.17.0
+# chaostoolkit-kubernetes>=0.30.0
+
+# Documentation
+sphinx>=7.0.0
+sphinx-rtd-theme>=1.2.0
+myst-parser>=2.0.0

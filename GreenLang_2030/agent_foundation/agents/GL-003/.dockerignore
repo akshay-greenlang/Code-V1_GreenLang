@@ -1,0 +1,93 @@
+# GL-003 SteamSystemAnalyzer - Docker Build Exclusions
+# Optimize build context by excluding unnecessary files
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+.hypothesis/
+.tox/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.circleci/
+
+# Documentation
+docs/
+*.md
+LICENSE
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Environment files
+.env
+.env.*
+!.env.template
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Security reports
+bandit-report.json
+safety-report.json
+sbom/
+
+# Deployment files
+deployment/
+kubernetes/
+terraform/
+
+# Analysis files
+analysis/
+experiments/
+feedback/
+
+# Runbooks
+runbooks/
+
+# Tests
+tests/
+test_*.py
+*_test.py

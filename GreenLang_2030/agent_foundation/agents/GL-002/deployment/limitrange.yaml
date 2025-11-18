@@ -1,0 +1,227 @@
+# GL-002 BoilerEfficiencyOptimizer - LimitRange
+# Sets default, minimum, and maximum resource constraints
+# Applies to pods/containers without explicit resource specifications
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limitrange
+  namespace: greenlang
+  labels:
+    app: greenlang-platform
+    managed-by: "platform-team"
+  annotations:
+    description: "LimitRange for greenlang namespace (all agents)"
+    documentation: "https://kubernetes.io/docs/concepts/policy/limit-range/"
+
+spec:
+  limits:
+    # Container-level limits
+    - type: Container
+      # Default resource requests (if not specified)
+      default:
+        cpu: "500m"      # Default CPU limit
+        memory: "512Mi"  # Default memory limit
+
+      # Default resource requests (if not specified)
+      defaultRequest:
+        cpu: "250m"      # Default CPU request
+        memory: "256Mi"  # Default memory request
+
+      # Minimum resources a container can request
+      min:
+        cpu: "100m"      # Minimum CPU (0.1 cores)
+        memory: "128Mi"  # Minimum memory
+
+      # Maximum resources a container can request
+      max:
+        cpu: "4000m"     # Maximum CPU (4 cores)
+        memory: "8Gi"    # Maximum memory
+
+      # Maximum ratio of limit to request
+      maxLimitRequestRatio:
+        cpu: "4"         # Limit can be max 4x request
+        memory: "2"      # Limit can be max 2x request
+
+    # Pod-level limits (sum of all containers)
+    - type: Pod
+      min:
+        cpu: "100m"
+        memory: "128Mi"
+
+      max:
+        cpu: "8000m"     # Max 8 cores per pod
+        memory: "16Gi"   # Max 16 GiB per pod
+
+    # PersistentVolumeClaim limits
+    - type: PersistentVolumeClaim
+      min:
+        storage: "1Gi"   # Minimum PVC size
+
+      max:
+        storage: "100Gi" # Maximum PVC size
+
+---
+# LimitRange for development environment (more permissive)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limitrange-dev
+  namespace: greenlang-dev
+  labels:
+    app: greenlang-platform
+    environment: development
+  annotations:
+    description: "Development LimitRange (more permissive for testing)"
+
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1000m"
+        memory: "1Gi"
+
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+      max:
+        cpu: "8000m"     # Higher limits for load testing
+        memory: "16Gi"
+
+      maxLimitRequestRatio:
+        cpu: "10"        # More flexible for testing
+        memory: "4"
+
+---
+# LimitRange for production environment (more restrictive)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-limitrange-prod
+  namespace: greenlang-prod
+  labels:
+    app: greenlang-platform
+    environment: production
+  annotations:
+    description: "Production LimitRange (enforces resource discipline)"
+
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+
+      defaultRequest:
+        cpu: "250m"
+        memory: "256Mi"
+
+      min:
+        cpu: "100m"      # Enforce minimum resources
+        memory: "128Mi"
+
+      max:
+        cpu: "2000m"     # Stricter limits for stability
+        memory: "4Gi"
+
+      maxLimitRequestRatio:
+        cpu: "2"         # Tight ratio for predictability
+        memory: "2"
+
+    - type: Pod
+      max:
+        cpu: "4000m"
+        memory: "8Gi"
+
+---
+# LimitRange Best Practices and Examples:
+#
+# 1. **LimitRange vs ResourceQuota**:
+#    - LimitRange: Per-pod/container constraints (default, min, max)
+#    - ResourceQuota: Namespace-wide total limits
+#    - Use both together for comprehensive control
+#
+# 2. **Default Resource Assignment**:
+#    - Pods without resource specs get LimitRange defaults
+#    - GL-002 explicitly specifies resources, so LimitRange defaults don't apply
+#    - LimitRange still enforces min/max constraints
+#
+# 3. **maxLimitRequestRatio Explained**:
+#    - Ratio = limit / request
+#    - If ratio is 4, and request is 500m, limit can be max 2000m
+#    - Prevents pods with low requests but high limits (QoS abuse)
+#    - Ensures better resource allocation and scheduling
+#
+# 4. **Monitoring LimitRange**:
+#    kubectl describe limitrange greenlang-limitrange -n greenlang
+#    kubectl get limitrange -n greenlang -o yaml
+#
+# 5. **Testing LimitRange**:
+#    # Try creating pod with resources outside limits
+#    kubectl run test-pod --image=nginx --requests=cpu=50m -n greenlang
+#    # Should be adjusted to min 100m CPU
+#
+#    kubectl run test-pod --image=nginx --requests=cpu=5000m -n greenlang
+#    # Should fail: exceeds max 4000m CPU
+#
+# 6. **GL-002 Compliance Check**:
+#    GL-002 deployment.yaml specifies:
+#      - requests.cpu: 500m (within min 100m, max 4000m) ✓
+#      - requests.memory: 512Mi (within min 128Mi, max 8Gi) ✓
+#      - limits.cpu: 1000m (within max 4000m) ✓
+#      - limits.memory: 1024Mi (within max 8Gi) ✓
+#      - Ratio CPU: 1000m/500m = 2 (within max ratio 4) ✓
+#      - Ratio Memory: 1024Mi/512Mi = 2 (within max ratio 2) ✓
+#
+# 7. **QoS Class Impact**:
+#    - Guaranteed: requests == limits (best QoS)
+#    - Burstable: requests < limits (medium QoS)
+#    - BestEffort: no requests/limits (worst QoS)
+#
+#    GL-002 is Burstable (requests < limits), which is appropriate for:
+#      - Variable workload (optimization runs)
+#      - Occasional CPU bursts
+#      - Memory buffering for data processing
+#
+# 8. **Environment-Specific LimitRanges**:
+#    - Development: Permissive (allow experimentation)
+#    - Staging: Moderate (match production resources)
+#    - Production: Restrictive (enforce discipline)
+#
+# 9. **Common LimitRange Patterns**:
+#
+#    **Microservices Pattern** (small containers):
+#    default: 200m CPU, 256Mi memory
+#    max: 1000m CPU, 1Gi memory
+#
+#    **Data Processing Pattern** (GL-002):
+#    default: 500m CPU, 512Mi memory
+#    max: 4000m CPU, 8Gi memory
+#
+#    **Batch Jobs Pattern**:
+#    default: 1000m CPU, 1Gi memory
+#    max: 8000m CPU, 16Gi memory
+#
+# 10. **LimitRange Troubleshooting**:
+#
+#     **Problem**: Pod rejected with "minimum CPU usage per Container is 100m"
+#     **Solution**: Increase pod's CPU request to at least 100m
+#
+#     **Problem**: Pod rejected with "maximum memory usage per Container is 8Gi"
+#     **Solution**: Reduce pod's memory limit to 8Gi or less
+#
+#     **Problem**: Pod adjusted to different resources than specified
+#     **Solution**: Check LimitRange defaults and explicitly set requests/limits
+#
+# 11. **Production Deployment Checklist**:
+#     - ✓ LimitRange created in namespace
+#     - ✓ ResourceQuota created in namespace
+#     - ✓ All pods have explicit resource requests/limits
+#     - ✓ Resource requests match actual usage (check metrics)
+#     - ✓ maxLimitRequestRatio prevents resource waste
+#     - ✓ Min/max constraints prevent runaway pods

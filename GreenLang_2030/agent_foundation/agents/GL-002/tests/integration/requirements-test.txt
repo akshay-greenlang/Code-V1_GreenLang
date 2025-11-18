@@ -1,0 +1,51 @@
+# Integration Test Requirements for GL-002 BoilerEfficiencyOptimizer
+
+# Core testing framework
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-timeout>=2.1.0
+pytest-benchmark>=4.0.0
+pytest-mock>=3.11.1
+
+# Async testing
+asyncio-mqtt>=0.16.1
+aiohttp>=3.8.5
+aiofiles>=23.1.0
+
+# Mock/simulation
+faker>=19.2.0
+responses>=0.23.1
+
+# Database testing
+psycopg2-binary>=2.9.6
+redis>=4.6.0
+
+# Test reporting
+pytest-html>=3.2.0
+pytest-json-report>=1.5.0
+coverage[toml]>=7.2.7
+codecov>=2.1.13
+
+# Performance testing
+memory-profiler>=0.61.0
+py-spy>=0.3.14
+
+# Container testing (optional, for Docker-based tests)
+testcontainers>=3.7.1
+
+# API testing
+httpx>=0.24.1
+
+# Data validation
+pydantic>=2.0.0
+marshmallow>=3.19.0
+
+# Time/date mocking
+freezegun>=1.2.2
+
+# Network simulation
+mocket>=3.11.0
+
+# Load testing (for performance benchmarks)
+locust>=2.15.1

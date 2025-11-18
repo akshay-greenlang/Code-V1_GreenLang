@@ -1,0 +1,41 @@
+# GL-003 SteamSystemAnalyzer - ResourceQuota
+# Namespace-wide resource limits
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-003-resourcequota
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+
+spec:
+  hard:
+    # Compute resources
+    requests.cpu: "10"
+    requests.memory: "20Gi"
+    limits.cpu: "20"
+    limits.memory: "40Gi"
+
+    # Storage
+    requests.storage: "100Gi"
+    persistentvolumeclaims: "10"
+
+    # Object counts
+    pods: "20"
+    services: "10"
+    configmaps: "20"
+    secrets: "20"
+    replicationcontrollers: "5"
+    deployments.apps: "5"
+    statefulsets.apps: "3"
+
+  # Scope to specific priority classes (optional)
+  scopeSelector:
+    matchExpressions:
+      - operator: In
+        scopeName: PriorityClass
+        values:
+          - high
+          - medium

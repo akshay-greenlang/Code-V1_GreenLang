@@ -1,0 +1,264 @@
+name: GL-002 Integration Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'integrations/**'
+      - 'tests/integration/**'
+      - '.github/workflows/integration.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'integrations/**'
+      - 'tests/integration/**'
+  schedule:
+    # Run integration tests nightly at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: gl002_test
+          POSTGRES_USER: gl002_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mosquitto:
+        image: eclipse-mosquitto:2
+        ports:
+          - 1883:1883
+        options: >-
+          --health-cmd "mosquitto_sub -t test -E -i healthcheck"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r tests/integration/requirements-test.txt
+
+      - name: Start mock servers
+        run: |
+          cd tests/integration
+          python mock_servers.py &
+          MOCK_PID=$!
+          echo "MOCK_SERVER_PID=$MOCK_PID" >> $GITHUB_ENV
+          sleep 5  # Wait for servers to start
+
+      - name: Run SCADA integration tests
+        env:
+          SCADA_HOST: localhost
+          SCADA_PORT: 4840
+        run: |
+          pytest tests/integration/test_scada_integration.py \
+            -v --tb=short \
+            --junitxml=test-results/scada-integration.xml \
+            --cov=integrations.scada_connector \
+            --cov-report=xml:test-results/scada-coverage.xml
+
+      - name: Run ERP integration tests
+        env:
+          SAP_HOST: localhost
+          SAP_PORT: 3300
+          ORACLE_HOST: localhost
+          ORACLE_PORT: 8080
+        run: |
+          pytest tests/integration/test_erp_integration.py \
+            -v --tb=short \
+            --junitxml=test-results/erp-integration.xml \
+            --cov=integrations.boiler_control_connector \
+            --cov-report=xml:test-results/erp-coverage.xml
+
+      - name: Run Fuel Management integration tests
+        env:
+          MODBUS_HOST: localhost
+          MODBUS_PORT: 502
+        run: |
+          pytest tests/integration/test_fuel_management.py \
+            -v --tb=short \
+            --junitxml=test-results/fuel-integration.xml \
+            --cov=integrations.fuel_management_connector \
+            --cov-report=xml:test-results/fuel-coverage.xml
+
+      - name: Run Emissions integration tests
+        env:
+          MODBUS_HOST: localhost
+          MODBUS_PORT: 502
+          MQTT_HOST: localhost
+          MQTT_PORT: 1883
+        run: |
+          pytest tests/integration/test_emissions_integration.py \
+            -v --tb=short \
+            --junitxml=test-results/emissions-integration.xml \
+            --cov=integrations.emissions_monitoring_connector \
+            --cov-report=xml:test-results/emissions-coverage.xml
+
+      - name: Run Agent Coordination integration tests
+        run: |
+          pytest tests/integration/test_parent_coordination.py \
+            -v --tb=short \
+            --junitxml=test-results/coordination-integration.xml \
+            --cov=integrations.agent_coordinator \
+            --cov-report=xml:test-results/coordination-coverage.xml
+
+      - name: Run End-to-End workflow tests
+        env:
+          SCADA_HOST: localhost
+          MODBUS_HOST: localhost
+          MQTT_HOST: localhost
+        run: |
+          pytest tests/integration/test_e2e_workflow.py \
+            -v --tb=short -m e2e \
+            --junitxml=test-results/e2e-integration.xml \
+            --cov=integrations \
+            --cov-report=xml:test-results/e2e-coverage.xml
+
+      - name: Generate combined coverage report
+        run: |
+          coverage combine test-results/*-coverage.xml
+          coverage report
+          coverage html -d test-results/htmlcov
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: integration-test-results
+          path: test-results/
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: test-results/*-coverage.xml
+          flags: integration
+          name: integration-coverage
+
+      - name: Stop mock servers
+        if: always()
+        run: |
+          if [ ! -z "$MOCK_SERVER_PID" ]; then
+            kill $MOCK_SERVER_PID || true
+          fi
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const testResults = fs.readFileSync('test-results/e2e-integration.xml', 'utf8');
+            // Parse and comment with summary
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.name,
+              body: '## Integration Test Results\n\nAll integration tests passed! ✅'
+            });
+
+  docker-integration-tests:
+    name: Docker-based Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Run integration tests with Docker Compose
+        run: |
+          cd tests/integration
+          docker-compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from integration-tests
+
+      - name: Collect test results from container
+        if: always()
+        run: |
+          docker cp gl002-integration-tests:/app/test-results ./test-results
+
+      - name: Upload Docker test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-integration-test-results
+          path: test-results/
+
+      - name: Clean up Docker resources
+        if: always()
+        run: |
+          cd tests/integration
+          docker-compose -f docker-compose.test.yml down -v
+
+  performance-benchmarks:
+    name: Integration Performance Benchmarks
+    runs-on: ubuntu-latest
+    needs: integration-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r tests/integration/requirements-test.txt
+          pip install pytest-benchmark
+
+      - name: Run performance benchmarks
+        run: |
+          pytest tests/integration/ -v --benchmark-only \
+            --benchmark-json=benchmark-results.json
+
+      - name: Store benchmark results
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'pytest'
+          output-file-path: benchmark-results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true

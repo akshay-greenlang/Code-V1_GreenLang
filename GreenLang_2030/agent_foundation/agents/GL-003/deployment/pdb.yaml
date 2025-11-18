@@ -1,0 +1,33 @@
+# GL-003 SteamSystemAnalyzer - Pod Disruption Budget
+# Ensure minimum availability during voluntary disruptions
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-003-steam-system-analyzer-pdb
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+
+spec:
+  # Minimum available pods during disruption
+  minAvailable: 2  # Keep at least 2 pods running
+
+  # Alternative: maximum unavailable pods
+  # maxUnavailable: 1  # Allow max 1 pod to be unavailable
+
+  selector:
+    matchLabels:
+      app: gl-003-steam-system-analyzer
+      agent: "GL-003"
+
+# Note: PDB only applies to voluntary disruptions:
+# - Node drain for maintenance
+# - Cluster autoscaler node removal
+# - kubectl drain/delete
+#
+# Does NOT apply to:
+# - Node failures
+# - Out-of-memory kills
+# - Unhealthy pods

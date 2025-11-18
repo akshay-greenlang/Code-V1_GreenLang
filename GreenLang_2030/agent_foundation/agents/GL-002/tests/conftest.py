@@ -14,6 +14,7 @@ import asyncio
 import logging
 import sys
 import os
+import time
 from pathlib import Path
 from datetime import datetime, timedelta
 from decimal import Decimal
@@ -597,3 +598,336 @@ def historian_credentials() -> Dict[str, str]:
 def cloud_credentials() -> Dict[str, str]:
     """Provide cloud credentials from environment."""
     return get_test_credentials("cloud")
+
+
+# ============================================================================
+# EDGE CASE TESTING FIXTURES
+# ============================================================================
+
+@pytest.fixture
+def extreme_values() -> Dict[str, Any]:
+    """Provide extreme values for boundary testing."""
+    return {
+        'max_float': sys.float_info.max,
+        'min_float': sys.float_info.min,
+        'epsilon': sys.float_info.epsilon,
+        'max_int': sys.maxsize,
+        'positive_inf': float('inf'),
+        'negative_inf': float('-inf'),
+        'nan': float('nan'),
+        'very_small': 1e-300,
+        'very_large': 1e300,
+        'positive_zero': 0.0,
+        'negative_zero': -0.0
+    }
+
+
+@pytest.fixture
+def invalid_data_samples() -> List[Dict[str, Any]]:
+    """Provide invalid data samples for error testing."""
+    return [
+        {'type': 'none_value', 'data': None},
+        {'type': 'empty_dict', 'data': {}},
+        {'type': 'empty_string', 'data': ''},
+        {'type': 'negative_value', 'data': -100},
+        {'type': 'zero_value', 'data': 0},
+        {'type': 'infinity', 'data': float('inf')},
+        {'type': 'nan', 'data': float('nan')},
+        {'type': 'invalid_type', 'data': 'not_a_number'},
+        {'type': 'missing_required', 'data': {'incomplete': True}},
+    ]
+
+
+@pytest.fixture
+def unicode_test_strings() -> List[str]:
+    """Provide Unicode test strings for edge case testing."""
+    return [
+        "锅炉-001",  # Chinese
+        "котел-001",  # Russian
+        "बॉयलर-001",  # Hindi
+        "غلاية-001",  # Arabic
+        "ボイラー-001",  # Japanese
+        "🔥-BOILER-001",  # Emoji
+        "BOILER\u0000NULL",  # Null character
+        "BOILER\n\t\r",  # Control characters
+        "'; DROP TABLE boilers; --",  # SQL injection
+        "A" * 10000,  # Very long string
+    ]
+
+
+@pytest.fixture
+def malformed_sensor_data() -> List[Dict[str, Any]]:
+    """Provide malformed sensor data for testing."""
+    return [
+        {'fuel_flow_kg_hr': 'not_a_number'},
+        {'fuel_flow_kg_hr': None},
+        {'fuel_flow_kg_hr': -1000},
+        {'fuel_flow_kg_hr': float('inf')},
+        {'fuel_flow_kg_hr': float('nan')},
+        {'stack_temperature_c': -300},  # Below absolute zero
+        {'stack_temperature_c': 1000},  # Unrealistic
+        {'o2_percent': -5},  # Negative oxygen
+        {'o2_percent': 150},  # Over 100%
+        {},  # Missing all fields
+    ]
+
+
+@pytest.fixture
+def performance_test_data() -> Dict[str, Any]:
+    """Provide data for performance testing."""
+    return {
+        'small_dataset': [{'id': i, 'value': i * 2} for i in range(10)],
+        'medium_dataset': [{'id': i, 'value': i * 2} for i in range(1000)],
+        'large_dataset': [{'id': i, 'value': i * 2} for i in range(10000)],
+        'max_concurrent_requests': 100,
+        'burst_sizes': [100, 500, 1000, 2000, 5000],
+        'load_test_duration_seconds': 5,
+        'throughput_target_rps': 1000,
+    }
+
+
+@pytest.fixture
+def timeout_scenarios() -> List[Dict[str, Any]]:
+    """Provide timeout scenarios for testing."""
+    return [
+        {'name': 'immediate', 'delay_seconds': 0, 'timeout_seconds': 0.1},
+        {'name': 'fast', 'delay_seconds': 0.05, 'timeout_seconds': 0.1},
+        {'name': 'boundary', 'delay_seconds': 0.1, 'timeout_seconds': 0.1},
+        {'name': 'slow', 'delay_seconds': 0.5, 'timeout_seconds': 0.1},
+        {'name': 'very_slow', 'delay_seconds': 5.0, 'timeout_seconds': 0.1},
+    ]
+
+
+@pytest.fixture
+def integration_failure_scenarios() -> List[Dict[str, Any]]:
+    """Provide integration failure scenarios."""
+    return [
+        {
+            'name': 'connection_refused',
+            'error_type': ConnectionRefusedError,
+            'message': 'Connection refused'
+        },
+        {
+            'name': 'timeout',
+            'error_type': TimeoutError,
+            'message': 'Connection timeout'
+        },
+        {
+            'name': 'connection_reset',
+            'error_type': ConnectionResetError,
+            'message': 'Connection reset by peer'
+        },
+        {
+            'name': 'broken_pipe',
+            'error_type': BrokenPipeError,
+            'message': 'Broken pipe'
+        },
+        {
+            'name': 'permission_denied',
+            'error_type': PermissionError,
+            'message': 'Permission denied'
+        },
+        {
+            'name': 'network_unreachable',
+            'error_type': OSError,
+            'message': 'Network is unreachable'
+        },
+    ]
+
+
+@pytest.fixture
+def cache_contention_config() -> Dict[str, Any]:
+    """Provide configuration for cache contention tests."""
+    return {
+        'num_threads': 20,
+        'operations_per_thread': 1000,
+        'cache_max_size': 500,
+        'cache_ttl_seconds': 60,
+        'expected_min_success_rate': 0.95,
+    }
+
+
+@pytest.fixture
+def memory_pressure_config() -> Dict[str, Any]:
+    """Provide configuration for memory pressure tests."""
+    return {
+        'max_memory_increase_mb': 100,
+        'large_object_size_kb': 100,
+        'num_large_objects': 10000,
+        'gc_interval': 100,
+    }
+
+
+@pytest.fixture
+def mock_failing_scada() -> AsyncMock:
+    """Create SCADA connector that fails intermittently."""
+    mock = AsyncMock()
+    call_count = [0]
+
+    async def failing_connect(*args, **kwargs):
+        call_count[0] += 1
+        if call_count[0] % 3 == 0:
+            return True
+        raise ConnectionError("SCADA connection failed")
+
+    mock.connect = AsyncMock(side_effect=failing_connect)
+    mock.read_tags = AsyncMock(side_effect=TimeoutError("Read timeout"))
+    mock.disconnect = AsyncMock(return_value=True)
+
+    return mock
+
+
+@pytest.fixture
+def mock_rate_limited_api() -> AsyncMock:
+    """Create API mock that implements rate limiting."""
+    mock = AsyncMock()
+    request_times = []
+
+    async def rate_limited_call(*args, **kwargs):
+        current_time = time.time()
+        request_times.append(current_time)
+
+        # Check rate (max 10 requests per second)
+        recent_requests = [t for t in request_times if current_time - t < 1.0]
+
+        if len(recent_requests) > 10:
+            raise Exception("Rate limit exceeded: 429 Too Many Requests")
+
+        return {'status': 'success', 'data': {}}
+
+    mock.call = AsyncMock(side_effect=rate_limited_call)
+
+    return mock
+
+
+@pytest.fixture
+def stress_test_config() -> Dict[str, Any]:
+    """Provide configuration for stress testing."""
+    return {
+        'max_concurrent_operations': 100,
+        'sustained_load_duration_seconds': 5,
+        'burst_sizes': [100, 500, 1000, 2000],
+        'memory_limit_mb': 500,
+        'cpu_intensive_iterations': 100000,
+    }
+
+
+@pytest.fixture
+async def async_test_helper():
+    """Helper for async test operations."""
+
+    class AsyncTestHelper:
+        """Helper class for async testing utilities."""
+
+        @staticmethod
+        async def wait_with_timeout(coro, timeout_seconds: float):
+            """Wait for coroutine with timeout."""
+            try:
+                return await asyncio.wait_for(coro, timeout=timeout_seconds)
+            except asyncio.TimeoutError:
+                raise TimeoutError(f"Operation timed out after {timeout_seconds}s")
+
+        @staticmethod
+        async def run_concurrent(operations: List, max_concurrent: int = 10):
+            """Run operations with concurrency limit."""
+            semaphore = asyncio.Semaphore(max_concurrent)
+
+            async def bounded_operation(op):
+                async with semaphore:
+                    return await op
+
+            return await asyncio.gather(*[bounded_operation(op) for op in operations])
+
+        @staticmethod
+        def measure_execution_time(func):
+            """Decorator to measure execution time."""
+            async def wrapper(*args, **kwargs):
+                start = time.perf_counter()
+                result = await func(*args, **kwargs)
+                duration = time.perf_counter() - start
+                return result, duration
+
+            return wrapper
+
+    return AsyncTestHelper()
+
+
+# ============================================================================
+# BENCHMARK AND METRICS FIXTURES
+# ============================================================================
+
+@pytest.fixture
+def benchmark_thresholds() -> Dict[str, float]:
+    """Provide performance benchmark thresholds."""
+    return {
+        'cache_operation_ms': 1.0,  # Cache operations should be <1ms
+        'efficiency_calculation_ms': 100.0,  # Calculations <100ms
+        'orchestrator_execute_ms': 3000.0,  # Full execution <3s
+        'throughput_min_rps': 100.0,  # Minimum 100 requests/second
+        'memory_increase_max_mb': 100.0,  # Max 100MB increase
+        'p99_latency_ms': 10.0,  # P99 latency <10ms
+        'cache_hit_rate_min': 0.7,  # Minimum 70% cache hit rate
+    }
+
+
+@pytest.fixture
+def metrics_collector():
+    """Provide metrics collector for test measurements."""
+
+    class MetricsCollector:
+        """Collect and analyze test metrics."""
+
+        def __init__(self):
+            self.metrics = {
+                'execution_times': [],
+                'memory_samples': [],
+                'throughput_samples': [],
+                'error_counts': {},
+                'cache_stats': {'hits': 0, 'misses': 0},
+            }
+
+        def record_execution_time(self, operation: str, duration_ms: float):
+            """Record execution time for an operation."""
+            self.metrics['execution_times'].append({
+                'operation': operation,
+                'duration_ms': duration_ms,
+                'timestamp': datetime.now(timezone.utc)
+            })
+
+        def record_error(self, error_type: str):
+            """Record error occurrence."""
+            self.metrics['error_counts'][error_type] = \
+                self.metrics['error_counts'].get(error_type, 0) + 1
+
+        def record_cache_hit(self):
+            """Record cache hit."""
+            self.metrics['cache_stats']['hits'] += 1
+
+        def record_cache_miss(self):
+            """Record cache miss."""
+            self.metrics['cache_stats']['misses'] += 1
+
+        def get_summary(self) -> Dict[str, Any]:
+            """Get metrics summary."""
+            exec_times = [m['duration_ms'] for m in self.metrics['execution_times']]
+
+            summary = {
+                'total_operations': len(exec_times),
+                'avg_execution_time_ms': sum(exec_times) / len(exec_times) if exec_times else 0,
+                'min_execution_time_ms': min(exec_times) if exec_times else 0,
+                'max_execution_time_ms': max(exec_times) if exec_times else 0,
+                'total_errors': sum(self.metrics['error_counts'].values()),
+                'cache_hit_rate': (
+                    self.metrics['cache_stats']['hits'] /
+                    (self.metrics['cache_stats']['hits'] + self.metrics['cache_stats']['misses'])
+                    if (self.metrics['cache_stats']['hits'] + self.metrics['cache_stats']['misses']) > 0
+                    else 0
+                ),
+            }
+
+            return summary
+
+    return MetricsCollector()
+
+
+logger.info("Conftest.py loaded with enhanced edge case testing fixtures")

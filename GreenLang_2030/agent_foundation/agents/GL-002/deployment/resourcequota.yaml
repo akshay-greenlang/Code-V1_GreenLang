@@ -1,0 +1,174 @@
+# GL-002 BoilerEfficiencyOptimizer - ResourceQuota
+# Prevents resource exhaustion in greenlang namespace
+# Sets hard limits on total resource consumption
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-resourcequota
+  namespace: greenlang
+  labels:
+    app: greenlang-platform
+    managed-by: "platform-team"
+  annotations:
+    description: "ResourceQuota for greenlang namespace (all agents)"
+    documentation: "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+
+spec:
+  hard:
+    # Compute Resources
+    # Total CPU requests across all pods in namespace
+    requests.cpu: "20"        # 20 CPU cores total
+
+    # Total CPU limits across all pods in namespace
+    limits.cpu: "40"          # 40 CPU cores max
+
+    # Total memory requests across all pods in namespace
+    requests.memory: "40Gi"   # 40 GiB total
+
+    # Total memory limits across all pods in namespace
+    limits.memory: "80Gi"     # 80 GiB max
+
+    # Storage Resources
+    # Total persistent volume claims storage
+    requests.storage: "500Gi" # 500 GiB total PVC storage
+
+    # Ephemeral storage (emptyDir, etc.)
+    requests.ephemeral-storage: "100Gi"
+    limits.ephemeral-storage: "200Gi"
+
+    # Object Count Limits
+    # Maximum number of pods
+    pods: "50"                # Max 50 pods in namespace
+
+    # Maximum number of services
+    services: "20"            # Max 20 services
+
+    # Maximum number of load balancers
+    services.loadbalancers: "5"
+
+    # Maximum number of persistent volume claims
+    persistentvolumeclaims: "20"
+
+    # Maximum number of secrets
+    secrets: "30"
+
+    # Maximum number of config maps
+    configmaps: "30"
+
+    # Maximum number of replication controllers/deployments
+    replicationcontrollers: "15"
+
+  # Scope selectors (optional)
+  # scopeSelector:
+  #   matchExpressions:
+  #     - operator: In
+  #       scopeName: PriorityClass
+  #       values: ["high", "medium"]
+
+---
+# ResourceQuota for GL-002 specific (optional)
+# Use if you want per-agent quotas instead of namespace-wide
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-002-boiler-efficiency-quota
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-efficiency
+    agent: "GL-002"
+  annotations:
+    description: "Dedicated quota for GL-002 BoilerEfficiencyOptimizer"
+
+spec:
+  hard:
+    # GL-002 specific limits (with 3-10 replicas)
+    # Each pod: requests.cpu=500m, limits.cpu=1000m
+    # Each pod: requests.memory=512Mi, limits.memory=1024Mi
+
+    # For 10 pods max: 10 * 500m = 5 CPUs, 10 * 512Mi = 5120Mi
+    requests.cpu: "6"          # 6 CPU cores (buffer for scaling)
+    limits.cpu: "12"           # 12 CPU cores max
+    requests.memory: "8Gi"     # 8 GiB (buffer for scaling)
+    limits.memory: "16Gi"      # 16 GiB max
+
+    # Object limits for GL-002
+    pods: "15"                 # Max 15 pods (HPA can scale to 10, buffer for rolling updates)
+    services: "3"              # Main service + headless + metrics
+    configmaps: "5"            # Config + environment-specific configs
+    secrets: "5"               # Secrets + TLS certs
+
+  # Scope to GL-002 pods only
+  scopeSelector:
+    matchExpressions:
+      - operator: In
+        scopeName: PriorityClass
+        values: ["gl-002-priority", "default"]
+
+---
+# ResourceQuota Scope Examples:
+#
+# 1. **Scope by PriorityClass**:
+#    scopeSelector:
+#      matchExpressions:
+#        - operator: In
+#          scopeName: PriorityClass
+#          values: ["high-priority"]
+#
+# 2. **Scope by QoS Class**:
+#    scopeSelector:
+#      matchExpressions:
+#        - operator: In
+#          scopeName: BestEffort  # or Burstable, Guaranteed
+#
+# 3. **Monitoring ResourceQuota Usage**:
+#    kubectl describe resourcequota greenlang-resourcequota -n greenlang
+#    kubectl get resourcequota -n greenlang -o yaml
+#
+# 4. **ResourceQuota Calculations for GL-002**:
+#    Deployment replicas: 3 (default) to 10 (max with HPA)
+#    Per-pod requests: 500m CPU, 512Mi memory
+#    Per-pod limits: 1000m CPU, 1024Mi memory
+#
+#    Minimum (3 pods):
+#      - requests: 1.5 CPU, 1.5 GiB memory
+#      - limits: 3 CPU, 3 GiB memory
+#
+#    Maximum (10 pods):
+#      - requests: 5 CPU, 5 GiB memory
+#      - limits: 10 CPU, 10 GiB memory
+#
+#    Recommended quota (with buffer):
+#      - requests: 6 CPU, 8 GiB memory
+#      - limits: 12 CPU, 16 GiB memory
+#
+# 5. **ResourceQuota vs LimitRange**:
+#    - ResourceQuota: Total limits for entire namespace
+#    - LimitRange: Default/min/max limits per pod/container
+#    - Use both together for comprehensive resource management
+#
+# 6. **Quota Enforcement**:
+#    - Pods without resource requests/limits will be rejected
+#    - Deployment will fail if quota is exceeded
+#    - Use admission controllers to enforce quota
+#
+# 7. **Testing ResourceQuota**:
+#    # Try creating a pod that exceeds quota
+#    kubectl run test-pod --image=nginx --requests=cpu=25 -n greenlang
+#    # Should fail with: "exceeded quota: greenlang-resourcequota"
+#
+# 8. **Multi-tenant Namespaces**:
+#    - Create separate ResourceQuota per team/project
+#    - Use scopeSelector to partition resources
+#    - Monitor and adjust based on actual usage
+#
+# 9. **ResourceQuota and Cluster Autoscaler**:
+#    - ResourceQuota doesn't block cluster autoscaling
+#    - Cluster can add nodes if quota is exceeded
+#    - ResourceQuota only limits namespace consumption
+#
+# 10. **Production Recommendations**:
+#     - Set ResourceQuota to 1.5x expected peak usage
+#     - Review and adjust quarterly based on metrics
+#     - Alert when namespace usage exceeds 80% of quota
+#     - Document quota limits in team handbook

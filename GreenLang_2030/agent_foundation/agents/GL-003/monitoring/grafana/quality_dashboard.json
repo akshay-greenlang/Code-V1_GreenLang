@@ -1,0 +1,578 @@
+{
+  "dashboard": {
+    "title": "GL-003 Quality Dashboard - Determinism & Accuracy",
+    "tags": ["gl-003", "quality", "determinism", "accuracy"],
+    "timezone": "utc",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Determinism Score (%)",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "100 * sum(rate(gl_003_optimization_requests_total{status=\"success\"}[1h])) / sum(rate(gl_003_optimization_requests_total[1h]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 99, "color": "yellow"},
+                {"value": 99.9, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Efficiency Accuracy (vs Target)",
+        "type": "stat",
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "avg(gl_003_boiler_efficiency_percent)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 80, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Emissions Compliance Rate (%)",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "100 * sum(gl_003_emissions_compliance_status == 1) / count(gl_003_emissions_compliance_status)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 1,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 100, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Calculation Errors (24h)",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(increase(gl_003_optimization_requests_total{status=\"failure\"}[24h]))",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 10, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Efficiency Prediction vs Actual",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "avg(gl_003_boiler_efficiency_percent) by (boiler_id)",
+            "refId": "A",
+            "legendFormat": "Actual - {{boiler_id}}"
+          },
+          {
+            "expr": "avg(gl_003_boiler_efficiency_percent) by (boiler_id) * 0.98",
+            "refId": "B",
+            "legendFormat": "Target - {{boiler_id}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 10,
+              "lineWidth": 2
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byRegexp", "options": "/Target.*/"},
+              "properties": [
+                {"id": "custom.lineStyle", "value": {"dash": [10, 5], "fill": "dash"}},
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "yellow"}}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "min", "max"]
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Optimization Consistency (Same Input)",
+        "type": "timeseries",
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "stddev_over_time(gl_003_optimization_efficiency_improvement_percent_sum[5m])",
+            "refId": "A",
+            "legendFormat": "Standard Deviation"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "lineWidth": 2
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.5, "color": "yellow"},
+                {"value": 1, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Emissions Compliance Violations",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 12, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_emissions_compliance_violations_total[5m])) by (boiler_id, pollutant)",
+            "refId": "A",
+            "legendFormat": "{{boiler_id}} - {{pollutant}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "custom": {
+              "drawStyle": "bars",
+              "fillOpacity": 80,
+              "lineWidth": 0
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["sum", "max"]
+          }
+        },
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [0], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "sum"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "1m",
+          "handler": 1,
+          "name": "Compliance Violations Alert",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 8,
+        "title": "Steam System Distribution",
+        "type": "histogram",
+        "gridPos": {"x": 12, "y": 12, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "gl_003_boiler_efficiency_percent",
+            "refId": "A",
+            "format": "heatmap"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Optimization Repeatability Score",
+        "type": "gauge",
+        "gridPos": {"x": 0, "y": 18, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "100 - (stddev_over_time(gl_003_optimization_efficiency_improvement_percent_sum[1h]) * 10)",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "auto",
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 10,
+        "title": "Tool Execution Variance",
+        "type": "bargauge",
+        "gridPos": {"x": 8, "y": 18, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "stddev_over_time(rate(gl_003_optimization_duration_seconds_sum[5m])[1h:]) by (strategy)",
+            "refId": "A",
+            "legendFormat": "{{strategy}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "s",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 0.1, "color": "yellow"},
+                {"value": 0.5, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        }
+      },
+      {
+        "id": 11,
+        "title": "Accuracy Metrics by Boiler",
+        "type": "table",
+        "gridPos": {"x": 16, "y": 18, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "gl_003_boiler_efficiency_percent",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          },
+          {
+            "expr": "gl_003_emissions_compliance_status",
+            "refId": "B",
+            "format": "table",
+            "instant": true
+          },
+          {
+            "expr": "gl_003_boiler_load_percent",
+            "refId": "C",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "merge"
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true},
+              "renameByName": {
+                "boiler_id": "Boiler",
+                "fuel_type": "Fuel",
+                "Value #A": "Efficiency (%)",
+                "Value #B": "Compliant",
+                "Value #C": "Load (%)"
+              }
+            }
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [{"displayName": "Efficiency (%)", "desc": true}]
+        },
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Efficiency (%)"},
+              "properties": [
+                {
+                  "id": "custom.cellOptions",
+                  "value": {
+                    "type": "color-background",
+                    "mode": "gradient"
+                  }
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {"value": 0, "color": "red"},
+                      {"value": 80, "color": "yellow"},
+                      {"value": 85, "color": "green"}
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Compliant"},
+              "properties": [
+                {
+                  "id": "mappings",
+                  "value": [
+                    {"type": "value", "value": "0", "text": "NO", "color": "red"},
+                    {"type": "value", "value": "1", "text": "YES", "color": "green"}
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 12,
+        "title": "Cost Savings Accuracy vs Prediction",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 24, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_optimization_cost_savings_usd_per_hour_sum[5m]))",
+            "refId": "A",
+            "legendFormat": "Actual Savings"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "lineWidth": 2
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom",
+            "calcs": ["mean", "min", "max", "last"]
+          }
+        }
+      },
+      {
+        "id": 13,
+        "title": "Quality Metrics Summary",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 24, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "100 - (sum(rate(gl_003_optimization_requests_total{status=\"failure\"}[24h])) / sum(rate(gl_003_optimization_requests_total[24h])) * 100)",
+            "refId": "A"
+          },
+          {
+            "expr": "100 * sum(gl_003_emissions_compliance_status == 1) / count(gl_003_emissions_compliance_status)",
+            "refId": "B"
+          },
+          {
+            "expr": "avg(gl_003_boiler_efficiency_percent)",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byFrameRefID", "options": "A"},
+              "properties": [
+                {"id": "displayName", "value": "Success Rate"}
+              ]
+            },
+            {
+              "matcher": {"id": "byFrameRefID", "options": "B"},
+              "properties": [
+                {"id": "displayName", "value": "Compliance Rate"}
+              ]
+            },
+            {
+              "matcher": {"id": "byFrameRefID", "options": "C"},
+              "properties": [
+                {"id": "displayName", "value": "Avg Efficiency"}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "graphMode": "none",
+          "colorMode": "background",
+          "orientation": "horizontal"
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "boiler_id",
+          "type": "query",
+          "label": "Boiler",
+          "query": "label_values(gl_003_boiler_efficiency_percent, boiler_id)",
+          "multi": true,
+          "includeAll": true,
+          "refresh": 1
+        },
+        {
+          "name": "time_range",
+          "type": "interval",
+          "label": "Time Range",
+          "query": "1h,6h,24h,7d,30d",
+          "auto": false,
+          "current": {
+            "text": "24h",
+            "value": "24h"
+          }
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Quality Issues",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "rate(gl_003_optimization_requests_total{status=\"failure\"}[1m]) > 0.01",
+          "iconColor": "red",
+          "tagKeys": "strategy"
+        },
+        {
+          "name": "Compliance Violations",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "rate(gl_003_emissions_compliance_violations_total[1m]) > 0",
+          "iconColor": "critical",
+          "tagKeys": "pollutant"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,236 @@
+# GL-002 BoilerEfficiencyOptimizer - Git Ignore File
+# Security: Prevent credential exposure
+
+# ============================================================================
+# SECRETS AND CREDENTIALS (CRITICAL)
+# ============================================================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.cert
+*.crt
+credentials.json
+secrets.yaml
+secrets.yml
+*secret*
+*credential*
+
+# Test credentials
+tests/.env
+tests/.env.local
+
+# ============================================================================
+# PYTHON
+# ============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# ============================================================================
+# IDEs and Editors
+# ============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================================================
+# OS
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ============================================================================
+# LOGS AND TEMPORARY FILES
+# ============================================================================
+*.log
+logs/
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Security scan reports
+bandit-report.json
+bandit-report.html
+safety-report.json
+pip-audit-report.json
+
+# ============================================================================
+# DATA FILES
+# ============================================================================
+# Large data files
+*.csv
+*.parquet
+*.h5
+*.hdf5
+
+# Database files
+*.db
+*.sqlite
+
+# ============================================================================
+# APPLICATION SPECIFIC
+# ============================================================================
+# Cache files
+.cache/
+*.cache
+
+# Runtime data
+*.pid
+*.seed
+
+# Backup files
+*.bak
+*.backup
+
+# ============================================================================
+# SECURITY: DO NOT IGNORE THESE FILES
+# ============================================================================
+# Keep these files tracked:
+# !.env.example
+# !tests/.env.example
+# !requirements.txt
+# !SECURITY_AUDIT_REPORT.md

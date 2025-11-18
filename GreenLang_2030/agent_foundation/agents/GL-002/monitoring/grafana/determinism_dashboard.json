@@ -1,0 +1,444 @@
+{
+  "dashboard": {
+    "title": "GL-002 Determinism Monitoring",
+    "uid": "gl-002-determinism",
+    "version": 1,
+    "schemaVersion": 27,
+    "timezone": "UTC",
+    "refresh": "10s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Determinism Score (Target: 100%)",
+        "type": "gauge",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 6,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "gl_002_determinism_score_percent{component=\"orchestrator\"}",
+            "legendFormat": "Orchestrator",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 95},
+                {"color": "green", "value": 99.9}
+              ]
+            },
+            "min": 0,
+            "max": 100,
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Determinism Verification Failures",
+        "type": "graph",
+        "gridPos": {
+          "x": 6,
+          "y": 0,
+          "w": 9,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "increase(gl_002_determinism_verification_failures_total[5m])",
+            "legendFormat": "{{violation_type}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Failures (per 5m)",
+            "min": 0
+          }
+        ],
+        "alert": {
+          "name": "Determinism Violations Detected",
+          "conditions": [
+            {
+              "evaluator": {
+                "params": [0],
+                "type": "gt"
+              },
+              "query": {
+                "params": ["A", "5m", "now"]
+              },
+              "type": "query"
+            }
+          ],
+          "frequency": "1m",
+          "handler": 1,
+          "message": "Determinism violations detected in GL-002. Investigate immediately.",
+          "notifications": [],
+          "for": "5m"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Provenance Hash Verifications",
+        "type": "stat",
+        "gridPos": {
+          "x": 15,
+          "y": 0,
+          "w": 4,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "rate(gl_002_provenance_hash_verifications_total{status=\"success\"}[5m]) / rate(gl_002_provenance_hash_verifications_total[5m]) * 100",
+            "legendFormat": "Success Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 99},
+                {"color": "green", "value": 99.9}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Cache Key Determinism",
+        "type": "stat",
+        "gridPos": {
+          "x": 19,
+          "y": 0,
+          "w": 5,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "rate(gl_002_cache_key_determinism_checks_total{status=\"deterministic\"}[5m]) / rate(gl_002_cache_key_determinism_checks_total[5m]) * 100",
+            "legendFormat": "Deterministic Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "yellow", "value": 99},
+                {"color": "green", "value": 100}
+              ]
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "AI Configuration Compliance",
+        "type": "gauge",
+        "gridPos": {
+          "x": 15,
+          "y": 4,
+          "w": 4,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "rate(gl_002_ai_config_determinism_checks_total{status=\"compliant\"}[5m]) / rate(gl_002_ai_config_determinism_checks_total[5m]) * 100",
+            "legendFormat": "Compliance Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "red", "value": 0},
+                {"color": "green", "value": 100}
+              ]
+            },
+            "min": 0,
+            "max": 100,
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Seed Propagation Status",
+        "type": "stat",
+        "gridPos": {
+          "x": 19,
+          "y": 4,
+          "w": 5,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "gl_002_seed_propagation_checks_total{status=\"valid\"}",
+            "legendFormat": "Valid",
+            "refId": "A"
+          },
+          {
+            "expr": "gl_002_seed_propagation_checks_total{status=\"invalid\"}",
+            "legendFormat": "Invalid",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Golden Test Results (25 Tests)",
+        "type": "table",
+        "gridPos": {
+          "x": 0,
+          "y": 8,
+          "w": 12,
+          "h": 10
+        },
+        "targets": [
+          {
+            "expr": "gl_002_golden_test_results_total",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {},
+              "indexByName": {},
+              "renameByName": {
+                "test_name": "Test Name",
+                "status": "Status",
+                "Value": "Count"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Unseeded Random Operations (Target: 0)",
+        "type": "stat",
+        "gridPos": {
+          "x": 12,
+          "y": 8,
+          "w": 6,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "increase(gl_002_unseeded_random_operations_detected_total[1h])",
+            "legendFormat": "{{operation_type}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "red", "value": 1}
+              ]
+            },
+            "noValue": "0 (Good)"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Timestamp Calculations Detected (Target: 0)",
+        "type": "stat",
+        "gridPos": {
+          "x": 18,
+          "y": 8,
+          "w": 6,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "increase(gl_002_timestamp_calculations_detected_total[1h])",
+            "legendFormat": "{{pattern}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"color": "green", "value": 0},
+                {"color": "red", "value": 1}
+              ]
+            },
+            "noValue": "0 (Good)"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Determinism Verification Duration",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 13,
+          "w": 12,
+          "h": 5
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(gl_002_determinism_verification_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95 {{verification_type}}",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(gl_002_determinism_verification_duration_seconds_bucket[5m]))",
+            "legendFormat": "p99 {{verification_type}}",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Duration (seconds)",
+            "format": "s"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Violations by Type (Last 24h)",
+        "type": "piechart",
+        "gridPos": {
+          "x": 0,
+          "y": 18,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "increase(gl_002_determinism_verification_failures_total[24h])",
+            "legendFormat": "{{violation_type}}",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 12,
+        "title": "Calculation Determinism Runs Distribution",
+        "type": "heatmap",
+        "gridPos": {
+          "x": 8,
+          "y": 18,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "rate(gl_002_calculation_determinism_runs_bucket[5m])",
+            "legendFormat": "{{function_name}}",
+            "format": "heatmap",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 13,
+        "title": "Determinism Metrics Summary",
+        "type": "table",
+        "gridPos": {
+          "x": 16,
+          "y": 18,
+          "w": 8,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "gl_002_determinism_score_percent",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          },
+          {
+            "expr": "rate(gl_002_provenance_hash_verifications_total[5m])",
+            "format": "table",
+            "instant": true,
+            "refId": "B"
+          },
+          {
+            "expr": "rate(gl_002_cache_key_determinism_checks_total[5m])",
+            "format": "table",
+            "instant": true,
+            "refId": "C"
+          }
+        ]
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "name": "Determinism Violations",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "ALERTS{alertname=\"DeterminismScoreBelow100\"}",
+          "iconColor": "red",
+          "tagKeys": "violation_type"
+        },
+        {
+          "name": "Deployments",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(gl_002_system_uptime_seconds[5m]) > 0",
+          "iconColor": "blue"
+        }
+      ]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "component",
+          "type": "query",
+          "datasource": "Prometheus",
+          "query": "label_values(gl_002_determinism_score_percent, component)",
+          "multi": false,
+          "current": {
+            "text": "orchestrator",
+            "value": "orchestrator"
+          }
+        }
+      ]
+    }
+  }
+}

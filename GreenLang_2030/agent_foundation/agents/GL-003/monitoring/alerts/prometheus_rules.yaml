@@ -1,0 +1,430 @@
+---
+# Prometheus Alerting Rules for GL-003 SteamSystemAnalyzer
+# Comprehensive monitoring with CRITICAL and WARNING thresholds
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-003-alerts
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-analyzer
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    # ===========================================================================
+    # CRITICAL ALERTS - Immediate Action Required
+    # ===========================================================================
+    - name: gl-003-critical-alerts
+      interval: 30s
+      rules:
+        - alert: GL003AgentUnavailable
+          expr: up{job="gl-003-steam-analyzer"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: agent
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Agent is unavailable"
+            description: "GL-003 SteamSystemAnalyzer has been unavailable for more than 1 minute. Pod: {{ $labels.pod }}, Namespace: {{ $labels.namespace }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-unavailable"
+            dashboard_url: "https://grafana.greenlang.io/d/gl-003-ops"
+
+        - alert: GL003HighErrorRate
+          expr: |
+            100 * sum(rate(gl_003_http_requests_total{status="error"}[5m]))
+            / sum(rate(gl_003_http_requests_total[5m])) > 5
+          for: 2m
+          labels:
+            severity: critical
+            component: api
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Error rate exceeds 5%"
+            description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes. This indicates a systemic failure."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-high-error-rate"
+
+        - alert: GL003DeterminismFailure
+          expr: |
+            100 * sum(rate(gl_003_analysis_requests_total{status="failure"}[5m]))
+            / sum(rate(gl_003_analysis_requests_total[5m])) > 1
+          for: 5m
+          labels:
+            severity: critical
+            component: determinism
+            team: greenlang-quality
+          annotations:
+            summary: "GL-003 Determinism failure rate exceeds 1%"
+            description: "Analysis failure rate is {{ $value | humanizePercentage }}. Zero-hallucination guarantee may be violated."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-determinism-failure"
+
+        - alert: GL003CriticalSteamLeak
+          expr: |
+            sum(gl_003_active_leaks_count{severity="critical"}) by (system_id) > 0
+          for: 1m
+          labels:
+            severity: critical
+            component: leak_detection
+            team: greenlang-ops
+          annotations:
+            summary: "Critical steam leak detected"
+            description: "System {{ $labels.system_id }} has {{ $value }} critical steam leaks detected"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-critical-leak"
+
+        - alert: GL003SteamTrapMassiveFailure
+          expr: |
+            100 * sum(gl_003_steam_trap_failed_count) by (system_id)
+            / (sum(gl_003_steam_trap_operational_count) by (system_id) + sum(gl_003_steam_trap_failed_count) by (system_id)) > 30
+          for: 5m
+          labels:
+            severity: critical
+            component: steam_traps
+            team: greenlang-ops
+          annotations:
+            summary: "Massive steam trap failure"
+            description: "System {{ $labels.system_id }} has {{ $value | humanizePercentage }} steam trap failure rate"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-trap-failure"
+
+        - alert: GL003DatabaseConnectionFailure
+          expr: gl_003_db_connection_pool_size == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: database
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Database connection pool exhausted"
+            description: "No available database connections. Application cannot persist data."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-db-failure"
+
+        - alert: GL003HighMemoryUsage
+          expr: |
+            (gl_003_system_memory_usage_bytes{type="rss"} / 1024 / 1024 / 1024) > 4
+          for: 5m
+          labels:
+            severity: critical
+            component: resources
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Memory usage critically high"
+            description: "Memory usage is {{ $value | humanize }}GB. Pod may be OOM killed."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-high-memory"
+
+        - alert: GL003AnalysisTimeout
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_003_analysis_duration_seconds_bucket[5m])) by (le, analysis_type)) > 10
+          for: 5m
+          labels:
+            severity: critical
+            component: analysis
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Analysis p95 latency exceeds 10s"
+            description: "Analysis type {{ $labels.analysis_type }} p95 latency is {{ $value | humanizeDuration }}. Timeout risk."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-timeout"
+
+        - alert: GL003LowDistributionEfficiency
+          expr: avg(gl_003_distribution_efficiency_percent) by (system_id) < 70
+          for: 15m
+          labels:
+            severity: critical
+            component: efficiency
+            team: greenlang-ops
+          annotations:
+            summary: "Steam distribution efficiency critically low"
+            description: "System {{ $labels.system_id }} distribution efficiency is {{ $value | humanizePercentage }}, below 70% critical threshold"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-low-efficiency"
+
+    # ===========================================================================
+    # WARNING ALERTS - Investigation Required
+    # ===========================================================================
+    - name: gl-003-warning-alerts
+      interval: 1m
+      rules:
+        - alert: GL003PerformanceDegradation
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_003_http_request_duration_seconds_bucket[5m])) by (le, endpoint))
+            / histogram_quantile(0.95, sum(rate(gl_003_http_request_duration_seconds_bucket[1h])) by (le, endpoint)) > 1.10
+          for: 5m
+          labels:
+            severity: warning
+            component: performance
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Performance degraded by >10%"
+            description: "Endpoint {{ $labels.endpoint }} p95 latency increased {{ $value | humanizePercentage }} compared to 1h baseline."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-performance-degradation"
+
+        - alert: GL003LowCacheHitRate
+          expr: |
+            100 * sum(rate(gl_003_cache_hits_total[5m]))
+            / (sum(rate(gl_003_cache_hits_total[5m])) + sum(rate(gl_003_cache_misses_total[5m]))) < 70
+          for: 10m
+          labels:
+            severity: warning
+            component: cache
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Cache hit rate below 70%"
+            description: "Cache hit rate is {{ $value | humanizePercentage }}. Performance may be impacted."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-low-cache-hit"
+
+        - alert: GL003HighCacheEvictionRate
+          expr: sum(rate(gl_003_cache_evictions_total[5m])) > 1
+          for: 5m
+          labels:
+            severity: warning
+            component: cache
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 High cache eviction rate"
+            description: "Cache eviction rate is {{ $value | humanize }} evictions/sec. Cache may be undersized."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-high-evictions"
+
+        - alert: GL003LowCondensateReturn
+          expr: avg(gl_003_condensate_return_percent) by (system_id) < 75
+          for: 15m
+          labels:
+            severity: warning
+            component: condensate
+            team: greenlang-ops
+          annotations:
+            summary: "Low condensate return rate"
+            description: "System {{ $labels.system_id }} condensate return is {{ $value | humanizePercentage }}, below 75% target"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-low-condensate"
+
+        - alert: GL003HighPipeHeatLoss
+          expr: sum(gl_003_pipe_heat_loss_kw) by (system_id) > 100
+          for: 10m
+          labels:
+            severity: warning
+            component: heat_loss
+            team: greenlang-ops
+          annotations:
+            summary: "High heat loss through piping"
+            description: "System {{ $labels.system_id }} pipe heat loss is {{ $value | humanize }} kW"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-heat-loss"
+
+        - alert: GL003ModerateSteamLeaks
+          expr: |
+            sum(gl_003_active_leaks_count{severity=~"moderate|major"}) by (system_id) > 3
+          for: 5m
+          labels:
+            severity: warning
+            component: leak_detection
+            team: greenlang-ops
+          annotations:
+            summary: "Multiple moderate/major steam leaks detected"
+            description: "System {{ $labels.system_id }} has {{ $value }} moderate or major leaks"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-moderate-leaks"
+
+        - alert: GL003HighSteamTrapFailureRate
+          expr: |
+            100 * sum(gl_003_steam_trap_failed_count) by (system_id)
+            / (sum(gl_003_steam_trap_operational_count) by (system_id) + sum(gl_003_steam_trap_failed_count) by (system_id)) > 15
+          for: 10m
+          labels:
+            severity: warning
+            component: steam_traps
+            team: greenlang-ops
+          annotations:
+            summary: "High steam trap failure rate"
+            description: "System {{ $labels.system_id }} has {{ $value | humanizePercentage }} steam trap failure rate"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-trap-failure-warning"
+
+        - alert: GL003HighDatabaseLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_003_db_query_duration_seconds_bucket[5m])) by (le, query_type)) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            component: database
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Database query latency high"
+            description: "Query type {{ $labels.query_type }} p95 latency is {{ $value | humanizeDuration }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-db-latency"
+
+        - alert: GL003ExternalAPILatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_003_external_api_duration_seconds_bucket[5m])) by (le, api_name)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: external-api
+            team: greenlang-ops
+          annotations:
+            summary: "External API latency high"
+            description: "API {{ $labels.api_name }} p95 latency is {{ $value | humanizeDuration }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-api-latency"
+
+        - alert: GL003HighCPUUsage
+          expr: gl_003_system_cpu_usage_percent > 80
+          for: 10m
+          labels:
+            severity: warning
+            component: resources
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 CPU usage high"
+            description: "CPU usage is {{ $value | humanizePercentage }}. Consider scaling horizontally."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-high-cpu"
+
+        - alert: GL003LowSteamQuality
+          expr: avg(gl_003_steam_quality_percent) by (system_id, location) < 95
+          for: 10m
+          labels:
+            severity: warning
+            component: steam_quality
+            team: greenlang-ops
+          annotations:
+            summary: "Low steam quality detected"
+            description: "System {{ $labels.system_id }} at {{ $labels.location }} has steam quality {{ $value | humanizePercentage }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-steam-quality"
+
+        - alert: GL003HighPressureDrop
+          expr: gl_003_pressure_drop_bar > 2
+          for: 10m
+          labels:
+            severity: warning
+            component: pressure
+            team: greenlang-ops
+          annotations:
+            summary: "High pressure drop in steam distribution"
+            description: "System {{ $labels.system_id }} segment {{ $labels.segment }} has {{ $value }} bar pressure drop"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-pressure-drop"
+
+    # ===========================================================================
+    # BUSINESS METRIC ALERTS
+    # ===========================================================================
+    - name: gl-003-business-alerts
+      interval: 5m
+      rules:
+        - alert: GL003LowCostSavings
+          expr: sum(gl_003_analysis_annual_savings_usd) < 100000
+          for: 1h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "GL-003 Cost savings below target"
+            description: "Annual cost savings projection is ${{ $value | humanize }}, below $100k target."
+            dashboard_url: "https://grafana.greenlang.io/d/gl-003-exec"
+
+        - alert: GL003LowEnergySavings
+          expr: sum(gl_003_analysis_annual_energy_savings_mwh) < 500
+          for: 1h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "GL-003 Energy savings below target"
+            description: "Annual energy savings projection is {{ $value | humanize }} MWh, below 500 MWh target."
+            dashboard_url: "https://grafana.greenlang.io/d/gl-003-exec"
+
+        - alert: GL003HighLeakCostImpact
+          expr: sum(gl_003_leak_cost_impact_usd_hr) by (system_id) > 100
+          for: 30m
+          labels:
+            severity: warning
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "High leak cost impact"
+            description: "System {{ $labels.system_id }} leak losses are ${{ $value | humanize }}/hour"
+            dashboard_url: "https://grafana.greenlang.io/d/gl-003-exec"
+
+    # ===========================================================================
+    # SLO ALERTS - Service Level Objectives
+    # ===========================================================================
+    - name: gl-003-slo-alerts
+      interval: 1m
+      rules:
+        - alert: GL003SLOAvailabilityViolation
+          expr: |
+            100 * avg_over_time(up{job="gl-003-steam-analyzer"}[30d]) < 99.9
+          for: 5m
+          labels:
+            severity: critical
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 SLO availability violation"
+            description: "30-day availability is {{ $value | humanizePercentage }}, below 99.9% SLO."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-slo-availability"
+
+        - alert: GL003SLOLatencyViolation
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_003_http_request_duration_seconds_bucket[1h])) by (le)) > 2
+          for: 10m
+          labels:
+            severity: warning
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 SLO latency violation"
+            description: "1h p95 latency is {{ $value | humanizeDuration }}, exceeds 2s SLO."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-slo-latency"
+
+        - alert: GL003SLOErrorRateBudgetExhausted
+          expr: |
+            100 * sum(increase(gl_003_http_requests_total{status="error"}[30d]))
+            / sum(increase(gl_003_http_requests_total[30d])) > 0.1
+          for: 1h
+          labels:
+            severity: critical
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-003 Error budget exhausted"
+            description: "30-day error rate is {{ $value | humanizePercentage }}, exceeds 0.1% error budget."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-error-budget"
+
+    # ===========================================================================
+    # QUALITY ALERTS - Data Quality & Determinism
+    # ===========================================================================
+    - name: gl-003-quality-alerts
+      interval: 1m
+      rules:
+        - alert: GL003CalculationInconsistency
+          expr: |
+            stddev_over_time(gl_003_analysis_efficiency_improvement_percent_sum[5m]) > 1
+          for: 5m
+          labels:
+            severity: warning
+            component: quality
+            team: greenlang-quality
+          annotations:
+            summary: "GL-003 Calculation inconsistency detected"
+            description: "Analysis results show high variance (stddev={{ $value }}), indicating non-deterministic behavior."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-inconsistency"
+
+        - alert: GL003LeakDetectionAccuracyDrop
+          expr: |
+            avg(gl_003_leak_detection_confidence_percent) by (system_id) < 85
+          for: 10m
+          labels:
+            severity: warning
+            component: quality
+            team: greenlang-quality
+          annotations:
+            summary: "Leak detection confidence low"
+            description: "System {{ $labels.system_id }} leak detection confidence is {{ $value | humanizePercentage }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-detection-accuracy"
+
+        - alert: GL003DistributionEfficiencyFluctuating
+          expr: |
+            changes(gl_003_distribution_efficiency_percent[10m]) > 5
+          for: 10m
+          labels:
+            severity: warning
+            component: quality
+            team: greenlang-ops
+          annotations:
+            summary: "Distribution efficiency fluctuating"
+            description: "System {{ $labels.system_id }} efficiency changed {{ $value }} times in 10 minutes"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-003-efficiency-fluctuation"

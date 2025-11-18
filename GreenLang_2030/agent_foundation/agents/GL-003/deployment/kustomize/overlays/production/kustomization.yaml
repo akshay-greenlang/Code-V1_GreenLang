@@ -1,0 +1,92 @@
+# GL-003 SteamSystemAnalyzer - Production Environment Overlay
+# Production-specific configuration with full HA and security
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-003-steam-system-analyzer-production
+
+# Base configuration
+bases:
+  - ../../base
+
+# Namespace override
+namespace: greenlang-prod
+
+# Common labels for production environment
+commonLabels:
+  environment: production
+
+# Common annotations
+commonAnnotations:
+  environment: production
+  auto-deploy: "false"
+  approval-required: "true"
+
+# Replicas override (full HA)
+replicas:
+  - name: gl-003-steam-system-analyzer
+    count: 3
+
+# Images override (use production tag)
+images:
+  - name: gcr.io/greenlang/gl-003-steam-system-analyzer
+    newTag: 1.0.0
+
+# Resource adjustments for production (full resources)
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-003-steam-system-analyzer
+      spec:
+        template:
+          spec:
+            containers:
+            - name: gl-003-steam-system-analyzer
+              resources:
+                requests:
+                  memory: "512Mi"
+                  cpu: "500m"
+                limits:
+                  memory: "1024Mi"
+                  cpu: "1000m"
+
+# ConfigMap patches (production-specific settings)
+configMapGenerator:
+  - name: gl-003-config
+    behavior: merge
+    literals:
+      - environment=production
+      - log_level=INFO
+      - enable_profiling=false
+      - enable_metrics=true
+      - enable_tracing=true
+
+# HPA adjustments (full scaling)
+patchesJson6902:
+  - target:
+      group: autoscaling
+      version: v2
+      kind: HorizontalPodAutoscaler
+      name: gl-003-steam-system-analyzer-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 10
+
+# PDB adjustments (stricter for production)
+  - target:
+      group: policy
+      version: v1
+      kind: PodDisruptionBudget
+      name: gl-003-steam-system-analyzer-pdb
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 2

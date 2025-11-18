@@ -1,0 +1,316 @@
+# GL-001 ProcessHeatOrchestrator - Pre-commit Configuration
+# Master Orchestrator - Multi-Plant Process Heat Operations
+# Automated code quality checks before every commit
+# Installation: pip install pre-commit && pre-commit install
+
+repos:
+  # ===========================================================================
+  # CODE FORMATTING
+  # ===========================================================================
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        name: Black Code Formatter
+        language_version: python3.11
+        args: ['--line-length=120']
+        exclude: ^(migrations/|vendor/|third_party/)
+
+  # ===========================================================================
+  # IMPORT SORTING
+  # ===========================================================================
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort Import Sorter
+        args: ['--profile', 'black', '--line-length=120']
+        exclude: ^(migrations/|vendor/)
+
+  # ===========================================================================
+  # LINTING
+  # ===========================================================================
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.2.1
+    hooks:
+      - id: ruff
+        name: Ruff Fast Linter
+        args: ['--fix', '--exit-non-zero-on-fix']
+        exclude: ^(migrations/|vendor/)
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        name: Flake8 Linter
+        args: ['--max-line-length=120', '--extend-ignore=E203,W503,E501']
+        additional_dependencies:
+          - flake8-docstrings
+          - flake8-bugbear
+          - flake8-comprehensions
+          - flake8-simplify
+        exclude: ^(migrations/|vendor/|tests/)
+
+  # ===========================================================================
+  # TYPE CHECKING
+  # ===========================================================================
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: MyPy Type Checker
+        args:
+          - '--ignore-missing-imports'
+          - '--no-implicit-optional'
+          - '--warn-redundant-casts'
+          - '--warn-unused-ignores'
+          - '--disallow-untyped-defs'
+          - '--check-untyped-defs'
+        additional_dependencies:
+          - types-requests
+          - types-redis
+          - types-PyYAML
+          - types-python-dateutil
+        exclude: ^(tests/|migrations/)
+
+  # ===========================================================================
+  # SECURITY SCANNING
+  # ===========================================================================
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        name: Bandit Security Scanner
+        args:
+          - '-ll'  # Low confidence, low severity
+          - '-i'   # Show ignored findings
+          - '-r'   # Recursive
+          - '--exclude'
+          - 'tests/,vendor/,migrations/'
+        exclude: ^(tests/|vendor/)
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: Detect Secrets
+        args:
+          - '--baseline'
+          - '.secrets.baseline'
+          - '--exclude-files'
+          - '^tests/.*'
+          - '--exclude-files'
+          - '.*\.lock$'
+        exclude: package.lock.json
+
+  # ===========================================================================
+  # DEPENDENCY SECURITY
+  # ===========================================================================
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.3
+    hooks:
+      - id: python-safety-dependencies-check
+        name: Safety Dependency Vulnerability Check
+        files: requirements.*\.txt$
+
+  # ===========================================================================
+  # GENERAL FILE CHECKS
+  # ===========================================================================
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+        exclude: ^(\.gitignore|\.dockerignore)
+
+      - id: end-of-file-fixer
+        name: Fix End of Files
+        exclude: ^(\.gitignore|\.dockerignore)
+
+      - id: check-yaml
+        name: Check YAML Syntax
+        args: ['--unsafe']  # Allow custom YAML tags
+        exclude: ^(deployment/kustomize/|helm/)
+
+      - id: check-json
+        name: Check JSON Syntax
+        exclude: ^(\.vscode/|tsconfig\.json)
+
+      - id: check-toml
+        name: Check TOML Syntax
+
+      - id: check-added-large-files
+        name: Check for Large Files
+        args: ['--maxkb=1000']
+        exclude: ^(docs/|sbom/)
+
+      - id: check-merge-conflict
+        name: Check for Merge Conflicts
+
+      - id: check-case-conflict
+        name: Check for Case Conflicts
+
+      - id: check-docstring-first
+        name: Check Docstring First
+        exclude: ^(tests/|migrations/)
+
+      - id: debug-statements
+        name: Check for Debug Statements
+        exclude: ^(tests/)
+
+      - id: mixed-line-ending
+        name: Check Mixed Line Endings
+        args: ['--fix=lf']
+
+      - id: check-ast
+        name: Check Python AST
+        exclude: ^(vendor/)
+
+      - id: check-builtin-literals
+        name: Check Builtin Literals
+
+      - id: check-executables-have-shebangs
+        name: Check Executables Have Shebangs
+
+      - id: fix-byte-order-marker
+        name: Fix UTF-8 Byte Order Marker
+
+      - id: name-tests-test
+        name: Ensure Tests Match Pattern
+        args: ['--pytest-test-first']
+        exclude: ^(tests/conftest\.py|tests/__init__\.py)
+
+  # ===========================================================================
+  # YAML LINTING
+  # ===========================================================================
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        name: YAML Linter
+        args:
+          - '-d'
+          - '{extends: default, rules: {line-length: {max: 120}, document-start: disable}}'
+        exclude: ^(deployment/kustomize/|helm/|vendor/)
+
+  # ===========================================================================
+  # DOCKERFILE LINTING
+  # ===========================================================================
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        name: Hadolint Dockerfile Linter
+        args:
+          - '--ignore'
+          - 'DL3008'  # Pin versions in apt-get
+          - '--ignore'
+          - 'DL3013'  # Pin versions in pip
+          - '--ignore'
+          - 'DL3018'  # Pin versions in apk
+
+  # ===========================================================================
+  # MARKDOWN LINTING
+  # ===========================================================================
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        name: Markdown Linter
+        args: ['--fix']
+        exclude: ^(CHANGELOG\.md|vendor/)
+
+  # ===========================================================================
+  # PYTHON DOCSTRING VALIDATION
+  # ===========================================================================
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        name: Pydocstyle Docstring Checker
+        args:
+          - '--convention=google'
+          - '--add-ignore=D100,D104,D105,D107'
+        exclude: ^(tests/|migrations/|vendor/)
+
+  # ===========================================================================
+  # REQUIREMENTS.TXT SORTING
+  # ===========================================================================
+  - repo: https://github.com/pre-commit/mirrors-pip-compile
+    rev: 7.4.0
+    hooks:
+      - id: pip-compile
+        name: Pip-compile Requirements
+        files: ^requirements\.in$
+        args: ['requirements.in', '--output-file=requirements.txt']
+
+  # ===========================================================================
+  # COMMIT MESSAGE VALIDATION
+  # ===========================================================================
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: 3.13.0
+    hooks:
+      - id: commitizen
+        name: Commitizen Check
+        stages: [commit-msg]
+
+  # ===========================================================================
+  # PYTHON COMPLEXITY CHECK
+  # ===========================================================================
+  - repo: https://github.com/PyCQA/mccabe
+    rev: 0.7.0
+    hooks:
+      - id: mccabe
+        name: McCabe Complexity Check
+        args: ['--min-complexity=10']
+        exclude: ^(tests/|migrations/)
+
+  # ===========================================================================
+  # SHELL SCRIPT LINTING
+  # ===========================================================================
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        name: ShellCheck Script Linter
+        args: ['--severity=warning']
+
+# ==============================================================================
+# GLOBAL SETTINGS
+# ==============================================================================
+default_language_version:
+  python: python3.11
+
+default_stages: [commit]
+
+fail_fast: false
+
+minimum_pre_commit_version: '2.20.0'
+
+# Exclude patterns (global)
+exclude: |
+  (?x)^(
+    migrations/.*|
+    vendor/.*|
+    third_party/.*|
+    \.git/.*|
+    \.venv/.*|
+    venv/.*|
+    build/.*|
+    dist/.*|
+    .*\.egg-info/.*|
+    __pycache__/.*|
+    \.pytest_cache/.*|
+    \.mypy_cache/.*|
+    \.ruff_cache/.*
+  )$
+
+# CI mode settings (for GitHub Actions, GitLab CI, etc.)
+ci:
+  autofix_commit_msg: 'chore: auto-fix pre-commit hooks'
+  autofix_prs: true
+  autoupdate_commit_msg: 'chore: update pre-commit hooks'
+  autoupdate_schedule: weekly
+  skip:
+    - pip-compile  # Skip in CI to avoid dependency changes
+    - python-safety-dependencies-check  # Can be slow in CI

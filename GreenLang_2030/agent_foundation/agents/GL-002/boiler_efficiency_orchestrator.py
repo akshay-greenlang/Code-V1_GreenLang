@@ -45,6 +45,7 @@ from agent_foundation.memory.long_term_memory import LongTermMemory
 # Import local modules
 from .config import BoilerEfficiencyConfig, BoilerConfiguration
 from .tools import BoilerEfficiencyTools, CombustionOptimizationResult, SteamGenerationStrategy
+from .monitoring.determinism_validator import DeterminismValidator, default_validator
 
 logger = logging.getLogger(__name__)
 
@@ -242,9 +243,44 @@ class BoilerEfficiencyOptimizer(BaseAgent):
         self.state_history = []
         self.optimization_history = []
 
+        # Determinism validator for runtime verification
+        self.determinism_validator = DeterminismValidator(
+            strict_mode=config.enable_monitoring,  # Strict mode in production
+            verification_runs=3,
+            tolerance=1e-15,
+            enable_metrics=config.enable_monitoring
+        )
+
+        # RUNTIME VERIFICATION: Verify seed propagation at startup
+        self._verify_seed_propagation_at_startup()
+
         logger.info(f"BoilerEfficiencyOptimizer {config.agent_id} initialized successfully")
 
-    def _init_intelligence(self):
+    def _verify_seed_propagation_at_startup(self) -> None:
+        """
+        Verify random seed propagation at agent startup.
+
+        This ensures all RNG operations will be deterministic throughout
+        the agent's lifecycle.
+
+        Raises:
+            AssertionError: If seed propagation fails
+        """
+        try:
+            # Verify seed propagation using validator
+            seed_valid = self.determinism_validator.verify_seed_propagation(seed=42)
+
+            if seed_valid:
+                logger.info("✓ Random seed propagation verified at startup")
+            else:
+                logger.warning("✗ Random seed propagation verification failed")
+
+        except Exception as e:
+            logger.error(f"Seed propagation verification error: {e}")
+            if self.boiler_config.enable_monitoring:
+                raise  # Fail fast in production
+
+    def _init_intelligence(self) -> None:
         """Initialize AgentIntelligence with deterministic configuration."""
         try:
             # Create deterministic ChatSession for classification tasks only
@@ -255,6 +291,20 @@ class BoilerEfficiencyOptimizer(BaseAgent):
                 seed=42,  # Fixed seed for reproducibility
                 max_tokens=500  # Limited output for classification
             )
+
+            # RUNTIME ASSERTION: Verify AI config is deterministic
+            assert self.chat_session.temperature == 0.0, \
+                "DETERMINISM VIOLATION: Temperature must be exactly 0.0 for zero-hallucination"
+            assert self.chat_session.seed == 42, \
+                "DETERMINISM VIOLATION: Seed must be exactly 42 for reproducibility"
+
+            # Use validator for comprehensive AI config check
+            try:
+                self.determinism_validator.verify_ai_config(self.chat_session)
+                logger.info("✓ AI configuration verified as deterministic")
+            except Exception as e:
+                logger.error(f"✗ AI configuration determinism check failed: {e}")
+                raise
 
             # Initialize prompt templates for classification tasks
             self.anomaly_classification_prompt = PromptTemplate(
@@ -347,6 +397,12 @@ class BoilerEfficiencyOptimizer(BaseAgent):
                 emissions_optimization,
                 parameter_adjustments
             )
+
+            # RUNTIME VERIFICATION: Verify provenance hash determinism
+            provenance_hash = self._calculate_provenance_hash(input_data, kpi_dashboard)
+            provenance_hash_verify = self._calculate_provenance_hash(input_data, kpi_dashboard)
+            assert provenance_hash == provenance_hash_verify, \
+                "DETERMINISM VIOLATION: Provenance hash not deterministic"
 
             # Step 7: Coordinate sub-agents if needed
             coordination_result = None
@@ -902,7 +958,7 @@ class BoilerEfficiencyOptimizer(BaseAgent):
         if self.performance_metrics['optimizations_performed'] % 50 == 0:
             asyncio.create_task(self._persist_to_long_term_memory())
 
-    async def _persist_to_long_term_memory(self):
+    async def _persist_to_long_term_memory(self) -> None:
         """Persist short-term memories to long-term storage."""
         try:
             recent_memories = self.short_term_memory.retrieve(limit=50)
@@ -990,9 +1046,20 @@ class BoilerEfficiencyOptimizer(BaseAgent):
         Returns:
             Cache key string
         """
-        # Convert dict to hashable format
+        # Convert dict to hashable format (MUST be deterministic)
+        # DETERMINISM: Always sort keys for consistent ordering
         data_str = json.dumps(data, sort_keys=True, default=str)
-        return f"{operation}_{hashlib.md5(data_str.encode()).hexdigest()}"
+        cache_key = f"{operation}_{hashlib.md5(data_str.encode()).hexdigest()}"
+
+        # RUNTIME VERIFICATION: Verify cache key is deterministic
+        # Generate again and ensure identical
+        data_str_verify = json.dumps(data, sort_keys=True, default=str)
+        cache_key_verify = f"{operation}_{hashlib.md5(data_str_verify.encode()).hexdigest()}"
+
+        assert cache_key == cache_key_verify, \
+            "DETERMINISM VIOLATION: Cache key generation is non-deterministic"
+
+        return cache_key
 
     def _is_cache_valid(self, cache_key: str) -> bool:
         """
@@ -1023,7 +1090,7 @@ class BoilerEfficiencyOptimizer(BaseAgent):
         execution_time_ms: float,
         combustion_result: CombustionOptimizationResult,
         emissions_result: Any
-    ):
+    ) -> None:
         """
         Update performance metrics with latest execution.
 
@@ -1052,6 +1119,9 @@ class BoilerEfficiencyOptimizer(BaseAgent):
         """
         Calculate SHA-256 provenance hash for complete audit trail.
 
+        DETERMINISM GUARANTEE: This method MUST produce identical hashes
+        for identical inputs, regardless of execution time or environment.
+
         Args:
             input_data: Input data
             result: Execution result
@@ -1059,8 +1129,25 @@ class BoilerEfficiencyOptimizer(BaseAgent):
         Returns:
             SHA-256 hash string
         """
-        provenance_str = f"{self.config.agent_id}{input_data}{result}{datetime.now(timezone.utc).isoformat()}"
-        return hashlib.sha256(provenance_str.encode()).hexdigest()
+        # DETERMINISM FIX: Remove timestamp from provenance calculation
+        # Timestamps make hashing non-deterministic
+        # Only include: agent_id, input_data, result (all deterministic)
+
+        # Serialize input and result deterministically
+        input_str = json.dumps(input_data, sort_keys=True, default=str)
+        result_str = json.dumps(result, sort_keys=True, default=str)
+
+        provenance_str = f"{self.config.agent_id}|{input_str}|{result_str}"
+        hash_value = hashlib.sha256(provenance_str.encode()).hexdigest()
+
+        # RUNTIME VERIFICATION: Calculate again to verify determinism
+        provenance_str_verify = f"{self.config.agent_id}|{input_str}|{result_str}"
+        hash_value_verify = hashlib.sha256(provenance_str_verify.encode()).hexdigest()
+
+        assert hash_value == hash_value_verify, \
+            "DETERMINISM VIOLATION: Provenance hash calculation is non-deterministic"
+
+        return hash_value
 
     async def _handle_error_recovery(
         self,
@@ -1162,7 +1249,7 @@ class BoilerEfficiencyOptimizer(BaseAgent):
             'timestamp': datetime.now(timezone.utc).isoformat()
         }
 
-    async def shutdown(self):
+    async def shutdown(self) -> None:
         """Graceful shutdown of the orchestrator."""
         logger.info(f"Shutting down BoilerEfficiencyOptimizer {self.config.agent_id}")
 

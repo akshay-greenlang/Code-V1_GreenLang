@@ -1,0 +1,52 @@
+# GL-003 SteamSystemAnalyzer - ConfigMap
+# Non-sensitive configuration data
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-003-config
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+    version: "1.0.0"
+
+data:
+  # Environment configuration
+  environment: "production"
+
+  # Logging configuration
+  log_level: "INFO"
+  log_format: "json"
+
+  # Application configuration
+  app_name: "GL-003-SteamSystemAnalyzer"
+  app_version: "1.0.0"
+
+  # API configuration
+  api_version: "v1"
+  api_prefix: "/api/v1"
+
+  # Feature flags
+  enable_metrics: "true"
+  enable_tracing: "true"
+  enable_profiling: "false"
+
+  # Performance tuning
+  worker_count: "4"
+  max_connections: "1000"
+  timeout_seconds: "30"
+
+  # Cache configuration
+  cache_ttl: "3600"
+  cache_max_size: "1000"
+
+  # Rate limiting
+  rate_limit_per_minute: "100"
+  rate_limit_burst: "20"
+
+  # Steam system specific settings
+  steam_analysis_interval: "300"
+  pressure_threshold_psi: "150"
+  temperature_threshold_f: "350"
+  efficiency_target_percent: "85"

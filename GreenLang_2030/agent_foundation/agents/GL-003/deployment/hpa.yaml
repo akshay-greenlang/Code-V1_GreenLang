@@ -1,0 +1,120 @@
+# GL-003 SteamSystemAnalyzer - Horizontal Pod Autoscaler
+# Automatically scales pods based on CPU and memory utilization
+# Maintains 3-10 pods, scales at 70% CPU or 80% memory
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-003-steam-system-analyzer-hpa
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+    version: "1.0.0"
+  annotations:
+    description: "Horizontal Pod Autoscaler for GL-003"
+
+spec:
+  # Target the GL-003 deployment
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-003-steam-system-analyzer
+
+  # Min and max replicas
+  minReplicas: 3   # Maintain minimum 3 pods for HA
+  maxReplicas: 10  # Scale up to max 10 pods
+
+  # Metrics for scaling decisions
+  metrics:
+    # Scale on CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # Target 70% average CPU
+
+    # Scale on memory utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # Target 80% average memory
+
+  # Scaling behavior (fine-tune for stability)
+  behavior:
+    # Scale up aggressively
+    scaleUp:
+      stabilizationWindowSeconds: 30   # Wait 30s before next scale-up
+      policies:
+        - type: Percent
+          value: 100                    # Double the pods
+          periodSeconds: 30
+        - type: Pods
+          value: 2                      # Or add 2 pods
+          periodSeconds: 60
+      selectPolicy: Max                 # Use whichever scales up more
+
+    # Scale down conservatively
+    scaleDown:
+      stabilizationWindowSeconds: 300   # Wait 5 minutes before scale-down
+      policies:
+        - type: Percent
+          value: 50                     # Reduce by 50%
+          periodSeconds: 60
+        - type: Pods
+          value: 1                      # Or remove 1 pod
+          periodSeconds: 120
+      selectPolicy: Min                 # Use whichever scales down less
+
+---
+# Example: Vertical Pod Autoscaler (VPA) for resource optimization
+# Install: kubectl apply -f https://github.com/kubernetes/autoscaler/releases/download/vertical-pod-autoscaler-0.14.0/vpa-v0.14.0.yaml
+#
+# apiVersion: autoscaling.k8s.io/v1
+# kind: VerticalPodAutoscaler
+# metadata:
+#   name: gl-003-steam-system-analyzer-vpa
+#   namespace: greenlang
+# spec:
+#   targetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: gl-003-steam-system-analyzer
+#   updatePolicy:
+#     updateMode: "Auto"
+#   resourcePolicy:
+#     containerPolicies:
+#       - containerName: gl-003-steam-system-analyzer
+#         minAllowed:
+#           memory: "256Mi"
+#           cpu: "250m"
+#         maxAllowed:
+#           memory: "2Gi"
+#           cpu: "2000m"
+
+---
+# Scaling policy template - Monitor and adjust based on actual usage
+# Common patterns:
+#
+# High-traffic pattern (scale up quickly, down slowly):
+#   - Use with web/API services
+#   - scaleUp: 100% every 30s
+#   - scaleDown: 50% every 5 minutes
+#
+# Batch processing pattern (scale down quickly after burst):
+#   - Use with background jobs
+#   - scaleUp: 200% every 30s
+#   - scaleDown: 50% every 2 minutes
+#
+# Stable pattern (conservative scaling):
+#   - Use with real-time services
+#   - scaleUp: 50% every 60s
+#   - scaleDown: 25% every 10 minutes
+#
+# For GL-003, we use "Stable pattern" because:
+# 1. Real-time steam system optimization requires consistency
+# 2. Cold starts should be avoided (warmup time)
+# 3. Load fluctuations are gradual, not spiky

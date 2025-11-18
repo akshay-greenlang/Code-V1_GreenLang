@@ -1,0 +1,253 @@
+{
+  "kind": "greenlang-run-ledger",
+  "version": "1.0.0",
+  "execution": {
+    "backend": "kubernetes",
+    "environment": {
+      "namespace": "greenlang",
+      "deployment": "gl-002-boiler-efficiency",
+      "pod_name": "${POD_NAME}",
+      "node_name": "${NODE_NAME}",
+      "cluster": "${KUBERNETES_CLUSTER}"
+    },
+    "profile": "production"
+  },
+  "metadata": {
+    "agent_id": "GL-002",
+    "agent_name": "BoilerEfficiencyOptimizer",
+    "agent_version": "1.0.0",
+    "pack_version": "1.0.0",
+    "pipeline_name": "boiler-efficiency-optimization",
+    "pipeline_version": "1",
+    "started_at": "${EXECUTION_START_TIMESTAMP}",
+    "finished_at": "${EXECUTION_END_TIMESTAMP}",
+    "duration_seconds": "${EXECUTION_DURATION_SECONDS}",
+    "duration_ms": "${EXECUTION_DURATION_MS}",
+    "status": "success",
+    "execution_id": "${EXECUTION_UUID}",
+    "parent_execution_id": null,
+    "retry_count": 0
+  },
+  "spec": {
+    "pipeline_hash": "${PIPELINE_CONFIG_SHA256}",
+    "config_hash": "${AGENT_CONFIG_SHA256}",
+    "inputs_hash": "${INPUT_DATA_SHA256}",
+    "ledger_hash": "${COMPLETE_LEDGER_SHA256}",
+    "sbom_ref": "sbom/SBOM_SPDX.json",
+    "versions": {
+      "agent_version": "1.0.0",
+      "pack_version": "1.0.0",
+      "greenlang_version": "1.0.0",
+      "python_version": "3.11",
+      "kubernetes_version": "1.24+"
+    },
+    "signatures": [],
+    "artifacts": {
+      "optimization_results": "outputs/optimization_results.json",
+      "provenance_record": "outputs/provenance_record.json",
+      "calculation_audit_trail": "outputs/calculation_audit_trail.json",
+      "efficiency_metrics": "outputs/efficiency_metrics.json",
+      "emissions_compliance_report": "outputs/emissions_compliance.json"
+    },
+    "artifacts_list": [
+      "optimization_results.json",
+      "provenance_record.json",
+      "calculation_audit_trail.json",
+      "efficiency_metrics.json",
+      "emissions_compliance.json"
+    ]
+  },
+  "inputs": {
+    "sensor_data": {
+      "timestamp": "${SENSOR_DATA_TIMESTAMP}",
+      "fuel_flow_rate_kg_hr": 0.0,
+      "combustion_air_temp_c": 0.0,
+      "flue_gas_temp_c": 0.0,
+      "steam_flow_rate_kg_hr": 0.0,
+      "feedwater_temp_c": 0.0,
+      "pressure_bar": 0.0,
+      "o2_percent": 0.0,
+      "co2_percent": 0.0,
+      "co_ppm": 0.0,
+      "nox_ppm": 0.0,
+      "tds_ppm": 0.0,
+      "steam_quality": 0.0
+    },
+    "operational_request": {
+      "steam_demand_kg_hr": 0.0,
+      "pressure_setpoint_bar": 0.0,
+      "temperature_setpoint_c": 0.0,
+      "priority": "balanced"
+    },
+    "boiler_metadata": {
+      "site_id": "${SITE_ID}",
+      "plant_id": "${PLANT_ID}",
+      "boiler_id": "${BOILER_ID}",
+      "fuel_type": "natural_gas",
+      "steam_capacity_kg_hr": 0.0
+    }
+  },
+  "outputs": {
+    "optimization_status": {
+      "system_status": "nominal",
+      "timestamp": "${OUTPUT_TIMESTAMP}"
+    },
+    "efficiency_improvement_percent": 0.0,
+    "fuel_savings_usd_hr": 0.0,
+    "emissions_reduction_kg_hr": 0.0,
+    "recommendations_count": 0,
+    "compliance_status": "compliant"
+  },
+  "metrics": {
+    "execution_time_ms": 0,
+    "pipeline_steps_executed": 0,
+    "tool_calls_total": 0,
+    "calculation_count": 0,
+    "api_calls": 0,
+    "memory_usage_mb": 0,
+    "cpu_usage_percent": 0,
+    "network_bytes_sent": 0,
+    "network_bytes_received": 0
+  },
+  "steps": [
+    {
+      "step_number": 1,
+      "step_name": "validate-sensor-data",
+      "started_at": "${STEP_1_START}",
+      "finished_at": "${STEP_1_END}",
+      "duration_ms": 0,
+      "status": "success",
+      "outputs": {
+        "validation_status": "valid",
+        "errors": [],
+        "warnings": []
+      }
+    },
+    {
+      "step_number": 2,
+      "step_name": "calculate-efficiency",
+      "started_at": "${STEP_2_START}",
+      "finished_at": "${STEP_2_END}",
+      "duration_ms": 0,
+      "status": "success",
+      "outputs": {
+        "current_efficiency_percent": 0.0,
+        "improvement_potential_percent": 0.0
+      }
+    },
+    {
+      "step_number": 3,
+      "step_name": "optimize-combustion",
+      "started_at": "${STEP_3_START}",
+      "finished_at": "${STEP_3_END}",
+      "duration_ms": 0,
+      "status": "success",
+      "outputs": {
+        "fuel_savings_usd_hr": 0.0
+      }
+    },
+    {
+      "step_number": 4,
+      "step_name": "check-emissions",
+      "started_at": "${STEP_4_START}",
+      "finished_at": "${STEP_4_END}",
+      "duration_ms": 0,
+      "status": "success",
+      "outputs": {
+        "compliance_status": "compliant"
+      }
+    },
+    {
+      "step_number": 5,
+      "step_name": "optimize-steam",
+      "started_at": "${STEP_5_START}",
+      "finished_at": "${STEP_5_END}",
+      "duration_ms": 0,
+      "status": "success",
+      "outputs": {
+        "efficiency_gain_percent": 0.0
+      }
+    },
+    {
+      "step_number": 6,
+      "step_name": "analyze-heat-transfer",
+      "started_at": "${STEP_6_START}",
+      "finished_at": "${STEP_6_END}",
+      "duration_ms": 0,
+      "status": "success",
+      "outputs": {}
+    },
+    {
+      "step_number": 7,
+      "step_name": "analyze-economizer",
+      "started_at": "${STEP_7_START}",
+      "finished_at": "${STEP_7_END}",
+      "duration_ms": 0,
+      "status": "success",
+      "outputs": {}
+    },
+    {
+      "step_number": 8,
+      "step_name": "generate-recommendations",
+      "started_at": "${STEP_8_START}",
+      "finished_at": "${STEP_8_END}",
+      "duration_ms": 0,
+      "status": "success",
+      "outputs": {
+        "recommendations_count": 0
+      }
+    }
+  ],
+  "provenance": {
+    "calculation_hashes": [],
+    "tool_calls": [],
+    "data_sources": [
+      "SCADA/DCS sensor data",
+      "GHG Protocol emission factors",
+      "ASME PTC 4.1 coefficients"
+    ],
+    "standards_applied": [
+      "ASME PTC 4.1",
+      "EPA Method 19",
+      "ISO 50001"
+    ],
+    "confidence_level": 0.0,
+    "determinism_verified": true,
+    "reproducibility_hash": "${REPRODUCIBILITY_HASH}"
+  },
+  "errors": [],
+  "warnings": [],
+  "alerts": [],
+  "compliance": {
+    "asme_ptc_4_1_compliant": true,
+    "epa_compliant": true,
+    "iso_50001_compliant": true,
+    "violations": []
+  },
+  "performance": {
+    "target_execution_time_ms": 500,
+    "actual_execution_time_ms": 0,
+    "performance_ratio": 0.0,
+    "bottleneck_step": null,
+    "optimization_achieved": true
+  },
+  "environment": {
+    "kubernetes_namespace": "greenlang",
+    "pod_ip": "${POD_IP}",
+    "service_name": "gl-002-boiler-efficiency",
+    "replica_id": "${REPLICA_ID}",
+    "build_commit": "${GIT_COMMIT_SHA}",
+    "build_number": "${BUILD_NUMBER}",
+    "deployment_timestamp": "${DEPLOYMENT_TIMESTAMP}"
+  },
+  "audit": {
+    "created_by": "GL-002 BoilerEfficiencyOptimizer",
+    "created_at": "${LEDGER_CREATION_TIMESTAMP}",
+    "ledger_version": "1.0.0",
+    "schema_version": "1.0",
+    "retention_period_days": 2555,
+    "immutable": true,
+    "signed": false,
+    "archived": false
+  }
+}

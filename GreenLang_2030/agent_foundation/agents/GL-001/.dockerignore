@@ -1,0 +1,369 @@
+# GL-001 ProcessHeatOrchestrator - Docker Build Exclusions
+# Minimize Docker image size and build time
+# Exclude development, testing, and sensitive files
+
+# ============================================================================
+# VERSION CONTROL
+# ============================================================================
+.git/
+.gitignore
+.gitattributes
+.github/
+.gitlab-ci.yml
+
+# ============================================================================
+# DOCUMENTATION
+# ============================================================================
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENSE
+docs/
+*.md
+
+# Keep deployment documentation
+!DEPLOYMENT_GUIDE.md
+!RUNBOOK.md
+
+# ============================================================================
+# DEVELOPMENT & TESTING
+# ============================================================================
+# Test files
+tests/
+test_*.py
+*_test.py
+conftest.py
+pytest.ini
+.pytest_cache/
+.coverage
+.coveragerc
+htmlcov/
+coverage.xml
+junit.xml
+test-results/
+
+# Test data
+test_data/
+mock_data/
+fixtures/
+
+# Benchmarking
+benchmarks/
+*.benchmark
+
+# ============================================================================
+# IDE AND EDITOR FILES
+# ============================================================================
+.vscode/
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+.project
+.pydevproject
+.settings/
+*.swp
+*.swo
+*~
+
+# ============================================================================
+# PYTHON DEVELOPMENT
+# ============================================================================
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+virtualenv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.pytype/
+.pyre/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+# ============================================================================
+# SECRETS & CREDENTIALS (CRITICAL)
+# ============================================================================
+.env
+.env.*
+!.env.template
+*.pem
+*.key
+*.cert
+*.crt
+credentials.json
+credentials.yaml
+secrets.json
+secrets.yaml
+*secret*
+*credential*
+*password*
+*.token
+
+# SCADA certificates
+scada/certificates/
+scada/*.pem
+scada/*.key
+
+# ERP credentials
+erp_credentials/
+erp_config/*.secret
+
+# ============================================================================
+# LOGS AND TEMPORARY FILES
+# ============================================================================
+*.log
+logs/
+*.tmp
+*.temp
+temp/
+tmp/
+*.bak
+*.backup
+
+# Application logs
+gl001.log
+orchestrator.log
+coordination/*.log
+sub-agents/*.log
+
+# ============================================================================
+# DATA FILES (EXCLUDE FROM IMAGE)
+# ============================================================================
+*.csv
+*.parquet
+*.h5
+*.hdf5
+*.feather
+*.db
+*.sqlite
+
+# SCADA sensor data
+scada_data/
+sensor_exports/
+timeseries_data/
+
+# ERP data exports
+erp_exports/
+sap_exports/
+oracle_exports/
+
+# Optimization results
+optimization_results/
+*.optimization
+
+# Plant operational data
+plant_data/
+operational_data/
+
+# ============================================================================
+# MONITORING & METRICS DATA
+# ============================================================================
+prometheus_data/
+metrics_data/
+grafana/provisioning/dashboards/*.json
+
+# Performance profiles
+*.prof
+*.pprof
+*.profile
+profiling/
+
+# ============================================================================
+# BUILD ARTIFACTS & CACHE
+# ============================================================================
+.cache/
+*.cache
+node_modules/
+package-lock.json
+yarn.lock
+
+# ============================================================================
+# BACKUP FILES
+# ============================================================================
+backup/
+backups/
+*.sql.gz
+*.dump
+db_backups/
+postgres_backups/
+timescaledb_backups/
+
+# ============================================================================
+# SBOM (BUILD SEPARATELY)
+# ============================================================================
+sbom/
+*.spdx
+*.cdx.json
+cyclonedx-*.json
+spdx-*.json
+
+# ============================================================================
+# COMPLIANCE & AUDIT (SENSITIVE DATA)
+# ============================================================================
+audit/
+audit_logs/
+audit_trail/
+compliance_reports/
+emission_reports/
+
+# ============================================================================
+# INFRASTRUCTURE AS CODE
+# ============================================================================
+# Terraform
+terraform/
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Kubernetes development files
+kustomization.yaml.tmp
+*.yaml.bak
+
+# Docker Compose (development only)
+docker-compose.yml
+docker-compose.*.yml
+!docker-compose.production.yml
+
+# ============================================================================
+# CI/CD
+# ============================================================================
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+azure-pipelines.yml
+Jenkinsfile
+
+# ============================================================================
+# CODE QUALITY TOOLS (NOT NEEDED AT RUNTIME)
+# ============================================================================
+.pre-commit-config.yaml
+.flake8
+.pylintrc
+.bandit
+mypy.ini
+.ruff.toml
+.black.toml
+.isort.cfg
+
+# Security scan reports
+bandit-report.*
+safety-report.*
+pip-audit-report.*
+trivy-report.*
+snyk-report.*
+
+# ============================================================================
+# DEPLOYMENT SCRIPTS (HANDLED SEPARATELY)
+# ============================================================================
+deployment/scripts/
+deployment/kustomize/
+deployment/*.sh
+scripts/deploy*.sh
+scripts/rollback*.sh
+
+# ============================================================================
+# EXAMPLES & SAMPLES
+# ============================================================================
+examples/
+samples/
+demo/
+
+# ============================================================================
+# MACHINE LEARNING MODELS (BUILD SEPARATELY IF NEEDED)
+# ============================================================================
+models/
+*.pkl
+*.pickle
+*.h5
+*.onnx
+*.pt
+*.pth
+*.pb
+
+# ============================================================================
+# SCREENSHOTS & MEDIA
+# ============================================================================
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# ============================================================================
+# OPERATING SYSTEM FILES
+# ============================================================================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ============================================================================
+# RUNTIME DATA (NOT NEEDED IN IMAGE)
+# ============================================================================
+*.pid
+*.seed
+*.pid.lock
+pids/
+*.sock
+
+# Core dumps
+core
+core.*
+
+# ============================================================================
+# DEVELOPMENT REQUIREMENTS (EXCLUDE FROM PRODUCTION IMAGE)
+# ============================================================================
+requirements-dev.txt
+requirements.test.txt
+
+# Keep production requirements
+!requirements.txt
+
+# ============================================================================
+# INTEGRATION TEST MOCKS
+# ============================================================================
+tests/integration/mock_servers.py
+tests/integration/mock_scada.py
+tests/integration/mock_erp.py
+
+# ============================================================================
+# ANALYSIS & PROFILING
+# ============================================================================
+analysis/
+*.hprof
+*.dump
+memory-profiler/
+line-profiler/
+
+# ============================================================================
+# ALLOWED FILES (EXPLICITLY INCLUDED IN BUILD)
+# ============================================================================
+# Application code (included by default)
+# *.py files in src directories
+
+# Configuration templates
+!.env.template
+
+# Production deployment files
+!deployment/deployment.yaml
+!deployment/service.yaml
+!deployment/hpa.yaml
+
+# Required documentation
+!RUNBOOK.md

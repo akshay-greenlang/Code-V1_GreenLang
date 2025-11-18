@@ -1,0 +1,359 @@
+groups:
+  - name: gl_002_determinism_alerts
+    interval: 30s
+    rules:
+      # ======================================================================
+      # CRITICAL ALERTS (PagerDuty)
+      # ======================================================================
+
+      - alert: DeterminismScoreBelow100
+        expr: gl_002_determinism_score_percent < 100
+        for: 5m
+        labels:
+          severity: critical
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "GL-002 Determinism Score Below 100%"
+          description: |
+            Determinism score dropped below 100% for GL-002 BoilerEfficiencyOptimizer.
+            Current score: {{ $value }}%
+            Target: 100%
+
+            IMMEDIATE ACTION REQUIRED:
+            1. Check Grafana dashboard: http://grafana:3000/d/gl-002-determinism
+            2. Review recent violations: kubectl logs -l app=gl-002 | grep "DETERMINISM VIOLATION"
+            3. Run determinism audit: python run_determinism_audit.py
+            4. Investigate root cause and fix ASAP
+
+            This is a CRITICAL issue affecting calculation reproducibility.
+
+      - alert: UnseededRandomOperationDetected
+        expr: increase(gl_002_unseeded_random_operations_detected_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Unseeded Random Operation Detected in GL-002"
+          description: |
+            Unseeded random operations detected in GL-002 calculations.
+            Operation type: {{ $labels.operation_type }}
+            Count (last 5m): {{ $value }}
+
+            DETERMINISM VIOLATION - IMMEDIATE ACTION REQUIRED:
+            This indicates non-deterministic behavior in calculations.
+
+            Steps:
+            1. Identify affected calculation: grep "{{ $labels.operation_type }}" code/
+            2. Add seed: random.seed(42) or np.random.seed(42)
+            3. Re-run determinism tests
+            4. Deploy fix immediately
+
+      - alert: ProvenanceHashVerificationFailure
+        expr: increase(gl_002_provenance_hash_verifications_total{status="failure"}[5m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Provenance Hash Verification Failed"
+          description: |
+            Provenance hash verification failed for GL-002.
+            Failures (last 5m): {{ $value }}
+
+            AUDIT TRAIL COMPROMISED - IMMEDIATE ACTION REQUIRED:
+            This indicates calculations are not reproducible.
+
+            Steps:
+            1. Check logs: kubectl logs -l app=gl-002 | grep "provenance_hash"
+            2. Verify hash calculation: python -m debugger hash_calculation.py
+            3. Check for timestamp contamination in hash
+            4. Review recent code changes
+
+      - alert: AIConfigDeterminismViolation
+        expr: increase(gl_002_ai_config_determinism_checks_total{status="violation"}[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "AI Configuration Violates Determinism Requirements"
+          description: |
+            AI configuration does not meet determinism requirements.
+            Violations (last 5m): {{ $value }}
+
+            ZERO-HALLUCINATION VIOLATION:
+            Required: temperature=0.0, seed=42
+            Current: VIOLATION DETECTED
+
+            Steps:
+            1. Check AI config: kubectl exec -it gl-002-pod -- cat config/ai_config.yaml
+            2. Verify temperature=0.0 and seed=42
+            3. Restart agent with correct configuration
+            4. Monitor for recurrence
+
+      - alert: GoldenTestFailure
+        expr: increase(gl_002_golden_test_results_total{status="fail"}[1h]) > 0
+        for: 5m
+        labels:
+          severity: critical
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Golden Test Failed for GL-002"
+          description: |
+            Golden test failed: {{ $labels.test_name }}
+            Failures (last 1h): {{ $value }}
+
+            REPRODUCIBILITY COMPROMISED:
+            Golden tests ensure bit-perfect reproducibility.
+
+            Steps:
+            1. Run test locally: pytest tests/test_determinism_golden.py::{{ $labels.test_name }} -v
+            2. Compare expected vs actual results
+            3. Check for platform-specific issues
+            4. Investigate root cause (code change? environment change?)
+            5. Fix and re-run all 25 golden tests
+
+      # ======================================================================
+      # HIGH PRIORITY ALERTS (Slack)
+      # ======================================================================
+
+      - alert: CacheKeyNonDeterministic
+        expr: increase(gl_002_cache_key_determinism_checks_total{status="non_deterministic"}[15m]) > 0
+        for: 5m
+        labels:
+          severity: high
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Cache Key Generation Non-Deterministic"
+          description: |
+            Cache key generation is non-deterministic.
+            Non-deterministic checks (last 15m): {{ $value }}
+
+            CACHE INTEGRITY AT RISK:
+            Non-deterministic cache keys lead to cache misses and inconsistent behavior.
+
+            Steps:
+            1. Review _get_cache_key() method
+            2. Ensure sort_keys=True in json.dumps()
+            3. Check for timestamp or UUID in cache key
+            4. Add runtime verification assertions
+
+      - alert: SeedPropagationFailure
+        expr: increase(gl_002_seed_propagation_checks_total{status="invalid"}[30m]) > 0
+        for: 5m
+        labels:
+          severity: high
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Random Seed Propagation Failed"
+          description: |
+            Random seed propagation verification failed.
+            Invalid checks (last 30m): {{ $value }}
+
+            RANDOM NUMBER GENERATION NOT DETERMINISTIC:
+            This affects any calculations using random numbers.
+
+            Steps:
+            1. Check seed initialization: grep "random.seed" code/
+            2. Verify np.random.seed(42) is called
+            3. Check for torch.manual_seed(42) if using PyTorch
+            4. Re-run seed propagation test
+
+      - alert: TimestampBasedCalculationDetected
+        expr: increase(gl_002_timestamp_calculations_detected_total[15m]) > 0
+        for: 5m
+        labels:
+          severity: high
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Timestamp-Based Calculation Detected"
+          description: |
+            Timestamp-based calculations detected in deterministic code path.
+            Pattern: {{ $labels.pattern }}
+            Detections (last 15m): {{ $value }}
+
+            NON-DETERMINISTIC CALCULATION:
+            Timestamps make calculations time-dependent.
+
+            Steps:
+            1. Search for pattern: grep "{{ $labels.pattern }}" code/
+            2. Remove timestamp from calculation logic
+            3. Move to logging/monitoring only
+            4. Add to allowed_timestamp_operations if legitimate
+
+      # ======================================================================
+      # WARNING ALERTS (Email)
+      # ======================================================================
+
+      - alert: DeterminismScoreDeclining
+        expr: rate(gl_002_determinism_score_percent[1h]) < 0
+        for: 15m
+        labels:
+          severity: warning
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Determinism Score Declining"
+          description: |
+            Determinism score is declining over time.
+            Current score: {{ $value }}%
+            Trend: DECLINING
+
+            PROACTIVE INVESTIGATION RECOMMENDED:
+            While not critical yet, investigate before it becomes an issue.
+
+            Steps:
+            1. Review recent code changes
+            2. Check for new dependencies
+            3. Run full determinism audit
+            4. Monitor for continued decline
+
+      - alert: HighDeterminismVerificationDuration
+        expr: histogram_quantile(0.95, rate(gl_002_determinism_verification_duration_seconds_bucket[5m])) > 1.0
+        for: 10m
+        labels:
+          severity: warning
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "High Determinism Verification Duration"
+          description: |
+            Determinism verification taking too long.
+            P95 duration: {{ $value }}s
+            Target: <1s
+
+            PERFORMANCE IMPACT:
+            Slow verification affects overall agent performance.
+
+            Steps:
+            1. Profile verification code
+            2. Optimize hot paths
+            3. Consider reducing verification_runs in non-critical paths
+            4. Check for unnecessary synchronous operations
+
+      - alert: MultipleGoldenTestFailures
+        expr: count(increase(gl_002_golden_test_results_total{status="fail"}[6h]) > 0) > 3
+        for: 10m
+        labels:
+          severity: warning
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Multiple Golden Tests Failing"
+          description: |
+            Multiple golden tests are failing ({{ $value }} tests).
+
+            SYSTEMIC ISSUE LIKELY:
+            Multiple failures suggest a common root cause.
+
+            Steps:
+            1. Run full test suite: pytest tests/test_determinism_golden.py -v
+            2. Look for common patterns in failures
+            3. Check for environment changes (Python version, libraries)
+            4. Review recent code changes
+
+      # ======================================================================
+      # INFO ALERTS (Monitoring)
+      # ======================================================================
+
+      - alert: DeterminismVerificationActive
+        expr: rate(gl_002_provenance_hash_verifications_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: info
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Determinism Verification Active"
+          description: |
+            Determinism verification is active and running.
+            Verifications (last 5m): {{ $value }}
+
+            This is normal operation - verification is working as expected.
+
+      - alert: DeterminismScore100Maintained
+        expr: gl_002_determinism_score_percent == 100
+        for: 24h
+        labels:
+          severity: info
+          component: gl-002
+          team: backend
+        annotations:
+          summary: "Determinism Score 100% Maintained for 24h"
+          description: |
+            Excellent! Determinism score has been 100% for 24 hours.
+
+            This indicates:
+            - All calculations are deterministic
+            - All golden tests passing
+            - Zero violations detected
+            - Production-ready quality
+
+            Keep up the great work!
+
+# ==============================================================================
+# ALERT ROUTING (AlertManager Configuration)
+# ==============================================================================
+#
+# alertmanager.yml:
+#
+# route:
+#   group_by: ['alertname', 'component']
+#   group_wait: 10s
+#   group_interval: 10s
+#   repeat_interval: 12h
+#   receiver: 'default'
+#   routes:
+#     - match:
+#         severity: critical
+#       receiver: 'pagerduty'
+#       continue: true
+#     - match:
+#         severity: high
+#       receiver: 'slack'
+#       continue: true
+#     - match:
+#         severity: warning
+#       receiver: 'email'
+#     - match:
+#         severity: info
+#       receiver: 'log-only'
+#
+# receivers:
+#   - name: 'pagerduty'
+#     pagerduty_configs:
+#       - service_key: '<pagerduty-service-key>'
+#         description: '{{ .GroupLabels.alertname }}: {{ .CommonAnnotations.summary }}'
+#
+#   - name: 'slack'
+#     slack_configs:
+#       - api_url: '<slack-webhook-url>'
+#         channel: '#gl-002-alerts'
+#         title: '{{ .GroupLabels.alertname }}'
+#         text: '{{ .CommonAnnotations.description }}'
+#
+#   - name: 'email'
+#     email_configs:
+#       - to: 'backend-team@greenlang.ai'
+#         from: 'alerts@greenlang.ai'
+#         smarthost: 'smtp.gmail.com:587'
+#         auth_username: 'alerts@greenlang.ai'
+#         auth_password: '<password>'
+#
+#   - name: 'log-only'
+#     webhook_configs:
+#       - url: 'http://logger:8080/alerts'
+#
+#   - name: 'default'
+#     slack_configs:
+#       - api_url: '<slack-webhook-url>'
+#         channel: '#gl-002-monitoring'

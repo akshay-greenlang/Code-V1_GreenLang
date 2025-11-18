@@ -1,0 +1,331 @@
+---
+# Prometheus Alerting Rules for GL-002 BoilerEfficiencyOptimizer
+# Comprehensive monitoring with CRITICAL and WARNING thresholds
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-002-alerts
+  namespace: greenlang
+  labels:
+    app: gl-002-boiler-optimizer
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    # ===========================================================================
+    # CRITICAL ALERTS - Immediate Action Required
+    # ===========================================================================
+    - name: gl-002-critical-alerts
+      interval: 30s
+      rules:
+        - alert: GL002AgentUnavailable
+          expr: up{job="gl-002-boiler-optimizer"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: agent
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Agent is unavailable"
+            description: "GL-002 BoilerEfficiencyOptimizer has been unavailable for more than 1 minute. Pod: {{ $labels.pod }}, Namespace: {{ $labels.namespace }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-unavailable"
+            dashboard_url: "https://grafana.greenlang.io/d/gl-002-ops"
+
+        - alert: GL002HighErrorRate
+          expr: |
+            100 * sum(rate(gl_002_http_requests_total{status="error"}[5m]))
+            / sum(rate(gl_002_http_requests_total[5m])) > 5
+          for: 2m
+          labels:
+            severity: critical
+            component: api
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Error rate exceeds 5%"
+            description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes. This indicates a systemic failure."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-high-error-rate"
+
+        - alert: GL002DeterminismFailure
+          expr: |
+            100 * sum(rate(gl_002_optimization_requests_total{status="failure"}[5m]))
+            / sum(rate(gl_002_optimization_requests_total[5m])) > 1
+          for: 5m
+          labels:
+            severity: critical
+            component: determinism
+            team: greenlang-quality
+          annotations:
+            summary: "GL-002 Determinism failure rate exceeds 1%"
+            description: "Optimization failure rate is {{ $value | humanizePercentage }}. Zero-hallucination guarantee may be violated."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-determinism-failure"
+
+        - alert: GL002EmissionsComplianceViolation
+          expr: |
+            sum(rate(gl_002_emissions_compliance_violations_total[5m])) by (boiler_id, pollutant) > 0
+          for: 1m
+          labels:
+            severity: critical
+            component: emissions
+            team: greenlang-compliance
+          annotations:
+            summary: "Emissions compliance violation detected"
+            description: "Boiler {{ $labels.boiler_id }} has emissions compliance violation for {{ $labels.pollutant }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-compliance-violation"
+
+        - alert: GL002DatabaseConnectionFailure
+          expr: gl_002_db_connection_pool_size == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: database
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Database connection pool exhausted"
+            description: "No available database connections. Application cannot persist data."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-db-failure"
+
+        - alert: GL002HighMemoryUsage
+          expr: |
+            (gl_002_system_memory_usage_bytes{type="rss"} / 1024 / 1024 / 1024) > 4
+          for: 5m
+          labels:
+            severity: critical
+            component: resources
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Memory usage critically high"
+            description: "Memory usage is {{ $value | humanize }}GB. Pod may be OOM killed."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-high-memory"
+
+        - alert: GL002OptimizationTimeout
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_002_optimization_duration_seconds_bucket[5m])) by (le, strategy)) > 10
+          for: 5m
+          labels:
+            severity: critical
+            component: optimization
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Optimization p95 latency exceeds 10s"
+            description: "Strategy {{ $labels.strategy }} p95 latency is {{ $value | humanizeDuration }}. Optimization timeout risk."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-timeout"
+
+    # ===========================================================================
+    # WARNING ALERTS - Investigation Required
+    # ===========================================================================
+    - name: gl-002-warning-alerts
+      interval: 1m
+      rules:
+        - alert: GL002PerformanceDegradation
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_002_http_request_duration_seconds_bucket[5m])) by (le, endpoint))
+            / histogram_quantile(0.95, sum(rate(gl_002_http_request_duration_seconds_bucket[1h])) by (le, endpoint)) > 1.10
+          for: 5m
+          labels:
+            severity: warning
+            component: performance
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Performance degraded by >10%"
+            description: "Endpoint {{ $labels.endpoint }} p95 latency increased {{ $value | humanizePercentage }} compared to 1h baseline."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-performance-degradation"
+
+        - alert: GL002LowCacheHitRate
+          expr: |
+            100 * sum(rate(gl_002_cache_hits_total[5m]))
+            / (sum(rate(gl_002_cache_hits_total[5m])) + sum(rate(gl_002_cache_misses_total[5m]))) < 70
+          for: 10m
+          labels:
+            severity: warning
+            component: cache
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Cache hit rate below 70%"
+            description: "Cache hit rate is {{ $value | humanizePercentage }}. Performance may be impacted."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-low-cache-hit"
+
+        - alert: GL002HighCacheEvictionRate
+          expr: sum(rate(gl_002_cache_evictions_total[5m])) > 1
+          for: 5m
+          labels:
+            severity: warning
+            component: cache
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 High cache eviction rate"
+            description: "Cache eviction rate is {{ $value | humanize }} evictions/sec. Cache may be undersized."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-high-evictions"
+
+        - alert: GL002EfficiencyBelowTarget
+          expr: avg(gl_002_boiler_efficiency_percent) by (boiler_id) < 80
+          for: 15m
+          labels:
+            severity: warning
+            component: efficiency
+            team: greenlang-ops
+          annotations:
+            summary: "Boiler efficiency below target"
+            description: "Boiler {{ $labels.boiler_id }} efficiency is {{ $value | humanizePercentage }}, below 80% target."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-low-efficiency"
+
+        - alert: GL002HighDatabaseLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_002_db_query_duration_seconds_bucket[5m])) by (le, query_type)) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            component: database
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Database query latency high"
+            description: "Query type {{ $labels.query_type }} p95 latency is {{ $value | humanizeDuration }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-db-latency"
+
+        - alert: GL002ExternalAPILatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_002_external_api_duration_seconds_bucket[5m])) by (le, api_name)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: external-api
+            team: greenlang-ops
+          annotations:
+            summary: "External API latency high"
+            description: "API {{ $labels.api_name }} p95 latency is {{ $value | humanizeDuration }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-api-latency"
+
+        - alert: GL002HighCPUUsage
+          expr: gl_002_system_cpu_usage_percent > 80
+          for: 10m
+          labels:
+            severity: warning
+            component: resources
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 CPU usage high"
+            description: "CPU usage is {{ $value | humanizePercentage }}. Consider scaling horizontally."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-high-cpu"
+
+        - alert: GL002EmissionsNearLimit
+          expr: |
+            (gl_002_emissions_nox_ppm / 200) > 0.9 or
+            (gl_002_emissions_co_ppm / 100) > 0.9 or
+            (gl_002_emissions_so2_ppm / 150) > 0.9
+          for: 5m
+          labels:
+            severity: warning
+            component: emissions
+            team: greenlang-compliance
+          annotations:
+            summary: "Emissions approaching regulatory limits"
+            description: "Boiler {{ $labels.boiler_id }} emissions at {{ $value | humanizePercentage }} of limit."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-emissions-warning"
+
+    # ===========================================================================
+    # BUSINESS METRIC ALERTS
+    # ===========================================================================
+    - name: gl-002-business-alerts
+      interval: 5m
+      rules:
+        - alert: GL002LowCostSavings
+          expr: sum(gl_002_optimization_annual_savings_usd) < 50000
+          for: 1h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "GL-002 Cost savings below target"
+            description: "Annual cost savings projection is ${{ $value | humanize }}, below $50k target."
+            dashboard_url: "https://grafana.greenlang.io/d/gl-002-exec"
+
+        - alert: GL002LowEmissionsReduction
+          expr: sum(gl_002_optimization_annual_emissions_reduction_tons) < 100
+          for: 1h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "GL-002 Emissions reduction below target"
+            description: "Annual CO2 reduction projection is {{ $value | humanize }} tons, below 100 ton target."
+            dashboard_url: "https://grafana.greenlang.io/d/gl-002-exec"
+
+    # ===========================================================================
+    # SLO ALERTS - Service Level Objectives
+    # ===========================================================================
+    - name: gl-002-slo-alerts
+      interval: 1m
+      rules:
+        - alert: GL002SLOAvailabilityViolation
+          expr: |
+            100 * avg_over_time(up{job="gl-002-boiler-optimizer"}[30d]) < 99.9
+          for: 5m
+          labels:
+            severity: critical
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 SLO availability violation"
+            description: "30-day availability is {{ $value | humanizePercentage }}, below 99.9% SLO."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-slo-availability"
+
+        - alert: GL002SLOLatencyViolation
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_002_http_request_duration_seconds_bucket[1h])) by (le)) > 2
+          for: 10m
+          labels:
+            severity: warning
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 SLO latency violation"
+            description: "1h p95 latency is {{ $value | humanizeDuration }}, exceeds 2s SLO."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-slo-latency"
+
+        - alert: GL002SLOErrorRateBudgetExhausted
+          expr: |
+            100 * sum(increase(gl_002_http_requests_total{status="error"}[30d]))
+            / sum(increase(gl_002_http_requests_total[30d])) > 0.1
+          for: 1h
+          labels:
+            severity: critical
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-002 Error budget exhausted"
+            description: "30-day error rate is {{ $value | humanizePercentage }}, exceeds 0.1% error budget."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-error-budget"
+
+    # ===========================================================================
+    # QUALITY ALERTS - Data Quality & Determinism
+    # ===========================================================================
+    - name: gl-002-quality-alerts
+      interval: 1m
+      rules:
+        - alert: GL002CalculationInconsistency
+          expr: |
+            stddev_over_time(gl_002_optimization_efficiency_improvement_percent_sum[5m]) > 1
+          for: 5m
+          labels:
+            severity: warning
+            component: quality
+            team: greenlang-quality
+          annotations:
+            summary: "GL-002 Calculation inconsistency detected"
+            description: "Optimization results show high variance (stddev={{ $value }}), indicating non-deterministic behavior."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-inconsistency"
+
+        - alert: GL002ComplianceStatusInconsistent
+          expr: |
+            changes(gl_002_emissions_compliance_status[5m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            component: quality
+            team: greenlang-compliance
+          annotations:
+            summary: "Emissions compliance status fluctuating"
+            description: "Boiler {{ $labels.boiler_id }} compliance status changed {{ $value }} times in 5 minutes."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-002-compliance-fluctuation"

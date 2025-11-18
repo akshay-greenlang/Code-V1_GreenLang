@@ -1,0 +1,52 @@
+# GL-003 SteamSystemAnalyzer - ServiceMonitor
+# Prometheus Operator configuration for metrics scraping
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-003-steam-system-analyzer
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+    prometheus: "kube-prometheus"
+
+spec:
+  # Select the service to monitor
+  selector:
+    matchLabels:
+      app: gl-003-steam-system-analyzer
+      agent: "GL-003"
+
+  # Namespace selector
+  namespaceSelector:
+    matchNames:
+      - greenlang
+
+  # Endpoints to scrape
+  endpoints:
+    # Main application metrics
+    - port: http
+      path: /api/v1/metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      scheme: http
+
+    # Dedicated metrics port
+    - port: metrics
+      path: /metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      scheme: http
+
+  # Metric relabeling
+  metricRelabelings:
+    # Add agent label
+    - sourceLabels: [__name__]
+      targetLabel: agent
+      replacement: "GL-003"
+
+    # Add environment label
+    - sourceLabels: [__name__]
+      targetLabel: environment
+      replacement: "production"

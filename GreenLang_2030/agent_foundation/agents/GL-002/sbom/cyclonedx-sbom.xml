@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bom xmlns="http://cyclonedx.org/schema/bom/1.5" serialNumber="urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79" version="1">
+  <metadata>
+    <timestamp>2025-11-17T00:00:00Z</timestamp>
+    <tools>
+      <tool>
+        <vendor>GreenLang</vendor>
+        <name>SBOM Generator</name>
+        <version>1.0.0</version>
+      </tool>
+    </tools>
+    <component type="application" bom-ref="gl002-boiler-optimizer@2.0.0">
+      <name>GL-002 Boiler Efficiency Optimizer</name>
+      <version>2.0.0</version>
+      <description>Advanced industrial AI agent for boiler optimization, fuel reduction, and emissions control</description>
+      <licenses>
+        <license>
+          <id>Proprietary</id>
+        </license>
+      </licenses>
+      <publisher>GreenLang Foundation</publisher>
+    </component>
+  </metadata>
+  <components>
+    <component type="library" bom-ref="anthropic@0.18.1">
+      <name>anthropic</name>
+      <version>0.18.1</version>
+      <description>Official Python client for the Anthropic Claude API</description>
+      <licenses>
+        <license><id>MIT</id></license>
+      </licenses>
+      <purl>pkg:pypi/anthropic@0.18.1</purl>
+    </component>
+    <component type="library" bom-ref="pydantic@2.5.3">
+      <name>pydantic</name>
+      <version>2.5.3</version>
+      <description>Data validation using Python type hints</description>
+      <licenses>
+        <license><id>MIT</id></license>
+      </licenses>
+      <purl>pkg:pypi/pydantic@2.5.3</purl>
+    </component>
+    <component type="library" bom-ref="numpy@1.26.3">
+      <name>numpy</name>
+      <version>1.26.3</version>
+      <description>Fundamental package for array computing in Python</description>
+      <licenses>
+        <license><id>BSD-3-Clause</id></license>
+      </licenses>
+      <purl>pkg:pypi/numpy@1.26.3</purl>
+    </component>
+    <component type="library" bom-ref="scipy@1.12.0">
+      <name>scipy</name>
+      <version>1.12.0</version>
+      <description>Scientific computing tools for Python</description>
+      <licenses>
+        <license><id>BSD-3-Clause</id></license>
+      </licenses>
+      <purl>pkg:pypi/scipy@1.12.0</purl>
+    </component>
+    <component type="library" bom-ref="cryptography@42.0.5">
+      <name>cryptography</name>
+      <version>42.0.5</version>
+      <description>Cryptographic recipes and primitives for Python</description>
+      <licenses>
+        <license><id>Apache-2.0</id></license>
+      </licenses>
+      <purl>pkg:pypi/cryptography@42.0.5</purl>
+    </component>
+    <component type="library" bom-ref="fastapi@0.109.2">
+      <name>fastapi</name>
+      <version>0.109.2</version>
+      <description>FastAPI framework, high performance, easy to learn, fast to code, ready for production</description>
+      <licenses>
+        <license><id>MIT</id></license>
+      </licenses>
+      <purl>pkg:pypi/fastapi@0.109.2</purl>
+    </component>
+    <component type="library" bom-ref="prometheus-client@0.19.0">
+      <name>prometheus-client</name>
+      <version>0.19.0</version>
+      <description>Python client for the Prometheus monitoring system</description>
+      <licenses>
+        <license><id>Apache-2.0</id></license>
+      </licenses>
+      <purl>pkg:pypi/prometheus-client@0.19.0</purl>
+    </component>
+  </components>
+  <dependencies>
+    <dependency ref="gl002-boiler-optimizer@2.0.0">
+      <dependency ref="anthropic@0.18.1"/>
+      <dependency ref="pydantic@2.5.3"/>
+      <dependency ref="numpy@1.26.3"/>
+      <dependency ref="scipy@1.12.0"/>
+      <dependency ref="cryptography@42.0.5"/>
+      <dependency ref="fastapi@0.109.2"/>
+      <dependency ref="prometheus-client@0.19.0"/>
+    </dependency>
+  </dependencies>
+</bom>

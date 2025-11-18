@@ -1,0 +1,439 @@
+{
+  "dashboard": {
+    "title": "GL-003 Executive Dashboard - KPIs & ROI",
+    "tags": ["gl-003", "executive", "kpi", "roi"],
+    "timezone": "utc",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Annual Cost Savings (USD)",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(gl_003_optimization_annual_savings_usd)",
+            "refId": "A",
+            "legendFormat": "Total Annual Savings"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 50000, "color": "yellow"},
+                {"value": 100000, "color": "green"}
+              ]
+            },
+            "color": {"mode": "thresholds"}
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Annual CO2 Reduction (Tons)",
+        "type": "stat",
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "sum(gl_003_optimization_annual_emissions_reduction_tons)",
+            "refId": "A",
+            "legendFormat": "CO2 Reduction"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 100, "color": "yellow"},
+                {"value": 500, "color": "green"}
+              ]
+            },
+            "color": {"mode": "thresholds"}
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 3,
+        "title": "Average Efficiency Improvement (%)",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "avg(rate(gl_003_optimization_efficiency_improvement_percent_sum[24h]) / rate(gl_003_optimization_efficiency_improvement_percent_count[24h]))",
+            "refId": "A",
+            "legendFormat": "Avg Improvement"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 2,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 2, "color": "yellow"},
+                {"value": 5, "color": "green"}
+              ]
+            },
+            "color": {"mode": "thresholds"}
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 4,
+        "title": "Optimization Success Rate (%)",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 4},
+        "targets": [
+          {
+            "expr": "100 * sum(rate(gl_003_optimization_requests_total{status=\"success\"}[24h])) / sum(rate(gl_003_optimization_requests_total[24h]))",
+            "refId": "A",
+            "legendFormat": "Success Rate"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "decimals": 1,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            },
+            "color": {"mode": "thresholds"}
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Cost Savings Trend (24h)",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_optimization_cost_savings_usd_per_hour_sum[5m])) by (fuel_type)",
+            "refId": "A",
+            "legendFormat": "{{fuel_type}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "showPoints": "never",
+              "stacking": {"mode": "normal"}
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "max", "last"]
+          },
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 6,
+        "title": "Emissions Reduction Trend (24h)",
+        "type": "timeseries",
+        "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(gl_003_optimization_emissions_reduction_kg_hr) by (boiler_id)",
+            "refId": "A",
+            "legendFormat": "Boiler {{boiler_id}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "kg/hr",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "showPoints": "never",
+              "stacking": {"mode": "normal"}
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": ["mean", "max", "last"]
+          },
+          "tooltip": {"mode": "multi"}
+        }
+      },
+      {
+        "id": 7,
+        "title": "Steam System by Plant",
+        "type": "gauge",
+        "gridPos": {"x": 0, "y": 12, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "avg(gl_003_boiler_efficiency_percent) by (boiler_id)",
+            "refId": "A",
+            "legendFormat": "{{boiler_id}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 75, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "auto",
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 8,
+        "title": "Emissions Compliance Status",
+        "type": "piechart",
+        "gridPos": {"x": 8, "y": 12, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(gl_003_emissions_compliance_status == 1)",
+            "refId": "A",
+            "legendFormat": "Compliant"
+          },
+          {
+            "expr": "sum(gl_003_emissions_compliance_status == 0)",
+            "refId": "B",
+            "legendFormat": "Non-Compliant"
+          }
+        ],
+        "options": {
+          "pieType": "pie",
+          "displayLabels": ["name", "percent"],
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "ROI Metrics Summary",
+        "type": "table",
+        "gridPos": {"x": 16, "y": 12, "w": 8, "h": 6},
+        "targets": [
+          {
+            "expr": "gl_003_optimization_annual_savings_usd",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          },
+          {
+            "expr": "gl_003_optimization_annual_emissions_reduction_tons",
+            "refId": "B",
+            "format": "table",
+            "instant": true
+          },
+          {
+            "expr": "gl_003_optimization_payback_period_months",
+            "refId": "C",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "merge"
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "__name__": true},
+              "indexByName": {},
+              "renameByName": {
+                "boiler_id": "Boiler ID",
+                "Value #A": "Annual Savings (USD)",
+                "Value #B": "CO2 Reduction (Tons)",
+                "Value #C": "Payback (Months)"
+              }
+            }
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "sortBy": [{"displayName": "Annual Savings (USD)", "desc": true}]
+        }
+      },
+      {
+        "id": 10,
+        "title": "Optimization Requests by Strategy",
+        "type": "bargauge",
+        "gridPos": {"x": 0, "y": 18, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_optimization_requests_total[24h])) by (strategy)",
+            "refId": "A",
+            "legendFormat": "{{strategy}}"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"},
+                {"value": 0.5, "color": "green"},
+                {"value": 2, "color": "yellow"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        }
+      },
+      {
+        "id": 11,
+        "title": "Carbon Impact Over Time",
+        "type": "timeseries",
+        "gridPos": {"x": 12, "y": 18, "w": 12, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(rate(gl_003_emissions_co2_kg_hr[5m]))",
+            "refId": "A",
+            "legendFormat": "Current CO2 Emissions"
+          },
+          {
+            "expr": "sum(rate(gl_003_emissions_co2_kg_hr[5m])) - sum(gl_003_optimization_emissions_reduction_kg_hr)",
+            "refId": "B",
+            "legendFormat": "Baseline (Without Optimization)"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "kg/hr",
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 10,
+              "lineWidth": 2
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Baseline (Without Optimization)"},
+              "properties": [
+                {"id": "custom.lineStyle", "value": {"dash": [10, 10], "fill": "dash"}},
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom",
+            "calcs": ["mean", "min", "max"]
+          },
+          "tooltip": {"mode": "multi"}
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "boiler_id",
+          "type": "query",
+          "label": "Boiler",
+          "query": "label_values(gl_003_boiler_efficiency_percent, boiler_id)",
+          "multi": true,
+          "includeAll": true,
+          "refresh": 1
+        },
+        {
+          "name": "fuel_type",
+          "type": "query",
+          "label": "Fuel Type",
+          "query": "label_values(gl_003_boiler_fuel_flow_kg_hr, fuel_type)",
+          "multi": true,
+          "includeAll": true,
+          "refresh": 1
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Optimizations",
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(gl_003_optimization_requests_total[1m]) > 0",
+          "iconColor": "green",
+          "tagKeys": "strategy"
+        }
+      ]
+    }
+  }
+}

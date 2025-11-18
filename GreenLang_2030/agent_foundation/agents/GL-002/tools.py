@@ -146,7 +146,16 @@ class BoilerEfficiencyTools:
 
         Returns:
             Comprehensive efficiency calculation result
+
+        Raises:
+            ValueError: If input validation fails
         """
+        # Input validation - None checks
+        if boiler_data is None:
+            raise ValueError("boiler_data cannot be None")
+        if sensor_feeds is None:
+            raise ValueError("sensor_feeds cannot be None")
+
         # Extract sensor data
         fuel_flow = sensor_feeds.get('fuel_flow_kg_hr', 1000)
         steam_flow = sensor_feeds.get('steam_flow_kg_hr', 10000)
@@ -154,6 +163,54 @@ class BoilerEfficiencyTools:
         ambient_temp = sensor_feeds.get('ambient_temperature_c', 25)
         o2_percent = sensor_feeds.get('o2_percent', 3.0)
         co_ppm = sensor_feeds.get('co_ppm', 50)
+
+        # Validate sensor values - cannot be negative
+        if fuel_flow is None:
+            raise ValueError("fuel_flow_kg_hr cannot be None")
+        if fuel_flow < 0:
+            raise ValueError(f"fuel_flow_kg_hr must be non-negative, got {fuel_flow}")
+        if fuel_flow == 0:
+            raise ValueError("fuel_flow_kg_hr must be positive (cannot be zero)")
+
+        if steam_flow is None:
+            raise ValueError("steam_flow_kg_hr cannot be None")
+        if steam_flow < 0:
+            raise ValueError(f"steam_flow_kg_hr must be non-negative, got {steam_flow}")
+
+        if stack_temp is None:
+            raise ValueError("stack_temperature_c cannot be None")
+        if stack_temp < -273.15:
+            raise ValueError(f"stack_temperature_c must be above absolute zero (-273.15°C), got {stack_temp}")
+
+        if ambient_temp is None:
+            raise ValueError("ambient_temperature_c cannot be None")
+        if ambient_temp < -273.15:
+            raise ValueError(f"ambient_temperature_c must be above absolute zero (-273.15°C), got {ambient_temp}")
+
+        # Validate physical constraint: stack temp should be higher than ambient
+        if stack_temp <= ambient_temp:
+            raise ValueError(f"stack_temperature_c ({stack_temp}) must be greater than ambient_temperature_c ({ambient_temp})")
+
+        # Validate physical limits per ASME PTC 4.1
+        if stack_temp > 600:
+            raise ValueError(f"stack_temperature_c ({stack_temp}) exceeds physical limit of 600°C per ASME PTC 4.1")
+
+        if ambient_temp < -50 or ambient_temp > 50:
+            raise ValueError(f"ambient_temperature_c ({ambient_temp}) outside reasonable range [-50, 50]°C")
+
+        if o2_percent is None:
+            raise ValueError("o2_percent cannot be None")
+        if o2_percent < 0:
+            raise ValueError(f"o2_percent must be non-negative, got {o2_percent}")
+        if o2_percent > 21:
+            raise ValueError(f"o2_percent ({o2_percent}) cannot exceed 21% (atmospheric limit)")
+
+        if co_ppm is None:
+            raise ValueError("co_ppm cannot be None")
+        if co_ppm < 0:
+            raise ValueError(f"co_ppm must be non-negative, got {co_ppm}")
+        if co_ppm > 10000:
+            raise ValueError(f"co_ppm ({co_ppm}) exceeds dangerous limit of 10000 ppm")
 
         # Get fuel properties
         fuel_properties = boiler_data.get('fuel_properties', self.default_fuel_properties)
@@ -250,14 +307,79 @@ class BoilerEfficiencyTools:
 
         Returns:
             Optimized combustion parameters
+
+        Raises:
+            ValueError: If input validation fails
         """
+        # Input validation - None checks
+        if operational_state is None:
+            raise ValueError("operational_state cannot be None")
+        if fuel_data is None:
+            raise ValueError("fuel_data cannot be None")
+        if constraints is None:
+            raise ValueError("constraints cannot be None")
+
         # Get fuel properties
         fuel_properties = fuel_data.get('properties', self.default_fuel_properties)
         heating_value = fuel_properties['heating_value_mj_kg']
 
+        # Validate heating value
+        if heating_value is None:
+            raise ValueError("heating_value_mj_kg cannot be None")
+        if heating_value <= 0:
+            raise ValueError(f"heating_value_mj_kg must be positive, got {heating_value}")
+        if heating_value > 100:
+            raise ValueError(f"heating_value_mj_kg ({heating_value}) exceeds reasonable limit of 100 MJ/kg")
+
         # Current operating parameters
         current_excess_air = operational_state.get('excess_air_percent', 15)
         fuel_flow = operational_state.get('fuel_flow_rate_kg_hr', 1000)
+
+        # Validate operational state parameters
+        if current_excess_air is None:
+            raise ValueError("excess_air_percent cannot be None")
+        if current_excess_air < 0:
+            raise ValueError(f"excess_air_percent must be non-negative, got {current_excess_air}")
+        if current_excess_air > 100:
+            raise ValueError(f"excess_air_percent ({current_excess_air}) exceeds reasonable limit of 100%")
+
+        if fuel_flow is None:
+            raise ValueError("fuel_flow_rate_kg_hr cannot be None")
+        if fuel_flow < 0:
+            raise ValueError(f"fuel_flow_rate_kg_hr must be non-negative, got {fuel_flow}")
+        if fuel_flow == 0:
+            raise ValueError("fuel_flow_rate_kg_hr must be positive (cannot be zero)")
+
+        # Validate load percentage
+        load_percent = operational_state.get('load_percent', 75)
+        if load_percent is None:
+            raise ValueError("load_percent cannot be None")
+        if load_percent < 0 or load_percent > 100:
+            raise ValueError(f"load_percent ({load_percent}) must be in range [0, 100]")
+
+        # Validate combustion temperature
+        combustion_temp = operational_state.get('combustion_temperature_c', 1200)
+        if combustion_temp is None:
+            raise ValueError("combustion_temperature_c cannot be None")
+        if combustion_temp < -273.15:
+            raise ValueError(f"combustion_temperature_c must be above absolute zero (-273.15°C), got {combustion_temp}")
+        if combustion_temp > 2000:
+            raise ValueError(f"combustion_temperature_c ({combustion_temp}) exceeds reasonable limit of 2000°C")
+
+        # Validate stack temperature
+        stack_temp = operational_state.get('stack_temperature_c', 180)
+        if stack_temp is None:
+            raise ValueError("stack_temperature_c cannot be None")
+        if stack_temp < -273.15:
+            raise ValueError(f"stack_temperature_c must be above absolute zero (-273.15°C), got {stack_temp}")
+        if stack_temp > 600:
+            raise ValueError(f"stack_temperature_c ({stack_temp}) exceeds physical limit of 600°C")
+
+        # Validate efficiency percentage
+        efficiency_percent = operational_state.get('efficiency_percent', 80)
+        if efficiency_percent is not None:
+            if efficiency_percent < 0 or efficiency_percent > 100:
+                raise ValueError(f"efficiency_percent ({efficiency_percent}) must be in range [0, 100]")
 
         # Calculate theoretical air requirement
         theoretical_air = self._calculate_theoretical_air(fuel_properties)
@@ -344,18 +466,92 @@ class BoilerEfficiencyTools:
 
         Returns:
             Optimized steam generation strategy
+
+        Raises:
+            ValueError: If input validation fails
         """
+        # Input validation - None checks
+        if steam_demand is None:
+            raise ValueError("steam_demand cannot be None")
+        if operational_state is None:
+            raise ValueError("operational_state cannot be None")
+        if constraints is None:
+            raise ValueError("constraints cannot be None")
+
         # Steam demand parameters
         required_flow = steam_demand.get('required_flow_kg_hr', 10000)
         required_pressure = steam_demand.get('required_pressure_bar', 10)
         required_temp = steam_demand.get('required_temperature_c', 180)
 
+        # Validate steam demand parameters
+        if required_flow is None:
+            raise ValueError("required_flow_kg_hr cannot be None")
+        if required_flow < 0:
+            raise ValueError(f"required_flow_kg_hr must be non-negative, got {required_flow}")
+        if required_flow > 1000000:
+            raise ValueError(f"required_flow_kg_hr ({required_flow}) exceeds reasonable limit of 1,000,000 kg/hr")
+
+        if required_pressure is None:
+            raise ValueError("required_pressure_bar cannot be None")
+        if required_pressure <= 0:
+            raise ValueError(f"required_pressure_bar must be positive, got {required_pressure}")
+        if required_pressure > 200:
+            raise ValueError(f"required_pressure_bar ({required_pressure}) exceeds reasonable limit of 200 bar")
+
+        if required_temp is None:
+            raise ValueError("required_temperature_c cannot be None")
+        if required_temp < -273.15:
+            raise ValueError(f"required_temperature_c must be above absolute zero (-273.15°C), got {required_temp}")
+        if required_temp > 600:
+            raise ValueError(f"required_temperature_c ({required_temp}) exceeds reasonable limit of 600°C")
+
         # Current parameters
         current_flow = operational_state.get('steam_flow_rate_kg_hr', 9000)
         current_pressure = operational_state.get('steam_pressure_bar', 10)
 
-        # Optimize blowdown rate based on TDS
+        # Validate current operational state parameters
+        if current_flow is not None:
+            if current_flow < 0:
+                raise ValueError(f"steam_flow_rate_kg_hr must be non-negative, got {current_flow}")
+
+        if current_pressure is not None:
+            if current_pressure <= 0:
+                raise ValueError(f"steam_pressure_bar must be positive, got {current_pressure}")
+            if current_pressure > 200:
+                raise ValueError(f"steam_pressure_bar ({current_pressure}) exceeds reasonable limit of 200 bar")
+
+        # Validate TDS and other operational state parameters
         tds_ppm = operational_state.get('tds_ppm', 2000)
+        if tds_ppm is not None:
+            if tds_ppm < 0:
+                raise ValueError(f"tds_ppm must be non-negative, got {tds_ppm}")
+            if tds_ppm > 10000:
+                raise ValueError(f"tds_ppm ({tds_ppm}) exceeds reasonable limit of 10,000 ppm")
+
+        # Validate feedwater temperature
+        feedwater_temp = operational_state.get('feedwater_temperature_c', 80)
+        if feedwater_temp is not None:
+            if feedwater_temp < -273.15:
+                raise ValueError(f"feedwater_temperature_c must be above absolute zero (-273.15°C), got {feedwater_temp}")
+            if feedwater_temp > 200:
+                raise ValueError(f"feedwater_temperature_c ({feedwater_temp}) exceeds reasonable limit of 200°C")
+            # Feedwater must be less than steam temperature
+            if feedwater_temp >= required_temp:
+                raise ValueError(f"feedwater_temperature_c ({feedwater_temp}) must be less than required_temperature_c ({required_temp})")
+
+        # Validate steam moisture
+        steam_moisture = operational_state.get('steam_moisture_percent', 0.5)
+        if steam_moisture is not None:
+            if steam_moisture < 0 or steam_moisture > 100:
+                raise ValueError(f"steam_moisture_percent ({steam_moisture}) must be in range [0, 100]")
+
+        # Validate fuel flow
+        fuel_flow = operational_state.get('fuel_flow_rate_kg_hr', 1000)
+        if fuel_flow is not None:
+            if fuel_flow < 0:
+                raise ValueError(f"fuel_flow_rate_kg_hr must be non-negative, got {fuel_flow}")
+
+        # Optimize blowdown rate based on TDS
         optimal_blowdown = self._optimize_blowdown_rate(tds_ppm, constraints)
 
         # Calculate feedwater temperature for efficiency
@@ -429,7 +625,38 @@ class BoilerEfficiencyTools:
 
         Returns:
             Emissions optimization result
+
+        Raises:
+            ValueError: If input validation fails
         """
+        # Input validation - None checks
+        if combustion_result is None:
+            raise ValueError("combustion_result cannot be None")
+        if emission_limits is None:
+            raise ValueError("emission_limits cannot be None")
+
+        # Validate combustion result fields
+        if combustion_result.optimal_excess_air_percent is None:
+            raise ValueError("optimal_excess_air_percent cannot be None")
+        if combustion_result.optimal_excess_air_percent < 0:
+            raise ValueError(f"optimal_excess_air_percent must be non-negative, got {combustion_result.optimal_excess_air_percent}")
+
+        if combustion_result.combustion_efficiency_percent is None:
+            raise ValueError("combustion_efficiency_percent cannot be None")
+        if combustion_result.combustion_efficiency_percent < 0 or combustion_result.combustion_efficiency_percent > 100:
+            raise ValueError(f"combustion_efficiency_percent ({combustion_result.combustion_efficiency_percent}) must be in range [0, 100]")
+
+        # Validate emission limits
+        if 'nox_limit_ppm' in emission_limits:
+            nox_limit = emission_limits['nox_limit_ppm']
+            if nox_limit is not None and nox_limit < 0:
+                raise ValueError(f"nox_limit_ppm must be non-negative, got {nox_limit}")
+
+        if 'co_limit_ppm' in emission_limits:
+            co_limit = emission_limits['co_limit_ppm']
+            if co_limit is not None and co_limit < 0:
+                raise ValueError(f"co_limit_ppm must be non-negative, got {co_limit}")
+
         # Current emission levels (example calculations)
         fuel_flow = 1000  # kg/hr (default)
 
@@ -510,7 +737,35 @@ class BoilerEfficiencyTools:
 
         Returns:
             Control parameter adjustments
+
+        Raises:
+            ValueError: If input validation fails
         """
+        # Input validation - None checks
+        if combustion_result is None:
+            raise ValueError("combustion_result cannot be None")
+        if steam_strategy is None:
+            raise ValueError("steam_strategy cannot be None")
+        if emissions_result is None:
+            raise ValueError("emissions_result cannot be None")
+
+        # Validate combustion result fields
+        if combustion_result.optimal_excess_air_percent is None:
+            raise ValueError("optimal_excess_air_percent cannot be None")
+        if combustion_result.fuel_efficiency_percent is None:
+            raise ValueError("fuel_efficiency_percent cannot be None")
+
+        # Validate steam strategy fields
+        if steam_strategy.target_pressure_bar is None:
+            raise ValueError("target_pressure_bar cannot be None")
+        if steam_strategy.target_pressure_bar <= 0:
+            raise ValueError(f"target_pressure_bar must be positive, got {steam_strategy.target_pressure_bar}")
+
+        if steam_strategy.blowdown_rate_percent is None:
+            raise ValueError("blowdown_rate_percent cannot be None")
+        if steam_strategy.blowdown_rate_percent < 0 or steam_strategy.blowdown_rate_percent > 100:
+            raise ValueError(f"blowdown_rate_percent ({steam_strategy.blowdown_rate_percent}) must be in range [0, 100]")
+
         adjustments = {}
 
         # Air flow adjustments
@@ -558,7 +813,48 @@ class BoilerEfficiencyTools:
     # Helper methods for calculations
 
     def _calculate_theoretical_air(self, fuel_properties: Dict[str, Any]) -> float:
-        """Calculate theoretical air requirement for complete combustion."""
+        """
+        Calculate theoretical air requirement for complete combustion.
+
+        Args:
+            fuel_properties: Fuel composition properties
+
+        Returns:
+            Theoretical air requirement (kg air/kg fuel)
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation
+        if fuel_properties is None:
+            raise ValueError("fuel_properties cannot be None")
+
+        # Validate fuel composition percentages
+        required_keys = ['carbon_percent', 'hydrogen_percent', 'sulfur_percent', 'oxygen_percent']
+        for key in required_keys:
+            if key not in fuel_properties:
+                raise ValueError(f"fuel_properties missing required key: {key}")
+
+            value = fuel_properties[key]
+            if value is None:
+                raise ValueError(f"{key} cannot be None")
+            if value < 0:
+                raise ValueError(f"{key} must be non-negative, got {value}")
+            if value > 100:
+                raise ValueError(f"{key} ({value}) cannot exceed 100%")
+
+        # Validate total composition does not exceed 100%
+        total_percent = (
+            fuel_properties['carbon_percent'] +
+            fuel_properties['hydrogen_percent'] +
+            fuel_properties['sulfur_percent'] +
+            fuel_properties['oxygen_percent'] +
+            fuel_properties.get('nitrogen_percent', 0) +
+            fuel_properties.get('moisture_percent', 0)
+        )
+        if total_percent > 100:
+            raise ValueError(f"Total fuel composition ({total_percent}%) exceeds 100%")
+
         C = fuel_properties['carbon_percent'] / 100
         H = fuel_properties['hydrogen_percent'] / 100
         S = fuel_properties['sulfur_percent'] / 100
@@ -570,7 +866,26 @@ class BoilerEfficiencyTools:
         return theoretical_air
 
     def _calculate_excess_air_from_o2(self, o2_percent: float) -> float:
-        """Calculate excess air from flue gas O2 measurement."""
+        """
+        Calculate excess air from flue gas O2 measurement.
+
+        Args:
+            o2_percent: Oxygen percentage in flue gas
+
+        Returns:
+            Excess air percentage
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation
+        if o2_percent is None:
+            raise ValueError("o2_percent cannot be None")
+        if o2_percent < 0:
+            raise ValueError(f"o2_percent must be non-negative, got {o2_percent}")
+        if o2_percent >= 21:
+            raise ValueError(f"o2_percent ({o2_percent}) must be less than 21% (atmospheric limit)")
+
         # Using simplified formula for natural gas
         excess_air = (o2_percent / (21 - o2_percent)) * 100
         return excess_air
@@ -582,7 +897,47 @@ class BoilerEfficiencyTools:
         o2_percent: float,
         co_ppm: float
     ) -> float:
-        """Calculate dry gas loss percentage."""
+        """
+        Calculate dry gas loss percentage.
+
+        Args:
+            stack_temp: Stack temperature (°C)
+            ambient_temp: Ambient temperature (°C)
+            o2_percent: Oxygen percentage in flue gas
+            co_ppm: CO concentration (ppm)
+
+        Returns:
+            Dry gas loss percentage
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation
+        if stack_temp is None:
+            raise ValueError("stack_temp cannot be None")
+        if stack_temp < -273.15:
+            raise ValueError(f"stack_temp must be above absolute zero (-273.15°C), got {stack_temp}")
+
+        if ambient_temp is None:
+            raise ValueError("ambient_temp cannot be None")
+        if ambient_temp < -273.15:
+            raise ValueError(f"ambient_temp must be above absolute zero (-273.15°C), got {ambient_temp}")
+
+        if stack_temp <= ambient_temp:
+            raise ValueError(f"stack_temp ({stack_temp}) must be greater than ambient_temp ({ambient_temp})")
+
+        if o2_percent is None:
+            raise ValueError("o2_percent cannot be None")
+        if o2_percent < 0:
+            raise ValueError(f"o2_percent must be non-negative, got {o2_percent}")
+        if o2_percent >= 21:
+            raise ValueError(f"o2_percent ({o2_percent}) must be less than 21%")
+
+        if co_ppm is None:
+            raise ValueError("co_ppm cannot be None")
+        if co_ppm < 0:
+            raise ValueError(f"co_ppm must be non-negative, got {co_ppm}")
+
         # Siegert formula
         k_factor = 0.65  # For natural gas
         temp_diff = stack_temp - ambient_temp
@@ -597,7 +952,42 @@ class BoilerEfficiencyTools:
         stack_temp: float,
         ambient_temp: float
     ) -> float:
-        """Calculate moisture loss from hydrogen combustion."""
+        """
+        Calculate moisture loss from hydrogen combustion.
+
+        Args:
+            fuel_properties: Fuel composition properties
+            stack_temp: Stack temperature (°C)
+            ambient_temp: Ambient temperature (°C)
+
+        Returns:
+            Moisture loss percentage
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation
+        if fuel_properties is None:
+            raise ValueError("fuel_properties cannot be None")
+
+        if 'hydrogen_percent' not in fuel_properties:
+            raise ValueError("fuel_properties missing required key: hydrogen_percent")
+        if 'moisture_percent' not in fuel_properties:
+            raise ValueError("fuel_properties missing required key: moisture_percent")
+
+        if stack_temp is None:
+            raise ValueError("stack_temp cannot be None")
+        if stack_temp < -273.15:
+            raise ValueError(f"stack_temp must be above absolute zero (-273.15°C), got {stack_temp}")
+
+        if ambient_temp is None:
+            raise ValueError("ambient_temp cannot be None")
+        if ambient_temp < -273.15:
+            raise ValueError(f"ambient_temp must be above absolute zero (-273.15°C), got {ambient_temp}")
+
+        if stack_temp <= ambient_temp:
+            raise ValueError(f"stack_temp ({stack_temp}) must be greater than ambient_temp ({ambient_temp})")
+
         H = fuel_properties['hydrogen_percent'] / 100
         M = fuel_properties['moisture_percent'] / 100
 
@@ -612,13 +1002,53 @@ class BoilerEfficiencyTools:
         return moisture_loss
 
     def _calculate_unburnt_loss(self, co_ppm: float, fuel_properties: Dict[str, Any]) -> float:
-        """Calculate loss due to unburnt fuel (CO formation)."""
+        """
+        Calculate loss due to unburnt fuel (CO formation).
+
+        Args:
+            co_ppm: CO concentration (ppm)
+            fuel_properties: Fuel composition properties
+
+        Returns:
+            Unburnt loss percentage
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation
+        if co_ppm is None:
+            raise ValueError("co_ppm cannot be None")
+        if co_ppm < 0:
+            raise ValueError(f"co_ppm must be non-negative, got {co_ppm}")
+        if co_ppm > 10000:
+            raise ValueError(f"co_ppm ({co_ppm}) exceeds dangerous limit of 10000 ppm")
+
+        if fuel_properties is None:
+            raise ValueError("fuel_properties cannot be None")
+
         # Loss proportional to CO concentration
         unburnt_loss = (co_ppm / 10000) * 5  # Empirical correlation
         return min(unburnt_loss, 1.0)  # Cap at 1%
 
     def _calculate_radiation_loss(self, steam_flow: float) -> float:
-        """Calculate radiation and convection losses."""
+        """
+        Calculate radiation and convection losses.
+
+        Args:
+            steam_flow: Steam flow rate (kg/hr)
+
+        Returns:
+            Radiation loss percentage
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation
+        if steam_flow is None:
+            raise ValueError("steam_flow cannot be None")
+        if steam_flow < 0:
+            raise ValueError(f"steam_flow must be non-negative, got {steam_flow}")
+
         # ABMA radiation loss chart approximation
         if steam_flow < 5000:
             return 2.0
@@ -632,16 +1062,71 @@ class BoilerEfficiencyTools:
             return 0.5
 
     def _calculate_blowdown_loss(self, blowdown_rate: float) -> float:
-        """Calculate blowdown heat loss."""
+        """
+        Calculate blowdown heat loss.
+
+        Args:
+            blowdown_rate: Blowdown rate percentage
+
+        Returns:
+            Blowdown loss percentage
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation
+        if blowdown_rate is None:
+            raise ValueError("blowdown_rate cannot be None")
+        if blowdown_rate < 0:
+            raise ValueError(f"blowdown_rate must be non-negative, got {blowdown_rate}")
+        if blowdown_rate > 100:
+            raise ValueError(f"blowdown_rate ({blowdown_rate}) cannot exceed 100%")
+
         # Approximate loss based on blowdown rate
         blowdown_loss = blowdown_rate * 0.3  # 30% of blowdown energy is lost
         return blowdown_loss
 
     def _calculate_heat_output(self, steam_flow: float, sensor_feeds: Dict[str, Any]) -> float:
-        """Calculate heat output in steam."""
+        """
+        Calculate heat output in steam.
+
+        Args:
+            steam_flow: Steam flow rate (kg/hr)
+            sensor_feeds: Sensor feed data
+
+        Returns:
+            Heat output (MW)
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation
+        if steam_flow is None:
+            raise ValueError("steam_flow cannot be None")
+        if steam_flow < 0:
+            raise ValueError(f"steam_flow must be non-negative, got {steam_flow}")
+
+        if sensor_feeds is None:
+            raise ValueError("sensor_feeds cannot be None")
+
         steam_pressure = sensor_feeds.get('steam_pressure_bar', 10)
         steam_temp = sensor_feeds.get('steam_temperature_c', 180)
         feedwater_temp = sensor_feeds.get('feedwater_temperature_c', 80)
+
+        # Validate sensor values
+        if steam_pressure is not None:
+            if steam_pressure <= 0:
+                raise ValueError(f"steam_pressure_bar must be positive, got {steam_pressure}")
+
+        if steam_temp is not None:
+            if steam_temp < -273.15:
+                raise ValueError(f"steam_temperature_c must be above absolute zero (-273.15°C), got {steam_temp}")
+
+        if feedwater_temp is not None:
+            if feedwater_temp < -273.15:
+                raise ValueError(f"feedwater_temperature_c must be above absolute zero (-273.15°C), got {feedwater_temp}")
+            if feedwater_temp >= steam_temp:
+                raise ValueError(f"feedwater_temperature_c ({feedwater_temp}) must be less than steam_temperature_c ({steam_temp})")
 
         # Simplified enthalpy calculation
         steam_enthalpy = 2700 + 1.9 * (steam_temp - 100)  # kJ/kg approximation
@@ -855,7 +1340,28 @@ class BoilerEfficiencyTools:
     # Integration methods
 
     def process_scada_data(self, scada_feed: Dict[str, Any]) -> Dict[str, Any]:
-        """Process SCADA data for boiler optimization."""
+        """
+        Process SCADA data for boiler optimization.
+
+        Args:
+            scada_feed: SCADA data feed
+
+        Returns:
+            Processed SCADA data
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation - None checks
+        if scada_feed is None:
+            raise ValueError("scada_feed cannot be None")
+
+        # Validate quality if provided
+        quality = scada_feed.get('quality', 100)
+        if quality is not None:
+            if quality < 0 or quality > 100:
+                raise ValueError(f"quality ({quality}) must be in range [0, 100]")
+
         processed = {
             'timestamp': datetime.now().isoformat(),
             'tags_processed': len(scada_feed.get('tags', {})),
@@ -871,7 +1377,29 @@ class BoilerEfficiencyTools:
         return processed
 
     def process_dcs_data(self, dcs_feed: Dict[str, Any]) -> Dict[str, Any]:
-        """Process DCS data for control integration."""
+        """
+        Process DCS data for control integration.
+
+        Args:
+            dcs_feed: DCS data feed
+
+        Returns:
+            Processed DCS data
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation - None checks
+        if dcs_feed is None:
+            raise ValueError("dcs_feed cannot be None")
+
+        # Validate mode if provided
+        mode = dcs_feed.get('mode', 'manual')
+        if mode is not None:
+            valid_modes = ['manual', 'auto', 'cascade', 'remote']
+            if mode not in valid_modes:
+                raise ValueError(f"mode ({mode}) must be one of {valid_modes}")
+
         return {
             'timestamp': datetime.now().isoformat(),
             'control_points': len(dcs_feed.get('points', {})),
@@ -885,7 +1413,43 @@ class BoilerEfficiencyTools:
         commands: Dict[str, Any],
         dashboard: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Coordinate multiple boiler agents."""
+        """
+        Coordinate multiple boiler agents.
+
+        Args:
+            agent_ids: List of agent identifiers
+            commands: Command dictionary
+            dashboard: Dashboard data
+
+        Returns:
+            Task assignments for agents
+
+        Raises:
+            ValueError: If input validation fails
+        """
+        # Input validation - None checks
+        if agent_ids is None:
+            raise ValueError("agent_ids cannot be None")
+        if commands is None:
+            raise ValueError("commands cannot be None")
+        if dashboard is None:
+            raise ValueError("dashboard cannot be None")
+
+        # Validate agent_ids is a list
+        if not isinstance(agent_ids, list):
+            raise ValueError(f"agent_ids must be a list, got {type(agent_ids)}")
+
+        # Validate list is not empty
+        if len(agent_ids) == 0:
+            raise ValueError("agent_ids cannot be an empty list")
+
+        # Validate each agent_id is a string
+        for idx, agent_id in enumerate(agent_ids):
+            if not isinstance(agent_id, str):
+                raise ValueError(f"agent_ids[{idx}] must be a string, got {type(agent_id)}")
+            if not agent_id.strip():
+                raise ValueError(f"agent_ids[{idx}] cannot be an empty string")
+
         task_assignments = {}
 
         for agent_id in agent_ids:

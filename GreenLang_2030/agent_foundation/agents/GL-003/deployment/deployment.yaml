@@ -1,0 +1,377 @@
+# GL-003 SteamSystemAnalyzer - Kubernetes Deployment
+# Production-grade deployment with resource limits, health checks, and auto-scaling
+# Compatible with Kubernetes 1.24+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-003-steam-system-analyzer
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+    version: "1.0.0"
+    component: "steam-optimization"
+  annotations:
+    description: "SteamSystemAnalyzer - Industrial steam system optimization agent"
+    documentation: "https://docs.greenlang.ai/agents/GL-003"
+
+    # Ownership and contact information
+    owner: "greenlang-platform-team"
+    team: "industrial-optimization"
+    contact: "gl-003-oncall@greenlang.ai"
+    slack-channel: "#gl-003-alerts"
+    pagerduty-service: "GL-003-SteamSystem"
+
+    # Cost tracking and allocation
+    cost-center: "industrial-optimization"
+    billing-code: "GL-003-PROD"
+    environment: "production"
+
+    # Compliance and security
+    compliance-level: "sox-compliant"
+    data-classification: "confidential"
+    security-tier: "tier-2"
+
+    # Release and version tracking
+    release-date: "2025-11-17"
+    git-commit: "abc123def456"
+    build-number: "1.0.0-build.1"
+    deployment-strategy: "rolling-update"
+
+    # Monitoring and observability
+    datadog.com/service: "gl-003-steam-system-analyzer"
+    prometheus.io/scrape: "true"
+    sentry.io/project: "gl-003-steam-system-analyzer"
+
+    # Change management
+    last-updated: "2025-11-17"
+    change-ticket: "CHG-2025-001001"
+    approval-status: "approved"
+
+spec:
+  # Replicas for production (3 for high availability)
+  replicas: 3
+
+  # Rolling update strategy with zero downtime
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Allow 1 extra pod during update
+      maxUnavailable: 0  # Never take down all pods
+
+  # Label selector for pod management
+  selector:
+    matchLabels:
+      app: gl-003-steam-system-analyzer
+      agent: "GL-003"
+
+  template:
+    metadata:
+      labels:
+        app: gl-003-steam-system-analyzer
+        agent: "GL-003"
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        prometheus.io/path: "/api/v1/metrics"
+
+    spec:
+      # Service account for RBAC
+      serviceAccountName: gl-003-steam-system-analyzer
+
+      # Security context for pod-level security
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 3000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Affinity rules for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-003-steam-system-analyzer
+                topologyKey: kubernetes.io/hostname
+
+      # Topology spread constraints for even distribution
+      topologySpreadConstraints:
+        # Spread pods across availability zones
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway  # Soft constraint
+          labelSelector:
+            matchLabels:
+              app: gl-003-steam-system-analyzer
+              agent: "GL-003"
+
+        # Spread pods across nodes
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule  # Hard constraint
+          labelSelector:
+            matchLabels:
+              app: gl-003-steam-system-analyzer
+              agent: "GL-003"
+
+      # Termination grace period for graceful shutdown
+      terminationGracePeriodSeconds: 30
+
+      # Init containers for dependency checks
+      initContainers:
+        # Wait for PostgreSQL database to be ready
+        - name: wait-for-db
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL database to be ready..."
+              until nc -z -v -w30 postgresql.database.svc.cluster.local 5432; do
+                echo "Waiting for database connection..."
+                sleep 5
+              done
+              echo "Database is ready!"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+        # Wait for Redis cache to be ready
+        - name: wait-for-redis
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Redis cache to be ready..."
+              until nc -z -v -w30 redis.cache.svc.cluster.local 6379; do
+                echo "Waiting for Redis connection..."
+                sleep 5
+              done
+              echo "Redis is ready!"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+        # Database migration (if needed)
+        - name: db-migrate
+          image: "gcr.io/greenlang/gl-003-steam-system-analyzer:1.0.0"
+          command:
+            - python
+            - -m
+            - alembic
+            - upgrade
+            - head
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-003-secrets
+                  key: database_url
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false  # Migration may need write access
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      containers:
+        - name: gl-003-steam-system-analyzer
+          image: "gcr.io/greenlang/gl-003-steam-system-analyzer:1.0.0"
+          imagePullPolicy: IfNotPresent
+
+          # Lifecycle hooks for graceful startup and shutdown
+          lifecycle:
+            # Post-start hook - execute after container starts
+            postStart:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "GL-003 SteamSystemAnalyzer starting..."
+                    echo "Pod: $POD_NAME"
+                    echo "Namespace: $POD_NAMESPACE"
+                    echo "Node: $NODE_NAME"
+                    # Optional: Register with service discovery, warm up caches, etc.
+
+            # Pre-stop hook - execute before container is terminated
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "GL-003 SteamSystemAnalyzer shutting down gracefully..."
+                    # Graceful shutdown sequence:
+                    # 1. Stop accepting new requests
+                    # 2. Finish processing current requests (max 25 seconds)
+                    # 3. Close database connections
+                    # 4. Flush logs and metrics
+                    sleep 5
+                    # Optional: Call application shutdown endpoint
+                    # wget -q -O- http://localhost:8000/api/v1/shutdown || true
+
+          # Security context for container-level security
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
+
+          # Ports exposed by the container
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 8001
+              protocol: TCP
+
+          # Environment variables from ConfigMap and Secrets
+          env:
+            - name: GREENLANG_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-003-config
+                  key: environment
+
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-003-config
+                  key: log_level
+
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-003-secrets
+                  key: database_url
+
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-003-secrets
+                  key: redis_url
+
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-003-secrets
+                  key: api_key
+
+            - name: METRICS_ENABLED
+              value: "true"
+
+            - name: PROMETHEUS_PORT
+              value: "8001"
+
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Resource requests and limits
+          # Requests: guaranteed resources
+          # Limits: maximum resources to prevent node exhaustion
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"
+
+          # Liveness probe - restart pod if unresponsive
+          # Detects deadlocks, memory leaks, infinite loops
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 40   # Wait for startup
+            periodSeconds: 10         # Check every 10 seconds
+            timeoutSeconds: 5         # 5 second timeout
+            failureThreshold: 3       # Restart after 3 failures (30 seconds)
+            successThreshold: 1       # 1 success to declare healthy
+
+          # Readiness probe - remove from service if not ready
+          # Detects slow startup, initialization issues
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10   # Quick readiness check
+            periodSeconds: 5          # Check every 5 seconds
+            timeoutSeconds: 3         # 3 second timeout
+            failureThreshold: 2       # Remove after 2 failures (10 seconds)
+            successThreshold: 1       # 1 success to add back to service
+
+          # Startup probe - allow time for application bootstrap
+          # Prevents killing slow-starting applications
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30      # 150 seconds (30 * 5s) for startup
+
+          # Volume mounts for logs and temporary files
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/cache
+
+      # Volumes for ephemeral storage
+      volumes:
+        - name: logs
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 2Gi

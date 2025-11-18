@@ -1,0 +1,62 @@
+# GL-003 SteamSystemAnalyzer - Kustomize Base Configuration
+# Base Kubernetes resources for all environments
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-003-steam-system-analyzer-base
+
+# Namespace
+namespace: greenlang
+
+# Common labels applied to all resources
+commonLabels:
+  app: gl-003-steam-system-analyzer
+  agent: "GL-003"
+  managed-by: kustomize
+
+# Common annotations
+commonAnnotations:
+  managed-by: kustomize
+  repository: "https://github.com/greenlang/Code-V1_GreenLang"
+
+# Resources to include
+resources:
+  - ../../deployment.yaml
+  - ../../service.yaml
+  - ../../configmap.yaml
+  - ../../secret.yaml
+  - ../../hpa.yaml
+  - ../../ingress.yaml
+  - ../../networkpolicy.yaml
+  - ../../serviceaccount.yaml
+  - ../../servicemonitor.yaml
+  - ../../pdb.yaml
+  - ../../limitrange.yaml
+  - ../../resourcequota.yaml
+
+# ConfigMap generator (optional)
+configMapGenerator:
+  - name: gl-003-config
+    behavior: merge
+    literals:
+      - app_name=GL-003-SteamSystemAnalyzer
+      - app_version=1.0.0
+
+# Secret generator (optional - use external secrets in production)
+# secretGenerator:
+#   - name: gl-003-secrets
+#     behavior: merge
+#     literals:
+#       - api_key=placeholder
+
+# Images
+images:
+  - name: gcr.io/greenlang/gl-003-steam-system-analyzer
+    newTag: 1.0.0
+
+# Replicas (can be overridden in overlays)
+replicas:
+  - name: gl-003-steam-system-analyzer
+    count: 3

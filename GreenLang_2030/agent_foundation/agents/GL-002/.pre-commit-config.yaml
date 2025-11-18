@@ -1,0 +1,114 @@
+# GL-002 Pre-commit Configuration
+# Automated code quality checks before every commit
+# Installation: pip install pre-commit && pre-commit install
+
+repos:
+  # Code Formatting
+  - repo: https://github.com/psf/black
+    rev: 24.1.1
+    hooks:
+      - id: black
+        name: Black Code Formatter
+        language_version: python3.11
+        args: ['--line-length=120']
+
+  # Import Sorting
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort Import Sorter
+        args: ['--profile', 'black', '--line-length=120']
+
+  # Linting
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        name: Flake8 Linter
+        args: ['--max-line-length=120', '--extend-ignore=E203,W503']
+        additional_dependencies: [flake8-docstrings, flake8-bugbear]
+
+  # Type Checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: MyPy Type Checker
+        args: ['--ignore-missing-imports', '--no-implicit-optional']
+        additional_dependencies: [types-all]
+
+  # Security Scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.6
+    hooks:
+      - id: bandit
+        name: Bandit Security Scanner
+        args: ['-ll', '-i']
+        exclude: tests/
+
+  # General File Checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+      - id: end-of-file-fixer
+        name: Fix End of Files
+      - id: check-yaml
+        name: Check YAML Syntax
+        args: ['--unsafe']
+      - id: check-json
+        name: Check JSON Syntax
+      - id: check-added-large-files
+        name: Check for Large Files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+        name: Check for Merge Conflicts
+      - id: check-case-conflict
+        name: Check for Case Conflicts
+      - id: check-docstring-first
+        name: Check Docstring First
+      - id: debug-statements
+        name: Check for Debug Statements
+      - id: mixed-line-ending
+        name: Check Mixed Line Endings
+        args: ['--fix=lf']
+
+  # Secret Detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: Detect Secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: package.lock.json
+
+  # Python Security
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.3
+    hooks:
+      - id: python-safety-dependencies-check
+        name: Safety Dependency Check
+        files: requirements.*\.txt$
+
+  # YAML Linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.33.0
+    hooks:
+      - id: yamllint
+        name: YAML Linter
+        args: ['-d', '{extends: default, rules: {line-length: {max: 120}}}']
+
+  # Dockerfile Linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint-docker
+        name: Hadolint Dockerfile Linter
+        args: ['--ignore', 'DL3008', '--ignore', 'DL3013']
+
+# Global Settings
+default_stages: [commit]
+fail_fast: false
+minimum_pre_commit_version: '2.20.0'

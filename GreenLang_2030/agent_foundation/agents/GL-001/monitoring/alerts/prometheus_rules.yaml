@@ -1,0 +1,523 @@
+---
+# Prometheus Alerting Rules for GL-001 ProcessHeatOrchestrator
+# Comprehensive monitoring for master orchestrator and multi-plant operations
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-001-alerts
+  namespace: greenlang
+  labels:
+    app: gl-001-process-heat-orchestrator
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    # ===========================================================================
+    # CRITICAL ALERTS - Immediate Action Required
+    # ===========================================================================
+    - name: gl-001-critical-alerts
+      interval: 30s
+      rules:
+        - alert: GL001MasterOrchestratorDown
+          expr: up{job="gl-001-orchestrator"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: master-orchestrator
+            team: greenlang-ops
+            priority: p0
+          annotations:
+            summary: "GL-001 Master Orchestrator is DOWN"
+            description: "GL-001 ProcessHeatOrchestrator has been unavailable for more than 1 minute. This affects ALL plant operations. Pod: {{ $labels.pod }}, Namespace: {{ $labels.namespace }}"
+            impact: "All 99 sub-agents and plant operations affected"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-orchestrator-down"
+            dashboard_url: "https://grafana.greenlang.io/d/gl-001-master"
+
+        - alert: GL001AllSubAgentsFailed
+          expr: gl_001_active_subagents_count == 0 and gl_001_orchestrator_health_status == 1
+          for: 2m
+          labels:
+            severity: critical
+            component: sub-agents
+            team: greenlang-ops
+            priority: p0
+          annotations:
+            summary: "ALL sub-agents have failed"
+            description: "No sub-agents are responding. Complete coordination failure."
+            impact: "Zero operational capacity across all plants"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-all-agents-failed"
+
+        - alert: GL001MultiPlantHeatLoss
+          expr: sum(gl_001_plant_heat_losses_mw) > 100
+          for: 5m
+          labels:
+            severity: critical
+            component: multi-plant
+            team: greenlang-ops
+            priority: p0
+          annotations:
+            summary: "Excessive multi-plant heat loss detected"
+            description: "Total heat losses exceed 100 MW across all plants. Current: {{ $value | humanize }} MW"
+            impact: "Massive energy waste and cost impact"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-heat-loss"
+
+        - alert: GL001CriticalPlantFailure
+          expr: sum(gl_001_plant_health_status) by (plant_id) == 0
+          for: 2m
+          labels:
+            severity: critical
+            component: plant-operations
+            team: greenlang-ops
+            priority: p0
+          annotations:
+            summary: "Critical plant failure detected"
+            description: "Plant {{ $labels.plant_id }} is in FAILED state. All operations halted."
+            impact: "Plant shutdown - production disruption"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-plant-failure"
+
+        - alert: GL001SCADAConnectionLost
+          expr: sum(gl_001_scada_connection_status) by (plant_id) == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: scada-integration
+            team: greenlang-ops
+            priority: p1
+          annotations:
+            summary: "SCADA connection lost for plant"
+            description: "Plant {{ $labels.plant_id }} has lost all SCADA connectivity. Blind operation risk."
+            impact: "No real-time data - manual operation required"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-scada-lost"
+
+        - alert: GL001ERPIntegrationFailure
+          expr: gl_001_erp_connection_status == 0
+          for: 5m
+          labels:
+            severity: critical
+            component: erp-integration
+            team: greenlang-ops
+            priority: p1
+          annotations:
+            summary: "ERP integration failure"
+            description: "ERP system {{ $labels.erp_system }} connection lost. Production scheduling impacted."
+            impact: "Cannot sync production schedules, costs, inventory"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-erp-failure"
+
+        - alert: GL001HighOrchestrationErrorRate
+          expr: |
+            100 * sum(rate(gl_001_orchestration_requests_total{status="failure"}[5m]))
+            / sum(rate(gl_001_orchestration_requests_total[5m])) > 5
+          for: 2m
+          labels:
+            severity: critical
+            component: orchestration
+            team: greenlang-ops
+            priority: p0
+          annotations:
+            summary: "Orchestration error rate exceeds 5%"
+            description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes. Systemic failure."
+            impact: "Coordination degraded - manual intervention required"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-high-error-rate"
+
+        - alert: GL001EmissionsComplianceViolation
+          expr: |
+            sum(gl_001_emissions_compliance_status{regulation!=""}) by (plant_id, regulation) == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: emissions-compliance
+            team: greenlang-compliance
+            priority: p0
+          annotations:
+            summary: "Emissions compliance violation"
+            description: "Plant {{ $labels.plant_id }} violates {{ $labels.regulation }}. Regulatory risk."
+            impact: "Potential fines, plant shutdown orders"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-emissions-violation"
+
+        - alert: GL001EnergyBalanceFailure
+          expr: gl_001_energy_balance_closure_percent < 90
+          for: 5m
+          labels:
+            severity: critical
+            component: energy-balance
+            team: greenlang-ops
+            priority: p1
+          annotations:
+            summary: "Energy balance calculation failure"
+            description: "Plant {{ $labels.plant_id }} energy balance closure at {{ $value | humanizePercentage }}. Should be >95%."
+            impact: "Accuracy compromised - cannot trust optimization results"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-balance-failure"
+
+    # ===========================================================================
+    # WARNING ALERTS - Investigation Required
+    # ===========================================================================
+    - name: gl-001-warning-alerts
+      interval: 1m
+      rules:
+        - alert: GL001OrchestratorPerformanceDegradation
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_001_orchestration_duration_seconds_bucket[5m])) by (le, orchestration_type))
+            / histogram_quantile(0.95, sum(rate(gl_001_orchestration_duration_seconds_bucket[1h])) by (le, orchestration_type)) > 1.20
+          for: 10m
+          labels:
+            severity: warning
+            component: performance
+            team: greenlang-ops
+          annotations:
+            summary: "Orchestration performance degraded by >20%"
+            description: "{{ $labels.orchestration_type }} p95 latency increased {{ $value | humanizePercentage }} vs 1h baseline"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-perf-degradation"
+
+        - alert: GL001SubAgentDegradation
+          expr: |
+            100 * (gl_001_active_subagents_count / 99) < 80
+          for: 5m
+          labels:
+            severity: warning
+            component: sub-agents
+            team: greenlang-ops
+          annotations:
+            summary: "More than 20% of sub-agents unavailable"
+            description: "Only {{ $value | humanizePercentage }} of sub-agents are active. Category: {{ $labels.agent_category }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-agent-degradation"
+
+        - alert: GL001PlantEfficiencyDrop
+          expr: gl_001_plant_thermal_efficiency_percent < 70
+          for: 15m
+          labels:
+            severity: warning
+            component: plant-efficiency
+            team: greenlang-ops
+          annotations:
+            summary: "Plant thermal efficiency below 70%"
+            description: "Plant {{ $labels.plant_name }} efficiency is {{ $value | humanizePercentage }}. Target: >85%"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-low-efficiency"
+
+        - alert: GL001HighTaskQueueDepth
+          expr: sum(gl_001_task_queue_depth) by (priority) > 100
+          for: 10m
+          labels:
+            severity: warning
+            component: task-queue
+            team: greenlang-ops
+          annotations:
+            summary: "Task queue depth exceeds 100"
+            description: "{{ $labels.priority }} priority queue has {{ $value }} pending tasks. Processing bottleneck."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-queue-depth"
+
+        - alert: GL001SubAgentResponseSlow
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_001_subagent_response_time_seconds_bucket[5m])) by (le, agent_id)) > 5
+          for: 10m
+          labels:
+            severity: warning
+            component: sub-agents
+            team: greenlang-ops
+          annotations:
+            summary: "Sub-agent response time exceeds 5s"
+            description: "Agent {{ $labels.agent_id }} p95 response time is {{ $value | humanizeDuration }}. Type: {{ $labels.agent_type }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-slow-agent"
+
+        - alert: GL001SCADADataQualityLow
+          expr: gl_001_scada_data_quality_percent < 90
+          for: 10m
+          labels:
+            severity: warning
+            component: scada-quality
+            team: greenlang-ops
+          annotations:
+            summary: "SCADA data quality below 90%"
+            description: "Plant {{ $labels.plant_id }} SCADA quality at {{ $value | humanizePercentage }} for {{ $labels.data_category }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-scada-quality"
+
+        - alert: GL001LowCacheHitRate
+          expr: |
+            100 * sum(rate(gl_001_calculation_cache_hits_total[5m])) by (calculation_type)
+            / (sum(rate(gl_001_calculation_cache_hits_total[5m])) by (calculation_type) + sum(rate(gl_001_calculation_cache_misses_total[5m])) by (calculation_type)) < 60
+          for: 15m
+          labels:
+            severity: warning
+            component: cache
+            team: greenlang-ops
+          annotations:
+            summary: "Calculation cache hit rate below 60%"
+            description: "{{ $labels.calculation_type }} cache hit rate is {{ $value | humanizePercentage }}. Performance impact."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-cache-miss"
+
+        - alert: GL001HighMemoryUsage
+          expr: |
+            (gl_001_system_memory_usage_bytes{type="rss"} / 1024 / 1024 / 1024) > 6
+          for: 10m
+          labels:
+            severity: warning
+            component: resources
+            team: greenlang-ops
+          annotations:
+            summary: "Memory usage exceeds 6GB"
+            description: "Memory usage is {{ $value | humanize }}GB. Approaching OOM risk."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-high-memory"
+
+        - alert: GL001HighCPUUsage
+          expr: gl_001_system_cpu_usage_percent > 80
+          for: 15m
+          labels:
+            severity: warning
+            component: resources
+            team: greenlang-ops
+          annotations:
+            summary: "CPU usage exceeds 80%"
+            description: "CPU usage is {{ $value | humanizePercentage }}. Consider horizontal scaling."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-high-cpu"
+
+        - alert: GL001MessageBusLatencyHigh
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_001_message_bus_latency_seconds_bucket[5m])) by (le, message_type)) > 1
+          for: 10m
+          labels:
+            severity: warning
+            component: message-bus
+            team: greenlang-ops
+          annotations:
+            summary: "Message bus latency exceeds 1s"
+            description: "{{ $labels.message_type }} messages p95 latency is {{ $value | humanizeDuration }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-bus-latency"
+
+    # ===========================================================================
+    # BUSINESS METRIC ALERTS
+    # ===========================================================================
+    - name: gl-001-business-alerts
+      interval: 5m
+      rules:
+        - alert: GL001LowOptimizationSavings
+          expr: sum(gl_001_optimization_annual_savings_usd) < 500000
+          for: 1h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "Optimization savings below target"
+            description: "Annual savings projection is ${{ $value | humanize }}, below $500k target"
+            dashboard_url: "https://grafana.greenlang.io/d/gl-001-exec"
+
+        - alert: GL001LowEmissionsReduction
+          expr: sum(gl_001_optimization_annual_emissions_reduction_tons) < 1000
+          for: 1h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "Emissions reduction below target"
+            description: "Annual CO2 reduction is {{ $value | humanize }} tons, below 1000 ton target"
+            dashboard_url: "https://grafana.greenlang.io/d/gl-001-exec"
+
+        - alert: GL001LowPlantCapacityUtilization
+          expr: gl_001_plant_capacity_utilization_percent < 60
+          for: 2h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "Plant capacity utilization below 60%"
+            description: "Plant {{ $labels.plant_name }} capacity at {{ $value | humanizePercentage }}. Revenue opportunity."
+            dashboard_url: "https://grafana.greenlang.io/d/gl-001-exec"
+
+    # ===========================================================================
+    # SLO ALERTS - Service Level Objectives
+    # ===========================================================================
+    - name: gl-001-slo-alerts
+      interval: 1m
+      rules:
+        - alert: GL001SLOAvailabilityViolation
+          expr: |
+            100 * avg_over_time(up{job="gl-001-orchestrator"}[30d]) < 99.9
+          for: 5m
+          labels:
+            severity: critical
+            component: slo
+            team: greenlang-ops
+            priority: p0
+          annotations:
+            summary: "GL-001 SLO availability violation"
+            description: "30-day availability is {{ $value | humanizePercentage }}, below 99.9% SLO"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-slo-availability"
+
+        - alert: GL001SLOLatencyViolation
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_001_orchestration_duration_seconds_bucket[1h])) by (le)) > 5
+          for: 15m
+          labels:
+            severity: warning
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-001 SLO latency violation"
+            description: "1h p95 orchestration latency is {{ $value | humanizeDuration }}, exceeds 5s SLO"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-slo-latency"
+
+        - alert: GL001SLOErrorRateBudgetExhausted
+          expr: |
+            100 * sum(increase(gl_001_orchestration_requests_total{status="failure"}[30d]))
+            / sum(increase(gl_001_orchestration_requests_total[30d])) > 0.1
+          for: 1h
+          labels:
+            severity: critical
+            component: slo
+            team: greenlang-ops
+            priority: p1
+          annotations:
+            summary: "GL-001 Error budget exhausted"
+            description: "30-day error rate is {{ $value | humanizePercentage }}, exceeds 0.1% error budget"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-error-budget"
+
+        - alert: GL001SLOSubAgentAvailability
+          expr: |
+            100 * (gl_001_active_subagents_count / 99) < 95
+          for: 30m
+          labels:
+            severity: warning
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "Sub-agent availability below 95% SLO"
+            description: "Only {{ $value | humanizePercentage }} of sub-agents available. Target: 95%"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-slo-subagents"
+
+    # ===========================================================================
+    # INTEGRATION HEALTH ALERTS
+    # ===========================================================================
+    - name: gl-001-integration-alerts
+      interval: 1m
+      rules:
+        - alert: GL001SCADADataStale
+          expr: |
+            time() - gl_001_scada_data_latency_seconds > 300
+          for: 5m
+          labels:
+            severity: warning
+            component: scada-integration
+            team: greenlang-ops
+          annotations:
+            summary: "SCADA data is stale"
+            description: "Plant {{ $labels.plant_id }} SCADA data is {{ $value | humanizeDuration }} old"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-stale-data"
+
+        - alert: GL001SCADAAlarmFlood
+          expr: sum(gl_001_scada_alarms_active) by (plant_id) > 50
+          for: 5m
+          labels:
+            severity: warning
+            component: scada-alarms
+            team: greenlang-ops
+          annotations:
+            summary: "SCADA alarm flood detected"
+            description: "Plant {{ $labels.plant_id }} has {{ $value }} active alarms. Alarm rationalization needed."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-alarm-flood"
+
+        - alert: GL001ERPSyncFailureRate
+          expr: |
+            100 * sum(rate(gl_001_erp_data_sync_total{status="failure"}[10m]))
+            / sum(rate(gl_001_erp_data_sync_total[10m])) > 10
+          for: 10m
+          labels:
+            severity: warning
+            component: erp-integration
+            team: greenlang-ops
+          annotations:
+            summary: "ERP sync failure rate exceeds 10%"
+            description: "ERP sync failures at {{ $value | humanizePercentage }} for {{ $labels.data_type }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-erp-sync"
+
+    # ===========================================================================
+    # COORDINATION ALERTS
+    # ===========================================================================
+    - name: gl-001-coordination-alerts
+      interval: 1m
+      rules:
+        - alert: GL001HighTaskFailureRate
+          expr: |
+            100 * sum(rate(gl_001_tasks_completed_total{status="failure"}[10m])) by (task_category)
+            / sum(rate(gl_001_tasks_completed_total[10m])) by (task_category) > 5
+          for: 10m
+          labels:
+            severity: warning
+            component: task-coordination
+            team: greenlang-ops
+          annotations:
+            summary: "Task failure rate exceeds 5%"
+            description: "{{ $labels.task_category }} tasks failing at {{ $value | humanizePercentage }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-task-failures"
+
+        - alert: GL001SubAgentCoordinationFailures
+          expr: |
+            sum(rate(gl_001_subagent_coordination_failures_total[5m])) by (agent_id) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+            component: coordination
+            team: greenlang-ops
+          annotations:
+            summary: "Sub-agent coordination failures detected"
+            description: "Agent {{ $labels.agent_id }} coordination failures: {{ $value }}/sec. Type: {{ $labels.failure_type }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-coordination-failures"
+
+        - alert: GL001CrossPlantHeatTransferAnomaly
+          expr: gl_001_cross_plant_heat_transfer_mw > 50 or gl_001_cross_plant_heat_transfer_mw < 0
+          for: 10m
+          labels:
+            severity: warning
+            component: multi-plant
+            team: greenlang-ops
+          annotations:
+            summary: "Anomalous cross-plant heat transfer"
+            description: "Heat transfer from {{ $labels.source_plant }} to {{ $labels.destination_plant }}: {{ $value | humanize }} MW"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-heat-transfer"
+
+    # ===========================================================================
+    # DETERMINISM & QUALITY ALERTS
+    # ===========================================================================
+    - name: gl-001-quality-alerts
+      interval: 1m
+      rules:
+        - alert: GL001DeterminismViolation
+          expr: |
+            rate(gl_001_determinism_verification_failures_total[5m]) > 0
+          for: 2m
+          labels:
+            severity: critical
+            component: determinism
+            team: greenlang-quality
+            priority: p0
+          annotations:
+            summary: "Determinism violation detected"
+            description: "Determinism violations for {{ $labels.violation_type }}. Zero-hallucination guarantee compromised."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-determinism-violation"
+
+        - alert: GL001DeterminismScoreLow
+          expr: gl_001_determinism_score_percent < 100
+          for: 5m
+          labels:
+            severity: warning
+            component: determinism
+            team: greenlang-quality
+          annotations:
+            summary: "Determinism score below 100%"
+            description: "{{ $labels.component }} determinism score is {{ $value | humanizePercentage }}. Target: 100%"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-determinism-score"
+
+        - alert: GL001ProvenanceHashVerificationFailed
+          expr: |
+            sum(rate(gl_001_provenance_hash_verifications_total{status="failure"}[5m])) > 0
+          for: 2m
+          labels:
+            severity: critical
+            component: provenance
+            team: greenlang-quality
+            priority: p1
+          annotations:
+            summary: "Provenance hash verification failures"
+            description: "Provenance verification failing. Audit trail integrity compromised."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-001-provenance-failure"

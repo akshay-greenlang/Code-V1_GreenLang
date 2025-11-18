@@ -1,0 +1,108 @@
+# GL-003 SteamSystemAnalyzer - Network Policy
+# Control ingress and egress traffic for security
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-003-steam-system-analyzer-netpol
+  namespace: greenlang
+  labels:
+    app: gl-003-steam-system-analyzer
+    agent: "GL-003"
+
+spec:
+  # Apply to GL-003 pods
+  podSelector:
+    matchLabels:
+      app: gl-003-steam-system-analyzer
+      agent: "GL-003"
+
+  # Policy types
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # Ingress rules (who can connect to GL-003)
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow from Prometheus (metrics scraping)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8001
+
+    # Allow from same namespace (inter-service communication)
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  # Egress rules (where GL-003 can connect)
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow PostgreSQL database
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow Redis cache
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: cache
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow HTTPS to external APIs (OpenAI, Anthropic)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow HTTP for webhooks and callbacks
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
