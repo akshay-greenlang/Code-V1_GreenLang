@@ -1,0 +1,61 @@
+name: GL-004 BurnerOptimizationAgent CI/CD
+
+on:
+  push:
+    branches: [master, develop]
+    paths:
+      - 'agent_foundation/agents/GL-004/**'
+  pull_request:
+    branches: [master]
+
+env:
+  AGENT_PATH: agent_foundation/agents/GL-004
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - run: |
+          pip install ruff black isort mypy
+          cd $AGENT_PATH
+          ruff check .
+          black --check .
+          isort --check .
+          mypy . --ignore-missing-imports
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - run: |
+          pip install bandit safety
+          cd $AGENT_PATH
+          bandit -r . -ll
+          safety check
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+      - run: |
+          cd $AGENT_PATH
+          pip install -r requirements.txt
+          pytest tests/ -v --cov=.
+
+  build:
+    needs: [lint, security, test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v3
+      - uses: docker/build-push-action@v4
+        with:
+          context: $AGENT_PATH
+          push: true
+          tags: greenlang/gl-004:latest
