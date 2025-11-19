@@ -1,0 +1,124 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:3e671687-395b-41f5-a30f-a58921a69b79",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-11-19T00:00:00Z",
+    "tools": [
+      {
+        "vendor": "GreenLang",
+        "name": "GL-SecScan",
+        "version": "1.0.0"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "gl-007-furnace-monitor",
+      "name": "GL-007 FurnacePerformanceMonitor",
+      "version": "1.0.0",
+      "description": "Advanced monitoring and optimization system for industrial furnaces",
+      "supplier": {
+        "name": "GreenLang",
+        "url": ["https://greenlang.ai"]
+      },
+      "licenses": [
+        {
+          "license": {
+            "id": "Proprietary"
+          }
+        }
+      ]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "fastapi-0.104.1",
+      "name": "fastapi",
+      "version": "0.104.1",
+      "description": "FastAPI framework for building APIs",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/fastapi@0.104.1",
+      "externalReferences": [
+        {
+          "type": "website",
+          "url": "https://fastapi.tiangolo.com/"
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "bom-ref": "uvicorn-0.24.0",
+      "name": "uvicorn",
+      "version": "0.24.0",
+      "description": "ASGI server implementation",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}],
+      "purl": "pkg:pypi/uvicorn@0.24.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "pydantic-2.5.0",
+      "name": "pydantic",
+      "version": "2.5.0",
+      "description": "Data validation using Python type hints",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/pydantic@2.5.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "sqlalchemy-2.0.23",
+      "name": "sqlalchemy",
+      "version": "2.0.23",
+      "description": "SQL toolkit and ORM",
+      "licenses": [{"license": {"id": "MIT"}}],
+      "purl": "pkg:pypi/sqlalchemy@2.0.23"
+    },
+    {
+      "type": "library",
+      "bom-ref": "prometheus-client-0.19.0",
+      "name": "prometheus-client",
+      "version": "0.19.0",
+      "description": "Prometheus instrumentation library",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/prometheus-client@0.19.0"
+    },
+    {
+      "type": "library",
+      "bom-ref": "cryptography-41.0.7",
+      "name": "cryptography",
+      "version": "41.0.7",
+      "description": "Cryptographic recipes and primitives",
+      "licenses": [{"license": {"id": "Apache-2.0"}}],
+      "purl": "pkg:pypi/cryptography@41.0.7"
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "gl-007-furnace-monitor",
+      "dependsOn": [
+        "fastapi-0.104.1",
+        "uvicorn-0.24.0",
+        "pydantic-2.5.0",
+        "sqlalchemy-2.0.23",
+        "prometheus-client-0.19.0",
+        "cryptography-41.0.7"
+      ]
+    }
+  ],
+  "vulnerabilities": [],
+  "annotations": [
+    {
+      "bom-ref": "annotation-001",
+      "subjects": ["gl-007-furnace-monitor"],
+      "annotator": {
+        "component": {
+          "name": "GL-SecScan",
+          "version": "1.0.0"
+        }
+      },
+      "timestamp": "2025-11-19T00:00:00Z",
+      "text": "Security Grade: A+ (95/100) - No critical vulnerabilities detected"
+    }
+  ]
+}

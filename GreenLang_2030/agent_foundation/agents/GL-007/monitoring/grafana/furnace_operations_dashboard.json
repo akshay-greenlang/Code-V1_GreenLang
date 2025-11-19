@@ -1,0 +1,390 @@
+{
+  "dashboard": {
+    "title": "GL-007 FurnacePerformanceMonitor - Furnace Operations",
+    "tags": ["gl-007", "furnace", "operations"],
+    "timezone": "utc",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "refresh": "1m",
+    "templating": {
+      "list": [
+        {
+          "name": "furnace_id",
+          "type": "query",
+          "query": "label_values(gl_007_furnace_thermal_efficiency_percent, furnace_id)",
+          "refresh": 1,
+          "multi": true,
+          "includeAll": true
+        }
+      ]
+    },
+    "panels": [
+      {
+        "title": "Thermal Efficiency by Furnace",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_furnace_thermal_efficiency_percent{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{zone}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Efficiency", "min": 0, "max": 100},
+          {"format": "short"}
+        ],
+        "thresholds": [
+          {"value": 70, "colorMode": "critical", "op": "lt", "fill": true, "line": true},
+          {"value": 80, "colorMode": "custom", "op": "lt", "fill": false, "line": true}
+        ]
+      },
+      {
+        "title": "Fuel Consumption Rate",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_furnace_fuel_consumption_kg_hr{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{fuel_type}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "kg/h", "label": "Fuel Consumption"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Furnace Temperature by Zone",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_furnace_temperature_celsius{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{zone}} - {{sensor_id}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "celsius", "label": "Temperature"},
+          {"format": "short"}
+        ],
+        "tooltip": {"shared": true, "sort": 2}
+      },
+      {
+        "title": "Production Rate",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 16},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_furnace_production_rate_tons_hr{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "tons/h", "label": "Production"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Specific Energy Consumption",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 16},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_furnace_specific_energy_consumption_kwh_ton{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "kWh/ton", "label": "SEC"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Furnace Pressure",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 16},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_furnace_pressure_bar{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{zone}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "bar", "label": "Pressure"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Heat Recovery Efficiency",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 22},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_heat_recovery_efficiency_percent{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{recovery_system}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Efficiency"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Heat Loss by Type",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 22},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_heat_loss_rate_kw{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{loss_type}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "kW", "label": "Heat Loss"},
+          {"format": "short"}
+        ],
+        "stack": true
+      },
+      {
+        "title": "Combustion Efficiency",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 28},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_combustion_efficiency_percent{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Efficiency", "min": 0, "max": 100},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Excess Air Percentage",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 28},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_excess_air_percent{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Excess Air"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Air-Fuel Ratio",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 28},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_air_fuel_ratio{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - Burner {{burner_id}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "short", "label": "Ratio"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Flue Gas Temperature",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 34},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_flue_gas_temperature_celsius{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{measurement_point}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "celsius", "label": "Temperature"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Oxygen Level in Flue Gas",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 34},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_furnace_oxygen_level_percent{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "O2 Level"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Refractory Temperature Profile",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_refractory_temperature_celsius{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{zone}} - Depth: {{depth}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "celsius", "label": "Temperature"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Refractory Degradation Rate",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_refractory_degradation_rate_mm_day{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - {{zone}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "mm/day", "label": "Degradation Rate"},
+          {"format": "short"}
+        ],
+        "thresholds": [
+          {"value": 5, "colorMode": "critical", "op": "gt", "fill": true, "line": true}
+        ]
+      },
+      {
+        "title": "Burner Performance Index",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 48},
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "gl_007_burner_performance_index{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}} - Burner {{burner_id}}"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 75, "color": "yellow"},
+                {"value": 90, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Maintenance Alerts (24h)",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 48},
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "sum(increase(gl_007_maintenance_alerts_total{furnace_id=~\"$furnace_id\"}[24h])) by (furnace_id, severity)",
+            "legendFormat": "{{furnace_id}} - {{severity}}"
+          }
+        ],
+        "options": {
+          "displayMode": "gradient",
+          "orientation": "horizontal"
+        }
+      },
+      {
+        "title": "Component Remaining Life (hours)",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 54},
+        "type": "table",
+        "targets": [
+          {
+            "expr": "gl_007_component_remaining_life_hours{furnace_id=~\"$furnace_id\"}",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "job": true},
+              "indexByName": {
+                "furnace_id": 0,
+                "component": 1,
+                "Value": 2
+              }
+            }
+          }
+        ],
+        "options": {
+          "sortBy": [{"displayName": "Value", "desc": false}]
+        }
+      },
+      {
+        "title": "Energy-Production Correlation",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 62},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl_007_energy_production_correlation{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}}"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "min": -1,
+            "max": 1,
+            "thresholds": {
+              "steps": [
+                {"value": -1, "color": "red"},
+                {"value": 0.7, "color": "yellow"},
+                {"value": 0.85, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Production Uptime %",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 62},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl_007_production_uptime_percent{furnace_id=~\"$furnace_id\"}",
+            "legendFormat": "{{furnace_id}}"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 98, "color": "green"}
+              ]
+            }
+          }
+        }
+      }
+    ]
+  }
+}

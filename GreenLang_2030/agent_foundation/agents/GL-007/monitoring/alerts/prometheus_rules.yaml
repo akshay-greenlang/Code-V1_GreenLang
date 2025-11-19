@@ -1,0 +1,469 @@
+---
+# Prometheus Alerting Rules for GL-007 FurnacePerformanceMonitor
+# Comprehensive monitoring with CRITICAL and WARNING thresholds
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-007-alerts
+  namespace: greenlang
+  labels:
+    app: gl-007-furnace-monitor
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    # ===========================================================================
+    # CRITICAL ALERTS - Immediate Action Required
+    # ===========================================================================
+    - name: gl-007-critical-alerts
+      interval: 30s
+      rules:
+        - alert: GL007AgentUnavailable
+          expr: up{job="gl-007-furnace-monitor"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: agent
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Agent is unavailable"
+            description: "GL-007 FurnacePerformanceMonitor has been unavailable for more than 1 minute. Pod: {{ $labels.pod }}, Namespace: {{ $labels.namespace }}"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-unavailable"
+            dashboard_url: "https://grafana.greenlang.io/d/gl-007-ops"
+
+        - alert: GL007HighErrorRate
+          expr: |
+            100 * sum(rate(gl_007_http_requests_total{status="error"}[5m]))
+            / sum(rate(gl_007_http_requests_total[5m])) > 5
+          for: 2m
+          labels:
+            severity: critical
+            component: api
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Error rate exceeds 5%"
+            description: "Error rate is {{ $value | humanizePercentage }} over the last 5 minutes. This indicates a systemic failure."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-high-error-rate"
+
+        - alert: GL007SCADAConnectionDown
+          expr: gl_007_scada_connection_status == 0
+          for: 2m
+          labels:
+            severity: critical
+            component: scada
+            team: greenlang-ops
+          annotations:
+            summary: "SCADA connection lost"
+            description: "SCADA system {{ $labels.scada_system }} connection has been down for 2 minutes. Real-time monitoring unavailable."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-scada-down"
+
+        - alert: GL007FurnaceTemperatureAnomaly
+          expr: |
+            abs(gl_007_furnace_temperature_celsius - avg_over_time(gl_007_furnace_temperature_celsius[1h]))
+            / avg_over_time(gl_007_furnace_temperature_celsius[1h]) > 0.15
+          for: 5m
+          labels:
+            severity: critical
+            component: furnace
+            team: greenlang-ops
+          annotations:
+            summary: "Furnace temperature anomaly detected"
+            description: "Furnace {{ $labels.furnace_id }} zone {{ $labels.zone }} temperature deviated >15% from 1h average. Current: {{ $value }}°C"
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-temp-anomaly"
+
+        - alert: GL007LowThermalEfficiency
+          expr: gl_007_furnace_thermal_efficiency_percent < 70
+          for: 10m
+          labels:
+            severity: critical
+            component: efficiency
+            team: greenlang-ops
+          annotations:
+            summary: "Furnace thermal efficiency critically low"
+            description: "Furnace {{ $labels.furnace_id }} efficiency is {{ $value }}%, below 70% critical threshold."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-low-efficiency"
+
+        - alert: GL007DatabaseConnectionFailure
+          expr: gl_007_db_connection_pool_size == 0
+          for: 1m
+          labels:
+            severity: critical
+            component: database
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Database connection pool exhausted"
+            description: "No available database connections. Application cannot persist data."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-db-failure"
+
+        - alert: GL007HighMemoryUsage
+          expr: |
+            (gl_007_system_memory_usage_bytes{type="rss"} / 1024 / 1024 / 1024) > 6
+          for: 5m
+          labels:
+            severity: critical
+            component: resources
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Memory usage critically high"
+            description: "Memory usage is {{ $value | humanize }}GB. Pod may be OOM killed."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-high-memory"
+
+        - alert: GL007RefractoryDegradationCritical
+          expr: gl_007_refractory_degradation_rate_mm_day > 5
+          for: 15m
+          labels:
+            severity: critical
+            component: maintenance
+            team: greenlang-maintenance
+          annotations:
+            summary: "Refractory degradation rate critical"
+            description: "Furnace {{ $labels.furnace_id }} zone {{ $labels.zone }} refractory degrading at {{ $value }}mm/day. Immediate inspection required."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-refractory-critical"
+
+        - alert: GL007MaintenancePredictionHighConfidence
+          expr: |
+            gl_007_maintenance_prediction_confidence > 0.9
+            and gl_007_component_remaining_life_hours < 168
+          for: 5m
+          labels:
+            severity: critical
+            component: maintenance
+            team: greenlang-maintenance
+          annotations:
+            summary: "Component failure predicted within 7 days"
+            description: "Furnace {{ $labels.furnace_id }} component {{ $labels.component }} predicted to fail in {{ $value }} hours with >90% confidence."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-maintenance-critical"
+
+        - alert: GL007CalculationTimeout
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_007_calculation_duration_seconds_bucket[5m])) by (le, calculation_type)) > 5
+          for: 5m
+          labels:
+            severity: critical
+            component: calculation
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Calculation p95 latency exceeds 5s"
+            description: "Calculation {{ $labels.calculation_type }} p95 latency is {{ $value | humanizeDuration }}. Timeout risk."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-calc-timeout"
+
+    # ===========================================================================
+    # WARNING ALERTS - Investigation Required
+    # ===========================================================================
+    - name: gl-007-warning-alerts
+      interval: 1m
+      rules:
+        - alert: GL007PerformanceDegradation
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_007_http_request_duration_seconds_bucket[5m])) by (le, endpoint))
+            / histogram_quantile(0.95, sum(rate(gl_007_http_request_duration_seconds_bucket[1h])) by (le, endpoint)) > 1.15
+          for: 5m
+          labels:
+            severity: warning
+            component: performance
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Performance degraded by >15%"
+            description: "Endpoint {{ $labels.endpoint }} p95 latency increased {{ $value | humanizePercentage }} compared to 1h baseline."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-performance-degradation"
+
+        - alert: GL007LowCacheHitRate
+          expr: |
+            100 * sum(rate(gl_007_cache_hits_total[5m]))
+            / (sum(rate(gl_007_cache_hits_total[5m])) + sum(rate(gl_007_cache_misses_total[5m]))) < 75
+          for: 10m
+          labels:
+            severity: warning
+            component: cache
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Cache hit rate below 75%"
+            description: "Cache hit rate is {{ $value | humanizePercentage }}. Performance may be impacted."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-low-cache-hit"
+
+        - alert: GL007EfficiencyBelowTarget
+          expr: avg(gl_007_furnace_thermal_efficiency_percent) by (furnace_id) < 80
+          for: 15m
+          labels:
+            severity: warning
+            component: efficiency
+            team: greenlang-ops
+          annotations:
+            summary: "Furnace efficiency below target"
+            description: "Furnace {{ $labels.furnace_id }} efficiency is {{ $value }}%, below 80% target."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-efficiency-warning"
+
+        - alert: GL007HighFuelConsumption
+          expr: |
+            (gl_007_furnace_fuel_consumption_kg_hr - avg_over_time(gl_007_furnace_fuel_consumption_kg_hr[6h]))
+            / avg_over_time(gl_007_furnace_fuel_consumption_kg_hr[6h]) > 0.20
+          for: 10m
+          labels:
+            severity: warning
+            component: fuel
+            team: greenlang-ops
+          annotations:
+            summary: "Fuel consumption spike detected"
+            description: "Furnace {{ $labels.furnace_id }} fuel consumption {{ $value }}% above 6h average."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-fuel-spike"
+
+        - alert: GL007SCADADataLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_007_scada_data_latency_seconds_bucket[5m])) by (le, scada_system)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: scada
+            team: greenlang-ops
+          annotations:
+            summary: "SCADA data latency high"
+            description: "SCADA {{ $labels.scada_system }} p95 latency is {{ $value | humanizeDuration }}. Data freshness impacted."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-scada-latency"
+
+        - alert: GL007SCADATagQualityDegraded
+          expr: avg(gl_007_scada_tag_quality) by (scada_system) < 0.95
+          for: 10m
+          labels:
+            severity: warning
+            component: scada
+            team: greenlang-ops
+          annotations:
+            summary: "SCADA tag quality degraded"
+            description: "SCADA {{ $labels.scada_system }} tag quality is {{ $value | humanizePercentage }}. Check sensor health."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-tag-quality"
+
+        - alert: GL007HighDatabaseLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_007_db_query_duration_seconds_bucket[5m])) by (le, query_type)) > 0.5
+          for: 5m
+          labels:
+            severity: warning
+            component: database
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Database query latency high"
+            description: "Query type {{ $labels.query_type }} p95 latency is {{ $value | humanizeDuration }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-db-latency"
+
+        - alert: GL007ExternalAPILatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_007_external_api_duration_seconds_bucket[5m])) by (le, api_name)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            component: external-api
+            team: greenlang-ops
+          annotations:
+            summary: "External API latency high"
+            description: "API {{ $labels.api_name }} p95 latency is {{ $value | humanizeDuration }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-api-latency"
+
+        - alert: GL007HighCPUUsage
+          expr: gl_007_system_cpu_usage_percent > 80
+          for: 10m
+          labels:
+            severity: warning
+            component: resources
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 CPU usage high"
+            description: "CPU usage is {{ $value | humanizePercentage }}. Consider scaling horizontally."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-high-cpu"
+
+        - alert: GL007PredictionAccuracyDrop
+          expr: |
+            avg(gl_007_prediction_accuracy) by (model_type) < 0.85
+          for: 30m
+          labels:
+            severity: warning
+            component: ml
+            team: greenlang-ml
+          annotations:
+            summary: "ML model prediction accuracy dropped"
+            description: "Model {{ $labels.model_type }} accuracy is {{ $value | humanizePercentage }}, below 85% threshold."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-accuracy-drop"
+
+        - alert: GL007ProductionCorrelationBreak
+          expr: abs(gl_007_energy_production_correlation) < 0.7
+          for: 1h
+          labels:
+            severity: warning
+            component: correlation
+            team: greenlang-ops
+          annotations:
+            summary: "Energy-production correlation weakened"
+            description: "Furnace {{ $labels.furnace_id }} energy-production correlation is {{ $value }}, indicating process instability."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-correlation-break"
+
+        - alert: GL007SensorMalfunction
+          expr: |
+            changes(gl_007_furnace_temperature_celsius[5m]) == 0
+            and gl_007_furnace_production_rate_tons_hr > 0
+          for: 15m
+          labels:
+            severity: warning
+            component: sensor
+            team: greenlang-maintenance
+          annotations:
+            summary: "Furnace sensor malfunction suspected"
+            description: "Furnace {{ $labels.furnace_id }} sensor {{ $labels.sensor_id }} reading unchanged for 15 minutes during production."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-sensor-malfunction"
+
+        - alert: GL007BurnerPerformanceDegraded
+          expr: gl_007_burner_performance_index < 75
+          for: 20m
+          labels:
+            severity: warning
+            component: burner
+            team: greenlang-maintenance
+          annotations:
+            summary: "Burner performance degraded"
+            description: "Furnace {{ $labels.furnace_id }} burner {{ $labels.burner_id }} performance index is {{ $value }}/100."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-burner-degraded"
+
+        - alert: GL007HighHeatLoss
+          expr: |
+            sum(gl_007_heat_loss_rate_kw) by (furnace_id)
+            / (gl_007_furnace_production_rate_tons_hr * 1000) > 0.15
+          for: 30m
+          labels:
+            severity: warning
+            component: thermal
+            team: greenlang-ops
+          annotations:
+            summary: "High heat loss detected"
+            description: "Furnace {{ $labels.furnace_id }} specific heat loss is {{ $value }} kW/ton, >15% threshold."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-heat-loss"
+
+    # ===========================================================================
+    # BUSINESS METRIC ALERTS
+    # ===========================================================================
+    - name: gl-007-business-alerts
+      interval: 5m
+      rules:
+        - alert: GL007LowEnergySavings
+          expr: sum(gl_007_annual_energy_savings_usd) < 100000
+          for: 1h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "GL-007 Energy savings below target"
+            description: "Annual energy savings projection is ${{ $value | humanize }}, below $100k target."
+            dashboard_url: "https://grafana.greenlang.io/d/gl-007-exec"
+
+        - alert: GL007LowCarbonReduction
+          expr: sum(gl_007_annual_carbon_reduction_tons) < 500
+          for: 1h
+          labels:
+            severity: info
+            component: business
+            team: greenlang-product
+          annotations:
+            summary: "GL-007 Carbon reduction below target"
+            description: "Annual CO2 reduction projection is {{ $value | humanize }} tons, below 500 ton target."
+            dashboard_url: "https://grafana.greenlang.io/d/gl-007-exec"
+
+        - alert: GL007LowProductionUptime
+          expr: gl_007_production_uptime_percent < 95
+          for: 6h
+          labels:
+            severity: warning
+            component: production
+            team: greenlang-ops
+          annotations:
+            summary: "Production uptime below target"
+            description: "Furnace {{ $labels.furnace_id }} uptime is {{ $value }}%, below 95% target."
+            dashboard_url: "https://grafana.greenlang.io/d/gl-007-ops"
+
+    # ===========================================================================
+    # SLO ALERTS - Service Level Objectives
+    # ===========================================================================
+    - name: gl-007-slo-alerts
+      interval: 1m
+      rules:
+        - alert: GL007SLOAvailabilityViolation
+          expr: |
+            100 * avg_over_time(up{job="gl-007-furnace-monitor"}[30d]) < 99.9
+          for: 5m
+          labels:
+            severity: critical
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 SLO availability violation"
+            description: "30-day availability is {{ $value | humanizePercentage }}, below 99.9% SLO."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-slo-availability"
+
+        - alert: GL007SLOLatencyViolation
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_007_http_request_duration_seconds_bucket[1h])) by (le)) > 3
+          for: 10m
+          labels:
+            severity: warning
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 SLO latency violation"
+            description: "1h p95 latency is {{ $value | humanizeDuration }}, exceeds 3s SLO."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-slo-latency"
+
+        - alert: GL007SLOErrorRateBudgetExhausted
+          expr: |
+            100 * sum(increase(gl_007_http_requests_total{status="error"}[30d]))
+            / sum(increase(gl_007_http_requests_total[30d])) > 0.1
+          for: 1h
+          labels:
+            severity: critical
+            component: slo
+            team: greenlang-ops
+          annotations:
+            summary: "GL-007 Error budget exhausted"
+            description: "30-day error rate is {{ $value | humanizePercentage }}, exceeds 0.1% error budget."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-error-budget"
+
+    # ===========================================================================
+    # QUALITY ALERTS - Data Quality & Determinism
+    # ===========================================================================
+    - name: gl-007-quality-alerts
+      interval: 1m
+      rules:
+        - alert: GL007DeterminismFailure
+          expr: gl_007_determinism_score_percent < 100
+          for: 5m
+          labels:
+            severity: critical
+            component: determinism
+            team: greenlang-quality
+          annotations:
+            summary: "GL-007 Determinism score below 100%"
+            description: "Component {{ $labels.component }} determinism score is {{ $value }}%. Zero-hallucination guarantee may be violated."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-determinism-failure"
+
+        - alert: GL007CalculationInconsistency
+          expr: |
+            stddev_over_time(gl_007_calculation_duration_seconds_sum[10m]) > 1
+          for: 10m
+          labels:
+            severity: warning
+            component: quality
+            team: greenlang-quality
+          annotations:
+            summary: "GL-007 Calculation inconsistency detected"
+            description: "Calculation {{ $labels.calculation_type }} shows high variance (stddev={{ $value }}s), indicating non-deterministic behavior."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-inconsistency"
+
+        - alert: GL007HighModelInferenceTime
+          expr: |
+            histogram_quantile(0.95, sum(rate(gl_007_model_inference_duration_seconds_bucket[5m])) by (le, model_type)) > 0.5
+          for: 10m
+          labels:
+            severity: warning
+            component: ml
+            team: greenlang-ml
+          annotations:
+            summary: "ML model inference time high"
+            description: "Model {{ $labels.model_type }} p95 inference time is {{ $value | humanizeDuration }}."
+            runbook_url: "https://docs.greenlang.io/runbooks/gl-007-inference-slow"

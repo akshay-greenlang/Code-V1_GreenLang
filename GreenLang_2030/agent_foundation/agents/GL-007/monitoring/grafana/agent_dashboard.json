@@ -1,0 +1,301 @@
+{
+  "dashboard": {
+    "title": "GL-007 FurnacePerformanceMonitor - Agent Performance",
+    "tags": ["gl-007", "agent", "performance"],
+    "timezone": "utc",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "panels": [
+      {
+        "title": "Agent Health Status",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl_007_agent_health_status",
+            "legendFormat": "Health Status"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            },
+            "mappings": [
+              {"value": 0, "text": "Unhealthy"},
+              {"value": 1, "text": "Healthy"}
+            ]
+          }
+        }
+      },
+      {
+        "title": "Active Furnaces Monitored",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl_007_furnace_monitoring_active",
+            "legendFormat": "Furnaces"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area"
+        }
+      },
+      {
+        "title": "Request Rate (req/s)",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_007_http_requests_total[5m]))",
+            "legendFormat": "Requests/s"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area"
+        }
+      },
+      {
+        "title": "Error Rate (%)",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "100 * sum(rate(gl_007_http_requests_total{status=\"error\"}[5m])) / sum(rate(gl_007_http_requests_total[5m]))",
+            "legendFormat": "Error Rate"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 1, "color": "yellow"},
+                {"value": 5, "color": "red"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "HTTP Request Rate by Endpoint",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(rate(gl_007_http_requests_total[5m])) by (endpoint)",
+            "legendFormat": "{{endpoint}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "reqps", "label": "Requests/s"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "HTTP Request Latency (p50, p95, p99)",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(gl_007_http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl_007_http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(gl_007_http_request_duration_seconds_bucket[5m])) by (le))",
+            "legendFormat": "p99"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Latency"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Memory Usage",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 12},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_system_memory_usage_bytes{type=\"rss\"} / 1024 / 1024 / 1024",
+            "legendFormat": "RSS Memory (GB)"
+          }
+        ],
+        "yaxes": [
+          {"format": "decgbytes", "label": "Memory"},
+          {"format": "short"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [4], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "type": "query"
+            }
+          ],
+          "name": "High Memory Usage"
+        }
+      },
+      {
+        "title": "CPU Usage (%)",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 12},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_system_cpu_usage_percent",
+            "legendFormat": "CPU %"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "CPU", "max": 100},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "System Uptime",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 12},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl_007_system_uptime_seconds / 3600",
+            "legendFormat": "Uptime (hours)"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "h"
+          }
+        }
+      },
+      {
+        "title": "Cache Hit Rate",
+        "gridPos": {"h": 6, "w": 12, "x": 0, "y": 20},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "100 * sum(rate(gl_007_cache_hits_total[5m])) / (sum(rate(gl_007_cache_hits_total[5m])) + sum(rate(gl_007_cache_misses_total[5m])))",
+            "legendFormat": "Hit Rate %"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Hit Rate", "max": 100},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Database Query Latency (p95)",
+        "gridPos": {"h": 6, "w": 12, "x": 12, "y": 20},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl_007_db_query_duration_seconds_bucket[5m])) by (le, query_type))",
+            "legendFormat": "{{query_type}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Latency"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "SCADA Connection Status",
+        "gridPos": {"h": 4, "w": 12, "x": 0, "y": 26},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "gl_007_scada_connection_status",
+            "legendFormat": "{{scada_system}}"
+          }
+        ],
+        "options": {
+          "colorMode": "background"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 1, "color": "green"}
+              ]
+            },
+            "mappings": [
+              {"value": 0, "text": "Disconnected"},
+              {"value": 1, "text": "Connected"}
+            ]
+          }
+        }
+      },
+      {
+        "title": "Calculation Duration by Type",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 26},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(gl_007_calculation_duration_seconds_bucket[5m])) by (le, calculation_type))",
+            "legendFormat": "{{calculation_type}} (p95)"
+          }
+        ],
+        "yaxes": [
+          {"format": "s", "label": "Duration"},
+          {"format": "short"}
+        ]
+      },
+      {
+        "title": "Determinism Score by Component",
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 34},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "gl_007_determinism_score_percent",
+            "legendFormat": "{{component}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "percent", "label": "Score", "min": 0, "max": 100},
+          {"format": "short"}
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": {"params": [100], "type": "lt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "type": "query"
+            }
+          ],
+          "name": "Determinism Score Below 100%"
+        }
+      }
+    ]
+  }
+}

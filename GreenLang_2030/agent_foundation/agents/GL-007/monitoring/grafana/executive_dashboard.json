@@ -1,0 +1,442 @@
+{
+  "dashboard": {
+    "title": "GL-007 FurnacePerformanceMonitor - Executive KPIs",
+    "tags": ["gl-007", "executive", "kpis", "business"],
+    "timezone": "utc",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-30d",
+      "to": "now"
+    },
+    "refresh": "5m",
+    "panels": [
+      {
+        "title": "Fleet-Wide Avg Thermal Efficiency",
+        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "avg(gl_007_furnace_thermal_efficiency_percent)",
+            "legendFormat": "Efficiency %"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 70, "color": "orange"},
+                {"value": 80, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Annual Energy Savings (Projected)",
+        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(gl_007_annual_energy_savings_usd)",
+            "legendFormat": "Savings"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 0,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 100000, "color": "yellow"},
+                {"value": 250000, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Annual Carbon Reduction (Projected)",
+        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(gl_007_annual_carbon_reduction_tons)",
+            "legendFormat": "CO2 Reduction"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "tons",
+            "decimals": 0,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 500, "color": "yellow"},
+                {"value": 1000, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Fleet Availability (30d)",
+        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "avg(avg_over_time(gl_007_production_uptime_percent[30d]))",
+            "legendFormat": "Uptime %"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 90, "color": "orange"},
+                {"value": 95, "color": "yellow"},
+                {"value": 98, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Energy Savings Trend ($/hr)",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(gl_007_energy_cost_savings_usd_hr) by (furnace_id)",
+            "legendFormat": "{{furnace_id}}"
+          },
+          {
+            "expr": "sum(gl_007_energy_cost_savings_usd_hr)",
+            "legendFormat": "Total Fleet"
+          }
+        ],
+        "yaxes": [
+          {"format": "currencyUSD", "label": "Savings $/hr"},
+          {"format": "short"}
+        ],
+        "stack": false
+      },
+      {
+        "title": "Carbon Emissions Reduction (kg/hr)",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(gl_007_carbon_emissions_reduction_kg_hr) by (furnace_id)",
+            "legendFormat": "{{furnace_id}}"
+          },
+          {
+            "expr": "sum(gl_007_carbon_emissions_reduction_kg_hr)",
+            "legendFormat": "Total Fleet"
+          }
+        ],
+        "yaxes": [
+          {"format": "kg/h", "label": "CO2 Reduction"},
+          {"format": "short"}
+        ],
+        "stack": false
+      },
+      {
+        "title": "Fleet Performance Score Card",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 14},
+        "type": "table",
+        "targets": [
+          {
+            "expr": "avg(gl_007_furnace_thermal_efficiency_percent) by (furnace_id)",
+            "format": "table",
+            "instant": true,
+            "legendFormat": "Efficiency"
+          },
+          {
+            "expr": "avg(gl_007_furnace_specific_energy_consumption_kwh_ton) by (furnace_id)",
+            "format": "table",
+            "instant": true,
+            "legendFormat": "SEC"
+          },
+          {
+            "expr": "avg(gl_007_production_uptime_percent) by (furnace_id)",
+            "format": "table",
+            "instant": true,
+            "legendFormat": "Uptime"
+          },
+          {
+            "expr": "avg(gl_007_energy_cost_savings_usd_hr) by (furnace_id)",
+            "format": "table",
+            "instant": true,
+            "legendFormat": "Savings"
+          }
+        ],
+        "transformations": [
+          {
+            "id": "merge",
+            "options": {}
+          },
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {"Time": true, "job": true, "__name__": true},
+              "renameByName": {
+                "furnace_id": "Furnace",
+                "Value #A": "Efficiency %",
+                "Value #B": "SEC (kWh/ton)",
+                "Value #C": "Uptime %",
+                "Value #D": "Savings ($/hr)"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "title": "Efficiency Distribution by Furnace",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 22},
+        "type": "bargauge",
+        "targets": [
+          {
+            "expr": "avg(gl_007_furnace_thermal_efficiency_percent) by (furnace_id)",
+            "legendFormat": "{{furnace_id}}"
+          }
+        ],
+        "options": {
+          "displayMode": "gradient",
+          "orientation": "horizontal",
+          "showUnfilled": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 70, "color": "orange"},
+                {"value": 80, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Fuel Consumption by Type",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 22},
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum(gl_007_furnace_fuel_consumption_kg_hr) by (fuel_type)",
+            "legendFormat": "{{fuel_type}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          }
+        }
+      },
+      {
+        "title": "Maintenance Alerts by Severity (30d)",
+        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 30},
+        "type": "piechart",
+        "targets": [
+          {
+            "expr": "sum(increase(gl_007_maintenance_alerts_total[30d])) by (severity)",
+            "legendFormat": "{{severity}}"
+          }
+        ],
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "bottom",
+            "values": ["value"]
+          }
+        },
+        "fieldConfig": {
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "critical"},
+              "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "warning"},
+              "properties": [{"id": "color", "value": {"fixedColor": "yellow", "mode": "fixed"}}]
+            }
+          ]
+        }
+      },
+      {
+        "title": "Total Maintenance Cost Avoidance (30d)",
+        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 30},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(increase(gl_007_maintenance_cost_avoidance_usd_total[30d]))",
+            "legendFormat": "Cost Avoided"
+          }
+        ],
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 0
+          }
+        }
+      },
+      {
+        "title": "ML Model Prediction Accuracy",
+        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 30},
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "avg(gl_007_prediction_accuracy) by (model_type)",
+            "legendFormat": "{{model_type}}"
+          }
+        ],
+        "options": {
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit",
+            "min": 0,
+            "max": 1,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 0.85, "color": "yellow"},
+                {"value": 0.90, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "ROI Analysis - Energy Savings vs Investment",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 36},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(gl_007_annual_energy_savings_usd) by (furnace_id)",
+            "legendFormat": "Annual Savings - {{furnace_id}}"
+          }
+        ],
+        "yaxes": [
+          {"format": "currencyUSD", "label": "Annual Savings"},
+          {"format": "short"}
+        ],
+        "seriesOverrides": [
+          {
+            "alias": "/Annual Savings.*/",
+            "bars": true,
+            "lines": false
+          }
+        ]
+      },
+      {
+        "title": "Cumulative CO2 Reduction (30d)",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 36},
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "sum(increase(gl_007_carbon_emissions_reduction_kg_hr[1h])) / 1000",
+            "legendFormat": "Cumulative CO2 (tons)"
+          }
+        ],
+        "yaxes": [
+          {"format": "tons", "label": "CO2 Reduction"},
+          {"format": "short"}
+        ],
+        "fill": 2
+      },
+      {
+        "title": "Compliance & Quality Metrics",
+        "gridPos": {"h": 6, "w": 24, "x": 0, "y": 44},
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "avg(gl_007_determinism_score_percent)",
+            "legendFormat": "Determinism Score"
+          },
+          {
+            "expr": "100 * (1 - sum(rate(gl_007_http_requests_total{status=\"error\"}[30d])) / sum(rate(gl_007_http_requests_total[30d])))",
+            "legendFormat": "Success Rate"
+          },
+          {
+            "expr": "100 * avg_over_time(up{job=\"gl-007-furnace-monitor\"}[30d])",
+            "legendFormat": "Availability"
+          },
+          {
+            "expr": "avg(gl_007_scada_connection_status) * 100",
+            "legendFormat": "SCADA Connectivity"
+          }
+        ],
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "title": "Key Performance Indicators Summary",
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 50},
+        "type": "text",
+        "options": {
+          "mode": "markdown",
+          "content": "# GL-007 FurnacePerformanceMonitor - Executive Summary\n\n## Business Impact\n- **Energy Efficiency**: Continuous monitoring and optimization of thermal efficiency across furnace fleet\n- **Cost Savings**: Real-time identification of efficiency losses and optimization opportunities\n- **Carbon Reduction**: Quantified CO2 emissions reduction through improved operations\n- **Predictive Maintenance**: ML-powered maintenance forecasting reduces unplanned downtime\n\n## Technical Excellence\n- **Zero-Hallucination Guarantee**: 100% deterministic calculations with full provenance tracking\n- **High Availability**: 99.9% uptime SLA with automated failover\n- **SCADA Integration**: Real-time data from industrial control systems\n- **Advanced Analytics**: ML models for efficiency prediction and anomaly detection\n\n## Compliance & Quality\n- **Determinism Verification**: All calculations reproducible and auditable\n- **Data Quality**: Continuous monitoring of sensor health and data integrity\n- **Regulatory Compliance**: Automated tracking of operational parameters\n- **Performance Transparency**: Complete visibility into agent operations"
+        }
+      }
+    ]
+  }
+}
