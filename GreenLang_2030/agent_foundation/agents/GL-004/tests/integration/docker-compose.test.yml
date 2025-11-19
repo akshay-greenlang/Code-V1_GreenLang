@@ -1,0 +1,174 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Test Database
+  postgres-test:
+    image: postgres:15-alpine
+    container_name: gl004-postgres-test
+    environment:
+      POSTGRES_DB: gl004_test
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-test-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d gl004_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gl004-test-network
+
+  # Redis Cache
+  redis-test:
+    image: redis:7-alpine
+    container_name: gl004-redis-test
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-test-data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfilename "gl004-test.aof"
+      --dbfilename "gl004-test.rdb"
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gl004-test-network
+
+  # Mosquitto MQTT Broker
+  mosquitto-test:
+    image: eclipse-mosquitto:2.0
+    container_name: gl004-mosquitto-test
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - mosquitto-test-data:/mosquitto/data
+      - mosquitto-test-logs:/mosquitto/log
+    healthcheck:
+      test: ["CMD", "mosquitto_pub", "-t", "test", "-m", "test", "-q", "0"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gl004-test-network
+
+  # Mock Modbus Server
+  modbus-mock:
+    build:
+      context: .
+      dockerfile: Dockerfile.modbus
+    container_name: gl004-modbus-mock
+    ports:
+      - "5502:502"
+    environment:
+      MODBUS_MODE: "test"
+      EQUIPMENT_TYPE: "burner_controller"
+      SIMULATION_ENABLED: "true"
+    volumes:
+      - ./modbus_config.yaml:/app/config.yaml
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('localhost', 502))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gl004-test-network
+
+  # Mock HTTP API Server (Flame Scanner)
+  flame-scanner-mock:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: gl004-flame-scanner-mock
+    ports:
+      - "5003:5000"
+    environment:
+      API_MODE: "test"
+      DEVICE_TYPE: "flame_scanner"
+      SIMULATION_ENABLED: "true"
+    volumes:
+      - ./api_config.yaml:/app/config.yaml
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - gl004-test-network
+
+  # Test Runner Container
+  test-runner:
+    build:
+      context: ../../../..
+      dockerfile: GreenLang_2030/agent_foundation/agents/GL-004/tests/integration/Dockerfile.test
+    container_name: gl004-test-runner
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+      mosquitto-test:
+        condition: service_healthy
+      modbus-mock:
+        condition: service_healthy
+      flame-scanner-mock:
+        condition: service_healthy
+    environment:
+      # Database config
+      DB_HOST: postgres-test
+      DB_PORT: 5432
+      DB_NAME: gl004_test
+      DB_USER: test_user
+      DB_PASSWORD: test_password
+      # Redis config
+      REDIS_HOST: redis-test
+      REDIS_PORT: 6379
+      # MQTT config
+      MQTT_BROKER: mosquitto-test
+      MQTT_PORT: 1883
+      # Modbus config
+      MODBUS_HOST: modbus-mock
+      MODBUS_PORT: 502
+      # API config
+      API_HOST: flame-scanner-mock
+      API_PORT: 5000
+      # Test config
+      PYTEST_ARGS: "-v --cov=gl004 --cov-report=html --cov-report=term"
+    volumes:
+      - ../../:/app
+      - ./test-results:/app/test-results
+    command: >
+      sh -c "
+        echo 'Waiting for all services to be ready...' &&
+        sleep 10 &&
+        echo 'Running integration tests...' &&
+        pytest tests/integration/ ${PYTEST_ARGS} &&
+        echo 'Integration tests completed.'
+      "
+    networks:
+      - gl004-test-network
+
+volumes:
+  postgres-test-data:
+  redis-test-data:
+  mosquitto-test-data:
+  mosquitto-test-logs:
+
+networks:
+  gl004-test-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
