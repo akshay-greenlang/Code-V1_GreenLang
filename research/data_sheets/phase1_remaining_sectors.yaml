@@ -1,0 +1,512 @@
+# Phase 1: Remaining Sectors (Hydrogen, Recycling, Carbon Removal)
+# Integration-Ready YAML for GreenLang Emission Factors Registry
+# Research Date: 2025-01-15
+# Factors: 27 (10 hydrogen + 12 recycling + 5 carbon removal)
+
+# ====================
+# HYDROGEN PRODUCTION PATHWAYS - EXPANSION
+# ====================
+# NOTE: Grey, Blue, Green (basic) already in main registry
+# These are additional pathways and regional variations
+
+hydrogen_production:
+  # New Hydrogen Pathways
+
+  hydrogen_turquoise_methane_pyrolysis:
+    name: "Hydrogen - Turquoise (Methane Pyrolysis)"
+    emission_factor_kg_co2e_per_kg_h2: 1.8
+    emission_factor_kg_co2e_per_kwh: 0.054
+    scope: "Scope 1"
+    description: "Methane pyrolysis producing H2 and solid carbon (no CO2 combustion)"
+    source: "IEA Global Hydrogen Review 2024 + BASF Pilot Data"
+    uri: "https://www.iea.org/reports/global-hydrogen-review-2024"
+    standard: "ISO 14687"
+    last_updated: "2024-06-15"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 15%"
+    technology_readiness_level: 7
+    process: "CH4 → C (solid) + 2H2"
+    co_product: "Carbon black (valuable material, ~$500-1500/tonne)"
+    notes: "Produces no CO2 during process. Emissions from natural gas extraction and process heat."
+
+  hydrogen_pink_nuclear_electrolysis:
+    name: "Hydrogen - Pink (Nuclear-Powered Electrolysis)"
+    emission_factor_kg_co2e_per_kg_h2: 0.3
+    emission_factor_kg_co2e_per_kwh: 0.009
+    scope: "Scope 1"
+    description: "Electrolysis powered by nuclear electricity (includes lifecycle)"
+    source: "World Nuclear Association 2024 + IEA Hydrogen Review"
+    uri: "https://world-nuclear.org/information-library/energy-and-the-environment/hydrogen-production-and-uses.aspx"
+    standard: "ISO 14687"
+    last_updated: "2024-09-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 12%"
+    technology_readiness_level: 8
+    lifecycle_includes: "Uranium mining, reactor construction, waste management, electrolysis"
+    notes: "France EPR reactors with SOEC electrolyzers. Very low operational emissions."
+
+  # Green Hydrogen - Dedicated Renewable Sources
+
+  hydrogen_green_solar_pv:
+    name: "Green Hydrogen - Solar PV Dedicated"
+    emission_factor_kg_co2e_per_kg_h2: 0.8
+    emission_factor_kg_co2e_per_kwh: 0.024
+    scope: "Scope 1 + Scope 3"
+    description: "Electrolysis from dedicated solar PV (includes PV lifecycle)"
+    source: "NREL H2@Scale Analysis 2024"
+    uri: "https://www.nrel.gov/hydrogen/h2-scale.html"
+    standard: "ISO 14687"
+    last_updated: "2024-10-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 10%"
+    electrolysis_efficiency_kwh_per_kg: 50
+    pv_lifecycle_emissions_g_co2e_per_kwh: 41
+    notes: "Includes solar panel manufacturing, installation, O&M. 100% renewable."
+
+  hydrogen_green_wind:
+    name: "Green Hydrogen - Wind Dedicated"
+    emission_factor_kg_co2e_per_kg_h2: 0.4
+    emission_factor_kg_co2e_per_kwh: 0.012
+    scope: "Scope 1 + Scope 3"
+    description: "Electrolysis from dedicated wind power (includes turbine lifecycle)"
+    source: "NREL H2@Scale Analysis 2024"
+    uri: "https://www.nrel.gov/hydrogen/h2-scale.html"
+    standard: "ISO 14687"
+    last_updated: "2024-10-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 10%"
+    electrolysis_efficiency_kwh_per_kg: 50
+    wind_lifecycle_emissions_g_co2e_per_kwh: 11
+    notes: "Offshore/onshore average. Includes turbine manufacturing."
+
+  hydrogen_green_hydro:
+    name: "Green Hydrogen - Hydroelectric Dedicated"
+    emission_factor_kg_co2e_per_kg_h2: 0.3
+    emission_factor_kg_co2e_per_kwh: 0.009
+    scope: "Scope 1 + Scope 3"
+    description: "Electrolysis from dedicated hydro power (includes dam lifecycle)"
+    source: "IEA Hydrogen Review 2024 + Hydrogen Council"
+    uri: "https://www.iea.org/reports/global-hydrogen-review-2024"
+    standard: "ISO 14687"
+    last_updated: "2024-06-15"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 10%"
+    electrolysis_efficiency_kwh_per_kg: 50
+    hydro_lifecycle_emissions_g_co2e_per_kwh: 24
+    notes: "Norway, Canada, Brazil examples. Very low lifecycle emissions."
+
+  # Green Hydrogen - Regional Grid-Based (NOT truly "green" unless grid is clean)
+
+  hydrogen_grid_france:
+    name: "Hydrogen from France Grid (Nuclear-Heavy)"
+    emission_factor_kg_co2e_per_kg_h2: 2.6
+    scope: "Scope 1 + Scope 2"
+    description: "Electrolysis using France national grid (65% nuclear)"
+    source: "Calculated from France grid factor 0.052 kg CO2e/kWh"
+    uri: "https://www.rte-france.com/en/eco2mix/co2-emissions"
+    last_updated: "2025-01-15"
+    data_quality: "Tier 2"
+    grid_carbon_intensity_kg_co2e_per_kwh: 0.052
+    electrolysis_efficiency_kwh_per_kg: 50
+    reduction_vs_grey_percent: 75
+    notes: "Better than blue hydrogen (3.5 kg) due to nuclear grid. Suitable for 'low-carbon hydrogen' claims, not 'green' hydrogen."
+
+  hydrogen_grid_brazil:
+    name: "Hydrogen from Brazil Grid (Hydro-Heavy)"
+    emission_factor_kg_co2e_per_kg_h2: 6.0
+    scope: "Scope 1 + Scope 2"
+    description: "Electrolysis using Brazil national grid (83% renewable, hydro-dominant)"
+    source: "Calculated from Brazil grid factor 0.120 kg CO2e/kWh"
+    uri: "https://www.gov.br/mcti/pt-br"
+    last_updated: "2025-01-15"
+    data_quality: "Tier 2"
+    grid_carbon_intensity_kg_co2e_per_kwh: 0.120
+    electrolysis_efficiency_kwh_per_kg: 50
+    reduction_vs_grey_percent: 43
+    notes: "Moderate emissions despite high renewable share. Dedicated hydro would be 0.3 kg."
+
+  hydrogen_grid_germany:
+    name: "Hydrogen from Germany Grid"
+    emission_factor_kg_co2e_per_kg_h2: 19.0
+    scope: "Scope 1 + Scope 2"
+    description: "Electrolysis using Germany national grid (mixed renewables and gas)"
+    source: "Calculated from Germany grid factor 0.380 kg CO2e/kWh"
+    uri: "https://www.umweltbundesamt.de/en"
+    last_updated: "2025-01-15"
+    data_quality: "Tier 2"
+    grid_carbon_intensity_kg_co2e_per_kwh: 0.380
+    electrolysis_efficiency_kwh_per_kg: 50
+    reduction_vs_grey_percent: -81
+    notes: "WORSE than grey hydrogen (10.5 kg). Grid-based 'green' hydrogen only works with <0.2 kg/kWh grid."
+
+  hydrogen_grid_china:
+    name: "Hydrogen from China Grid"
+    emission_factor_kg_co2e_per_kg_h2: 27.7
+    scope: "Scope 1 + Scope 2"
+    description: "Electrolysis using China national grid (coal-heavy)"
+    source: "Calculated from China grid factor 0.554 kg CO2e/kWh"
+    uri: "https://www.mee.gov.cn/"
+    last_updated: "2025-01-15"
+    data_quality: "Tier 2"
+    grid_carbon_intensity_kg_co2e_per_kwh: 0.554
+    electrolysis_efficiency_kwh_per_kg: 50
+    reduction_vs_grey_percent: -164
+    notes: "SIGNIFICANTLY WORSE than grey hydrogen. Do not use grid-based electrolysis in coal-heavy grids."
+
+  hydrogen_grid_india:
+    name: "Hydrogen from India Grid"
+    emission_factor_kg_co2e_per_kg_h2: 35.5
+    scope: "Scope 1 + Scope 2"
+    description: "Electrolysis using India national grid (coal-dominant)"
+    source: "Calculated from India grid factor 0.710 kg CO2e/kWh"
+    uri: "https://cea.nic.in/"
+    last_updated: "2025-01-15"
+    data_quality: "Tier 2"
+    grid_carbon_intensity_kg_co2e_per_kwh: 0.710
+    electrolysis_efficiency_kwh_per_kg: 50
+    reduction_vs_grey_percent: -238
+    notes: "WORST case. 3.4× emissions vs. grey hydrogen. Only use dedicated renewables in India."
+
+# ====================
+# CIRCULAR ECONOMY - RECYCLING AVOIDED EMISSIONS
+# ====================
+# Methodology: Virgin Production Emissions - Recycling Process Emissions = Avoided Emissions
+
+recycling:
+  # Plastics
+
+  plastic_pet_recycling:
+    name: "PET Plastic Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 2.3
+    virgin_production_kg_co2e_per_kg: 3.2
+    recycling_process_kg_co2e_per_kg: 0.9
+    reduction_percent: 72
+    description: "Mechanical recycling of PET bottles (polyethylene terephthalate)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "PlasticsEurope Eco-profiles 2023"
+    uri: "https://plasticseurope.org/sustainability/circularity/life-cycle-thinking/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2023-12-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 15%"
+    recycling_type: "Mechanical"
+    applications: "Bottles, food containers, textiles"
+
+  plastic_hdpe_recycling:
+    name: "HDPE Plastic Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 1.4
+    virgin_production_kg_co2e_per_kg: 1.9
+    recycling_process_kg_co2e_per_kg: 0.5
+    reduction_percent: 74
+    description: "High-Density Polyethylene recycling (milk jugs, detergent bottles)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "PlasticsEurope Eco-profiles 2023"
+    uri: "https://plasticseurope.org/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2023-12-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 15%"
+
+  plastic_ldpe_recycling:
+    name: "LDPE Plastic Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 1.5
+    virgin_production_kg_co2e_per_kg: 2.1
+    recycling_process_kg_co2e_per_kg: 0.6
+    reduction_percent: 71
+    description: "Low-Density Polyethylene recycling (plastic bags, films)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "PlasticsEurope Eco-profiles 2023"
+    uri: "https://plasticseurope.org/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2023-12-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 15%"
+
+  plastic_pp_recycling:
+    name: "PP Plastic Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 1.4
+    virgin_production_kg_co2e_per_kg: 1.95
+    recycling_process_kg_co2e_per_kg: 0.55
+    reduction_percent: 72
+    description: "Polypropylene recycling (yogurt containers, bottle caps)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "PlasticsEurope Eco-profiles 2023"
+    uri: "https://plasticseurope.org/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2023-12-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 15%"
+
+  # Metals (cross-reference existing registry factors)
+
+  aluminum_recycling:
+    name: "Aluminum Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 11.9
+    virgin_production_kg_co2e_per_kg: 12.5
+    recycling_process_kg_co2e_per_kg: 0.6
+    reduction_percent: 95
+    description: "Aluminum secondary production (from scrap)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "International Aluminium Institute 2024"
+    uri: "https://international-aluminium.org/statistics/greenhouse-gas-emissions-data/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-07-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 10%"
+    notes: "Cross-reference with aluminum_primary and aluminum_secondary in main registry"
+
+  steel_recycling:
+    name: "Steel Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 1.85
+    virgin_production_kg_co2e_per_kg: 2.30
+    recycling_process_kg_co2e_per_kg: 0.45
+    reduction_percent: 80
+    description: "Steel secondary production via EAF (from scrap)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "World Steel Association 2024"
+    uri: "https://worldsteel.org/steel-topics/climate-change/"
+    standard: "ISO 14404-2"
+    last_updated: "2024-06-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 10%"
+    notes: "Cross-reference with steel_blast_furnace and steel_electric_arc in main registry"
+
+  copper_recycling:
+    name: "Copper Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 3.4
+    virgin_production_kg_co2e_per_kg: 4.2
+    recycling_process_kg_co2e_per_kg: 0.8
+    reduction_percent: 81
+    description: "Copper secondary production (from wire scrap, electronics)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "International Copper Association LCA 2023"
+    uri: "https://copperalliance.org/resource/lca-copper-production/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2023-11-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 12%"
+
+  # Glass
+
+  glass_clear_recycling:
+    name: "Clear Glass Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 0.54
+    virgin_production_kg_co2e_per_kg: 0.85
+    recycling_process_kg_co2e_per_kg: 0.31
+    reduction_percent: 64
+    description: "Clear/flint glass container recycling (cullet use)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "British Glass / FEVE (European Container Glass Federation) 2023"
+    uri: "https://feve.org/about-glass/lifecycle-thinking/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2023-09-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 12%"
+
+  glass_green_recycling:
+    name: "Green Glass Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 0.53
+    virgin_production_kg_co2e_per_kg: 0.82
+    recycling_process_kg_co2e_per_kg: 0.29
+    reduction_percent: 65
+    description: "Green glass container recycling (wine/beer bottles)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "British Glass / FEVE 2023"
+    uri: "https://feve.org/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2023-09-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 12%"
+
+  glass_brown_recycling:
+    name: "Brown/Amber Glass Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 0.53
+    virgin_production_kg_co2e_per_kg: 0.83
+    recycling_process_kg_co2e_per_kg: 0.30
+    reduction_percent: 64
+    description: "Brown/amber glass container recycling (beer bottles)"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "British Glass / FEVE 2023"
+    uri: "https://feve.org/"
+    standard: "ISO 14040 LCA"
+    last_updated: "2023-09-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 12%"
+
+  # Paper
+
+  paper_cardboard_occ_recycling:
+    name: "Cardboard/OCC Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 0.65
+    virgin_production_kg_co2e_per_kg: 1.10
+    recycling_process_kg_co2e_per_kg: 0.45
+    reduction_percent: 59
+    description: "Old Corrugated Containers (OCC) recycling, cardboard boxes"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "EPA WARM Model v16 + NCASI"
+    uri: "https://www.epa.gov/warm"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-05-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 12%"
+    notes: "Virgin kraft liner vs. recycled OCC"
+
+  paper_mixed_recycling:
+    name: "Mixed Paper Recycling (Avoided Emissions)"
+    avoided_emissions_kg_co2e_per_kg: 0.70
+    virgin_production_kg_co2e_per_kg: 1.25
+    recycling_process_kg_co2e_per_kg: 0.55
+    reduction_percent: 56
+    description: "Mixed office paper, newsprint, magazines"
+    scope: "Scope 3 - Category 1 (Avoided)"
+    source: "EPA WARM Model v16 + NCASI"
+    uri: "https://www.epa.gov/warm"
+    standard: "ISO 14040 LCA"
+    last_updated: "2024-05-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 12%"
+
+# ====================
+# CARBON REMOVAL TECHNOLOGIES (NEGATIVE EMISSIONS)
+# ====================
+# Note: Negative values indicate CO2 removal from atmosphere
+
+carbon_removal:
+  direct_air_capture_dac:
+    name: "Direct Air Capture (DAC) with Geological Storage"
+    net_removal_kg_co2e_per_kg_co2_captured: -0.80
+    gross_co2_captured_kg: 1.00
+    lifecycle_energy_emissions_kg_co2e: 0.20
+    description: "Large-scale DAC capturing CO2 from ambient air, geological storage"
+    scope: "Negative Emissions / CDR"
+    source: "Climeworks Orca Plant LCA + IPCC CDR Report 2023"
+    uri: "https://www.ipcc.ch/report/carbon-dioxide-removal/"
+    standard: "ISO 14064-2, Puro.earth CO2 Removal Certificate"
+    last_updated: "2024-10-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 25%"
+    energy_requirement_kwh_thermal_per_tonne_co2: 1750
+    energy_requirement_kwh_electric_per_tonne_co2: 400
+    cost_usd_per_tonne_co2: 600-1000
+    technology_readiness_level: 7
+    notes: "Must use low-carbon energy (renewable/nuclear) for net-negative. Iceland Orca plant uses geothermal."
+
+  biochar_production_application:
+    name: "Biochar Production and Soil Application"
+    net_removal_kg_co2e_per_kg_biochar: -0.50
+    gross_sequestration_kg_co2e: 0.60
+    lifecycle_emissions_kg_co2e: 0.10
+    description: "Pyrolysis of biomass to stable biochar, applied to agricultural soil"
+    scope: "Negative Emissions / CDR"
+    source: "European Biochar Certificate + IBI (International Biochar Initiative)"
+    uri: "https://www.european-biochar.org/"
+    standard: "EBC Standard, ISO 14064-2"
+    last_updated: "2024-09-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 20%"
+    carbon_stability_years: ">1000"
+    co_benefits: "Soil improvement, water retention, N2O reduction"
+    cost_usd_per_tonne_co2: 150-300
+    technology_readiness_level: 8
+    notes: "Recalcitrant aromatic carbon. Additional 0.1-0.2 kg/kg from methane/N2O reduction in soil."
+
+  enhanced_weathering_basalt:
+    name: "Enhanced Weathering - Basalt Application"
+    net_removal_kg_co2e_per_kg_basalt: -0.35
+    gross_sequestration_kg_co2e_30yr: 0.40
+    lifecycle_emissions_kg_co2e: 0.05
+    description: "Crushed basalt rock spread on agricultural soil, accelerated CO2 mineralization"
+    scope: "Negative Emissions / CDR"
+    source: "Project Vesta 2024 + Beerling et al. Nature 2020"
+    uri: "https://projectvesta.org/science/"
+    standard: "Puro.earth Enhanced Weathering Methodology"
+    last_updated: "2024-11-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 30%"
+    sequestration_timeline_years: 30
+    annual_removal_rate_kg_co2e_per_kg_per_year: 0.012
+    co_benefits: "Soil pH improvement, micronutrient addition, reduced lime requirement"
+    cost_usd_per_tonne_co2: 50-150
+    technology_readiness_level: 6
+    notes: "Slow process, permanent mineralization. Verification challenge due to long timescale."
+
+  soil_carbon_sequestration_regen_ag:
+    name: "Soil Carbon Sequestration - Regenerative Agriculture"
+    net_removal_tonnes_co2e_per_hectare_per_year: -0.50
+    gross_sequestration_tonnes_co2e: 0.60
+    lifecycle_emissions_tonnes_co2e: 0.10
+    description: "No-till farming, cover crops, compost application increasing soil organic carbon"
+    scope: "Negative Emissions / CDR"
+    source: "IPCC 2021 Agriculture Guidelines + FAO Recarbonization 2020"
+    uri: "https://www.fao.org/global-soil-partnership/resources/highlights/detail/en/c/1370478/"
+    standard: "Verra VM0042, Gold Standard Agriculture"
+    last_updated: "2024-08-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 25%"
+    carbon_stability_years: 20-100
+    co_benefits: "Improved yields, water retention, reduced fertilizer/N2O"
+    cost_usd_per_tonne_co2: 10-50
+    technology_readiness_level: 9
+    monitoring_requirement: "Soil sampling 0-30cm depth, 3-5 year intervals"
+    notes: "Depends on continued regenerative management. Reversible if practices discontinued."
+
+  afforestation_temperate_forests:
+    name: "Afforestation - Temperate Forests"
+    net_removal_tonnes_co2e_per_hectare_per_year: -5.0
+    gross_sequestration_tonnes_co2e: 6.0
+    lifecycle_emissions_tonnes_co2e: 1.0
+    description: "Planting trees on previously non-forested land (temperate climate)"
+    scope: "Negative Emissions / CDR"
+    source: "IPCC 2021 AFOLU Guidelines + USDA Forest Service i-Tree"
+    uri: "https://www.ipcc-nggip.iges.or.jp/public/2019rf/pdf/4_Volume4/"
+    standard: "Verra VCS ARR Methodologies, Gold Standard Land Use"
+    last_updated: "2024-09-01"
+    data_quality: "Tier 2"
+    uncertainty: "+/- 30%"
+    sequestration_rate_range:
+      temperate: "3-8 tonnes CO2/ha/year"
+      tropical: "8-15 tonnes CO2/ha/year"
+      boreal: "1-3 tonnes CO2/ha/year"
+    carbon_storage_distribution:
+      aboveground_biomass: 0.65
+      belowground_roots: 0.23
+      soil_carbon: 0.12
+    permanence_risk: "Fire, disease, logging, land-use change"
+    cost_usd_per_tonne_co2: 5-30
+    technology_readiness_level: 9
+    monitoring_requirement: "Remote sensing + field verification, 100-year commitment"
+    notes: "Must ensure additionality, permanence, no leakage. Sequestration rate highest in first 20 years."
+
+# Usage Notes
+usage_notes:
+  hydrogen:
+    critical_insight: "Grid-based 'green' hydrogen only achieves GHG reduction if grid carbon intensity <0.2 kg CO2e/kWh. Otherwise, blue hydrogen (3.5 kg) or dedicated renewables are better."
+    color_codes:
+      grey: "Steam Methane Reforming (10.5 kg CO2e/kg) - fossil, no CCS"
+      blue: "SMR + 85% CCS (3.5 kg CO2e/kg) - fossil with capture"
+      green: "Renewable electrolysis (0.3-0.8 kg CO2e/kg) - fully renewable"
+      turquoise: "Methane pyrolysis (1.8 kg CO2e/kg) - no CO2 produced, carbon black co-product"
+      pink: "Nuclear electrolysis (0.3 kg CO2e/kg) - low-carbon electricity"
+
+  recycling:
+    calculation_method: "Avoided Emissions = Virgin Production - Recycling Process"
+    reporting: "Report as Scope 3 Category 1 (Purchased Goods) avoided emissions, separate from offsets"
+    double_counting_warning: "Do not claim both recycling credit and virgin material reduction"
+
+  carbon_removal:
+    permanence: "DAC + geological storage: >10,000 years. Biochar: >1,000 years. Enhanced weathering: permanent (mineralization). Soil carbon: 20-100 years. Forests: 100 years (if protected)."
+    additionality_requirement: "Must demonstrate removal would not occur without project/payment"
+    verification_standards: "Use Puro.earth, Verra, Gold Standard certified credits for corporate claims"
+    insetting_vs_offsetting: "Insetting = removal in own value chain (biochar in company's soil). Offsetting = external credit purchase."
+    scope_accounting: "Not included in Scope 1/2/3. Report separately as 'GHG Removals' per CSRD ESRS E1-6."
+
+metadata:
+  version: "1.0"
+  research_date: "2025-01-15"
+  integration_status: "Ready for production"
+  factor_count: 27
+  hydrogen_pathways: 10
+  recycling_materials: 12
+  carbon_removal_technologies: 5
+  source_count: 15
+  average_uncertainty: "+/- 16%"

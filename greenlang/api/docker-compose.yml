@@ -1,0 +1,45 @@
+# Docker Compose for GreenLang API with Redis cache
+version: '3.8'
+
+services:
+  # FastAPI application
+  api:
+    build:
+      context: ../..
+      dockerfile: greenlang/api/Dockerfile
+    container_name: greenlang-api
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - CACHE_ENABLED=true
+      - LOG_LEVEL=info
+    depends_on:
+      - redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: greenlang-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+volumes:
+  redis-data:
+    driver: local
