@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Migration CLI Tool
 
@@ -31,6 +32,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn
 from rich.prompt import Confirm
 import re
+from greenlang.determinism import DeterministicClock
 
 console = Console()
 
@@ -600,7 +602,7 @@ def plan(output: str):
     # Generate migration plan
     migration_plan = {
         "version": "1.0",
-        "created_at": datetime.now().isoformat(),
+        "created_at": DeterministicClock.now().isoformat(),
         "source_version": analysis["current_version"],
         "target_version": analysis["target_version"],
         "estimated_duration": analysis["estimated_migration_time"],
@@ -871,7 +873,7 @@ def backup_database(ctx: MigrationContext) -> bool:
 
     try:
         # Create backup directory
-        backup_dir = Path("backups") / f"migration_v0.2_to_v0.3_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        backup_dir = Path("backups") / f"migration_v0.2_to_v0.3_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}"
         backup_dir.mkdir(parents=True, exist_ok=True)
         ctx.backup_dir = backup_dir
 
@@ -884,12 +886,27 @@ def backup_database(ctx: MigrationContext) -> bool:
         # Determine database type and backup
         if db_url.startswith("postgresql"):
             # PostgreSQL backup
+            # SECURITY FIX: Use shell=False to prevent command injection
             backup_file = backup_dir / "database.sql"
-            result = subprocess.run(
-                f"pg_dump {db_url} > {backup_file}",
-                shell=True,
-                capture_output=True
-            )
+
+            # Parse pg_dump command safely without shell=True
+            import shlex
+
+            # Validate db_url to prevent injection
+            if any(char in str(db_url) for char in [';', '|', '&', '$', '`', '\n', '(', ')']):
+                ctx.add_error("Invalid database URL - contains dangerous characters")
+                return False
+
+            # Use subprocess without shell=True (secure)
+            with open(backup_file, 'w') as f:
+                result = subprocess.run(
+                    ["pg_dump", str(db_url)],
+                    shell=False,
+                    stdout=f,
+                    stderr=subprocess.PIPE,
+                    timeout=300  # 5 minute timeout
+                )
+
             if result.returncode != 0:
                 ctx.add_error(f"Database backup failed: {result.stderr.decode()}")
                 return False
@@ -921,7 +938,7 @@ def backup_configuration(ctx: MigrationContext) -> bool:
 
     try:
         if not ctx.backup_dir:
-            ctx.backup_dir = Path("backups") / f"migration_v0.2_to_v0.3_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            ctx.backup_dir = Path("backups") / f"migration_v0.2_to_v0.3_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}"
             ctx.backup_dir.mkdir(parents=True, exist_ok=True)
 
         config_files = [
@@ -950,7 +967,7 @@ def backup_agent_packs(ctx: MigrationContext) -> bool:
 
     try:
         if not ctx.backup_dir:
-            ctx.backup_dir = Path("backups") / f"migration_v0.2_to_v0.3_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            ctx.backup_dir = Path("backups") / f"migration_v0.2_to_v0.3_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}"
             ctx.backup_dir.mkdir(parents=True, exist_ok=True)
 
         packs_dir = Path.home() / ".greenlang" / "packs"
@@ -1228,7 +1245,7 @@ def save_migration_log(ctx: MigrationContext):
     """Save migration log"""
     log_file = Path("migration_log.json")
     log_data = {
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": DeterministicClock.now().isoformat(),
         "source_version": ctx.current_version,
         "target_version": ctx.target_version,
         "steps_completed": ctx.steps_completed,

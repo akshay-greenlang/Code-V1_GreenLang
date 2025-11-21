@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for greenlang.runtime.executor module
 """
@@ -108,7 +109,8 @@ class TestExecutor:
 
     def setup_method(self):
         """Set up test fixtures"""
-        self.test_artifacts_dir = Path("/tmp/test_artifacts")
+        # SECURITY FIX: Use secure temporary directory
+        self.test_artifacts_dir = Path(tempfile.gettempdir()) / "test_artifacts"
 
     def test_executor_creation_default(self):
         """Test creating Executor with default settings"""
@@ -417,7 +419,8 @@ class TestExecutor:
 
         # Mock temporary file
         mock_temp_file = MagicMock()
-        mock_temp_file.name = "/tmp/manifest.yaml"
+        # SECURITY FIX: Use secure temporary path
+        mock_temp_file.name = os.path.join(tempfile.gettempdir(), "manifest.yaml")
         mock_temp.return_value.__enter__.return_value = mock_temp_file
 
         # Mock kubectl commands

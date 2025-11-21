@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Environment and Production Safety Module
 =========================================

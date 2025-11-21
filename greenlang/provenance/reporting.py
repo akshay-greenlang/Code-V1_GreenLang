@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Provenance - Reporting Module
 Audit report generation and visualization.

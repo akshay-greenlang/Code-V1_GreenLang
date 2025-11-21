@@ -6,7 +6,7 @@
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.10+
 - Docker (for Prometheus, Grafana)
 - Kubernetes cluster (for production)
 - Sentry account (optional, for error tracking)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit Tests for Default-Deny Security Policy
 """

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ChatSession Tool Calling Tests
 GL Intelligence Infrastructure

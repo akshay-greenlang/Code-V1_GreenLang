@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Attribute-Based Access Control (ABAC) for GreenLang
 
@@ -43,6 +44,8 @@ import uuid
 from pydantic import BaseModel, Field, validator
 
 from greenlang.auth.permissions import PermissionEffect, PermissionAction
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +125,7 @@ class EnvironmentAttributeProvider(AttributeProvider):
 
         Returns current environment state like time, IP address, etc.
         """
-        now = datetime.now()
+        now = DeterministicClock.now()
 
         return {
             'time_of_day': now.hour,
@@ -242,7 +245,7 @@ class ABACPolicy(BaseModel):
     """
 
     policy_id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
+        default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         description="Unique policy identifier"
     )
     name: str = Field(..., description="Policy name")

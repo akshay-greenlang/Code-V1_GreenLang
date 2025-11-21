@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI-APP - Infrastructure Enhancements Test Suite
 =====================================================
@@ -22,6 +23,7 @@ from pathlib import Path
 from typing import Dict, List, Any
 from unittest.mock import Mock, patch, MagicMock
 import sys
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -735,8 +737,8 @@ if DistributedTracer is None:
             self.operation_name = operation_name
             self.tracer = tracer
             self.parent = parent
-            self.trace_id = parent.trace_id if parent else str(uuid.uuid4())
-            self.span_id = str(uuid.uuid4())
+            self.trace_id = parent.trace_id if parent else str(deterministic_uuid(__name__, str(DeterministicClock.now())))
+            self.span_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
             self.tags = {}
 
         def __enter__(self):

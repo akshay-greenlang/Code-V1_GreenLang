@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Update Workflow and Approval System
 
@@ -18,6 +19,7 @@ import json
 from enum import Enum
 
 from .models import (
+from greenlang.determinism import DeterministicClock
     ChangeRequest,
     ChangeType,
     ReviewStatus,
@@ -177,7 +179,7 @@ class UpdateWorkflow:
         current_values = self._get_current_factor_values(factor_id)
 
         # Generate request ID
-        request_id = f"cr_{factor_id}_{int(datetime.now().timestamp())}"
+        request_id = f"cr_{factor_id}_{int(DeterministicClock.now().timestamp())}"
 
         # Create change request
         request = ChangeRequest(
@@ -496,8 +498,8 @@ class UpdateWorkflow:
             json.dumps(list(request.proposed_changes.keys())),
             implemented_by,
             request.change_reason,
-            datetime.now().isoformat(),
-            datetime.now().isoformat(),
+            DeterministicClock.now().isoformat(),
+            DeterministicClock.now().isoformat(),
             1,  # validation_passed
             self._calculate_hash(request.proposed_changes)
         ))
@@ -510,7 +512,7 @@ class UpdateWorkflow:
         conn = sqlite3.connect(self.version_db_path)
         cursor = conn.cursor()
 
-        log_id = f"log_{int(datetime.now().timestamp())}"
+        log_id = f"log_{int(DeterministicClock.now().timestamp())}"
 
         cursor.execute("""
             INSERT INTO change_log (
@@ -520,7 +522,7 @@ class UpdateWorkflow:
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             log_id,
-            datetime.now().isoformat(),
+            DeterministicClock.now().isoformat(),
             request.change_type.value,
             request.factor_id,
             f"Implemented change request {request.request_id}",
@@ -544,7 +546,7 @@ class UpdateWorkflow:
             UPDATE change_requests
             SET implemented = 1, implementation_timestamp = ?
             WHERE request_id = ?
-        """, (datetime.now().isoformat(), request_id))
+        """, (DeterministicClock.now().isoformat(), request_id))
 
         conn.commit()
         conn.close()
@@ -645,7 +647,7 @@ class ApprovalManager:
         """, (
             ReviewStatus.APPROVED.value,
             reviewed_by,
-            datetime.now().isoformat(),
+            DeterministicClock.now().isoformat(),
             review_notes,
             request_id
         ))
@@ -682,7 +684,7 @@ class ApprovalManager:
         """, (
             ReviewStatus.REJECTED.value,
             reviewed_by,
-            datetime.now().isoformat(),
+            DeterministicClock.now().isoformat(),
             review_notes,
             request_id
         ))

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Factor Broker Core Implementation
 GL-VCCI Scope 3 Platform
@@ -14,6 +15,7 @@ from datetime import datetime
 import asyncio
 
 from .models import (
+from greenlang.determinism import DeterministicClock
     FactorRequest,
     FactorResponse,
     GWPComparisonRequest,
@@ -172,7 +174,7 @@ class FactorBroker:
             FactorNotFoundError: If factor cannot be resolved
             ValidationError: If request is invalid
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
         self.performance_stats["total_requests"] += 1
 
         try:
@@ -357,7 +359,7 @@ class FactorBroker:
             cache_hit_rate=cache_hit_rate,
             average_latency_ms=avg_latency_ms,
             data_sources=source_statuses,
-            timestamp=datetime.utcnow()
+            timestamp=DeterministicClock.utcnow()
         )
 
     def get_performance_stats(self) -> Dict[str, Any]:
@@ -417,7 +419,7 @@ class FactorBroker:
             start_time: Request start time
             success: Whether request was successful
         """
-        latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+        latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
 
         self.performance_stats["total_latency_ms"] += latency_ms
         self.performance_stats["min_latency_ms"] = min(

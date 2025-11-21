@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 GreenLang Import Rewriter
 
 AST-based tool to rewrite imports from external libraries to GreenLang equivalents.
 Preserves code formatting and generates git diffs.
 """
 
+import logging
 import ast
 import astor
 import argparse
@@ -432,7 +436,7 @@ def main():
             print(tool.generate_git_diff(args.path))
 
     else:
-        print(f"Error: {args.path} is not a valid file or directory")
+        logger.error(f"{args.path} is not a valid file or directory")
         sys.exit(1)
 
     if args.dry_run:

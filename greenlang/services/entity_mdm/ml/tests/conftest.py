@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pytest fixtures for Entity Resolution ML tests.
 
@@ -12,6 +13,7 @@ import numpy as np
 from datetime import datetime
 from typing import Dict, List, Any
 from unittest.mock import Mock, MagicMock, patch
+from greenlang.determinism import deterministic_random
 
 
 # ============================================================================
@@ -440,8 +442,8 @@ def performance_test_data():
     for i in range(1000):
         suppliers.append({
             "name": f"Test Company {i}",
-            "country": np.random.choice(["US", "GB", "DE", "FR", "JP"]),
-            "lei_code": f"549300TEST{i:06d}" if np.random.random() > 0.5 else None
+            "country": np.deterministic_random().choice(["US", "GB", "DE", "FR", "JP"]),
+            "lei_code": f"549300TEST{i:06d}" if np.deterministic_random().random() > 0.5 else None
         })
 
     return suppliers

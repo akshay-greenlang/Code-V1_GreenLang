@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive tests for GridFactorAgent.
 
 This module tests the GridFactorAgent implementation to achieve 85%+ coverage, ensuring:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for Resilience Patterns.
 
 Comprehensive test suite for retry, timeout, fallback, rate limiting,

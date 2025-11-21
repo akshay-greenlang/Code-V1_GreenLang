@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for consent management (GDPR, CCPA, CAN-SPAM).
 """

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 OAuth 2.0 / OpenID Connect (OIDC) Authentication Provider for GreenLang
 
@@ -33,6 +34,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from urllib.parse import urlencode, parse_qs, urlparse
 import jwt
+from greenlang.determinism import DeterministicClock
 
 try:
     from authlib.integrations.requests_client import OAuth2Session
@@ -139,7 +141,7 @@ class OAuthTokens:
         """Check if access token is expired"""
         if not self.expires_at:
             return False
-        return datetime.utcnow() >= self.expires_at
+        return DeterministicClock.utcnow() >= self.expires_at
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary"""
@@ -347,7 +349,7 @@ class JWTValidator:
         """Get JWKS from cache or fetch from endpoint"""
         # Check cache
         if self._jwks_cache and self._jwks_cache_time:
-            age = (datetime.utcnow() - self._jwks_cache_time).total_seconds()
+            age = (DeterministicClock.utcnow() - self._jwks_cache_time).total_seconds()
             if age < self._jwks_cache_ttl:
                 return self._jwks_cache
 
@@ -362,7 +364,7 @@ class JWTValidator:
 
             # Cache
             self._jwks_cache = jwks
-            self._jwks_cache_time = datetime.utcnow()
+            self._jwks_cache_time = DeterministicClock.utcnow()
 
             return jwks
 
@@ -478,7 +480,7 @@ class OAuthProvider:
         self._state_cache[state] = {
             "nonce": nonce,
             "code_verifier": code_verifier,
-            "created_at": datetime.utcnow(),
+            "created_at": DeterministicClock.utcnow(),
         }
 
         logger.info(f"Generated authorization URL with state: {state}")
@@ -701,7 +703,7 @@ class OAuthProvider:
     def create_session(self, user: OAuthUser, tokens: OAuthTokens) -> OAuthSession:
         """Create OAuth session"""
         session_id = secrets.token_urlsafe(32)
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
 
         session = OAuthSession(
             session_id=session_id,
@@ -724,7 +726,7 @@ class OAuthProvider:
             return False
 
         # Check if expired
-        if datetime.utcnow() >= session.expires_at:
+        if DeterministicClock.utcnow() >= session.expires_at:
             # Try to refresh if enabled and refresh token available
             if auto_refresh and session.tokens.refresh_token:
                 try:
@@ -758,7 +760,7 @@ class OAuthProvider:
 
     def cleanup_expired_sessions(self) -> int:
         """Clean up expired sessions"""
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         expired = [
             sid for sid, session in self.sessions.items()
             if now >= session.expires_at

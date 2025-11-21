@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example usage of GreenLang SDK for carbon footprint calculations
 """

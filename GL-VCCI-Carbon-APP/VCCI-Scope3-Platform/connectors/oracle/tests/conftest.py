@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pytest Fixtures and Mocks for Oracle Connector Tests
 GL-VCCI Scope 3 Platform

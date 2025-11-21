@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Policy Management CLI Commands for GreenLang
 """

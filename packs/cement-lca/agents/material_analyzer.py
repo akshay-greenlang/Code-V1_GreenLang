@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 """Material Analyzer Agent for cement and concrete composition analysis."""
 
 import json
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 class MaterialAnalyzerAgent:
     """Agent for analyzing cement and concrete material compositions."""
@@ -94,7 +96,7 @@ class MaterialAnalyzerAgent:
     def _calculate_inventory(self, cement_comp, mix, volume_m3):
         """Calculate total material inventory."""
         inventory = {
-            "id": f"batch_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "id": f"batch_{DeterministicClock.now().strftime('%Y%m%d%H%M%S')}",
             "volume_m3": volume_m3,
             "materials": {}
         }

@@ -1,84 +1,381 @@
-# Pre-commit hooks for code quality
-# Install: pip install pre-commit && pre-commit install
+# GreenLang Pre-Commit Hooks Configuration
+# Comprehensive quality gates and security enforcement
+# Installation: pip install pre-commit && pre-commit install
 # Run manually: pre-commit run --all-files
 
+default_language_version:
+  python: python3.11
+  node: 20.0.0
+
+default_stages: [commit]
+
+fail_fast: false
+
 repos:
+  # =============================================================================
+  # 1. SECURITY HOOKS - Critical security checks
+  # =============================================================================
+
+  # Secret Detection - Prevent credential leaks
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: |
+          (?x)^(
+            .*\.lock|
+            .*\.sum|
+            package-lock\.json|
+            yarn\.lock|
+            poetry\.lock
+          )$
+
+  # TruffleHog - Advanced secret scanning
   - repo: https://github.com/trufflesecurity/trufflehog
     rev: v3.66.0
     hooks:
       - id: trufflehog
-        args: [--no-update]
+        name: TruffleHog Secret Scanner
+        args: ['--no-update']
 
+  # AWS Credentials Detection
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-json
-      - id: check-toml
-      - id: check-added-large-files
-        args: ['--maxkb=1000']
-      - id: check-merge-conflict
-      - id: debug-statements
-      - id: mixed-line-ending
-        args: ['--fix=lf']
-      - id: detect-private-key
-        exclude: 'tests/fixtures/unsigned/'
+      - id: detect-aws-credentials
+        args: ['--allow-missing-credentials']
 
-  - repo: https://github.com/psf/black
-    rev: 23.12.1
-    hooks:
-      - id: black
-        language_version: python3.11
-        args: ['--line-length=100']
-
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.1.9
-    hooks:
-      - id: ruff
-        args: ['--fix', '--exit-non-zero-on-fix']
-
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-      - id: mypy
-        additional_dependencies: 
-          - types-PyYAML
-          - types-requests
-          - types-jsonschema
-        args: ['--ignore-missing-imports']
-
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
-    hooks:
-      - id: isort
-        args: ['--profile', 'black', '--line-length', '100']
-
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
-    hooks:
-      - id: pyupgrade
-        args: ['--py310-plus']
-
-  - repo: https://github.com/hadialqattan/pycln
-    rev: v2.4.0
-    hooks:
-      - id: pycln
-        args: ['--all']
-
+  # Python Security - Bandit
   - repo: https://github.com/PyCQA/bandit
     rev: 1.8.0
     hooks:
       - id: bandit
+        name: Bandit Security Linter
         args: ['-c', '.bandit', '-r']
         types: [python]
+        exclude: |
+          (?x)^(
+            tests/.*|
+            .*/test_.*\.py$
+          )$
+
+  # Python Dependency Vulnerabilities - Safety
+  - repo: https://github.com/Lucas-C/pre-commit-hooks-safety
+    rev: v1.3.3
+    hooks:
+      - id: python-safety-dependencies-check
+        name: Safety - Dependency Vulnerability Scanner
+        files: requirements.*\.txt$
+
+  # Check for Private Keys
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: detect-private-key
+        name: Detect Private Keys
+        exclude: 'tests/fixtures/unsigned/'
+
+  # =============================================================================
+  # 2. GIT HYGIENE - Repository health
+  # =============================================================================
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      # File size limits
+      - id: check-added-large-files
+        name: Check for Large Files (>5MB)
+        args: ['--maxkb=5120']  # 5MB limit
+
+      # Merge conflict detection
+      - id: check-merge-conflict
+        name: Check for Merge Conflicts
+
+      # File formatting
+      - id: trailing-whitespace
+        name: Fix Trailing Whitespace
+        args: ['--markdown-linebreak-ext=md']
+
+      - id: end-of-file-fixer
+        name: Fix End of Files
+
+      - id: mixed-line-ending
+        name: Fix Mixed Line Endings
+        args: ['--fix=lf']
+
+      # JSON/YAML validation
+      - id: check-json
+        name: Validate JSON Files
+
+      - id: check-yaml
+        name: Validate YAML Files
+        args: ['--allow-multiple-documents']
+        exclude: |
+          (?x)^(
+            .*\/templates\/.*\.yaml$|
+            .*\/templates\/.*\.yml$
+          )$
+
+      - id: check-toml
+        name: Validate TOML Files
+
+      # Case conflicts
+      - id: check-case-conflict
+        name: Check for Case Conflicts
+
+      # Debug statements
+      - id: debug-statements
+        name: Check for Debug Statements
+
+      # Executable scripts have shebangs
+      - id: check-executables-have-shebangs
+        name: Check Executables Have Shebangs
+
+  # Git commit message validation
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v3.13.0
+    hooks:
+      - id: commitizen
+        name: Validate Commit Message Format
+        stages: [commit-msg]
+
+  # =============================================================================
+  # 3. PYTHON CODE QUALITY - Formatting and linting
+  # =============================================================================
+
+  # Black - Code formatter
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        name: Black Code Formatter
+        language_version: python3.11
+        args: ['--line-length=100']
+
+  # isort - Import sorting
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: isort - Sort Imports
+        args: ['--profile', 'black', '--line-length', '100']
+
+  # Ruff - Fast Python linter
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
+      - id: ruff
+        name: Ruff Linter
+        args: ['--fix', '--exit-non-zero-on-fix']
+
+  # MyPy - Static type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        name: MyPy Static Type Checker
+        args: ['--ignore-missing-imports']
+        additional_dependencies:
+          - types-requests
+          - types-redis
+          - types-PyYAML
+          - types-python-dateutil
+          - types-setuptools
+          - types-jsonschema
+
+  # Pyupgrade - Upgrade Python syntax
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.15.0
+    hooks:
+      - id: pyupgrade
+        name: Pyupgrade - Modernize Python Code
+        args: ['--py311-plus']
+
+  # Pycln - Remove unused imports
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.4.0
+    hooks:
+      - id: pycln
+        name: Pycln - Remove Unused Imports
+        args: ['--all']
+
+  # =============================================================================
+  # 4. PYTHON DOCUMENTATION
+  # =============================================================================
+
+  # Docstring validation
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        name: Pydocstyle - Docstring Checker
+        args: ['--convention=google']
+        exclude: |
+          (?x)^(
+            tests/.*|
+            migrations/.*
+          )$
+
+  # =============================================================================
+  # 5. FRONTEND CODE QUALITY - TypeScript/JavaScript
+  # =============================================================================
+
+  # ESLint - JavaScript/TypeScript linting
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: v8.56.0
+    hooks:
+      - id: eslint
+        name: ESLint - JS/TS Linter
+        files: \.(js|jsx|ts|tsx)$
+        types: [file]
+        args: ['--fix', '--max-warnings=0']
+        additional_dependencies:
+          - eslint@8.56.0
+          - '@typescript-eslint/parser@6.19.0'
+          - '@typescript-eslint/eslint-plugin@6.19.0'
+          - eslint-config-prettier@9.1.0
+          - eslint-plugin-react@7.33.2
+          - eslint-plugin-react-hooks@4.6.0
+
+  # Prettier - Code formatter
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v4.0.0-alpha.8
+    hooks:
+      - id: prettier
+        name: Prettier - Code Formatter
+        files: \.(js|jsx|ts|tsx|json|css|scss|md|html)$
+        args: ['--write']
+
+  # =============================================================================
+  # 6. INFRASTRUCTURE AS CODE - Docker, Kubernetes, Terraform
+  # =============================================================================
+
+  # Dockerfile linting
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.0
+    hooks:
+      - id: hadolint
+        name: Hadolint - Dockerfile Linter
+
+  # Terraform formatting
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.86.0
+    hooks:
+      - id: terraform_fmt
+        name: Terraform Format
+
+      - id: terraform_validate
+        name: Terraform Validate
+
+      - id: terraform_docs
+        name: Terraform Docs
+
+      - id: terraform_tflint
+        name: TFLint - Terraform Linter
+
+  # =============================================================================
+  # 7. DOCUMENTATION - Markdown, spelling
+  # =============================================================================
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        name: Markdownlint
+        args: ['--fix']
+        exclude: |
+          (?x)^(
+            CHANGELOG\.md|
+            .*\/node_modules\/.*
+          )$
+
+  # =============================================================================
+  # 8. SHELL SCRIPTS - Validation
+  # =============================================================================
+
+  # ShellCheck - Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        name: ShellCheck - Shell Script Linter
+        args: ['--severity=warning']
+
+  # Shfmt - Shell script formatting
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.7.0-4
+    hooks:
+      - id: shfmt
+        name: Shfmt - Shell Script Formatter
+        args: ['-w', '-i', '2', '-ci']
+
+  # =============================================================================
+  # 9. CUSTOM GREENLANG HOOKS - Project-specific validation
+  # =============================================================================
 
   - repo: local
     hooks:
+      # Version sync (existing)
       - id: version-sync
         name: Sync version numbers
         entry: python scripts/sync_version.py
         language: python
         pass_filenames: false
         files: ^(pyproject\.toml|greenlang/__init__\.py)$
+
+      # Validate pack.yaml schema
+      - id: validate-pack-yaml
+        name: Validate GreenLang Pack.yaml Schema
+        entry: python scripts/pre-commit/check-greenlang-spec.py
+        language: system
+        files: ^.*pack\.yaml$
+        pass_filenames: true
+
+      # Check for hardcoded secrets
+      - id: check-hardcoded-secrets
+        name: Check for Hardcoded Secrets
+        entry: python scripts/pre-commit/check-security.py
+        language: system
+        files: \.py$
+        pass_filenames: true
+
+      # Validate agent configuration
+      - id: validate-agent-config
+        name: Validate Agent Configuration
+        entry: python scripts/pre-commit/validate-agent-config.py
+        language: system
+        files: ^.*agents\/.*\/pack\.yaml$
+        pass_filenames: true
+
+      # Validate database migrations
+      - id: validate-migrations
+        name: Validate Database Migrations
+        entry: python scripts/pre-commit/validate-migrations.py
+        language: system
+        files: ^.*migrations\/.*\.py$
+        pass_filenames: true
+
+# =============================================================================
+# CONFIGURATION NOTES
+# =============================================================================
+#
+# To skip hooks in emergency (NOT RECOMMENDED):
+#   git commit --no-verify
+#
+# To run manually on all files:
+#   pre-commit run --all-files
+#
+# To run specific hook:
+#   pre-commit run <hook-id>
+#
+# To update hooks to latest versions:
+#   pre-commit autoupdate
+#
+# To install hooks:
+#   pre-commit install --install-hooks
+#   pre-commit install --hook-type commit-msg
+#   pre-commit install --hook-type pre-push
+#
+# =============================================================================

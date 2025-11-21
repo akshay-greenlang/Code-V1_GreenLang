@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Integration Examples for Resilience Patterns in GL-VCCI.
 
 Demonstrates how to use retry, timeout, fallback, rate limiting,

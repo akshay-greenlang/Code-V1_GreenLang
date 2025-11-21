@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Data Module
 # Emission factor databases and data management
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Extractor Tests for SAP Connector
 GL-VCCI Scope 3 Platform

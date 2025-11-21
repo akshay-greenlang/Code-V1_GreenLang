@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Connector Tests
 # Integration tests for ERP connectors
 

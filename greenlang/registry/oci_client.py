@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Native OCI Registry Client for GreenLang
 

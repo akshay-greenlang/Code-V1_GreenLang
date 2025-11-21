@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Data Quality Dashboard and CLI
 
@@ -22,6 +23,7 @@ from .monitoring import DataQualityMonitor, CoverageAnalyzer, SourceDiversityAna
 from .pipeline import AutomatedImportPipeline, ScheduledImporter, RollbackManager
 from .workflow import UpdateWorkflow, ApprovalManager
 from .models import ImportJob, ImportStatus
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -64,7 +66,7 @@ class DataQualityDashboard:
         layout["header"].update(
             Panel(
                 "[bold blue]GreenLang Emission Factors - Data Quality Dashboard[/bold blue]",
-                subtitle=f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                subtitle=f"Generated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}"
             )
         )
 
@@ -294,7 +296,7 @@ Top 3 Concentration: [cyan]{source_data['top_3_concentration_pct']:.1f}%[/cyan]
 </head>
 <body>
     <h1>GreenLang Emission Factors - Data Quality Report</h1>
-    <p>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+    <p>Generated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
 
     <div class="metric">
         <h2>Overall Quality Score</h2>
@@ -373,8 +375,8 @@ class PipelineCLI:
 
         # Create import job
         job = ImportJob(
-            job_id=f"import_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-            job_name=f"Manual Import {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+            job_id=f"import_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}",
+            job_name=f"Manual Import {DeterministicClock.now().strftime('%Y-%m-%d %H:%M')}",
             source_files=yaml_files,
             target_database=self.db_path,
             validate_before_import=validate,

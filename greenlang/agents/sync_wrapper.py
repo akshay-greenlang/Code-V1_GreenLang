@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Sync Wrapper for Async Agents
 ========================================

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for the refactored executor with safe evaluation and importlib-based loading.
 """

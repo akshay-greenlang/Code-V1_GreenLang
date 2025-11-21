@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Input sanitization for RAG system to prevent prompt injection and data leakage.
 

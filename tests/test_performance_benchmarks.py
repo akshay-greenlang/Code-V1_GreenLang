@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance Benchmarks and Batch Processing Tests
 
@@ -24,6 +25,7 @@ import random
 from concurrent.futures import ThreadPoolExecutor
 import psutil
 import os
+from greenlang.determinism import deterministic_random
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -206,7 +208,7 @@ class TestDatabaseQueryBenchmarks:
         client = EmissionFactorClient(db_path=benchmark_db)
 
         def lookup_factor():
-            factor_id = f"benchmark_factor_{random.randint(0, 99):04d}"
+            factor_id = f"benchmark_factor_{deterministic_random().randint(0, 99):04d}"
             return client.get_factor(factor_id)
 
         # Benchmark
@@ -437,7 +439,7 @@ class TestScalability:
             start_time = time.perf_counter()
 
             for _ in range(100):
-                factor_id = f"factor_{random.randint(0, size - 1):05d}"
+                factor_id = f"factor_{deterministic_random().randint(0, size - 1):05d}"
                 client.get_factor(factor_id)
 
             elapsed = time.perf_counter() - start_time
@@ -469,7 +471,7 @@ class TestStressConditions:
         start_time = time.perf_counter()
 
         while (time.perf_counter() - start_time) < duration_seconds:
-            factor_id = f"benchmark_factor_{random.randint(0, 99):04d}"
+            factor_id = f"benchmark_factor_{deterministic_random().randint(0, 99):04d}"
             client.calculate_emissions(
                 factor_id=factor_id,
                 activity_amount=100.0,

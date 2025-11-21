@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 demos/internationalization_demo.py
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Authentication and API Key Management for GreenLang
 """
@@ -14,6 +15,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Set
 import base64
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:
     import bcrypt
@@ -41,7 +44,7 @@ logger = logging.getLogger(__name__)
 class AuthToken:
     """Authentication token"""
 
-    token_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    token_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     token_value: str = field(default_factory=lambda: secrets.token_urlsafe(32))
     tenant_id: str = ""
     user_id: str = ""
@@ -82,7 +85,7 @@ class AuthToken:
         if not self.active or self.revoked:
             return False
 
-        if self.expires_at and datetime.utcnow() > self.expires_at:
+        if self.expires_at and DeterministicClock.utcnow() > self.expires_at:
             return False
 
         if self.max_uses and self.use_count >= self.max_uses:
@@ -93,12 +96,12 @@ class AuthToken:
     def use(self):
         """Record token usage"""
         self.use_count += 1
-        self.last_used_at = datetime.utcnow()
+        self.last_used_at = DeterministicClock.utcnow()
 
     def revoke(self, by: str = None, reason: str = None):
         """Revoke token"""
         self.revoked = True
-        self.revoked_at = datetime.utcnow()
+        self.revoked_at = DeterministicClock.utcnow()
         self.revoked_by = by
         self.revoke_reason = reason
         self.active = False
@@ -127,7 +130,7 @@ class AuthToken:
 class APIKey:
     """API Key for programmatic access"""
 
-    key_id: str = field(default_factory=lambda: f"glk_{uuid.uuid4().hex[:16]}")
+    key_id: str = field(default_factory=lambda: f"glk_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}")
     key_secret: str = field(default_factory=lambda: secrets.token_urlsafe(32))
     tenant_id: str = ""
 
@@ -160,7 +163,7 @@ class APIKey:
     def rotate(self) -> str:
         """Rotate API key secret"""
         self.key_secret = secrets.token_urlsafe(32)
-        self.last_rotated_at = datetime.utcnow()
+        self.last_rotated_at = DeterministicClock.utcnow()
         return self.key_secret
 
     def is_valid(self) -> bool:
@@ -168,7 +171,7 @@ class APIKey:
         if not self.active:
             return False
 
-        if self.expires_at and datetime.utcnow() > self.expires_at:
+        if self.expires_at and DeterministicClock.utcnow() > self.expires_at:
             return False
 
         return True
@@ -184,7 +187,7 @@ class APIKey:
 class ServiceAccount:
     """Service account for automated access"""
 
-    account_id: str = field(default_factory=lambda: f"sa_{uuid.uuid4().hex[:16]}")
+    account_id: str = field(default_factory=lambda: f"sa_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}")
     tenant_id: str = ""
 
     # Metadata
@@ -217,14 +220,14 @@ class ServiceAccount:
             **kwargs,
         )
         self.api_keys.append(key)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = DeterministicClock.utcnow()
         return key
 
     def revoke_all_keys(self):
         """Revoke all API keys"""
         for key in self.api_keys:
             key.active = False
-        self.updated_at = datetime.utcnow()
+        self.updated_at = DeterministicClock.utcnow()
 
 
 class AuthManager:
@@ -415,14 +418,14 @@ class AuthManager:
         password_hash = self._hash_password(password)
 
         # Create user
-        user_id = str(uuid.uuid4())
+        user_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         self.users[user_id] = {
             "user_id": user_id,
             "tenant_id": tenant_id,
             "username": username,
             "email": email,
             "password_hash": password_hash,
-            "created_at": datetime.utcnow(),
+            "created_at": DeterministicClock.utcnow(),
             "active": True,
             "mfa_enabled": False,
             "mfa_secret": None,
@@ -492,8 +495,8 @@ class AuthManager:
             "user_id": user["user_id"],
             "tenant_id": user["tenant_id"],
             "username": username,
-            "login_time": datetime.utcnow(),
-            "last_activity": datetime.utcnow(),
+            "login_time": DeterministicClock.utcnow(),
+            "last_activity": DeterministicClock.utcnow(),
         }
 
         logger.info(f"User authenticated: {username}")
@@ -531,9 +534,9 @@ class AuthManager:
         )
 
         if expires_in:
-            token.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+            token.expires_at = DeterministicClock.utcnow() + timedelta(seconds=expires_in)
         elif self.token_expiry:
-            token.expires_at = datetime.utcnow() + timedelta(seconds=self.token_expiry)
+            token.expires_at = DeterministicClock.utcnow() + timedelta(seconds=self.token_expiry)
 
         # Store token
         self.tokens[token.token_value] = token
@@ -564,7 +567,7 @@ class AuthManager:
 
         # Update session activity
         if token.token_id in self.sessions:
-            self.sessions[token.token_id]["last_activity"] = datetime.utcnow()
+            self.sessions[token.token_id]["last_activity"] = DeterministicClock.utcnow()
 
         return token
 
@@ -620,7 +623,7 @@ class AuthManager:
         key = APIKey(tenant_id=tenant_id, name=name, scopes=scopes or [], **kwargs)
 
         if expires_in:
-            key.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+            key.expires_at = DeterministicClock.utcnow() + timedelta(seconds=expires_in)
 
         # Store key
         self.api_keys[f"{key.key_id}.{key.key_secret}"] = key
@@ -648,7 +651,7 @@ class AuthManager:
 
         # Update usage
         key.use_count += 1
-        key.last_used_at = datetime.utcnow()
+        key.last_used_at = DeterministicClock.utcnow()
 
         return key
 
@@ -711,7 +714,7 @@ class AuthManager:
         # Simplified MFA verification (in production, use pyotp)
         expected = hmac.new(
             secret.encode("utf-8"),
-            str(int(datetime.utcnow().timestamp() // 30)).encode("utf-8"),
+            str(int(DeterministicClock.utcnow().timestamp() // 30)).encode("utf-8"),
             hashlib.sha256,
         ).hexdigest()[:6]
 
@@ -722,10 +725,10 @@ class AuthManager:
         if identifier not in self.failed_attempts:
             self.failed_attempts[identifier] = []
 
-        self.failed_attempts[identifier].append(datetime.utcnow())
+        self.failed_attempts[identifier].append(DeterministicClock.utcnow())
 
         # Clean old attempts (keep last hour)
-        cutoff = datetime.utcnow() - timedelta(hours=1)
+        cutoff = DeterministicClock.utcnow() - timedelta(hours=1)
         self.failed_attempts[identifier] = [
             dt for dt in self.failed_attempts[identifier] if dt > cutoff
         ]

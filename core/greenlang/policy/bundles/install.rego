@@ -25,8 +25,10 @@ network_policy_present if {
 	count(input.pack.policy.network) > 0
 }
 
-# Emission factor vintage must be recent (2024+)
+# SECURITY FIX: Emission factor vintage is MANDATORY (2024+)
+# No bypass allowed - ensures climate data quality
 vintage_requirement_met if {
+	input.pack.policy.ef_vintage_min
 	input.pack.policy.ef_vintage_min >= 2024
 }
 
@@ -38,9 +40,14 @@ reason := "GPL or restrictive license not allowed" if {
 } else := "missing network allowlist - must specify allowed domains" if {
 	not network_policy_present
 	license_allowed
+} else := "emission factor vintage missing - must declare ef_vintage_min" if {
+	license_allowed
+	network_policy_present
+	not input.pack.policy.ef_vintage_min
 } else := "emission factor vintage too old - must be 2024 or newer" if {
 	license_allowed
 	network_policy_present
+	input.pack.policy.ef_vintage_min
 	not vintage_requirement_met
 } else := sprintf("unsupported license: %s", [input.pack.license]) if {
 	not license_allowed

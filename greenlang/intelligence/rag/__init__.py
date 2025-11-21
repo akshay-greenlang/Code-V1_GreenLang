@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang RAG (Retrieval-Augmented Generation) System
 

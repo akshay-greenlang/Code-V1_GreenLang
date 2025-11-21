@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/data/wtt_emission_factors.py
 

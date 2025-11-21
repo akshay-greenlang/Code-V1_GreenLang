@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pytest Configuration and Shared Fixtures for Emission Factor Tests
 
@@ -19,6 +20,8 @@ import string
 from datetime import date, datetime
 from typing import List, Dict, Any
 import sys
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -209,9 +212,9 @@ class TestDataGenerator:
         """Generate random factor ID."""
         fuel_types = ['diesel', 'gasoline', 'natural_gas', 'propane', 'coal']
         regions = ['us', 'eu', 'uk', 'cn', 'jp']
-        year = random.randint(2020, 2024)
+        year = deterministic_random().randint(2020, 2024)
 
-        return f"{random.choice(fuel_types)}_{random.choice(regions)}_{year}"
+        return f"{deterministic_random().choice(fuel_types)}_{deterministic_random().choice(regions)}_{year}"
 
     @staticmethod
     def generate_emission_factor(
@@ -230,19 +233,19 @@ class TestDataGenerator:
             'factor_id': factor_id,
             'name': f"Test Factor {TestDataGenerator.random_string(8)}",
             'category': category,
-            'subcategory': random.choice(['diesel', 'gasoline', 'natural_gas', 'coal']),
+            'subcategory': deterministic_random().choice(['diesel', 'gasoline', 'natural_gas', 'coal']),
             'emission_factor_value': ef_value,
-            'unit': random.choice(['gallon', 'liter', 'kg', 'm3', 'therms']),
-            'scope': random.choice(['Scope 1', 'Scope 2 - Location-Based', 'Scope 3']),
-            'source_org': random.choice(['EPA', 'DEFRA', 'IEA', 'IPCC']),
+            'unit': deterministic_random().choice(['gallon', 'liter', 'kg', 'm3', 'therms']),
+            'scope': deterministic_random().choice(['Scope 1', 'Scope 2 - Location-Based', 'Scope 3']),
+            'source_org': deterministic_random().choice(['EPA', 'DEFRA', 'IEA', 'IPCC']),
             'source_uri': f"https://test.com/{TestDataGenerator.random_string(8)}",
             'standard': 'GHG Protocol',
             'last_updated': '2024-01-01',
-            'year_applicable': random.randint(2020, 2024),
-            'geographic_scope': random.choice(['United States', 'United Kingdom', 'European Union']),
+            'year_applicable': deterministic_random().randint(2020, 2024),
+            'geographic_scope': deterministic_random().choice(['United States', 'United Kingdom', 'European Union']),
             'geography_level': 'Country',
-            'country_code': random.choice(['US', 'UK', 'EU', 'CN']),
-            'data_quality_tier': random.choice(['Tier 1', 'Tier 2', 'Tier 3']),
+            'country_code': deterministic_random().choice(['US', 'UK', 'EU', 'CN']),
+            'data_quality_tier': deterministic_random().choice(['Tier 1', 'Tier 2', 'Tier 3']),
             'uncertainty_percent': random.uniform(3.0, 15.0)
         }
 
@@ -297,7 +300,7 @@ def mock_api_response():
     return {
         'status': 'success',
         'data': {},
-        'timestamp': datetime.now().isoformat(),
+        'timestamp': DeterministicClock.now().isoformat(),
         'version': '1.0.0'
     }
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Test script to validate pipelines against v1.0 spec"""
 
 import sys

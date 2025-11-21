@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP Quality Management (QM) Extractor
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 RAG query with MMR retrieval and citation formatting.
 

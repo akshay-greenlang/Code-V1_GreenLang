@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Fusion Cloud Connector Configuration Management
 GL-VCCI Scope 3 Platform
@@ -14,6 +15,7 @@ import os
 from typing import Optional, Dict, Any, List
 from enum import Enum
 from pydantic import BaseModel, Field, validator
+from greenlang.determinism import FinancialDecimal
 
 
 class OracleEnvironment(str, Enum):
@@ -300,7 +302,7 @@ class OracleConnectorConfig(BaseModel):
         timeout_config = TimeoutConfig(
             connect_timeout=float(os.getenv("ORACLE_CONNECT_TIMEOUT", "10.0")),
             read_timeout=float(os.getenv("ORACLE_READ_TIMEOUT", "30.0")),
-            total_timeout=float(os.getenv("ORACLE_TOTAL_TIMEOUT", "60.0"))
+            total_timeout=FinancialDecimal.from_string(os.getenv("ORACLE_TOTAL_TIMEOUT", "60.0"))
         )
 
         # Default batch size

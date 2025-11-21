@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Role Hierarchy with Inheritance for GreenLang
 
@@ -34,6 +35,8 @@ import uuid
 from pydantic import BaseModel, Field, validator
 
 from greenlang.auth.permissions import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     Permission,
     PermissionEffect,
     PermissionEvaluator,
@@ -81,7 +84,7 @@ class Role(BaseModel):
     """
 
     role_id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
+        default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         description="Unique role identifier"
     )
     name: str = Field(
@@ -150,14 +153,14 @@ class Role(BaseModel):
     def add_permission(self, permission: Permission):
         """Add a permission to this role."""
         self.permissions.append(permission)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = DeterministicClock.utcnow()
 
     def remove_permission(self, permission_id: str) -> bool:
         """Remove a permission from this role."""
         original_length = len(self.permissions)
         self.permissions = [p for p in self.permissions if p.permission_id != permission_id]
         if len(self.permissions) < original_length:
-            self.updated_at = datetime.utcnow()
+            self.updated_at = DeterministicClock.utcnow()
             return True
         return False
 
@@ -165,13 +168,13 @@ class Role(BaseModel):
         """Add a parent role for inheritance."""
         if parent_role_id not in self.parent_role_ids:
             self.parent_role_ids.append(parent_role_id)
-            self.updated_at = datetime.utcnow()
+            self.updated_at = DeterministicClock.utcnow()
 
     def remove_parent(self, parent_role_id: str) -> bool:
         """Remove a parent role."""
         if parent_role_id in self.parent_role_ids:
             self.parent_role_ids.remove(parent_role_id)
-            self.updated_at = datetime.utcnow()
+            self.updated_at = DeterministicClock.utcnow()
             return True
         return False
 
@@ -212,7 +215,7 @@ class Role(BaseModel):
 class RoleAssignment:
     """Assignment of a role to a user or service."""
 
-    assignment_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    assignment_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     role_id: str = ""
     principal_id: str = ""  # User or service account ID
     principal_type: str = "user"  # "user" or "service_account"
@@ -225,7 +228,7 @@ class RoleAssignment:
     def is_expired(self) -> bool:
         """Check if assignment has expired."""
         if self.expires_at:
-            return datetime.utcnow() > self.expires_at
+            return DeterministicClock.utcnow() > self.expires_at
         return False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -617,7 +620,7 @@ class RoleManager:
         if existing.is_built_in:
             raise ValueError("Cannot modify built-in roles")
 
-        role.updated_at = datetime.utcnow()
+        role.updated_at = DeterministicClock.utcnow()
         self.hierarchy.add_role(role)  # Updates existing
         logger.info(f"Updated role: {role.name}")
         return role

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo #2: Food Processing - Solar Thermal Hybrid Retrofit
 

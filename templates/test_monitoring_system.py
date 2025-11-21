@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Test suite for the operational monitoring system.
 
 This script validates that all components of the monitoring system
@@ -14,6 +15,7 @@ Date: October 2025
 import sys
 import os
 from pathlib import Path
+from greenlang.determinism import deterministic_random
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -331,7 +333,7 @@ def test_performance_summary():
             def execute(self, input_data):
                 with self.track_execution(input_data) as tracker:
                     tracker.set_cost(random.uniform(0.05, 0.15))
-                    tracker.set_tokens(random.randint(1000, 3000))
+                    tracker.set_tokens(deterministic_random().randint(1000, 3000))
                     return AgentResult(success=True, data={})
 
         agent = SummaryAgent()

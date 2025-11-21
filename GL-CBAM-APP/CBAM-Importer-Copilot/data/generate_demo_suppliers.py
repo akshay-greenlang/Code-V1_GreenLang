@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generate Synthetic Demo Suppliers for CBAM Importer Copilot
 
@@ -15,6 +16,8 @@ import yaml
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 # Set seed for reproducibility
 RANDOM_SEED = 42
@@ -109,9 +112,9 @@ def generate_actual_emissions_data(
 
     # Data completeness
     completeness_map = {
-        "high": 95 + random.randint(0, 5),     # 95-100%
-        "medium": 75 + random.randint(0, 20),  # 75-95%
-        "low": 50 + random.randint(0, 25),     # 50-75%
+        "high": 95 + deterministic_random().randint(0, 5),     # 95-100%
+        "medium": 75 + deterministic_random().randint(0, 20),  # 75-95%
+        "low": 50 + deterministic_random().randint(0, 25),     # 50-75%
     }
     completeness = completeness_map.get(quality, 75)
 
@@ -172,7 +175,7 @@ def generate_suppliers(count: int = 20) -> List[Dict[str, Any]]:
 
         # Contact information
         company_email = f"exports@{company_name.lower().replace(' ', '').replace('#', '')}example.com"
-        contact_person = f"{random.choice(['Zhang', 'Ivan', 'Rajesh', 'Mehmet', 'Viktor'])} {random.choice(['Wang', 'Petrov', 'Kumar', 'Yilmaz', 'Novak'])}"
+        contact_person = f"{deterministic_random().choice(['Zhang', 'Ivan', 'Rajesh', 'Mehmet', 'Viktor'])} {deterministic_random().choice(['Wang', 'Petrov', 'Kumar', 'Yilmaz', 'Novak'])}"
 
         # Production capacity (random but realistic)
         capacity_ranges = {
@@ -184,7 +187,7 @@ def generate_suppliers(count: int = 20) -> List[Dict[str, Any]]:
         }
         primary_product_group = product_groups[0]
         min_cap, max_cap = capacity_ranges.get(primary_product_group, (10000, 100000))
-        production_capacity_tons_per_year = random.randint(min_cap, max_cap)
+        production_capacity_tons_per_year = deterministic_random().randint(min_cap, max_cap)
 
         # Build supplier record
         supplier = {
@@ -193,14 +196,14 @@ def generate_suppliers(count: int = 20) -> List[Dict[str, Any]]:
             "country_iso": country_iso,
             "country_name": country_name,
             "address": {
-                "city": random.choice(["Beijing", "Shanghai", "Moscow", "Mumbai", "Istanbul", "Kiev"]),
-                "postal_code": f"{random.randint(10000, 99999)}",
+                "city": deterministic_random().choice(["Beijing", "Shanghai", "Moscow", "Mumbai", "Istanbul", "Kiev"]),
+                "postal_code": f"{deterministic_random().randint(10000, 99999)}",
                 "country": country_name,
             },
             "contact": {
                 "person": contact_person,
                 "email": company_email,
-                "phone": f"+{random.randint(1, 99)}-{random.randint(100, 999)}-{random.randint(1000, 9999)}",
+                "phone": f"+{deterministic_random().randint(1, 99)}-{deterministic_random().randint(100, 999)}-{deterministic_random().randint(1000, 9999)}",
             },
             "product_groups": product_groups,
             "cn_codes_produced": cn_codes,
@@ -226,7 +229,7 @@ def generate_suppliers(count: int = 20) -> List[Dict[str, Any]]:
             supplier["notes"] = "No actual emissions data available. EU importer will use default values."
 
         # Add metadata
-        supplier["last_updated"] = datetime.now().strftime("%Y-%m-%d")
+        supplier["last_updated"] = DeterministicClock.now().strftime("%Y-%m-%d")
         supplier["data_source"] = "Demo data - synthetic supplier profile"
 
         suppliers.append(supplier)
@@ -244,7 +247,7 @@ def save_to_yaml(suppliers: List[Dict[str, Any]], output_path: Path) -> None:
 
     data = {
         "metadata": {
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "count": len(suppliers),
             "disclaimer": "Synthetic data for demo purposes only",
             "version": "1.0.0-demo",
@@ -264,7 +267,7 @@ def save_to_json(suppliers: List[Dict[str, Any]], output_path: Path) -> None:
 
     data = {
         "metadata": {
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "count": len(suppliers),
             "disclaimer": "Synthetic data for demo purposes only",
             "version": "1.0.0-demo",

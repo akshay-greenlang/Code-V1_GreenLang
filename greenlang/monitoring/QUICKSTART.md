@@ -4,7 +4,7 @@ Get the monitoring system up and running in 15 minutes.
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.10+
 - Prometheus (with Pushgateway)
 - Grafana
 - Redis

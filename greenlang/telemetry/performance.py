@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance monitoring for GreenLang
 """
@@ -17,6 +18,7 @@ import pstats
 import io
 from contextlib import contextmanager
 import logging
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +128,7 @@ class PerformanceMonitor:
         Returns:
             List of metrics
         """
-        cutoff = datetime.utcnow() - timedelta(seconds=window_seconds)
+        cutoff = DeterministicClock.utcnow() - timedelta(seconds=window_seconds)
 
         with self._lock:
             return [m for m in self.metrics.get(name, []) if m.timestamp >= cutoff]
@@ -486,7 +488,7 @@ class PerformanceAnalyzer:
             Performance report
         """
         report = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "system": {
                 "memory": self.monitor.get_memory_usage(),
                 "cpu": self.monitor.get_cpu_usage(),

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """RecommendationAgentAI Demo - AI-Powered Building Optimization Recommendations
 
 This demo showcases the AI-powered RecommendationAgent, which generates

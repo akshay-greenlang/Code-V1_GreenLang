@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 GreenLang Infrastructure Code Generator
 
 Generates boilerplate code for agents, pipelines, chat sessions, cache, and validation.
 """
 
+import logging
 import argparse
 import os
 import sys
 from pathlib import Path
 from typing import List, Dict
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 class CodeGenerator:
@@ -36,7 +41,7 @@ class CodeGenerator:
 
 {description}
 
-Created: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
 from typing import Any, Dict, List, Optional
@@ -149,7 +154,7 @@ if __name__ == "__main__":
 
 {description}
 
-Created: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
 from typing import Any, Dict, List, Optional
@@ -236,7 +241,7 @@ LLM Session Configuration
 Provider: {provider}
 Model: {model}
 
-Created: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
 from typing import List, Dict, Any, Optional
@@ -356,7 +361,7 @@ if __name__ == "__main__":
         template = f'''"""
 Cache Manager Configuration
 
-Created: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
 from typing import Any, Optional
@@ -519,7 +524,7 @@ if __name__ == "__main__":
         template = f'''"""
 Validation Schema Configuration
 
-Created: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
 from typing import Any, Dict, List
@@ -664,7 +669,7 @@ if __name__ == "__main__":
         template = f'''"""
 Configuration Management
 
-Created: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+Created: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}
 """
 
 from typing import Any, Optional
@@ -891,7 +896,7 @@ def main():
             print(code)
 
     except Exception as e:
-        print(f"Error: {e}")
+        logger.error(f"{e}")
         sys.exit(1)
 
 

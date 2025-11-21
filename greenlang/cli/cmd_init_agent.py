@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 gl init agent - Initialize new GreenLang agents with AgentSpec v2
 
@@ -21,6 +22,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 import yaml
+from greenlang.determinism import DeterministicClock
 
 app = typer.Typer()
 console = Console()
@@ -1730,7 +1732,7 @@ class RealtimeConnector:
         # MOCK: Replace with actual API calls
         mock_data = {{
             "topic": topic,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "window": window,
             "data": {{
                 "value": 0.42,  # Example: grid intensity
@@ -1775,7 +1777,7 @@ def generate_common_files(agent_dir, pack_id, python_pkg, license, author):
     if license == "apache-2.0":
         license_text = f'''Apache License 2.0
 
-Copyright {datetime.now().year} {author or "Author"}
+Copyright {DeterministicClock.now().year} {author or "Author"}
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1792,7 +1794,7 @@ limitations under the License.
     elif license == "mit":
         license_text = f'''MIT License
 
-Copyright (c) {datetime.now().year} {author or "Author"}
+Copyright (c) {DeterministicClock.now().year} {author or "Author"}
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2350,7 +2352,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.0] - {datetime.now().strftime("%Y-%m-%d")}
+## [0.1.0] - {DeterministicClock.now().strftime("%Y-%m-%d")}
 
 ### Added
 - Initial release

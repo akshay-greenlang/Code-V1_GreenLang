@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Demo: AI-Powered Fuel Emissions Calculator
 
 This script demonstrates the FuelAgentAI which enhances the original FuelAgent

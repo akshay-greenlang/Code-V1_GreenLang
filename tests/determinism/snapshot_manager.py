@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Snapshot Testing Infrastructure for GreenLang.
 
 This module provides golden file testing capabilities for agent outputs.

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Load Testing - Shared Fixtures and Configuration
 
@@ -24,6 +25,8 @@ from typing import Dict, Any, List
 import json
 import requests
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 
 # ============================================================================
@@ -161,7 +164,7 @@ def test_user(test_users) -> Dict[str, str]:
         Single user dictionary
     """
     import random
-    return random.choice(test_users)
+    return deterministic_random().choice(test_users)
 
 
 @pytest.fixture(scope="session")
@@ -366,7 +369,7 @@ def test_results_collector(test_output_dir):
     """
     results = {
         "test_name": None,
-        "start_time": datetime.now().isoformat(),
+        "start_time": DeterministicClock.now().isoformat(),
         "end_time": None,
         "metrics": [],
         "errors": [],
@@ -374,16 +377,16 @@ def test_results_collector(test_output_dir):
 
     class ResultsCollector:
         def add_metric(self, name: str, value: float):
-            results["metrics"].append({"name": name, "value": value, "timestamp": datetime.now().isoformat()})
+            results["metrics"].append({"name": name, "value": value, "timestamp": DeterministicClock.now().isoformat()})
 
         def add_error(self, error: str):
-            results["errors"].append({"error": error, "timestamp": datetime.now().isoformat()})
+            results["errors"].append({"error": error, "timestamp": DeterministicClock.now().isoformat()})
 
         def set_test_name(self, name: str):
             results["test_name"] = name
 
         def save(self):
-            results["end_time"] = datetime.now().isoformat()
+            results["end_time"] = DeterministicClock.now().isoformat()
             output_file = test_output_dir / f"{results['test_name']}_results.json"
             with open(output_file, 'w') as f:
                 json.dump(results, f, indent=2)
@@ -440,7 +443,7 @@ def test_metadata():
     return {
         "platform": sys.platform,
         "python_version": sys.version,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": DeterministicClock.now().isoformat(),
         "test_suite": "GL-VCCI Load Testing Suite",
         "version": "1.0.0"
     }

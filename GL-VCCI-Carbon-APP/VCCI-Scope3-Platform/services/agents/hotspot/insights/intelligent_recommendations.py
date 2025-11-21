@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Intelligent Recommendation Engine - LLM-Powered Strategic Insights
 
@@ -18,6 +19,8 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     Insight,
     InsightReport,
     HotspotReport,
@@ -377,7 +380,7 @@ Return JSON:
 
             # Create rich insight
             insight = Insight(
-                insight_id=str(uuid.uuid4())[:8],
+                insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                 insight_type=InsightType.HIGH_EMISSIONS_SUPPLIER
                 if hotspot.hotspot_type == "supplier_name"
                 else InsightType.HIGH_EMISSIONS_CATEGORY,
@@ -393,7 +396,7 @@ Return JSON:
                     "llm_model": self.llm_client.config.model,
                     "llm_cost_usd": response.usage.cost_usd,
                     "num_recommendations": len(llm_output["recommendations"]),
-                    "generation_timestamp": datetime.utcnow().isoformat()
+                    "generation_timestamp": DeterministicClock.utcnow().isoformat()
                 }
             )
 
@@ -456,7 +459,7 @@ Return JSON:
             insight_type = InsightType.DATA_QUALITY_ISSUE
 
         return Insight(
-            insight_id=str(uuid.uuid4())[:8],
+            insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
             insight_type=insight_type,
             priority=hotspot.priority,
             title=f"{hotspot.entity_name} - High Emissions Hotspot",
@@ -478,7 +481,7 @@ Return JSON:
         # 80/20 rule insight
         if pareto_analysis.pareto_80_count > 0:
             insight = Insight(
-                insight_id=str(uuid.uuid4())[:8],
+                insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                 insight_type=InsightType.PARETO_CONCENTRATION,
                 priority=InsightPriority.HIGH,
                 title=f"Pareto Principle: {pareto_analysis.pareto_80_count} Suppliers = 80% of Emissions",

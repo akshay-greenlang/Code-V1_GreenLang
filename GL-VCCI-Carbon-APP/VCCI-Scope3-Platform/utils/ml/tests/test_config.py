@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Spend Classification ML Configuration.
 

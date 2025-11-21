@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Category 3: Fuel and Energy-Related Activities Calculator
 GL-VCCI Scope 3 Platform
@@ -21,6 +22,7 @@ from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
 from services.agents.calculator.categories.category_3 import (
+from greenlang.determinism import DeterministicClock
     Category3Calculator,
     FUEL_TYPES,
 )
@@ -82,7 +84,7 @@ def mock_provenance_builder():
     builder.hash_factor_info = Mock(return_value="test_hash")
     builder.build = AsyncMock(return_value=ProvenanceChain(
         calculation_id="test_calc",
-        timestamp=datetime.utcnow(),
+        timestamp=DeterministicClock.utcnow(),
         category=3,
         tier=TierType.TIER_2,
         input_data_hash="input_hash",

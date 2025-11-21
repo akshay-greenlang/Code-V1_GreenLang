@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Migration script for upgrading pack.yaml to v1.0 specification
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 13: CLI calc to Markdown snapshot."""
 
 import pytest

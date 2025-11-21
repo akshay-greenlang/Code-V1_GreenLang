@@ -1,11 +1,37 @@
 name: cement-lca
 version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
 description: Life Cycle Assessment for cement and concrete production
-author: GreenLang Team
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
 license: Apache-2.0
-
-domain: construction
-keywords:
+agents:
+- name: material_analyzer
+  type: cement.material_analyzer
+  version: 1.0.0
+- name: emissions_calculator
+  type: cement.emissions_calculator
+  version: 1.0.0
+- name: impact_assessor
+  type: cement.impact_assessor
+  version: 1.0.0
+contents:
+  pipelines:
+  - gl.yaml
+dependencies:
+- numpy>=1.24.0
+- pandas>=2.0.0
+- matplotlib>=3.7.0
+- reportlab>=4.0.0
+- pint>=0.20.0
+metadata:
+  authors:
+  - GreenLang Team
+  domain: construction
+  tags:
   - cement
   - concrete
   - lca
@@ -13,53 +39,31 @@ keywords:
   - carbon-footprint
   - embodied-carbon
   - construction-materials
-
-dependencies:
-  - numpy>=1.24.0
-  - pandas>=2.0.0
-  - matplotlib>=3.7.0
-  - reportlab>=4.0.0
-  - pint>=0.20.0
-
-agents:
-  - name: material_analyzer
-    type: cement.material_analyzer
-    version: 1.0.0
-  - name: emissions_calculator
-    type: cement.emissions_calculator
-    version: 1.0.0
-  - name: impact_assessor
-    type: cement.impact_assessor
-    version: 1.0.0
-
 datasets:
-  - name: cement_compositions
-    path: datasets/cement_compositions.csv
-    format: csv
-  - name: emission_factors
-    path: datasets/emission_factors.json
-    format: json
-  - name: transport_distances
-    path: datasets/transport_distances.csv
-    format: csv
-
+- name: cement_compositions
+  path: datasets/cement_compositions.csv
+  format: csv
+- name: emission_factors
+  path: datasets/emission_factors.json
+  format: json
+- name: transport_distances
+  path: datasets/transport_distances.csv
+  format: csv
 models:
-  - name: carbon_predictor
-    path: models/carbon_predictor.pkl
-    framework: scikit-learn
-
+- name: carbon_predictor
+  path: models/carbon_predictor.pkl
+  framework: scikit-learn
 registry:
   uri: ghcr.io/greenlang/packs/cement-lca
   tags:
-    - latest
-    - v1.0.0
-
+  - latest
+  - v1.0.0
 policy:
-  min_python: "3.9"
-  max_memory: "2GB"
+  min_python: '3.9'
+  max_memory: 2GB
   allowed_imports:
-    - numpy
-    - pandas
-    - matplotlib
-    - pint
+  - numpy
+  - pandas
+  - matplotlib
+  - pint
   blocked_licenses: []

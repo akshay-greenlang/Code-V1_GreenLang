@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Setup GitHub Branch Protection Rules via API
 This script configures branch protection for the master branch.

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for BenchmarkAgent."""
 
 import pytest

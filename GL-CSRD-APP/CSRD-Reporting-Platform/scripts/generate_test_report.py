@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GL-CSRD Test Report Generator
 
@@ -23,6 +24,7 @@ import xml.etree.ElementTree as ET
 
 from jinja2 import Template
 from rich.console import Console
+from greenlang.determinism import DeterministicClock
 
 console = Console()
 
@@ -527,7 +529,7 @@ class TestReportGenerator:
         # Render template
         template = Template(HTML_TEMPLATE)
         html_content = template.render(
-            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            timestamp=DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S"),
             summary=summary,
             agents=agents,
             esrs_standards=esrs_standards
@@ -535,7 +537,7 @@ class TestReportGenerator:
 
         # Save report
         if output_file is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
             output_file = self.reports_dir / "html" / f"test_report_{timestamp}.html"
 
         output_file.parent.mkdir(parents=True, exist_ok=True)

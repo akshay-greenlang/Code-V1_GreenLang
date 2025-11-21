@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 from typing import Any, Dict
 from datetime import datetime
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 from templates.agent_monitoring import OperationalMonitoringMixin
+from greenlang.determinism import DeterministicClock
 
 
 class ReportAgent(OperationalMonitoringMixin, BaseAgent):
@@ -41,7 +43,7 @@ class ReportAgent(OperationalMonitoringMixin, BaseAgent):
                 data={
                     "report": report,
                     "format": report_format,
-                    "generated_at": datetime.now().isoformat(),
+                    "generated_at": DeterministicClock.now().isoformat(),
                 },
                 metadata={"agent": "ReportAgent", "report_format": report_format},
             )
@@ -65,7 +67,7 @@ class ReportAgent(OperationalMonitoringMixin, BaseAgent):
             data={
                 "report": report,
                 "format": report_format,
-                "generated_at": datetime.now().isoformat(),
+                "generated_at": DeterministicClock.now().isoformat(),
             },
             metadata={"agent": "ReportAgent", "report_format": report_format},
         )
@@ -139,7 +141,7 @@ class ReportAgent(OperationalMonitoringMixin, BaseAgent):
 
         report.append("=" * 60)
         report.append(
-            f"Report generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            f"Report generated on {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}"
         )
 
         return "\n".join(report)
@@ -212,7 +214,7 @@ class ReportAgent(OperationalMonitoringMixin, BaseAgent):
 
         report.append("---")
         report.append(
-            f"*Report generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*"
+            f"*Report generated on {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}*"
         )
 
         return "\n".join(report)
@@ -222,7 +224,7 @@ class ReportAgent(OperationalMonitoringMixin, BaseAgent):
     ) -> Dict:
         return {
             "report_type": "carbon_footprint",
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "building_info": building_info,
             "period": period_info,
             "emissions": {

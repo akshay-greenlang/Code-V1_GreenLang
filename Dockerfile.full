@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1.7
-# Production-ready full development image for GreenLang v0.2.3
+# Production-ready full development image for GreenLang v0.3.0
 # This image includes GreenLang CLI with additional development and analysis tools
 
 # Multi-stage build for optimized layer caching and security
 ARG PYTHON_VERSION=3.11-slim
-FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228 AS builder
+FROM python:${PYTHON_VERSION} AS builder
 
 # Build stage environment
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -35,7 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Install GreenLang CLI with full optional dependencies
-ARG GL_VERSION=0.2.3
+ARG GL_VERSION=0.3.0
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip setuptools wheel \
     && pip install "greenlang-cli[full]==${GL_VERSION}"
@@ -56,7 +56,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     isort
 
 # Final stage - production image with tools
-FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228
+FROM python:${PYTHON_VERSION}
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -97,7 +97,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 # Verify installation
-ARG GL_VERSION=0.2.3
+ARG GL_VERSION=0.3.0
 RUN python -c "import greenlang; print(f'GreenLang CLI v${GL_VERSION} with full dependencies installed successfully')" \
     && gl version
 
@@ -122,7 +122,7 @@ ARG VCS_REF
 ARG BUILD_DATE
 ARG VERSION=${GL_VERSION}
 LABEL org.opencontainers.image.title="GreenLang Full Development Environment" \
-      org.opencontainers.image.description="Complete development environment for GreenLang CLI v0.2.3 with all optional dependencies and tools" \
+      org.opencontainers.image.description="Complete development environment for GreenLang CLI v0.3.0 with all optional dependencies and tools" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}" \

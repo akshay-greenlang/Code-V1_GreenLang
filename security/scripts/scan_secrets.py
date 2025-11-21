@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Secret Scanner
 
@@ -36,6 +37,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any, Optional, Set
 import logging
+from greenlang.determinism import DeterministicClock
 
 logging.basicConfig(
     level=logging.INFO,
@@ -400,7 +402,7 @@ class SecretScanner:
         env_in_git = self.check_env_in_git()
 
         report = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "scanned_files": self.scanned_files,
             "total_secrets_found": len(self.secrets),
             "summary": {

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 26: Long-run smoke test (100 executions; no memory blow-up)."""
 
 import pytest

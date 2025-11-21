@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo Script #2: Chemical Plant Process Heat with Heat Pump Integration
 

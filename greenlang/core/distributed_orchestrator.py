@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Distributed Orchestrator for Multi-Node Workflow Execution.
 
 This module provides DistributedOrchestrator, which extends AsyncOrchestrator
@@ -65,6 +66,8 @@ from contextlib import asynccontextmanager
 
 from greenlang.core.async_orchestrator import AsyncOrchestrator
 from greenlang.core.workflow import Workflow
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Redis imports with fallback
 try:
@@ -242,7 +245,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
         self.redis_url = redis_url
         self.sentinel_hosts = sentinel_hosts
         self.cluster_name = cluster_name
-        self.node_id = node_id or str(uuid.uuid4())
+        self.node_id = node_id or str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         self.heartbeat_interval = heartbeat_interval
         self.heartbeat_timeout = heartbeat_timeout
         self.enable_monitoring = enable_monitoring
@@ -373,7 +376,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
             bool: True if lock acquired, False otherwise
         """
         lock_key = f"{self.cluster_name}:lock:{key}"
-        lock_value = str(uuid.uuid4())
+        lock_value = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         acquired = False
 
         try:
@@ -434,7 +437,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
                     import psutil
                     self.local_node.cpu_usage = psutil.cpu_percent()
                     self.local_node.memory_usage = psutil.virtual_memory().percent
-                    self.local_node.last_heartbeat = datetime.utcnow()
+                    self.local_node.last_heartbeat = DeterministicClock.utcnow()
                     self.local_node.active_tasks = len(self.active_tasks)
 
                     # Send heartbeat
@@ -455,7 +458,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
                 pattern = f"{self.cluster_name}:nodes:*"
                 keys = await self.redis.keys(pattern)
 
-                current_time = datetime.utcnow()
+                current_time = DeterministicClock.utcnow()
                 failed_nodes = []
 
                 for key in keys:
@@ -499,7 +502,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
                 await asyncio.sleep(60)  # Run every minute
 
                 # Clean up completed tasks older than 1 hour
-                cutoff_time = datetime.utcnow() - timedelta(hours=1)
+                cutoff_time = DeterministicClock.utcnow() - timedelta(hours=1)
                 pattern = f"{self.cluster_name}:tasks:*"
                 keys = await self.redis.keys(pattern)
 
@@ -611,7 +614,7 @@ class DistributedOrchestrator(AsyncOrchestrator):
             raise ValueError(f"Workflow '{workflow_id}' not found")
 
         workflow = self.workflows[workflow_id]
-        execution_id = f"{workflow_id}_{uuid.uuid4().hex[:8]}"
+        execution_id = f"{workflow_id}_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}"
 
         logger.info(
             f"Starting distributed workflow execution: {execution_id} "

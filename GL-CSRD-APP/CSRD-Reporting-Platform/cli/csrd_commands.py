@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD/ESRS Digital Reporting Platform - CLI Commands
 
@@ -28,6 +29,7 @@ import click
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import (
+from greenlang.determinism import DeterministicClock
     BarColumn,
     Progress,
     SpinnerColumn,
@@ -1510,11 +1512,11 @@ def config(init: bool, show: bool, path: str):
             "reporting_period": {
                 "start_date": click.prompt(
                     "Reporting period start",
-                    default=f"{datetime.now().year}-01-01"
+                    default=f"{DeterministicClock.now().year}-01-01"
                 ),
                 "end_date": click.prompt(
                     "Reporting period end",
-                    default=f"{datetime.now().year}-12-31"
+                    default=f"{DeterministicClock.now().year}-12-31"
                 ),
             },
             "materiality": {

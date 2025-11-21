@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang ADR (Architecture Decision Record) Generator
 
@@ -12,6 +13,8 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import sorted_listdir
 
 
 class ADRGenerator:
@@ -32,7 +35,7 @@ class ADRGenerator:
         adrs = []
 
         if os.path.exists(self.adr_dir):
-            for file in os.listdir(self.adr_dir):
+            for file in sorted_listdir(self.adr_dir):
                 if file.startswith('ADR-') and file.endswith('.md'):
                     # Extract number
                     try:
@@ -216,7 +219,7 @@ class ADRGenerator:
 
 **Status**: {adr_data['status']}
 
-**Date**: {datetime.now().strftime('%Y-%m-%d')}
+**Date**: {DeterministicClock.now().strftime('%Y-%m-%d')}
 
 ## Context
 

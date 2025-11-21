@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/api/tests/test_api.py
 

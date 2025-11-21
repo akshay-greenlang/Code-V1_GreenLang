@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Document ingestion for GreenLang RAG system.
 
@@ -22,6 +23,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 from greenlang.intelligence.rag.models import (
+from greenlang.determinism import DeterministicClock
     DocMeta,
     Chunk,
     IngestionManifest,
@@ -302,7 +304,7 @@ def write_manifest(
         "vector_store_type": manifest.vector_store_type,
         "vector_store_config": manifest.vector_store_config,
         "total_embeddings": manifest.total_embeddings,
-        "created_at": datetime.utcnow().isoformat() + "Z",
+        "created_at": DeterministicClock.utcnow().isoformat() + "Z",
     }
 
     with open(manifest_path, "w") as f:

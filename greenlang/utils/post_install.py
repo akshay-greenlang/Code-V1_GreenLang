@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Post-installation script for GreenLang CLI
 

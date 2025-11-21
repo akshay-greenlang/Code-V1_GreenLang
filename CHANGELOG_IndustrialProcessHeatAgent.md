@@ -49,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deterministic: Same input always produces same output
 
 ### Technical Specifications
-- Python 3.9+
+- Python 3.10+
 - Dependencies: pydantic>=2.0, numpy>=1.24
 - Resource requirements: 512MB RAM, 1 CPU core
 - API endpoint: /api/v1/agents/industrial/process_heat/execute

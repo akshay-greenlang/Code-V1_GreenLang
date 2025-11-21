@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Monetization and Payment Tests
 
@@ -12,6 +13,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 from greenlang.marketplace.models import AgentPurchase, MarketplaceAgent
 from greenlang.marketplace.monetization import (
+from greenlang.determinism import DeterministicClock
     MonetizationManager,
     PaymentProcessor,
     PaymentIntent,
@@ -160,7 +162,7 @@ class TestRefunds:
             currency="USD",
             transaction_id="txn_123",
             status=PaymentStatus.COMPLETED.value,
-            purchased_at=datetime.utcnow() - timedelta(days=30)  # 30 days ago
+            purchased_at=DeterministicClock.utcnow() - timedelta(days=30)  # 30 days ago
         )
 
         db_session.query().filter().first = Mock(return_value=old_purchase)
@@ -298,7 +300,7 @@ class TestLicenseValidation:
             transaction_id="txn_123",
             license_key=LicenseGenerator.generate("agent_123", "user_456"),
             status="completed",
-            subscription_period_end=datetime.utcnow() - timedelta(days=30)
+            subscription_period_end=DeterministicClock.utcnow() - timedelta(days=30)
         )
 
         db_session.query().filter().first = Mock(return_value=expired_purchase)
@@ -322,7 +324,7 @@ class TestLicenseValidation:
             transaction_id="txn_123",
             license_key=LicenseGenerator.generate("agent_123", "user_456"),
             status="completed",
-            subscription_period_end=datetime.utcnow() - timedelta(days=3)
+            subscription_period_end=DeterministicClock.utcnow() - timedelta(days=3)
         )
 
         db_session.query().filter().first = Mock(return_value=grace_purchase)
@@ -533,7 +535,7 @@ def sample_purchase():
         license_key=LicenseGenerator.generate("agent_123", "user_456"),
         pricing_type="one_time",
         status=PaymentStatus.COMPLETED.value,
-        purchased_at=datetime.utcnow()
+        purchased_at=DeterministicClock.utcnow()
     )
 
 

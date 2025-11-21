@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Entity MDM Matching Model (BERT Re-ranking).
 

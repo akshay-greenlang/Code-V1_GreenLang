@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Test the calculator functionality directly"""
 
 from greenlang.sdk import GreenLangClient

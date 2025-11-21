@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Decarbonization Roadmap Agent with ChatSession Integration.
 
 This module provides the MASTER PLANNING AGENT for comprehensive industrial
@@ -66,14 +67,9 @@ import math
 from typing_extensions import TypedDict, NotRequired
 
 from ..types import Agent, AgentResult, ErrorInfo
-from greenlang.intelligence import (
-    ChatSession,
-    ChatMessage,
-    Role,
-    Budget,
-    BudgetExceeded,
-    create_provider,
-)
+# Fixed: Removed incomplete import
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 from .citations import (
     EmissionFactorCitation,
@@ -327,13 +323,11 @@ class DecarbonizationRoadmapAgentAI:
             # Load Agent #1: Industrial Process Heat
             self._sub_agents_cache['heat_agent'] = IndustrialProcessHeatAgent_AI(
                 budget_usd=0.50  # Allocate $0.50 per sub-agent
-            )
             logger.debug("Loaded IndustrialProcessHeatAgent_AI")
 
             # Load Agent #2: Boiler Replacement
             self._sub_agents_cache['boiler_agent'] = BoilerReplacementAgent_AI(
                 budget_usd=0.50
-            )
             logger.debug("Loaded BoilerReplacementAgent_AI")
 
             # Try to load supporting agents (optional, may not exist yet)
@@ -398,7 +392,6 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["fuel_consumption", "electricity_kwh", "grid_region"],
             },
-        )
 
         # Tool #2: Technology Assessment
         self._tool_assess_technologies = ToolDef(
@@ -422,7 +415,6 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["baseline_data", "capital_budget_usd"],
             },
-        )
 
         # Tool #3: Scenario Modeling
         self._tool_model_scenarios = ToolDef(
@@ -450,7 +442,6 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["baseline_emissions", "technologies", "target_year"],
             },
-        )
 
         # Tool #4: Implementation Roadmap
         self._tool_build_roadmap = ToolDef(
@@ -474,7 +465,6 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["selected_scenario", "technologies"],
             },
-        )
 
         # Tool #5: Financial Analysis
         self._tool_calculate_financials = ToolDef(
@@ -498,7 +488,6 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["roadmap_data"],
             },
-        )
 
         # Tool #6: Risk Assessment
         self._tool_assess_risks = ToolDef(
@@ -523,7 +512,6 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["technologies"],
             },
-        )
 
         # Tool #7: Compliance Analysis
         self._tool_analyze_compliance = ToolDef(
@@ -547,7 +535,6 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["facility_location"],
             },
-        )
 
         # Tool #8: Pathway Optimization
         self._tool_optimize_pathway = ToolDef(
@@ -575,7 +562,6 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["scenarios", "risk_data"],
             },
-        )
 
         # Register all tools
         self._all_tools = [
@@ -1041,12 +1027,10 @@ class DecarbonizationRoadmapAgentAI:
                     # Already in async context, use existing loop
                     technology_options = loop.run_until_complete(
                         self._call_sub_agents_async(baseline_data, capital_budget_usd)
-                    )
                 else:
                     # Create new event loop
                     technology_options = asyncio.run(
                         self._call_sub_agents_async(baseline_data, capital_budget_usd)
-                    )
 
                 logger.info(f"Sub-agent coordination completed: {len(technology_options)} technologies assessed")
 
@@ -1117,7 +1101,7 @@ class DecarbonizationRoadmapAgentAI:
         """
         self._tool_call_count += 1
 
-        current_year = datetime.now().year
+        current_year = DeterministicClock.now().year
         years = target_year - current_year
 
         # Business-as-Usual: No action, efficiency degradation
@@ -1344,7 +1328,7 @@ class DecarbonizationRoadmapAgentAI:
         annual_savings = estimated_energy_cost * 0.20  # 20% savings
 
         # IRA 2022 incentives
-        current_year = datetime.now().year
+        current_year = DeterministicClock.now().year
         solar_itc_rate = IRA_SOLAR_ITC.get(current_year, 0.30)
 
         # Solar/renewable eligible portion (configurable from input, default 40%)
@@ -1407,14 +1391,12 @@ class DecarbonizationRoadmapAgentAI:
             initial_investment=net_investment,
             annual_cash_flow=annual_savings,
             years=years
-        )
 
         # Levelized Cost of Abatement (LCOA)
         total_reduction = (
             roadmap_data.get("phase1_quick_wins", {}).get("expected_reduction_kg_co2e", 0) +
             roadmap_data.get("phase2_core_decarbonization", {}).get("expected_reduction_kg_co2e", 0) +
             roadmap_data.get("phase3_deep_decarbonization", {}).get("expected_reduction_kg_co2e", 0)
-        )
 
         # LCOA = (CAPEX + PV(OPEX) - PV(Energy_Savings)) / PV(Emissions_Reduced)
         # Proper implementation per GHG Protocol
@@ -1820,7 +1802,6 @@ class DecarbonizationRoadmapAgentAI:
                 carbon_score * weights["carbon"] +
                 risk_score * weights["risk"] +
                 strategic_score * weights["strategic"]
-            )
 
             scenario_scores.append({
                 "pathway_name": scenario_name.replace("_", " ").title(),
@@ -1908,7 +1889,7 @@ class DecarbonizationRoadmapAgentAI:
             - All tools are deterministic
             - Same input -> Same output (always)
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Reset citations for new run
         self._current_citations = []
@@ -1985,7 +1966,6 @@ Provide a comprehensive executive summary and actionable next steps."""
                 temperature=0.0,  # DETERMINISTIC (required)
                 seed=42,  # REPRODUCIBLE (required)
                 tool_choice="auto",
-            )
 
             # Execute tool calls
             tool_results = {}
@@ -2003,7 +1983,7 @@ Provide a comprehensive executive summary and actionable next steps."""
             output = self._build_output(tool_results, response)
 
             # Calculate metrics
-            duration = (datetime.now() - start_time).total_seconds() * 1000
+            duration = (DeterministicClock.now() - start_time).total_seconds() * 1000
 
             return AgentResult(
                 success=True,
@@ -2022,20 +2002,17 @@ Provide a comprehensive executive summary and actionable next steps."""
                     "temperature": 0.0,
                     "seed": 42,
                 },
-            )
 
         except BudgetExceeded as e:
             logger.error(f"Budget exceeded: {e}")
             return AgentResult(
                 success=False,
                 error=f"Budget exceeded: {e}",
-            )
         except Exception as e:
             logger.error(f"Execution error: {e}", exc_info=True)
             return AgentResult(
                 success=False,
                 error=f"Execution error: {str(e)}",
-            )
 
     def _build_output(
         self,

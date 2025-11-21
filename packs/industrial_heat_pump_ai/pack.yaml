@@ -1,9 +1,12 @@
-schema_version: 2.0.0
-id: industrial/heat_pump_ai_v1
 name: Industrial Heat Pump Agent (AI-Powered)
 version: 1.0.0
-summary: AI-powered industrial heat pump analysis with thermodynamic COP calculation,
-  technology selection, cascade system design, and electrification pathway optimization
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 tags:
 - industrial
 - heat-pump
@@ -13,139 +16,11 @@ tags:
 - waste-heat-recovery
 - ai-agent
 - citations
+id: industrial/heat_pump_ai_v1
+summary: AI-powered industrial heat pump analysis with thermodynamic COP calculation,
+  technology selection, cascade system design, and electrification pathway optimization
 owners:
 - greenlang-team
-license: MIT
-compute:
-  entrypoint: python://greenlang.agents.industrial_heat_pump_agent_ai:execute
-  deterministic: true
-  timeout_s: 90
-  memory_limit_mb: 768
-  inputs:
-    process_temperature_f:
-      dtype: float64
-      unit: degF
-      description: Required process temperature in Fahrenheit
-      ge: 32.0
-      le: 300.0
-    annual_heating_load_mmbtu:
-      dtype: float64
-      unit: MMBtu/year
-      description: Annual heating load in million BTU
-      ge: 0.0
-    load_profile_type:
-      dtype: string
-      unit: '1'
-      description: Operating schedule pattern
-    climate_zone:
-      dtype: string
-      unit: '1'
-      description: ASHRAE climate zone classification
-    design_ambient_temp_f:
-      dtype: float64
-      unit: degF
-      description: Design ambient temperature for sizing
-      ge: -40.0
-      le: 120.0
-    baseline_fuel_type:
-      dtype: string
-      unit: '1'
-      description: Current baseline fuel source
-    baseline_efficiency:
-      dtype: float64
-      unit: '1'
-      description: Current system thermal efficiency (0-1)
-      ge: 0.0
-      le: 1.0
-    electricity_rate_usd_per_kwh:
-      dtype: float64
-      unit: USD/kWh
-      description: Electricity rate per kilowatt-hour
-      ge: 0.0
-    electricity_rate_structure:
-      dtype: string
-      unit: '1'
-      description: Electricity rate structure type
-    grid_emissions_factor_kg_co2e_per_kwh:
-      dtype: float64
-      unit: kgCO2e/kWh
-      description: Grid emission factor for electricity
-      ge: 0.0
-    space_constraints:
-      dtype: string
-      unit: '1'
-      description: Available space for equipment
-    demand_charge_usd_per_kw:
-      dtype: float64
-      unit: USD/kW
-      description: Monthly demand charge
-      ge: 0.0
-  outputs:
-    recommended_technology:
-      dtype: string
-      unit: '1'
-      description: Recommended heat pump technology
-    average_cop:
-      dtype: float64
-      unit: '1'
-      description: Average coefficient of performance
-    capacity_kw_thermal:
-      dtype: float64
-      unit: kW
-      description: Required thermal capacity
-    electrical_demand_kw:
-      dtype: float64
-      unit: kW
-      description: Peak electrical demand
-    annual_electricity_kwh:
-      dtype: float64
-      unit: kWh/year
-      description: Annual electricity consumption
-    baseline_emissions_kg_co2e:
-      dtype: float64
-      unit: kgCO2e/year
-      description: Current baseline emissions
-    emissions_reduction_kg_co2e:
-      dtype: float64
-      unit: kgCO2e/year
-      description: Annual emissions reduction potential
-    emissions_reduction_percent:
-      dtype: float64
-      unit: percent
-      description: Percentage emissions reduction
-    simple_payback_years:
-      dtype: float64
-      unit: years
-      description: Simple payback period
-    npv_usd:
-      dtype: float64
-      unit: USD
-      description: Net present value over analysis period
-    lcoh_usd_per_mmbtu:
-      dtype: float64
-      unit: USD/MMBtu
-      description: Levelized cost of heat
-    estimated_capex_usd:
-      dtype: float64
-      unit: USD
-      description: Estimated capital expenditure
-    annual_operating_cost_usd:
-      dtype: float64
-      unit: USD/year
-      description: Annual operating cost (electricity + maintenance)
-    requires_thermal_storage:
-      dtype: string
-      unit: '1'
-      description: Whether thermal storage is recommended (yes/no)
-    ai_explanation:
-      dtype: string
-      unit: '1'
-      description: AI-generated analysis and recommendations
-    citations:
-      dtype: string
-      unit: '1'
-      description: Citation tracking for calculations (JSON serialized)
-  factors: {}
 ai:
   system_prompt: 'You are an expert in industrial heat pump systems and thermal system
     electrification.

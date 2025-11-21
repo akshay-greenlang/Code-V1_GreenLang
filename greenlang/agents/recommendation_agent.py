@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Dict, Any, Optional, List
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 import logging
@@ -386,8 +387,8 @@ class RecommendationAgent(BaseAgent):
             numbers = re.findall(r"\d+", payback_str)
             if numbers:
                 return float(numbers[0])
-        except:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to extract payback years from '{payback_str}': {e}")
 
         return 10
 

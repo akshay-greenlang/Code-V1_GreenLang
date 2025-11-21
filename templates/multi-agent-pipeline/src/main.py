@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Multi-Agent Pipeline Application
 =================================
@@ -28,6 +29,7 @@ from greenlang.core import Pipeline, PipelineStage, Orchestrator
 from greenlang.provenance import ProvenanceTracker
 from greenlang.telemetry import get_logger, get_metrics_collector, TelemetryManager
 from greenlang.config import get_config_manager
+from greenlang.determinism import DeterministicClock
 
 
 class MultiAgentPipelineApplication:
@@ -202,7 +204,7 @@ class MultiAgentPipelineApplication:
             Pipeline execution result
         """
         with self.provenance.track_operation("pipeline_execution"):
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             try:
                 self.logger.info(f"Starting pipeline execution: {input_file}")
@@ -214,7 +216,7 @@ class MultiAgentPipelineApplication:
                     "format": format
                 })
 
-                duration = (datetime.now() - start_time).total_seconds()
+                duration = (DeterministicClock.now() - start_time).total_seconds()
 
                 # Track provenance
                 self.provenance.add_metadata("input_file", input_file)
@@ -240,7 +242,7 @@ class MultiAgentPipelineApplication:
                 return {
                     "success": False,
                     "error": str(e),
-                    "duration_seconds": (datetime.now() - start_time).total_seconds()
+                    "duration_seconds": (DeterministicClock.now() - start_time).total_seconds()
                 }
 
     async def shutdown(self):

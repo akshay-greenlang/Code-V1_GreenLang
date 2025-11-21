@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ShipmentIntakeAgent_v2 - Refactored with GreenLang SDK Infrastructure
 
@@ -26,6 +27,7 @@ from pydantic import BaseModel
 
 # GreenLang SDK Infrastructure
 from greenlang.sdk.base import Agent, Metadata, Result
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -394,7 +396,7 @@ class ShipmentIntakeAgent_v2(Agent[IntakeInput, IntakeOutput]):
 
         This is the main processing logic, adapted from v1's process() method.
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Read input
         df = self.read_shipments(input_data.file_path)
@@ -430,7 +432,7 @@ class ShipmentIntakeAgent_v2(Agent[IntakeInput, IntakeOutput]):
             validated_shipments.append(shipment)
             all_errors.extend([issue.dict() for issue in issues])
 
-        end_time = datetime.now()
+        end_time = DeterministicClock.now()
         processing_time = (end_time - start_time).total_seconds()
 
         # Build metadata

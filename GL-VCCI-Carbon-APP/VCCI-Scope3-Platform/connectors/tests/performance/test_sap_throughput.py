@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP Throughput Performance Tests
 GL-VCCI Scope 3 Platform

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Error Handling Middleware for GreenLang.
 
 Provides centralized error handling, formatting, and logging for all GreenLang
@@ -33,6 +34,7 @@ import sys
 import traceback
 
 from greenlang.exceptions import (
+from greenlang.determinism import DeterministicClock
     GreenLangException,
     AgentException,
     WorkflowException,
@@ -88,7 +90,7 @@ class ErrorResponse:
             "message": message,
             "details": details or {},
         }
-        self.timestamp = datetime.now().isoformat()
+        self.timestamp = DeterministicClock.now().isoformat()
         self.request_id = request_id
 
     def to_dict(self) -> Dict[str, Any]:

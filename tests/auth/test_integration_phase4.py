@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration tests for Advanced Access Control (Phase 4)
 

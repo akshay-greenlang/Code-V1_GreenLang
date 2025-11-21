@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Apply Security Hardening - Batch Script
 Team 7: Input Validation & Security Hardening

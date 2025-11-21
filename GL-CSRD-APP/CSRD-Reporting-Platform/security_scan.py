@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Automated Security Scanning Pipeline for CSRD Reporting Platform
 =================================================================
@@ -20,6 +21,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any
 import re
+from greenlang.determinism import DeterministicClock
 
 
 class SecurityScanner:
@@ -28,7 +30,7 @@ class SecurityScanner:
     def __init__(self, project_root: str):
         self.project_root = Path(project_root)
         self.results = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "project": "CSRD-Reporting-Platform",
             "scans": {},
             "summary": {}

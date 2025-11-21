@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive Performance Benchmarks for GreenLang Phase 3.
 
 This module extends async_performance.py with comprehensive benchmarking:
@@ -34,6 +35,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from greenlang.determinism import DeterministicClock
 
 try:
     import psutil
@@ -441,7 +443,7 @@ class ComprehensiveBenchmarkSuite:
         print(f"\n{'='*80}")
         print("COMPREHENSIVE BENCHMARK SUITE")
         print(f"{'='*80}")
-        print(f"Timestamp: {datetime.now().isoformat()}")
+        print(f"Timestamp: {DeterministicClock.now().isoformat()}")
         print(f"{'='*80}")
 
         suite_start = time.perf_counter()
@@ -544,7 +546,7 @@ class ComprehensiveBenchmarkSuite:
 
     def _save_results(self, results: BenchmarkSuiteResults):
         """Save benchmark results to JSON."""
-        filepath = self.results_dir / f"benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        filepath = self.results_dir / f"benchmark_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.json"
 
         data = {
             "timestamp": results.timestamp.isoformat(),

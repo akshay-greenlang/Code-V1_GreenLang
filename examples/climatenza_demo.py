@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Climatenza AI Demo - Solar Thermal Feasibility Analysis
 

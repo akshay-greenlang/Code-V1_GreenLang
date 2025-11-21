@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Database Query Optimization Module
 GL-VCCI Scope 3 Platform - Performance Optimization
@@ -32,6 +33,8 @@ from sqlalchemy import text, Index, MetaData, Table
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql import Select
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 
@@ -228,7 +231,7 @@ class QueryAnalyzer:
                 if "cost=" in line:
                     try:
                         cost_part = line.split("cost=")[1].split()[0]
-                        plan_cost = float(cost_part.split("..")[-1])
+                        plan_cost = FinancialDecimal.from_string(cost_part.split("..")[-1])
                     except:
                         pass
 
@@ -276,7 +279,7 @@ class QueryAnalyzer:
                 uses_index=uses_index,
                 full_table_scan=full_table_scan,
                 recommendations=recommendations,
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
             # Store in history

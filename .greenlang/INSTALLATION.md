@@ -5,7 +5,7 @@
 Before using the Migration Toolkit, ensure you have:
 
 ### Required
-- **Python 3.8+**: Download from [python.org](https://www.python.org/downloads/)
+- **Python 3.10+**: Download from [python.org](https://www.python.org/downloads/)
 - **pip**: Usually comes with Python
 - **Git**: For diff generation and version control
 

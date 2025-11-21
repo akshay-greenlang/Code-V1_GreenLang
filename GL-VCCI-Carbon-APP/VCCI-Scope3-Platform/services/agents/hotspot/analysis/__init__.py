@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Hotspot Analysis Modules
 GL-VCCI Scope 3 Platform

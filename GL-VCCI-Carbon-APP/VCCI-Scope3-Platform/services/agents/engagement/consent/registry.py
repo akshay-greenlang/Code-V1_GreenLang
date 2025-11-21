@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Consent registry for GDPR, CCPA, and CAN-SPAM compliance.
 
@@ -11,6 +12,7 @@ from pathlib import Path
 
 from ..models import ConsentRecord, ConsentStatus, LawfulBasis
 from ..exceptions import (
+from greenlang.determinism import DeterministicClock
     ConsentNotGrantedError,
     OptOutViolationError,
     SupplierNotFoundError
@@ -134,7 +136,7 @@ class ConsentRegistry:
         else:
             # Opt-out model or auto opt-in
             initial_status = ConsentStatus.OPTED_IN
-            consent_date = datetime.utcnow()
+            consent_date = DeterministicClock.utcnow()
 
         record = ConsentRecord(
             supplier_id=supplier_id,
@@ -145,7 +147,7 @@ class ConsentRegistry:
             consent_date=consent_date,
             metadata={
                 "jurisdiction": jurisdiction.value,
-                "registered_at": datetime.utcnow().isoformat()
+                "registered_at": DeterministicClock.utcnow().isoformat()
             }
         )
 
@@ -177,7 +179,7 @@ class ConsentRegistry:
 
         record = self.records[supplier_id]
         record.consent_status = ConsentStatus.OPTED_IN
-        record.consent_date = datetime.utcnow()
+        record.consent_date = DeterministicClock.utcnow()
         record.opt_out_date = None
         record.opt_out_reason = None
 
@@ -210,7 +212,7 @@ class ConsentRegistry:
 
         record = self.records[supplier_id]
         record.consent_status = ConsentStatus.OPTED_OUT
-        record.opt_out_date = datetime.utcnow()
+        record.opt_out_date = DeterministicClock.utcnow()
         record.opt_out_reason = reason
 
         self._save_records()
@@ -291,7 +293,7 @@ class ConsentRegistry:
             supplier_id: Supplier identifier
         """
         if supplier_id in self.records:
-            self.records[supplier_id].last_contacted = datetime.utcnow()
+            self.records[supplier_id].last_contacted = DeterministicClock.utcnow()
             self._save_records()
             logger.debug(f"Recorded contact for supplier {supplier_id}")
 
@@ -341,7 +343,7 @@ class ConsentRegistry:
         Returns:
             Number of records removed
         """
-        cutoff_date = datetime.utcnow() - timedelta(days=retention_days)
+        cutoff_date = DeterministicClock.utcnow() - timedelta(days=retention_days)
         expired_suppliers = []
 
         for supplier_id, record in self.records.items():

@@ -1,0 +1,540 @@
+openapi: 3.0.3
+info:
+  title: CBAM Importer Copilot API
+  description: |
+    EU CBAM Transitional Registry Reporting API with comprehensive monitoring.
+
+    ## Overview
+
+    The CBAM Importer Copilot automates EU Carbon Border Adjustment Mechanism reporting
+    for importers. This API provides programmatic access to:
+
+    - **Shipment Intake**: Import and validate shipment data (CSV, Excel, JSON, XML)
+    - **Emissions Calculation**: Zero-hallucination GHG calculations with full provenance
+    - **CBAM Report Generation**: Automated CBAM registry report generation
+    - **Health Monitoring**: Production-grade health checks and observability
+    - **Metrics Export**: Prometheus-compatible metrics for monitoring
+
+    ## CBAM Context
+
+    The EU Carbon Border Adjustment Mechanism (CBAM) requires importers to report
+    embedded emissions for certain goods (cement, steel, aluminum, fertilizers, electricity).
+
+    This API automates the 3-agent pipeline:
+    1. **IntakeAgent**: Validates shipment data against CBAM schema
+    2. **CalculatorAgent**: Calculates embedded emissions with zero hallucination
+    3. **ReportingAgent**: Generates CBAM registry reports
+
+    ## Features
+
+    - **Zero Hallucination**: Calculations use only audited emission factors
+    - **Full Provenance**: Complete audit trail for regulatory compliance
+    - **Health Monitoring**: Kubernetes-ready health checks (live, ready, startup)
+    - **Prometheus Metrics**: Production metrics for SLO tracking
+    - **Structured Logging**: JSON logging with correlation IDs
+    - **Rate Limiting**: DDoS protection with configurable limits
+    - **CORS Security**: Configurable origins from environment
+
+    ## SLA Commitments
+
+    - **Availability**: 99.9% uptime
+    - **Success Rate**: 99% successful pipeline executions
+    - **Latency**: 95th percentile < 10 minutes for full pipeline
+
+    ## Authentication
+
+    API requests require authentication. Include API key in header:
+
+    ```
+    Authorization: Bearer <your-api-key>
+    ```
+
+  version: 1.0.0
+  contact:
+    name: GreenLang CBAM Team
+    email: cbam-support@greenlang.io
+    url: https://greenlang.io/cbam
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://cbam-api.greenlang.io
+    description: Production server
+  - url: https://cbam-staging.greenlang.io
+    description: Staging server
+  - url: http://localhost:8000
+    description: Local development server
+
+tags:
+  - name: Root
+    description: API root and information
+  - name: Health
+    description: Health check endpoints for monitoring
+  - name: Metrics
+    description: Prometheus metrics endpoints
+  - name: Info
+    description: Application information
+  - name: Pipeline
+    description: CBAM pipeline execution (example endpoints)
+
+security:
+  - BearerAuth: []
+
+paths:
+  /:
+    get:
+      summary: API root
+      description: Root endpoint with API information and links
+      operationId: getRoot
+      tags:
+        - Root
+      security: []
+      responses:
+        '200':
+          description: API information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service:
+                    type: string
+                    example: CBAM Importer Copilot
+                  version:
+                    type: string
+                    example: 1.0.0
+                  status:
+                    type: string
+                    example: operational
+                  documentation:
+                    type: string
+                    example: /docs
+                  health:
+                    type: string
+                    example: /health
+                  metrics:
+                    type: string
+                    example: /metrics
+
+  /health:
+    get:
+      summary: Basic health check
+      description: |
+        Basic health check - service is running.
+
+        Returns 200 if the application process is alive.
+        Does not check external dependencies.
+
+        Used by: Load balancers, basic uptime monitoring
+      operationId: getHealth
+      tags:
+        - Health
+      security: []
+      responses:
+        '200':
+          description: Service is running
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - service
+                  - timestamp
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: cbam-importer-copilot
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: '2025-11-21T10:30:00Z'
+
+  /health/ready:
+    get:
+      summary: Readiness check
+      description: |
+        Readiness check - service is ready to accept requests.
+
+        Checks:
+        - Database connectivity
+        - Redis cache availability
+        - External dependencies
+
+        Returns 200 if ready, 503 if not ready.
+
+        Used by: Kubernetes readiness probe, load balancer health checks
+      operationId: getReadiness
+      tags:
+        - Health
+      security: []
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - status
+                  - service
+                  - checks
+                properties:
+                  status:
+                    type: string
+                    enum: [ready, not_ready]
+                    example: ready
+                  service:
+                    type: string
+                    example: cbam-importer-copilot
+                  checks:
+                    type: object
+                    properties:
+                      database:
+                        type: boolean
+                      redis:
+                        type: boolean
+                      factor_api:
+                        type: boolean
+                    example:
+                      database: true
+                      redis: true
+                      factor_api: true
+        '503':
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: not_ready
+                  checks:
+                    type: object
+
+  /health/live:
+    get:
+      summary: Liveness check
+      description: |
+        Liveness check - service is functioning correctly.
+
+        Checks for critical failures that require restart:
+        - Deadlock detection
+        - Memory leaks
+        - Unrecoverable errors
+
+        Returns 200 if alive, 503 if should be restarted.
+
+        Used by: Kubernetes liveness probe
+      operationId: getLiveness
+      tags:
+        - Health
+      security: []
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: alive
+                  service:
+                    type: string
+                    example: cbam-importer-copilot
+        '503':
+          description: Service should be restarted
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      description: |
+        Prometheus metrics endpoint.
+
+        Returns metrics in Prometheus exposition format for:
+        - Pipeline execution metrics (duration, success rate)
+        - Records processed
+        - Active pipelines
+        - System metrics (CPU, memory)
+        - Cache performance
+        - Error rates
+
+        Scrape interval: 15 seconds recommended
+      operationId: getMetrics
+      tags:
+        - Metrics
+      security: []
+      responses:
+        '200':
+          description: Metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: |
+                # HELP cbam_pipeline_executions_total Total number of pipeline executions
+                # TYPE cbam_pipeline_executions_total counter
+                cbam_pipeline_executions_total{status="success",stage="total"} 150
+
+                # HELP cbam_pipeline_duration_seconds Pipeline execution duration
+                # TYPE cbam_pipeline_duration_seconds histogram
+                cbam_pipeline_duration_seconds_bucket{stage="total",le="60"} 120
+                cbam_pipeline_duration_seconds_bucket{stage="total",le="300"} 145
+                cbam_pipeline_duration_seconds_bucket{stage="total",le="+Inf"} 150
+
+                # HELP cbam_records_processed_total Total records processed
+                # TYPE cbam_records_processed_total counter
+                cbam_records_processed_total{stage="intake",status="success"} 5000
+
+                # HELP cbam_pipeline_active Current active pipelines
+                # TYPE cbam_pipeline_active gauge
+                cbam_pipeline_active 3
+
+  /api/v1/info:
+    get:
+      summary: Application information
+      description: |
+        Get application information including version, capabilities, and SLA.
+
+        Returns static information about the CBAM Importer Copilot service.
+      operationId: getInfo
+      tags:
+        - Info
+      responses:
+        '200':
+          description: Application information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplicationInfo'
+
+  /api/v1/pipeline/execute:
+    post:
+      summary: Execute CBAM pipeline
+      description: |
+        Execute the complete CBAM reporting pipeline.
+
+        **Note**: This is an example/placeholder endpoint showing monitoring integration.
+
+        In production, this endpoint would:
+        1. Accept shipment data (CSV, Excel, JSON, XML)
+        2. Execute 3-agent pipeline (Intake → Calculator → Reporting)
+        3. Return CBAM registry report
+
+        Currently returns a mock response for demonstration.
+
+        **Rate Limit**: 10 requests per minute
+      operationId: executePipeline
+      tags:
+        - Pipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PipelineRequest'
+            example:
+              shipment_file_url: https://example.com/shipments.csv
+              report_quarter: Q4-2024
+              importer_id: IMP-12345
+      responses:
+        '200':
+          description: Pipeline execution started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineResponse'
+              example:
+                status: success
+                message: Pipeline execution completed
+                report_id: CBAM-2024-Q4-001
+                records_processed: 1000
+                emissions_tco2: 12345.67
+        '500':
+          description: Pipeline execution failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: API key authentication (contact support for API keys)
+
+  schemas:
+    ApplicationInfo:
+      type: object
+      required:
+        - name
+        - version
+        - description
+        - capabilities
+        - monitoring
+        - sla
+      properties:
+        name:
+          type: string
+          example: CBAM Importer Copilot
+        version:
+          type: string
+          example: 1.0.0
+        description:
+          type: string
+          example: EU CBAM Transitional Registry Reporting
+        capabilities:
+          type: array
+          items:
+            type: string
+          example:
+            - Shipment intake and validation
+            - Emissions calculation (zero hallucination)
+            - CBAM report generation
+            - Provenance tracking
+            - Health monitoring
+            - Prometheus metrics
+        monitoring:
+          type: object
+          properties:
+            health_checks:
+              type: boolean
+              example: true
+            metrics:
+              type: boolean
+              example: true
+            structured_logging:
+              type: boolean
+              example: true
+            correlation_ids:
+              type: boolean
+              example: true
+        sla:
+          type: object
+          properties:
+            availability:
+              type: string
+              example: 99.9%
+            success_rate:
+              type: string
+              example: 99%
+            latency_p95:
+              type: string
+              example: 10 minutes
+
+    PipelineRequest:
+      type: object
+      required:
+        - shipment_file_url
+        - report_quarter
+        - importer_id
+      properties:
+        shipment_file_url:
+          type: string
+          format: uri
+          description: URL to shipment data file (CSV, Excel, JSON, XML)
+          example: https://example.com/shipments.csv
+        report_quarter:
+          type: string
+          description: Reporting quarter (e.g., Q4-2024)
+          example: Q4-2024
+        importer_id:
+          type: string
+          description: CBAM importer identifier
+          example: IMP-12345
+        options:
+          type: object
+          description: Optional pipeline configuration
+          properties:
+            validate_only:
+              type: boolean
+              description: Only validate data, don't generate report
+              default: false
+            include_provenance:
+              type: boolean
+              description: Include full provenance in report
+              default: true
+
+    PipelineResponse:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: string
+          enum: [success, error]
+          description: Pipeline execution status
+        message:
+          type: string
+          description: Status message
+        report_id:
+          type: string
+          description: Generated CBAM report ID
+          example: CBAM-2024-Q4-001
+        records_processed:
+          type: integer
+          description: Number of shipment records processed
+          example: 1000
+        emissions_tco2:
+          type: number
+          format: float
+          description: Total embedded emissions (tCO2)
+          example: 12345.67
+        validation_errors:
+          type: array
+          description: Validation errors (if any)
+          items:
+            type: object
+            properties:
+              row:
+                type: integer
+              field:
+                type: string
+              error:
+                type: string
+        report_url:
+          type: string
+          format: uri
+          description: URL to download generated report
+          example: https://cbam-api.greenlang.io/reports/CBAM-2024-Q4-001.xml
+
+    ErrorResponse:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: string
+          example: error
+        message:
+          type: string
+          description: Error message
+          example: Pipeline execution failed
+        correlation_id:
+          type: string
+          format: uuid
+          description: Correlation ID for debugging
+          example: 550e8400-e29b-41d4-a716-446655440000
+        error_details:
+          type: object
+          description: Additional error details
+          properties:
+            stage:
+              type: string
+              description: Pipeline stage where error occurred
+            exception:
+              type: string
+              description: Exception type

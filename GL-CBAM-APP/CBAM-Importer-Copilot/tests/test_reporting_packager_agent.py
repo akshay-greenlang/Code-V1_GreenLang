@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CBAM Importer Copilot - Reporting Packager Agent Tests
 
@@ -9,6 +10,7 @@ Version: 1.0.0
 import pytest
 from pathlib import Path
 import sys
+from greenlang.determinism import FinancialDecimal
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -211,7 +213,7 @@ class TestAggregations:
 
         # Set known emissions
         for i, shipment in enumerate(sample_shipments_data):
-            shipment['embedded_emissions_tco2'] = float(i + 1)  # 1, 2, 3, 4, 5
+            shipment['embedded_emissions_tco2'] = FinancialDecimal.from_string(i + 1)  # 1, 2, 3, 4, 5
             shipment['product_group'] = 'iron_steel'
 
         total_emissions = sum(i + 1 for i in range(len(sample_shipments_data)))

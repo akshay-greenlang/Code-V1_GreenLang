@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 """ISO 14083 Certificate Generator - GL-VCCI Scope 3 Platform v1.0.0"""
 import logging
 from typing import Dict, Any
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +16,7 @@ class ISO14083Generator:
         logger.info("Generating ISO 14083 certificate")
 
         return {
-            "certificate_id": f"ISO14083-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+            "certificate_id": f"ISO14083-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}",
             "standard": "ISO 14083:2023",
             "conformance_level": "Full",
             "transport_modes": list(transport_data.get("transport_by_mode", {}).keys()),
@@ -23,7 +25,7 @@ class ISO14083Generator:
             "emission_factors": transport_data.get("emission_factors_used", []),
             "data_quality_score": transport_data.get("data_quality_score", 0),
             "variance_confirmation": "Zero variance to reference calculations",
-            "issued_at": datetime.utcnow().isoformat(),
+            "issued_at": DeterministicClock.utcnow().isoformat(),
         }
 
 __all__ = ["ISO14083Generator"]

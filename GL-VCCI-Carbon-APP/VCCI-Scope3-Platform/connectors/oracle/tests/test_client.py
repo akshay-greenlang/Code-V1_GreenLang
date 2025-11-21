@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Connector REST Client Tests
 GL-VCCI Scope 3 Platform

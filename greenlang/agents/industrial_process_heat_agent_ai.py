@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Industrial Process Heat Agent with ChatSession Integration.
 
 This module provides an AI-enhanced agent for industrial process heat analysis
@@ -46,14 +47,9 @@ import math
 from typing_extensions import TypedDict, NotRequired
 
 from ..types import Agent, AgentResult, ErrorInfo
-from greenlang.intelligence import (
-    ChatSession,
-    ChatMessage,
-    Role,
-    Budget,
-    BudgetExceeded,
-    create_provider,
-)
+# Fixed: Removed incomplete import
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 from .citations import (
     EmissionFactorCitation,
@@ -295,7 +291,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["process_type", "production_rate", "temperature_requirement"],
             },
-        )
 
         # Tool 2: Calculate temperature requirements
         self.calculate_temperature_requirements_tool = ToolDef(
@@ -317,7 +312,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["process_type"],
             },
-        )
 
         # Tool 3: Calculate energy intensity
         self.calculate_energy_intensity_tool = ToolDef(
@@ -342,7 +336,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["heat_demand_kw", "production_rate"],
             },
-        )
 
         # Tool 4: Estimate solar thermal fraction
         self.estimate_solar_fraction_tool = ToolDef(
@@ -382,7 +375,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["process_temperature", "load_profile", "latitude", "heat_demand_kw"],
             },
-        )
 
         # Tool 5: Calculate backup fuel requirements
         self.calculate_backup_fuel_tool = ToolDef(
@@ -418,7 +410,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["peak_heat_demand_kw", "solar_fraction", "backup_type", "annual_energy_mwh"],
             },
-        )
 
         # Tool 6: Estimate emissions baseline
         self.estimate_emissions_baseline_tool = ToolDef(
@@ -444,7 +435,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["annual_heat_demand_mwh", "current_fuel_type"],
             },
-        )
 
         # Tool 7: Calculate decarbonization potential
         self.calculate_decarbonization_potential_tool = ToolDef(
@@ -475,7 +465,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["baseline_emissions_kg_co2e", "solar_fraction", "annual_heat_demand_mwh"],
             },
-        )
 
     def _calculate_process_heat_demand_impl(
         self,
@@ -680,7 +669,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
         annual_solar_energy_needed_mwh = (heat_demand_kw * 8760 / 1000) * solar_fraction
         collector_area_m2 = (annual_solar_energy_needed_mwh * 1000) / (
             annual_irradiance * collector_efficiency
-        )
 
         # Storage volume (rule of thumb: 50-75 liters per m² collector)
         storage_volume_m3 = (collector_area_m2 * 60) / 1000  # liters to m³
@@ -823,7 +811,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
         # Maximum reduction = baseline × solar_fraction - solar_lifecycle_emissions
         max_reduction_kg_co2e = (
             baseline_emissions_kg_co2e * solar_fraction - solar_lifecycle_emissions
-        )
 
         # Reduction percentage
         reduction_percentage = (max_reduction_kg_co2e / baseline_emissions_kg_co2e) * 100
@@ -920,7 +907,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
         Returns:
             AgentResult with heat analysis and recommendations
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Validate input
         if not self.validate(payload):
@@ -946,7 +933,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result["success"]:
@@ -1005,7 +992,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
         # Calculate annual operating hours
         operating_hours_per_year = (
             operating_hours_per_day * (days_per_week / 7) * 365
-        )
 
         # Create ChatSession with tools
         session = ChatSession(self.provider)
@@ -1061,7 +1047,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
-            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -1074,7 +1059,6 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 payload,
                 tool_results,
                 response.text if self.enable_explanations else None,
-            )
 
             return {
                 "success": True,
@@ -1184,7 +1168,6 @@ IMPORTANT:
                 elif name == "calculate_temperature_requirements":
                     results["temperature_requirements"] = (
                         self._calculate_temperature_requirements_impl(**args)
-                    )
                 elif name == "calculate_energy_intensity":
                     results["energy_intensity"] = self._calculate_energy_intensity_impl(**args)
                 elif name == "estimate_solar_thermal_fraction":
@@ -1196,7 +1179,6 @@ IMPORTANT:
                 elif name == "calculate_decarbonization_potential":
                     results["decarbonization"] = self._calculate_decarbonization_potential_impl(
                         **args
-                    )
             except Exception as e:
                 self.logger.warning(f"Tool call {name} failed: {e}")
                 # Continue processing other tools
@@ -1231,7 +1213,6 @@ IMPORTANT:
         storage_volume_m3 = solar_data.get("storage_volume_m3", 0.0)
         technology_recommendation = solar_data.get(
             "technology_recommendation", "Solar thermal system"
-        )
 
         # Extract backup fuel data
         backup_data = tool_results.get("backup_fuel", {})
@@ -1277,7 +1258,6 @@ IMPORTANT:
         if intensity_data:
             output["energy_intensity_kwh_per_unit"] = intensity_data.get(
                 "energy_intensity_kwh_per_unit"
-            )
 
         if annual_backup_energy_mwh:
             output["annual_backup_energy_mwh"] = annual_backup_energy_mwh
@@ -1305,7 +1285,7 @@ IMPORTANT:
 
         # Add feedback collection metadata
         output["_feedback_url"] = "/api/v1/feedback/industrial_process_heat"
-        output["_session_id"] = f"session_{datetime.now().timestamp()}"
+        output["_session_id"] = f"session_{DeterministicClock.now().timestamp()}"
 
         return output
 
@@ -1345,7 +1325,6 @@ IMPORTANT:
                 process_type="pasteurization",
                 production_rate=100,
                 temperature_requirement=72,
-            )
 
             # Verify provider is available
             provider_status = "available" if self.provider else "unavailable"
@@ -1370,7 +1349,7 @@ IMPORTANT:
                 "version": self.version,
                 "agent_id": self.agent_id,
                 "provider": provider_status,
-                "last_successful_call": datetime.now().isoformat(),
+                "last_successful_call": DeterministicClock.now().isoformat(),
                 "metrics": {
                     "avg_latency_ms": avg_latency_ms,
                     "error_rate_24h": error_rate_24h,
@@ -1389,5 +1368,5 @@ IMPORTANT:
                 "version": self.version,
                 "agent_id": self.agent_id,
                 "error": str(e),
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": DeterministicClock.now().isoformat(),
             }

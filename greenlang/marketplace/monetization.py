@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Monetization System
 
@@ -19,6 +20,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, desc
 
 from greenlang.marketplace.models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     MarketplaceAgent,
     AgentPurchase,
     PricingType,
@@ -132,7 +136,7 @@ class PaymentProcessor:
             # )
 
             # For now, simulate payment intent ID
-            payment_intent_id = f"pi_{uuid.uuid4().hex[:24]}"
+            payment_intent_id = f"pi_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:24]}"
 
             logger.info(
                 f"Created payment intent {payment_intent_id} for "
@@ -171,7 +175,7 @@ class PaymentProcessor:
 
         try:
             # Generate unique transaction ID
-            transaction_id = f"txn_{uuid.uuid4().hex}"
+            transaction_id = f"txn_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex}"
 
             # Generate license key
             license_key = self._generate_license_key(agent_id, user_id)
@@ -249,13 +253,13 @@ class PaymentProcessor:
             # )
 
             # Simulate subscription ID
-            subscription_id = f"sub_{uuid.uuid4().hex[:24]}"
+            subscription_id = f"sub_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:24]}"
 
             # Calculate subscription period
             if pricing_type == PricingModel.MONTHLY:
-                period_end = datetime.utcnow() + timedelta(days=30)
+                period_end = DeterministicClock.utcnow() + timedelta(days=30)
             else:  # Annual
-                period_end = datetime.utcnow() + timedelta(days=365)
+                period_end = DeterministicClock.utcnow() + timedelta(days=365)
 
             # Create purchase record
             purchase = AgentPurchase(
@@ -263,10 +267,10 @@ class PaymentProcessor:
                 agent_id=agent_id,
                 amount=agent.price,
                 currency=agent.currency,
-                transaction_id=f"txn_{uuid.uuid4().hex}",
+                transaction_id=f"txn_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex}",
                 pricing_type=pricing_type.value,
                 subscription_id=subscription_id,
-                subscription_period_start=datetime.utcnow(),
+                subscription_period_start=DeterministicClock.utcnow(),
                 subscription_period_end=period_end,
                 status=PaymentStatus.COMPLETED.value,
                 license_key=self._generate_license_key(agent_id, user_id)
@@ -311,7 +315,7 @@ class PaymentProcessor:
                 return False, ["Purchase not found"]
 
             # Check refund policy (14 days)
-            if datetime.utcnow() - purchase.purchased_at > timedelta(days=14):
+            if DeterministicClock.utcnow() - purchase.purchased_at > timedelta(days=14):
                 return False, ["Refund period expired (14 days)"]
 
             # Calculate refund amount
@@ -328,7 +332,7 @@ class PaymentProcessor:
 
             # Update purchase
             purchase.status = PaymentStatus.REFUNDED.value
-            purchase.refunded_at = datetime.utcnow()
+            purchase.refunded_at = DeterministicClock.utcnow()
             purchase.refund_amount = refund_amount
             purchase.refund_reason = request.reason
 
@@ -357,7 +361,7 @@ class PaymentProcessor:
 
     def _generate_license_key(self, agent_id: str, user_id: str) -> str:
         """Generate unique license key"""
-        data = f"{agent_id}{user_id}{uuid.uuid4().hex}"
+        data = f"{agent_id}{user_id}{deterministic_uuid(__name__, str(DeterministicClock.now())).hex}"
         signature = hmac.new(
             b"secret_key",  # In production, use actual secret
             data.encode(),
@@ -423,7 +427,7 @@ class MonetizationManager:
 
         return True, {
             "payment_intent_id": payment_intent_id,
-            "amount": float(agent.price),
+            "amount": FinancialDecimal.from_string(agent.price),
             "currency": agent.currency
         }, []
 
@@ -462,7 +466,7 @@ class MonetizationManager:
         ).scalar() or Decimal(0)
 
         # Period revenue
-        period_start = datetime.utcnow() - timedelta(days=period_days)
+        period_start = DeterministicClock.utcnow() - timedelta(days=period_days)
         period_revenue = query.filter(
             AgentPurchase.purchased_at >= period_start
         ).with_entities(

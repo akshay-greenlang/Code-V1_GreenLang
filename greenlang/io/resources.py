@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Resource Loader
 Intelligent resource loading with caching and validation.
@@ -10,6 +11,7 @@ import hashlib
 from datetime import datetime, timedelta
 
 from .readers import DataReader
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +37,7 @@ class ResourceCache:
             return None
 
         entry = self._cache[key]
-        if datetime.now() - entry["timestamp"] > self.ttl:
+        if DeterministicClock.now() - entry["timestamp"] > self.ttl:
             # Expired
             del self._cache[key]
             return None
@@ -51,7 +53,7 @@ class ResourceCache:
 
         self._cache[key] = {
             "data": data,
-            "timestamp": datetime.now()
+            "timestamp": DeterministicClock.now()
         }
 
     def clear(self):

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Text and data normalization utilities for integration tests.
 """

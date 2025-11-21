@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang RNG (GLRNG) - SIM-401 Compliant Location
 

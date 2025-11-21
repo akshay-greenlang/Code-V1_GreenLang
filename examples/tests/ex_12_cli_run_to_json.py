@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 12: CLI run to JSON export."""
 
 import json

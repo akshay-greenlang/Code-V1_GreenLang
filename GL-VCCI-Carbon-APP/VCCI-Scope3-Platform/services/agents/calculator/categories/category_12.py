@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 12: End-of-Life Treatment of Sold Products Calculator
 GL-VCCI Scope 3 Platform
@@ -28,6 +29,7 @@ from datetime import datetime
 from enum import Enum
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     Category12Input,
     MaterialComposition,
     CalculationResult,
@@ -100,7 +102,7 @@ class Category12Calculator:
             DataValidationError: If input data is invalid
             CalculationError: If calculation fails
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         # Validate input
         self._validate_input(input_data)

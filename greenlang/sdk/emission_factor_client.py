@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Emission Factor Client SDK
 
@@ -23,6 +24,7 @@ from functools import lru_cache
 
 # Import data models
 import sys
+from greenlang.determinism import DeterministicClock
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from greenlang.models.emission_factor import (
@@ -489,7 +491,7 @@ class EmissionFactorClient:
         emissions_kg_co2e = activity_amount * factor_value
 
         # Generate audit trail
-        calculation_timestamp = datetime.now()
+        calculation_timestamp = DeterministicClock.now()
         audit_data = {
             'factor_id': factor_id,
             'factor_value': factor_value,

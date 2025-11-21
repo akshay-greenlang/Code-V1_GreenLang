@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Excel Exporter - GL-VCCI Scope 3 Platform v1.0.0"""
 import logging
 from typing import Dict, Any, List

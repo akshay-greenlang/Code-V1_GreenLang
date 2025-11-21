@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Base Classes for Runtime Backends
 """
@@ -10,6 +11,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Any, Optional
 import uuid
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -142,8 +144,8 @@ class Pipeline:
 class ExecutionContext:
     """Execution context for pipelines"""
 
-    pipeline_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    run_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    pipeline_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
+    run_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     user: Optional[str] = None
     project: Optional[str] = None
     environment: str = "production"

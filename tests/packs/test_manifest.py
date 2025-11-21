@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for pack manifest schema and loader.
 """

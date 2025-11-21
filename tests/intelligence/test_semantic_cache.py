@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Semantic Cache
 
@@ -16,6 +17,7 @@ import numpy as np
 import pytest
 
 from greenlang.intelligence.semantic_cache import (
+from greenlang.determinism import DeterministicClock
     CacheEntry,
     CacheMetrics,
     EmbeddingGenerator,
@@ -156,7 +158,7 @@ class TestInMemoryCache:
             prompt="test prompt",
             response="test response",
             metadata={},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
         )
 
         cache.set("key1", entry)
@@ -178,7 +180,7 @@ class TestInMemoryCache:
             prompt="test",
             response="test",
             metadata={},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
         )
 
         cache.set("key1", entry)
@@ -195,7 +197,7 @@ class TestInMemoryCache:
             prompt="test",
             response="test",
             metadata={},
-            timestamp=datetime.now() - timedelta(seconds=2),  # 2 seconds ago
+            timestamp=DeterministicClock.now() - timedelta(seconds=2),  # 2 seconds ago
             ttl_seconds=1,
         )
 

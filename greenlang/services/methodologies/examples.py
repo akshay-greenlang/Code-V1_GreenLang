@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Methodologies Module - Usage Examples
 
@@ -9,6 +10,7 @@ Run: python -m services.methodologies.examples
 """
 
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 def example_1_simple_emission_calculation():
@@ -285,7 +287,7 @@ def example_5_complete_workflow():
     print(f"     Upper Bound (p95): {result.p95:.2f} kg CO2e")
     print(f"   ")
     print(f"   Data Quality: {dqi.quality_label} (DQI: {dqi.score:.2f}/100)")
-    print(f"   Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"   Timestamp: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("   " + "-" * 60)
 
 

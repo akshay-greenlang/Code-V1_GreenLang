@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Security Test: Verify No eval() or exec() Usage
 

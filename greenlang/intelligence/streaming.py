@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Streaming LLM Responses with Server-Sent Events (SSE)
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday Celery Jobs
 GL-VCCI Scope 3 Platform

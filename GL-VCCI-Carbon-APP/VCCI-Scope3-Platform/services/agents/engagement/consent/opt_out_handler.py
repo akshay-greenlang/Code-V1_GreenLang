@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Opt-out handler for GDPR, CCPA, and CAN-SPAM compliance.
 
@@ -12,6 +13,7 @@ from ..models import ConsentRecord, ConsentStatus
 from ..exceptions import SupplierNotFoundError
 from .registry import ConsentRegistry
 from .jurisdictions import JurisdictionManager
+from greenlang.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -120,7 +122,7 @@ class OptOutHandler:
         Args:
             supplier_id: Supplier identifier
         """
-        self.suppression_list[supplier_id] = datetime.utcnow()
+        self.suppression_list[supplier_id] = DeterministicClock.utcnow()
         logger.debug(f"Added supplier {supplier_id} to suppression list")
 
     def remove_from_suppression_list(self, supplier_id: str):
@@ -166,7 +168,7 @@ class OptOutHandler:
 
         # Check if still within grace period
         grace_end = record.opt_out_date + grace_period
-        return datetime.utcnow() < grace_end
+        return DeterministicClock.utcnow() < grace_end
 
     def get_suppression_list(self) -> List[str]:
         """
@@ -193,7 +195,7 @@ class OptOutHandler:
             Unsubscribe token
         """
         # Create token from supplier_id + campaign_id + timestamp
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = DeterministicClock.utcnow().isoformat()
         data = f"{supplier_id}:{campaign_id}:{timestamp}"
         token = hashlib.sha256(data.encode()).hexdigest()
 
@@ -267,7 +269,7 @@ class OptOutHandler:
         jurisdiction = self.jurisdiction_manager.get_jurisdiction(record.country)
 
         log_entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "supplier_id": supplier_id,
             "email": record.email_address,
             "jurisdiction": jurisdiction.value,

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Audit logging for GreenLang multi-tenancy
 """
@@ -12,6 +13,8 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 import uuid
 from collections import defaultdict, deque
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +79,7 @@ class AuditSeverity(Enum):
 class AuditEvent:
     """Audit event record"""
 
-    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    event_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     timestamp: datetime = field(default_factory=datetime.utcnow)
     event_type: AuditEventType = AuditEventType.RESOURCE_READ
     severity: AuditSeverity = AuditSeverity.INFO
@@ -509,7 +512,7 @@ class AuditLogger:
 
     def cleanup_old_logs(self):
         """Remove old audit logs based on retention policy"""
-        cutoff_date = datetime.utcnow() - timedelta(days=self.retention_days)
+        cutoff_date = DeterministicClock.utcnow() - timedelta(days=self.retention_days)
 
         for log_file in self.storage_path.glob("audit_*.jsonl"):
             try:

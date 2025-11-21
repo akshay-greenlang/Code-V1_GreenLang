@@ -54,7 +54,7 @@ This guide provides step-by-step instructions for deploying the entire GreenLang
 
 - Docker Engine 24.0+
 - Docker Compose 2.20+
-- Python 3.11+ (for validation scripts)
+- Python 3.10+ (for validation scripts)
 - Git
 
 ### Required API Keys

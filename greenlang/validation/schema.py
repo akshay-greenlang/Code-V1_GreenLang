@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Schema Validator
 JSON Schema-based validation with extended support.

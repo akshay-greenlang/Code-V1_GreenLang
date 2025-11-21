@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 gl pack - Pack management commands
 """
@@ -12,6 +13,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
+from greenlang.determinism import DeterministicClock
 
 app = typer.Typer()
 console = Console()
@@ -901,7 +903,7 @@ def _update_hub_index(pack_path: Path, manifest, org: str) -> None:
             existing.versions.append(manifest.version)
             existing.versions.sort()  # Keep versions sorted
         existing.latest_version = manifest.version
-        existing.updated_at = datetime.now().isoformat()
+        existing.updated_at = DeterministicClock.now().isoformat()
         existing.card_summary = card_summary or existing.card_summary
         existing.description = (
             getattr(manifest, "description", "") or existing.description
@@ -918,8 +920,8 @@ def _update_hub_index(pack_path: Path, manifest, org: str) -> None:
             description=getattr(manifest, "description", ""),
             license=getattr(manifest, "license", "Apache-2.0"),
             card_summary=card_summary,
-            created_at=datetime.now().isoformat(),
-            updated_at=datetime.now().isoformat(),
+            created_at=DeterministicClock.now().isoformat(),
+            updated_at=DeterministicClock.now().isoformat(),
             download_count=0,
             tags=getattr(manifest, "tags", []),
             oci_ref=f"ghcr.io/{org}/{manifest.name}",

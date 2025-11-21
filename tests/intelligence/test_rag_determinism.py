@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 RAG Determinism and Reproducibility Tests
 GL Intelligence Infrastructure

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Test that the benchmark script can be imported."""
 
 import sys

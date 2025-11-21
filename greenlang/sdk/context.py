@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Execution context and artifacts
 """
@@ -8,6 +9,7 @@ from pathlib import Path
 from datetime import datetime
 from pydantic import BaseModel
 from ..sdk.base import Result
+from greenlang.determinism import DeterministicClock
 
 
 class Artifact(BaseModel):
@@ -22,7 +24,7 @@ class Artifact(BaseModel):
     def __init__(self, **data):
         super().__init__(**data)
         if not self.created_at:
-            self.created_at = datetime.utcnow().isoformat()
+            self.created_at = DeterministicClock.utcnow().isoformat()
 
 
 class Context:
@@ -43,7 +45,7 @@ class Context:
         self.backend = backend
         self.metadata = metadata or {}
         self.artifacts: Dict[str, Artifact] = {}  # Changed to dict for easier lookup
-        self.start_time = datetime.utcnow()
+        self.start_time = DeterministicClock.utcnow()
         self.steps = {}  # Store step results
 
         # Thread safety locks
@@ -53,7 +55,7 @@ class Context:
 
         # Add timestamp to metadata
         if "timestamp" not in self.metadata:
-            self.metadata["timestamp"] = datetime.utcnow().isoformat()
+            self.metadata["timestamp"] = DeterministicClock.utcnow().isoformat()
 
         # Ensure artifacts directory exists
         self.artifacts_dir.mkdir(parents=True, exist_ok=True)
@@ -159,7 +161,7 @@ class Context:
                 "inputs": self.inputs,
                 "profile": self.profile,
                 "backend": self.backend,
-                "duration": (datetime.utcnow() - self.start_time).total_seconds(),
+                "duration": (DeterministicClock.utcnow() - self.start_time).total_seconds(),
                 "artifacts": [
                     a.model_dump() if hasattr(a, "model_dump") else a.dict()
                     for a in artifacts_copy
@@ -180,6 +182,6 @@ class Context:
                 for a in self.artifacts.values()
             ],
             "start_time": self.start_time.isoformat(),
-            "duration": (datetime.utcnow() - self.start_time).total_seconds(),
+            "duration": (DeterministicClock.utcnow() - self.start_time).total_seconds(),
             "steps": self.steps,
         }

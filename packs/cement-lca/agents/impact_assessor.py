@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 """Impact Assessor Agent for comprehensive LCA impact assessment."""
 
 import json
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 class ImpactAssessorAgent:
     """Agent for assessing environmental impacts and generating reports."""
@@ -88,7 +90,7 @@ class ImpactAssessorAgent:
         # Generate LCA report structure
         lca_report = {
             "title": "Life Cycle Assessment Report - Cement/Concrete",
-            "date": datetime.now().isoformat(),
+            "date": DeterministicClock.now().isoformat(),
             "scope": "Cradle-to-Grave",
             "functional_unit": f"{material_inventory['volume_m3']} m³ concrete",
             "system_boundaries": self._define_system_boundaries(),

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Error handling and validation integration tests.
 """

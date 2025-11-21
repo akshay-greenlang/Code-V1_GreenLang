@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Factor Broker Data Sources
 GL-VCCI Scope 3 Platform

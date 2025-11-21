@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Batch Processing Optimizer
 GL-VCCI Scope 3 Platform - Performance Optimization
@@ -27,6 +28,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import time
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -165,10 +167,10 @@ class AsyncBatchProcessor:
         """
         self.stats = BatchStatistics(
             total_records=len(records),
-            start_time=datetime.utcnow()
+            start_time=DeterministicClock.utcnow()
         )
 
-        batch_id = batch_id or f"BATCH-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        batch_id = batch_id or f"BATCH-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}"
 
         logger.info(
             f"Starting batch processing: {batch_id}, "
@@ -190,7 +192,7 @@ class AsyncBatchProcessor:
         )
 
         # Calculate final statistics
-        self.stats.end_time = datetime.utcnow()
+        self.stats.end_time = DeterministicClock.utcnow()
         self.stats.calculate_metrics()
 
         logger.info(
@@ -367,10 +369,10 @@ class ParallelBatchProcessor:
         """
         self.stats = BatchStatistics(
             total_records=len(records),
-            start_time=datetime.utcnow()
+            start_time=DeterministicClock.utcnow()
         )
 
-        batch_id = batch_id or f"BATCH-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        batch_id = batch_id or f"BATCH-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}"
 
         logger.info(
             f"Starting parallel batch processing: {batch_id}, "
@@ -390,7 +392,7 @@ class ParallelBatchProcessor:
         self.stats.processed_records = sum(len(batch) for batch in batches)
 
         # Calculate statistics
-        self.stats.end_time = datetime.utcnow()
+        self.stats.end_time = DeterministicClock.utcnow()
         self.stats.calculate_metrics()
 
         logger.info(

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 E2E Test Infrastructure - Shared Fixtures and Utilities
 
@@ -32,6 +33,8 @@ import redis
 from playwright.async_api import Browser, Page, async_playwright
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -153,7 +156,7 @@ class TestTenant:
         self.name = name
         self.db_session = db_session
         self.redis = redis_client
-        self.created_at = datetime.utcnow()
+        self.created_at = DeterministicClock.utcnow()
         self.metadata = {}
 
     def add_metadata(self, key: str, value: Any):
@@ -182,7 +185,7 @@ class TestTenant:
 @pytest.fixture
 async def test_tenant(db_session, redis_client):
     """Create isolated test tenant"""
-    tenant_id = str(uuid4())
+    tenant_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
     tenant_name = f"{config.DEFAULT_TENANT_NAME}-{tenant_id[:8]}"
 
     tenant = TestTenant(
@@ -403,11 +406,11 @@ class TestDataFactory:
     ) -> Dict:
         """Create a test purchase order"""
         return {
-            "po_number": po_number or f"PO-{uuid4().hex[:10].upper()}",
-            "supplier_name": supplier_name or f"Supplier-{uuid4().hex[:8]}",
-            "amount": amount or round(1000 + (10000 * hash(str(uuid4())) % 1000), 2),
+            "po_number": po_number or f"PO-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:10].upper()}",
+            "supplier_name": supplier_name or f"Supplier-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}",
+            "amount": amount or round(1000 + (10000 * hash(str(deterministic_uuid(__name__, str(DeterministicClock.now())))) % 1000), 2),
             "currency": currency,
-            "posting_date": (posting_date or datetime.utcnow()).isoformat(),
+            "posting_date": (posting_date or DeterministicClock.utcnow()).isoformat(),
             "line_items": [
                 {
                     "item_number": f"{i+1:03d}",
@@ -428,12 +431,12 @@ class TestDataFactory:
     ) -> Dict:
         """Create a test supplier"""
         return {
-            "supplier_id": supplier_id or f"SUP-{uuid4().hex[:10].upper()}",
-            "name": name or f"Test Supplier {uuid4().hex[:8]}",
+            "supplier_id": supplier_id or f"SUP-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:10].upper()}",
+            "name": name or f"Test Supplier {deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}",
             "country": country,
             "city": "New York",
             "postal_code": "10001",
-            "tax_id": f"TAX-{uuid4().hex[:12].upper()}"
+            "tax_id": f"TAX-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:12].upper()}"
         }
 
     @staticmethod
@@ -447,13 +450,13 @@ class TestDataFactory:
     ) -> Dict:
         """Create a test logistics shipment"""
         return {
-            "shipment_id": shipment_id or f"SHIP-{uuid4().hex[:10].upper()}",
+            "shipment_id": shipment_id or f"SHIP-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:10].upper()}",
             "origin": origin,
             "destination": destination,
             "transport_mode": mode,
             "weight_kg": weight_kg or 5000.0,
             "distance_km": distance_km or 11000.0,
-            "shipment_date": datetime.utcnow().isoformat()
+            "shipment_date": DeterministicClock.utcnow().isoformat()
         }
 
     @staticmethod
@@ -466,12 +469,12 @@ class TestDataFactory:
     ) -> Dict:
         """Create a test expense report"""
         return {
-            "expense_id": expense_id or f"EXP-{uuid4().hex[:10].upper()}",
-            "employee_id": employee_id or f"EMP-{uuid4().hex[:6].upper()}",
+            "expense_id": expense_id or f"EXP-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:10].upper()}",
+            "employee_id": employee_id or f"EMP-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:6].upper()}",
             "expense_type": expense_type,
             "amount": amount or 500.0,
             "currency": currency,
-            "report_date": datetime.utcnow().isoformat(),
+            "report_date": DeterministicClock.utcnow().isoformat(),
             "description": f"Business travel - {expense_type}"
         }
 

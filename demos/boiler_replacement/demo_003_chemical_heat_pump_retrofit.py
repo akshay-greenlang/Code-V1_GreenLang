@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo #3: Chemical Plant - Heat Pump Boiler Retrofit
 

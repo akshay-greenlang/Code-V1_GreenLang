@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # SAP Audit Logger
 # Comprehensive audit logging for compliance and data lineage
 
@@ -22,6 +23,7 @@ Usage:
 ------
 ```python
 from connectors.sap.utils.audit_logger import AuditLogger
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Initialize logger
 audit_logger = AuditLogger()
@@ -188,7 +190,7 @@ class AuditLogger:
             "method": method,
             "status_code": status_code,
             "duration": f"{duration:.3f}s",
-            "request_id": request_id or str(uuid4()),
+            "request_id": request_id or str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             "user": user,
             "success": "true" if 200 <= status_code < 300 else "false",
             "timestamp": datetime.now(timezone.utc).isoformat(),

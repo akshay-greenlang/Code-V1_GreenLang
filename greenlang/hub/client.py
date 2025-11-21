@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Hub Client for GreenLang Registry
 """
@@ -14,6 +15,8 @@ from greenlang.security.http import SecureHTTPSession
 from .archive import create_pack_archive, extract_pack_archive
 from .manifest import load_manifest, save_manifest, validate_manifest
 from .auth import HubAuth
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatMessage
 
 # Import policy enforcer for security checks
 try:
@@ -136,7 +139,7 @@ class HubClient:
         # Prepare upload data
         upload_data = {
             "manifest": json.dumps(manifest.dict()),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
         }
 
         if signature:

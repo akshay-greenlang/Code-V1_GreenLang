@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance Benchmark Reporting
 GL-VCCI Scope 3 Platform
@@ -16,6 +17,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 from pathlib import Path
 from dataclasses import dataclass, asdict
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -80,13 +82,13 @@ class BenchmarkReporter:
             Path to generated report
         """
         if filename is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
             filename = f"benchmark_report_{timestamp}.json"
 
         filepath = self.output_dir / filename
 
         report_data = {
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "total_tests": len(self.results),
             "results": [r.to_dict() for r in self.results],
             "summary": self._generate_summary()
@@ -108,7 +110,7 @@ class BenchmarkReporter:
             Path to generated report
         """
         if filename is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
             filename = f"benchmark_report_{timestamp}.html"
 
         filepath = self.output_dir / filename
@@ -253,7 +255,7 @@ class BenchmarkReporter:
 <body>
     <div class="container">
         <h1>ERP Connector Performance Benchmark Report</h1>
-        <p>Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+        <p>Generated: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
         <p>Total Tests: {len(self.results)}</p>
 
         <h2>Summary by Connector</h2>
@@ -356,7 +358,7 @@ class BenchmarkReporter:
         print("Performance Benchmark Summary")
         print("="*60)
         print(f"Total Tests: {len(self.results)}")
-        print(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"Generated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print()
 
         for connector, stats in summary.get("connectors", {}).items():
@@ -394,7 +396,7 @@ def create_benchmark_result_from_metrics(
     return BenchmarkResult(
         connector_name=connector_name,
         test_name=test_name,
-        timestamp=datetime.now().isoformat(),
+        timestamp=DeterministicClock.now().isoformat(),
         duration_seconds=metrics.duration_seconds,
         records_extracted=metrics.total_records,
         throughput_per_hour=metrics.throughput_per_hour,
@@ -417,7 +419,7 @@ if __name__ == "__main__":
     reporter.add_result(BenchmarkResult(
         connector_name="SAP",
         test_name="100K Throughput Test",
-        timestamp=datetime.now().isoformat(),
+        timestamp=DeterministicClock.now().isoformat(),
         duration_seconds=3200,
         records_extracted=100000,
         throughput_per_hour=112500,
@@ -434,7 +436,7 @@ if __name__ == "__main__":
     reporter.add_result(BenchmarkResult(
         connector_name="Oracle",
         test_name="100K Throughput Test",
-        timestamp=datetime.now().isoformat(),
+        timestamp=DeterministicClock.now().isoformat(),
         duration_seconds=3400,
         records_extracted=100000,
         throughput_per_hour=105882,

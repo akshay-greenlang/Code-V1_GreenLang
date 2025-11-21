@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 """Dataset utilities for loading emission factors from the global dataset."""
 
 import json
 import os
+from greenlang.determinism import FinancialDecimal
 
 CANDIDATE_PATHS = [
     # packaged
@@ -21,5 +23,5 @@ def load_emission_factor(country: str, fuel: str, unit: str) -> float:
             rec = data.get(country, {}).get(fuel)
             if not rec or "emission_factor" not in rec:
                 raise KeyError(f"Missing factor for {country=} {fuel=} in {path}")
-            return float(rec["emission_factor"])
+            return FinancialDecimal.from_string(rec["emission_factor"])
     raise FileNotFoundError("global_emission_factors.json not found (update CANDIDATE_PATHS).")

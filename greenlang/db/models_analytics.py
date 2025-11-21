@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SQLAlchemy models for analytics dashboards.
 
@@ -10,6 +11,7 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import (
+from greenlang.determinism import DeterministicClock
     Column,
     String,
     Text,
@@ -162,7 +164,7 @@ class DashboardShare(Base):
         """Check if share link is expired."""
         if self.expires_at is None:
             return False
-        return datetime.utcnow() > self.expires_at
+        return DeterministicClock.utcnow() > self.expires_at
 
 
 class DashboardTemplate(Base):

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CogenerationCHPAgent_AI - Combined Heat and Power System Analysis and Optimization
 
@@ -134,6 +135,7 @@ import numpy as np
 from greenlang.core.chat_session import ChatSession
 from greenlang.core.tool_registry import ToolRegistry
 from greenlang.core.provenance import ProvenanceTracker
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -748,7 +750,7 @@ class CogenerationCHPAgentAI:
                     "tool": "select_chp_technology",
                     "method": "Multi-criteria decision analysis",
                     "standard": "EPA CHP Partnership Technology Characterization",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "inputs": {
                         "electrical_demand_kw": electrical_demand_kw,
                         "thermal_demand_mmbtu_hr": thermal_demand_mmbtu_hr,
@@ -926,7 +928,7 @@ class CogenerationCHPAgentAI:
                     "tool": "calculate_chp_performance",
                     "method": "Thermodynamic efficiency analysis with empirical part-load curves",
                     "standard": "EPA CHP Partnership, ASHRAE CHP Applications",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "inputs": {
                         "chp_technology": chp_technology,
                         "electrical_capacity_kw": electrical_capacity_kw,
@@ -1014,7 +1016,7 @@ class CogenerationCHPAgentAI:
                     "tool": "size_heat_recovery_system",
                     "method": "Heat transfer analysis with pinch point",
                     "standard": "ASME BPVC Section I",
-                    "timestamp": datetime.now().isoformat()
+                    "timestamp": DeterministicClock.now().isoformat()
                 }
             }
 
@@ -1243,7 +1245,7 @@ class CogenerationCHPAgentAI:
                     "tool": "calculate_economic_metrics",
                     "method": "Spark spread, NPV, IRR, LCOE analysis",
                     "standard": "NIST 135 (Economic Analysis), EPA CHP Economic Analysis",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "assumptions": {
                         "discount_rate": discount_rate,
                         "analysis_period_years": analysis_period_years,
@@ -1460,7 +1462,7 @@ class CogenerationCHPAgentAI:
                     "tool": "assess_grid_interconnection",
                     "method": "IEEE 1547 interconnection analysis",
                     "standard": "IEEE 1547-2018 (Interconnection of DER)",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "assumptions": {
                         "standby_charges_typical": "Vary by utility, $3-12/kW-month",
                         "export_compensation_typical": "Wholesale or avoided cost rates"
@@ -1616,7 +1618,7 @@ class CogenerationCHPAgentAI:
                 "provenance": {
                     "tool": "optimize_operating_strategy",
                     "method": "Economic dispatch optimization with load profile matching",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "strategy_evaluated": strategy_type
                 }
             }
@@ -1759,7 +1761,7 @@ class CogenerationCHPAgentAI:
                     "tool": "calculate_emissions_reduction",
                     "method": "EPA CHP emission factor methodology",
                     "standard": "EPA eGRID, IPCC emission factors",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "assumptions": {
                         "upstream_emission_factor": 0.12 if include_upstream_emissions else 0,
                         "thermal_to_electric_conversion_efficiency": 0.35
@@ -1898,7 +1900,7 @@ Recommendation: {"PROCEED - Excellent economics and emissions reduction" if simp
             return {
                 "report_type": report_type,
                 "facility_name": facility_name,
-                "report_date": datetime.now().strftime("%Y-%m-%d"),
+                "report_date": DeterministicClock.now().strftime("%Y-%m-%d"),
                 "executive_summary": executive_summary,
                 "technical_summary": technical_summary,
                 "economic_summary": economic_summary,
@@ -1909,7 +1911,7 @@ Recommendation: {"PROCEED - Excellent economics and emissions reduction" if simp
                 "provenance": {
                     "tool": "generate_chp_report",
                     "method": "Comprehensive CHP analysis report generation",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "tools_aggregated": ["technology_selection", "performance", "economic", "emissions"]
                 }
             }
@@ -1977,7 +1979,7 @@ Remember: Use deterministic tools for ALL calculations.
             # Enhance response with metadata
             response["agent_version"] = self._version()
             response["deterministic"] = True
-            response["timestamp"] = datetime.now().isoformat()
+            response["timestamp"] = DeterministicClock.now().isoformat()
 
             logger.info(f"CHP analysis complete. Cost: ${response.get('cost_usd', 0):.3f}")
 
@@ -2024,7 +2026,7 @@ Standards: EPA CHP Partnership, ASHRAE CHP Applications, IEEE 1547
             "status": "healthy",
             "agent": self.config.agent_name,
             "version": self._version(),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": DeterministicClock.now().isoformat()
         }
 
     def ready_check(self) -> Dict[str, Any]:

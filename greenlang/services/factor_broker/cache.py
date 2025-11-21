@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Factor Cache Implementation
 GL-VCCI Scope 3 Platform

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Telemetry CLI Commands
 """
@@ -14,6 +15,7 @@ from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from greenlang.telemetry import (
+from greenlang.determinism import DeterministicClock
     get_monitoring_service,
     get_metrics_collector,
     get_health_checker,
@@ -385,7 +387,7 @@ def tail(level, component, follow):
         if follow:
             console.print("[cyan]Following logs... (Ctrl+C to stop)[/cyan]")
 
-            last_timestamp = datetime.utcnow()
+            last_timestamp = DeterministicClock.utcnow()
 
             try:
                 while True:

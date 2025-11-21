@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Shared Services
 Core Infrastructure for Sustainability Applications

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Tool Telemetry System
 ================================
@@ -25,6 +26,7 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 import logging
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +162,7 @@ class TelemetryCollector:
                 data["error_counts"][error_type] += 1
 
             # Update last called timestamp
-            data["last_called"] = datetime.now()
+            data["last_called"] = DeterministicClock.now()
 
             # Trim execution times if too large (keep last 10000)
             if len(data["execution_times"]) > 10000:
@@ -348,7 +350,7 @@ class TelemetryCollector:
                 name: metrics.to_dict()
                 for name, metrics in all_metrics.items()
             },
-            "exported_at": datetime.now().isoformat()
+            "exported_at": DeterministicClock.now().isoformat()
         }
 
     def _export_prometheus(self) -> str:

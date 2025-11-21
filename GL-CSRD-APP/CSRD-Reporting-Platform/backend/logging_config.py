@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Reporting Platform - Structured Logging Configuration
 ===========================================================
@@ -25,6 +26,8 @@ from pathlib import Path
 from contextvars import ContextVar
 import structlog
 from pythonjsonlogger import jsonlogger
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 # ============================================================================
@@ -64,7 +67,7 @@ class ESRSJsonFormatter(jsonlogger.JsonFormatter):
         super().add_fields(log_record, record, message_dict)
 
         # Add timestamp in ISO 8601 format
-        log_record['timestamp'] = datetime.utcnow().isoformat() + 'Z'
+        log_record['timestamp'] = DeterministicClock.utcnow().isoformat() + 'Z'
 
         # Add log level
         log_record['level'] = record.levelname
@@ -314,7 +317,7 @@ class AuditLogger:
             'action': action,
             'data_points': data_points,
             'success': success,
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
+            'timestamp': DeterministicClock.utcnow().isoformat() + 'Z'
         }
 
         if details:
@@ -358,7 +361,7 @@ class AuditLogger:
             'esrs_standards': esrs_standards,
             'success': success,
             'duration_seconds': duration_seconds,
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
+            'timestamp': DeterministicClock.utcnow().isoformat() + 'Z'
         }
 
         if details:
@@ -399,7 +402,7 @@ class AuditLogger:
             'passed': passed,
             'errors_count': errors_count,
             'warnings_count': warnings_count,
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
+            'timestamp': DeterministicClock.utcnow().isoformat() + 'Z'
         }
 
         if details:
@@ -473,7 +476,7 @@ async def logging_middleware(request, call_next):
     import time
 
     # Generate request ID
-    request_id = str(uuid.uuid4())
+    request_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
     # Set context
     request_id_ctx.set(request_id)

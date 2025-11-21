@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pack Management CLI Commands for GreenLang
 Maps user-friendly pack commands to hub operations
@@ -341,7 +342,7 @@ def list(user: str, installed: bool, limit: int):
 
             console.print("[bold]Installed Packs:[/bold]\n")
 
-            for pack_dir in packs_dir.iterdir():
+            for pack_dir in sorted(packs_dir.iterdir()):
                 if pack_dir.is_dir():
                     try:
                         manifest = load_manifest(pack_dir)

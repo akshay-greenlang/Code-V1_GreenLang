@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 AI-Powered Infrastructure Search Tool
 
 Uses semantic search and RAG to help developers discover infrastructure components.
 Embeds queries and infrastructure catalog for vector similarity matching.
 """
 
+import logging
 import argparse
 import json
 import os
@@ -22,7 +26,7 @@ try:
     HAS_TRANSFORMERS = True
 except ImportError:
     HAS_TRANSFORMERS = False
-    print("Warning: sentence-transformers not installed. Using fallback search.")
+    logger.warning(f" sentence-transformers not installed. Using fallback search.")
 
 
 @dataclass

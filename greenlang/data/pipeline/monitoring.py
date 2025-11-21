@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Data Quality Monitoring System
 
@@ -17,6 +18,7 @@ import logging
 from collections import defaultdict
 
 from .models import DataQualityMetrics
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -232,7 +234,7 @@ class CoverageAnalyzer:
         logger.info("Generating coverage report...")
 
         report = {
-            'timestamp': datetime.now().isoformat(),
+            'timestamp': DeterministicClock.now().isoformat(),
             'category_coverage': self.analyze_category_coverage(),
             'geographic_coverage': self.analyze_geographic_coverage(),
             'scope_coverage': self.analyze_scope_coverage()
@@ -565,7 +567,7 @@ class DataQualityMonitor:
         conn.close()
 
         metrics = DataQualityMetrics(
-            metric_id=f"metrics_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+            metric_id=f"metrics_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}",
             total_factors=total_factors,
             overall_quality_score=round(overall_quality_score, 2),
             completeness_score=round(completeness_score, 2),
@@ -686,7 +688,7 @@ class DataQualityMonitor:
         logger.info("Generating monitoring report...")
 
         report = {
-            'timestamp': datetime.now().isoformat(),
+            'timestamp': DeterministicClock.now().isoformat(),
             'quality_metrics': self.calculate_quality_metrics().dict(),
             'coverage_report': self.coverage_analyzer.generate_coverage_report(),
             'source_analysis': self.source_analyzer.analyze_source_distribution(),

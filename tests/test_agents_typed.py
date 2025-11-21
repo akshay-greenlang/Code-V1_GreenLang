@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Fully typed test suite for GreenLang agents."""
 
 import unittest

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Batch Calculator
 
@@ -19,6 +20,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Optional, Callable, Dict, Any
 from greenlang.calculation.core_calculator import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
     EmissionCalculator,
     CalculationRequest,
     CalculationResult,
@@ -54,7 +57,7 @@ class BatchResult:
     def __post_init__(self):
         """Calculate summary statistics"""
         self.total_emissions_kg_co2e = sum(
-            float(calc.emissions_kg_co2e) for calc in self.calculations
+            FinancialDecimal.from_string(calc.emissions_kg_co2e) for calc in self.calculations
         )
 
         self.successful_count = len([
@@ -169,7 +172,7 @@ class BatchCalculator:
             >>> print(f"Total emissions: {result.total_emissions_kg_co2e:,.3f} kg CO2e")
             >>> print(f"Processed {len(requests)} calculations in {result.batch_duration_seconds:.2f} seconds")
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
         results = []
         completed = 0
 
@@ -194,7 +197,7 @@ class BatchCalculator:
                 if progress_callback:
                     progress_callback(completed, len(requests))
 
-        end_time = datetime.utcnow()
+        end_time = DeterministicClock.utcnow()
         duration_seconds = (end_time - start_time).total_seconds()
 
         logger.info(

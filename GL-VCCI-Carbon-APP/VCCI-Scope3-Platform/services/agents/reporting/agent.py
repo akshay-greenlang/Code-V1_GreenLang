@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope3ReportingAgent - Main Agent Class
 GL-VCCI Scope 3 Platform
@@ -19,6 +20,8 @@ from pathlib import Path
 from greenlang.sdk.base import Agent, Metadata, Result
 from greenlang.cache import CacheManager, get_cache_manager
 from greenlang.telemetry import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     MetricsCollector,
     get_logger,
     track_execution,
@@ -279,7 +282,7 @@ class Scope3ReportingAgent(Agent[Dict[str, Any], ReportResult]):
             audit_package = self.audit_generator.generate_audit_package(
                 emissions_data.__dict__,
                 [{"category": cat, "emissions_tco2e": val} for cat, val in emissions_data.scope3_categories.items()],
-                {"report_id": str(uuid.uuid4()), "standard": "ESRS E1"},
+                {"report_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))), "standard": "ESRS E1"},
             )
 
             # Step 6: Export
@@ -301,7 +304,7 @@ class Scope3ReportingAgent(Agent[Dict[str, Any], ReportResult]):
 
             # Step 7: Create result
             metadata = ReportMetadata(
-                report_id=str(uuid.uuid4()),
+                report_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 standard=ReportStandard.ESRS_E1,
                 export_format=export_format_enum,
                 reporting_period=f"{company_info.reporting_year}",
@@ -377,7 +380,7 @@ class Scope3ReportingAgent(Agent[Dict[str, Any], ReportResult]):
 
             # Result
             metadata = ReportMetadata(
-                report_id=str(uuid.uuid4()),
+                report_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 standard=ReportStandard.CDP,
                 export_format=ExportFormat(export_format),
                 reporting_period=f"{company_info.reporting_year}",
@@ -448,7 +451,7 @@ class Scope3ReportingAgent(Agent[Dict[str, Any], ReportResult]):
                 file_path = self.pdf_exporter.export(content, html_content, output_path)
 
             metadata = ReportMetadata(
-                report_id=str(uuid.uuid4()),
+                report_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 standard=ReportStandard.IFRS_S2,
                 export_format=ExportFormat(export_format),
                 reporting_period=f"{company_info.reporting_year}",
@@ -508,7 +511,7 @@ class Scope3ReportingAgent(Agent[Dict[str, Any], ReportResult]):
                 report_id=certificate["certificate_id"],
                 standard=ReportStandard.ISO_14083,
                 export_format=ExportFormat.JSON,
-                reporting_period=datetime.utcnow().year,
+                reporting_period=DeterministicClock.utcnow().year,
                 validation_passed=validation_result.is_valid,
                 data_quality_score=transport_data.data_quality_score,
             )

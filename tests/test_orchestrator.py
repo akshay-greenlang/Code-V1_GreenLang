@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest
 from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import Workflow, WorkflowStep

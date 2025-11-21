@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Determinism Tests for FuelAgentAI.
 
 This module tests that FuelAgentAI produces deterministic, reproducible results

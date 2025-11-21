@@ -56,12 +56,17 @@ tmp-pack/tests/
 
 # Environments
 .env
+.env.*
+!.env.example
+!.env.template
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+docker-compose.env
+!docker-compose.env.example
 
 # IDEs
 .vscode/
@@ -163,6 +168,13 @@ grafana_data/
 # Temporary files
 .ruff_cache/
 .benchmarks/
+
+# Windows artifacts
+nul
+
+# Turborepo
+.turbo/
+node_modules/
 
 # Binary files
 opa.exe

@@ -1,81 +1,29 @@
-schema_version: 2.0.0
-id: emissions/carbon_ai_v1
-name: Carbon Aggregation Agent (AI-Powered)
+name: carbon-aggregation-agent-ai
 version: 1.0.0
-summary: AI-powered carbon footprint aggregation with intelligent insights, deterministic
+kind: pack
+pack_schema_version: '1.0'
+description: AI-powered carbon footprint aggregation with intelligent insights, deterministic
   calculations, and citation tracking
-tags:
-- emissions
-- carbon
-- aggregation
-- scope1
-- scope2
-- ai-agent
-- citations
-- recommendations
-owners:
-- greenlang-team
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
 license: MIT
-compute:
-  entrypoint: python://greenlang.agents.carbon_agent_ai:execute
-  deterministic: true
-  timeout_s: 60
-  memory_limit_mb: 512
-  inputs:
-    emissions:
-      dtype: list
-      description: List of emission sources to aggregate
-      unit: '1'
-    building_area:
-      dtype: float64
-      unit: sqft
-      description: Building area for intensity calculations (optional)
-      ge: 0.0
-    occupancy:
-      dtype: int32
-      unit: people
-      description: Number of occupants for per-capita intensity (optional)
-      ge: 0
-    year:
-      dtype: int32
-      unit: '1'
-      description: Year for temporal analysis (optional)
-      ge: 1990
-      le: 2030
-  outputs:
-    total_co2e_kg:
-      dtype: float64
-      unit: kgCO2e
-      description: Total CO2 equivalent emissions in kilograms
-    total_co2e_tons:
-      dtype: float64
-      unit: tCO2e
-      description: Total CO2 equivalent emissions in metric tons
-    emissions_breakdown:
-      dtype: list
-      description: Breakdown of emissions by source with percentages
-      unit: '1'
-    carbon_intensity:
-      dtype: object
-      description: Carbon intensity metrics
-      unit: '1'
-    recommendations:
-      dtype: list
-      description: AI-generated reduction recommendations
-      unit: '1'
-    summary:
-      dtype: string
-      unit: '1'
-      description: Brief summary of aggregation results
-    ai_summary:
-      dtype: string
-      unit: '1'
-      description: AI-generated detailed analysis and insights
-    citations:
-      dtype: list
-      description: Citation tracking for provenance
-      unit: '1'
-  factors: {}
+contents:
+  pipelines:
+  - gl.yaml
+metadata:
+  tags:
+  - emissions
+  - carbon
+  - aggregation
+  - scope1
+  - scope2
+  - ai-agent
+  - citations
+  - recommendations
+  authors:
+  - greenlang-team
 ai:
   system_prompt: 'You are an expert carbon footprint analyst helping organizations
     understand and reduce their emissions.

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for AI-powered ReportAgent.
 
 This module tests the ReportAgentAI implementation, ensuring:

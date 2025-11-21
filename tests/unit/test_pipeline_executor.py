@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pipeline Executor Tests
 =======================
@@ -24,6 +25,7 @@ from datetime import datetime
 
 from greenlang.runtime.executor import Executor, DeterministicConfig
 from greenlang.sdk.base import Result
+from greenlang.determinism import deterministic_random
 
 
 class TestDeterministicConfig:
@@ -297,7 +299,7 @@ class TestLocalExecution:
                 {
                     "name": "random-step",
                     "type": "python",
-                    "code": "import random; outputs['value'] = random.randint(1, 100)"
+                    "code": "import random; outputs['value'] = deterministic_random().randint(1, 100)"
                 }
             ]
         }

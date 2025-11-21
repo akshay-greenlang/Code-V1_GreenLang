@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Provenance Seed Integration - Round-trip reproducibility
 

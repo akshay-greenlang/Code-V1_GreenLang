@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+logger = logging.getLogger(__name__)
 """
 GreenLang Migration Dashboard Server
 
@@ -6,6 +9,7 @@ Real-time dashboard showing migration progress, infrastructure usage metrics,
 team leaderboard, and ADR status.
 """
 
+import logging
 import argparse
 import os
 import sys
@@ -15,6 +19,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
+from greenlang.determinism import DeterministicClock
 
 # Try Flask first, fall back to http.server if not available
 try:
@@ -51,7 +56,7 @@ class DashboardData:
     def update_data(self):
         """Update all dashboard data."""
         with self.lock:
-            self.data['last_update'] = datetime.now().isoformat()
+            self.data['last_update'] = DeterministicClock.now().isoformat()
 
             # Update usage statistics
             if UsageAnalyzer:
@@ -542,7 +547,7 @@ else:
     # Fallback to simple HTTP server
     def run_simple_server(app_directory: str, port: int = 8080):
         """Run simple HTTP server with static HTML."""
-        print("Warning: Flask not available. Using simple HTTP server.")
+        logger.warning(f"Flask not available. Using simple HTTP server.")
         print("Install Flask for full dashboard functionality: pip install flask")
         print(f"\nServer running at: http://localhost:{port}")
 
@@ -580,7 +585,7 @@ def main():
     app_directory = os.path.abspath(args.directory)
 
     if not os.path.isdir(app_directory):
-        print(f"Error: {app_directory} is not a valid directory")
+        logger.error(f"{app_directory} is not a valid directory")
         sys.exit(1)
 
     try:

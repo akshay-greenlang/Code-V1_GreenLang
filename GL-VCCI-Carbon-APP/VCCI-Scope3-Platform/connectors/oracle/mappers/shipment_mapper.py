@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Shipment Mapper
 
@@ -27,6 +28,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -141,7 +143,7 @@ class ShipmentMapper:
         try:
             return int(shipment_date[:4])
         except (ValueError, TypeError):
-            return datetime.now().year
+            return DeterministicClock.now().year
 
     def map_shipment(
         self,
@@ -163,7 +165,7 @@ class ShipmentMapper:
         # Shipment date (prefer actual over planned)
         shipment_date = shipment_header.get("ActualDeliveryDate") or shipment_header.get("ShipmentDate", "")
         if not shipment_date:
-            shipment_date = datetime.now().strftime("%Y-%m-%d")
+            shipment_date = DeterministicClock.now().strftime("%Y-%m-%d")
 
         # Transport mode
         transport_mode = self._map_transport_mode(shipment_header.get("TransportMode"))

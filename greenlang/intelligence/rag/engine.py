@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Main RAG engine orchestrating document ingestion and retrieval.
 

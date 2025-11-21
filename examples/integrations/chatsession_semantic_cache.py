@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Example: ChatSession + SemanticCache
 =================================================
@@ -10,6 +11,7 @@ from datetime import datetime
 from greenlang.intelligence import ChatSession, ChatMessage, MessageRole
 from greenlang.intelligence.cache_warming import SemanticCache
 from greenlang.intelligence.providers import get_provider, ProviderType
+from greenlang.determinism import DeterministicClock
 
 
 async def main():
@@ -32,12 +34,12 @@ async def main():
 
     # Function to ask question with caching
     async def ask_with_cache(question: str) -> tuple[str, bool, float]:
-        start = datetime.now()
+        start = DeterministicClock.now()
 
         # Check cache first
         cached = await semantic_cache.get(question)
         if cached:
-            duration = (datetime.now() - start).total_seconds()
+            duration = (DeterministicClock.now() - start).total_seconds()
             return cached["response"], True, duration
 
         # Cache miss - call LLM
@@ -50,7 +52,7 @@ async def main():
             "model": chat.model
         })
 
-        duration = (datetime.now() - start).total_seconds()
+        duration = (DeterministicClock.now() - start).total_seconds()
         return response.content, False, duration
 
     # Test with similar questions

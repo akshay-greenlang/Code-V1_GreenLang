@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Data Quality Index (DQI) Calculator
 
@@ -27,6 +28,7 @@ from datetime import datetime
 
 from .models import DQIScore, PedigreeScore
 from .constants import (
+from greenlang.determinism import DeterministicClock
     DQI_QUALITY_LABELS,
     FACTOR_SOURCE_SCORES,
     PEDIGREE_TO_DQI_MAPPING,
@@ -358,7 +360,7 @@ class DQICalculator:
             pedigree_score=pedigree_score,
             factor_source=factor_source,
             data_tier=data_tier,
-            assessed_at=datetime.utcnow(),
+            assessed_at=DeterministicClock.utcnow(),
             assessed_by=assessed_by,
             notes=notes,
         )

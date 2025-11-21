@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for structured logging
 """
@@ -6,6 +7,7 @@ import pytest
 import json
 from datetime import datetime
 from greenlang.observability import (
+from greenlang.determinism import DeterministicClock
     LogLevel,
     LogContext,
     LogEntry,
@@ -51,7 +53,7 @@ class TestLogEntry:
         """Test creating a log entry"""
         context = LogContext(tenant_id="test")
         entry = LogEntry(
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             level=LogLevel.INFO,
             message="Test message",
             context=context,
@@ -63,7 +65,7 @@ class TestLogEntry:
         """Test converting log entry to dictionary"""
         context = LogContext(tenant_id="test")
         entry = LogEntry(
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             level=LogLevel.ERROR,
             message="Error occurred",
             context=context,
@@ -79,7 +81,7 @@ class TestLogEntry:
         """Test converting log entry to JSON"""
         context = LogContext(tenant_id="test")
         entry = LogEntry(
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             level=LogLevel.WARNING,
             message="Warning message",
             context=context,
@@ -154,7 +156,7 @@ class TestLogAggregator:
         """Test adding log entry"""
         aggregator = LogAggregator()
         entry = LogEntry(
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             level=LogLevel.INFO,
             message="Test",
             context=LogContext(),
@@ -167,12 +169,12 @@ class TestLogAggregator:
         aggregator = LogAggregator()
         aggregator.add_log(
             LogEntry(
-                datetime.utcnow(), LogLevel.INFO, "Info", LogContext(component="test")
+                DeterministicClock.utcnow(), LogLevel.INFO, "Info", LogContext(component="test")
             )
         )
         aggregator.add_log(
             LogEntry(
-                datetime.utcnow(), LogLevel.ERROR, "Error", LogContext(component="test")
+                DeterministicClock.utcnow(), LogLevel.ERROR, "Error", LogContext(component="test")
             )
         )
 
@@ -184,11 +186,11 @@ class TestLogAggregator:
         """Test filtering logs by component"""
         aggregator = LogAggregator()
         aggregator.add_log(
-            LogEntry(datetime.utcnow(), LogLevel.INFO, "A", LogContext(component="api"))
+            LogEntry(DeterministicClock.utcnow(), LogLevel.INFO, "A", LogContext(component="api"))
         )
         aggregator.add_log(
             LogEntry(
-                datetime.utcnow(), LogLevel.INFO, "B", LogContext(component="worker")
+                DeterministicClock.utcnow(), LogLevel.INFO, "B", LogContext(component="worker")
             )
         )
 
@@ -200,10 +202,10 @@ class TestLogAggregator:
         """Test getting log statistics"""
         aggregator = LogAggregator()
         aggregator.add_log(
-            LogEntry(datetime.utcnow(), LogLevel.INFO, "Test", LogContext())
+            LogEntry(DeterministicClock.utcnow(), LogLevel.INFO, "Test", LogContext())
         )
         aggregator.add_log(
-            LogEntry(datetime.utcnow(), LogLevel.ERROR, "Error", LogContext())
+            LogEntry(DeterministicClock.utcnow(), LogLevel.ERROR, "Error", LogContext())
         )
 
         stats = aggregator.get_statistics()
@@ -215,7 +217,7 @@ class TestLogAggregator:
         aggregator = LogAggregator()
         aggregator.add_log(
             LogEntry(
-                datetime.utcnow(),
+                DeterministicClock.utcnow(),
                 LogLevel.ERROR,
                 "Error 1",
                 LogContext(),
@@ -224,7 +226,7 @@ class TestLogAggregator:
         )
         aggregator.add_log(
             LogEntry(
-                datetime.utcnow(),
+                DeterministicClock.utcnow(),
                 LogLevel.ERROR,
                 "Error 2",
                 LogContext(),

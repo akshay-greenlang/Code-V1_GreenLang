@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Load Testing Scenarios
 ================================
@@ -25,6 +26,7 @@ import random
 import time
 from locust import HttpUser, task, between, events
 from locust.exception import RescheduleTask
+from greenlang.determinism import deterministic_random
 
 
 # ============================================================================
@@ -34,15 +36,15 @@ from locust.exception import RescheduleTask
 def generate_shipment():
     """Generate realistic CBAM shipment data."""
     return {
-        "shipment_id": f"SHIP-{random.randint(100000, 999999)}",
-        "origin_country": random.choice(["CN", "IN", "US", "JP", "KR"]),
-        "destination_country": random.choice(["DE", "FR", "IT", "ES", "NL"]),
-        "goods_category": random.choice(["Steel", "Aluminum", "Cement", "Fertilizer"]),
-        "cn_code": random.choice(["7208", "7601", "2523", "3102"]),
-        "quantity": random.randint(100, 10000),
+        "shipment_id": f"SHIP-{deterministic_random().randint(100000, 999999)}",
+        "origin_country": deterministic_random().choice(["CN", "IN", "US", "JP", "KR"]),
+        "destination_country": deterministic_random().choice(["DE", "FR", "IT", "ES", "NL"]),
+        "goods_category": deterministic_random().choice(["Steel", "Aluminum", "Cement", "Fertilizer"]),
+        "cn_code": deterministic_random().choice(["7208", "7601", "2523", "3102"]),
+        "quantity": deterministic_random().randint(100, 10000),
         "unit": "kg",
-        "transport_mode": random.choice(["Sea", "Air", "Rail", "Road"]),
-        "invoice_value": random.randint(1000, 100000),
+        "transport_mode": deterministic_random().choice(["Sea", "Air", "Rail", "Road"]),
+        "invoice_value": deterministic_random().randint(1000, 100000),
         "currency": "EUR"
     }
 
@@ -50,12 +52,12 @@ def generate_shipment():
 def generate_company():
     """Generate CSRD company data."""
     return {
-        "company_id": f"COMP-{random.randint(10000, 99999)}",
-        "name": f"Company {random.randint(1, 1000)}",
-        "sector": random.choice(["Manufacturing", "Energy", "Transport", "Agriculture"]),
-        "employees": random.randint(100, 10000),
-        "revenue": random.randint(1000000, 1000000000),
-        "countries": random.sample(["DE", "FR", "IT", "ES", "NL", "PL"], k=random.randint(1, 3)),
+        "company_id": f"COMP-{deterministic_random().randint(10000, 99999)}",
+        "name": f"Company {deterministic_random().randint(1, 1000)}",
+        "sector": deterministic_random().choice(["Manufacturing", "Energy", "Transport", "Agriculture"]),
+        "employees": deterministic_random().randint(100, 10000),
+        "revenue": deterministic_random().randint(1000000, 1000000000),
+        "countries": deterministic_random().sample(["DE", "FR", "IT", "ES", "NL", "PL"], k=deterministic_random().randint(1, 3)),
         "reporting_period": "2024"
     }
 
@@ -63,11 +65,11 @@ def generate_company():
 def generate_supplier():
     """Generate VCCI supplier data."""
     return {
-        "supplier_id": f"SUPP-{random.randint(100000, 999999)}",
-        "name": f"Supplier {random.randint(1, 10000)}",
-        "country": random.choice(["CN", "US", "DE", "IN", "JP", "KR", "TW"]),
-        "sector": random.choice(["Manufacturing", "Services", "Energy", "Agriculture"]),
-        "spend": random.randint(10000, 1000000),
+        "supplier_id": f"SUPP-{deterministic_random().randint(100000, 999999)}",
+        "name": f"Supplier {deterministic_random().randint(1, 10000)}",
+        "country": deterministic_random().choice(["CN", "US", "DE", "IN", "JP", "KR", "TW"]),
+        "sector": deterministic_random().choice(["Manufacturing", "Services", "Energy", "Agriculture"]),
+        "spend": deterministic_random().randint(10000, 1000000),
         "currency": "USD"
     }
 
@@ -109,8 +111,8 @@ class CBOMSustainedLoad(HttpUser):
     @task(2)  # Weight: 2
     def get_emission_factor(self):
         """Retrieve emission factor."""
-        cn_code = random.choice(["7208", "7601", "2523", "3102"])
-        country = random.choice(["CN", "IN", "US", "DE"])
+        cn_code = deterministic_random().choice(["7208", "7601", "2523", "3102"])
+        country = deterministic_random().choice(["CN", "IN", "US", "DE"])
 
         with self.client.get(
             f"/api/factors/emission/{cn_code}",

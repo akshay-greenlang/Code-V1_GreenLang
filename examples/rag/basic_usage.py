@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example: Basic RAG usage with determinism and citations.
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Grid Carbon Intensity Factor Lookup with ChatSession Integration.
 
 This module provides an AI-enhanced version of the GridFactorAgent that uses
@@ -45,6 +46,7 @@ from datetime import datetime
 import asyncio
 import logging
 import warnings
+from greenlang.determinism import DeterministicClock
 
 # DEPRECATION WARNING: This agent is deprecated for CRITICAL PATH emissions calculations
 warnings.warn(
@@ -345,7 +347,7 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
             source_name=data["source"],
             source_type="database",
             query={"country": country, "fuel_type": fuel_type, "unit": unit, "year": year},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             url=None,
         )
         self._data_source_citations.append(data_source_citation)
@@ -595,7 +597,7 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
             AgentResult with grid intensity and AI explanation
         """
         with self.track_execution(payload) as tracker:
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             # Validate input
             if not self.validate(payload):
@@ -621,7 +623,7 @@ class GridFactorAgentAI(OperationalMonitoringMixin, Agent[GridFactorInput, GridF
                     loop.close()
 
                 # Calculate duration
-                duration = (datetime.now() - start_time).total_seconds()
+                duration = (DeterministicClock.now() - start_time).total_seconds()
 
                 # Add performance metadata
                 if result["success"]:

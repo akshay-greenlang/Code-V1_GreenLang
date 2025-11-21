@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Core Schemas for Tool Runtime (INTL-103)
 

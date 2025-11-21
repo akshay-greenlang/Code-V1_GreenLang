@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 6: Business Travel Calculator
 GL-VCCI Scope 3 Platform

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Authentication and Authorization Middleware
 GL-VCCI Scope 3 Platform

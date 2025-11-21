@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for BaseAgent class.
 Tests lifecycle management, metrics collection, hooks, and resource loading.

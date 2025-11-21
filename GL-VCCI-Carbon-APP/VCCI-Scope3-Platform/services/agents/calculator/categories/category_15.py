@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 15: Investments Calculator (PCAF Standard)
 GL-VCCI Scope 3 Platform
@@ -32,6 +33,7 @@ from datetime import datetime
 from enum import Enum
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     Category15Input,
     CalculationResult,
     DataQualityInfo,
@@ -144,7 +146,7 @@ class Category15Calculator:
             DataValidationError: If input data is invalid
             CalculationError: If calculation fails
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         # Validate input
         self._validate_input(input_data)
@@ -244,7 +246,7 @@ class Category15Calculator:
 
         # Provenance
         provenance = self.provenance_builder.build(
-            calculation_id=f"cat15_{input_data.investment_id}_{datetime.utcnow().timestamp()}",
+            calculation_id=f"cat15_{input_data.investment_id}_{DeterministicClock.utcnow().timestamp()}",
             category=15,
             tier=tier,
             input_data=input_data.model_dump(),
@@ -344,7 +346,7 @@ class Category15Calculator:
 
         # Provenance
         provenance = self.provenance_builder.build(
-            calculation_id=f"cat15_{input_data.investment_id}_{datetime.utcnow().timestamp()}",
+            calculation_id=f"cat15_{input_data.investment_id}_{DeterministicClock.utcnow().timestamp()}",
             category=15,
             tier=tier,
             input_data=input_data.model_dump(),
@@ -442,7 +444,7 @@ class Category15Calculator:
 
         # Provenance
         provenance = self.provenance_builder.build(
-            calculation_id=f"cat15_{input_data.investment_id}_{datetime.utcnow().timestamp()}",
+            calculation_id=f"cat15_{input_data.investment_id}_{DeterministicClock.utcnow().timestamp()}",
             category=15,
             tier=tier,
             input_data=input_data.model_dump(),

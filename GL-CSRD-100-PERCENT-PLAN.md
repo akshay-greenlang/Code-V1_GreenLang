@@ -898,7 +898,7 @@ FINAL REVIEW
    - Runtime: ~1 hour for full suite
 
 4. **Development Environment**
-   - Python 3.11+
+   - Python 3.10+
    - 8GB+ RAM
    - 10GB disk space
    - Git

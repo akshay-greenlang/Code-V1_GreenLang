@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Connectors - Data Source Integration Framework
 =========================================================

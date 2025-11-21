@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Reporting Platform - Python SDK
 
@@ -25,6 +26,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, List
 import pandas as pd
+from greenlang.determinism import DeterministicClock
 
 # Add parent directory to path
 parent_dir = str(Path(__file__).parent.parent)
@@ -116,7 +118,7 @@ class CSRDConfig:
             return cls(
                 company_name=data["company"]["name"],
                 company_lei=data["company"]["lei"],
-                reporting_year=data["company"].get("reporting_year", datetime.now().year),
+                reporting_year=data["company"].get("reporting_year", DeterministicClock.now().year),
                 sector=data["company"].get("sector", ""),
                 country=data["company"].get("country", "DE"),
                 employee_count=data["company"].get("employee_count"),
@@ -144,7 +146,7 @@ class CSRDConfig:
         return cls(
             company_name=os.getenv("CSRD_COMPANY_NAME", ""),
             company_lei=os.getenv("CSRD_COMPANY_LEI", ""),
-            reporting_year=int(os.getenv("CSRD_REPORTING_YEAR", datetime.now().year)),
+            reporting_year=int(os.getenv("CSRD_REPORTING_YEAR", DeterministicClock.now().year)),
             sector=os.getenv("CSRD_SECTOR", ""),
             country=os.getenv("CSRD_COUNTRY", "DE"),
             llm_api_key=os.getenv("OPENAI_API_KEY") or os.getenv("ANTHROPIC_API_KEY")
@@ -605,7 +607,7 @@ def csrd_build_report(
         report.save_json("output/report.json")
         report.save_summary("output/summary.md")
     """
-    start_time = datetime.now()
+    start_time = DeterministicClock.now()
 
     # Configure logging
     if verbose:
@@ -618,7 +620,7 @@ def csrd_build_report(
         config = CSRDConfig(
             company_name="",
             company_lei="",
-            reporting_year=datetime.now().year,
+            reporting_year=DeterministicClock.now().year,
             sector=""
         )
 
@@ -860,7 +862,7 @@ def csrd_build_report(
                 "critical_failures": 0,
                 "major_failures": 0,
                 "minor_failures": 0,
-                "validation_timestamp": datetime.now().isoformat(),
+                "validation_timestamp": DeterministicClock.now().isoformat(),
                 "validation_duration_seconds": 0.0
             },
             "rule_results": [],
@@ -871,7 +873,7 @@ def csrd_build_report(
     # BUILD CSRD REPORT OBJECT
     # ========================================================================
 
-    end_time = datetime.now()
+    end_time = DeterministicClock.now()
     processing_time = (end_time - start_time).total_seconds() / 60.0
 
     # Extract key metrics from calculated results

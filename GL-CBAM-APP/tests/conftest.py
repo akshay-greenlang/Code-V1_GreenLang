@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-CBAM-APP - Shared Test Fixtures and Configuration
 
@@ -17,6 +18,7 @@ from typing import Dict, Any, List
 from datetime import datetime, date
 from decimal import Decimal
 import pandas as pd
+from greenlang.determinism import DeterministicClock
 
 # Add project roots to path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -524,11 +526,11 @@ def pytest_collection_modifyitems(config, items):
 @pytest.fixture(scope="session", autouse=True)
 def test_run_info(request):
     """Capture test run information."""
-    start_time = datetime.now()
+    start_time = DeterministicClock.now()
 
     yield
 
-    end_time = datetime.now()
+    end_time = DeterministicClock.now()
     duration = (end_time - start_time).total_seconds()
 
     print(f"\n\n{'='*60}")

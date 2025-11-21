@@ -170,7 +170,7 @@ psutil>=5.9.0                 # System and process utilities for health checks
 # ----------------------------------------------------------------------------
 
 # Data encryption
-cryptography>=41.0.0          # Cryptographic recipes and primitives (Fernet, AES)
+cryptography>=46.0.0          # Cryptographic recipes and primitives (Fernet, AES)
 
 # SECURITY FIX (HIGH-SEC-002): Rate limiting
 slowapi>=0.1.9                # API rate limiting for FastAPI (protects against DoS)

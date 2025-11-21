@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang v2.0: Infrastructure for Climate Intelligence
 ========================================================

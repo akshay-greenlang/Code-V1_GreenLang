@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Utility Tests for SAP Connector
 GL-VCCI Scope 3 Platform

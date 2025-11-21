@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Direct entry point script for gl command
 This ensures the gl command works on Windows after pip install

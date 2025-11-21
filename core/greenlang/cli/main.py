@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang CLI v0.1
 ==================
@@ -275,7 +276,32 @@ def pack_add(
                 console.print(f"[red]Failed to install pack: {e}[/red]")
                 raise typer.Exit(1)
         else:
-            # TODO: Download from registry
+            # NOTE: Registry download implementation pending
+            # When implementing:
+            # 1. Connect to pack registry server
+            # 2. Search for pack by name/version
+            # 3. Download pack archive with progress bar
+            # 4. Verify signature and checksum
+            # 5. Extract and install locally
+            # Example:
+            #   import requests
+            #   from tqdm import tqdm
+            #   # Search registry
+            #   search_url = f"{registry_url}/api/v1/packs/search?name={source}"
+            #   response = requests.get(search_url)
+            #   pack_info = response.json()
+            #   # Download pack
+            #   download_url = pack_info['download_url']
+            #   response = requests.get(download_url, stream=True)
+            #   total_size = int(response.headers.get('content-length', 0))
+            #   with open(f"/tmp/{source}.tar.gz", 'wb') as f:
+            #       with tqdm(total=total_size, unit='B', unit_scale=True) as pbar:
+            #           for chunk in response.iter_content(chunk_size=8192):
+            #               f.write(chunk)
+            #               pbar.update(len(chunk))
+            #   # Verify and install
+            #   registry.install(f"/tmp/{source}.tar.gz")
+
             console.print("[yellow]Registry installation not yet implemented[/yellow]")
             console.print(f"Would download {source} from {registry_url}")
 
@@ -453,7 +479,35 @@ def pack_publish(
         console.print(f"  - Register {manifest.name} v{manifest.version}")
         console.print("  - Publish metadata and signatures")
     else:
-        # TODO: Implement actual upload
+        # NOTE: Registry upload implementation pending
+        # When implementing:
+        # 1. Authenticate with registry server
+        # 2. Upload pack archive with progress tracking
+        # 3. Upload signature and checksums
+        # 4. Register pack metadata in catalog
+        # 5. Verify upload success
+        # Example:
+        #   import requests
+        #   from tqdm import tqdm
+        #   # Authenticate
+        #   auth_token = os.getenv("GREENLANG_REGISTRY_TOKEN")
+        #   headers = {"Authorization": f"Bearer {auth_token}"}
+        #   # Upload archive
+        #   upload_url = f"{registry_url}/api/v1/packs/upload"
+        #   with open(archive_path, 'rb') as f:
+        #       file_size = os.path.getsize(archive_path)
+        #       with tqdm(total=file_size, unit='B', unit_scale=True) as pbar:
+        #           response = requests.post(
+        #               upload_url,
+        #               files={'file': f},
+        #               headers=headers,
+        #               data={'name': manifest.name, 'version': manifest.version}
+        #           )
+        #   if response.status_code == 201:
+        #       console.print(f"[green]Successfully uploaded to {registry_url}[/green]")
+        #   else:
+        #       console.print(f"[red]Upload failed: {response.text}[/red]")
+
         console.print(
             f"\n[yellow]Upload to {registry_url} not yet implemented[/yellow]"
         )

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Performance Monitoring System
 GL-VCCI Scope 3 Platform - Performance Optimization
@@ -33,6 +34,7 @@ from collections import deque
 import statistics
 
 from prometheus_client import (
+from greenlang.determinism import DeterministicClock
     Counter,
     Histogram,
     Gauge,
@@ -368,7 +370,7 @@ class SlowQueryLogger:
             record = SlowQueryRecord(
                 query_text=query_text[:500],  # Truncate long queries
                 duration_seconds=duration_seconds,
-                timestamp=datetime.utcnow(),
+                timestamp=DeterministicClock.utcnow(),
                 query_type=query_type,
                 params=params
             )
@@ -485,7 +487,7 @@ class PerformanceMonitor:
     def get_performance_report(self) -> Dict[str, Any]:
         """Get comprehensive performance report"""
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "api_latency": self.api_latency_tracker.get_percentiles(),
             "database_latency": self.db_latency_tracker.get_percentiles(),
             "slow_queries": self.slow_query_logger.get_summary(),

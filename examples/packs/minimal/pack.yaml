@@ -1,16 +1,19 @@
 name: minimal-pack
 version: 1.0.0
 kind: pack
-license: MIT
+pack_schema_version: '1.0'
 description: A minimal example GreenLang pack
-
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 contents:
   pipelines:
-    - gl.yaml
-
+  - gl.yaml
 metadata:
   author: GreenLang Team
   tags:
-    - example
-    - minimal
-    - demo
+  - example
+  - minimal
+  - demo

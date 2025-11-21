@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Base Agent Framework
 Enhanced base classes for agent development with lifecycle management,
@@ -12,6 +13,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from collections import defaultdict
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +238,7 @@ class BaseAgent(ABC):
                 return AgentResult(
                     success=False,
                     error=f"Agent {self.config.name} is disabled",
-                    timestamp=datetime.now()
+                    timestamp=DeterministicClock.now()
                 )
 
             # Validate input
@@ -244,7 +246,7 @@ class BaseAgent(ABC):
                 return AgentResult(
                     success=False,
                     error="Input validation failed",
-                    timestamp=datetime.now()
+                    timestamp=DeterministicClock.now()
                 )
 
             # Record input size
@@ -272,7 +274,7 @@ class BaseAgent(ABC):
                 result.metrics = metrics
 
             # Set timestamp
-            result.timestamp = datetime.now()
+            result.timestamp = DeterministicClock.now()
 
             # Run post-execution hooks
             for hook in self._post_execute_hooks:
@@ -291,7 +293,7 @@ class BaseAgent(ABC):
             return AgentResult(
                 success=False,
                 error=str(e),
-                timestamp=datetime.now(),
+                timestamp=DeterministicClock.now(),
                 metrics=AgentMetrics(execution_time_ms=duration_ms) if self.config.enable_metrics else None
             )
 

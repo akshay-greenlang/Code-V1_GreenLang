@@ -88,7 +88,7 @@ OUTPUT: cbam_report.json + provenance
 
 ### Required Software
 
-#### 1. Python 3.9+
+#### 1. Python 3.10+
 
 **Check Python version:**
 ```bash

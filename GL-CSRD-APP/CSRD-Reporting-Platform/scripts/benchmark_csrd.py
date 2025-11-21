@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GL-CSRD Performance Benchmark Script
 
@@ -29,6 +30,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.progress import track
 from rich import box
+from greenlang.determinism import DeterministicClock
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -58,7 +60,7 @@ class CSRDBenchmark:
         self.output_dir.mkdir(exist_ok=True)
 
         self.results = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "benchmarks": {},
             "summary": {}
         }
@@ -389,7 +391,7 @@ class CSRDBenchmark:
 
     def save_results(self):
         """Save benchmark results to JSON file."""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
         output_file = self.output_dir / f"benchmark_results_{timestamp}.json"
 
         with open(output_file, "w") as f:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generate Synthetic Demo Shipments for CBAM Importer Copilot
 
@@ -16,6 +17,8 @@ import random
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Dict, Any, Tuple
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 # Set seed for reproducibility
 RANDOM_SEED = 42
@@ -154,28 +157,28 @@ def generate_shipments(
         cn_code, product_group, product_name, min_mass, max_mass = product_data[product_idx]
 
         # Generate mass
-        net_mass_kg = random.randint(min_mass, max_mass)
+        net_mass_kg = deterministic_random().randint(min_mass, max_mass)
 
         # Generate import date
-        random_days = random.randint(0, days_in_quarter)
+        random_days = deterministic_random().randint(0, days_in_quarter)
         import_date = start_date + timedelta(days=random_days)
 
         # Select importer
-        importer_name, importer_country = random.choice(EU_IMPORTERS)
+        importer_name, importer_country = deterministic_random().choice(EU_IMPORTERS)
 
         # Determine if shipment has actual emissions data
-        has_actual_data = random.random() < actual_data_ratio
-        supplier_id = random.choice(SUPPLIER_IDS) if has_actual_data else None
+        has_actual_data = deterministic_random().random() < actual_data_ratio
+        supplier_id = deterministic_random().choice(SUPPLIER_IDS) if has_actual_data else None
 
         # Generate shipment ID
         shipment_id = f"DEMO-{quarter}-{i+1:05d}"
 
         # Importer reference (realistic customs reference)
-        importer_ref = f"IMP-{year}-{random.randint(100000, 999999)}"
+        importer_ref = f"IMP-{year}-{deterministic_random().randint(100000, 999999)}"
 
         # Port of entry (common EU ports)
         ports = ["Rotterdam", "Hamburg", "Antwerp", "Le Havre", "Barcelona", "Piraeus", "Genoa"]
-        port_of_entry = random.choice(ports)
+        port_of_entry = deterministic_random().choice(ports)
 
         # Create shipment record
         shipment = {
@@ -231,7 +234,7 @@ def save_to_json(shipments: List[Dict[str, Any]], output_path: Path) -> None:
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump({
             "metadata": {
-                "generated_at": datetime.now().isoformat(),
+                "generated_at": DeterministicClock.now().isoformat(),
                 "count": len(shipments),
                 "quarter": shipments[0]["quarter"] if shipments else "N/A",
                 "disclaimer": "Synthetic data for demo purposes only",

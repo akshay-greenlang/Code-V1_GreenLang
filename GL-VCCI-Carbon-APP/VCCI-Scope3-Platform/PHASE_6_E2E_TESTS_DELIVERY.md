@@ -674,7 +674,7 @@ HA failover validation:
 1. **Test Environment:**
    - PostgreSQL 15+ available
    - Redis 7+ available
-   - Python 3.11+ installed
+   - Python 3.10+ installed
    - Playwright browsers installed
 
 2. **Test Data:**

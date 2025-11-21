@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Text normalization utilities for stable test snapshots."""
 
 import re

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """DQI Integration with methodologies module"""
 import logging
 from typing import Optional, Dict, Any

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 INTL-103 Tool Runtime Demo
 

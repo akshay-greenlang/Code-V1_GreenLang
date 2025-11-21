@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Uncertainty Propagation Engine
 Monte Carlo simulation for emissions calculations

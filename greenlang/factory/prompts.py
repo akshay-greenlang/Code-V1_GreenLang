@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Agent Factory - LLM Prompt Templates
 

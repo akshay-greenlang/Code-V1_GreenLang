@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope3CalculatorAgent - Main Agent
 GL-VCCI Scope 3 Platform
@@ -28,6 +29,7 @@ import time
 from greenlang.sdk.base import Agent, Metadata, Result
 from greenlang.cache import CacheManager, get_cache_manager
 from greenlang.telemetry import (
+from greenlang.determinism import DeterministicClock
     MetricsCollector,
     get_logger,
     track_execution,
@@ -1086,7 +1088,7 @@ class Scope3CalculatorAgent(Agent[Dict[str, Any], CalculationResult]):
                 "tier": r.tier,
                 "dqi_score": r.data_quality.dqi_score if r.data_quality else None,
                 "calculation_method": r.calculation_method,
-                "timestamp": datetime.utcnow(),
+                "timestamp": DeterministicClock.utcnow(),
                 "provenance_chain": r.provenance_chain if hasattr(r, 'provenance_chain') else None,
             }
             for r in results

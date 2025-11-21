@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for greenlang.sdk.base module
 """
@@ -8,6 +9,7 @@ from pathlib import Path
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 from abc import ABC
+from greenlang.determinism import DeterministicClock
 
 # Add the greenlang directory to the path
 sys.path.insert(0, str(Path(__file__).parent.parent / "greenlang"))
@@ -53,7 +55,7 @@ class TestMetadata:
 
     def test_metadata_with_all_fields(self):
         """Test Metadata with all fields specified"""
-        created_at = datetime.now()
+        created_at = DeterministicClock.now()
         metadata = Metadata(
             id="component1",
             name="Component 1",

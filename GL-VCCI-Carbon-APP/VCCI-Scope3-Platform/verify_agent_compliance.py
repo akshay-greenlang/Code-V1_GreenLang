@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Agent Compliance Verification Script
 GL-VCCI Scope 3 Platform

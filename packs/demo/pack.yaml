@@ -1,18 +1,12 @@
-name: "demo-pack"
-version: "1.0.0"
-kind: "pack"
-license: "MIT"
+name: demo-pack
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 contents:
-  pipelines: ["gl.yaml"]
-# Optional fields - uncomment as needed:
-# compat:
-#   greenlang: ">=0.3,<0.5"
-#   python: ">=3.10"
-# dependencies:
-#   - "pandas>=2.1"
-#   - "numpy>=1.24"
-# card: "CARD.md"
-# metadata:
-#   description: "A GreenLang pack-basic"
-#   authors: ["Unknown"]
-#   tags: ["climate", "data-processing"]
+  pipelines:
+  - gl.yaml

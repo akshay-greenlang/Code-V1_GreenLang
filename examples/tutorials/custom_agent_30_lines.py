@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tutorial: Write a new agent in 30 lines.
 
 This example shows how to create a custom GreenLang agent

@@ -1,0 +1,812 @@
+openapi: 3.0.3
+info:
+  title: CSRD/ESRS Digital Reporting Platform API
+  description: |
+    Zero-hallucination EU sustainability reporting API for CSRD/ESRS compliance.
+
+    ## Overview
+
+    The CSRD/ESRS Digital Reporting Platform automates Corporate Sustainability Reporting
+    Directive (CSRD) compliance for EU companies. This API provides:
+
+    - **Data Validation**: Intake and validation against CSRD/ESRS schema
+    - **Metric Calculations**: 975+ ESRS metrics with zero hallucination
+    - **Materiality Assessment**: AI-powered double materiality analysis
+    - **Audit & Quality**: Automated compliance and quality checks
+    - **XBRL/iXBRL Generation**: ESEF-compliant digital reports
+    - **Multi-Framework Integration**: CSRD, GRI, SASB, TCFD alignment
+
+    ## CSRD/ESRS Context
+
+    The Corporate Sustainability Reporting Directive (CSRD) requires:
+    - ~50,000 EU companies to report sustainability data
+    - Compliance with European Sustainability Reporting Standards (ESRS)
+    - Digital reporting in XBRL/iXBRL format (ESEF taxonomy)
+    - Third-party assurance of reported data
+
+    This API implements a 6-agent pipeline:
+    1. **IntakeAgent**: Validates input data against ESRS schema
+    2. **CalculatorAgent**: Calculates 975+ ESRS metrics
+    3. **MaterialityAgent**: Performs double materiality assessment
+    4. **AuditAgent**: Ensures compliance and data quality
+    5. **ReportingAgent**: Generates XBRL/iXBRL reports
+    6. **AggregatorAgent**: Integrates with GRI, SASB, TCFD
+
+    ## Features
+
+    - **975+ ESRS Metrics**: Complete coverage of all ESRS data points
+    - **Zero Hallucination**: Calculations use only verified methodologies
+    - **Double Materiality**: Impact and financial materiality analysis
+    - **XBRL Generation**: ESEF-compliant iXBRL reports
+    - **Multi-Format Output**: XBRL, JSON, PDF, Excel
+    - **AI-Powered Insights**: Optional LLM analysis for materiality and gaps
+    - **Audit Trail**: Complete provenance for regulatory assurance
+    - **Rate Limiting**: DDoS protection with configurable limits
+
+    ## SLA Commitments
+
+    - **Availability**: 99.9% uptime
+    - **Success Rate**: 99% successful pipeline executions
+    - **Latency**: 95th percentile < 15 minutes for full pipeline
+
+    ## Authentication
+
+    API requests require Bearer token authentication:
+
+    ```
+    Authorization: Bearer <your-token>
+    ```
+
+  version: 1.0.0
+  contact:
+    name: GreenLang CSRD Team
+    email: csrd-support@greenlang.io
+    url: https://greenlang.io/csrd
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+servers:
+  - url: https://csrd-api.greenlang.io
+    description: Production server
+  - url: https://csrd-staging.greenlang.io
+    description: Staging server
+  - url: http://localhost:8000
+    description: Local development server
+
+tags:
+  - name: System
+    description: Health checks and system information
+  - name: Pipeline
+    description: CSRD/ESRS pipeline execution
+  - name: Validation
+    description: Data validation endpoints
+  - name: Calculation
+    description: ESRS metric calculations
+  - name: Reporting
+    description: Report generation
+  - name: Materiality
+    description: Double materiality assessment
+
+security:
+  - BearerAuth: []
+
+paths:
+  /:
+    get:
+      summary: API root
+      description: Root endpoint with API information
+      operationId: getRoot
+      tags:
+        - System
+      security: []
+      responses:
+        '200':
+          description: API information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: CSRD/ESRS Digital Reporting Platform
+                  version:
+                    type: string
+                    example: 1.0.0
+                  status:
+                    type: string
+                    example: operational
+                  documentation:
+                    type: string
+                    example: /docs
+
+  /health:
+    get:
+      summary: Health check
+      description: |
+        Basic health check endpoint.
+
+        Returns service health status without checking external dependencies.
+        Used by load balancers and uptime monitoring.
+      operationId: getHealth
+      tags:
+        - System
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: healthy
+                version: 1.0.0
+                timestamp: '2025-11-21T10:30:00Z'
+                uptime_seconds: 86400.0
+
+  /ready:
+    get:
+      summary: Readiness check
+      description: |
+        Readiness check endpoint.
+
+        Checks if the service is ready to handle requests by testing
+        connections to external dependencies:
+        - Database (PostgreSQL)
+        - Redis cache
+        - Weaviate vector database (for AI features)
+
+        Returns 200 if ready, 503 if not ready.
+      operationId: getReadiness
+      tags:
+        - System
+      security: []
+      responses:
+        '200':
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+              example:
+                status: ready
+                database: connected
+                redis: connected
+                weaviate: connected
+        '503':
+          description: Service is not ready
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReadinessResponse'
+
+  /metrics:
+    get:
+      summary: Prometheus metrics
+      description: |
+        Prometheus-compatible metrics endpoint.
+
+        Exposes application metrics including:
+        - Request counters
+        - Pipeline execution metrics
+        - Uptime
+        - Job counts
+      operationId: getMetrics
+      tags:
+        - System
+      security: []
+      responses:
+        '200':
+          description: Metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /api/v1/pipeline/run:
+    post:
+      summary: Execute CSRD/ESRS pipeline
+      description: |
+        Execute the complete CSRD/ESRS reporting pipeline.
+
+        This endpoint triggers the full 6-agent pipeline:
+        1. **IntakeAgent**: Data validation and ingestion
+        2. **CalculatorAgent**: Metric calculations (975 metrics)
+        3. **MaterialityAgent**: Double materiality assessment
+        4. **AuditAgent**: Compliance and quality checks
+        5. **ReportingAgent**: XBRL/iXBRL generation
+        6. **AggregatorAgent**: Multi-framework integration
+
+        The pipeline runs asynchronously in the background.
+        Use the returned `job_id` to check status via `/api/v1/pipeline/status/{job_id}`
+
+        **Rate Limit**: 10 requests per minute
+      operationId: runPipeline
+      tags:
+        - Pipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PipelineRequest'
+            example:
+              company_name: Acme Corporation
+              lei_code: 549300XXXXXXXXXXXXX
+              reporting_year: 2024
+              input_file: /uploads/acme-2024-data.xlsx
+              output_format: xbrl
+              enable_ai: true
+      responses:
+        '202':
+          description: Pipeline execution queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineResponse'
+              example:
+                job_id: 550e8400-e29b-41d4-a716-446655440000
+                status: queued
+                message: Pipeline execution queued successfully
+                started_at: '2025-11-21T10:30:00Z'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Rate limit exceeded
+
+  /api/v1/pipeline/status/{job_id}:
+    get:
+      summary: Get pipeline execution status
+      description: |
+        Get the status of a pipeline execution job.
+
+        Returns detailed information including:
+        - Current status (queued, running, completed, failed)
+        - Progress percentage
+        - Current agent being executed
+        - Results (if completed)
+        - Error details (if failed)
+      operationId: getPipelineStatus
+      tags:
+        - Pipeline
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          description: Job identifier
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Job status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '404':
+          description: Job not found
+
+  /api/v1/pipeline/jobs:
+    get:
+      summary: List pipeline jobs
+      description: |
+        List all pipeline execution jobs.
+
+        Supports filtering by status and pagination.
+      operationId: listPipelineJobs
+      tags:
+        - Pipeline
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of jobs to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - name: status_filter
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [queued, running, completed, failed]
+      responses:
+        '200':
+          description: Jobs list retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of jobs
+                  filtered:
+                    type: integer
+                    description: Number of jobs after filtering
+                  jobs:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/JobStatus'
+
+  /api/v1/validate:
+    post:
+      summary: Validate input data
+      description: |
+        Validate input data against CSRD/ESRS schema.
+
+        Runs IntakeAgent validation only without executing the full pipeline.
+        Useful for:
+        - Pre-flight checks before pipeline execution
+        - Data quality assessment
+        - Schema validation
+
+        **Rate Limit**: 60 requests per minute
+      operationId: validateData
+      tags:
+        - Validation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidationRequest'
+            example:
+              input_file: /uploads/company-data.xlsx
+              schema_version: '1.0'
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+              example:
+                is_valid: true
+                errors: []
+                warnings:
+                  - Missing optional field: governance_structure
+                data_quality_score: 95.5
+
+  /api/v1/calculate/{metric_id}:
+    post:
+      summary: Calculate specific ESRS metric
+      description: |
+        Calculate a specific ESRS metric.
+
+        Runs CalculatorAgent for a single metric without executing the full pipeline.
+
+        Useful for:
+        - Ad-hoc metric calculations
+        - Testing calculations
+        - API integrations
+
+        **Example metric IDs**:
+        - `E1-1`: Scope 1 GHG emissions
+        - `E1-2`: Scope 2 GHG emissions
+        - `E1-3`: Scope 3 GHG emissions
+        - `S1-1`: Own workforce headcount
+      operationId: calculateMetric
+      tags:
+        - Calculation
+      parameters:
+        - name: metric_id
+          in: path
+          required: true
+          description: ESRS metric identifier
+          schema:
+            type: string
+            example: E1-1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              description: Input data for metric calculation
+      responses:
+        '200':
+          description: Calculation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricCalculationResponse'
+              example:
+                metric_id: E1-1
+                value: 12345.67
+                unit: tCO2e
+                calculation_method: GHG Protocol
+                data_quality: high
+
+  /api/v1/report/generate:
+    post:
+      summary: Generate CSRD/ESRS report
+      description: |
+        Generate CSRD/ESRS report in requested format.
+
+        Supports multiple output formats:
+        - **xbrl**: ESEF-compliant iXBRL (for regulatory filing)
+        - **json**: Machine-readable JSON (for integrations)
+        - **pdf**: Human-readable PDF (for stakeholders)
+        - **excel**: Excel workbook (for analysis)
+
+        Runs ReportingAgent only, assumes data is already validated and calculated.
+      operationId: generateReport
+      tags:
+        - Reporting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportGenerationRequest'
+            example:
+              company_name: Acme Corporation
+              reporting_year: 2024
+              format: xbrl
+      responses:
+        '200':
+          description: Report generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportGenerationResponse'
+              example:
+                report_id: REP-2024-001
+                status: generated
+                format: xbrl
+                download_url: /api/v1/report/download/xbrl/REP-2024-001
+
+  /api/v1/materiality/assess:
+    post:
+      summary: Perform double materiality assessment
+      description: |
+        Perform double materiality assessment.
+
+        Uses MaterialityAgent to assess:
+        - **Impact materiality** (inside-out): Company's impact on environment and society
+        - **Financial materiality** (outside-in): Sustainability impact on company finances
+        - **IRO identification**: Impacts, Risks, and Opportunities
+
+        Can optionally use AI for enhanced analysis.
+      operationId: assessMateriality
+      tags:
+        - Materiality
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterialityRequest'
+            example:
+              company_name: Acme Corporation
+              sector: Manufacturing
+              enable_ai: true
+      responses:
+        '200':
+          description: Materiality assessment completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaterialityResponse'
+              example:
+                assessment_id: MAT-2024-001
+                material_topics:
+                  - Climate change mitigation
+                  - Energy efficiency
+                  - Water management
+                methodology: ESRS 2 IRO-1
+                ai_enabled: true
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token or API key authentication
+
+  schemas:
+    HealthResponse:
+      type: object
+      required:
+        - status
+        - version
+        - timestamp
+        - uptime_seconds
+      properties:
+        status:
+          type: string
+          enum: [healthy, unhealthy]
+        version:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        uptime_seconds:
+          type: number
+          format: float
+
+    ReadinessResponse:
+      type: object
+      required:
+        - status
+        - database
+        - redis
+        - weaviate
+      properties:
+        status:
+          type: string
+          enum: [ready, not_ready]
+        database:
+          type: string
+          enum: [connected, disconnected]
+        redis:
+          type: string
+          enum: [connected, disconnected]
+        weaviate:
+          type: string
+          enum: [connected, disconnected]
+
+    PipelineRequest:
+      type: object
+      required:
+        - company_name
+        - reporting_year
+        - input_file
+      properties:
+        company_name:
+          type: string
+          description: Company name
+          example: Acme Corporation
+        lei_code:
+          type: string
+          description: Legal Entity Identifier (20 characters)
+          pattern: '^[0-9A-Z]{20}$'
+          example: 549300XXXXXXXXXXXXX
+        reporting_year:
+          type: integer
+          minimum: 2024
+          description: Reporting year
+          example: 2024
+        input_file:
+          type: string
+          description: Path to input data file
+          example: /uploads/acme-2024-data.xlsx
+        output_format:
+          type: string
+          enum: [xbrl, json, pdf, excel]
+          default: xbrl
+          description: Output format
+        enable_ai:
+          type: boolean
+          default: true
+          description: Enable AI-powered features
+
+    PipelineResponse:
+      type: object
+      required:
+        - job_id
+        - status
+        - message
+        - started_at
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Job identifier
+        status:
+          type: string
+          enum: [queued, running, completed, failed]
+          description: Job status
+        message:
+          type: string
+          description: Status message
+        started_at:
+          type: string
+          format: date-time
+          description: Start timestamp
+
+    JobStatus:
+      type: object
+      required:
+        - job_id
+        - status
+        - request
+        - started_at
+        - progress
+      properties:
+        job_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running, completed, failed]
+        request:
+          type: object
+          description: Original request parameters
+        started_at:
+          type: string
+          format: date-time
+        completed_at:
+          type: string
+          format: date-time
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Progress percentage
+        current_agent:
+          type: string
+          description: Currently executing agent
+        results:
+          type: object
+          description: Pipeline results (if completed)
+        error:
+          type: string
+          description: Error message (if failed)
+
+    ValidationRequest:
+      type: object
+      required:
+        - input_file
+      properties:
+        input_file:
+          type: string
+          description: Path to input data file
+        schema_version:
+          type: string
+          default: '1.0'
+          description: Schema version to validate against
+
+    ValidationResponse:
+      type: object
+      required:
+        - is_valid
+        - errors
+        - warnings
+        - data_quality_score
+      properties:
+        is_valid:
+          type: boolean
+          description: Validation result
+        errors:
+          type: array
+          items:
+            type: string
+          description: Validation errors
+        warnings:
+          type: array
+          items:
+            type: string
+          description: Validation warnings
+        data_quality_score:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: Data quality score (0-100)
+
+    MetricCalculationResponse:
+      type: object
+      required:
+        - metric_id
+        - value
+        - unit
+        - calculation_method
+        - data_quality
+      properties:
+        metric_id:
+          type: string
+          description: ESRS metric identifier
+        value:
+          type: number
+          format: float
+          description: Calculated value
+        unit:
+          type: string
+          description: Unit of measurement
+        calculation_method:
+          type: string
+          description: Calculation methodology used
+        data_quality:
+          type: string
+          enum: [high, medium, low]
+          description: Data quality assessment
+
+    ReportGenerationRequest:
+      type: object
+      required:
+        - company_name
+        - reporting_year
+      properties:
+        company_name:
+          type: string
+        reporting_year:
+          type: integer
+        format:
+          type: string
+          enum: [xbrl, json, pdf, excel]
+          default: xbrl
+
+    ReportGenerationResponse:
+      type: object
+      required:
+        - report_id
+        - status
+        - format
+        - download_url
+      properties:
+        report_id:
+          type: string
+        status:
+          type: string
+          enum: [generated, failed]
+        format:
+          type: string
+        download_url:
+          type: string
+          format: uri
+
+    MaterialityRequest:
+      type: object
+      required:
+        - company_name
+        - sector
+      properties:
+        company_name:
+          type: string
+        sector:
+          type: string
+          description: Industry sector
+        enable_ai:
+          type: boolean
+          default: true
+
+    MaterialityResponse:
+      type: object
+      required:
+        - assessment_id
+        - material_topics
+        - methodology
+        - ai_enabled
+      properties:
+        assessment_id:
+          type: string
+        material_topics:
+          type: array
+          items:
+            type: string
+          description: Identified material topics
+        methodology:
+          type: string
+          description: Assessment methodology
+        ai_enabled:
+          type: boolean
+          description: Whether AI analysis was used
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - path
+      properties:
+        error:
+          type: string
+          description: Error type
+        message:
+          type: string
+          description: Error message
+        path:
+          type: string
+          description: Request path where error occurred

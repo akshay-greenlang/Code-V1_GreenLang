@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ESRS E1 (EU CSRD) Report Generator
 GL-VCCI Scope 3 Platform
@@ -16,6 +17,7 @@ from datetime import datetime
 from ..models import CompanyInfo, EmissionsData, EnergyData, IntensityMetrics
 from ..config import ESRS_E1_CONFIG
 from ..exceptions import StandardComplianceError
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ class ESRSE1Generator:
             "standard_name": "Climate Change",
             "reporting_entity": company_info.name,
             "reporting_period": company_info.reporting_year,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": DeterministicClock.utcnow().isoformat(),
             "disclosures": [],
         }
 

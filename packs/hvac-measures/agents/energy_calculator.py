@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 """Energy Calculator Agent for HVAC system analysis."""
 
 import json
 from typing import Dict, Any, List
 from datetime import datetime, timedelta
 import random
+from greenlang.determinism import DeterministicClock
 
 class EnergyCalculatorAgent:
     """Agent for calculating HVAC energy consumption and costs."""
@@ -92,7 +94,7 @@ class EnergyCalculatorAgent:
         # Create report content
         report = {
             "title": "HVAC Optimization Report",
-            "generated": datetime.now().isoformat(),
+            "generated": DeterministicClock.now().isoformat(),
             "executive_summary": self._generate_executive_summary(
                 comfort_analysis, energy_consumption, ventilation_plan
             ),

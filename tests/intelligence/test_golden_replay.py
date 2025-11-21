@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Golden Test for Byte-Exact Replay (INTL-103 DoD Gap 4)
 

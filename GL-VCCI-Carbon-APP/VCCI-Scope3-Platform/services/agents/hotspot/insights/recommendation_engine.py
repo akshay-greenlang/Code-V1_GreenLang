@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Recommendation Engine
 GL-VCCI Scope 3 Platform
@@ -15,6 +16,7 @@ from typing import List, Dict, Any
 import uuid
 
 from ..models import (
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     Insight,
     InsightReport,
     HotspotReport,
@@ -142,7 +144,7 @@ class RecommendationEngine:
             # High emissions supplier
             if hotspot.hotspot_type == "supplier_name" and hotspot.emissions_tco2e >= 1000:
                 insight = Insight(
-                    insight_id=str(uuid.uuid4())[:8],
+                    insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                     insight_type=InsightType.HIGH_EMISSIONS_SUPPLIER,
                     priority=hotspot.priority,
                     title=f"High Emissions from {hotspot.entity_name}",
@@ -174,7 +176,7 @@ class RecommendationEngine:
             # Low data quality
             if hotspot.data_quality_flag:
                 insight = Insight(
-                    insight_id=str(uuid.uuid4())[:8],
+                    insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                     insight_type=InsightType.LOW_DATA_QUALITY,
                     priority=InsightPriority.MEDIUM,
                     title=f"Low Data Quality for {hotspot.entity_name}",
@@ -200,7 +202,7 @@ class RecommendationEngine:
             # Concentration risk
             if hotspot.percent_of_total >= 30:
                 insight = Insight(
-                    insight_id=str(uuid.uuid4())[:8],
+                    insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                     insight_type=InsightType.CONCENTRATION_RISK,
                     priority=InsightPriority.CRITICAL,
                     title=f"Concentration Risk: {hotspot.entity_name}",
@@ -242,7 +244,7 @@ class RecommendationEngine:
         # Pareto efficiency insight
         if pareto_analysis.pareto_achieved:
             insight = Insight(
-                insight_id=str(uuid.uuid4())[:8],
+                insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                 insight_type=InsightType.CONCENTRATION_RISK,
                 priority=InsightPriority.HIGH,
                 title="Strong Pareto Pattern Detected",
@@ -286,7 +288,7 @@ class RecommendationEngine:
             top_segment = segmentation_analysis.top_10_segments[0]
 
             insight = Insight(
-                insight_id=str(uuid.uuid4())[:8],
+                insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                 insight_type=InsightType.HIGH_EMISSIONS_CATEGORY,
                 priority=InsightPriority.HIGH,
                 title=f"Highest Emissions: {top_segment.segment_name}",
@@ -336,7 +338,7 @@ class RecommendationEngine:
             total_savings = sum(abs(i.cost_per_tco2e * i.reduction_tco2e) for i in negative_cost_initiatives)
 
             insight = Insight(
-                insight_id=str(uuid.uuid4())[:8],
+                insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                 insight_type=InsightType.QUICK_WIN,
                 priority=InsightPriority.CRITICAL,
                 title=f"Quick Wins: {abatement_curve.n_negative_cost} Cost-Saving Opportunities",
@@ -366,7 +368,7 @@ class RecommendationEngine:
             total_reduction = sum(i.reduction_tco2e for i in low_cost_initiatives)
 
             insight = Insight(
-                insight_id=str(uuid.uuid4())[:8],
+                insight_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                 insight_type=InsightType.COST_EFFECTIVE_REDUCTION,
                 priority=InsightPriority.HIGH,
                 title=f"Cost-Effective Opportunities: {len(low_cost_initiatives)} Initiatives",

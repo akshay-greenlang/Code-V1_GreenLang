@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Semantic Cache for LLM Responses
 
@@ -39,6 +40,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from greenlang.determinism import DeterministicClock
 
 try:
     import faiss
@@ -115,7 +117,7 @@ class CacheEntry:
 
     def is_expired(self) -> bool:
         """Check if entry has expired based on TTL"""
-        age = datetime.now() - self.timestamp
+        age = DeterministicClock.now() - self.timestamp
         return age.total_seconds() > self.ttl_seconds
 
 
@@ -652,7 +654,7 @@ class SemanticCache:
             prompt=prompt,
             response=response,
             metadata=metadata,
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             agent_id=agent_id,
             ttl_seconds=ttl_seconds,
         )
@@ -726,7 +728,7 @@ class SemanticCache:
 
             # Cache hit!
             entry.hit_count += 1
-            entry.last_accessed = datetime.now()
+            entry.last_accessed = DeterministicClock.now()
             self.cache_storage.set(key, entry)
 
             # Update metrics

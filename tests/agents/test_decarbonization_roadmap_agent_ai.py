@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive tests for DecarbonizationRoadmapAgent_AI.
 
 Test Coverage Target: 80%+
@@ -20,6 +21,7 @@ import asyncio
 from typing import Dict, Any
 
 from greenlang.agents.decarbonization_roadmap_agent_ai import (
+from greenlang.determinism import FinancialDecimal
     DecarbonizationRoadmapAgentAI,
     DecarbonizationRoadmapInput,
     DecarbonizationRoadmapOutput,
@@ -757,7 +759,7 @@ def test_boundary_very_large_emissions(agent):
 
     # Should handle large numbers correctly
     assert result["total_emissions_kg_co2e"] > 0
-    assert result["total_emissions_kg_co2e"] < float('inf')
+    assert result["total_emissions_kg_co2e"] < FinancialDecimal.from_string('inf')
 
 
 def test_boundary_empty_technologies(agent):

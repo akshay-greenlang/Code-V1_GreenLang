@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Fetch OPA (Open Policy Agent) binary for the current platform."""
 
 import os

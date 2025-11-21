@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Simple GreenLang Test
 # This script calculates carbon footprint for electricity usage
 

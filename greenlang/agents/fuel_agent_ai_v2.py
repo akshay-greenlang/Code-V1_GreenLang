@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/agents/fuel_agent_ai_v2.py
 
@@ -50,6 +51,7 @@ from datetime import datetime
 import asyncio
 import logging
 import warnings
+from greenlang.determinism import DeterministicClock
 
 # DEPRECATION WARNING: This agent is deprecated for CRITICAL PATH emissions calculations
 warnings.warn(
@@ -229,7 +231,7 @@ class FuelAgentAI_v2(Agent[FuelInput, FuelOutput]):
         Returns:
             AgentResult with emissions data (v1 or v2 format based on response_format)
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Validate input
         if not self.validate(payload):
@@ -271,7 +273,7 @@ class FuelAgentAI_v2(Agent[FuelInput, FuelOutput]):
                     loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result["success"]:

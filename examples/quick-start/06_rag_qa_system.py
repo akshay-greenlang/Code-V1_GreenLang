@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 6: RAG Q&A System
 ==========================

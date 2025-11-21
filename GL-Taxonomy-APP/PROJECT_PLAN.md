@@ -160,7 +160,7 @@ graph LR
 ### 3.2 Technology Stack
 
 **Backend:**
-- Python 3.11+ (FastAPI framework)
+- Python 3.10+ (FastAPI framework)
 - PostgreSQL 15 (taxonomy database)
 - Redis (caching layer)
 - Celery (async processing)

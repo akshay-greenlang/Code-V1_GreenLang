@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Reporting System for GreenLang Partners
 
@@ -29,6 +30,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
 import pandas as pd
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -270,7 +272,7 @@ class ReportGenerator:
         partner_info = Paragraph(
             f"<b>Partner:</b> {report_data.partner_name}<br/>"
             f"<b>Period:</b> {report_data.period_start.strftime('%Y-%m-%d')} to {report_data.period_end.strftime('%Y-%m-%d')}<br/>"
-            f"<b>Generated:</b> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC",
+            f"<b>Generated:</b> {DeterministicClock.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC",
             styles['Normal']
         )
         story.append(partner_info)
@@ -522,7 +524,7 @@ class ReportScheduler:
             PartnerModel.status == "ACTIVE"
         ).all()
 
-        yesterday = datetime.utcnow().date() - timedelta(days=1)
+        yesterday = DeterministicClock.utcnow().date() - timedelta(days=1)
         start_date = datetime.combine(yesterday, datetime.min.time())
         end_date = datetime.combine(yesterday, datetime.max.time())
 
@@ -561,7 +563,7 @@ class ReportScheduler:
         ).all()
 
         # Last month
-        today = datetime.utcnow().date()
+        today = DeterministicClock.utcnow().date()
         first_of_month = today.replace(day=1)
         last_month_end = first_of_month - timedelta(days=1)
         last_month_start = last_month_end.replace(day=1)
@@ -613,8 +615,8 @@ if __name__ == "__main__":
     # Generate report
     report_data = generator.generate_report(
         "partner_123",
-        datetime.utcnow() - timedelta(days=30),
-        datetime.utcnow(),
+        DeterministicClock.utcnow() - timedelta(days=30),
+        DeterministicClock.utcnow(),
         ReportType.MONTHLY
     )
 

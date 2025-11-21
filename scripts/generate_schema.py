@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang AgentSpec v2 - JSON Schema Generator
 

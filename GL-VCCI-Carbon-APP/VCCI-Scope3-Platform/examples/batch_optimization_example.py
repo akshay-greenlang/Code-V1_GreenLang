@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Batch Optimization Example - 100K Suppliers/Hour Throughput
 GL-VCCI Scope 3 Platform

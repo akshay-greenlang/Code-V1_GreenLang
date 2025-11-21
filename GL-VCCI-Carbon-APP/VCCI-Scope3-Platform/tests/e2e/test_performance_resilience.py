@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 E2E Tests: Performance & Resilience (Scenarios 44-50)
 
@@ -24,6 +25,8 @@ from uuid import uuid4
 import pytest
 
 from tests.e2e.conftest import (
+from greenlang.determinism import deterministic_random
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     E2ETestConfig,
     assert_throughput_target_met,
     assert_latency_target_met,
@@ -95,8 +98,8 @@ async def test_scenario_44_high_volume_ingestion_100k_per_hour(
         # Mock ingestion
         batch_result = {
             "records_processed": batch_size,
-            "records_failed": random.randint(0, 10),  # 0-1% failure rate
-            "processing_time_ms": random.randint(800, 1200)
+            "records_failed": deterministic_random().randint(0, 10),  # 0-1% failure rate
+            "processing_time_ms": deterministic_random().randint(800, 1200)
         }
 
         api_latency = (time.time() - api_start) * 1000
@@ -226,7 +229,7 @@ async def test_scenario_45_api_load_1000_concurrent_users(
     for user_id in range(concurrent_users):
         for op_num in range(operations_per_user):
             # Determine operation type
-            rand = random.random()
+            rand = deterministic_random().random()
             if rand < 0.50:
                 op_type = "read"
             elif rand < 0.80:
@@ -249,7 +252,7 @@ async def test_scenario_45_api_load_1000_concurrent_users(
             await asyncio.sleep(latency / 10000)  # Scale down for testing
 
             # Record results
-            success = random.random() > 0.005  # 0.5% error rate
+            success = deterministic_random().random() > 0.005  # 0.5% error rate
 
             if success:
                 results["successful_requests"] += 1
@@ -328,7 +331,7 @@ async def test_scenario_46_network_failure_retry_recovery(
     """
 
     # ----- Step 1: Start Extraction -----
-    extraction_id = str(uuid4())
+    extraction_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
     print(f"\n=== Starting extraction {extraction_id} ===")
 
@@ -422,7 +425,7 @@ async def test_scenario_47_database_failover_ha(
     7. Verify downtime < 10 seconds
     """
 
-    transaction_id = str(uuid4())
+    transaction_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
     print(f"\n=== Starting transaction {transaction_id} ===")
 
@@ -700,7 +703,7 @@ async def test_scenario_50_e2e_system_stress_test(
     # ----- Step 2: Concurrent Entity Resolution -----
     print("\n[2/4] Entity Resolution...")
     for i in range(1000):
-        success = random.random() > 0.01  # 1% failure rate
+        success = deterministic_random().random() > 0.01  # 1% failure rate
         if success:
             stress_results["entity_resolution"]["completed"] += 1
         else:
@@ -712,7 +715,7 @@ async def test_scenario_50_e2e_system_stress_test(
     # ----- Step 3: Concurrent Calculations -----
     print("\n[3/4] Calculations...")
     for i in range(5000):
-        success = random.random() > 0.005  # 0.5% failure rate
+        success = deterministic_random().random() > 0.005  # 0.5% failure rate
         if success:
             stress_results["calculations"]["completed"] += 1
         else:
@@ -724,7 +727,7 @@ async def test_scenario_50_e2e_system_stress_test(
     # ----- Step 4: Concurrent Reports -----
     print("\n[4/4] Report Generation...")
     for i in range(100):
-        success = random.random() > 0.02  # 2% failure rate
+        success = deterministic_random().random() > 0.02  # 2% failure rate
         if success:
             stress_results["reports"]["completed"] += 1
         else:

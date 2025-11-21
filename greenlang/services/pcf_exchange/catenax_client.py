@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Catena-X PCF Exchange Client
 Automotive Industry Data Exchange Network
@@ -14,6 +15,8 @@ import httpx
 import uuid
 
 from greenlang.services.pcf_exchange.models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     PCFDataModel,
     PCFExchangeResponse,
 )
@@ -83,8 +86,8 @@ class CatenaXClient:
             return PCFExchangeResponse(
                 success=True,
                 pcf_data=pcf_data,
-                exchange_id=str(uuid.uuid4()),
-                timestamp=datetime.utcnow()
+                exchange_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+                timestamp=DeterministicClock.utcnow()
             )
 
         except httpx.HTTPStatusError as e:
@@ -92,7 +95,7 @@ class CatenaXClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[f"HTTP {e.response.status_code}: {e.response.text}"],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
         except Exception as e:
@@ -100,7 +103,7 @@ class CatenaXClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     async def publish_pcf(self, pcf_data: PCFDataModel) -> PCFExchangeResponse:
@@ -126,8 +129,8 @@ class CatenaXClient:
             return PCFExchangeResponse(
                 success=True,
                 pcf_data=pcf_data,
-                exchange_id=str(uuid.uuid4()),
-                timestamp=datetime.utcnow()
+                exchange_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+                timestamp=DeterministicClock.utcnow()
             )
 
         except httpx.HTTPStatusError as e:
@@ -135,7 +138,7 @@ class CatenaXClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[f"HTTP {e.response.status_code}: {e.response.text}"],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
         except Exception as e:
@@ -143,7 +146,7 @@ class CatenaXClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     def _convert_to_catenax_format(self, pcf_data: PCFDataModel) -> Dict[str, Any]:

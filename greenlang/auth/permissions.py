@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Fine-Grained Permission Model for GreenLang
 
@@ -39,6 +40,8 @@ import json
 import uuid
 
 from pydantic import BaseModel, Field, validator
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -209,7 +212,7 @@ class Permission(BaseModel):
     """
 
     permission_id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
+        default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         description="Unique permission identifier"
     )
     resource: str = Field(
@@ -520,11 +523,11 @@ class PermissionEvaluator:
         """Generate cache key for evaluation."""
         # Hash permissions
         perm_ids = sorted([p.permission_id for p in permissions])
-        perm_hash = hashlib.md5(json.dumps(perm_ids).encode()).hexdigest()[:8]
+        perm_hash = hashlib.sha256(json.dumps(perm_ids).encode()).hexdigest()[:16]
 
         # Hash context
         context_str = json.dumps(context, sort_keys=True)
-        context_hash = hashlib.md5(context_str.encode()).hexdigest()[:8]
+        context_hash = hashlib.sha256(context_str.encode()).hexdigest()[:16]
 
         return f"{perm_hash}:{resource}:{action}:{context_hash}"
 
@@ -532,7 +535,7 @@ class PermissionEvaluator:
         """Get result from cache if not expired."""
         if key in self._evaluation_cache:
             result, cached_at = self._evaluation_cache[key]
-            age = (datetime.utcnow() - cached_at).total_seconds()
+            age = (DeterministicClock.utcnow() - cached_at).total_seconds()
 
             if age < self.cache_ttl_seconds:
                 return result
@@ -544,7 +547,7 @@ class PermissionEvaluator:
 
     def _put_in_cache(self, key: str, result: EvaluationResult):
         """Put result in cache."""
-        self._evaluation_cache[key] = (result, datetime.utcnow())
+        self._evaluation_cache[key] = (result, DeterministicClock.utcnow())
 
 
 # ==============================================================================
@@ -561,12 +564,13 @@ class PermissionStore:
     - Permission indexing for fast lookup
     """
 
-    def __init__(self, storage_backend: str = "memory"):
+    def __init__(self, storage_backend: str = "memory", db_config: Optional[Dict[str, Any]] = None):
         """
         Initialize permission store.
 
         Args:
             storage_backend: Storage backend ("memory" or "postgresql")
+            db_config: Database configuration for PostgreSQL backend
         """
         self.storage_backend = storage_backend
         self._memory_store: Dict[str, Permission] = {}
@@ -576,6 +580,14 @@ class PermissionStore:
             'by_scope': {},
             'by_effect': {}
         }
+
+        # Initialize PostgreSQL backend if selected
+        if storage_backend == "postgresql":
+            if not db_config:
+                raise ValueError("Database configuration required for PostgreSQL backend")
+            from greenlang.auth.backends.postgresql import PostgreSQLBackend, DatabaseConfig
+            self._pg_backend = PostgreSQLBackend(DatabaseConfig(**db_config))
+            logger.info("Initialized PostgreSQL backend for PermissionStore")
 
         logger.info(f"Initialized PermissionStore with backend: {storage_backend}")
 
@@ -592,9 +604,14 @@ class PermissionStore:
         if self.storage_backend == "memory":
             self._memory_store[permission.permission_id] = permission
             self._update_indices(permission)
+        elif self.storage_backend == "postgresql":
+            # Use PostgreSQL backend
+            from greenlang.auth.backends.postgresql import PostgreSQLBackend
+            if not hasattr(self, '_pg_backend'):
+                raise RuntimeError("PostgreSQL backend not initialized")
+            return self._pg_backend.create_permission(permission)
         else:
-            # PostgreSQL implementation would go here
-            raise NotImplementedError("PostgreSQL backend not yet implemented")
+            raise ValueError(f"Unknown storage backend: {self.storage_backend}")
 
         logger.info(f"Created permission: {permission.to_string()}")
         return permission
@@ -603,8 +620,14 @@ class PermissionStore:
         """Get permission by ID."""
         if self.storage_backend == "memory":
             return self._memory_store.get(permission_id)
+        elif self.storage_backend == "postgresql":
+            # Use PostgreSQL backend
+            from greenlang.auth.backends.postgresql import PostgreSQLBackend
+            if not hasattr(self, '_pg_backend'):
+                raise RuntimeError("PostgreSQL backend not initialized")
+            return self._pg_backend.get_permission(permission_id)
         else:
-            raise NotImplementedError("PostgreSQL backend not yet implemented")
+            raise ValueError(f"Unknown storage backend: {self.storage_backend}")
 
     def update(self, permission: Permission) -> Permission:
         """Update existing permission."""
@@ -619,8 +642,14 @@ class PermissionStore:
             # Update and re-index
             self._memory_store[permission.permission_id] = permission
             self._update_indices(permission)
+        elif self.storage_backend == "postgresql":
+            # Use PostgreSQL backend
+            from greenlang.auth.backends.postgresql import PostgreSQLBackend
+            if not hasattr(self, '_pg_backend'):
+                raise RuntimeError("PostgreSQL backend not initialized")
+            return self._pg_backend.update_permission(permission)
         else:
-            raise NotImplementedError("PostgreSQL backend not yet implemented")
+            raise ValueError(f"Unknown storage backend: {self.storage_backend}")
 
         logger.info(f"Updated permission: {permission.to_string()}")
         return permission
@@ -635,8 +664,14 @@ class PermissionStore:
                 logger.info(f"Deleted permission: {permission_id}")
                 return True
             return False
+        elif self.storage_backend == "postgresql":
+            # Use PostgreSQL backend
+            from greenlang.auth.backends.postgresql import PostgreSQLBackend
+            if not hasattr(self, '_pg_backend'):
+                raise RuntimeError("PostgreSQL backend not initialized")
+            return self._pg_backend.delete_permission(permission_id)
         else:
-            raise NotImplementedError("PostgreSQL backend not yet implemented")
+            raise ValueError(f"Unknown storage backend: {self.storage_backend}")
 
     def list(
         self,
@@ -671,8 +706,19 @@ class PermissionStore:
                 permissions = [p for p in permissions if p.effect == effect]
 
             return permissions
+        elif self.storage_backend == "postgresql":
+            # Use PostgreSQL backend
+            from greenlang.auth.backends.postgresql import PostgreSQLBackend
+            if not hasattr(self, '_pg_backend'):
+                raise RuntimeError("PostgreSQL backend not initialized")
+            return self._pg_backend.list_permissions(
+                resource_pattern=resource_pattern,
+                action_pattern=action_pattern,
+                scope=scope,
+                effect=effect
+            )
         else:
-            raise NotImplementedError("PostgreSQL backend not yet implemented")
+            raise ValueError(f"Unknown storage backend: {self.storage_backend}")
 
     def _update_indices(self, permission: Permission):
         """Update search indices for permission."""

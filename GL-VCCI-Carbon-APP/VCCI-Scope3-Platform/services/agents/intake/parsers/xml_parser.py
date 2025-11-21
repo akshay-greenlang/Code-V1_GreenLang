@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 XML Parser with XPath Support
 

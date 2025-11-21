@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scenario Runner - Execute scenarios with deterministic RNG
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Custom exceptions for Entity Resolution ML system.
 

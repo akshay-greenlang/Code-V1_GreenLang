@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Property-Based Tests for Agent Invariants.
 
 This module uses Hypothesis for property-based testing to verify that agents

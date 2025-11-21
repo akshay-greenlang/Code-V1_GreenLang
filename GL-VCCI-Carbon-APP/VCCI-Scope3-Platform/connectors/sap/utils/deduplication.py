@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # SAP Deduplication Cache
 # Idempotency and duplicate detection for SAP transactions
 

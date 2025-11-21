@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Resilient HTTP Client with Circuit Breaker
 

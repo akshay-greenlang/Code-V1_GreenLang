@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ReportingPackagerAgent_v2 - Refactored with GreenLang SDK Infrastructure
 
@@ -27,6 +28,7 @@ from pydantic import BaseModel
 # GreenLang SDK Infrastructure
 from greenlang.sdk.base import Agent, Metadata, Result
 from greenlang.agents.templates import ReportingAgent, ReportFormat
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -376,7 +378,7 @@ class ReportingPackagerAgent_v2(Agent[PackagerInput, PackagerOutput]):
 
         return {
             "is_valid": len(errors) == 0,
-            "validation_timestamp": datetime.now().isoformat(),
+            "validation_timestamp": DeterministicClock.now().isoformat(),
             "rules_checked": validation_results,
             "errors": errors,
             "warnings": []
@@ -402,7 +404,7 @@ class ReportingPackagerAgent_v2(Agent[PackagerInput, PackagerOutput]):
 
     def process(self, input_data: PackagerInput) -> PackagerOutput:
         """Process shipments to generate report (Framework interface)."""
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         shipments = input_data.shipments_with_emissions
         importer_info = input_data.importer_info
@@ -453,7 +455,7 @@ class ReportingPackagerAgent_v2(Agent[PackagerInput, PackagerOutput]):
             "validation_results": validation_results
         }
 
-        end_time = datetime.now()
+        end_time = DeterministicClock.now()
         processing_time = (end_time - start_time).total_seconds()
 
         metadata = {

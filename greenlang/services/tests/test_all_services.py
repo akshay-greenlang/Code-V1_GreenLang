@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Shared Services - Comprehensive Test Suite
 ====================================================

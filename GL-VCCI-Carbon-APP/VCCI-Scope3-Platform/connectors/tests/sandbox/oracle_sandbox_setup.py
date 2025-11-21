@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Sandbox Environment Setup
 GL-VCCI Scope 3 Platform
@@ -16,6 +17,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 import responses
 from responses import matchers
+from greenlang.determinism import DeterministicClock
 
 
 class OracleSandboxSetup:
@@ -77,7 +79,7 @@ class OracleSandboxSetup:
             List of purchase order dictionaries
         """
         purchase_orders = []
-        base_date = datetime.now() - timedelta(days=30)
+        base_date = DeterministicClock.now() - timedelta(days=30)
 
         for i in range(count):
             po_date = base_date + timedelta(days=i % 30)
@@ -121,7 +123,7 @@ class OracleSandboxSetup:
             List of requisition dictionaries
         """
         requisitions = []
-        base_date = datetime.now() - timedelta(days=25)
+        base_date = DeterministicClock.now() - timedelta(days=25)
 
         for i in range(count):
             req_date = base_date + timedelta(days=i % 25)
@@ -160,7 +162,7 @@ class OracleSandboxSetup:
             List of shipment dictionaries
         """
         shipments = []
-        base_date = datetime.now() - timedelta(days=15)
+        base_date = DeterministicClock.now() - timedelta(days=15)
 
         for i in range(count):
             ship_date = base_date + timedelta(days=i % 15)
@@ -261,7 +263,41 @@ class OracleSandboxSetup:
         Note: In production, this would clean up test records created during testing.
         """
         print("Cleaning up Oracle sandbox test data...")
-        # TODO: Implement actual cleanup logic
+
+        # NOTE: Cleanup logic implementation pending
+        # When implementing:
+        # 1. Connect to Oracle sandbox using credentials
+        # 2. Identify test records by marker fields (e.g., test_run_id, created_by='test_user')
+        # 3. Delete or soft-delete test records
+        # 4. Verify cleanup completion
+        # 5. Log cleanup statistics
+        # Example:
+        #   import oracledb
+        #   connection = oracledb.connect(
+        #       user=self.username,
+        #       password=self.password,
+        #       dsn=self.base_url
+        #   )
+        #   cursor = connection.cursor()
+        #   # Delete test purchase orders
+        #   cursor.execute("""
+        #       DELETE FROM purchase_orders
+        #       WHERE created_by = 'test_user'
+        #       AND created_date > SYSDATE - 1
+        #   """)
+        #   deleted_pos = cursor.rowcount
+        #   # Delete test suppliers
+        #   cursor.execute("""
+        #       DELETE FROM suppliers
+        #       WHERE supplier_name LIKE 'TEST_%'
+        #   """)
+        #   deleted_suppliers = cursor.rowcount
+        #   connection.commit()
+        #   cursor.close()
+        #   connection.close()
+        #   print(f"Deleted {deleted_pos} test purchase orders, {deleted_suppliers} test suppliers")
+
+        # Placeholder - replace with actual cleanup logic
         print("Oracle sandbox cleanup complete")
 
     def get_sandbox_status(self) -> Dict[str, Any]:
@@ -275,7 +311,7 @@ class OracleSandboxSetup:
             "available": self.is_sandbox_available(),
             "base_url": self.base_url,
             "environment_variables": self.verify_environment_variables(),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": DeterministicClock.now().isoformat()
         }
 
     def print_setup_instructions(self):

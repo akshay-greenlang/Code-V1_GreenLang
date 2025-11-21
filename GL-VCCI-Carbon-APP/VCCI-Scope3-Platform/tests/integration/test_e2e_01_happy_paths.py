@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - E2E Happy Path Tests
@@ -28,6 +29,7 @@ import asyncio
 from datetime import datetime
 from typing import Dict, List, Any
 from uuid import uuid4
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 @pytest.mark.e2e
@@ -422,8 +424,8 @@ class TestHappyPathWorkflows:
         Verify tenant data isolation.
         """
         # Arrange - Create two tenants
-        tenant_1_id = str(uuid4())
-        tenant_2_id = str(uuid4())
+        tenant_1_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
+        tenant_2_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
         tenant_1_suppliers = sample_suppliers[:5]
         tenant_2_suppliers = sample_suppliers[5:]

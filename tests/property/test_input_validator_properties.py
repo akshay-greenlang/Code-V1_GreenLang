@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Property-based tests for InputValidatorAgent."""
 
 from hypothesis import given, strategies as st, assume

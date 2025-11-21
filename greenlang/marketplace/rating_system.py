@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Rating and Review System
 
@@ -16,6 +17,7 @@ from sqlalchemy import func, and_, or_
 from sqlalchemy.orm import Session
 
 from greenlang.marketplace.models import (
+from greenlang.determinism import DeterministicClock
     MarketplaceAgent,
     AgentReview,
     AgentInstall,
@@ -243,7 +245,7 @@ class RatingSystem:
         Returns:
             List of trending agents
         """
-        since = datetime.utcnow() - timedelta(days=days)
+        since = DeterministicClock.utcnow() - timedelta(days=days)
 
         # Subquery for recent review counts
         recent_reviews = self.session.query(
@@ -367,7 +369,7 @@ class ReviewModerator:
             warnings.append("You haven't installed this agent. Install it to verify your review.")
 
         # Check rate limiting (max 10 reviews per day)
-        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+        today_start = DeterministicClock.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         today_reviews = self.session.query(func.count(AgentReview.id)).filter(
             and_(
                 AgentReview.user_id == user_id,
@@ -521,7 +523,7 @@ class ReviewModerator:
             "user_id": str(user_id),
             "reason": reason.value,
             "details": details,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": DeterministicClock.utcnow().isoformat()
         })
 
         # Auto-hide if too many flags
@@ -642,7 +644,7 @@ class ReviewModerator:
             return False
 
         review.author_response = response
-        review.author_response_at = datetime.utcnow()
+        review.author_response_at = DeterministicClock.utcnow()
 
         self.session.commit()
         logger.info(f"Author response added to review {review_id}")
@@ -674,7 +676,7 @@ class ReviewAnalytics:
         Returns:
             Dictionary with trend data
         """
-        since = datetime.utcnow() - timedelta(days=days)
+        since = DeterministicClock.utcnow() - timedelta(days=days)
 
         reviews = self.session.query(AgentReview).filter(
             and_(

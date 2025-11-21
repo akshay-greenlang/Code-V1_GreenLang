@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for SDK Context abstraction.
 
@@ -14,6 +15,7 @@ import json
 from pathlib import Path
 from greenlang.sdk.context import Context, Artifact
 from greenlang.sdk.base import Result
+from greenlang.determinism import DeterministicClock
 
 
 @pytest.mark.unit
@@ -455,4 +457,4 @@ class TestContextEdgeCases:
         ctx = Context()
 
         assert isinstance(ctx.start_time, datetime)
-        assert ctx.start_time <= datetime.utcnow()
+        assert ctx.start_time <= DeterministicClock.utcnow()

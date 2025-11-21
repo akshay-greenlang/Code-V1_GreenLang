@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Simplified Security Verification Test
 ======================================
@@ -19,9 +20,10 @@ def test_sbom_verification():
     print("\n" + "="*60)
     print("TEST 1: SBOM Verification")
     print("="*60)
-    
-    cmd = "python -m core.greenlang.cli verify packs/boiler-solar/sbom.spdx.json"
-    result = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
+
+    # SECURITY FIX: Use shell=False to prevent command injection
+    cmd = ["python", "-m", "core.greenlang.cli", "verify", "packs/boiler-solar/sbom.spdx.json"]
+    result = subprocess.run(cmd, shell=False, capture_output=True, text=True, encoding='utf-8', errors='replace')
     
     if result.returncode == 0 and "Valid SPDX SBOM" in result.stdout:
         print("[PASS] SBOM verification successful")
@@ -64,8 +66,9 @@ def test_pack_signing():
         print("[INFO] No signature file found - generating one")
         
         # Try to sign the pack
-        cmd = "python -m core.greenlang.cli pack sign packs/boiler-solar"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        # SECURITY FIX: Use shell=False to prevent command injection
+        cmd = ["python", "-m", "core.greenlang.cli", "pack", "sign", "packs/boiler-solar"]
+        result = subprocess.run(cmd, shell=False, capture_output=True, text=True)
         
         if sig_file.exists():
             print("[PASS] Pack signature generated")
@@ -100,9 +103,10 @@ def test_run_with_audit():
         
         # Run with audit flag
         artifacts = Path(tmpdir) / "out"
-        cmd = f'python -m core.greenlang.cli run "{pipeline_file}" --artifacts "{artifacts}" --audit'
-        
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, encoding='utf-8', errors='replace')
+        # SECURITY FIX: Use shell=False to prevent command injection
+        cmd = ["python", "-m", "core.greenlang.cli", "run", str(pipeline_file), "--artifacts", str(artifacts), "--audit"]
+
+        result = subprocess.run(cmd, shell=False, capture_output=True, text=True, encoding='utf-8', errors='replace')
         
         # Check for success indicators
         if "Artifacts ->" in result.stdout or "Recorded in audit ledger" in result.stdout:

@@ -20,7 +20,7 @@ cd vcci-python
 pip install -e .
 ```
 
-**Requirements:** Python 3.8+
+**Requirements:** Python 3.10+
 
 ---
 

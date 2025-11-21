@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration tests for gl init agent command (FRMW-202)
 

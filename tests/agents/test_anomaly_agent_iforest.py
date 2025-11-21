@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive test suite for Isolation Forest Anomaly Detection Agent.
 
 Tests cover:
@@ -27,6 +28,7 @@ from unittest.mock import Mock, patch, AsyncMock
 import asyncio
 
 from greenlang.agents.anomaly_agent_iforest import (
+from greenlang.determinism import deterministic_random
     IsolationForestAnomalyAgent,
     AnomalyScore,
     AnomalyAlert,
@@ -51,8 +53,8 @@ def normal_data():
     # Add a few anomalies (outliers)
     anomaly_indices = [50, 75, 120, 150, 180]
     for idx in anomaly_indices:
-        energy[idx] = np.random.choice([200, 20])  # Extreme values
-        temperature[idx] = np.random.choice([40, 0])
+        energy[idx] = np.deterministic_random().choice([200, 20])  # Extreme values
+        temperature[idx] = np.deterministic_random().choice([40, 0])
 
     df = pd.DataFrame({
         'energy_kwh': energy,

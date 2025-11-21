@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang GraphQL API Module
 Phase 4 - Comprehensive GraphQL API Layer

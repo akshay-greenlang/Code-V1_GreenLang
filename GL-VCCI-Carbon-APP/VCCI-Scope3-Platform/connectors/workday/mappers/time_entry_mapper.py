@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Time Entry Mapper
 
@@ -30,6 +31,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -185,7 +187,7 @@ class TimeEntryMapper:
         try:
             return int(date_str[:4])
         except (ValueError, TypeError):
-            return datetime.now().year
+            return DeterministicClock.now().year
 
     def map_time_entry(
         self,

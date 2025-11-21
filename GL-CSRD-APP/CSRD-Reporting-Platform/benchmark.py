@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance Benchmarking Framework for CSRD Reporting Platform
 ===============================================================
@@ -16,6 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Callable
 import statistics
+from greenlang.determinism import DeterministicClock
 
 
 class PerformanceBenchmark:
@@ -27,7 +29,7 @@ class PerformanceBenchmark:
         self.reports_dir.mkdir(exist_ok=True)
 
         self.results = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "project": "CSRD-Reporting-Platform",
             "benchmarks": {},
             "summary": {},

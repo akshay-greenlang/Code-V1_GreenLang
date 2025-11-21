@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Circuit Breaker Integration Examples for GL-VCCI Scope 3 Platform
 
@@ -13,6 +14,7 @@ from datetime import datetime
 
 # Circuit breaker imports
 from services.circuit_breakers import (
+from greenlang.determinism import DeterministicClock
     get_factor_broker_cb,
     get_llm_provider_cb,
     get_erp_connector_cb,
@@ -87,7 +89,7 @@ class CalculatorAgentWithCircuitBreaker:
                 "emissions_kg_co2e": emissions,
                 "factor_source": factor_data["source"],
                 "factor_quality": factor_data.get("quality", "high"),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
             }
 
         except CircuitOpenError as e:
@@ -109,7 +111,7 @@ class CalculatorAgentWithCircuitBreaker:
                 "factor_source": "conservative_default",
                 "factor_quality": "fallback",
                 "warning": "External factor services unavailable - using conservative estimate",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
             }
 
 
@@ -457,7 +459,7 @@ def get_circuit_breaker_health() -> Dict[str, Any]:
             "erp_connector": erp_cb.get_stats(),
             "email_service": email_cb.get_stats(),
         },
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": DeterministicClock.utcnow().isoformat(),
     }
 
     # Determine overall status

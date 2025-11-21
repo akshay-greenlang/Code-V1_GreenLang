@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Agent Factory - Code Generation Templates
 
@@ -17,6 +18,7 @@ Date: October 2025
 
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -253,7 +255,7 @@ class {template.agent_class}(BaseAgent):
         Returns:
             AgentResult with data and metadata
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Validate input
         if not self.validate_input(input_data):
@@ -272,7 +274,7 @@ class {template.agent_class}(BaseAgent):
                 loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result.success:

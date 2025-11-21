@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Prompt Injection Defense and Input Sanitization
 

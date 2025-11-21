@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang L1 Memory Cache Implementation
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Agent Factory Python SDK
 
@@ -24,6 +25,7 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 from pydantic import BaseModel, Field, validator
 import yaml
 import jinja2
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -372,7 +374,7 @@ class AgentFactory:
                 template=template,
                 framework=framework,
                 language=language,
-                created_at=datetime.now()
+                created_at=DeterministicClock.now()
             )
 
         # Apply template defaults
@@ -411,7 +413,7 @@ class AgentFactory:
         # Initialize result
         result = ValidationResult(
             agent_name=agent.name,
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             passed=True,
             score=100.0
         )
@@ -461,7 +463,7 @@ class AgentFactory:
 
         result = ValidationResult(
             agent_name=spec.name,
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             passed=True,
             score=100.0
         )
@@ -605,7 +607,7 @@ class AgentFactory:
         result = TestResult(
             agent_name=agent.name,
             test_type=test_type,
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             passed=True,
             tests_run=len(test_files),
             tests_passed=len(test_files)

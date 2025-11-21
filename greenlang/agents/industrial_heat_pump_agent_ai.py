@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Industrial Heat Pump Agent with ChatSession Integration.
 
 This module provides an AI-enhanced agent for industrial heat pump analysis,
@@ -54,14 +55,9 @@ import math
 from typing_extensions import TypedDict, NotRequired
 
 from ..types import Agent, AgentResult, ErrorInfo
-from greenlang.intelligence import (
-    ChatSession,
-    ChatMessage,
-    Role,
-    Budget,
-    BudgetExceeded,
-    create_provider,
-)
+# Fixed: Removed incomplete import
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 from .citations import (
     EmissionFactorCitation,
@@ -314,7 +310,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["heat_pump_type", "source_temperature_f", "sink_temperature_f", "compressor_type", "refrigerant"],
             },
-        )
 
         # Tool 2: Select heat pump technology
         self.select_heat_pump_technology_tool = ToolDef(
@@ -363,7 +358,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["required_temperature_f", "annual_heating_load_mmbtu", "load_profile_type", "climate_zone", "available_heat_sources", "space_constraints"],
             },
-        )
 
         # Tool 3: Calculate annual operating costs
         self.calculate_annual_operating_costs_tool = ToolDef(
@@ -417,7 +411,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["heat_pump_capacity_tons", "average_cop", "annual_heat_delivered_mmbtu", "electricity_rate_structure", "energy_charge_usd_per_kwh"],
             },
-        )
 
         # Tool 4: Calculate capacity degradation
         self.calculate_capacity_degradation_tool = ToolDef(
@@ -457,7 +450,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["rated_capacity_tons", "rated_cop", "rated_source_temp_f", "rated_sink_temp_f", "actual_source_temp_f", "actual_sink_temp_f", "heat_pump_type"],
             },
-        )
 
         # Tool 5: Design cascade heat pump system
         self.design_cascade_heat_pump_system_tool = ToolDef(
@@ -490,7 +482,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["source_temperature_f", "final_sink_temperature_f", "total_heating_capacity_mmbtu_hr"],
             },
-        )
 
         # Tool 6: Calculate thermal storage sizing
         self.calculate_thermal_storage_sizing_tool = ToolDef(
@@ -536,7 +527,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["peak_heating_load_mmbtu_hr", "average_heating_load_mmbtu_hr", "storage_strategy", "storage_medium", "storage_temperature_range_f"],
             },
-        )
 
         # Tool 7: Calculate emissions reduction
         self.calculate_emissions_reduction_tool = ToolDef(
@@ -582,7 +572,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["annual_heat_delivered_mmbtu", "heat_pump_cop", "baseline_fuel_type", "baseline_efficiency", "grid_region", "grid_emissions_factor_kg_co2e_per_kwh"],
             },
-        )
 
         # Tool 8: Generate performance curve
         self.generate_performance_curve_tool = ToolDef(
@@ -625,7 +614,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["heat_pump_type", "rated_capacity_tons", "rated_cop", "rated_conditions", "temperature_range"],
             },
-        )
 
     # ==========================================================================
     # Tool Implementations (8 methods)
@@ -717,9 +705,8 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 "carnot_efficiency": carnot_efficiency,
             },
             output={"cop_heating": cop_heating, "carnot_cop": carnot_cop},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id=f"hp_cop_{self._tool_call_count}",
-        )
         self._calculation_citations.append(calc_citation)
 
         return {
@@ -881,7 +868,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
             blended_rate = (
                 energy_charge_usd_per_kwh * peak_multiplier * peak_fraction +
                 energy_charge_usd_per_kwh * off_peak_fraction
-            )
         else:
             blended_rate = energy_charge_usd_per_kwh
 
@@ -1285,7 +1271,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                     actual_source_temp_f=source_temp,
                     actual_sink_temp_f=sink_temp,
                     heat_pump_type=heat_pump_type,
-                )
 
                 capacity_tons = degrad["actual_capacity_tons"]
                 cop = degrad["actual_cop"]
@@ -1417,7 +1402,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
         Returns:
             AgentResult with heat pump analysis and recommendations
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Validate input
         if not self.validate(payload):
@@ -1443,7 +1428,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result["success"]:
@@ -1538,7 +1523,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
-            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -1551,7 +1535,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 payload,
                 tool_results,
                 response.text if self.enable_explanations else None,
-            )
 
             return {
                 "success": True,
@@ -1740,7 +1723,6 @@ IMPORTANT:
         baseline_fuel_cost_per_mmbtu = payload.get("baseline_fuel_cost_usd_per_mmbtu", 8.0)
         baseline_operating_cost_usd = (
             payload["annual_heating_load_mmbtu"] / payload["baseline_efficiency"] * baseline_fuel_cost_per_mmbtu
-        )
 
         # Annual cost savings
         annual_cost_savings_usd = baseline_operating_cost_usd - annual_operating_cost_usd
@@ -1756,7 +1738,6 @@ IMPORTANT:
         # Simple payback
         simple_payback_years = (
             estimated_capex_usd / annual_cost_savings_usd if annual_cost_savings_usd > 0 else 999
-        )
 
         # NPV 20-year (simplified: assume 8% discount rate)
         discount_rate = 0.08
@@ -1863,7 +1844,6 @@ IMPORTANT:
                 compressor_type="screw",
                 refrigerant="R134a",
                 part_load_ratio=0.80,
-            )
 
             # Verify provider is available
             provider_status = "available" if self.provider else "unavailable"
@@ -1888,7 +1868,7 @@ IMPORTANT:
                 "version": self.version,
                 "agent_id": self.agent_id,
                 "provider": provider_status,
-                "last_successful_call": datetime.now().isoformat(),
+                "last_successful_call": DeterministicClock.now().isoformat(),
                 "metrics": {
                     "avg_latency_ms": avg_latency_ms,
                     "error_rate_24h": error_rate_24h,
@@ -1907,5 +1887,5 @@ IMPORTANT:
                 "version": self.version,
                 "agent_id": self.agent_id,
                 "error": str(e),
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": DeterministicClock.now().isoformat(),
             }

@@ -1,0 +1,157 @@
+kind: Pack
+pack_schema_version: '1.0'
+license: MIT
+metadata:
+  name: gl-004-burner-optimization
+  agent_id: GL-004
+  agent_name: BurnerOptimizationAgent
+  version: 1.0.0
+  category: combustion
+  type: optimizer
+  priority: low
+  business_priority: P1
+  market_value: $5B
+  target_date: Q1 2026
+  description: Optimizes burner settings for complete combustion and reduced emissions
+apiVersion: greenlang.io/v1
+spec:
+  runtime:
+    language: python
+    version: '3.11'
+    framework: fastapi
+    entry_point: main:app
+  dependencies:
+    required:
+    - fastapi>=0.104.1
+    - uvicorn>=0.24.0
+    - pydantic>=2.5.0
+    - asyncpg>=0.29.0
+    - redis>=5.0.1
+    - pymodbus>=3.5.4
+    - opcua-asyncio>=1.0.5
+    - prometheus-client>=0.19.0
+    - numpy>=1.26.2
+    - scipy>=1.11.4
+    optional:
+    - opentelemetry-api>=1.21.0
+    - structlog>=23.2.0
+  resources:
+    cpu:
+      requests: 500m
+      limits: 1000m
+    memory:
+      requests: 512Mi
+      limits: 1Gi
+    storage: 10Gi
+  ports:
+  - name: http
+    port: 8000
+    protocol: TCP
+  - name: metrics
+    port: 8001
+    protocol: TCP
+  inputs:
+  - name: air_fuel_ratio
+    type: float
+    description: Current air-fuel ratio
+    required: true
+  - name: flame_temperature
+    type: float
+    description: Flame temperature in Celsius
+    required: true
+  - name: o2_level
+    type: float
+    description: O2 concentration in flue gas (%)
+    required: true
+  - name: fuel_flow_rate
+    type: float
+    description: Fuel flow rate (kg/hr or m3/hr)
+    required: true
+  - name: air_flow_rate
+    type: float
+    description: Air flow rate (m3/hr)
+    required: true
+  outputs:
+  - name: optimal_burner_settings
+    type: object
+    description: Optimized burner control parameters
+  - name: emissions_reduction_percent
+    type: float
+    description: Achieved emissions reduction percentage
+  - name: efficiency_improvement
+    type: float
+    description: Efficiency gain percentage
+  - name: fuel_savings
+    type: float
+    description: Fuel savings (kg/hr)
+  integrations:
+  - name: burner_controls
+    type: modbus_tcp
+    description: Burner controller interface
+    required: true
+  - name: emissions_monitoring
+    type: modbus_tcp
+    description: CEMS interface
+    required: true
+  - name: o2_analyzer
+    type: modbus_tcp
+    description: O2 analyzer interface
+    required: true
+  - name: scada
+    type: opcua
+    description: SCADA system integration
+    required: false
+  capabilities:
+  - stoichiometric_calculations
+  - combustion_efficiency_analysis
+  - emissions_prediction
+  - multi_objective_optimization
+  - safety_interlock_management
+  - real_time_adaptive_control
+  compliance:
+  - standard: ASME PTC 4.1
+    description: Combustion efficiency methodology
+  - standard: EPA 40 CFR Part 60
+    description: Emissions standards
+  - standard: EU IED
+    description: Industrial Emissions Directive
+  - standard: NFPA 85
+    description: Boiler safety
+  monitoring:
+    metrics_enabled: true
+    metrics_port: 8001
+    dashboards:
+    - agent_performance
+    - emissions_monitoring
+    - safety_interlocks
+    alerts:
+    - high_emissions
+    - low_efficiency
+    - safety_interlock_triggered
+  security:
+    authentication: jwt
+    authorization: rbac
+    encryption: tls_1_3
+    secrets_management: kubernetes
+  deployment:
+    replicas: 3
+    strategy: rolling_update
+    health_check:
+      path: /health
+      interval: 30s
+    readiness_check:
+      path: /readiness
+      interval: 10s
+  authors:
+  - name: GreenLang AI Agent Factory
+    email: agents@greenlang.io
+  license: Apache-2.0
+  repository: https://github.com/greenlang/agents/gl-004
+  documentation: https://docs.greenlang.io/agents/gl-004
+  tags:
+  - combustion
+  - optimization
+  - emissions
+  - burner
+  - efficiency
+  - industrial

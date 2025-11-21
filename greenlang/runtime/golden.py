@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Golden Tests for Deterministic Execution
 =========================================
@@ -11,6 +12,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List, Tuple, Optional
+from greenlang.determinism import DeterministicClock
 
 try:
     import numpy as np
@@ -58,7 +60,7 @@ def create_golden_test(
         "expected_outputs": expected_outputs,
         "tolerance": tolerance,
         "metadata": metadata or {},
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": DeterministicClock.utcnow().isoformat(),
     }
 
 

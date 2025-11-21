@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/agents/scenario_analysis.py
 

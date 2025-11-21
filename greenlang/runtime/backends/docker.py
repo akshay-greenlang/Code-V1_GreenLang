@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Docker Backend for GreenLang Pipeline Execution
 """
@@ -11,6 +12,7 @@ from typing import Dict, List, Any, Optional
 import tempfile
 
 from .base import (
+from greenlang.determinism import DeterministicClock
     Backend,
     ExecutionContext,
     Pipeline,
@@ -88,11 +90,11 @@ class DockerBackend(Backend):
                 run_id=context.run_id,
                 pipeline_name=pipeline.name,
                 status=ExecutionStatus.FAILED,
-                start_time=datetime.utcnow(),
+                start_time=DeterministicClock.utcnow(),
                 errors=errors,
             )
 
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             if len(pipeline.steps) == 1:
@@ -102,7 +104,7 @@ class DockerBackend(Backend):
                 # Multiple steps
                 result = self._run_workflow(pipeline, context)
 
-            end_time = datetime.utcnow()
+            end_time = DeterministicClock.utcnow()
             duration = (end_time - start_time).total_seconds()
 
             return ExecutionResult(
@@ -125,7 +127,7 @@ class DockerBackend(Backend):
                 pipeline_name=pipeline.name,
                 status=ExecutionStatus.FAILED,
                 start_time=start_time,
-                end_time=datetime.utcnow(),
+                end_time=DeterministicClock.utcnow(),
                 errors=[str(e)],
             )
 

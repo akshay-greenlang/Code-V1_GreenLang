@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang SDK Client
 
@@ -134,7 +135,7 @@ class GreenLangClient:
         try:
             error_data = response.json()
             message = error_data.get("detail", response.text)
-        except:
+        except Exception:
             message = response.text
 
         if response.status_code == 401:

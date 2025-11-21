@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Factor Broker Comprehensive Test Suite
 GL-VCCI Scope 3 Platform - Phase 6

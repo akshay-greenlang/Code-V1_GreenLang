@@ -1,103 +1,23 @@
-schema_version: 2.0.0
-id: emissions/fuel_ai_v1
 name: Fuel Emissions Agent (AI-Powered)
 version: 1.0.0
-summary: AI-powered fuel emissions calculation with deterministic tool runtime and
-  citation tracking
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 tags:
 - emissions
 - fuel
 - scope1
 - ai-agent
 - citations
+id: emissions/fuel_ai_v1
+summary: AI-powered fuel emissions calculation with deterministic tool runtime and
+  citation tracking
 owners:
 - greenlang-team
-license: MIT
-compute:
-  entrypoint: python://greenlang.agents.fuel_agent_ai:compute
-  deterministic: true
-  timeout_s: 30
-  memory_limit_mb: 512
-  inputs:
-    fuel_type:
-      dtype: string
-      unit: '1'
-      description: Type of fuel (natural_gas, coal, diesel, propane, fuel_oil, etc.)
-    consumption_value:
-      dtype: float64
-      unit: '1'
-      description: Fuel consumption amount
-      ge: 0.0
-    consumption_unit:
-      dtype: string
-      unit: '1'
-      description: Unit of measurement for consumption
-    country:
-      dtype: string
-      unit: '1'
-      description: Country code for emission factor lookup (ISO 3166-1 alpha-2)
-      default: US
-      required: false
-    year:
-      dtype: int32
-      unit: '1'
-      description: Year for historical emission factors (optional)
-      ge: 1990
-      le: 2030
-  outputs:
-    co2e_emissions_kg:
-      dtype: float64
-      unit: kgCO2e
-      description: Total CO2 equivalent emissions
-    result_fuel_type:
-      dtype: string
-      unit: '1'
-      description: Type of fuel used in calculation
-    result_consumption_value:
-      dtype: float64
-      unit: '1'
-      description: Fuel consumption amount (normalized)
-    result_consumption_unit:
-      dtype: string
-      unit: '1'
-      description: Unit of fuel consumption
-    emission_factor:
-      dtype: float64
-      unit: '1'
-      description: Emission factor value used in calculation
-    emission_factor_unit:
-      dtype: string
-      unit: '1'
-      description: Unit of emission factor
-    source:
-      dtype: string
-      unit: '1'
-      description: Data source for emission factor (e.g., EPA, IPCC)
-    version:
-      dtype: string
-      unit: '1'
-      description: Version of emission factor database
-    last_updated:
-      dtype: string
-      unit: '1'
-      description: Last update date of emission factor (ISO 8601)
-    citations:
-      dtype: string
-      unit: '1'
-      description: List of emission factor citations with EF CIDs
-  factors:
-    ipcc_ar6_ng:
-      ref: ef://ipcc/ar6/fossil-fuels/natural-gas
-      gwp_set: AR6GWP100
-      description: IPCC AR6 natural gas combustion factors
-    epa_ghg_fuels:
-      ref: ef://epa/ghg-inventory/fossil-fuels
-      gwp_set: AR6GWP100
-      description: EPA GHG Inventory fossil fuel factors
-    uk_defra_fuels:
-      ref: ef://uk_defra/2023/fuels
-      gwp_set: AR6GWP100
-      description: UK DEFRA 2023 fuel emission factors
 ai:
   json_mode: true
   system_prompt: 'You are a climate emissions expert specialized in calculating fuel-based

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang v0.2.0b2 Beta Smoke Test
 

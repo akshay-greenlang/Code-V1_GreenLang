@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Pydantic models for pipeline specification.
 
 This module provides type-safe Pydantic models for defining pipeline configurations,

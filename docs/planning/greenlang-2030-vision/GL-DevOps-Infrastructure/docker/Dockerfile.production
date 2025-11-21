@@ -1,0 +1,226 @@
+# GreenLang Production Dockerfile - Multi-stage Build
+# Optimized for security, size, and performance
+# Base image size: < 100MB
+
+# ==========================================
+# Stage 1: Dependencies Builder
+# ==========================================
+FROM node:20-alpine AS dependencies
+
+# Install security updates
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    git \
+    curl
+
+# Set working directory
+WORKDIR /build
+
+# Copy package files
+COPY package*.json ./
+COPY yarn.lock ./
+
+# Install production dependencies
+RUN yarn install --production --frozen-lockfile && \
+    yarn cache clean
+
+# Install dev dependencies separately for building
+COPY . .
+RUN yarn install --frozen-lockfile && \
+    yarn build && \
+    yarn cache clean
+
+# ==========================================
+# Stage 2: Security Scanner
+# ==========================================
+FROM aquasec/trivy:latest AS scanner
+
+COPY --from=dependencies /build /scan
+RUN trivy fs --no-progress --severity HIGH,CRITICAL /scan
+
+# ==========================================
+# Stage 3: Production Runtime
+# ==========================================
+FROM gcr.io/distroless/nodejs20-debian12:nonroot AS runtime
+
+# Set Node environment
+ENV NODE_ENV=production \
+    NODE_OPTIONS="--enable-source-maps --max-old-space-size=2048" \
+    PORT=8080
+
+# Copy built application
+COPY --from=dependencies --chown=nonroot:nonroot /build/dist /app
+COPY --from=dependencies --chown=nonroot:nonroot /build/node_modules /app/node_modules
+
+# Set working directory
+WORKDIR /app
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD ["/nodejs/bin/node", "healthcheck.js"]
+
+# Non-root user (65532)
+USER nonroot
+
+# Expose port
+EXPOSE 8080
+
+# Start application
+ENTRYPOINT ["/nodejs/bin/node"]
+CMD ["server.js"]
+
+# ==========================================
+# Python Service Dockerfile
+# ==========================================
+FROM python:3.10-slim AS python-builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install Python packages
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.10-slim AS python-runtime
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment
+COPY --from=python-builder /opt/venv /opt/venv
+
+# Set environment
+ENV PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Create non-root user
+RUN useradd -m -u 1000 -s /bin/bash greenlang
+
+# Copy application
+WORKDIR /app
+COPY --chown=greenlang:greenlang . /app
+
+# Switch to non-root user
+USER greenlang
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Run application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
+
+# ==========================================
+# Go Service Dockerfile
+# ==========================================
+FROM golang:1.21-alpine AS go-builder
+
+# Install dependencies
+RUN apk add --no-cache git make
+
+# Set working directory
+WORKDIR /build
+
+# Copy go mod files
+COPY go.mod go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Build binary
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-w -s -X main.Version=${VERSION} -X main.BuildTime=${BUILD_TIME}" \
+    -o app ./cmd/server
+
+# Final stage
+FROM scratch AS go-runtime
+
+# Copy CA certificates
+COPY --from=go-builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+# Copy binary
+COPY --from=go-builder /build/app /app
+
+# Expose port
+EXPOSE 8080
+
+# Run binary
+ENTRYPOINT ["/app"]
+
+# ==========================================
+# Java Service Dockerfile
+# ==========================================
+FROM maven:3.9-eclipse-temurin-17 AS java-builder
+
+# Set working directory
+WORKDIR /build
+
+# Copy POM
+COPY pom.xml .
+
+# Download dependencies
+RUN mvn dependency:go-offline
+
+# Copy source
+COPY src ./src
+
+# Build application
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:17-jre-alpine AS java-runtime
+
+# Install dependencies
+RUN apk add --no-cache curl
+
+# Create non-root user
+RUN addgroup -g 1000 -S greenlang && \
+    adduser -u 1000 -S greenlang -G greenlang
+
+# Copy JAR
+COPY --from=java-builder /build/target/*.jar /app/app.jar
+
+# Set ownership
+RUN chown -R greenlang:greenlang /app
+
+# Switch user
+USER greenlang
+
+# JVM options for container
+ENV JAVA_OPTS="-XX:MaxRAMPercentage=75.0 \
+    -XX:+UseG1GC \
+    -XX:+UseStringDeduplication \
+    -Djava.security.egd=file:/dev/./urandom"
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# Expose port
+EXPOSE 8080
+
+# Run application
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Scope 3 Platform - Prometheus Metrics
 
@@ -20,6 +21,7 @@ Author: GreenLang VCCI Team (Monitoring & Observability)
 Date: 2025-11-08
 """
 
+import logging
 import time
 import psutil
 import platform
@@ -28,6 +30,8 @@ from functools import wraps
 from typing import Callable, Dict, Any, Optional, List
 from pathlib import Path
 from enum import Enum
+
+logger = logging.getLogger(__name__)
 
 try:
     from prometheus_client import (
@@ -38,7 +42,7 @@ try:
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     PROMETHEUS_AVAILABLE = False
-    print("Warning: prometheus_client not installed. Metrics will not be collected.")
+    logger.warning("prometheus_client not installed. Metrics will not be collected.")
 
 
 # ============================================================================
@@ -709,7 +713,7 @@ def create_metrics_endpoint(metrics: VCCIMetrics):
     try:
         from fastapi import Response
     except ImportError:
-        print("Warning: FastAPI not installed. Metrics endpoint will not be available.")
+        logger.warning("FastAPI not installed. Metrics endpoint will not be available.")
         return None
 
     exporter = MetricsExporter(metrics)
@@ -762,7 +766,7 @@ if __name__ == "__main__":
     metrics = VCCIMetrics()
 
     # Simulate carbon calculations
-    print("Simulating VCCI metrics collection...")
+    logger.info("Simulating VCCI metrics collection...")
 
     # Category 1: Purchased goods and services
     metrics.record_carbon_calculation(

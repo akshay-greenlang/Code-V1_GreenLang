@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Calculator Agent
 Specialized base class for computational and mathematical operations.

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 Performance Profiler
 
 Profile infrastructure usage and identify performance bottlenecks.
 Measures execution time, cache performance, and LLM costs.
 """
 
+import logging
 import argparse
 import cProfile
 import pstats
@@ -281,7 +285,7 @@ Examples:
     args = parser.parse_args()
 
     if not os.path.exists(args.file):
-        print(f"Error: File not found: {args.file}")
+        logger.error(f" File not found: {args.file}")
         sys.exit(1)
 
     # Profile the file

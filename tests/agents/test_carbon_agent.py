@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive test suite for CarbonAgent.
 
 Tests cover:
@@ -24,6 +25,7 @@ from copy import deepcopy
 
 from greenlang.agents.carbon_agent import CarbonAgent
 from greenlang.agents.base import AgentResult, AgentConfig
+from greenlang.determinism import deterministic_random
 
 
 # ==============================================================================
@@ -514,7 +516,7 @@ class TestCarbonAgentDeterminism:
         # Shuffle emissions
         shuffled = five_emissions.copy()
         random.seed(42)
-        random.shuffle(shuffled)
+        deterministic_random().shuffle(shuffled)
 
         input_data2 = {"emissions": shuffled}
         result2 = agent.execute(input_data2)

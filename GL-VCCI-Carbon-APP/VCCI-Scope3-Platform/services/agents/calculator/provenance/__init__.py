@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Provenance tracking for Scope3CalculatorAgent."""
 
 from .chain_builder import ProvenanceChainBuilder

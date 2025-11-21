@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Card Generator for Documentation
 =================================
@@ -12,6 +13,7 @@ from datetime import datetime
 from typing import List
 
 from .templates import (
+from greenlang.determinism import DeterministicClock
     PACK_CARD_TEMPLATE,
     DATASET_CARD_TEMPLATE,
     MODEL_CARD_TEMPLATE,
@@ -70,8 +72,8 @@ def generate_pack_card(
             "tags": ", ".join(tags or ["climate", "greenlang"]),
             "license": license,
             "maintainer": author or "GreenLang Community",
-            "created": datetime.now().date().isoformat(),
-            "updated": datetime.now().date().isoformat(),
+            "created": DeterministicClock.now().date().isoformat(),
+            "updated": DeterministicClock.now().date().isoformat(),
             # Usage examples
             "quick_start": f"""from {name.replace("-", "_")} import Pipeline
 
@@ -207,8 +209,8 @@ def generate_dataset_card(
             "samples": samples,
             "features": ", ".join(features or []),
             "license": license,
-            "created": datetime.now().date().isoformat(),
-            "updated": datetime.now().date().isoformat(),
+            "created": DeterministicClock.now().date().isoformat(),
+            "updated": DeterministicClock.now().date().isoformat(),
             "tags": "climate, environmental, greenlang",
             # Description
             "summary": summary or f"A dataset for {name.replace('-', ' ')}",
@@ -334,8 +336,8 @@ def generate_model_card(
             "training_data": "Custom climate dataset",
             "training_emissions": "10 kg CO2",
             "inference_emissions": "0.001 kg CO2 per 1000 inferences",
-            "created": datetime.now().date().isoformat(),
-            "updated": datetime.now().date().isoformat(),
+            "created": DeterministicClock.now().date().isoformat(),
+            "updated": DeterministicClock.now().date().isoformat(),
             "tags": "climate, ml, greenlang",
             "description": description or f"A model for {name.replace('-', ' ')}",
             "developers": "GreenLang ML Team",
@@ -466,8 +468,8 @@ def generate_pipeline_card(
             "display_name": name.replace("-", " ").title(),
             "components": ", ".join(components),
             "license": license,
-            "created": datetime.now().date().isoformat(),
-            "updated": datetime.now().date().isoformat(),
+            "created": DeterministicClock.now().date().isoformat(),
+            "updated": DeterministicClock.now().date().isoformat(),
             "tags": "pipeline, climate, greenlang",
             "overview": overview or f"Pipeline for {name.replace('-', ' ')}",
             "purpose": "Process climate data through multiple stages",

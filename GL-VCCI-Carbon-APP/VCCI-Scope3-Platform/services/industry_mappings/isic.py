@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ISIC Rev 4 Database and NAICS-ISIC Crosswalk
 

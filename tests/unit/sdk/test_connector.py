@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for SDK Connector abstraction.
 

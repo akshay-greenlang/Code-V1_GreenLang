@@ -580,7 +580,7 @@ Build the world's most advanced **Scope 3 Value Chain Carbon Intelligence Platfo
 
 **NFR-5: Code Quality**
 - 90%+ test coverage
-- Type hints (Python 3.9+)
+- Type hints (Python 3.10+)
 - Docstrings (Google style)
 - Linting (Ruff, Black)
 - CI/CD (GitHub Actions)
@@ -659,7 +659,7 @@ Build the world's most advanced **Scope 3 Value Chain Carbon Intelligence Platfo
 ### 6.2 Technology Stack
 
 **Backend:**
-- Python 3.11+ (FastAPI, Pydantic, Pandas)
+- Python 3.10+ (FastAPI, Pydantic, Pandas)
 - PostgreSQL 15+ (TimescaleDB extension for time-series)
 - Redis 7+ (caching, Celery broker)
 - Weaviate 1.20+ (vector database)

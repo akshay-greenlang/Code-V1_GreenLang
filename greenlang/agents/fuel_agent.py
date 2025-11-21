@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Optional, Dict, Any, List
 from functools import lru_cache
 from datetime import datetime
@@ -13,6 +14,7 @@ from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utils.performance_tracker import PerformanceTracker
 from greenlang.agents.tools import get_registry
 from greenlang.exceptions import ValidationError, ExecutionError, MissingData
+from greenlang.determinism import DeterministicClock
 
 
 class FuelAgent(Agent[FuelInput, FuelOutput]):
@@ -182,7 +184,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         Returns:
             AgentResult containing calculated emissions and metrics
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         with self.performance_tracker.track("fuel_calculation"):
             try:
@@ -283,7 +285,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
 
                 # Store in historical data
                 result_data = {
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "fuel_type": fuel_type,
                     "amount": amount,
                     "unit": unit,
@@ -293,7 +295,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
                 self._historical_data.append(result_data)
 
                 # Calculate performance metrics
-                duration = (datetime.now() - start_time).total_seconds()
+                duration = (DeterministicClock.now() - start_time).total_seconds()
                 self._execution_times.append(duration)
 
                 output: FuelOutput = {
@@ -451,8 +453,9 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
             return self.unit_converter.convert_fuel_to_energy(
                 abs(amount), unit, fuel_type, "MMBtu"
             )
-        except:
+        except Exception as e:
             # Fallback calculation
+            self.logger.warning(f"Unit conversion failed: {e}, using fallback calculation")
             if unit == "kWh":
                 return abs(amount) * 0.003412
             elif unit == "therms":
@@ -584,7 +587,7 @@ class FuelAgent(Agent[FuelInput, FuelOutput]):
         Returns:
             str: Path to exported file
         """
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
         filename = f"fuel_emissions_{timestamp}.{format}"
 
         if format == "json":

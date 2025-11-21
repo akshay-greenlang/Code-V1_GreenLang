@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 30: Test for custom workflow with XLSX export tutorial."""
 
 import pytest

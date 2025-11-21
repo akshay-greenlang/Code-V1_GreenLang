@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for BaseDataProcessor class.
 Tests batch processing, parallel execution, error handling, and progress tracking.

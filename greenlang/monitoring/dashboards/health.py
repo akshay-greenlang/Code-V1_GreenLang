@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Infrastructure Health Dashboard
 ================================

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Demo command for GreenLang CLI."""
 
 import json

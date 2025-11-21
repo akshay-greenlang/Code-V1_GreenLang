@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang SDK Pack Loading Example
 
@@ -23,6 +24,7 @@ from datetime import datetime
 # GreenLang SDK imports
 import greenlang
 from greenlang import Orchestrator
+from greenlang.determinism import DeterministicClock
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -205,7 +207,7 @@ class PackLoader:
         execution_result = {
             "pipeline_name": pipeline_data.get("name", pipeline_name),
             "pack_name": pack_name,
-            "execution_timestamp": datetime.now().isoformat(),
+            "execution_timestamp": DeterministicClock.now().isoformat(),
             "status": "completed",
             "inputs_received": inputs,
             "outputs": {
@@ -240,7 +242,7 @@ class PackRegistry:
         repo_path = Path(repository_path)
 
         if repo_path.exists() and repo_path.is_dir():
-            for item in repo_path.iterdir():
+            for item in sorted(repo_path.iterdir()):
                 if item.is_dir():
                     pack_manifest = item / "pack.yaml"
                     if pack_manifest.exists():
@@ -279,7 +281,7 @@ class PackRegistry:
                         self.installed_packs[pack_name] = {
                             "metadata": metadata,
                             "installation_path": pack_info["path"],
-                            "installed_at": datetime.now().isoformat(),
+                            "installed_at": DeterministicClock.now().isoformat(),
                             "repository": repo_path
                         }
 

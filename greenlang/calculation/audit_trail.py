@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Audit Trail Generator
 
@@ -19,6 +20,7 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 from greenlang.calculation.core_calculator import CalculationResult
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -277,7 +279,7 @@ class AuditTrailGenerator:
             Markdown report summarizing all calculations
         """
         md = f"# {report_title}\n\n"
-        md += f"**Generated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n"
+        md += f"**Generated:** {DeterministicClock.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n"
         md += f"**Total Calculations:** {len(calculations)}\n\n"
 
         # Summary statistics

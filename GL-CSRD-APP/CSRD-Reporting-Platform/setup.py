@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Setup script for CSRD/ESRS Digital Reporting Platform.
 
@@ -80,7 +81,7 @@ setup(
     },
 
     # Python version requirement
-    python_requires=">=3.11",
+    python_requires=">=3.10",
 
     # Entry points for CLI
     entry_points={
@@ -97,6 +98,7 @@ setup(
         "Topic :: Office/Business :: Financial",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Operating System :: OS Independent",

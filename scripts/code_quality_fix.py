@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Code Quality Automation Script
 
@@ -25,6 +26,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 import argparse
 import re
+from greenlang.determinism import DeterministicClock
 
 
 class CodeQualityFixer:
@@ -206,7 +208,7 @@ class CodeQualityFixer:
         """Generate comprehensive quality report."""
         import datetime
 
-        self.report["timestamp"] = datetime.datetime.now().isoformat()
+        self.report["timestamp"] = datetime.DeterministicClock.now().isoformat()
 
         # Run all checks
         print("Running black formatter...")

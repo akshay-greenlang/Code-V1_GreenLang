@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Test the create agent functionality"""
 
 from greenlang.cli.dev_interface import GreenLangDevInterface

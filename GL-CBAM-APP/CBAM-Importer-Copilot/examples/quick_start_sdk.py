@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CBAM IMPORTER COPILOT - PYTHON SDK QUICK START
 ===============================================

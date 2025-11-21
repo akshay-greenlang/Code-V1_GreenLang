@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 DoD Verification Tools
 ======================
@@ -10,6 +11,8 @@ import subprocess
 import sys
 import os
 from pathlib import Path
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 
 def run_command(cmd, description="", check=True, capture_output=True):
@@ -110,7 +113,7 @@ def verify_coverage_threshold():
         tree = ET.parse(coverage_file)
         root = tree.getroot()
 
-        line_rate = float(root.get('line-rate', 0))
+        line_rate = FinancialDecimal.from_string(root.get('line-rate', 0))
         coverage_percent = line_rate * 100
 
         print(f"Current coverage: {coverage_percent:.2f}%")
@@ -184,7 +187,7 @@ def create_dod_compliance_report():
             "total_checks": total_checks,
             "passed_checks": passed_checks,
             "details": report,
-            "timestamp": __import__("datetime").datetime.now().isoformat()
+            "timestamp": __import__("datetime").DeterministicClock.now().isoformat()
         }, f, indent=2)
 
     print(f"\n📋 Report saved to: dod_compliance_report.json")

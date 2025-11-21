@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CBAM Importer Copilot - FastAPI Application (Optional)
 
@@ -26,6 +27,7 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 from typing import Dict, Any
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:
     from fastapi import FastAPI, Request, Response
@@ -140,7 +142,7 @@ if FASTAPI_AVAILABLE:
         # Get or generate correlation ID
         correlation_id = request.headers.get("X-Correlation-ID")
         if not correlation_id:
-            correlation_id = str(uuid.uuid4())
+            correlation_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
         CorrelationContext.set_correlation_id(correlation_id)
 

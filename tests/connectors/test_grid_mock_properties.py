@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Property-Based Tests for GridIntensityMockConnector
 =====================================================

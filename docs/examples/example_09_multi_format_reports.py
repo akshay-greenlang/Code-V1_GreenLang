@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 09: Multi-Format Report Generation
 

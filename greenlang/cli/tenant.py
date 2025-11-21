@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Tenant Management CLI Commands
 """
@@ -12,6 +13,7 @@ from rich.table import Table
 from rich.panel import Panel
 
 from greenlang.auth import (
+from greenlang.determinism import DeterministicClock
     TenantManager,
     TenantQuota,
     TenantIsolation,
@@ -771,7 +773,7 @@ def audit_logs(
         audit_logger = get_audit_logger()
 
         # Query events
-        start_time = datetime.utcnow() - timedelta(days=days)
+        start_time = DeterministicClock.utcnow() - timedelta(days=days)
         events = audit_logger.query(
             tenant_id=tenant_id, start_time=start_time, user_id=user, limit=limit
         )
@@ -829,8 +831,8 @@ def audit_report(tenant_id: str, days: int, output: Optional[str]):
         audit_logger = get_audit_logger()
 
         # Generate report
-        start_time = datetime.utcnow() - timedelta(days=days)
-        end_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow() - timedelta(days=days)
+        end_time = DeterministicClock.utcnow()
         report = audit_logger.get_report(tenant_id, start_time, end_time)
 
         if output == "json":

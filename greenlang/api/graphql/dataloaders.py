@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 DataLoader Implementation for N+1 Query Prevention
 Provides batching and caching for efficient data loading
@@ -13,6 +14,7 @@ from datetime import datetime
 import strawberry
 
 from greenlang.api.graphql.types import (
+from greenlang.determinism import DeterministicClock
     Agent,
     Workflow,
     Execution,
@@ -326,7 +328,7 @@ class UserLoader(DataLoader):
                     active=user_data.get("active", True),
                     roles=roles,
                     permissions=permissions,
-                    created_at=user_data.get("created_at", datetime.utcnow()),
+                    created_at=user_data.get("created_at", DeterministicClock.utcnow()),
                     last_login=None,
                     metadata=user_data.get("metadata", {}),
                 )

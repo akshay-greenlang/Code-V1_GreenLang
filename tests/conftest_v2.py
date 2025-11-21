@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang V2 - Pytest Configuration and Shared Fixtures
 =======================================================

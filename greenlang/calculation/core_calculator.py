@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Core Emission Calculation Engine
 
@@ -21,6 +22,8 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from enum import Enum
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +110,7 @@ class CalculationRequest:
 
     def _generate_request_id(self) -> str:
         """Generate unique request ID"""
-        data = f"{self.factor_id}_{self.activity_amount}_{self.activity_unit}_{datetime.utcnow().isoformat()}"
+        data = f"{self.factor_id}_{self.activity_amount}_{self.activity_unit}_{DeterministicClock.utcnow().isoformat()}"
         return hashlib.sha256(data.encode()).hexdigest()[:16]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -422,7 +425,7 @@ class EmissionCalculator:
             ValueError: If inputs invalid or factor not found
             UnitConversionError: If units incompatible
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
         calculation_steps = []
         warnings = []
 
@@ -474,7 +477,7 @@ class EmissionCalculator:
         if factor_base_unit != request_unit:
             try:
                 converted_amount = self.unit_converter.convert(
-                    value=float(request.activity_amount),
+                    value=FinancialDecimal.from_string(request.activity_amount),
                     from_unit=request_unit,
                     to_unit=factor_base_unit,
                 )
@@ -520,7 +523,7 @@ class EmissionCalculator:
         })
 
         # Calculate duration
-        end_time = datetime.utcnow()
+        end_time = DeterministicClock.utcnow()
         duration_ms = (end_time - start_time).total_seconds() * 1000
 
         # Create result

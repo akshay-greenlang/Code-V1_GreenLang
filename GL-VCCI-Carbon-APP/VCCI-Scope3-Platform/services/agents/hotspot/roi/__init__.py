@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ROI Analysis Modules
 GL-VCCI Scope 3 Platform

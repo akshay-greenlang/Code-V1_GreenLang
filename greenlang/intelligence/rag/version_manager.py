@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Document version management system for climate/GHG accounting standards.
 
@@ -20,6 +21,7 @@ import logging
 
 from greenlang.intelligence.rag.models import DocMeta
 from greenlang.intelligence.rag.hashing import file_hash
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -311,7 +313,7 @@ class DocumentVersionManager:
             'errata_date': errata_date,
             'description': description,
             'sections_affected': sections_affected or [],
-            'applied_at': datetime.utcnow()
+            'applied_at': DeterministicClock.utcnow()
         }
 
         self.errata[doc_id].append(errata_record)

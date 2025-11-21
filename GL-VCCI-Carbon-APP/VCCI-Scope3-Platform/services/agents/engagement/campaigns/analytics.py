@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Campaign analytics and reporting.
 

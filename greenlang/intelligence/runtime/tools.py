@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tool Runtime - "No Naked Numbers" Enforcement (INTL-103)
 
@@ -27,6 +28,7 @@ from jsonpath_ng import parse as jsonpath_parse
 
 from .schemas import Quantity, Claim, ASSISTANT_STEP_SCHEMA, QUANTITY_SCHEMA
 from .errors import (
+from greenlang.determinism import DeterministicClock
     GLValidationError,
     GLRuntimeError,
     GLSecurityError,
@@ -338,7 +340,7 @@ class ToolRuntime:
             "arguments": step["arguments"],
             "output": output,
             "unit_index": unit_index,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "mode": self.mode,
         }
         self.provenance.append(provenance_entry)

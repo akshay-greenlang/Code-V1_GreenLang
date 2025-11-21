@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Mock Grid Intensity Connector
 ==============================

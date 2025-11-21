@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Data Collection Agent
 
@@ -17,6 +18,7 @@ from datetime import datetime
 import logging
 from pathlib import Path
 import json
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -236,7 +238,7 @@ class CSRDDataCollectionAgent:
                 'value': 1500000,
                 'unit': 'kWh',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'high'
             },
             {
@@ -245,7 +247,7 @@ class CSRDDataCollectionAgent:
                 'value': 9072.0,
                 'unit': 'tCO2e',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'high'
             },
             {
@@ -254,7 +256,7 @@ class CSRDDataCollectionAgent:
                 'value': 450,
                 'unit': 'tonnes',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'medium'
             }
         ]
@@ -282,7 +284,7 @@ class CSRDDataCollectionAgent:
                 'value': 1200000,
                 'unit': 'kWh',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'high'
             },
             {
@@ -291,7 +293,7 @@ class CSRDDataCollectionAgent:
                 'value': 45000,
                 'unit': 'm3',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'high'
             },
             {
@@ -300,7 +302,7 @@ class CSRDDataCollectionAgent:
                 'value': 480000,
                 'unit': 'kWh',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'high'
             }
         ]
@@ -328,7 +330,7 @@ class CSRDDataCollectionAgent:
                 'value': 325,
                 'unit': 'FTE',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'high'
             },
             {
@@ -337,7 +339,7 @@ class CSRDDataCollectionAgent:
                 'value': 12500,
                 'unit': 'hours',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'medium'
             },
             {
@@ -346,7 +348,7 @@ class CSRDDataCollectionAgent:
                 'value': 3,
                 'unit': 'count',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'high'
             }
         ]
@@ -374,7 +376,7 @@ class CSRDDataCollectionAgent:
                 'value': 25000,
                 'unit': 'm3',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'high'
             },
             {
@@ -383,7 +385,7 @@ class CSRDDataCollectionAgent:
                 'value': 42,
                 'unit': 'AQI',
                 'reporting_year': year,
-                'collection_timestamp': datetime.now().isoformat(),
+                'collection_timestamp': DeterministicClock.now().isoformat(),
                 'data_quality': 'medium'
             }
         ]
@@ -485,7 +487,7 @@ class CSRDDataCollectionAgent:
             'frequency': frequency,
             'enabled': True,
             'last_run': None,
-            'next_run': datetime.now().isoformat()
+            'next_run': DeterministicClock.now().isoformat()
         }
 
         config_file = Path('data/collection_schedule.json')

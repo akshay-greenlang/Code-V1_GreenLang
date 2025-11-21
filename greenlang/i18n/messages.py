@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/i18n/messages.py
 

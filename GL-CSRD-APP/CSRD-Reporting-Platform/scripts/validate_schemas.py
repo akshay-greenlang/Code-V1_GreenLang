@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Schema Validation Tool
 

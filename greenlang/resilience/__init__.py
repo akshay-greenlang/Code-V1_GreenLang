@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """GreenLang Resilience Patterns.
 
 Production-grade resilience infrastructure for distributed systems including:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for BaseCalculator class.
 Tests calculation caching, unit conversion, deterministic computation, and tracing.

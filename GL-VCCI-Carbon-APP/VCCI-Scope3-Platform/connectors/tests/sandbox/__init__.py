@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sandbox Environment Setup for ERP Connectors
 GL-VCCI Scope 3 Platform

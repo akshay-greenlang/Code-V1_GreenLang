@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Test Suite for Category 6: Business Travel
 GL-VCCI Scope 3 Platform

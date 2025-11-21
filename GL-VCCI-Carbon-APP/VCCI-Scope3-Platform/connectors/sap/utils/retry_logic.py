@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # SAP Retry Logic
 # Exponential backoff retry decorator for SAP API calls
 
@@ -21,6 +22,7 @@ Usage:
 ------
 ```python
 from connectors.sap.utils.retry_logic import retry_with_backoff
+from greenlang.determinism import deterministic_random
 
 @retry_with_backoff(max_retries=4, base_delay=1.0)
 def call_sap_api():
@@ -193,7 +195,7 @@ def _calculate_backoff(
 
     # Add jitter: random value between 0 and delay
     if jitter:
-        delay = delay * (0.5 + random.random() * 0.5)  # 50-100% of calculated delay
+        delay = delay * (0.5 + deterministic_random().random() * 0.5)  # 50-100% of calculated delay
 
     return delay
 

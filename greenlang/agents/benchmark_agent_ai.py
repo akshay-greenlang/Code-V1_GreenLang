@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AI-Powered Benchmark Agent with Competitive Insights
 GL Intelligence Infrastructure - INSIGHT PATH

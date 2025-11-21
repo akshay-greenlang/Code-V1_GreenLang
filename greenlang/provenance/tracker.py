@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Provenance - Tracker Module
 Automatic provenance tracking for sustainability operations.

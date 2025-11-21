@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for alert rule evaluation engine.
 
@@ -12,6 +13,7 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 
 from greenlang.api.alerting.alert_engine import (
+from greenlang.determinism import DeterministicClock
     AlertEngine,
     AlertRule,
     AlertState,
@@ -129,7 +131,7 @@ class TestAlertEngine:
 
             rule = engine.rules[sample_threshold_rule.id]
             assert rule.silenced_until is not None
-            assert rule.silenced_until > datetime.utcnow()
+            assert rule.silenced_until > DeterministicClock.utcnow()
 
 
 @pytest.mark.asyncio
@@ -238,13 +240,13 @@ class TestAlertEvaluation:
             state=AlertState.OK,
             value=75.0,
             labels={"env": "production"},
-            started_at=datetime.utcnow(),
-            last_evaluated=datetime.utcnow()
+            started_at=DeterministicClock.utcnow(),
+            last_evaluated=DeterministicClock.utcnow()
         )
 
         # OK -> PENDING
         instance.state = AlertState.PENDING
-        instance.started_at = datetime.utcnow()
+        instance.started_at = DeterministicClock.utcnow()
         assert instance.state == AlertState.PENDING
 
         # PENDING -> FIRING
@@ -282,8 +284,8 @@ class TestNotificationDelivery:
             state=AlertState.FIRING,
             value=95.0,
             labels={"env": "production"},
-            started_at=datetime.utcnow(),
-            last_evaluated=datetime.utcnow()
+            started_at=DeterministicClock.utcnow(),
+            last_evaluated=DeterministicClock.utcnow()
         )
 
         # Verify state determines color
@@ -302,14 +304,14 @@ class TestNotificationDelivery:
             state=AlertState.FIRING,
             value=95.0,
             labels={},
-            started_at=datetime.utcnow(),
-            last_evaluated=datetime.utcnow(),
-            last_notified=datetime.utcnow()
+            started_at=DeterministicClock.utcnow(),
+            last_evaluated=DeterministicClock.utcnow(),
+            last_notified=DeterministicClock.utcnow()
         )
 
         # Should not send if within group interval
         engine = AlertEngine()
-        interval = (datetime.utcnow() - instance.last_notified).total_seconds()
+        interval = (DeterministicClock.utcnow() - instance.last_notified).total_seconds()
         should_send = interval >= sample_threshold_rule.group_interval
 
         assert should_send is False  # Just notified
@@ -326,8 +328,8 @@ class TestAlertDeduplication:
             state=AlertState.FIRING,
             value=95.0,
             labels={"env": "production", "host": "server1"},
-            started_at=datetime.utcnow(),
-            last_evaluated=datetime.utcnow()
+            started_at=DeterministicClock.utcnow(),
+            last_evaluated=DeterministicClock.utcnow()
         )
 
         instance2 = AlertInstance(
@@ -335,8 +337,8 @@ class TestAlertDeduplication:
             state=AlertState.FIRING,
             value=97.0,  # Different value
             labels={"env": "production", "host": "server1"},  # Same labels
-            started_at=datetime.utcnow(),
-            last_evaluated=datetime.utcnow()
+            started_at=DeterministicClock.utcnow(),
+            last_evaluated=DeterministicClock.utcnow()
         )
 
         # Same rule and labels should have same fingerprint
@@ -349,8 +351,8 @@ class TestAlertDeduplication:
             state=AlertState.FIRING,
             value=95.0,
             labels={"env": "production", "host": "server1"},
-            started_at=datetime.utcnow(),
-            last_evaluated=datetime.utcnow()
+            started_at=DeterministicClock.utcnow(),
+            last_evaluated=DeterministicClock.utcnow()
         )
 
         instance2 = AlertInstance(
@@ -358,8 +360,8 @@ class TestAlertDeduplication:
             state=AlertState.FIRING,
             value=95.0,
             labels={"env": "production", "host": "server2"},  # Different host
-            started_at=datetime.utcnow(),
-            last_evaluated=datetime.utcnow()
+            started_at=DeterministicClock.utcnow(),
+            last_evaluated=DeterministicClock.utcnow()
         )
 
         # Different labels should have different fingerprints
@@ -381,8 +383,8 @@ class TestAlertHistory:
                 state=AlertState.FIRING,
                 value=95.0,
                 labels={"env": "production"},
-                started_at=datetime.utcnow(),
-                last_evaluated=datetime.utcnow()
+                started_at=DeterministicClock.utcnow(),
+                last_evaluated=DeterministicClock.utcnow()
             )
 
             await engine._save_alert_history(sample_threshold_rule, instance)
@@ -401,8 +403,8 @@ class TestAlertHistory:
             state=AlertState.FIRING,
             value=95.0,
             labels={"env": "production"},
-            started_at=datetime.utcnow(),
-            last_evaluated=datetime.utcnow()
+            started_at=DeterministicClock.utcnow(),
+            last_evaluated=DeterministicClock.utcnow()
         )
         engine.alert_instances[instance.fingerprint] = instance
 
@@ -439,7 +441,7 @@ class TestAlertEngineIntegration:
 
             # Mock time passing for for_duration
             for instance in engine.alert_instances.values():
-                instance.started_at = datetime.utcnow() - timedelta(seconds=400)
+                instance.started_at = DeterministicClock.utcnow() - timedelta(seconds=400)
 
             # Re-evaluate
             await engine._evaluate_threshold_rule(sample_threshold_rule)

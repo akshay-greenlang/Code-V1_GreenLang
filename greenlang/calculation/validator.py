@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Calculation Validator
 
@@ -15,6 +16,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 from decimal import Decimal
 from greenlang.calculation.core_calculator import (
+from greenlang.determinism import FinancialDecimal
     CalculationRequest,
     CalculationResult,
     CalculationStatus,
@@ -196,7 +198,7 @@ class CalculationValidator:
             result.add_error("Emissions result is NaN (not a number)")
 
         try:
-            if abs(float(calculation.emissions_kg_co2e)) == float('inf'):
+            if abs(FinancialDecimal.from_string(calculation.emissions_kg_co2e)) == FinancialDecimal.from_string('inf'):
                 result.add_error("Emissions result is infinite")
         except (ValueError, OverflowError):
             result.add_error("Emissions result is invalid")
@@ -285,8 +287,8 @@ class CalculationValidator:
         result: ValidationResult
     ):
         """Check if emission result is within reasonable range"""
-        emissions = float(calculation.emissions_kg_co2e)
-        activity = float(calculation.request.activity_amount)
+        emissions = FinancialDecimal.from_string(calculation.emissions_kg_co2e)
+        activity = FinancialDecimal.from_string(calculation.request.activity_amount)
 
         if emissions == 0:
             return  # Zero emissions is valid (e.g., renewable energy)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 16: Assistant path mocked (deterministic)."""
 
 import pytest

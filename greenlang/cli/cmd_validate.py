@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Validate command for GreenLang CLI."""
 
 import typer

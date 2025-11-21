@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ReportingPackagerAgent_AI - Package CBAM Report for EU Transitional Registry
 
@@ -30,6 +31,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 from pydantic import BaseModel
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -414,7 +416,7 @@ class ReportingPackagerAgent:
 
         return {
             "is_valid": is_valid,
-            "validation_timestamp": datetime.now().isoformat(),
+            "validation_timestamp": DeterministicClock.now().isoformat(),
             "rules_checked": validation_results,
             "errors": errors,
             "warnings": warnings,
@@ -438,19 +440,19 @@ class ReportingPackagerAgent:
             "processing_log": [
                 {
                     "step": "Data ingestion and validation",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "status": "success",
                     "agent": "ShipmentIntakeAgent_AI v1.0.0"
                 },
                 {
                     "step": "Emissions calculation",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "status": "success",
                     "agent": "EmissionsCalculatorAgent_AI v1.0.0"
                 },
                 {
                     "step": "Report generation and validation",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "status": "success",
                     "agent": "ReportingPackagerAgent_AI v1.0.0"
                 }
@@ -480,7 +482,7 @@ class ReportingPackagerAgent:
         Returns:
             Complete CBAM report dictionary
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Infer quarter from first shipment if not provided
         if not quarter and shipments_with_emissions:
@@ -526,7 +528,7 @@ class ReportingPackagerAgent:
         )
 
         # Provenance
-        end_time = datetime.now()
+        end_time = DeterministicClock.now()
         processing_time = (end_time - start_time).total_seconds()
 
         provenance = self._generate_provenance(

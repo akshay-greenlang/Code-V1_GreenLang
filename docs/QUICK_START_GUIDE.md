@@ -17,7 +17,7 @@ gl --version
 ```
 
 **Requirements:**
-- Python 3.9+
+- Python 3.10+
 - pip 21.0+
 
 ---

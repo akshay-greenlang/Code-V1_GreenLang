@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Monte Carlo Integration Tests
 GL-VCCI Scope 3 Platform

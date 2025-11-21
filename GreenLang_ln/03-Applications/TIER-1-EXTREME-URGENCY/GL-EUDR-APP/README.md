@@ -133,7 +133,7 @@ GL-EUDR-APP/
 ### Prerequisites
 - Docker & Docker Compose
 - Node.js 20+
-- Python 3.11+
+- Python 3.10+
 - PostgreSQL 15 with PostGIS
 - Redis 7+
 

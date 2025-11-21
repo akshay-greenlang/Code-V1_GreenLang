@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Pytest configuration for example tests."""
 
 import pytest

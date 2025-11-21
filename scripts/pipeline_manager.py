@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 GreenLang Data Pipeline Manager
 
@@ -30,6 +31,7 @@ import argparse
 import logging
 from pathlib import Path
 from datetime import datetime
+from greenlang.determinism import FinancialDecimal
 
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -266,7 +268,7 @@ def handle_workflow(args, cli):
         # Build proposed changes
         proposed_changes = {}
         if args.value:
-            proposed_changes['emission_factor_value'] = float(args.value)
+            proposed_changes['emission_factor_value'] = FinancialDecimal.from_string(args.value)
         if args.source:
             proposed_changes['source_org'] = args.source
         if args.uri:

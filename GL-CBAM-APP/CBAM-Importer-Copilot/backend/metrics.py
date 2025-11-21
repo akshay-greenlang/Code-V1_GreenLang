@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CBAM Importer Copilot - Prometheus Metrics
 

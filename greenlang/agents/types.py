@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Type definitions for all GreenLang agents.
 
 This module defines the input and output types for each agent,

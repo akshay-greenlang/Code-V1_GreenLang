@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD/ESRS Digital Reporting Platform - Provenance Tracking Framework
 =====================================================================
@@ -45,6 +46,7 @@ from uuid import uuid4
 
 import networkx as nx
 from pydantic import BaseModel, Field, validator
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -79,7 +81,7 @@ class DataSource(BaseModel):
         timestamp: When this data was sourced
         metadata: Additional source metadata
     """
-    source_id: str = Field(default_factory=lambda: str(uuid4()))
+    source_id: str = Field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     source_type: str = Field(..., description="csv|json|excel|database|api|manual|calculated")
     file_path: Optional[str] = None
     file_hash: Optional[str] = None
@@ -126,7 +128,7 @@ class CalculationLineage(BaseModel):
         dependencies: List of metric codes this calculation depends on
         metadata: Additional calculation metadata
     """
-    lineage_id: str = Field(default_factory=lambda: str(uuid4()))
+    lineage_id: str = Field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     metric_code: str
     metric_name: str
     formula: str
@@ -193,7 +195,7 @@ class EnvironmentSnapshot(BaseModel):
         llm_models: LLM models used (for MaterialityAgent)
         metadata: Additional environment metadata
     """
-    snapshot_id: str = Field(default_factory=lambda: str(uuid4()))
+    snapshot_id: str = Field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
     # Python environment
@@ -253,7 +255,7 @@ class ProvenanceRecord(BaseModel):
         errors: List of errors encountered
         warnings: List of warnings
     """
-    record_id: str = Field(default_factory=lambda: str(uuid4()))
+    record_id: str = Field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     agent_name: str
     operation: str
@@ -417,12 +419,14 @@ def capture_environment(
     # Capture system info
     try:
         hostname = platform.node()
-    except:
+    except Exception as e:
+        logger.debug(f"Failed to get hostname: {e}")
         hostname = "unknown"
 
     try:
         processor = platform.processor()
-    except:
+    except Exception as e:
+        logger.debug(f"Failed to get processor info: {e}")
         processor = "unknown"
 
     # Capture user

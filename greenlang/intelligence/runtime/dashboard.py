@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Intelligence Layer Cost Tracking Dashboard
 
@@ -14,9 +15,11 @@ Provides both CLI and web-based views.
 
 from __future__ import annotations
 import time
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from greenlang.intelligence.runtime.monitoring import get_metrics_collector
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatMessage
 
 
 class CostDashboard:
@@ -185,7 +188,7 @@ class CostDashboard:
         print("\n" + "=" * 80)
         print("  GREENLANG INTELLIGENCE LAYER - COST DASHBOARD")
         print("=" * 80)
-        print(f"  Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"  Timestamp: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("=" * 80)
 
         # Budget Status
@@ -261,7 +264,7 @@ class CostDashboard:
     def export_json_dashboard(self) -> Dict[str, Any]:
         """Export dashboard data as JSON"""
         return {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "budget": self.get_budget_status(),
             "providers": self.get_provider_stats(),
             "circuit_breakers": self.get_circuit_breaker_status(),

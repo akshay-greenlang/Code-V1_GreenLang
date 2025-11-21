@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AWS SES integration for email delivery (production-ready stub).
 """
@@ -11,6 +12,7 @@ from datetime import datetime
 from ..models import EmailMessage, EmailResult, EmailStatus
 from ..config import AWS_SES_CONFIG
 from ..exceptions import EmailServiceError
+from greenlang.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -78,7 +80,7 @@ class AWSSESService:
                 message_id=message.message_id,
                 supplier_id=message.supplier_id,
                 status=EmailStatus.SENT,
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
         except Exception as e:
@@ -89,5 +91,5 @@ class AWSSESService:
                 supplier_id=message.supplier_id,
                 status=EmailStatus.FAILED,
                 error_message=str(e),
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )

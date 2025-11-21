@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 14: Franchises Calculator Tests
 GL-VCCI Scope 3 Platform
@@ -19,6 +20,7 @@ from datetime import datetime
 from unittest.mock import Mock, AsyncMock
 
 from services.agents.calculator.categories.category_14 import (
+from greenlang.determinism import DeterministicClock
     Category14Calculator,
     Category14Input,
     FranchiseType,
@@ -59,7 +61,7 @@ def mock_provenance_builder():
     builder = Mock()
     builder.build = Mock(return_value=Mock(
         calculation_id="test_calc_id",
-        timestamp=datetime.utcnow(),
+        timestamp=DeterministicClock.utcnow(),
         category=14,
         tier=TierType.TIER_1,
         input_data_hash="test_hash",

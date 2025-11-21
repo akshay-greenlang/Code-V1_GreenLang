@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Structured logging and aggregation for GreenLang
 """
@@ -14,6 +15,7 @@ import threading
 from collections import deque, defaultdict
 import re
 from contextlib import contextmanager
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -147,7 +149,7 @@ class StructuredLogger:
         """Internal logging method"""
         # Create log entry
         entry = LogEntry(
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             level=level,
             message=message,
             context=self.context,

@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 Emission Factor CLI Tool
 
 Command-line interface for querying and calculating with emission factors.
@@ -12,6 +15,7 @@ Usage:
     greenlang factors validate-db
 """
 
+import logging
 import sys
 import json
 import argparse
@@ -86,7 +90,7 @@ def cmd_list(args):
         client.close()
 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -121,7 +125,7 @@ def cmd_search(args):
         client.close()
 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -215,10 +219,10 @@ def cmd_get(args):
         client.close()
 
     except EmissionFactorNotFoundError as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -278,14 +282,14 @@ def cmd_calculate(args):
         client.close()
 
     except EmissionFactorNotFoundError as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         print("\nTip: Use 'greenlang factors search' to find available factors")
         sys.exit(1)
     except UnitNotAvailableError as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -325,7 +329,7 @@ def cmd_stats(args):
         client.close()
 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -363,7 +367,7 @@ def cmd_validate_db(args):
         sys.exit(0 if results['valid'] else 1)
 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -391,7 +395,7 @@ def cmd_info(args):
         print()
 
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logger.error(f" {e}", file=sys.stderr)
         sys.exit(1)
 
 

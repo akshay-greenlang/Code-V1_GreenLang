@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GL-CBAM-APP - Test Report Generator
 
@@ -31,6 +32,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import xml.etree.ElementTree as ET
+from greenlang.determinism import DeterministicClock
 
 # ============================================================================
 # Configuration
@@ -398,7 +400,7 @@ def generate_html_report(data: Dict[str, Any]) -> str:
 
     # Fill template
     html = HTML_TEMPLATE.format(
-        timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        timestamp=DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S'),
         total_tests=test_results.get('total', 0),
         passed_tests=test_results.get('passed', 0),
         failed_tests=test_results.get('failed', 0),
@@ -417,7 +419,7 @@ def generate_markdown_report(data: Dict[str, Any]) -> str:
 
     md = f"""# GL-CBAM Test Report
 
-**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Generated:** {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ## Test Execution Summary
 
@@ -510,7 +512,7 @@ def main():
     # Compile data
     data = {
         'metadata': {
-            'generated_at': datetime.now().isoformat(),
+            'generated_at': DeterministicClock.now().isoformat(),
             'format': args.format
         },
         'test_results': test_results,

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for AsyncFuelAgentAI with async infrastructure.
 
 Tests:

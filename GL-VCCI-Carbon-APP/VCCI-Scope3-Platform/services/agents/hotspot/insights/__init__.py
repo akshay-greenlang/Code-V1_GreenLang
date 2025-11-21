@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Insights Generation Modules
 GL-VCCI Scope 3 Platform

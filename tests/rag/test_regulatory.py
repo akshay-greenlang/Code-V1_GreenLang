@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Regulatory compliance tests for GreenLang RAG system.
 
@@ -14,6 +15,7 @@ References:
 """
 
 import os
+from greenlang.determinism import DeterministicClock
 # Fix OpenMP conflict between PyTorch and FAISS on Windows
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 
@@ -780,7 +782,7 @@ class TestIngestionManifest:
 
     def test_manifest_timestamp_consistency(self):
         """Test timestamp fields are consistent and properly set."""
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         manifest = IngestionManifest(
             collection_id="test_collection",
@@ -791,7 +793,7 @@ class TestIngestionManifest:
             total_embeddings=0,
         )
 
-        end_time = datetime.utcnow()
+        end_time = DeterministicClock.utcnow()
 
         # Ingestion timestamp should be within test execution time
         assert start_time <= manifest.ingestion_timestamp <= end_time

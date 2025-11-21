@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 8: Upstream Leased Assets Calculator
 GL-VCCI Scope 3 Platform
@@ -29,6 +30,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 
 from ..models import (
+from greenlang.determinism import FinancialDecimal
     Category8Input,
     CalculationResult,
     DataQualityInfo,
@@ -190,7 +192,7 @@ class Category8Calculator:
                 total_emissions += elec_emissions
                 calculation_details["electricity_kwh"] = input_data.electricity_kwh
                 calculation_details["electricity_ef"] = electricity_ef.value
-                calculation_details["electricity_emissions_kgco2e"] = float(elec_emissions)
+                calculation_details["electricity_emissions_kgco2e"] = FinancialDecimal.from_string(elec_emissions)
 
             # Natural gas
             if input_data.natural_gas_kwh and input_data.natural_gas_kwh > 0:
@@ -198,7 +200,7 @@ class Category8Calculator:
                 total_emissions += gas_emissions
                 calculation_details["natural_gas_kwh"] = input_data.natural_gas_kwh
                 calculation_details["natural_gas_ef"] = NATURAL_GAS_EF
-                calculation_details["natural_gas_emissions_kgco2e"] = float(gas_emissions)
+                calculation_details["natural_gas_emissions_kgco2e"] = FinancialDecimal.from_string(gas_emissions)
 
             # District heating
             if input_data.heating_kwh and input_data.heating_kwh > 0:
@@ -206,7 +208,7 @@ class Category8Calculator:
                 total_emissions += heating_emissions
                 calculation_details["heating_kwh"] = input_data.heating_kwh
                 calculation_details["heating_ef"] = DISTRICT_HEATING_EF
-                calculation_details["heating_emissions_kgco2e"] = float(heating_emissions)
+                calculation_details["heating_emissions_kgco2e"] = FinancialDecimal.from_string(heating_emissions)
 
             # District cooling
             if input_data.cooling_kwh and input_data.cooling_kwh > 0:
@@ -214,7 +216,7 @@ class Category8Calculator:
                 total_emissions += cooling_emissions
                 calculation_details["cooling_kwh"] = input_data.cooling_kwh
                 calculation_details["cooling_ef"] = DISTRICT_COOLING_EF
-                calculation_details["cooling_emissions_kgco2e"] = float(cooling_emissions)
+                calculation_details["cooling_emissions_kgco2e"] = FinancialDecimal.from_string(cooling_emissions)
 
             # Fuel oil
             if input_data.fuel_oil_liters and input_data.fuel_oil_liters > 0:
@@ -222,7 +224,7 @@ class Category8Calculator:
                 total_emissions += oil_emissions
                 calculation_details["fuel_oil_liters"] = input_data.fuel_oil_liters
                 calculation_details["fuel_oil_ef"] = FUEL_OIL_EF
-                calculation_details["fuel_oil_emissions_kgco2e"] = float(oil_emissions)
+                calculation_details["fuel_oil_emissions_kgco2e"] = FinancialDecimal.from_string(oil_emissions)
 
             emissions_kgco2e = float(
                 total_emissions.quantize(Decimal('0.000001'), rounding=ROUND_HALF_UP)

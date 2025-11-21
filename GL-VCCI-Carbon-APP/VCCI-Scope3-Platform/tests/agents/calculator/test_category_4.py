@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Test Suite for Category 4: Upstream Transportation & Distribution
 GL-VCCI Scope 3 Platform

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Phase 4B: Analytics Dashboard Tests
 

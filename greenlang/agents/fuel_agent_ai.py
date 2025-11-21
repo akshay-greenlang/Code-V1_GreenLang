@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Fuel Emissions Calculator with ChatSession Integration.
 
 This module provides an AI-enhanced version of the FuelAgent that uses
@@ -38,6 +39,7 @@ from datetime import datetime
 import asyncio
 import logging
 import warnings
+from greenlang.determinism import DeterministicClock
 
 # DEPRECATION WARNING: This agent is deprecated for CRITICAL PATH emissions calculations
 warnings.warn(
@@ -443,7 +445,7 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
         Returns:
             AgentResult with emissions data and AI explanation
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Validate input
         if not self.validate(payload):
@@ -468,7 +470,7 @@ class FuelAgentAI(Agent[FuelInput, FuelOutput]):
                 loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result["success"]:

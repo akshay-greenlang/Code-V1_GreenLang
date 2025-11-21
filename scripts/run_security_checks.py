@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Security Testing Script
 Comprehensive security scanning for dependencies and code

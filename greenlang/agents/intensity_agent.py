@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Dict, Any, Optional
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 import logging

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive Integration Tests for Industrial AI Agents.
 
 This module provides end-to-end integration tests for the 3 industrial AI agents:

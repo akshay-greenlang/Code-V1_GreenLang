@@ -1,11 +1,13 @@
 name: packs/demo-test
 version: 0.1.0
 kind: pack
+pack_schema_version: '1.0'
 description: A GreenLang pack for packs/demo-test
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
 license: MIT
-authors:
-- name: Your Name
-  email: you@example.com
 contents:
   pipelines: []
   agents: []
@@ -13,6 +15,9 @@ contents:
 dependencies:
 - name: greenlang-sdk
   version: '>=0.1.0'
+authors:
+- name: Your Name
+  email: you@example.com
 security:
   sbom: sbom.spdx.json
   signatures: signatures/

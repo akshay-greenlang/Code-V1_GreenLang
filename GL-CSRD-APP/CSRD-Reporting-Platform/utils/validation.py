@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Input validation and sanitization utilities.
 

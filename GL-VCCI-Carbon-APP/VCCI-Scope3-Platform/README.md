@@ -217,7 +217,7 @@ vcci pipeline run --input data/ --output results/
 
 ### Prerequisites
 
-- Python 3.9+ (3.11+ recommended)
+- Python 3.10+ (3.11+ recommended)
 - PostgreSQL 15+
 - Redis 7+
 - Weaviate 1.20+ (vector database)

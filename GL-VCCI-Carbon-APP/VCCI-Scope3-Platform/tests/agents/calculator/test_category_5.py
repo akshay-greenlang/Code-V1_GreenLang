@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Category 5: Waste Generated in Operations Calculator
 GL-VCCI Scope 3 Platform
@@ -21,6 +22,7 @@ from datetime import datetime
 from unittest.mock import AsyncMock, Mock
 
 from services.agents.calculator.categories.category_5 import (
+from greenlang.determinism import DeterministicClock
     Category5Calculator,
     WASTE_TYPES,
     DISPOSAL_METHODS,
@@ -84,7 +86,7 @@ def mock_provenance_builder():
     builder.hash_factor_info = Mock(return_value="test_hash")
     builder.build = AsyncMock(return_value=ProvenanceChain(
         calculation_id="test_calc",
-        timestamp=datetime.utcnow(),
+        timestamp=DeterministicClock.utcnow(),
         category=5,
         tier=TierType.TIER_2,
         input_data_hash="input_hash",

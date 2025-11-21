@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CalculatorAgent - ESRS Metrics Calculator with ZERO HALLUCINATION GUARANTEE
 
@@ -36,6 +37,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 # Configure logging
 logging.basicConfig(
@@ -235,7 +238,7 @@ class FormulaEngine:
             # Try to find matching emission factor
             for key, ef_dict in self.emission_factors_db.items():
                 if isinstance(ef_dict, dict) and "emission_factor" in ef_dict:
-                    ef_value = float(ef_dict["emission_factor"])
+                    ef_value = FinancialDecimal.from_string(ef_dict["emission_factor"])
                     data_sources.append(f"Emission Factor ({key}): {ef_value}")
                     break
 
@@ -655,7 +658,7 @@ class CalculatorAgent:
                 intermediate_steps=intermediate_steps,
                 output=result,
                 unit=formula_spec.get("unit", ""),
-                timestamp=datetime.now().isoformat(),
+                timestamp=DeterministicClock.now().isoformat(),
                 data_sources=data_sources
             )
             self.provenance_records.append(provenance)
@@ -669,8 +672,8 @@ class CalculatorAgent:
                 calculation_method="deterministic",
                 formula=formula_spec.get("formula"),
                 inputs={k: v for k, v in input_data.items() if k in formula_spec.get("inputs", [])},
-                timestamp=datetime.now().isoformat(),
-                provenance_id=f"{metric_code}_{datetime.now().timestamp()}"
+                timestamp=DeterministicClock.now().isoformat(),
+                provenance_id=f"{metric_code}_{DeterministicClock.now().timestamp()}"
             )
 
             return calculated, None
@@ -705,7 +708,7 @@ class CalculatorAgent:
         Returns:
             Result dictionary with calculated metrics and errors
         """
-        self.stats["start_time"] = datetime.now()
+        self.stats["start_time"] = DeterministicClock.now()
         self.stats["total_metrics_requested"] = len(metric_codes)
 
         # Resolve dependencies
@@ -732,7 +735,7 @@ class CalculatorAgent:
                 if error:
                     calculation_errors.append(error.dict())
 
-        self.stats["end_time"] = datetime.now()
+        self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
         ms_per_metric = (processing_time * 1000) / len(metric_codes) if metric_codes else 0
 

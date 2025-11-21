@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit Tests for UnitRegistry Coverage (INTL-103 DoD Gap 6)
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Validation Framework
 Core validation framework with multi-layer validation support.

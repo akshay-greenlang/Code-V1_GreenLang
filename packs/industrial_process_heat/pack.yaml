@@ -1,28 +1,34 @@
-pack_id: "industrial/process_heat_agent"
-pack_version: "1.0.0"
-name: "Industrial Process Heat Analysis Pack"
-description: "Master coordinator for industrial process heat analysis and solar thermal decarbonization"
-
+name: industrial-process-heat-analysis-pack
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+description: Master coordinator for industrial process heat analysis and solar thermal
+  decarbonization
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 agents:
-  - agent_id: "industrial/process_heat_agent"
-    class: "IndustrialProcessHeatAgent_AI"
-    module: "greenlang.agents.industrial_process_heat_agent_ai"
-
+- agent_id: industrial/process_heat_agent
+  class: IndustrialProcessHeatAgent_AI
+  module: greenlang.agents.industrial_process_heat_agent_ai
+contents:
+  pipelines:
+  - gl.yaml
 dependencies:
   python_packages:
-    - "pydantic>=2.0,<3.0"
-    - "numpy>=1.24,<2.0"
+  - pydantic>=2.0,<3.0
+  - numpy>=1.24,<2.0
   greenlang_modules:
-    - "greenlang.agents.base"
-    - "greenlang.intelligence"
-
+  - greenlang.agents.base
+  - greenlang.intelligence
 resource_requirements:
   memory_mb: 512
   cpu_cores: 1
   gpu_required: false
-
 api_endpoints:
-  - endpoint: "/api/v1/agents/industrial/process_heat/execute"
-    method: "POST"
-    authentication: "required"
-    rate_limit: "100 req/min"
+- endpoint: /api/v1/agents/industrial/process_heat/execute
+  method: POST
+  authentication: required
+  rate_limit: 100 req/min

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Webhook System
 
@@ -17,6 +18,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from greenlang.partners.webhooks import (
+from greenlang.determinism import DeterministicClock
     WebhookModel,
     WebhookDeliveryModel,
     WebhookEventType,
@@ -194,7 +196,7 @@ class TestWebhookManager:
         """Test successful webhook delivery"""
         event = WebhookEvent(
             event_type=WebhookEventType.WORKFLOW_COMPLETED,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             partner_id="partner_123",
             data={"workflow_id": "wf_123", "status": "success"}
         )
@@ -216,7 +218,7 @@ class TestWebhookManager:
         """Test webhook delivery failure"""
         event = WebhookEvent(
             event_type=WebhookEventType.WORKFLOW_COMPLETED,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             partner_id="partner_123",
             data={"test": "data"}
         )
@@ -238,7 +240,7 @@ class TestWebhookManager:
         """Test webhook delivery timeout"""
         event = WebhookEvent(
             event_type=WebhookEventType.WORKFLOW_COMPLETED,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             partner_id="partner_123",
             data={"test": "data"}
         )
@@ -257,7 +259,7 @@ class TestWebhookManager:
         """Test that sending event creates delivery record"""
         event = WebhookEvent(
             event_type=WebhookEventType.WORKFLOW_COMPLETED,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             partner_id="partner_123",
             data={"test": "data"}
         )
@@ -441,7 +443,7 @@ class TestWebhookDeliveryLog:
         delivery.status = DeliveryStatus.SUCCESS
         delivery.status_code = 200
         delivery.response_time_ms = 150
-        delivery.completed_at = datetime.utcnow()
+        delivery.completed_at = DeterministicClock.utcnow()
         db_session.commit()
 
         # Verify updated
@@ -478,7 +480,7 @@ class TestWebhookEventTypes:
         """Test workflow completed event"""
         event = WebhookEvent(
             event_type=WebhookEventType.WORKFLOW_COMPLETED,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             partner_id="partner_123",
             data={
                 "workflow_id": "wf_123",
@@ -494,7 +496,7 @@ class TestWebhookEventTypes:
         """Test agent result event"""
         event = WebhookEvent(
             event_type=WebhookEventType.AGENT_RESULT,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             partner_id="partner_123",
             data={
                 "agent_id": "carbon_analyzer",
@@ -510,7 +512,7 @@ class TestWebhookEventTypes:
         """Test usage limit reached event"""
         event = WebhookEvent(
             event_type=WebhookEventType.USAGE_LIMIT_REACHED,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             partner_id="partner_123",
             data={
                 "current_usage": 1000,

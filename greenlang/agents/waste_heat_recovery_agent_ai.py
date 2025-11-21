@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-Powered Waste Heat Recovery Agent with Comprehensive Heat Transfer Modeling.
 
 This module provides a production-grade agent for identifying, quantifying, and recovering
@@ -114,14 +115,9 @@ import logging
 import math
 
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
-from greenlang.intelligence import (
-    ChatSession,
-    ChatMessage,
-    Role,
-    Budget,
-    BudgetExceeded,
-    create_provider,
-)
+# Fixed: Removed incomplete import
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 
 logger = logging.getLogger(__name__)
@@ -524,7 +520,6 @@ class WasteHeatCharacterization:
         return cls.PROCESS_WASTE_HEAT.get(
             process_type,
             cls.PROCESS_WASTE_HEAT["boiler_exhaust"]  # Default
-        )
 
 
 # ============================================================================
@@ -790,7 +785,6 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
                 name="WasteHeatRecoveryAgent_AI",
                 description="AI-powered waste heat recovery analysis with heat transfer modeling",
                 version="1.0.0",
-            )
         super().__init__(config)
 
         # Configuration
@@ -1166,7 +1160,6 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
             hot_side_in_f, hot_side_out_f,
             cold_side_in_f, cold_side_out_f,
             flow_arrangement
-        )
 
         # Get U-value for technology
         tech_data = HeatExchangerTechnology.TECHNOLOGIES.get(technology, {})
@@ -1732,7 +1725,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
         Returns:
             AgentResult with waste heat opportunities and recommendations
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         try:
             # Validate input
@@ -1740,7 +1733,6 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
                 return AgentResult(
                     success=False,
                     error="Invalid input: missing required fields",
-                )
 
             # Run async analysis
             loop = asyncio.new_event_loop()
@@ -1751,7 +1743,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
                 loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result.success:
@@ -1767,7 +1759,6 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
             return AgentResult(
                 success=False,
                 error=f"Failed to analyze waste heat recovery: {str(e)}",
-            )
 
     def _validate_input(self, input_data: Dict[str, Any]) -> bool:
         """Validate input data against schema."""
@@ -1797,7 +1788,6 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
             include_hvac_systems=input_data.get("include_hvac_systems", True),
             include_compressed_air=input_data.get("include_compressed_air", True),
             minimum_temperature_f=input_data.get("minimum_temperature_f", 120),
-        )
 
         return AgentResult(
             success=True,
@@ -1814,7 +1804,6 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
                 "deterministic": True,
                 "tool_calls": self._tool_call_count,
             },
-        )
 
     def health_check(self) -> Dict[str, Any]:
         """Agent health check for monitoring."""

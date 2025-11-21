@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example: Stream workflow results using GreenLang SDK
 

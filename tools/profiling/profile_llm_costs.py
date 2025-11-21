@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 LLM Cost Profiler
 ================
@@ -36,6 +37,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
 from contextlib import contextmanager
+from greenlang.determinism import DeterministicClock
 
 
 # Model pricing (per 1M tokens)
@@ -392,7 +394,7 @@ class LLMCostTracker:
 <body>
     <div class="container">
         <h1>LLM Cost Analysis Report</h1>
-        <p class="timestamp">Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+        <p class="timestamp">Generated: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
 
         <div class="summary">
             <div class="summary-item">
@@ -533,11 +535,11 @@ class LLMCostTracker:
             Path to saved file
         """
         if filename is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
             filename = f"llm_costs_{timestamp}.json"
 
         data = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "total_cost": self.get_total_cost(),
             "total_tokens": self.get_total_tokens(),
             "cost_by_operation": self.get_cost_by_operation(),

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SupplierEngagementAgent - Consent-aware supplier engagement and data collection.
 
@@ -15,6 +16,8 @@ from datetime import datetime
 from greenlang.sdk.base import Agent, Metadata, Result
 from greenlang.cache import CacheManager, get_cache_manager
 from greenlang.telemetry import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     MetricsCollector,
     get_logger,
     track_execution,
@@ -375,7 +378,7 @@ class SupplierEngagementAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         import uuid
 
         message = EmailMessage(
-            message_id=f"msg_{uuid.uuid4().hex[:16]}",
+            message_id=f"msg_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}",
             campaign_id="manual",
             supplier_id=supplier_id,
             to_email=consent_record.email_address,
@@ -383,7 +386,7 @@ class SupplierEngagementAgent(Agent[Dict[str, Any], Dict[str, Any]]):
             body_html=rendered["body_html"],
             body_text=rendered["body_text"],
             status=EmailStatus.PENDING,
-            scheduled_send=datetime.utcnow(),
+            scheduled_send=DeterministicClock.utcnow(),
             unsubscribe_url=unsubscribe_url
         )
 
@@ -528,5 +531,5 @@ class SupplierEngagementAgent(Agent[Dict[str, Any], Dict[str, Any]]):
                 "active": len(active_campaigns)
             },
             "agent_version": "1.0",
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": DeterministicClock.utcnow().isoformat()
         }

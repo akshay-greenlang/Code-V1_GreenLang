@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Complete Pipeline Runner
 
@@ -34,6 +35,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeRemainingColumn
 from rich.table import Table
+from greenlang.determinism import DeterministicClock
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -54,7 +56,7 @@ class BatchJob:
     def __init__(self, job_id: str, companies: List[Dict[str, Any]]):
         self.job_id = job_id
         self.companies = companies
-        self.start_time = datetime.now()
+        self.start_time = DeterministicClock.now()
         self.end_time: Optional[datetime] = None
         self.results: List[Dict[str, Any]] = []
         self.successful_count = 0
@@ -67,7 +69,7 @@ class BatchJob:
             "status": status,
             "result": result.dict() if result else None,
             "error": error,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": DeterministicClock.now().isoformat()
         })
 
         if status == "success":
@@ -77,7 +79,7 @@ class BatchJob:
 
     def complete(self):
         """Mark batch job as complete."""
-        self.end_time = datetime.now()
+        self.end_time = DeterministicClock.now()
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
@@ -288,7 +290,7 @@ def generate_summary_report(result: PipelineResult, output_path: Path):
         "",
         "---",
         "",
-        f"*Report generated at {datetime.now().isoformat()}*"
+        f"*Report generated at {DeterministicClock.now().isoformat()}*"
     ])
 
     # Write to file

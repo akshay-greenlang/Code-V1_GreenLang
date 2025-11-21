@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Metrics Collection and Prometheus Integration
 ======================================================
@@ -35,6 +36,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Union, Callable
 from uuid import uuid4
+from greenlang.determinism import DeterministicClock
 
 # Try to import Prometheus client
 try:
@@ -510,7 +512,7 @@ class MetricsCollector:
             operation_stats[operation] = self.get_operation_stats(operation)
 
         export_data = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "metrics": dict(metrics_data),
             "operation_stats": operation_stats,
             "system_info": {

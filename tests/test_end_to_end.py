@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """End-to-end workflow tests using actual emission factors from datasets."""
 
 import pytest

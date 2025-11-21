@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - Monte Carlo Uncertainty Propagation E2E Test

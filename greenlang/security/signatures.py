@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Signature Verification Module
 =============================
@@ -19,6 +20,7 @@ import base64
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple, List
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -258,7 +260,7 @@ class PackVerifier:
                 # Parse output for metadata
                 metadata = {
                     "publisher": "verified-with-cosign",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "algorithm": "ecdsa-sha256",
                     "cosign_output": result.stdout,
                 }
@@ -319,7 +321,7 @@ class PackVerifier:
             if result:
                 metadata = {
                     "publisher": "keyless-sigstore",
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "algorithm": "ecdsa-sha256",
                     "sigstore_bundle": True,
                 }
@@ -371,7 +373,7 @@ class PackVerifier:
         # Stub verification - in production this would use cryptographic verification
         metadata = {
             "publisher": sig_data.get("publisher", "unknown"),
-            "timestamp": sig_data.get("timestamp", datetime.now().isoformat()),
+            "timestamp": sig_data.get("timestamp", DeterministicClock.now().isoformat()),
             "algorithm": sig_data.get("algorithm", "sha256"),
         }
 
@@ -578,7 +580,7 @@ class PackVerifier:
         sig_data = {
             "version": "1.0",
             "publisher": publisher,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "algorithm": "sha256",
             "checksum": checksum,
             "signed_with": "stub-key",

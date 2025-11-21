@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 28: Test for custom agent tutorial (30 lines)."""
 
 import pytest

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example 8: Parallel Batch Processing
 =====================================
@@ -18,6 +19,7 @@ from pathlib import Path
 from typing import Dict, Any, List
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from greenlang.sdk.base import Agent, Result, Metadata
+from greenlang.determinism import deterministic_random
 
 
 class ParallelBuildingProcessor(Agent[List[Dict[str, Any]], Dict[str, Any]]):
@@ -191,8 +193,8 @@ def generate_test_buildings(count: int) -> List[Dict[str, Any]]:
         buildings.append({
             "building_id": f"B{i+1:03d}",
             "name": f"Building {i+1}",
-            "electricity_kwh": random.randint(10000, 100000),
-            "gas_therms": random.randint(500, 5000),
+            "electricity_kwh": deterministic_random().randint(10000, 100000),
+            "gas_therms": deterministic_random().randint(500, 5000),
             "country": "US"
         })
 

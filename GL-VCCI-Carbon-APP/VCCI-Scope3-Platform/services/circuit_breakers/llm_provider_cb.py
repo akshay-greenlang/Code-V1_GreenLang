@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Circuit Breaker for LLM Provider API Calls
 
@@ -22,6 +23,7 @@ from datetime import datetime
 import time
 
 from greenlang.resilience import (
+from greenlang.determinism import DeterministicClock
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitOpenError,
@@ -259,7 +261,7 @@ class LLMProviderCircuitBreaker:
             "text": f"[Claude response to: {prompt[:50]}...]",
             "tokens_used": 150,
             "latency_ms": int((time.time() - start_time) * 1000),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
         }
 
         return response
@@ -302,7 +304,7 @@ class LLMProviderCircuitBreaker:
             "text": f"[OpenAI response to: {prompt[:50]}...]",
             "tokens_used": 140,
             "latency_ms": int((time.time() - start_time) * 1000),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
         }
 
         return response

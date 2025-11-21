@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Consent management module for GDPR, CCPA, and CAN-SPAM compliance.
 """

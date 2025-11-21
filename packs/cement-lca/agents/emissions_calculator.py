@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Emissions Calculator Agent for cement and concrete LCA."""
 
 import json

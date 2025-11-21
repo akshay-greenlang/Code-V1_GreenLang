@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Evaluate agent results and determine CI pass/fail status.
 This script processes agent output and enforces governance decisions.
@@ -9,6 +10,7 @@ import sys
 import argparse
 from typing import Dict, Any, List
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 class ResultEvaluator:
@@ -42,7 +44,7 @@ class ResultEvaluator:
         evaluation = {
             'agent': self.agent,
             'status': self.status,
-            'timestamp': datetime.now().isoformat(),
+            'timestamp': DeterministicClock.now().isoformat(),
             'should_block': False,
             'severity': self._get_severity(),
             'actions': [],

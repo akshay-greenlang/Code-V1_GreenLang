@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Forecast Explanation Agent with AI-Powered Narrative Generation
 GL Intelligence Infrastructure - INSIGHT PATH
@@ -43,6 +44,7 @@ import logging
 from greenlang.agents.base_agents import InsightAgent, AuditEntry
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.agents.forecast_agent_sarima import SARIMAForecastAgent
+from greenlang.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -946,7 +948,7 @@ Temperature: 0.6 for consistency while allowing clear narrative flow."""
 
         narrative = f"""
 # FORECAST EXPLANATION REPORT
-Generated: {datetime.utcnow().isoformat()}Z
+Generated: {DeterministicClock.utcnow().isoformat()}Z
 
 ## Executive Summary
 **Target:** {target_column}
@@ -1079,7 +1081,7 @@ Generated: {datetime.utcnow().isoformat()}Z
 - **Stakeholder Level:** {context.get('stakeholder_level', 'executive')}
 - **Narrative Focus:** {context.get('narrative_focus', 'comprehensive')}
 - **Business Context:** {context.get('business_unit', 'N/A')} - {context.get('location', 'N/A')}
-- **Report Generated:** {datetime.utcnow().isoformat()}Z
+- **Report Generated:** {DeterministicClock.utcnow().isoformat()}Z
 
 ---
 
@@ -1093,7 +1095,7 @@ Generated: {datetime.utcnow().isoformat()}Z
         """Format explanation when no forecast was generated."""
         return f"""
 # FORECAST EXPLANATION REPORT
-Generated: {datetime.utcnow().isoformat()}Z
+Generated: {DeterministicClock.utcnow().isoformat()}Z
 
 ## Status
 No forecast was generated for {context.get('target_column', 'the target metric')}.

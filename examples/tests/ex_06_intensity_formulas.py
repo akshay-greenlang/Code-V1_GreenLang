@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 06: IntensityAgent formulas and zero guard."""
 
 import pytest

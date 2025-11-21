@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 7: Employee Commuting Calculator
 GL-VCCI Scope 3 Platform

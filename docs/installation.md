@@ -8,9 +8,11 @@ Install GreenLang CLI using pip:
 pip install greenlang-cli
 ```
 
+This installs the minimal core platform without ML dependencies, saving 250MB of disk space.
+
 ## Requirements
 
-- Python 3.8 or higher
+- Python 3.10 or higher (3.11+ recommended)
 - pip (Python package manager)
 - Optional: Docker for containerized execution
 - Optional: cosign for signature verification
@@ -19,17 +21,63 @@ pip install greenlang-cli
 
 ### 1. Install from PyPI (Recommended)
 
+#### Minimal Installation (No ML - Saves 250MB)
+
 ```bash
-# Basic installation
+# Basic installation without ML/vector databases
 pip install greenlang-cli
+```
 
-# With all optional dependencies
+This is perfect for:
+- Calculation engines
+- Regulatory compliance frameworks
+- Data intake and validation
+- Reporting and exports
+- Basic LLM integration (OpenAI, Anthropic)
+
+#### ML-Enhanced Installations
+
+```bash
+# Add ML capabilities (PyTorch, transformers, sentence-transformers)
+pip install greenlang-cli[ml]
+
+# Add vector databases (Weaviate, ChromaDB, Pinecone, Qdrant, FAISS)
+pip install greenlang-cli[vector-db]
+
+# Full AI capabilities (LLM + ML + Vector DBs)
+pip install greenlang-cli[ai-full]
+```
+
+#### Feature-Specific Installations
+
+```bash
+# Analytics and data processing
+pip install greenlang-cli[analytics]
+
+# Server components (FastAPI, Celery, Redis)
+pip install greenlang-cli[server]
+
+# Security features (Sigstore/cosign support)
+pip install greenlang-cli[security]
+
+# Development tools
+pip install greenlang-cli[dev]
+
+# Testing framework
+pip install greenlang-cli[test]
+
+# Documentation tools
+pip install greenlang-cli[doc]
+```
+
+#### Complete Installations
+
+```bash
+# Full features (excludes ML by default)
+pip install greenlang-cli[full]
+
+# Everything including ML/AI
 pip install greenlang-cli[all]
-
-# With specific features
-pip install greenlang-cli[security]  # Sigstore/cosign support
-pip install greenlang-cli[analytics] # Metrics and telemetry
-pip install greenlang-cli[dev]       # Development tools
 ```
 
 ### 2. Install from Source
@@ -216,6 +264,28 @@ pip install --upgrade certifi
 
 # Or disable SSL verification (NOT RECOMMENDED)
 pip install --trusted-host pypi.org greenlang-cli
+```
+
+**Missing ML dependencies error:**
+```
+MissingDependencyError: Missing Optional Dependency: torch
+```
+
+This means you're trying to use ML features without installing ML dependencies:
+```bash
+# Install ML capabilities
+pip install greenlang-cli[ml]
+
+# Or install all AI features
+pip install greenlang-cli[ai-full]
+```
+
+**Check available ML features:**
+```bash
+# Run the ML feature check utility
+python -m greenlang.utils.ml_imports
+
+# Output shows which ML components are installed
 ```
 
 ### Getting Help

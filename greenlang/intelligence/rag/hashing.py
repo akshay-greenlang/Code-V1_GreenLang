@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Deterministic hashing for RAG components.
 

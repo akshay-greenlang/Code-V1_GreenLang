@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Enterprise Data Pipeline System
 

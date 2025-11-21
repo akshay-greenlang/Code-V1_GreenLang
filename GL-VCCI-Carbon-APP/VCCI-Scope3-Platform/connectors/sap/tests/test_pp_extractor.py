@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for SAP PP (Production Planning) Extractor
 

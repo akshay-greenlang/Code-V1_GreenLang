@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Supply Chain Management (SCM) Extractor
 

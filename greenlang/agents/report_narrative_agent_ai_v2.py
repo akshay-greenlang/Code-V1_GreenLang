@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Report Narrative Agent with AI-Powered Insights
 GL Intelligence Infrastructure - INSIGHT PATH
@@ -22,6 +23,7 @@ import logging
 from greenlang.agents.base_agents import InsightAgent, AuditEntry
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.agents.report_agent import ReportAgent
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -348,7 +350,7 @@ class ReportNarrativeAgentAI_V2(InsightAgent):
             "executive_summary_data": exec_summary_data,
             "framework_metadata": formatted_report.get("framework_metadata", {}),
             "report_structure": formatted_report.get("report", ""),
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": DeterministicClock.utcnow().isoformat() + "Z",
             "calculation_trace": calculation_trace
         }
 
@@ -1335,7 +1337,7 @@ Temperature: 0.6 for consistency while allowing clear narrative flow."""
         """Format comprehensive narrative report."""
         framework = calculation_result.get("framework", "TCFD")
         stakeholder_level = context.get("stakeholder_level", "executive")
-        generated_at = calculation_result.get("generated_at", datetime.utcnow().isoformat() + "Z")
+        generated_at = calculation_result.get("generated_at", DeterministicClock.utcnow().isoformat() + "Z")
 
         report = f"""
 # {framework} CLIMATE DISCLOSURE REPORT

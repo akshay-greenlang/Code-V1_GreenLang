@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Load Testing Suite - Locust Test Modules
 ================================================

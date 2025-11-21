@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Provenance - Environment Module
 Environment capture for reproducibility and audit trails.

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PDF OCR Parser with Azure Form Recognizer Stub
 

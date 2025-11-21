@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CBAM Importer Copilot - Complete End-to-End Pipeline
 
@@ -45,6 +46,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any
+from greenlang.determinism import DeterministicClock
 
 # Add agents to path
 sys.path.insert(0, str(Path(__file__).parent / "agents"))
@@ -145,7 +147,7 @@ class CBAMPipeline:
         Returns:
             Complete CBAM report dictionary
         """
-        pipeline_start = datetime.now()
+        pipeline_start = DeterministicClock.now()
 
         logger.info("="*80)
         logger.info("CBAM PIPELINE EXECUTION STARTED")
@@ -186,11 +188,11 @@ class CBAMPipeline:
         logger.info("STAGE 1: SHIPMENT INTAKE & VALIDATION")
         logger.info("─" * 80)
 
-        stage1_start = datetime.now()
+        stage1_start = DeterministicClock.now()
 
         validated_output = self.intake_agent.process(input_file)
 
-        stage1_end = datetime.now()
+        stage1_end = DeterministicClock.now()
         stage1_time = (stage1_end - stage1_start).total_seconds()
 
         # Record agent execution for provenance
@@ -232,12 +234,12 @@ class CBAMPipeline:
         logger.info("STAGE 2: EMISSIONS CALCULATION (ZERO HALLUCINATION)")
         logger.info("─" * 80)
 
-        stage2_start = datetime.now()
+        stage2_start = DeterministicClock.now()
 
         shipments = validated_output['shipments']
         calculated_output = self.calculator_agent.calculate_batch(shipments)
 
-        stage2_end = datetime.now()
+        stage2_end = DeterministicClock.now()
         stage2_time = (stage2_end - stage2_start).total_seconds()
 
         # Record agent execution for provenance
@@ -276,7 +278,7 @@ class CBAMPipeline:
         logger.info("STAGE 3: REPORT GENERATION & VALIDATION")
         logger.info("─" * 80)
 
-        stage3_start = datetime.now()
+        stage3_start = DeterministicClock.now()
 
         shipments_with_emissions = calculated_output['shipments']
         final_report = self.packager_agent.generate_report(
@@ -284,7 +286,7 @@ class CBAMPipeline:
             importer_info
         )
 
-        stage3_end = datetime.now()
+        stage3_end = DeterministicClock.now()
         stage3_time = (stage3_end - stage3_start).total_seconds()
 
         # Record agent execution for provenance
@@ -313,7 +315,7 @@ class CBAMPipeline:
         # PIPELINE SUMMARY
         # ====================================================================
 
-        pipeline_time = (datetime.now() - pipeline_start).total_seconds()
+        pipeline_time = (DeterministicClock.now() - pipeline_start).total_seconds()
 
         logger.info("="*80)
         logger.info("PIPELINE EXECUTION COMPLETE")

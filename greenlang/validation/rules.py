@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Business Rules Engine
 Flexible rule-based validation system.

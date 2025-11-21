@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Reproducibility and performance integration tests.
 """

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Standards Generators
 GL-VCCI Scope 3 Platform

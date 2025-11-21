@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 FakeProvider - Demo Mode LLM Provider
 

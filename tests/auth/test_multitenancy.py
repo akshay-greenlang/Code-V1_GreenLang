@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for GreenLang Multi-tenancy Support
 """
@@ -11,6 +12,7 @@ from datetime import datetime, timedelta
 import jwt
 
 from greenlang.auth import (
+from greenlang.determinism import DeterministicClock
     TenantManager, Tenant, TenantQuota, TenantIsolation, TenantContext,
     RBACManager, Role, Permission, AccessControl,
     AuthManager, AuthToken, APIKey, ServiceAccount
@@ -664,8 +666,8 @@ class TestAuditLogging(unittest.TestCase):
         )
         
         # Generate report
-        start_time = datetime.utcnow() - timedelta(days=1)
-        end_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow() - timedelta(days=1)
+        end_time = DeterministicClock.utcnow()
         report = self.audit.get_report("tenant123", start_time, end_time)
         
         self.assertEqual(report["tenant_id"], "tenant123")
@@ -694,8 +696,8 @@ class TestAuditLogging(unittest.TestCase):
         ))
         
         # Generate SOX report
-        start_time = datetime.utcnow() - timedelta(days=30)
-        end_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow() - timedelta(days=30)
+        end_time = DeterministicClock.utcnow()
         sox_report = reporter.generate_sox_report(
             "tenant123", start_time, end_time
         )
@@ -805,8 +807,8 @@ class TestIntegration(unittest.TestCase):
         # Generate audit report
         report = audit_logger.get_report(
             tenant.tenant_id,
-            datetime.utcnow() - timedelta(days=1),
-            datetime.utcnow()
+            DeterministicClock.utcnow() - timedelta(days=1),
+            DeterministicClock.utcnow()
         )
         
         self.assertGreater(report["total_events"], 0)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for LLM Integration Module
 
@@ -19,6 +20,7 @@ import asyncio
 from typing import Dict, Any
 
 from greenlang_core.llm import (
+from greenlang.determinism import DeterministicClock
     LLMProvider,
     AnthropicProvider,
     OpenAIProvider,
@@ -388,7 +390,7 @@ class TestRateLimiter:
 
         # Mock time passing (61 seconds)
         with patch('time.time') as mock_time:
-            mock_time.return_value = datetime.now().timestamp() + 61
+            mock_time.return_value = DeterministicClock.now().timestamp() + 61
 
             # Should be allowed again
             allowed = await limiter.check_request(tokens=1000)
@@ -433,7 +435,7 @@ class TestCircuitBreaker:
 
         # Mock time passing (61 seconds)
         with patch('time.time') as mock_time:
-            mock_time.return_value = datetime.now().timestamp() + 61
+            mock_time.return_value = DeterministicClock.now().timestamp() + 61
 
             await circuit_breaker.check_request()
 
@@ -448,7 +450,7 @@ class TestCircuitBreaker:
 
         # Transition to half-open
         with patch('time.time') as mock_time:
-            mock_time.return_value = datetime.now().timestamp() + 61
+            mock_time.return_value = DeterministicClock.now().timestamp() + 61
             await circuit_breaker.check_request()
 
         # Record successful requests

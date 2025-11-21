@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - Full 5-Agent Pipeline E2E Test
@@ -40,6 +41,8 @@ from services.agents.calculator.models import Category1Input, CalculationResult
 from services.agents.hotspot.agent import HotspotAnalysisAgent
 from services.agents.engagement.agent import SupplierEngagementAgent
 from services.agents.reporting.agent import Scope3ReportingAgent
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = get_logger(__name__)
 
@@ -67,7 +70,7 @@ def create_test_suppliers(count: int = 100) -> List[Dict[str, Any]]:
             "tier": 1 if i < count * 0.2 else 2,
             "year": 2024,
             "has_pcf": i < count * 0.1,  # 10% have primary data
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": DeterministicClock.utcnow().isoformat(),
         }
         suppliers.append(supplier)
 
@@ -86,13 +89,13 @@ def create_ingestion_records(
             source_file="test_pipeline.csv",
             source_system=SourceSystem.Manual_Upload,
             ingestion_format=IngestionFormat.CSV,
-            batch_id=f"BATCH-TEST-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+            batch_id=f"BATCH-TEST-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}",
             row_number=suppliers.index(supplier) + 1,
             original_data=supplier,
         )
 
         record = IngestionRecord(
-            record_id=f"ING-{datetime.utcnow().strftime('%Y%m%d')}-{uuid4().hex[:8].upper()}",
+            record_id=f"ING-{DeterministicClock.utcnow().strftime('%Y%m%d')}-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8].upper()}",
             entity_type=EntityType.supplier,
             tenant_id=tenant_id,
             entity_name=supplier["name"],
@@ -260,7 +263,7 @@ class TestFull5AgentPipeline:
                         "tier": calc_result.tier_used,
                         "uncertainty": calc_result.uncertainty_range[1] - calc_result.uncertainty_range[0] if calc_result.uncertainty_range else 0,
                         "spend": supplier["spend_amount"],
-                        "calculated_at": datetime.utcnow().isoformat(),
+                        "calculated_at": DeterministicClock.utcnow().isoformat(),
                     })
             except Exception as e:
                 logger.warning(f"Calculation failed for {supplier['supplier_id']}: {e}")
@@ -335,7 +338,7 @@ class TestFull5AgentPipeline:
                 "campaign_name": "High Impact Supplier Engagement Q4 2024",
                 "supplier_ids": [s["supplier_id"] for s in top_suppliers],
                 "message_template": "high_impact",
-                "schedule_date": (datetime.utcnow() + timedelta(days=1)).isoformat(),
+                "schedule_date": (DeterministicClock.utcnow() + timedelta(days=1)).isoformat(),
             }
         }
 

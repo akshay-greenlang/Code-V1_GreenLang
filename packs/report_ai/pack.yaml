@@ -1,10 +1,12 @@
-schema_version: 2.0.0
-id: reports/emissions_report_ai_v1
 name: Emissions Report Generator (AI-Powered)
 version: 1.0.0
-summary: AI-powered comprehensive emissions report generation with multi-framework
-  support (TCFD, CDP, GRI, SASB, SEC, ISO14064) using deterministic calculations and
-  intelligent narratives
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 tags:
 - reporting
 - emissions
@@ -18,115 +20,12 @@ tags:
 - iso14064
 - multi-framework
 - citations
+id: reports/emissions_report_ai_v1
+summary: AI-powered comprehensive emissions report generation with multi-framework
+  support (TCFD, CDP, GRI, SASB, SEC, ISO14064) using deterministic calculations and
+  intelligent narratives
 owners:
 - greenlang-team
-license: MIT
-compute:
-  entrypoint: python://greenlang.agents.report_agent_ai:execute
-  deterministic: true
-  timeout_s: 60
-  memory_limit_mb: 1024
-  inputs:
-    carbon_data:
-      dtype: object
-      unit: '1'
-      description: Carbon emissions data with aggregated metrics
-    framework:
-      dtype: string
-      unit: '1'
-      description: Sustainability reporting framework
-    format:
-      dtype: string
-      unit: '1'
-      description: Output format for the generated report
-      default: markdown
-      required: false
-    building_info:
-      dtype: object
-      unit: '1'
-      description: Building/facility metadata
-    period:
-      dtype: object
-      unit: '1'
-      description: Reporting period boundaries
-    previous_period_data:
-      dtype: object
-      unit: '1'
-      description: Previous period emissions for year-over-year comparison
-    baseline_data:
-      dtype: object
-      unit: '1'
-      description: Baseline year emissions for baseline change analysis
-  outputs:
-    report:
-      dtype: string
-      unit: '1'
-      description: Formatted emissions report (text content)
-    format_used:
-      dtype: string
-      unit: '1'
-      description: Output format used (markdown, json, or text)
-    framework_used:
-      dtype: string
-      unit: '1'
-      description: Framework used for report structure
-    generated_at:
-      dtype: string
-      unit: '1'
-      description: ISO 8601 timestamp of report generation
-    total_co2e_tons:
-      dtype: float64
-      unit: tCO2e
-      description: Total greenhouse gas emissions in metric tons CO2 equivalent
-    total_co2e_kg:
-      dtype: float64
-      unit: kgCO2e
-      description: Total emissions in kilograms CO2 equivalent
-    emissions_breakdown:
-      dtype: list
-      description: Breakdown of emissions by source
-      unit: '1'
-    carbon_intensity:
-      dtype: object
-      unit: '1'
-      description: Carbon intensity metrics if provided in input
-    trends:
-      dtype: object
-      unit: '1'
-      description: Year-over-year and baseline change analysis
-    charts:
-      dtype: object
-      unit: '1'
-      description: Chart data for visualization (pie, bar, timeseries)
-    compliance_status:
-      dtype: string
-      unit: '1'
-      description: Overall compliance status with selected framework
-    compliance_checks:
-      dtype: list
-      description: Detailed compliance check results
-      unit: '1'
-    executive_summary:
-      dtype: string
-      unit: '1'
-      description: Natural language executive summary for leadership
-    executive_summary_data:
-      dtype: object
-      unit: '1'
-      description: Structured executive summary data
-    ai_narrative:
-      dtype: string
-      unit: '1'
-      description: AI-generated professional narrative with analysis and recommendations
-    framework_metadata:
-      dtype: object
-      unit: '1'
-      description: Framework-specific metadata and requirements
-    citations:
-      dtype: object
-      unit: '1'
-      description: Calculation citations for audit trail
-  factors: {}
 ai:
   system_prompt: "You are a climate reporting specialist for GreenLang.\nYou help\
     \ generate comprehensive emissions reports compliant with\ninternational frameworks\

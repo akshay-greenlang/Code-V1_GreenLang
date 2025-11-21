@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Rate Limiting and Throttling Handler.
 
 Production-grade rate limiting using token bucket and leaky bucket algorithms:

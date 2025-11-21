@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pytest fixtures for Phase 4 agent tests.
 

@@ -696,7 +696,7 @@ Build the world's most advanced **Scope 3 Value Chain Carbon Intelligence Platfo
 - **Test Coverage:** 90% minimum (unit + integration)
 - **Code Review:** 100% of PRs reviewed by 2+ engineers
 - **Linting:** Black, Ruff (auto-formatted)
-- **Type Hints:** 100% of functions (Python 3.9+ typing)
+- **Type Hints:** 100% of functions (Python 3.10+ typing)
 - **Docstrings:** Google style, 100% of public APIs
 
 **Documentation Quality:**

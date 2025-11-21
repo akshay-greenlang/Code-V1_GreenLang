@@ -748,7 +748,7 @@ Target: 1,000+ packs
 **Core Technologies:**
 
 **Programming Languages:**
-- Python 3.11+ (primary implementation language)
+- Python 3.10+ (primary implementation language)
 - TypeScript 5+ (SDK, frontend)
 - Go 1.21+ (performance-critical services)
 - Rust 1.75+ (security-critical components)

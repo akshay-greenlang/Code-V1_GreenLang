@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Load Testing - Spike Test Scenario
 
@@ -46,6 +47,7 @@ from io import BytesIO
 import time
 
 from load_test_utils import (
+from greenlang.determinism import deterministic_random
     generate_csv_data,
     monitor_system_resources,
 )
@@ -121,7 +123,7 @@ class SpikeTestUser(HttpUser):
 
     def on_start(self):
         """Initialize user session."""
-        self.user_id = f"spike_{random.randint(1, 10000)}"
+        self.user_id = f"spike_{deterministic_random().randint(1, 10000)}"
 
         # Authenticate
         with self.client.post(
@@ -181,7 +183,7 @@ class SpikeTestUser(HttpUser):
         These queries are heavily cached and should remain fast even
         during spikes.
         """
-        category = random.randint(1, 15)
+        category = deterministic_random().randint(1, 15)
 
         with self.client.get(
             f"/api/emissions/aggregate?category={category}",
@@ -210,9 +212,9 @@ class SpikeTestUser(HttpUser):
         spikes but must not fail. Timeout: 5s acceptable.
         """
         payload = {
-            "category": random.choice([1, 4, 6]),
-            "tier": random.choice([1, 2, 3]),
-            "supplier_id": f"SUP-{random.randint(1, 10000)}",
+            "category": deterministic_random().choice([1, 4, 6]),
+            "tier": deterministic_random().choice([1, 2, 3]),
+            "supplier_id": f"SUP-{deterministic_random().randint(1, 10000)}",
             "product": "Steel plate",
             "quantity": random.uniform(100, 10000),
             "unit": "kg",
@@ -269,7 +271,7 @@ class SpikeTestUser(HttpUser):
         Reports can be queued during high load.
         """
         payload = {
-            "report_type": random.choice(["esrs_e1", "cdp"]),
+            "report_type": deterministic_random().choice(["esrs_e1", "cdp"]),
             "year": 2024,
             "format": "json"
         }
@@ -304,7 +306,7 @@ class SpikeTestUser(HttpUser):
         Degradation from <2s to <10s is acceptable.
         """
         # Small file during spike (50 rows instead of 500)
-        num_rows = random.randint(50, 100)
+        num_rows = deterministic_random().randint(50, 100)
         csv_data = generate_csv_data(num_rows)
 
         files = {

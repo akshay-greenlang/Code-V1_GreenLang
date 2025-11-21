@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/utils/unit_conversion.py
 

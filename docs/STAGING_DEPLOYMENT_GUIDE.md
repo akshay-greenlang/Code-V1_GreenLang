@@ -3,7 +3,7 @@
 **Version:** 1.0
 **Last Updated:** 2025-10-01
 **Target Environment:** Staging
-**Prerequisites:** Docker, Python 3.9+, API Keys for OpenAI/Anthropic
+**Prerequisites:** Docker, Python 3.10+, API Keys for OpenAI/Anthropic
 
 ---
 

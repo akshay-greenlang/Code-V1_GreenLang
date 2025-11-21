@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 tests/cache/test_emission_factor_cache.py
 

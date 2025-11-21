@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Automated Import Pipeline
 
@@ -27,6 +28,8 @@ import yaml
 from .models import ImportJob, ImportStatus, FactorVersion, ChangeLog, ChangeType
 from .validator import EmissionFactorValidator
 from ..models import EmissionResult
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +68,7 @@ class RollbackManager:
         Returns:
             Path to backup file
         """
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        timestamp = DeterministicClock.now().strftime('%Y%m%d_%H%M%S')
         backup_name = f"backup_{job_id}_{timestamp}.db"
         backup_path = self.backup_dir / backup_name
 
@@ -121,7 +124,7 @@ class RollbackManager:
         Returns:
             Number of backups deleted
         """
-        cutoff_time = datetime.now() - timedelta(days=keep_days)
+        cutoff_time = DeterministicClock.now() - timedelta(days=keep_days)
         deleted_count = 0
 
         for backup_file in self.backup_dir.glob("backup_*.db"):
@@ -188,7 +191,7 @@ class AutomatedImportPipeline:
         """
         logger.info(f"Starting import job: {job.job_id} - {job.job_name}")
         job.status = ImportStatus.RUNNING
-        job.started_at = datetime.now()
+        job.started_at = DeterministicClock.now()
 
         backup_path = None
 
@@ -232,7 +235,7 @@ class AutomatedImportPipeline:
 
             # Step 5: Mark as complete
             job.status = ImportStatus.COMPLETED
-            job.completed_at = datetime.now()
+            job.completed_at = DeterministicClock.now()
             job.duration_seconds = (job.completed_at - job.started_at).total_seconds()
 
             logger.info(f"Import job completed successfully: {job.job_id}")
@@ -247,12 +250,12 @@ class AutomatedImportPipeline:
             logger.error(f"Import job failed: {e}", exc_info=True)
 
             job.status = ImportStatus.FAILED
-            job.completed_at = datetime.now()
+            job.completed_at = DeterministicClock.now()
             job.duration_seconds = (job.completed_at - job.started_at).total_seconds()
 
             job.errors.append({
                 'error': str(e),
-                'timestamp': datetime.now().isoformat()
+                'timestamp': DeterministicClock.now().isoformat()
             })
 
             # Rollback if enabled
@@ -262,7 +265,7 @@ class AutomatedImportPipeline:
                 if self.rollback_manager.rollback(backup_path):
                     job.status = ImportStatus.ROLLED_BACK
                     job.rolled_back = True
-                    job.rollback_timestamp = datetime.now()
+                    job.rollback_timestamp = DeterministicClock.now()
                     logger.info("Rollback successful")
                 else:
                     logger.error("Rollback failed!")
@@ -437,7 +440,7 @@ class AutomatedImportPipeline:
         scope = factor_data.get('scope', 'Unknown')
         source_org = factor_data.get('source', 'Unknown')
         source_uri = factor_data.get('uri', factor_data.get('source_uri', 'https://example.com'))
-        last_updated = factor_data.get('last_updated', datetime.now().date().isoformat())
+        last_updated = factor_data.get('last_updated', DeterministicClock.now().date().isoformat())
 
         cursor = self.conn.cursor()
         cursor.execute("""
@@ -466,7 +469,7 @@ class AutomatedImportPipeline:
         # Fallback
         for key in ['emission_factor', 'emission_factor_value']:
             if key in factor_data:
-                return float(factor_data[key])
+                return FinancialDecimal.from_string(factor_data[key])
 
         raise ValueError("No emission factor value found")
 
@@ -553,11 +556,11 @@ class ScheduledImporter:
 
     def _run_scheduled_import(self):
         """Run scheduled import job."""
-        job_id = f"scheduled_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        job_id = f"scheduled_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}"
 
         job = ImportJob(
             job_id=job_id,
-            job_name=f"Scheduled Import {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+            job_name=f"Scheduled Import {DeterministicClock.now().strftime('%Y-%m-%d %H:%M')}",
             source_files=self.source_files,
             target_database=self.db_path,
             validate_before_import=True,

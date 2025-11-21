@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Windows PATH Configuration Utilities for GreenLang CLI
 
@@ -12,6 +13,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional, Tuple
+from greenlang.determinism import DeterministicClock
 
 # Import winreg only on Windows
 if sys.platform == "win32":
@@ -207,11 +209,11 @@ def backup_user_path() -> Optional[Path]:
         BACKUP_DIR.mkdir(parents=True, exist_ok=True)
 
         current_path = get_user_path()
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
         backup_file = BACKUP_DIR / f"path_{timestamp}.json"
 
         backup_data = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "path": current_path,
             "entries": current_path.split(os.pathsep) if current_path else []
         }

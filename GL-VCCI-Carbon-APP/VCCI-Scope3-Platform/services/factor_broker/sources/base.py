@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Base Factor Source
 GL-VCCI Scope 3 Platform
@@ -15,6 +16,7 @@ from datetime import datetime
 import hashlib
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     FactorRequest,
     FactorResponse,
     FactorMetadata,
@@ -255,7 +257,7 @@ class FactorSource(ABC):
             ProvenanceInfo instance
         """
         return ProvenanceInfo(
-            lookup_timestamp=datetime.utcnow(),
+            lookup_timestamp=DeterministicClock.utcnow(),
             cache_hit=False,  # Will be updated by cache layer
             is_proxy=is_proxy,
             fallback_chain=fallback_chain or [self.name],

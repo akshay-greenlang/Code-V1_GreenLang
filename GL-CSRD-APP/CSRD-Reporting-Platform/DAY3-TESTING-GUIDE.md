@@ -25,7 +25,7 @@ Day 3 focuses on comprehensive testing and validation to ensure the CSRD Reporti
 ### Prerequisites
 
 ```bash
-# Ensure Python 3.11+ is installed
+# Ensure Python 3.10+ is installed
 python --version
 
 # Install project dependencies
@@ -497,7 +497,7 @@ Coverage Target:   ≥80%
 
 ### Pre-Execution
 
-- [ ] Python 3.11+ installed
+- [ ] Python 3.10+ installed
 - [ ] All dependencies installed (`pip install -r requirements-pinned.txt`)
 - [ ] Testing tools installed (`pytest`, `pytest-cov`, etc.)
 - [ ] Project directory structure verified

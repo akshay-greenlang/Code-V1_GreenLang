@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
 """Thermal Comfort Analysis Agent for HVAC Optimization."""
 
 import json
 import math
 from typing import Dict, Any, Optional
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 class ThermalComfortAgent:
     """Agent for analyzing and optimizing thermal comfort in buildings."""
@@ -18,7 +20,7 @@ class ThermalComfortAgent:
                           zone_count: int = 5) -> Dict[str, Any]:
         """Load and structure building data for analysis."""
         return {
-            "building_id": f"bldg_{datetime.now().strftime('%Y%m%d%H%M%S')}",
+            "building_id": f"bldg_{DeterministicClock.now().strftime('%Y%m%d%H%M%S')}",
             "type": building_type,
             "floor_area_sqft": floor_area,
             "zones": [
@@ -89,7 +91,7 @@ class ThermalComfortAgent:
         
         return {
             "comfort_analysis": {
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": DeterministicClock.now().isoformat(),
                 "zones": comfort_zones,
                 "overall_comfort": sum(1 for z in comfort_zones if z["in_comfort_range"]) / len(comfort_zones)
             },

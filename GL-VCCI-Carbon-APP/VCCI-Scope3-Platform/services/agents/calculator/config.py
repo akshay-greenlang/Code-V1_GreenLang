@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope3CalculatorAgent Configuration
 GL-VCCI Scope 3 Platform
@@ -13,6 +14,7 @@ import os
 from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, field_validator
 from enum import Enum
+from greenlang.determinism import FinancialDecimal
 
 
 class TierType(str, Enum):
@@ -304,7 +306,7 @@ class CalculatorConfig(BaseModel):
             category_4_default_distance_unit=os.getenv("CALC_CAT4_DISTANCE_UNIT", "km"),
             category_4_default_weight_unit=os.getenv("CALC_CAT4_WEIGHT_UNIT", "tonne"),
 
-            category_6_radiative_forcing_factor=float(os.getenv("CALC_CAT6_RF_FACTOR", "1.9")),
+            category_6_radiative_forcing_factor=FinancialDecimal.from_string(os.getenv("CALC_CAT6_RF_FACTOR", "1.9")),
             category_6_include_hotel_emissions=os.getenv("CALC_CAT6_HOTELS", "true").lower() == "true",
             category_6_include_ground_transport=os.getenv("CALC_CAT6_GROUND", "true").lower() == "true",
 

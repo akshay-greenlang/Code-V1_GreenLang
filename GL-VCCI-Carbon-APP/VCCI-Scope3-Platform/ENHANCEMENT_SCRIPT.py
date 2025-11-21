@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GL-VCCI-Carbon-APP Enhancement Script
 =====================================

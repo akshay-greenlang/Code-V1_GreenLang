@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GreenLang - Carbon Emissions Calculator (Secure)</title>
+
+    <!-- Content Security Policy (CSP) - CRITICAL SECURITY -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net;
+        style-src 'self' 'unsafe-inline';
+        img-src 'self' data: https:;
+        font-src 'self' data:;
+        connect-src 'self';
+        frame-ancestors 'none';
+        base-uri 'self';
+        form-action 'self';
+        object-src 'none';
+        upgrade-insecure-requests;
+    ">
+
+    <!-- Additional Security Headers (via meta tags) -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- Preload security module (highest priority) -->
+    <link rel="preload" href="/static/js/security.js" as="script">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="/static/css/style.css">
+
+    <style>
+        /* Notification styles for secure notifications */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+        }
+
+        .notification {
+            background: #fff;
+            border-left: 4px solid #2196F3;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .notification-success {
+            border-left-color: #4CAF50;
+        }
+
+        .notification-warning {
+            border-left-color: #FF9800;
+        }
+
+        .notification-error {
+            border-left-color: #F44336;
+        }
+
+        .notification-info {
+            border-left-color: #2196F3;
+        }
+
+        .notification-fade-out {
+            animation: slideOut 0.3s ease-in forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Security badge */
+        .security-badge {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+
+        .security-badge::before {
+            content: "🔒 ";
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>GreenLang Carbon Emissions Calculator</h1>
+            <p class="subtitle">Secure Version with XSS Protection</p>
+        </header>
+
+        <section class="calculator">
+            <h2>Calculate Your Emissions</h2>
+
+            <div class="input-group">
+                <label for="electricity">Electricity Consumption (kWh)</label>
+                <input type="number" id="electricity" placeholder="e.g., 1000" min="0" step="0.01">
+            </div>
+
+            <div class="input-group">
+                <label for="gas">Natural Gas (therms)</label>
+                <input type="number" id="gas" placeholder="e.g., 50" min="0" step="0.01">
+            </div>
+
+            <div class="input-group">
+                <label for="building-area">Building Area (sq ft)</label>
+                <input type="number" id="building-area" placeholder="Optional" min="0" step="1">
+            </div>
+
+            <div class="input-group">
+                <label for="building-type">Building Type</label>
+                <select id="building-type">
+                    <option value="commercial_office">Commercial Office</option>
+                    <option value="retail">Retail</option>
+                    <option value="warehouse">Warehouse</option>
+                    <option value="residential">Residential</option>
+                    <option value="industrial">Industrial</option>
+                </select>
+            </div>
+
+            <div class="custom-fuels-section">
+                <h3>Additional Fuels (Optional)</h3>
+                <div id="custom-fuels"></div>
+                <button id="add-fuel-btn" type="button" class="btn-secondary">Add Fuel</button>
+            </div>
+
+            <button id="calculate-btn" class="btn-primary">Calculate Emissions</button>
+        </section>
+
+        <section id="results" style="display: none;">
+            <h2>Results</h2>
+
+            <div class="result-box">
+                <h3>Total Emissions</h3>
+                <p class="big-number"><span id="total-emissions">0</span> metric tons CO₂e</p>
+                <p class="small-number"><span id="total-kg">0</span> kg CO₂e</p>
+            </div>
+
+            <div id="breakdown"></div>
+            <div id="benchmark"></div>
+            <div id="report"></div>
+        </section>
+
+        <section class="info">
+            <h2>Available Agents</h2>
+            <ul id="agents-list">
+                <li>Loading agents...</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>
+                GreenLang v2.0 - Climate Intelligence Platform<br>
+                <small>
+                    This is the secure version with XSS protection, input validation, and CSP headers.
+                </small>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Security badge -->
+    <div class="security-badge" title="XSS Protection Enabled">
+        SECURED
+    </div>
+
+    <!-- Security Scripts (Load First) -->
+    <script src="/static/js/security.js"></script>
+    <script src="/static/js/dompurify-loader.js"></script>
+
+    <!-- Application Scripts (SECURE VERSIONS) -->
+    <script src="/static/js/app.secure.js"></script>
+
+    <!-- Security validation on load -->
+    <script>
+        // Verify security module is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.GreenLangSecurity === 'undefined') {
+                console.error('SECURITY ERROR: GreenLangSecurity module not loaded!');
+                document.body.innerHTML = '<div style="padding: 20px; color: red; font-weight: bold;">Security module failed to load. Please refresh the page.</div>';
+            } else {
+                console.log('✓ Security module loaded successfully');
+                console.log('✓ XSS protection active');
+
+                // Check CSP
+                if (window.GreenLangSecurity.CSP) {
+                    window.GreenLangSecurity.CSP.checkConfiguration();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

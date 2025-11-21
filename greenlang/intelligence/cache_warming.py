@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Cache Warming for Semantic Cache
 
@@ -30,6 +31,7 @@ from datetime import datetime, timedelta
 from typing import Any, Callable, Coroutine, Dict, List, Optional
 
 from greenlang.intelligence.semantic_cache import SemanticCache, get_global_cache
+from greenlang.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -423,7 +425,7 @@ class CacheWarmer:
 
         stats = self.query_stats[prompt]
         stats.count += 1
-        stats.last_seen = datetime.now()
+        stats.last_seen = DeterministicClock.now()
 
     def get_top_queries(self, limit: int = 10) -> List[QueryStats]:
         """
@@ -457,7 +459,7 @@ class CacheWarmer:
         Returns:
             List of query prompts
         """
-        cutoff = datetime.now() - timedelta(hours=time_window_hours)
+        cutoff = DeterministicClock.now() - timedelta(hours=time_window_hours)
 
         candidates = []
         for stats in self.query_stats.values():

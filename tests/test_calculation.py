@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from greenlang.sdk import GreenLangClient
 
 # Create client

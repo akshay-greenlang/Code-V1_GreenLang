@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Base Reporter Agent
 Specialized base class for reporting and data aggregation.
@@ -11,6 +12,7 @@ from datetime import datetime
 from collections import defaultdict
 
 from .base import BaseAgent, AgentConfig, AgentResult
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +159,7 @@ class BaseReporter(BaseAgent):
         # Header
         lines.append(f"# {self.config.name} Report")
         lines.append("")
-        lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"**Generated:** {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append("")
 
         # Sections
@@ -214,7 +216,7 @@ class BaseReporter(BaseAgent):
 
         # Header
         html_lines.append(f"<h1>{self.config.name} Report</h1>")
-        html_lines.append(f"<p><strong>Generated:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>")
+        html_lines.append(f"<p><strong>Generated:</strong> {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}</p>")
 
         # Sections
         for section in self.sections:
@@ -251,7 +253,7 @@ class BaseReporter(BaseAgent):
 
         report_dict = {
             "report_name": self.config.name,
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "sections": [section.dict() for section in self.sections],
             "metadata": self.metadata
         }
@@ -283,7 +285,7 @@ class BaseReporter(BaseAgent):
         # Header
         sheet.cell(row=row, column=1, value=f"{self.config.name} Report")
         row += 1
-        sheet.cell(row=row, column=1, value=f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        sheet.cell(row=row, column=1, value=f"Generated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
         row += 2
 
         # Sections
@@ -424,7 +426,7 @@ class BaseReporter(BaseAgent):
             },
             metadata={
                 "aggregated_data": aggregated_data,
-                "generated_at": datetime.now().isoformat()
+                "generated_at": DeterministicClock.now().isoformat()
             }
         )
 

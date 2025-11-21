@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Reporting Platform - Complete End-to-End Pipeline
 
@@ -64,6 +65,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import yaml
+from greenlang.determinism import DeterministicClock
 
 # Add agents to path
 sys.path.insert(0, str(Path(__file__).parent / "agents"))
@@ -298,7 +300,7 @@ class CSRDPipeline:
         Returns:
             Complete pipeline result with all agent outputs
         """
-        self.stats["pipeline_start"] = datetime.now()
+        self.stats["pipeline_start"] = DeterministicClock.now()
         pipeline_id = f"csrd_pipeline_{int(time.time())}"
 
         logger.info("=" * 80)
@@ -325,7 +327,7 @@ class CSRDPipeline:
         logger.info("STAGE 1: DATA INTAKE & VALIDATION")
         logger.info("─" * 80)
 
-        stage1_start = datetime.now()
+        stage1_start = DeterministicClock.now()
 
         try:
             intake_output = self.intake_agent.process(esg_data_file)
@@ -335,7 +337,7 @@ class CSRDPipeline:
             stage1_status = "error"
             raise
 
-        stage1_end = datetime.now()
+        stage1_end = DeterministicClock.now()
         stage1_time = (stage1_end - stage1_start).total_seconds()
         self.stats["agent_times"]["intake"] = stage1_time
 
@@ -383,7 +385,7 @@ class CSRDPipeline:
         logger.info("STAGE 2: DOUBLE MATERIALITY ASSESSMENT (AI-POWERED)")
         logger.info("─" * 80)
 
-        stage2_start = datetime.now()
+        stage2_start = DeterministicClock.now()
 
         try:
             # Prepare input for materiality assessment
@@ -399,7 +401,7 @@ class CSRDPipeline:
             stage2_status = "error"
             raise
 
-        stage2_end = datetime.now()
+        stage2_end = DeterministicClock.now()
         stage2_time = (stage2_end - stage2_start).total_seconds()
         self.stats["agent_times"]["materiality"] = stage2_time
 
@@ -444,7 +446,7 @@ class CSRDPipeline:
         logger.info("STAGE 3: ESRS METRICS CALCULATION (ZERO HALLUCINATION)")
         logger.info("─" * 80)
 
-        stage3_start = datetime.now()
+        stage3_start = DeterministicClock.now()
 
         try:
             # Prepare calculation input with materiality context
@@ -460,7 +462,7 @@ class CSRDPipeline:
             stage3_status = "error"
             raise
 
-        stage3_end = datetime.now()
+        stage3_end = DeterministicClock.now()
         stage3_time = (stage3_end - stage3_start).total_seconds()
         self.stats["agent_times"]["calculator"] = stage3_time
 
@@ -505,7 +507,7 @@ class CSRDPipeline:
         logger.info("STAGE 4: CROSS-FRAMEWORK AGGREGATION & BENCHMARKING")
         logger.info("─" * 80)
 
-        stage4_start = datetime.now()
+        stage4_start = DeterministicClock.now()
 
         try:
             # Prepare aggregation input
@@ -521,7 +523,7 @@ class CSRDPipeline:
             stage4_status = "error"
             raise
 
-        stage4_end = datetime.now()
+        stage4_end = DeterministicClock.now()
         stage4_time = (stage4_end - stage4_start).total_seconds()
         self.stats["agent_times"]["aggregator"] = stage4_time
 
@@ -564,7 +566,7 @@ class CSRDPipeline:
         logger.info("STAGE 5: CSRD REPORT GENERATION & XBRL TAGGING")
         logger.info("─" * 80)
 
-        stage5_start = datetime.now()
+        stage5_start = DeterministicClock.now()
 
         try:
             # Prepare report input
@@ -582,7 +584,7 @@ class CSRDPipeline:
             stage5_status = "error"
             raise
 
-        stage5_end = datetime.now()
+        stage5_end = DeterministicClock.now()
         stage5_time = (stage5_end - stage5_start).total_seconds()
         self.stats["agent_times"]["reporting"] = stage5_time
 
@@ -633,7 +635,7 @@ class CSRDPipeline:
         logger.info("STAGE 6: COMPLIANCE AUDIT & VALIDATION")
         logger.info("─" * 80)
 
-        stage6_start = datetime.now()
+        stage6_start = DeterministicClock.now()
 
         try:
             # Prepare audit input with full context
@@ -648,7 +650,7 @@ class CSRDPipeline:
             stage6_status = "error"
             raise
 
-        stage6_end = datetime.now()
+        stage6_end = DeterministicClock.now()
         stage6_time = (stage6_end - stage6_start).total_seconds()
         self.stats["agent_times"]["audit"] = stage6_time
 
@@ -707,7 +709,7 @@ class CSRDPipeline:
         # PIPELINE SUMMARY & FINAL RESULT
         # ====================================================================
 
-        self.stats["pipeline_end"] = datetime.now()
+        self.stats["pipeline_end"] = DeterministicClock.now()
         pipeline_time = (self.stats["pipeline_end"] - self.stats["pipeline_start"]).total_seconds()
 
         logger.info("=" * 80)

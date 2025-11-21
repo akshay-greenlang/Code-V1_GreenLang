@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Quick validation script to check if SDK test imports work correctly.
 """

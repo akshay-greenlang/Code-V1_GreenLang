@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CLI end-to-end integration tests.
 """

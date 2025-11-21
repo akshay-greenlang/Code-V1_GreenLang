@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Authentication Module for GreenLang Hub
 """
@@ -12,6 +13,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import serialization
 import jwt
+from greenlang.determinism import DeterministicClock
 
 try:
     import keyring
@@ -270,13 +272,21 @@ class HubAuth:
 
         try:
             # Decode JWT token (without verification for expiry check)
-            payload = jwt.decode(self.token, options={"verify_signature": False})
+            # SECURITY FIX: Always verify JWT signature in production
+            import os
+            if os.getenv("GREENLANG_DEBUG_MODE") == "true":
+                logger.warning("JWT signature verification disabled in DEBUG mode only!")
+                payload = jwt.decode(self.token, options={"verify_signature": False})
+            else:
+                # Production mode - always verify signature
+                secret_key = os.getenv("JWT_SECRET_KEY", "default-secret-key-change-in-production")
+                payload = jwt.decode(self.token, secret_key, algorithms=["HS256"])
 
             # Check expiration
             exp = payload.get("exp")
             if exp:
                 expiry = datetime.fromtimestamp(exp)
-                if expiry < datetime.utcnow():
+                if expiry < DeterministicClock.utcnow():
                     logger.warning("Token expired")
                     return False
 
@@ -313,7 +323,7 @@ class HubAuth:
                 "username": self.username,
                 "token": self.token,
                 "api_key": self.api_key,
-                "updated": datetime.utcnow().isoformat(),
+                "updated": DeterministicClock.utcnow().isoformat(),
             }
 
             with open(creds_file, "w") as f:
@@ -485,7 +495,7 @@ class PackSigner:
             "algorithm": "RSA-PSS-SHA256",
             "signature": signature.hex(),
             "hash": pack_hash.hex(),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
         }
 
     def verify_signature(

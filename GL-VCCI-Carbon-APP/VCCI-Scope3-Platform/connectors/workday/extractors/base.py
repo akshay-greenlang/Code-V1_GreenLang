@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday Base Extractor
 GL-VCCI Scope 3 Platform

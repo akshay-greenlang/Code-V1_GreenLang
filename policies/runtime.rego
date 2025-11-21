@@ -35,7 +35,31 @@ network_allowed {
 
 network_allowed {
     input.network_targets
+    network_policy_valid
     all_targets_allowed
+}
+
+# SECURITY FIX: Validate network policy does not contain wildcards
+# This prevents packs from setting network: ["*"] to bypass egress controls
+network_policy_valid {
+    count(input.pack.policy.network) > 0
+    not has_wildcard_egress
+    not has_catch_all_pattern
+}
+
+# Detect wildcard egress patterns that would allow any destination
+has_wildcard_egress {
+    input.pack.policy.network[_] == "*"
+}
+
+has_catch_all_pattern {
+    input.pack.policy.network[_] == "*.*"
+}
+
+has_catch_all_pattern {
+    pattern := input.pack.policy.network[_]
+    startswith(pattern, "*")
+    not startswith(pattern, "*.")  # Block patterns like *.* or * alone
 }
 
 all_targets_allowed {
@@ -166,6 +190,21 @@ deny_reason["Timeout exceeds limit"] {
 deny_reason["Network target not allowed"] {
     input.network_targets
     not all_targets_allowed
+}
+
+deny_reason["Network policy contains wildcard patterns"] {
+    input.network_targets
+    has_wildcard_egress
+}
+
+deny_reason["Network policy contains catch-all patterns"] {
+    input.network_targets
+    has_catch_all_pattern
+}
+
+deny_reason["Network policy is empty or invalid"] {
+    input.network_targets
+    not network_policy_valid
 }
 
 deny_reason["Data residency violation"] {

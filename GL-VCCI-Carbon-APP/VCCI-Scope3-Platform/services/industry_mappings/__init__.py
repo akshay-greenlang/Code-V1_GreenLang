@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Industry Mappings Service for GL-VCCI Scope 3 Carbon Platform
 

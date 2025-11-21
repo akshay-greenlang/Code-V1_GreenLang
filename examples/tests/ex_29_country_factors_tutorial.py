@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 29: Test for adding new country factor set tutorial."""
 
 import pytest

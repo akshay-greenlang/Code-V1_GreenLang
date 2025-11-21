@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo script for INTL-104 RAG v1 core components.
 

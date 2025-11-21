@@ -4,7 +4,7 @@
 
 # Multi-stage build for optimized layer caching and security
 ARG PYTHON_VERSION=3.11-slim
-FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228 AS builder
+FROM python:${PYTHON_VERSION} AS builder
 
 # Build stage environment
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -38,7 +38,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     && pip install "greenlang-cli==${GL_VERSION}"
 
 # Final stage - minimal production image
-FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228
+FROM python:${PYTHON_VERSION}
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \

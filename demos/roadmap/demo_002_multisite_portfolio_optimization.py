@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo Script #2: Multi-Site Corporate Portfolio Optimization
 

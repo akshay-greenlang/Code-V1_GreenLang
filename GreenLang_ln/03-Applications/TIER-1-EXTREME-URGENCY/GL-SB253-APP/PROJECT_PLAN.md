@@ -143,7 +143,7 @@ graph TB
 ### 2.2 Technology Stack
 
 **Backend (Leverage GL-VCCI):**
-- Python 3.11+ (consistent with GL-VCCI)
+- Python 3.10+ (consistent with GL-VCCI)
 - FastAPI (REST APIs)
 - PostgreSQL (emissions data)
 - Redis (caching)

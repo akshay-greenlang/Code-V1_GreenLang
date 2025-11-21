@@ -1,0 +1,18 @@
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: ''
+  version: 1.0.0
+  labels:
+    type: ''
+    category: Boiler Systems
+    id: GL-002
+  annotations:
+    description: ''
+    created_by: ''
+    created_date: ''
+spec:
+  inputs: []
+  outputs: []
+  capabilities: []
+  requirements: {}

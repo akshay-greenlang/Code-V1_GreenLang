@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Network guard utilities to ensure tests run offline.
 """

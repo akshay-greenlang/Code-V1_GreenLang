@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Shared Fixtures for Integration and Performance Tests
 GL-VCCI Scope 3 Platform

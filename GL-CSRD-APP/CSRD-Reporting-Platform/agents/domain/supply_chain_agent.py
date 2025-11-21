@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Supply Chain Agent
 
@@ -14,6 +15,7 @@ from datetime import datetime, timedelta
 import logging
 from pathlib import Path
 import json
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ class CSRDSupplyChainAgent:
         logger.info(f"Sending data requests to {len(supplier_ids)} suppliers")
 
         requests_sent = []
-        deadline = datetime.now() + timedelta(days=deadline_days)
+        deadline = DeterministicClock.now() + timedelta(days=deadline_days)
 
         for supplier_id in supplier_ids:
             request = {
@@ -77,7 +79,7 @@ class CSRDSupplyChainAgent:
                     'safety_incidents'
                 ],
                 'deadline': deadline.isoformat(),
-                'request_date': datetime.now().isoformat(),
+                'request_date': DeterministicClock.now().isoformat(),
                 'status': 'pending'
             }
 
@@ -143,7 +145,7 @@ class CSRDSupplyChainAgent:
                 'revenue_million_eur': 25.0,
                 'emissions_intensity': 300.0,  # tCO2e per M€
                 'data_completeness': 95.0,
-                'submission_date': datetime.now().isoformat(),
+                'submission_date': DeterministicClock.now().isoformat(),
                 'submission_status': 'completed'
             },
             {
@@ -159,7 +161,7 @@ class CSRDSupplyChainAgent:
                 'revenue_million_eur': 10.0,
                 'emissions_intensity': 200.0,
                 'data_completeness': 100.0,
-                'submission_date': datetime.now().isoformat(),
+                'submission_date': DeterministicClock.now().isoformat(),
                 'submission_status': 'completed'
             },
             {
@@ -175,7 +177,7 @@ class CSRDSupplyChainAgent:
                 'revenue_million_eur': 30.0,
                 'emissions_intensity': 316.67,
                 'data_completeness': 90.0,
-                'submission_date': datetime.now().isoformat(),
+                'submission_date': DeterministicClock.now().isoformat(),
                 'submission_status': 'completed'
             }
         ]
@@ -229,7 +231,7 @@ class CSRDSupplyChainAgent:
             'unit': 'tCO2e',
             'number_of_suppliers': len(merged),
             'data_quality_score': round(avg_completeness, 2),
-            'calculation_date': datetime.now().isoformat(),
+            'calculation_date': DeterministicClock.now().isoformat(),
             'supplier_breakdown': merged[[
                 'supplier_id',
                 'supplier_name',
@@ -329,7 +331,7 @@ class CSRDSupplyChainAgent:
             supplier_data = self.score_suppliers(supplier_data)
 
         report = {
-            'report_date': datetime.now().isoformat(),
+            'report_date': DeterministicClock.now().isoformat(),
             'summary': {
                 'total_suppliers': len(supplier_data),
                 'scope3_emissions': scope3_result,

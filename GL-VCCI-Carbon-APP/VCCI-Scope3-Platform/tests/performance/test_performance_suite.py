@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance and Load Test Suite
 GL-VCCI Scope 3 Platform

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Enhanced GreenLang CLI with global options and improved DX
 """
@@ -20,6 +21,7 @@ from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import Workflow
 from greenlang.cli.jsonl_logger import JSONLLogger
 from greenlang.cli.agent_registry import AgentRegistry
+from greenlang.determinism import DeterministicClock
 
 # Initialize console and logging
 console = Console()
@@ -209,7 +211,7 @@ def run(
     """Run a workflow pipeline with JSONL logging"""
 
     # Generate run ID
-    run_id = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    run_id = f"run_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}"
 
     # Setup JSONL logging
     log_path = Path(log_dir or "logs") / f"{run_id}.jsonl"
@@ -319,7 +321,7 @@ def report(
     if not ctx.dry_run:
         output_dir.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
     filename = f"report_{timestamp}.{format}"
     output_path = output_dir / filename
 

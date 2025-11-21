@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope3CalculatorAgent
 GL-VCCI Scope 3 Platform
@@ -39,7 +40,20 @@ from .models import (
     BatchResult,
 )
 from .config import CalculatorConfig, TierType, TransportMode, CabinClass
-from .exceptions import *
+from .exceptions import (
+    CalculatorError,
+    DataValidationError,
+    EmissionFactorNotFoundError,
+    CalculationError,
+    ISO14083ComplianceError,
+    UncertaintyPropagationError,
+    ProvenanceError,
+    TierFallbackError,
+    ProductCategorizationError,
+    TransportModeError,
+    OPAPolicyError,
+    BatchProcessingError,
+)
 
 __version__ = "1.0.0"
 
@@ -57,4 +71,16 @@ __all__ = [
     "TierType",
     "TransportMode",
     "CabinClass",
+    "CalculatorError",
+    "DataValidationError",
+    "EmissionFactorNotFoundError",
+    "CalculationError",
+    "ISO14083ComplianceError",
+    "UncertaintyPropagationError",
+    "ProvenanceError",
+    "TierFallbackError",
+    "ProductCategorizationError",
+    "TransportModeError",
+    "OPAPolicyError",
+    "BatchProcessingError",
 ]

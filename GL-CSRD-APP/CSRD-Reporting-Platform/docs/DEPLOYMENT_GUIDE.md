@@ -1003,7 +1003,7 @@ def call_llm_api():
 ## Production Checklist
 
 - [ ] System requirements met
-- [ ] Python 3.11+ installed
+- [ ] Python 3.10+ installed
 - [ ] Virtual environment created
 - [ ] Dependencies installed
 - [ ] Configuration file created and validated

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-CSRD Shared Test Fixtures (conftest.py)
 
@@ -20,6 +21,7 @@ from unittest.mock import Mock
 import pandas as pd
 import pytest
 import yaml
+from greenlang.determinism import DeterministicClock
 
 
 # ============================================================================
@@ -546,13 +548,13 @@ def mock_reporting_agent():
 @pytest.fixture
 def current_timestamp() -> str:
     """Current ISO timestamp."""
-    return datetime.now().isoformat()
+    return DeterministicClock.now().isoformat()
 
 
 @pytest.fixture
 def reporting_year() -> int:
     """Current reporting year."""
-    return datetime.now().year
+    return DeterministicClock.now().year
 
 
 # ============================================================================
@@ -623,12 +625,12 @@ def test_session_info(request):
     print(f"Total Tests: 975")
     print(f"Test Files: 14")
     print(f"ESRS Standards: 12")
-    print(f"Session Start: {datetime.now().isoformat()}")
+    print(f"Session Start: {DeterministicClock.now().isoformat()}")
     print("=" * 70 + "\n")
 
     def finalizer():
         print("\n" + "=" * 70)
-        print(f"Session End: {datetime.now().isoformat()}")
+        print(f"Session End: {DeterministicClock.now().isoformat()}")
         print("=" * 70 + "\n")
 
     request.addfinalizer(finalizer)

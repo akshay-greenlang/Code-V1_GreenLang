@@ -1,933 +1,789 @@
-# ============================================================================
-# CSRD/ESRS DIGITAL REPORTING PLATFORM - GREENLANG PACK DEFINITION
-# ============================================================================
-#
-# This pack provides end-to-end CSRD compliance reporting with XBRL tagging
-# for companies subject to the EU Corporate Sustainability Reporting Directive.
-#
-# Version: 1.0.0
-# Author: GreenLang CSRD Team
-# License: MIT
-# Target: EU CSRD Directive (2022/2464) + ESRS Set 1
-#
-# ============================================================================
-
-# ----------------------------------------------------------------------------
-# PACK METADATA
-# ----------------------------------------------------------------------------
-
 name: csrd-esrs-reporting-platform
 version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
 display_name: CSRD/ESRS Digital Reporting Platform
 tagline: Zero-hallucination EU sustainability reporting with XBRL tagging
+description: 'Complete end-to-end solution for EU CSRD compliance reporting.
 
+
+  Transforms raw ESG data into submission-ready XBRL-tagged digital reports with:
+
+  - 100% calculation accuracy (ZERO HALLUCINATION)
+
+  - 1,000+ ESRS data points automated
+
+  - AI-powered double materiality assessment
+
+  - Multi-standard integration (TCFD, GRI, SASB → ESRS)
+
+  - Complete audit trail and provenance
+
+  - <30 minute processing for 10,000+ data points
+
+
+  Perfect for:
+
+  - EU companies (50,000+ globally) subject to CSRD
+
+  - Sustainability/ESG compliance officers
+
+  - CFOs managing integrated reporting
+
+  - External auditors requiring assurance documentation
+
+  '
 author:
   name: GreenLang CSRD Team
   email: csrd@greenlang.io
   organization: GreenLang
-
-description: |
-  Complete end-to-end solution for EU CSRD compliance reporting.
-
-  Transforms raw ESG data into submission-ready XBRL-tagged digital reports with:
-  - 100% calculation accuracy (ZERO HALLUCINATION)
-  - 1,000+ ESRS data points automated
-  - AI-powered double materiality assessment
-  - Multi-standard integration (TCFD, GRI, SASB → ESRS)
-  - Complete audit trail and provenance
-  - <30 minute processing for 10,000+ data points
-
-  Perfect for:
-  - EU companies (50,000+ globally) subject to CSRD
-  - Sustainability/ESG compliance officers
-  - CFOs managing integrated reporting
-  - External auditors requiring assurance documentation
-
+license: MIT
 category: compliance
 tags:
-  - csrd
-  - esrs
-  - sustainability-reporting
-  - esg
-  - xbrl
-  - eu-regulation
-  - zero-hallucination
-  - climate-disclosure
-
-license: MIT
-
-# ----------------------------------------------------------------------------
-# AGENTS
-# ----------------------------------------------------------------------------
-
+- csrd
+- esrs
+- sustainability-reporting
+- esg
+- xbrl
+- eu-regulation
+- zero-hallucination
+- climate-disclosure
 agents:
-  # ==========================================================================
-  # AGENT 1: ESG DATA INTAKE & VALIDATION
-  # ==========================================================================
-
-  - name: intake-agent
-    display_name: ESG Data Intake Agent
-    type: data-processor
-    description: |
-      Ingests and validates ESG data from multiple sources.
-
-      Responsibilities:
-      - Multi-format data ingestion (CSV, JSON, Excel, API, ERP)
-      - Schema validation against ESRS data point catalog (1,000+ fields)
-      - Data quality assessment (completeness, accuracy, consistency)
-      - Automated field mapping to ESRS taxonomy
-      - Outlier detection and flagging
-
-      Performance: 1,000+ records/sec
-
-    implementation:
-      language: python
-      entry_point: agents/intake_agent.py
-      class: IntakeAgent
-
-    inputs:
-      - name: esg_data
-        description: Raw ESG data from company systems
-        formats: [csv, json, excel, parquet]
-        schema: schemas/esg_data.schema.json
-        required: true
-
-      - name: esrs_data_points
-        description: ESRS data point catalog (1,082 points)
-        format: json
-        path: data/esrs_data_points.json
-        required: true
-
-      - name: data_quality_rules
-        description: Data quality validation rules
-        format: yaml
-        path: rules/data_quality_rules.yaml
-        required: true
-
-      - name: company_profile
-        description: Company metadata and context
-        format: json
-        schema: schemas/company_profile.schema.json
-        required: true
-
-    outputs:
-      - name: validated_esg_data
-        description: Validated and enriched ESG data
-        format: json
-        schema: |
-          {
-            "metadata": {
-              "total_records": int,
-              "valid_records": int,
-              "invalid_records": int,
-              "warnings": int,
-              "data_quality_score": float,
-              "processing_time_seconds": float
-            },
-            "data_points": [validated ESG data points],
-            "errors": [validation errors],
-            "warnings": [data quality warnings]
-          }
-
-    tools:
-      - name: schema-validator
-        description: JSON Schema validation
-        deterministic: true
-
-      - name: esrs-taxonomy-mapper
-        description: Map fields to ESRS data point codes
-        deterministic: true
-        database: data/esrs_data_points.json
-
-      - name: data-quality-assessor
-        description: Assess data completeness and quality
-        deterministic: true
-        rules: rules/data_quality_rules.yaml
-
-      - name: outlier-detector
-        description: Statistical outlier detection
-        deterministic: true
-
-    performance:
-      target_throughput: 1000 records/sec
-      target_latency_p99: 100 ms per record
-      memory_footprint: <2 GB for 50K data points
-
-  # ==========================================================================
-  # AGENT 2: DOUBLE MATERIALITY ASSESSMENT (AI-POWERED)
-  # ==========================================================================
-
-  - name: materiality-agent
-    display_name: Materiality Assessment Agent
-    type: ai-analyst
-    description: |
-      AI-powered double materiality assessment per ESRS 1.
-
-      Responsibilities:
-      - Impact materiality scoring (severity × scope × irremediability)
-      - Financial materiality scoring (magnitude × likelihood)
-      - Stakeholder consultation analysis (RAG-based)
-      - Material topic identification
-      - Materiality matrix generation
-
-      AI Model: GPT-4 / Claude 3.5 Sonnet
-      Performance: <10 minutes per assessment
-      Human Review: REQUIRED
-
-    implementation:
-      language: python
-      entry_point: agents/materiality_agent.py
-      class: MaterialityAgent
-
-    inputs:
-      - name: validated_esg_data
-        description: Output from Agent 1
-        format: json
-        required: true
-
-      - name: company_context
-        description: Company strategy, business model, value chain
-        format: json
-        required: true
-
-      - name: stakeholder_input
-        description: Stakeholder consultation results
-        format: json
-        required: false
-
-      - name: esrs_guidance_database
-        description: RAG database of ESRS guidance (10,000+ docs)
-        format: vector_db
-        path: data/esrs_guidance_vectors/
-        required: true
-
-    outputs:
-      - name: materiality_matrix
-        description: Double materiality assessment results
-        format: json
-        schema: schemas/materiality.schema.json
-        structure: |
-          {
-            "assessment_id": uuid,
-            "assessment_date": ISO8601,
-            "methodology": "ESRS 1 Double Materiality",
-            "material_topics": [
-              {
-                "topic": string,
-                "esrs_standard": "E1" | "E2" | ...,
-                "impact_materiality": {score, material},
-                "financial_materiality": {score, material},
-                "double_material": boolean
-              }
-            ]
-          }
-
-      - name: materiality_report
-        description: Human-readable materiality assessment
-        format: markdown
-        optional: true
-
-    tools:
-      - name: impact-materiality-scorer
-        description: AI-powered impact assessment
-        deterministic: false
-        llm_model: gpt-4 / claude-3.5-sonnet
-        requires_review: true
-
-      - name: financial-materiality-scorer
-        description: AI-powered financial risk/opportunity assessment
-        deterministic: false
-        llm_model: gpt-4 / claude-3.5-sonnet
-        requires_review: true
-
-      - name: rag-stakeholder-analyzer
-        description: RAG-based stakeholder consultation analysis
-        deterministic: false
-        vector_db: data/esrs_guidance_vectors/
-        requires_review: true
-
-      - name: matrix-generator
-        description: Generate 2D materiality matrix
-        deterministic: true
-
-    performance:
-      target_processing_time: <10 minutes
-      ai_automation_rate: 80% (20% expert review)
-
-    guarantees:
-      zero_hallucination: false
-      deterministic: false
-      requires_human_review: true
-      audit_trail: complete
-
-  # ==========================================================================
-  # AGENT 3: ESRS METRICS CALCULATOR (ZERO HALLUCINATION)
-  # ==========================================================================
-
-  - name: calculator-agent
-    display_name: ESRS Metrics Calculator Agent
-    type: calculator
-    description: |
-      Calculates ESRS metrics with ZERO HALLUCINATION guarantee.
-
-      Responsibilities:
-      - 10 ESRS topical standards (E1-E5, S1-S4, G1)
-      - 500+ metric formulas
-      - GHG emissions (Scope 1/2/3) per GHG Protocol
-      - Social & governance metrics
-      - Environmental indicators
-      - 100% deterministic calculations
-
-      ZERO HALLUCINATION GUARANTEE:
-      ✅ Database lookups only (no LLM)
-      ✅ Python arithmetic only (no estimation)
-      ✅ 100% bit-perfect reproducibility
-
-      Performance: <5 ms per metric
-
-    implementation:
-      language: python
-      entry_point: agents/calculator_agent.py
-      class: CalculatorAgent
-
-    inputs:
-      - name: validated_esg_data
-        description: Output from Agent 1
-        format: json
-        required: true
-
-      - name: materiality_matrix
-        description: Output from Agent 2 (determines scope)
-        format: json
-        required: true
-
-      - name: emission_factors_db
-        description: GHG Protocol emission factors
-        format: json
-        path: data/emission_factors.json
-        required: true
-
-      - name: esrs_formulas
-        description: 500+ ESRS metric calculation formulas
-        format: yaml
-        path: data/esrs_formulas.yaml
-        required: true
-
-    outputs:
-      - name: calculated_metrics
-        description: Calculated ESRS metrics
-        format: json
-        schema: |
-          {
-            "metadata": {
-              "total_metrics_calculated": int,
-              "calculation_time_ms": float,
-              "standards_covered": ["E1", "E2", ...]
-            },
-            "metrics": [
-              {
-                "metric_code": "E1-1",
-                "metric_name": string,
-                "value": number,
-                "unit": string,
-                "calculation_method": string,
-                "formula": string,
-                "inputs": [input values],
-                "provenance": {source, timestamp, version}
-              }
-            ]
-          }
-
-      - name: calculation_audit_trail
-        description: Complete calculation provenance
-        format: json
-        structure: |
-          {
-            "calculations": [
-              {
-                "metric_code": string,
-                "formula": string,
-                "inputs": {name: value},
-                "intermediate_steps": [...],
-                "output": value,
-                "timestamp": ISO8601,
-                "data_sources": [...]
-              }
-            ]
-          }
-
-    tools:
-      - name: emission-factor-lookup
-        description: Database lookup of GHG emission factors
-        deterministic: true
-        database: data/emission_factors.json
-        hallucination_risk: ZERO
-
-      - name: deterministic-calculator
-        description: Python arithmetic for all metrics
-        deterministic: true
-        operations: [add, subtract, multiply, divide, round]
-        hallucination_risk: ZERO
-
-      - name: formula-engine
-        description: Execute ESRS calculation formulas
-        deterministic: true
-        formula_database: data/esrs_formulas.yaml
-
-      - name: provenance-tracker
-        description: Track calculation lineage
-        deterministic: true
-
-    performance:
-      target_throughput: 200+ metrics/sec
-      target_latency: <5 ms per metric
-      memory_footprint: <500 MB
-
-    guarantees:
-      zero_hallucination: true
-      deterministic: true
-      reproducible: true
-      audit_trail: complete
-      calculation_accuracy: 100%
-
-  # ==========================================================================
-  # AGENT 4: MULTI-STANDARD AGGREGATOR
-  # ==========================================================================
-
-  - name: aggregator-agent
-    display_name: Multi-Standard Aggregator Agent
-    type: aggregator
-    description: |
-      Aggregates data across multiple ESG reporting frameworks.
-
-      Responsibilities:
-      - Cross-standard mapping (TCFD, GRI, SASB → ESRS)
-      - Time-series aggregation
-      - Trend analysis
-      - Comparative benchmarking
-      - Gap analysis
-
-      Performance: <2 min for 10,000 metrics
-
-    implementation:
-      language: python
-      entry_point: agents/aggregator_agent.py
-      class: AggregatorAgent
-
-    inputs:
-      - name: calculated_metrics
-        description: Output from Agent 3
-        format: json
-        required: true
-
-      - name: tcfd_data
-        description: TCFD-format climate data (optional)
-        format: json
-        required: false
-
-      - name: gri_data
-        description: GRI-format ESG data (optional)
-        format: json
-        required: false
-
-      - name: sasb_data
-        description: SASB-format industry metrics (optional)
-        format: json
-        required: false
-
-      - name: mapping_tables
-        description: Cross-framework mapping tables
-        format: json
-        path: data/framework_mappings.json
-        required: true
-
-    outputs:
-      - name: aggregated_esg_data
-        description: Unified multi-standard ESG dataset
-        format: json
-
-      - name: trend_analysis
-        description: Time-series trends and insights
-        format: json
-
-      - name: gap_analysis
-        description: Coverage gaps across standards
-        format: json
-
-    tools:
-      - name: cross-standard-mapper
-        description: Map metrics across ESRS, TCFD, GRI, SASB
-        deterministic: true
-        database: data/framework_mappings.json
-
-      - name: time-series-aggregator
-        description: Multi-year trend analysis
-        deterministic: true
-
-      - name: benchmark-comparator
-        description: Compare to industry benchmarks
-        deterministic: true
-        database: data/industry_benchmarks.json
-
-    performance:
-      target_processing_time: <2 min for 10,000 metrics
-      memory_footprint: <1 GB
-
-  # ==========================================================================
-  # AGENT 5: XBRL REPORTING & PACKAGING
-  # ==========================================================================
-
-  - name: reporting-agent
-    display_name: XBRL Reporting Agent
-    type: report-generator
-    description: |
-      Generates ESEF-compliant CSRD reports with XBRL tagging.
-
-      Responsibilities:
-      - XBRL digital tagging (1,000+ ESRS data points)
-      - ESEF package generation (.zip)
-      - Management report generation (PDF)
-      - Narrative section drafting (AI-assisted, review required)
-      - Multi-language support (EN, DE, FR, ES)
-
-      Performance: <5 min for complete report
-
-    implementation:
-      language: python
-      entry_point: agents/reporting_agent.py
-      class: ReportingAgent
-
-    inputs:
-      - name: aggregated_esg_data
-        description: Output from Agent 4
-        format: json
-        required: true
-
-      - name: materiality_matrix
-        description: From Agent 2 (determines disclosure scope)
-        format: json
-        required: true
-
-      - name: company_profile
-        description: Company metadata
-        format: json
-        required: true
-
-      - name: esrs_xbrl_taxonomy
-        description: ESRS XBRL taxonomy (1,000+ tags)
-        format: xsd
-        path: data/esrs_xbrl_taxonomy_v1.xsd
-        required: true
-
-    outputs:
-      - name: csrd_report_package
-        description: Complete ESEF submission package
-        format: zip
-        contents: |
-          - sustainability_statement.xhtml (iXBRL)
-          - management_report.pdf
-          - xbrl_instance.xml
-          - metadata.json
-          - digital_signature.p7s (optional)
-
-      - name: management_report
-        description: Human-readable PDF report
-        format: pdf
-
-      - name: xbrl_validation_report
-        description: XBRL taxonomy validation results
-        format: json
-
-    tools:
-      - name: xbrl-tagger
-        description: Tag data with ESRS XBRL taxonomy
-        deterministic: true
-        taxonomy: data/esrs_xbrl_taxonomy_v1.xsd
-
-      - name: esef-packager
-        description: Generate ESEF-compliant .zip package
-        deterministic: true
-
-      - name: narrative-generator
-        description: AI-assisted narrative drafting
-        deterministic: false
-        llm_model: gpt-4 / claude-3.5-sonnet
-        requires_review: true
-
-      - name: pdf-generator
-        description: Generate management report PDF
-        deterministic: true
-
-      - name: translator
-        description: Multi-language report generation
-        deterministic: false
-        languages: [en, de, fr, es]
-
-    performance:
-      target_processing_time: <5 min
-      xbrl_tagging_speed: <10 min for 1,000 tags
-
-    guarantees:
-      xbrl_compliance: true
-      esef_compliance: true
-      human_review_required: true (narrative sections)
-
-  # ==========================================================================
-  # AGENT 6: COMPLIANCE AUDIT & VALIDATION
-  # ==========================================================================
-
-  - name: audit-agent
-    display_name: Compliance Audit Agent
-    type: validator
-    description: |
-      Validates CSRD report against all ESRS requirements.
-
-      Responsibilities:
-      - 200+ ESRS compliance rule checks
-      - Cross-reference validation
-      - Calculation verification
-      - Data lineage documentation
-      - External auditor package generation
-
-      Performance: <3 min for full validation
-
-    implementation:
-      language: python
-      entry_point: agents/audit_agent.py
-      class: AuditAgent
-
-    inputs:
-      - name: csrd_report_package
-        description: Output from Agent 5
-        format: zip
-        required: true
-
-      - name: calculation_audit_trail
-        description: From Agent 3
-        format: json
-        required: true
-
-      - name: esrs_compliance_rules
-        description: 200+ ESRS compliance rules
-        format: yaml
-        path: rules/esrs_compliance_rules.yaml
-        required: true
-
-    outputs:
-      - name: compliance_report
-        description: ESRS compliance validation results
-        format: json
-        schema: |
-          {
-            "compliance_status": "PASS" | "FAIL" | "WARNING",
-            "total_rules_checked": int,
-            "rules_passed": int,
-            "rules_failed": int,
-            "errors": [compliance errors],
-            "warnings": [compliance warnings],
-            "recommendations": [improvement suggestions]
-          }
-
-      - name: audit_package
-        description: External auditor package
-        format: zip
-        contents: |
-          - audit_trail.json (complete lineage)
-          - calculation_documentation.pdf
-          - source_data_references.json
-          - compliance_checklist.pdf
-
-      - name: quality_score
-        description: Overall data quality assessment
-        format: json
-
-    tools:
-      - name: compliance-validator
-        description: Check 200+ ESRS rules
-        deterministic: true
-        rules: rules/esrs_compliance_rules.yaml
-
-      - name: cross-reference-checker
-        description: Validate internal cross-references
-        deterministic: true
-
-      - name: calculation-verifier
-        description: Re-verify all calculations
-        deterministic: true
-
-      - name: lineage-documenter
-        description: Generate complete data lineage
-        deterministic: true
-
-    performance:
-      target_processing_time: <3 min
-      rules_per_second: 100+
-
-    guarantees:
-      deterministic: true
-      complete_coverage: true (all ESRS requirements)
-
-# ----------------------------------------------------------------------------
-# PIPELINE
-# ----------------------------------------------------------------------------
-
+- name: intake-agent
+  display_name: ESG Data Intake Agent
+  type: data-processor
+  description: 'Ingests and validates ESG data from multiple sources.
+
+
+    Responsibilities:
+
+    - Multi-format data ingestion (CSV, JSON, Excel, API, ERP)
+
+    - Schema validation against ESRS data point catalog (1,000+ fields)
+
+    - Data quality assessment (completeness, accuracy, consistency)
+
+    - Automated field mapping to ESRS taxonomy
+
+    - Outlier detection and flagging
+
+
+    Performance: 1,000+ records/sec
+
+    '
+  implementation:
+    language: python
+    entry_point: agents/intake_agent.py
+    class: IntakeAgent
+  inputs:
+  - name: esg_data
+    description: Raw ESG data from company systems
+    formats:
+    - csv
+    - json
+    - excel
+    - parquet
+    schema: schemas/esg_data.schema.json
+    required: true
+  - name: esrs_data_points
+    description: ESRS data point catalog (1,082 points)
+    format: json
+    path: data/esrs_data_points.json
+    required: true
+  - name: data_quality_rules
+    description: Data quality validation rules
+    format: yaml
+    path: rules/data_quality_rules.yaml
+    required: true
+  - name: company_profile
+    description: Company metadata and context
+    format: json
+    schema: schemas/company_profile.schema.json
+    required: true
+  outputs:
+  - name: validated_esg_data
+    description: Validated and enriched ESG data
+    format: json
+    schema: "{\n  \"metadata\": {\n    \"total_records\": int,\n    \"valid_records\"\
+      : int,\n    \"invalid_records\": int,\n    \"warnings\": int,\n    \"data_quality_score\"\
+      : float,\n    \"processing_time_seconds\": float\n  },\n  \"data_points\": [validated\
+      \ ESG data points],\n  \"errors\": [validation errors],\n  \"warnings\": [data\
+      \ quality warnings]\n}\n"
+  tools:
+  - name: schema-validator
+    description: JSON Schema validation
+    deterministic: true
+  - name: esrs-taxonomy-mapper
+    description: Map fields to ESRS data point codes
+    deterministic: true
+    database: data/esrs_data_points.json
+  - name: data-quality-assessor
+    description: Assess data completeness and quality
+    deterministic: true
+    rules: rules/data_quality_rules.yaml
+  - name: outlier-detector
+    description: Statistical outlier detection
+    deterministic: true
+  performance:
+    target_throughput: 1000 records/sec
+    target_latency_p99: 100 ms per record
+    memory_footprint: <2 GB for 50K data points
+- name: materiality-agent
+  display_name: Materiality Assessment Agent
+  type: ai-analyst
+  description: 'AI-powered double materiality assessment per ESRS 1.
+
+
+    Responsibilities:
+
+    - Impact materiality scoring (severity × scope × irremediability)
+
+    - Financial materiality scoring (magnitude × likelihood)
+
+    - Stakeholder consultation analysis (RAG-based)
+
+    - Material topic identification
+
+    - Materiality matrix generation
+
+
+    AI Model: GPT-4 / Claude 3.5 Sonnet
+
+    Performance: <10 minutes per assessment
+
+    Human Review: REQUIRED
+
+    '
+  implementation:
+    language: python
+    entry_point: agents/materiality_agent.py
+    class: MaterialityAgent
+  inputs:
+  - name: validated_esg_data
+    description: Output from Agent 1
+    format: json
+    required: true
+  - name: company_context
+    description: Company strategy, business model, value chain
+    format: json
+    required: true
+  - name: stakeholder_input
+    description: Stakeholder consultation results
+    format: json
+    required: false
+  - name: esrs_guidance_database
+    description: RAG database of ESRS guidance (10,000+ docs)
+    format: vector_db
+    path: data/esrs_guidance_vectors/
+    required: true
+  outputs:
+  - name: materiality_matrix
+    description: Double materiality assessment results
+    format: json
+    schema: schemas/materiality.schema.json
+    structure: "{\n  \"assessment_id\": uuid,\n  \"assessment_date\": ISO8601,\n \
+      \ \"methodology\": \"ESRS 1 Double Materiality\",\n  \"material_topics\": [\n\
+      \    {\n      \"topic\": string,\n      \"esrs_standard\": \"E1\" | \"E2\" |\
+      \ ...,\n      \"impact_materiality\": {score, material},\n      \"financial_materiality\"\
+      : {score, material},\n      \"double_material\": boolean\n    }\n  ]\n}\n"
+  - name: materiality_report
+    description: Human-readable materiality assessment
+    format: markdown
+    optional: true
+  tools:
+  - name: impact-materiality-scorer
+    description: AI-powered impact assessment
+    deterministic: false
+    llm_model: gpt-4 / claude-3.5-sonnet
+    requires_review: true
+  - name: financial-materiality-scorer
+    description: AI-powered financial risk/opportunity assessment
+    deterministic: false
+    llm_model: gpt-4 / claude-3.5-sonnet
+    requires_review: true
+  - name: rag-stakeholder-analyzer
+    description: RAG-based stakeholder consultation analysis
+    deterministic: false
+    vector_db: data/esrs_guidance_vectors/
+    requires_review: true
+  - name: matrix-generator
+    description: Generate 2D materiality matrix
+    deterministic: true
+  performance:
+    target_processing_time: <10 minutes
+    ai_automation_rate: 80% (20% expert review)
+  guarantees:
+    zero_hallucination: false
+    deterministic: false
+    requires_human_review: true
+    audit_trail: complete
+- name: calculator-agent
+  display_name: ESRS Metrics Calculator Agent
+  type: calculator
+  description: 'Calculates ESRS metrics with ZERO HALLUCINATION guarantee.
+
+
+    Responsibilities:
+
+    - 10 ESRS topical standards (E1-E5, S1-S4, G1)
+
+    - 500+ metric formulas
+
+    - GHG emissions (Scope 1/2/3) per GHG Protocol
+
+    - Social & governance metrics
+
+    - Environmental indicators
+
+    - 100% deterministic calculations
+
+
+    ZERO HALLUCINATION GUARANTEE:
+
+    ✅ Database lookups only (no LLM)
+
+    ✅ Python arithmetic only (no estimation)
+
+    ✅ 100% bit-perfect reproducibility
+
+
+    Performance: <5 ms per metric
+
+    '
+  implementation:
+    language: python
+    entry_point: agents/calculator_agent.py
+    class: CalculatorAgent
+  inputs:
+  - name: validated_esg_data
+    description: Output from Agent 1
+    format: json
+    required: true
+  - name: materiality_matrix
+    description: Output from Agent 2 (determines scope)
+    format: json
+    required: true
+  - name: emission_factors_db
+    description: GHG Protocol emission factors
+    format: json
+    path: data/emission_factors.json
+    required: true
+  - name: esrs_formulas
+    description: 500+ ESRS metric calculation formulas
+    format: yaml
+    path: data/esrs_formulas.yaml
+    required: true
+  outputs:
+  - name: calculated_metrics
+    description: Calculated ESRS metrics
+    format: json
+    schema: "{\n  \"metadata\": {\n    \"total_metrics_calculated\": int,\n    \"\
+      calculation_time_ms\": float,\n    \"standards_covered\": [\"E1\", \"E2\", ...]\n\
+      \  },\n  \"metrics\": [\n    {\n      \"metric_code\": \"E1-1\",\n      \"metric_name\"\
+      : string,\n      \"value\": number,\n      \"unit\": string,\n      \"calculation_method\"\
+      : string,\n      \"formula\": string,\n      \"inputs\": [input values],\n \
+      \     \"provenance\": {source, timestamp, version}\n    }\n  ]\n}\n"
+  - name: calculation_audit_trail
+    description: Complete calculation provenance
+    format: json
+    structure: "{\n  \"calculations\": [\n    {\n      \"metric_code\": string,\n\
+      \      \"formula\": string,\n      \"inputs\": {name: value},\n      \"intermediate_steps\"\
+      : [...],\n      \"output\": value,\n      \"timestamp\": ISO8601,\n      \"\
+      data_sources\": [...]\n    }\n  ]\n}\n"
+  tools:
+  - name: emission-factor-lookup
+    description: Database lookup of GHG emission factors
+    deterministic: true
+    database: data/emission_factors.json
+    hallucination_risk: ZERO
+  - name: deterministic-calculator
+    description: Python arithmetic for all metrics
+    deterministic: true
+    operations:
+    - add
+    - subtract
+    - multiply
+    - divide
+    - round
+    hallucination_risk: ZERO
+  - name: formula-engine
+    description: Execute ESRS calculation formulas
+    deterministic: true
+    formula_database: data/esrs_formulas.yaml
+  - name: provenance-tracker
+    description: Track calculation lineage
+    deterministic: true
+  performance:
+    target_throughput: 200+ metrics/sec
+    target_latency: <5 ms per metric
+    memory_footprint: <500 MB
+  guarantees:
+    zero_hallucination: true
+    deterministic: true
+    reproducible: true
+    audit_trail: complete
+    calculation_accuracy: 100%
+- name: aggregator-agent
+  display_name: Multi-Standard Aggregator Agent
+  type: aggregator
+  description: 'Aggregates data across multiple ESG reporting frameworks.
+
+
+    Responsibilities:
+
+    - Cross-standard mapping (TCFD, GRI, SASB → ESRS)
+
+    - Time-series aggregation
+
+    - Trend analysis
+
+    - Comparative benchmarking
+
+    - Gap analysis
+
+
+    Performance: <2 min for 10,000 metrics
+
+    '
+  implementation:
+    language: python
+    entry_point: agents/aggregator_agent.py
+    class: AggregatorAgent
+  inputs:
+  - name: calculated_metrics
+    description: Output from Agent 3
+    format: json
+    required: true
+  - name: tcfd_data
+    description: TCFD-format climate data (optional)
+    format: json
+    required: false
+  - name: gri_data
+    description: GRI-format ESG data (optional)
+    format: json
+    required: false
+  - name: sasb_data
+    description: SASB-format industry metrics (optional)
+    format: json
+    required: false
+  - name: mapping_tables
+    description: Cross-framework mapping tables
+    format: json
+    path: data/framework_mappings.json
+    required: true
+  outputs:
+  - name: aggregated_esg_data
+    description: Unified multi-standard ESG dataset
+    format: json
+  - name: trend_analysis
+    description: Time-series trends and insights
+    format: json
+  - name: gap_analysis
+    description: Coverage gaps across standards
+    format: json
+  tools:
+  - name: cross-standard-mapper
+    description: Map metrics across ESRS, TCFD, GRI, SASB
+    deterministic: true
+    database: data/framework_mappings.json
+  - name: time-series-aggregator
+    description: Multi-year trend analysis
+    deterministic: true
+  - name: benchmark-comparator
+    description: Compare to industry benchmarks
+    deterministic: true
+    database: data/industry_benchmarks.json
+  performance:
+    target_processing_time: <2 min for 10,000 metrics
+    memory_footprint: <1 GB
+- name: reporting-agent
+  display_name: XBRL Reporting Agent
+  type: report-generator
+  description: 'Generates ESEF-compliant CSRD reports with XBRL tagging.
+
+
+    Responsibilities:
+
+    - XBRL digital tagging (1,000+ ESRS data points)
+
+    - ESEF package generation (.zip)
+
+    - Management report generation (PDF)
+
+    - Narrative section drafting (AI-assisted, review required)
+
+    - Multi-language support (EN, DE, FR, ES)
+
+
+    Performance: <5 min for complete report
+
+    '
+  implementation:
+    language: python
+    entry_point: agents/reporting_agent.py
+    class: ReportingAgent
+  inputs:
+  - name: aggregated_esg_data
+    description: Output from Agent 4
+    format: json
+    required: true
+  - name: materiality_matrix
+    description: From Agent 2 (determines disclosure scope)
+    format: json
+    required: true
+  - name: company_profile
+    description: Company metadata
+    format: json
+    required: true
+  - name: esrs_xbrl_taxonomy
+    description: ESRS XBRL taxonomy (1,000+ tags)
+    format: xsd
+    path: data/esrs_xbrl_taxonomy_v1.xsd
+    required: true
+  outputs:
+  - name: csrd_report_package
+    description: Complete ESEF submission package
+    format: zip
+    contents: '- sustainability_statement.xhtml (iXBRL)
+
+      - management_report.pdf
+
+      - xbrl_instance.xml
+
+      - metadata.json
+
+      - digital_signature.p7s (optional)
+
+      '
+  - name: management_report
+    description: Human-readable PDF report
+    format: pdf
+  - name: xbrl_validation_report
+    description: XBRL taxonomy validation results
+    format: json
+  tools:
+  - name: xbrl-tagger
+    description: Tag data with ESRS XBRL taxonomy
+    deterministic: true
+    taxonomy: data/esrs_xbrl_taxonomy_v1.xsd
+  - name: esef-packager
+    description: Generate ESEF-compliant .zip package
+    deterministic: true
+  - name: narrative-generator
+    description: AI-assisted narrative drafting
+    deterministic: false
+    llm_model: gpt-4 / claude-3.5-sonnet
+    requires_review: true
+  - name: pdf-generator
+    description: Generate management report PDF
+    deterministic: true
+  - name: translator
+    description: Multi-language report generation
+    deterministic: false
+    languages:
+    - en
+    - de
+    - fr
+    - es
+  performance:
+    target_processing_time: <5 min
+    xbrl_tagging_speed: <10 min for 1,000 tags
+  guarantees:
+    xbrl_compliance: true
+    esef_compliance: true
+    human_review_required: true (narrative sections)
+- name: audit-agent
+  display_name: Compliance Audit Agent
+  type: validator
+  description: 'Validates CSRD report against all ESRS requirements.
+
+
+    Responsibilities:
+
+    - 200+ ESRS compliance rule checks
+
+    - Cross-reference validation
+
+    - Calculation verification
+
+    - Data lineage documentation
+
+    - External auditor package generation
+
+
+    Performance: <3 min for full validation
+
+    '
+  implementation:
+    language: python
+    entry_point: agents/audit_agent.py
+    class: AuditAgent
+  inputs:
+  - name: csrd_report_package
+    description: Output from Agent 5
+    format: zip
+    required: true
+  - name: calculation_audit_trail
+    description: From Agent 3
+    format: json
+    required: true
+  - name: esrs_compliance_rules
+    description: 200+ ESRS compliance rules
+    format: yaml
+    path: rules/esrs_compliance_rules.yaml
+    required: true
+  outputs:
+  - name: compliance_report
+    description: ESRS compliance validation results
+    format: json
+    schema: "{\n  \"compliance_status\": \"PASS\" | \"FAIL\" | \"WARNING\",\n  \"\
+      total_rules_checked\": int,\n  \"rules_passed\": int,\n  \"rules_failed\": int,\n\
+      \  \"errors\": [compliance errors],\n  \"warnings\": [compliance warnings],\n\
+      \  \"recommendations\": [improvement suggestions]\n}\n"
+  - name: audit_package
+    description: External auditor package
+    format: zip
+    contents: '- audit_trail.json (complete lineage)
+
+      - calculation_documentation.pdf
+
+      - source_data_references.json
+
+      - compliance_checklist.pdf
+
+      '
+  - name: quality_score
+    description: Overall data quality assessment
+    format: json
+  tools:
+  - name: compliance-validator
+    description: Check 200+ ESRS rules
+    deterministic: true
+    rules: rules/esrs_compliance_rules.yaml
+  - name: cross-reference-checker
+    description: Validate internal cross-references
+    deterministic: true
+  - name: calculation-verifier
+    description: Re-verify all calculations
+    deterministic: true
+  - name: lineage-documenter
+    description: Generate complete data lineage
+    deterministic: true
+  performance:
+    target_processing_time: <3 min
+    rules_per_second: 100+
+  guarantees:
+    deterministic: true
+    complete_coverage: true (all ESRS requirements)
 pipeline:
   name: csrd-end-to-end
   description: Complete CSRD reporting pipeline
-
   stages:
-    - stage: 1
-      name: Data Intake & Validation
-      agent: intake-agent
-      input: [esg_data, company_profile]
-      output: validated_esg_data
-      estimated_time: 15% of total
-
-    - stage: 2
-      name: Materiality Assessment
-      agent: materiality-agent
-      input: [validated_esg_data, company_context]
-      output: materiality_matrix
-      estimated_time: 20% of total
-      requires_review: true
-
-    - stage: 3
-      name: Metric Calculations
-      agent: calculator-agent
-      input: [validated_esg_data, materiality_matrix]
-      output: [calculated_metrics, calculation_audit_trail]
-      estimated_time: 25% of total
-
-    - stage: 4
-      name: Multi-Standard Aggregation
-      agent: aggregator-agent
-      input: [calculated_metrics, tcfd_data, gri_data, sasb_data]
-      output: aggregated_esg_data
-      estimated_time: 10% of total
-
-    - stage: 5
-      name: Report Generation
-      agent: reporting-agent
-      input: [aggregated_esg_data, materiality_matrix, company_profile]
-      output: [csrd_report_package, management_report]
-      estimated_time: 20% of total
-      requires_review: true
-
-    - stage: 6
-      name: Compliance Validation
-      agent: audit-agent
-      input: [csrd_report_package, calculation_audit_trail]
-      output: [compliance_report, audit_package]
-      estimated_time: 10% of total
-
+  - stage: 1
+    name: Data Intake & Validation
+    agent: intake-agent
+    input:
+    - esg_data
+    - company_profile
+    output: validated_esg_data
+    estimated_time: 15% of total
+  - stage: 2
+    name: Materiality Assessment
+    agent: materiality-agent
+    input:
+    - validated_esg_data
+    - company_context
+    output: materiality_matrix
+    estimated_time: 20% of total
+    requires_review: true
+  - stage: 3
+    name: Metric Calculations
+    agent: calculator-agent
+    input:
+    - validated_esg_data
+    - materiality_matrix
+    output:
+    - calculated_metrics
+    - calculation_audit_trail
+    estimated_time: 25% of total
+  - stage: 4
+    name: Multi-Standard Aggregation
+    agent: aggregator-agent
+    input:
+    - calculated_metrics
+    - tcfd_data
+    - gri_data
+    - sasb_data
+    output: aggregated_esg_data
+    estimated_time: 10% of total
+  - stage: 5
+    name: Report Generation
+    agent: reporting-agent
+    input:
+    - aggregated_esg_data
+    - materiality_matrix
+    - company_profile
+    output:
+    - csrd_report_package
+    - management_report
+    estimated_time: 20% of total
+    requires_review: true
+  - stage: 6
+    name: Compliance Validation
+    agent: audit-agent
+    input:
+    - csrd_report_package
+    - calculation_audit_trail
+    output:
+    - compliance_report
+    - audit_package
+    estimated_time: 10% of total
   performance:
     target_total_time: <30 minutes for 10,000 data points
-    target_throughput: >300 data points/minute end-to-end
-
-# ----------------------------------------------------------------------------
-# DEPENDENCIES
-# ----------------------------------------------------------------------------
-
+    target_throughput: '>300 data points/minute end-to-end'
+contents:
+  pipelines:
+  - pipeline/csrd_end_to_end.yaml
 dependencies:
-  python: ">=3.11"
-
+  python: '>=3.11'
   packages:
-    - name: pandas
-      version: ">=2.1.0"
-      purpose: Data processing and aggregation
-
-    - name: pydantic
-      version: ">=2.5.0"
-      purpose: Data validation and models
-
-    - name: jsonschema
-      version: ">=4.20.0"
-      purpose: JSON Schema validation
-
-    - name: pyyaml
-      version: ">=6.0"
-      purpose: YAML configuration parsing
-
-    - name: openpyxl
-      version: ">=3.1.0"
-      purpose: Excel file support
-
-    - name: arelle
-      version: ">=2.20.0"
-      purpose: XBRL processing and validation
-
-    - name: lxml
-      version: ">=5.0.0"
-      purpose: XML processing for XBRL
-
-    - name: numpy
-      version: ">=1.26.0"
-      purpose: Numerical computations
-
-    - name: scipy
-      version: ">=1.11.0"
-      purpose: Statistical analysis
-
-    - name: langchain
-      version: ">=0.1.0"
-      purpose: AI/LLM orchestration
-
-    - name: openai
-      version: ">=1.10.0"
-      purpose: GPT-4 API (materiality assessment)
-
-    - name: anthropic
-      version: ">=0.18.0"
-      purpose: Claude API (alternative LLM)
-
-    - name: pinecone-client
-      version: ">=3.0.0"
-      purpose: Vector database for RAG
-
-    - name: fastapi
-      version: ">=0.109.0"
-      purpose: API framework
-
-    - name: sqlalchemy
-      version: ">=2.0.0"
-      purpose: Database ORM
-
-    - name: psycopg2-binary
-      version: ">=2.9.0"
-      purpose: PostgreSQL connector
-
-    - name: reportlab
-      version: ">=4.0.0"
-      purpose: PDF generation
-
-    - name: matplotlib
-      version: ">=3.8.0"
-      purpose: Charts and visualizations
-
-# ----------------------------------------------------------------------------
-# DATA & REFERENCE FILES
-# ----------------------------------------------------------------------------
-
+  - name: pandas
+    version: '>=2.1.0'
+    purpose: Data processing and aggregation
+  - name: pydantic
+    version: '>=2.5.0'
+    purpose: Data validation and models
+  - name: jsonschema
+    version: '>=4.20.0'
+    purpose: JSON Schema validation
+  - name: pyyaml
+    version: '>=6.0'
+    purpose: YAML configuration parsing
+  - name: openpyxl
+    version: '>=3.1.0'
+    purpose: Excel file support
+  - name: arelle
+    version: '>=2.20.0'
+    purpose: XBRL processing and validation
+  - name: lxml
+    version: '>=5.0.0'
+    purpose: XML processing for XBRL
+  - name: numpy
+    version: '>=1.26.0'
+    purpose: Numerical computations
+  - name: scipy
+    version: '>=1.11.0'
+    purpose: Statistical analysis
+  - name: langchain
+    version: '>=0.1.0'
+    purpose: AI/LLM orchestration
+  - name: openai
+    version: '>=1.10.0'
+    purpose: GPT-4 API (materiality assessment)
+  - name: anthropic
+    version: '>=0.18.0'
+    purpose: Claude API (alternative LLM)
+  - name: pinecone-client
+    version: '>=3.0.0'
+    purpose: Vector database for RAG
+  - name: fastapi
+    version: '>=0.109.0'
+    purpose: API framework
+  - name: sqlalchemy
+    version: '>=2.0.0'
+    purpose: Database ORM
+  - name: psycopg2-binary
+    version: '>=2.9.0'
+    purpose: PostgreSQL connector
+  - name: reportlab
+    version: '>=4.0.0'
+    purpose: PDF generation
+  - name: matplotlib
+    version: '>=3.8.0'
+    purpose: Charts and visualizations
 data:
-  - path: data/esrs_data_points.json
-    description: Complete ESRS data point catalog (1,082 points)
-    format: json
-    size: 5000 lines
-    source: EFRAG ESRS Set 1
-
-  - path: data/emission_factors.json
-    description: GHG Protocol emission factors database
-    format: json
-    size: 2000 lines
-    sources: [GHG Protocol, IEA, IPCC]
-
-  - path: data/esrs_formulas.yaml
-    description: 500+ ESRS metric calculation formulas
-    format: yaml
-    size: 3000 lines
-    source: ESRS technical guidance
-
-  - path: data/framework_mappings.json
-    description: Cross-framework mappings (TCFD, GRI, SASB)
-    format: json
-    size: 1500 lines
-
-  - path: data/industry_benchmarks.json
-    description: Sector-specific ESG benchmarks
-    format: json
-    size: 800 lines
-    source: EU databases
-
-  - path: data/esrs_xbrl_taxonomy_v1.xsd
-    description: ESRS XBRL taxonomy (1,000+ tags)
-    format: xsd
-    size: 8000 lines
-    source: EFRAG
-
+- path: data/esrs_data_points.json
+  description: Complete ESRS data point catalog (1,082 points)
+  format: json
+  size: 5000 lines
+  source: EFRAG ESRS Set 1
+- path: data/emission_factors.json
+  description: GHG Protocol emission factors database
+  format: json
+  size: 2000 lines
+  sources:
+  - GHG Protocol
+  - IEA
+  - IPCC
+- path: data/esrs_formulas.yaml
+  description: 500+ ESRS metric calculation formulas
+  format: yaml
+  size: 3000 lines
+  source: ESRS technical guidance
+- path: data/framework_mappings.json
+  description: Cross-framework mappings (TCFD, GRI, SASB)
+  format: json
+  size: 1500 lines
+- path: data/industry_benchmarks.json
+  description: Sector-specific ESG benchmarks
+  format: json
+  size: 800 lines
+  source: EU databases
+- path: data/esrs_xbrl_taxonomy_v1.xsd
+  description: ESRS XBRL taxonomy (1,000+ tags)
+  format: xsd
+  size: 8000 lines
+  source: EFRAG
 rules:
-  - path: rules/esrs_compliance_rules.yaml
-    description: 200+ ESRS compliance validation rules
-    format: yaml
-    size: 2000 lines
-    reference: ESRS Set 1
-
-  - path: rules/data_quality_rules.yaml
-    description: Data quality validation rules
-    format: yaml
-    size: 500 lines
-
-  - path: rules/xbrl_validation_rules.yaml
-    description: ESEF/XBRL validation rules
-    format: yaml
-    size: 400 lines
-
+- path: rules/esrs_compliance_rules.yaml
+  description: 200+ ESRS compliance validation rules
+  format: yaml
+  size: 2000 lines
+  reference: ESRS Set 1
+- path: rules/data_quality_rules.yaml
+  description: Data quality validation rules
+  format: yaml
+  size: 500 lines
+- path: rules/xbrl_validation_rules.yaml
+  description: ESEF/XBRL validation rules
+  format: yaml
+  size: 400 lines
 schemas:
-  - path: schemas/esg_data.schema.json
-    description: Input ESG data contract
-    format: json-schema
-    size: 300 lines
-
-  - path: schemas/company_profile.schema.json
-    description: Company profile contract
-    format: json-schema
-    size: 200 lines
-
-  - path: schemas/materiality.schema.json
-    description: Materiality assessment contract
-    format: json-schema
-    size: 250 lines
-
-  - path: schemas/csrd_report.schema.json
-    description: CSRD report output format
-    format: json-schema
-    size: 500 lines
-
+- path: schemas/esg_data.schema.json
+  description: Input ESG data contract
+  format: json-schema
+  size: 300 lines
+- path: schemas/company_profile.schema.json
+  description: Company profile contract
+  format: json-schema
+  size: 200 lines
+- path: schemas/materiality.schema.json
+  description: Materiality assessment contract
+  format: json-schema
+  size: 250 lines
+- path: schemas/csrd_report.schema.json
+  description: CSRD report output format
+  format: json-schema
+  size: 500 lines
 examples:
-  - path: examples/demo_esg_data.csv
-    description: Sample ESG data for testing
-    records: 50
-
-  - path: examples/demo_company_profile.json
-    description: Sample company profile
-
-  - path: examples/demo_materiality.json
-    description: Sample materiality assessment
-
-# ----------------------------------------------------------------------------
-# USAGE
-# ----------------------------------------------------------------------------
-
+- path: examples/demo_esg_data.csv
+  description: Sample ESG data for testing
+  records: 50
+- path: examples/demo_company_profile.json
+  description: Sample company profile
+- path: examples/demo_materiality.json
+  description: Sample materiality assessment
 usage:
-  cli: |
-    # Complete pipeline
-    python csrd_pipeline.py \
-      --input data/esg_data_2024.csv \
-      --company config/company_profile.json \
-      --materiality assessments/2024_materiality.json \
-      --output reports/2024_csrd_report.zip \
-      --standards tcfd gri
-
-  python_sdk: |
-    from greenlang.csrd import CSRDPipeline
-
-    # Initialize pipeline
-    pipeline = CSRDPipeline(config_path="config/csrd_config.yaml")
-
-    # Run pipeline
-    report = pipeline.run(
-        esg_data_file="data/esg_data_2024.csv",
-        company_profile="config/company_profile.json",
-        materiality_assessment="assessments/2024_materiality.json",
-        output_path="reports/2024_csrd_report.zip"
-    )
-
-    # Check compliance
-    print(f"Compliance: {'PASS' if report['compliance']['is_valid'] else 'FAIL'}")
-
-# ----------------------------------------------------------------------------
-# QUALITY GUARANTEES
-# ----------------------------------------------------------------------------
-
+  cli: "# Complete pipeline\npython csrd_pipeline.py \\\n  --input data/esg_data_2024.csv\
+    \ \\\n  --company config/company_profile.json \\\n  --materiality assessments/2024_materiality.json\
+    \ \\\n  --output reports/2024_csrd_report.zip \\\n  --standards tcfd gri\n"
+  python_sdk: "from greenlang.csrd import CSRDPipeline\n\n# Initialize pipeline\n\
+    pipeline = CSRDPipeline(config_path=\"config/csrd_config.yaml\")\n\n# Run pipeline\n\
+    report = pipeline.run(\n    esg_data_file=\"data/esg_data_2024.csv\",\n    company_profile=\"\
+    config/company_profile.json\",\n    materiality_assessment=\"assessments/2024_materiality.json\"\
+    ,\n    output_path=\"reports/2024_csrd_report.zip\"\n)\n\n# Check compliance\n\
+    print(f\"Compliance: {'PASS' if report['compliance']['is_valid'] else 'FAIL'}\"\
+    )\n"
 guarantees:
   calculation_accuracy: 100%
   zero_hallucination: true (for numeric calculations)
@@ -937,88 +793,75 @@ guarantees:
   compliance_validation: 200+ ESRS rules
   xbrl_compliance: true
   esef_compliance: true
-
   performance:
-    - <30 minutes for 10,000 data points
-    - <5 ms per metric calculation
-    - 1,000+ records/sec data intake
-
+  - <30 minutes for 10,000 data points
+  - <5 ms per metric calculation
+  - 1,000+ records/sec data intake
   supported_formats:
-    input: [CSV, JSON, Excel, API]
-    output: [XHTML (iXBRL), PDF, JSON, ZIP (ESEF)]
-
+    input:
+    - CSV
+    - JSON
+    - Excel
+    - API
+    output:
+    - XHTML (iXBRL)
+    - PDF
+    - JSON
+    - ZIP (ESEF)
   esrs_coverage:
     standards: 12 (E1-E5, S1-S4, G1, ESRS 1-2)
     data_points: 1,082
     automation_rate: 96%
-
-# ----------------------------------------------------------------------------
-# COMPLIANCE
-# ----------------------------------------------------------------------------
-
 compliance:
   regulations:
-    - name: EU CSRD Directive
-      number: 2022/2464
-      scope: Corporate Sustainability Reporting
-
-    - name: ESRS Set 1
-      number: Commission Delegated Regulation 2023/2772
-      scope: 12 European Sustainability Reporting Standards
-
-    - name: ESEF Regulation
-      number: Commission Delegated Regulation 2019/815
-      scope: European Single Electronic Format
-
+  - name: EU CSRD Directive
+    number: 2022/2464
+    scope: Corporate Sustainability Reporting
+  - name: ESRS Set 1
+    number: Commission Delegated Regulation 2023/2772
+    scope: 12 European Sustainability Reporting Standards
+  - name: ESEF Regulation
+    number: Commission Delegated Regulation 2019/815
+    scope: European Single Electronic Format
   reporting_frequency: Annual (with quarterly updates possible)
-
   covered_standards:
-    - ESRS E1: Climate Change
-    - ESRS E2: Pollution
-    - ESRS E3: Water and Marine Resources
-    - ESRS E4: Biodiversity and Ecosystems
-    - ESRS E5: Resource Use and Circular Economy
-    - ESRS S1: Own Workforce
-    - ESRS S2: Workers in the Value Chain
-    - ESRS S3: Affected Communities
-    - ESRS S4: Consumers and End-Users
-    - ESRS G1: Business Conduct
-
-# ----------------------------------------------------------------------------
-# METADATA
-# ----------------------------------------------------------------------------
-
+  - ESRS E1: Climate Change
+  - ESRS E2: Pollution
+  - ESRS E3: Water and Marine Resources
+  - ESRS E4: Biodiversity and Ecosystems
+  - ESRS E5: Resource Use and Circular Economy
+  - ESRS S1: Own Workforce
+  - ESRS S2: Workers in the Value Chain
+  - ESRS S3: Affected Communities
+  - ESRS S4: Consumers and End-Users
+  - ESRS G1: Business Conduct
 metadata:
   created: 2025-10-18
   updated: 2025-10-18
-  greenlang_version: ">=0.3.0"
+  greenlang_version: '>=0.3.0'
   pack_schema_version: 1.0
-
   repository:
     url: https://github.com/akshay-greenlang/Code-V1_GreenLang
     path: GL-CSRD-APP/CSRD-Reporting-Platform
-
   documentation:
     readme: README.md
     prd: PRD.md
     specs:
-      - specs/intake_agent_spec.yaml
-      - specs/materiality_agent_spec.yaml
-      - specs/calculator_agent_spec.yaml
-      - specs/aggregator_agent_spec.yaml
-      - specs/reporting_agent_spec.yaml
-      - specs/audit_agent_spec.yaml
-
+    - specs/intake_agent_spec.yaml
+    - specs/materiality_agent_spec.yaml
+    - specs/calculator_agent_spec.yaml
+    - specs/aggregator_agent_spec.yaml
+    - specs/reporting_agent_spec.yaml
+    - specs/audit_agent_spec.yaml
   support:
     email: csrd@greenlang.io
     issues: https://github.com/akshay-greenlang/Code-V1_GreenLang/issues
-
   keywords:
-    - csrd
-    - esrs
-    - sustainability
-    - esg
-    - xbrl
-    - eu-compliance
-    - zero-hallucination
-    - climate-disclosure
+  - csrd
+  - esrs
+  - sustainability
+  - esg
+  - xbrl
+  - eu-compliance
+  - zero-hallucination
+  - climate-disclosure

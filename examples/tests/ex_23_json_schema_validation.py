@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 23: JSON Schema validation for outputs."""
 
 import pytest

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Phase 5 Compliance Test Suite
 

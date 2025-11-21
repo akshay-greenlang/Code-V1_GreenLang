@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """GL-VCCI Resilience Patterns.
 
 Application-specific resilience patterns for the GL-VCCI Scope 3 Platform.

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CPU Profiling Tool with Flame Graph Generation
 ==============================================
@@ -40,6 +41,7 @@ from typing import Optional, List
 import importlib
 import json
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 class CPUProfiler:
@@ -113,7 +115,7 @@ class CPUProfiler:
             Path to saved file
         """
         if filename is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
             filename = f"profile_{timestamp}.prof"
 
         output_path = self.output_dir / filename
@@ -328,7 +330,7 @@ class CPUProfiler:
 <body>
     <div class="container">
         <h1>CPU Profile Report</h1>
-        <p class="timestamp">Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+        <p class="timestamp">Generated: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
 
         <div class="summary">
             <div class="summary-item">

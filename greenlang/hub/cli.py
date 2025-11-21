@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CLI Commands for GreenLang Hub Operations
 """

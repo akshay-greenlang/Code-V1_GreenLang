@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP S/4HANA Connector Configuration Management
 GL-VCCI Scope 3 Platform
@@ -15,6 +16,7 @@ from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from enum import Enum
 from pydantic import BaseModel, Field, validator
+from greenlang.determinism import FinancialDecimal
 
 
 class SAPEnvironment(str, Enum):
@@ -316,7 +318,7 @@ class SAPConnectorConfig(BaseModel):
         timeout_config = TimeoutConfig(
             connect_timeout=float(os.getenv("SAP_CONNECT_TIMEOUT", "10.0")),
             read_timeout=float(os.getenv("SAP_READ_TIMEOUT", "30.0")),
-            total_timeout=float(os.getenv("SAP_TOTAL_TIMEOUT", "60.0"))
+            total_timeout=FinancialDecimal.from_string(os.getenv("SAP_TOTAL_TIMEOUT", "60.0"))
         )
 
         # Default batch size

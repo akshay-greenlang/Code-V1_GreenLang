@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CBAM Importer Copilot - Health Check Endpoints
 
@@ -21,6 +22,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 import sys
+from greenlang.determinism import DeterministicClock
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -242,7 +244,7 @@ class CBAMHealthChecker:
         """
         self.base_path = base_path or str(Path(__file__).parent.parent)
         self.dependency_checker = DependencyHealthChecker(self.base_path)
-        self.start_time = datetime.now()
+        self.start_time = DeterministicClock.now()
 
     def basic_health(self) -> Dict[str, Any]:
         """
@@ -254,11 +256,11 @@ class CBAMHealthChecker:
         Returns:
             Health status dictionary
         """
-        uptime_seconds = (datetime.now() - self.start_time).total_seconds()
+        uptime_seconds = (DeterministicClock.now() - self.start_time).total_seconds()
 
         return {
             "status": "healthy",
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "service": "cbam-importer-copilot",
             "version": "1.0.0",
             "uptime_seconds": round(uptime_seconds, 2),
@@ -310,7 +312,7 @@ class CBAMHealthChecker:
 
         result = {
             "status": overall_status,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "service": "cbam-importer-copilot",
             "checks": {
                 name: check.to_dict()
@@ -386,7 +388,7 @@ class CBAMHealthChecker:
 
         result = {
             "status": overall_status,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "service": "cbam-importer-copilot",
             "checks": {
                 name: check.to_dict()

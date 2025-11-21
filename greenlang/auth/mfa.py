@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Multi-Factor Authentication (MFA) for GreenLang
 
@@ -33,6 +34,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
+from greenlang.determinism import DeterministicClock
 
 try:
     import pyotp
@@ -189,7 +191,7 @@ class RateLimiter:
         Returns:
             Tuple of (is_allowed, remaining_attempts)
         """
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         cutoff = now - timedelta(seconds=self.window_seconds)
 
         # Clean old attempts
@@ -212,7 +214,7 @@ class RateLimiter:
         if key not in self._attempts:
             self._attempts[key] = []
 
-        self._attempts[key].append(datetime.utcnow())
+        self._attempts[key].append(DeterministicClock.utcnow())
 
     def reset(self, key: str) -> None:
         """Reset attempts for key"""
@@ -396,7 +398,7 @@ class BackupCodeGenerator:
             backup_code = BackupCode(
                 code=code,
                 code_hash=code_hash,
-                created_at=datetime.utcnow()
+                created_at=DeterministicClock.utcnow()
             )
             codes.append(backup_code)
 
@@ -488,7 +490,7 @@ class MFAManager:
             device_id=secrets.token_urlsafe(16),
             device_name=device_name,
             secret=secret,
-            created_at=datetime.utcnow(),
+            created_at=DeterministicClock.utcnow(),
             verified=False
         )
 
@@ -528,7 +530,7 @@ class MFAManager:
         # Verify code
         if self.totp_provider.verify_code(device.secret, code):
             device.verified = True
-            device.last_used = datetime.utcnow()
+            device.last_used = DeterministicClock.utcnow()
 
             # Update enrollment
             if MFAMethod.TOTP not in enrollment.methods:
@@ -536,7 +538,7 @@ class MFAManager:
 
             if enrollment.status == MFAStatus.DISABLED:
                 enrollment.status = MFAStatus.ENABLED
-                enrollment.enrolled_at = datetime.utcnow()
+                enrollment.enrolled_at = DeterministicClock.utcnow()
 
             logger.info(f"TOTP enrollment verified for user: {user_id}")
             return True
@@ -560,7 +562,7 @@ class MFAManager:
         device = SMSDevice(
             device_id=secrets.token_urlsafe(16),
             phone_number=phone_number,
-            created_at=datetime.utcnow(),
+            created_at=DeterministicClock.utcnow(),
             verified=False
         )
 
@@ -604,7 +606,7 @@ class MFAManager:
         # Verify challenge
         if self._verify_challenge(user_id, MFAMethod.SMS, code):
             device.verified = True
-            device.last_used = datetime.utcnow()
+            device.last_used = DeterministicClock.utcnow()
 
             # Update enrollment
             if MFAMethod.SMS not in enrollment.methods:
@@ -612,7 +614,7 @@ class MFAManager:
 
             if enrollment.status == MFAStatus.DISABLED:
                 enrollment.status = MFAStatus.ENABLED
-                enrollment.enrolled_at = datetime.utcnow()
+                enrollment.enrolled_at = DeterministicClock.utcnow()
 
             logger.info(f"SMS enrollment verified for user: {user_id}")
             return True
@@ -675,7 +677,7 @@ class MFAManager:
             raise MFAError("User not enrolled in MFA")
 
         if enrollment.status == MFAStatus.LOCKED:
-            if enrollment.locked_until and datetime.utcnow() < enrollment.locked_until:
+            if enrollment.locked_until and DeterministicClock.utcnow() < enrollment.locked_until:
                 raise MFAError("Account is locked due to too many failed attempts")
             else:
                 # Unlock
@@ -708,7 +710,7 @@ class MFAManager:
             # Lock account if too many failures
             if enrollment.failed_attempts >= self.config.max_attempts:
                 enrollment.status = MFAStatus.LOCKED
-                enrollment.locked_until = datetime.utcnow() + timedelta(
+                enrollment.locked_until = DeterministicClock.utcnow() + timedelta(
                     seconds=self.config.lockout_duration
                 )
                 logger.warning(f"Account locked for user: {user_id}")
@@ -726,7 +728,7 @@ class MFAManager:
             # Try all devices
             for device in enrollment.totp_devices:
                 if device.verified and self.totp_provider.verify_code(device.secret, code):
-                    device.last_used = datetime.utcnow()
+                    device.last_used = DeterministicClock.utcnow()
                     return True
             return False
 
@@ -740,7 +742,7 @@ class MFAManager:
             return False
 
         if self.totp_provider.verify_code(device.secret, code):
-            device.last_used = datetime.utcnow()
+            device.last_used = DeterministicClock.utcnow()
             return True
 
         return False
@@ -760,7 +762,7 @@ class MFAManager:
 
         if backup_code:
             backup_code.used = True
-            backup_code.used_at = datetime.utcnow()
+            backup_code.used_at = DeterministicClock.utcnow()
             logger.info(f"Backup code used for user: {enrollment.user_id}")
             return True
 
@@ -778,8 +780,8 @@ class MFAManager:
             challenge_id=secrets.token_urlsafe(32),
             user_id=user_id,
             method=method,
-            created_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(minutes=10),
+            created_at=DeterministicClock.utcnow(),
+            expires_at=DeterministicClock.utcnow() + timedelta(minutes=10),
             code=code,
             device_id=device_id
         )
@@ -795,7 +797,7 @@ class MFAManager:
             if (challenge.user_id == user_id and
                 challenge.method == method and
                 not challenge.verified and
-                datetime.utcnow() < challenge.expires_at and
+                DeterministicClock.utcnow() < challenge.expires_at and
                 challenge.code == code):
 
                 challenge.verified = True

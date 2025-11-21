@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Integration Tests for Distributed Orchestrator.
 
 This module provides comprehensive integration tests for distributed workflow execution

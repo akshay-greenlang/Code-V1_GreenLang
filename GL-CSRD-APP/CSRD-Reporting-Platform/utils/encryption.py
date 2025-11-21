@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Data encryption utilities for sensitive ESG data.
 

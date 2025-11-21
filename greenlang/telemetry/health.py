@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Health checks and readiness probes for GreenLang
 """
@@ -12,6 +13,7 @@ from datetime import datetime
 from enum import Enum
 import threading
 import psutil
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -394,7 +396,7 @@ class HealthChecker:
     def __init__(self):
         """Initialize health checker"""
         self.checks: Dict[str, HealthCheck] = {}
-        self.start_time = datetime.utcnow()
+        self.start_time = DeterministicClock.utcnow()
         self._last_check_results: Dict[str, HealthCheckResult] = {}
         self._check_thread = None
         self._stop_checking = threading.Event()
@@ -456,7 +458,7 @@ class HealthChecker:
         overall_status = self._calculate_overall_status(results)
 
         # Calculate uptime
-        uptime = (datetime.utcnow() - self.start_time).total_seconds()
+        uptime = (DeterministicClock.utcnow() - self.start_time).total_seconds()
 
         return HealthReport(
             status=overall_status, checks=results, uptime_seconds=uptime
@@ -485,7 +487,7 @@ class HealthChecker:
         overall_status = self._calculate_overall_status(results)
 
         # Calculate uptime
-        uptime = (datetime.utcnow() - self.start_time).total_seconds()
+        uptime = (DeterministicClock.utcnow() - self.start_time).total_seconds()
 
         return HealthReport(
             status=overall_status, checks=results, uptime_seconds=uptime

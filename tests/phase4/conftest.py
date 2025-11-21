@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pytest fixtures and test factories for Phase 4
 Provides comprehensive test data and mocks for all Phase 4 components
@@ -16,6 +17,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from greenlang.db.base import Base, reset_engine
 from greenlang.db.models_auth import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     User,
     Role,
     Permission,
@@ -60,7 +63,7 @@ def db_session(db_engine):
 def test_user_data():
     """Test user data"""
     return {
-        "id": str(uuid.uuid4()),
+        "id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "tenant_id": "test-tenant-1",
         "username": "testuser",
         "email": "testuser@greenlang.test",
@@ -88,7 +91,7 @@ def test_users(db_session):
     users = []
     for i in range(5):
         user = User(
-            id=str(uuid.uuid4()),
+            id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             tenant_id=f"test-tenant-{(i % 2) + 1}",
             username=f"user{i}",
             email=f"user{i}@greenlang.test",
@@ -108,7 +111,7 @@ def test_users(db_session):
 def test_role_data():
     """Test role data"""
     return {
-        "id": str(uuid.uuid4()),
+        "id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "tenant_id": "test-tenant-1",
         "name": "developer",
         "description": "Developer role",
@@ -139,7 +142,7 @@ def test_roles(db_session):
     roles = []
     for data in roles_data:
         role = Role(
-            id=str(uuid.uuid4()),
+            id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             **data
         )
         db_session.add(role)
@@ -153,7 +156,7 @@ def test_roles(db_session):
 def test_permission(db_session, test_role):
     """Create test permission"""
     permission = Permission(
-        id=str(uuid.uuid4()),
+        id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         role_id=test_role.id,
         resource_type="pipeline",
         action="execute",
@@ -179,7 +182,7 @@ def test_permissions(db_session, test_roles):
     for config in perm_configs:
         role_idx = config.pop("role_idx")
         permission = Permission(
-            id=str(uuid.uuid4()),
+            id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             role_id=test_roles[role_idx].id,
             **config,
             effect="allow",
@@ -197,13 +200,13 @@ def test_permissions(db_session, test_roles):
 def test_session_data():
     """Test session data"""
     return {
-        "id": str(uuid.uuid4()),
-        "user_id": str(uuid.uuid4()),
+        "id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+        "user_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "tenant_id": "test-tenant-1",
-        "session_token": uuid.uuid4().hex,
+        "session_token": deterministic_uuid(__name__, str(DeterministicClock.now())).hex,
         "ip_address": "192.168.1.100",
         "user_agent": "pytest/1.0",
-        "expires_at": datetime.utcnow() + timedelta(hours=24),
+        "expires_at": DeterministicClock.utcnow() + timedelta(hours=24),
         "active": True,
     }
 
@@ -225,10 +228,10 @@ def test_db_session(db_session, test_user, test_session_data):
 def test_api_key(db_session, test_user):
     """Create test API key"""
     api_key = APIKey(
-        id=str(uuid.uuid4()),
+        id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         user_id=test_user.id,
         tenant_id=test_user.tenant_id,
-        key_id=f"glk_{uuid.uuid4().hex[:16]}",
+        key_id=f"glk_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}",
         key_hash="hashed_secret",
         key_prefix="glk_test",
         name="Test API Key",
@@ -246,7 +249,7 @@ def test_api_key(db_session, test_user):
 def test_saml_provider(db_session):
     """Create test SAML provider"""
     provider = SAMLProvider(
-        id=str(uuid.uuid4()),
+        id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         tenant_id="test-tenant-1",
         name="Test SAML IdP",
         entity_id="https://idp.greenlang.test/saml",
@@ -269,7 +272,7 @@ def test_saml_provider(db_session):
 def test_oauth_provider(db_session):
     """Create test OAuth provider"""
     provider = OAuthProvider(
-        id=str(uuid.uuid4()),
+        id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         tenant_id="test-tenant-1",
         name="Test OAuth Provider",
         provider_type="google",
@@ -291,7 +294,7 @@ def test_oauth_provider(db_session):
 def test_ldap_config(db_session):
     """Create test LDAP configuration"""
     config = LDAPConfig(
-        id=str(uuid.uuid4()),
+        id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         tenant_id="test-tenant-1",
         name="Test LDAP",
         server_url="ldap://ldap.greenlang.test",
@@ -465,7 +468,7 @@ def performance_metrics():
             self.measurements.append({
                 "operation": operation,
                 "duration_ms": duration * 1000,
-                "timestamp": datetime.utcnow(),
+                "timestamp": DeterministicClock.utcnow(),
                 **metadata
             })
 
@@ -525,10 +528,10 @@ class UserFactory:
     def create(session: Session, **kwargs) -> User:
         """Create user with defaults"""
         data = {
-            "id": str(uuid.uuid4()),
+            "id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             "tenant_id": "test-tenant-1",
-            "username": f"user_{uuid.uuid4().hex[:8]}",
-            "email": f"user_{uuid.uuid4().hex[:8]}@greenlang.test",
+            "username": f"user_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}",
+            "email": f"user_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}@greenlang.test",
             "password_hash": "$2b$12$test_hash",
             "active": True,
         }
@@ -553,9 +556,9 @@ class RoleFactory:
     def create(session: Session, **kwargs) -> Role:
         """Create role with defaults"""
         data = {
-            "id": str(uuid.uuid4()),
+            "id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             "tenant_id": "test-tenant-1",
-            "name": f"role_{uuid.uuid4().hex[:8]}",
+            "name": f"role_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}",
             "is_system_role": False,
         }
         data.update(kwargs)

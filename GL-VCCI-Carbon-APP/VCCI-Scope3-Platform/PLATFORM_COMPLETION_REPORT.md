@@ -513,7 +513,7 @@ result = await agent.calculate_by_category(category, data)
 ### 🎯 Next Steps for 100%
 
 **Immediate (1-2 days with Python environment)**:
-1. Install Python 3.9+ on Windows
+1. Install Python 3.10+ on Windows
 2. Create virtual environment
 3. Install dependencies: `pip install -r requirements.txt`
 4. Run tests: `pytest tests/ -v --cov`
@@ -540,7 +540,7 @@ result = await agent.calculate_by_category(category, data)
 
 ### Prerequisites
 ```bash
-# 1. Install Python 3.9+
+# 1. Install Python 3.10+
 # Download from python.org
 
 # 2. Create virtual environment

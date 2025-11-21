@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 """Tests for InputValidatorAgent."""
 
 import math
 import pytest
 from greenlang.agents.validator_agent import InputValidatorAgent
+from greenlang.determinism import FinancialDecimal
 
 
 class TestInputValidatorAgent:
@@ -104,7 +106,7 @@ class TestInputValidatorAgent:
             "building_name": "Test Building",
             "building_type": "office",
             "country": "IN",
-            "total_area": {"value": float('nan'), "unit": "sqft"},
+            "total_area": {"value": FinancialDecimal.from_string('nan'), "unit": "sqft"},
             "occupancy": 100
         }
         
@@ -120,7 +122,7 @@ class TestInputValidatorAgent:
             "building_name": "Test Building",
             "building_type": "office",
             "country": "IN",
-            "total_area": {"value": float('inf'), "unit": "sqft"},
+            "total_area": {"value": FinancialDecimal.from_string('inf'), "unit": "sqft"},
             "occupancy": 100
         }
         

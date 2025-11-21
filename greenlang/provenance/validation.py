@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Provenance - Validation Module
 Provenance record validation and integrity verification.

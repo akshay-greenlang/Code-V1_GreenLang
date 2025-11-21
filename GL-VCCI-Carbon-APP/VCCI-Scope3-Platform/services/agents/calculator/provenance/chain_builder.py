@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Provenance Chain Builder
 Complete tracking of calculation provenance for auditability.
@@ -9,6 +10,8 @@ from datetime import datetime
 from typing import Dict, Any, Optional, List
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     ProvenanceChain,
     DataQualityInfo,
     EmissionFactorInfo,
@@ -77,7 +80,7 @@ class ProvenanceChainBuilder:
 
         provenance = ProvenanceChain(
             calculation_id=calc_id,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             category=category,
             tier=tier,
             input_data_hash=input_hash,
@@ -97,8 +100,8 @@ class ProvenanceChainBuilder:
 
     def _generate_calculation_id(self, category: int) -> str:
         """Generate unique calculation ID."""
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
-        unique_id = str(uuid.uuid4())[:8]
+        timestamp = DeterministicClock.utcnow().strftime("%Y%m%d_%H%M%S")
+        unique_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8]
         return f"calc_cat{category}_{timestamp}_{unique_id}"
 
     def _get_trace_id(self) -> Optional[str]:
@@ -106,9 +109,10 @@ class ProvenanceChainBuilder:
         # In production, this would extract from OpenTelemetry context
         # For now, generate a placeholder
         try:
-            trace_id = str(uuid.uuid4())
+            trace_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
             return f"trace_{trace_id}"
-        except:
+        except Exception as e:
+            logger.debug(f"Failed to generate trace ID: {e}")
             return None
 
     def hash_factor_info(self, value: float, source: str) -> str:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 API Key Authentication System
 GL-VCCI Scope 3 Platform
@@ -26,6 +27,7 @@ from fastapi import HTTPException, status, Security, Request
 from fastapi.security import APIKeyHeader
 from passlib.hash import bcrypt
 import redis.asyncio as redis
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -322,12 +324,12 @@ async def verify_api_key(api_key: str) -> Optional[APIKeyData]:
                     return None
 
                 # Check expiration
-                if key_data.expires_at and key_data.expires_at < datetime.utcnow():
+                if key_data.expires_at and key_data.expires_at < DeterministicClock.utcnow():
                     logger.warning(f"Expired API key used: {key_id}")
                     return None
 
                 # Update last used timestamp
-                key_data.last_used_at = datetime.utcnow()
+                key_data.last_used_at = DeterministicClock.utcnow()
                 await redis_client.hset(
                     metadata_key,
                     "last_used_at",
@@ -365,7 +367,7 @@ async def check_rate_limit(key_data: APIKeyData) -> bool:
         redis_client = await get_redis_client()
 
         # Rate limit key (per hour window)
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         hour_key = now.strftime("%Y-%m-%d-%H")
         rate_key = f"api_key:rate:{key_data.key_id}:{hour_key}"
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Provenance and versioning integration tests.
 """
@@ -5,6 +6,7 @@ import pytest
 import json
 from datetime import datetime
 from tests.integration.utils import load_fixture
+from greenlang.determinism import DeterministicClock
 
 
 @pytest.mark.integration
@@ -106,14 +108,14 @@ class TestProvenanceAndVersions:
         """Test that execution timestamp is generated."""
         building_data = load_fixture('data', 'building_india_office.json')
         
-        before = datetime.utcnow().isoformat()
+        before = DeterministicClock.utcnow().isoformat()
         
         result = workflow_runner.run(
             'tests/fixtures/workflows/commercial_building_emissions.yaml',
             {'building_data': building_data}
         )
         
-        after = datetime.utcnow().isoformat()
+        after = DeterministicClock.utcnow().isoformat()
         
         assert result['success'] is True
         

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Fusion Cloud OAuth 2.0 Authentication Handler
 GL-VCCI Scope 3 Platform
@@ -18,6 +19,7 @@ from threading import Lock
 
 from .config import OAuth2Config, OracleEnvironment
 from .exceptions import OracleAuthenticationError, OracleConnectionError
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +55,7 @@ class TokenCache:
             expires_at = cached_data.get("expires_at")
 
             # Check if token is still valid (with 60s buffer)
-            if expires_at and datetime.now() < expires_at - timedelta(seconds=60):
+            if expires_at and DeterministicClock.now() < expires_at - timedelta(seconds=60):
                 logger.debug(f"Token cache hit for key: {key}")
                 return cached_data.get("access_token")
 
@@ -72,11 +74,11 @@ class TokenCache:
             expires_in: Token expiration time in seconds
         """
         with self._lock:
-            expires_at = datetime.now() + timedelta(seconds=expires_in)
+            expires_at = DeterministicClock.now() + timedelta(seconds=expires_in)
             self._cache[key] = {
                 "access_token": access_token,
                 "expires_at": expires_at,
-                "cached_at": datetime.now()
+                "cached_at": DeterministicClock.now()
             }
             logger.debug(f"Token cached for key: {key}, expires at: {expires_at}")
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 JSON Validation and Repair System
 

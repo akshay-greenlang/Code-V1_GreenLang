@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 tests/agents/test_performance_benchmarks.py
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 BERT-based pairwise matching model for entity resolution.
 

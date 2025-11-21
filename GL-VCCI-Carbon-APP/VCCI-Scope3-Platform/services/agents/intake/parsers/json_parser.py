@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 JSON Parser with Validation
 

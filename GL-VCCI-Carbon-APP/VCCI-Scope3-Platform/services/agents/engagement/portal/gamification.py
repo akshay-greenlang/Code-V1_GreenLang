@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Gamification features for supplier portal.
 
@@ -8,6 +9,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     SupplierProgress,
     SupplierBadge,
     BadgeType,
@@ -99,7 +101,7 @@ class GamificationEngine:
         progress.completion_percentage = completion_percentage
         if data_quality_score is not None:
             progress.data_quality_score = data_quality_score
-        progress.last_updated = datetime.utcnow()
+        progress.last_updated = DeterministicClock.utcnow()
 
         logger.debug(
             f"Updated progress for supplier {supplier_id}: {completion_percentage:.1f}%"

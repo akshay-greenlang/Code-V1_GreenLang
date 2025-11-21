@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Scope 3 Carbon Intelligence Platform - Load Testing Suite
 

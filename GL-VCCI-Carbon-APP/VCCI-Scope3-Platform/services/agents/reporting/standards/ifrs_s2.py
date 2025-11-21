@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """IFRS S2 Report Generator - GL-VCCI Scope 3 Platform v1.0.0"""
 import logging
 from typing import Dict, Any, Optional

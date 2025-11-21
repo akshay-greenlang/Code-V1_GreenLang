@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """GridFactorAgent with full type hints."""
 
 from typing import Dict, List

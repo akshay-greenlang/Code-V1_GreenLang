@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Enterprise Load Testing Suite for GreenLang
 
@@ -14,6 +15,7 @@ import random
 import time
 import os
 from typing import Dict, Any, Optional
+from greenlang.determinism import deterministic_random
 
 
 # Setup logging
@@ -44,7 +46,7 @@ class GreenLangUser(HttpUser):
         response = self.client.post(
             "/api/v1/auth/login",
             json={
-                "username": f"user_{random.randint(1, 100)}",
+                "username": f"user_{deterministic_random().randint(1, 100)}",
                 "password": "test_password",
                 "tenant": "test_tenant"
             },
@@ -77,7 +79,7 @@ class GreenLangUser(HttpUser):
     def search_packs(self):
         """Search for packs with various filters"""
         queries = ["carbon", "energy", "emissions", "solar", "wind"]
-        query = random.choice(queries)
+        query = deterministic_random().choice(queries)
         
         with self.client.get(
             f"/api/v1/packs/search?q={query}",
@@ -93,7 +95,7 @@ class GreenLangUser(HttpUser):
     def get_pack_details(self):
         """Get detailed information about a specific pack"""
         pack_names = ["boiler-solar", "emissions-core", "carbon-tracker"]
-        pack = random.choice(pack_names)
+        pack = deterministic_random().choice(pack_names)
         
         with self.client.get(
             f"/api/v1/packs/{pack}",
@@ -112,7 +114,7 @@ class GreenLangUser(HttpUser):
         """Execute a pipeline - resource intensive operation"""
         pipeline_data = {
             "pipeline": {
-                "name": f"test_pipeline_{random.randint(1, 1000)}",
+                "name": f"test_pipeline_{deterministic_random().randint(1, 1000)}",
                 "steps": [
                     {
                         "name": "validate",
@@ -128,8 +130,8 @@ class GreenLangUser(HttpUser):
             },
             "inputs": {
                 "building_data": {
-                    "area": random.randint(1000, 10000),
-                    "type": random.choice(["office", "retail", "industrial"])
+                    "area": deterministic_random().randint(1000, 10000),
+                    "type": deterministic_random().choice(["office", "retail", "industrial"])
                 }
             }
         }
@@ -150,7 +152,7 @@ class GreenLangUser(HttpUser):
     def upload_pack(self):
         """Upload a new pack - write operation"""
         pack_data = {
-            "name": f"test_pack_{random.randint(1, 10000)}",
+            "name": f"test_pack_{deterministic_random().randint(1, 10000)}",
             "version": "1.0.0",
             "description": "Load test pack",
             "content": "test content data"
@@ -238,11 +240,11 @@ class AdminUser(HttpUser):
     @task(2)
     def update_quota(self):
         """Update tenant quota"""
-        tenant_id = f"tenant_{random.randint(1, 10)}"
+        tenant_id = f"tenant_{deterministic_random().randint(1, 10)}"
         quota_data = {
-            "cpu_cores": random.randint(2, 8),
-            "memory_gb": random.randint(4, 32),
-            "storage_gb": random.randint(10, 100)
+            "cpu_cores": deterministic_random().randint(2, 8),
+            "memory_gb": deterministic_random().randint(4, 32),
+            "storage_gb": deterministic_random().randint(10, 100)
         }
         
         with self.client.patch(
@@ -260,9 +262,9 @@ class AdminUser(HttpUser):
     def create_tenant(self):
         """Create a new tenant"""
         tenant_data = {
-            "name": f"load_test_tenant_{random.randint(1, 10000)}",
-            "email": f"test_{random.randint(1, 10000)}@example.com",
-            "subscription_tier": random.choice(["FREE", "STARTER", "PROFESSIONAL"])
+            "name": f"load_test_tenant_{deterministic_random().randint(1, 10000)}",
+            "email": f"test_{deterministic_random().randint(1, 10000)}@example.com",
+            "subscription_tier": deterministic_random().choice(["FREE", "STARTER", "PROFESSIONAL"])
         }
         
         with self.client.post(
@@ -298,8 +300,8 @@ class RegistryUser(HttpUser):
     @task(10)
     def pull_manifest(self):
         """Pull pack manifest from registry"""
-        pack = random.choice(["boiler-solar", "emissions-core", "carbon-tracker"])
-        version = random.choice(["1.0.0", "1.1.0", "latest"])
+        pack = deterministic_random().choice(["boiler-solar", "emissions-core", "carbon-tracker"])
+        version = deterministic_random().choice(["1.0.0", "1.1.0", "latest"])
         
         with self.client.get(
             f"/v2/greenlang/{pack}/manifests/{version}",
@@ -316,7 +318,7 @@ class RegistryUser(HttpUser):
     @task(5)
     def list_tags(self):
         """List available tags for a pack"""
-        pack = random.choice(["boiler-solar", "emissions-core", "carbon-tracker"])
+        pack = deterministic_random().choice(["boiler-solar", "emissions-core", "carbon-tracker"])
         
         with self.client.get(
             f"/v2/greenlang/{pack}/tags/list",
@@ -365,7 +367,7 @@ class StressTestUser(HttpUser):
             "/metrics"
         ]
         
-        endpoint = random.choice(endpoints)
+        endpoint = deterministic_random().choice(endpoints)
         
         with self.client.get(
             endpoint,

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Apply Deployment Pack Template for GreenLang AI Agents.
 
 This script takes the universal deployment pack template and generates

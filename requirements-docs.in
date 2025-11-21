@@ -1,0 +1,11 @@
+# Documentation Dependencies (Input file for pip-compile)
+# Use: pip-compile --generate-hashes requirements-docs.in
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+mkdocs>=1.5.3,<2.0.0
+mkdocs-material>=9.5.7,<10.0.0
+mkdocstrings>=0.24.0,<1.0.0
+mkdocstrings-python>=1.8.0,<2.0.0
+griffe>=0.40.0,<1.0.0

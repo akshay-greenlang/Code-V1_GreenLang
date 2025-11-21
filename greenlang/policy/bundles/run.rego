@@ -15,15 +15,20 @@ allow if {
 }
 
 # Check signature verification (signed-only enforcement)
+# PRODUCTION SECURITY: All packs MUST be signed - no exceptions
 signature_verified if {
 	input.signature.verified == true
 }
 
-# For development, allow unsigned with explicit flag
-signature_verified if {
-	input.allow_unsigned == true
-	print("WARNING: Running unsigned pack in development mode")
-}
+# SECURITY FIX: Unsigned pack override removed for production security
+# Development/test environments must use separate policy bundles with explicit
+# environment restrictions. Never allow unsigned code in production.
+# If you need unsigned execution, create a separate dev-only policy with:
+# signature_verified if {
+#     input.allow_unsigned == true
+#     input.environment in ["dev", "test"]  # NEVER production
+#     print("WARNING: Running unsigned pack in development mode")
+# }
 
 # Validate capabilities follow default-deny principle
 capabilities_validated if {

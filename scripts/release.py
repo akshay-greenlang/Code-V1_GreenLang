@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Release Script
 
@@ -27,6 +28,7 @@ from typing import List, Optional
 
 import toml
 import git
+from greenlang.determinism import DeterministicClock
 
 
 def get_project_root() -> Path:
@@ -101,7 +103,7 @@ def generate_changelog(repo: git.Repo, version: str, from_tag: Optional[str] = N
     changelog_lines = [
         f"# Changelog",
         f"",
-        f"## [{version}] - {datetime.now().strftime('%Y-%m-%d')}",
+        f"## [{version}] - {DeterministicClock.now().strftime('%Y-%m-%d')}",
         f"",
     ]
 

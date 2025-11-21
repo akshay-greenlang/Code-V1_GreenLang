@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Multi-Gas Decomposition Calculator
 
@@ -11,6 +12,7 @@ from dataclasses import dataclass, asdict
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Dict, Optional
 from enum import Enum
+from greenlang.determinism import FinancialDecimal
 
 
 class GasType(str, Enum):
@@ -138,7 +140,7 @@ class GasBreakdown:
             return {}
 
         return {
-            gas: float((co2e / self.total_co2e_kg) * 100)
+            gas: FinancialDecimal.from_string((co2e / self.total_co2e_kg) * 100)
             for gas, co2e in self.gas_co2e_contributions_kg.items()
         }
 

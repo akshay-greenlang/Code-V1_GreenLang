@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang ConnectorSpec v1 - Pydantic Models
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AggregatorAgent - Multi-Standard ESG Data Aggregator for CSRD Reporting
 
@@ -34,6 +35,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, Union
 import numpy as np
 import pandas as pd
 from pydantic import BaseModel, Field, validator
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -772,7 +774,7 @@ class AggregatorAgent:
                         source_values={"ESRS": metric_data.get("value")},
                         mapping_quality="direct",
                         data_quality_score=metric_data.get("quality_score"),
-                        aggregation_timestamp=datetime.now().isoformat(),
+                        aggregation_timestamp=DeterministicClock.now().isoformat(),
                         provenance={
                             "source": "ESRS",
                             "original_data": metric_data
@@ -815,7 +817,7 @@ class AggregatorAgent:
                             reporting_period=tcfd_value.get("period", "") if isinstance(tcfd_value, dict) else "",
                             source_values={"TCFD": value},
                             mapping_quality=mapping.mapping_quality,
-                            aggregation_timestamp=datetime.now().isoformat(),
+                            aggregation_timestamp=DeterministicClock.now().isoformat(),
                             provenance={
                                 "source": "TCFD",
                                 "tcfd_reference": tcfd_ref,
@@ -860,7 +862,7 @@ class AggregatorAgent:
                             reporting_period=gri_value.get("period", "") if isinstance(gri_value, dict) else "",
                             source_values={"GRI": value},
                             mapping_quality=mapping.mapping_quality,
-                            aggregation_timestamp=datetime.now().isoformat(),
+                            aggregation_timestamp=DeterministicClock.now().isoformat(),
                             provenance={
                                 "source": "GRI",
                                 "gri_disclosure": gri_disclosure,
@@ -905,7 +907,7 @@ class AggregatorAgent:
                             reporting_period=sasb_value.get("period", "") if isinstance(sasb_value, dict) else "",
                             source_values={"SASB": value},
                             mapping_quality=mapping.mapping_quality,
-                            aggregation_timestamp=datetime.now().isoformat(),
+                            aggregation_timestamp=DeterministicClock.now().isoformat(),
                             provenance={
                                 "source": "SASB",
                                 "sasb_metric": sasb_metric,
@@ -1140,7 +1142,7 @@ class AggregatorAgent:
         Returns:
             Result dictionary with aggregated data and analyses
         """
-        self.stats["start_time"] = datetime.now()
+        self.stats["start_time"] = DeterministicClock.now()
 
         # Step 1: Integrate multi-framework data
         logger.info("Integrating multi-framework data...")
@@ -1170,7 +1172,7 @@ class AggregatorAgent:
         # Collect all issues
         all_issues = integration_issues + trend_issues + benchmark_issues
 
-        self.stats["end_time"] = datetime.now()
+        self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
 
         # Build result

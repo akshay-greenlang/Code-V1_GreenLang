@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Entity MDM ML Test Suite
 

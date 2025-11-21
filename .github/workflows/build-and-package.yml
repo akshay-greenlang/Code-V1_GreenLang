@@ -10,7 +10,7 @@ on:
       python_version:
         description: 'Python version to test'
         required: false
-        default: '3.11'
+        default: '3.10'
         type: choice
         options:
           - '3.10'
@@ -28,7 +28,7 @@ on:
           - 'macos-only'
 
 env:
-  PYTHON_VERSION_DEFAULT: '3.11'
+  PYTHON_VERSION_DEFAULT: '3.10'
   CACHE_VERSION: v1
 
 jobs:

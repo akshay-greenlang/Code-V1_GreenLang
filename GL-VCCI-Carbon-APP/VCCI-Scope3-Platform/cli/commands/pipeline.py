@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI CLI - Pipeline Command
 End-to-end workflow orchestration for Scope 3 emissions.
@@ -23,6 +24,8 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.progress import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
     Progress,
     SpinnerColumn,
     TextColumn,
@@ -64,7 +67,7 @@ class PipelineExecutor:
 
     def __init__(self, tenant_id: str = "cli-user"):
         self.tenant_id = tenant_id
-        self.run_id = f"RUN-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+        self.run_id = f"RUN-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}"
         self.results = {}
 
     def run(
@@ -80,7 +83,7 @@ class PipelineExecutor:
 
         pipeline_results = {
             "run_id": self.run_id,
-            "started_at": datetime.utcnow().isoformat(),
+            "started_at": DeterministicClock.utcnow().isoformat(),
             "stages": {},
             "overall_status": "running"
         }
@@ -138,7 +141,7 @@ class PipelineExecutor:
             }
 
             pipeline_results["overall_status"] = "completed"
-            pipeline_results["completed_at"] = datetime.utcnow().isoformat()
+            pipeline_results["completed_at"] = DeterministicClock.utcnow().isoformat()
 
         except Exception as e:
             pipeline_results["overall_status"] = "failed"
@@ -265,7 +268,7 @@ class PipelineExecutor:
                 results["categories"][category] = {
                     "emissions_tco2e": emissions,
                     "uncertainty_pct": uncertainty,
-                    "data_quality_tier": random.choice([1, 2, 3]),
+                    "data_quality_tier": deterministic_random().choice([1, 2, 3]),
                     "llm_enhanced": enable_llm,
                     "monte_carlo": enable_monte_carlo
                 }
@@ -406,7 +409,7 @@ class PipelineExecutor:
 
             report_data = {
                 "run_id": self.run_id,
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": DeterministicClock.utcnow().isoformat(),
                 "format": report_format,
                 "calculation_results": calc_results,
                 "analysis_results": analysis_results,
@@ -529,7 +532,7 @@ def run_pipeline(
     # Display pipeline configuration
     console.print(
         Panel(
-            f"[cyan]Run ID:[/cyan] RUN-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}\n"
+            f"[cyan]Run ID:[/cyan] RUN-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}\n"
             f"[cyan]Input:[/cyan] {input}\n"
             f"[cyan]Output:[/cyan] {output}\n"
             f"[cyan]Categories:[/cyan] {', '.join(map(str, category_list))}\n"
@@ -545,7 +548,7 @@ def run_pipeline(
         # Execute pipeline
         executor = PipelineExecutor()
 
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         pipeline_results = executor.run(
             input_path=input,
@@ -556,7 +559,7 @@ def run_pipeline(
             report_format=report_format
         )
 
-        end_time = datetime.utcnow()
+        end_time = DeterministicClock.utcnow()
         duration = (end_time - start_time).total_seconds()
 
         # Final summary

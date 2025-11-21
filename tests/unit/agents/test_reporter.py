@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for BaseReporter class.
 Tests report generation, data aggregation, formatting, and section management.

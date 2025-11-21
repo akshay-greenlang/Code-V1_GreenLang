@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 JWT Refresh Token Management System
 GL-VCCI Scope 3 Platform
@@ -28,6 +29,7 @@ import redis.asyncio as redis
 
 # Import auth manager from main auth module
 from backend.auth import get_auth_manager
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -281,8 +283,8 @@ async def issue_token_pair(
     token_data = RefreshTokenData(
         user_id=user_id,
         jti=jti,
-        issued_at=datetime.utcnow(),
-        expires_at=datetime.utcnow() + timedelta(seconds=REFRESH_TOKEN_EXPIRE_SECONDS),
+        issued_at=DeterministicClock.utcnow(),
+        expires_at=DeterministicClock.utcnow() + timedelta(seconds=REFRESH_TOKEN_EXPIRE_SECONDS),
         device_id=device_id,
         ip_address=ip_address,
         user_agent=user_agent,

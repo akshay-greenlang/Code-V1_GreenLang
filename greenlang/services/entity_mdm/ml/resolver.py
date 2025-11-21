@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Two-stage entity resolution pipeline with human-in-the-loop.
 
@@ -22,6 +23,8 @@ from entity_mdm.ml.embeddings import EmbeddingPipeline
 from entity_mdm.ml.vector_store import VectorStore, SupplierEntity
 from entity_mdm.ml.matching_model import MatchingModel
 from entity_mdm.ml.exceptions import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     InsufficientCandidatesException,
     ModelNotTrainedException,
 )
@@ -361,12 +364,12 @@ class EntityResolver:
         Returns:
             Review ID
         """
-        review_id = str(uuid.uuid4())
+        review_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         review_item = ReviewItem(
             review_id=review_id,
             query_entity=query_entity,
             match_result=match_result,
-            created_at=datetime.utcnow(),
+            created_at=DeterministicClock.utcnow(),
         )
 
         self._review_queue[review_id] = review_item
@@ -431,7 +434,7 @@ class EntityResolver:
             raise ValueError(f"Decision must be one of {valid_decisions}")
 
         review_item = self._review_queue[review_id]
-        review_item.reviewed_at = datetime.utcnow()
+        review_item.reviewed_at = DeterministicClock.utcnow()
         review_item.reviewer = reviewer
         review_item.decision = decision
         review_item.notes = notes

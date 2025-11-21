@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Concurrent Execution Tests for GreenLang Agents.
 
 This module tests concurrent execution capabilities:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Authentication for supplier portal.
 
@@ -12,6 +13,8 @@ import uuid
 
 from ..models import SupplierPortalSession
 from ..exceptions import AuthenticationError
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -61,7 +64,7 @@ class PortalAuthenticator:
         token = secrets.token_urlsafe(32)
 
         # Store magic link with expiry (15 minutes)
-        expires_at = datetime.utcnow() + timedelta(minutes=15)
+        expires_at = DeterministicClock.utcnow() + timedelta(minutes=15)
         self.magic_links[token] = {
             "supplier_id": supplier_id,
             "email": email,
@@ -92,7 +95,7 @@ class PortalAuthenticator:
         magic_link_data = self.magic_links[token]
 
         # Check expiry
-        if datetime.utcnow() > magic_link_data['expires_at']:
+        if DeterministicClock.utcnow() > magic_link_data['expires_at']:
             logger.warning(f"Expired magic link token: {token[:10]}...")
             del self.magic_links[token]
             return None
@@ -201,8 +204,8 @@ class PortalAuthenticator:
         Returns:
             Portal session
         """
-        session_id = f"sess_{uuid.uuid4().hex[:16]}"
-        expires_at = datetime.utcnow() + timedelta(hours=self.session_duration_hours)
+        session_id = f"sess_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}"
+        expires_at = DeterministicClock.utcnow() + timedelta(hours=self.session_duration_hours)
 
         session = SupplierPortalSession(
             session_id=session_id,
@@ -234,13 +237,13 @@ class PortalAuthenticator:
         session = self.sessions[session_id]
 
         # Check expiry
-        if datetime.utcnow() > session.expires_at:
+        if DeterministicClock.utcnow() > session.expires_at:
             logger.info(f"Session {session_id} expired")
             del self.sessions[session_id]
             return False
 
         # Update last activity
-        session.last_activity = datetime.utcnow()
+        session.last_activity = DeterministicClock.utcnow()
 
         return True
 
@@ -278,7 +281,7 @@ class PortalAuthenticator:
         Returns:
             Number of sessions removed
         """
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         expired = [
             sid for sid, session in self.sessions.items()
             if now > session.expires_at

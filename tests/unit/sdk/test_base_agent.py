@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for GreenLang BaseAgent framework.
 
@@ -22,6 +23,7 @@ from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 
 from greenlang.agents.base import (
+from greenlang.determinism import DeterministicClock
     BaseAgent,
     AgentConfig,
     AgentResult,
@@ -63,7 +65,7 @@ class PreprocessAgent(BaseAgent):
 
     def preprocess(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Add preprocessing timestamp."""
-        input_data["preprocessed_at"] = datetime.now().isoformat()
+        input_data["preprocessed_at"] = DeterministicClock.now().isoformat()
         input_data["value"] = input_data.get("value", 0) + 10
         return input_data
 
@@ -277,7 +279,7 @@ class TestAgentResult:
 
     def test_result_with_timestamp(self):
         """Test result with timestamp."""
-        now = datetime.now()
+        now = DeterministicClock.now()
         result = AgentResult(
             success=True,
             data={},

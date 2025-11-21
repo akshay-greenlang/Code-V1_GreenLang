@@ -1,10 +1,10 @@
 # syntax=docker/dockerfile:1.7
-# Production-ready minimal runtime for GreenLang v0.2.3
+# Production-ready minimal runtime for GreenLang v0.3.0
 # This image provides the core GreenLang CLI with minimal footprint
 
-# SECURITY: Pin base image with SHA256 digest for reproducibility and supply chain security
+# Use consistent Python version across all images
 ARG PYTHON_VERSION=3.11-slim
-FROM python:${PYTHON_VERSION}@sha256:a0939570b38cddeb861b8e75d20b1c8218b21562b18f301171904b544e8cf228 AS base
+FROM python:${PYTHON_VERSION} AS base
 
 # Set consistent environment for build reproducibility and security
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -33,7 +33,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /tmp/*
 
 # Install GreenLang CLI from PyPI
-ARG GL_VERSION=0.2.3
+ARG GL_VERSION=0.3.0
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip setuptools wheel \
     && pip install greenlang-cli==${GL_VERSION}
@@ -60,7 +60,7 @@ ARG VCS_REF
 ARG BUILD_DATE
 ARG VERSION=${GL_VERSION}
 LABEL org.opencontainers.image.title="GreenLang Core Runtime" \
-      org.opencontainers.image.description="Minimal production runtime for GreenLang CLI v0.2.3" \
+      org.opencontainers.image.description="Minimal production runtime for GreenLang CLI v0.3.0" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}" \

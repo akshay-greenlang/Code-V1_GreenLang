@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Tests: Concurrent Pipeline Runs
 ============================================

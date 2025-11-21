@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Provenance - Hashing Module
 Cryptographic hashing for file integrity and content-addressable storage.
@@ -68,7 +69,11 @@ def hash_file(
     elif algorithm == "sha512":
         hasher = hashlib.sha512()
     elif algorithm == "md5":
-        hasher = hashlib.md5()
+        # MD5 is cryptographically broken - use SHA256 instead
+        # Kept for backward compatibility but logs warning
+        import logging
+        logging.warning("MD5 is cryptographically broken. Use SHA256 instead.")
+        hasher = hashlib.sha256()
     else:
         raise ValueError(f"Unsupported hash algorithm: {algorithm}")
 
@@ -97,7 +102,8 @@ def hash_file(
 
 def hash_data(
     data: Union[str, bytes, dict],
-    algorithm: str = "sha256"
+    algorithm: str = "sha256",
+    use_canonical: bool = True
 ) -> str:
     """
     Calculate hash of in-memory data.
@@ -105,6 +111,7 @@ def hash_data(
     Args:
         data: Data to hash (string, bytes, or dict)
         algorithm: Hash algorithm
+        use_canonical: Use canonical JSON serialization for dicts (default: True)
 
     Returns:
         Hex digest of hash
@@ -119,14 +126,24 @@ def hash_data(
     elif algorithm == "sha512":
         hasher = hashlib.sha512()
     elif algorithm == "md5":
-        hasher = hashlib.md5()
+        # MD5 is cryptographically broken - use SHA256 instead
+        # Kept for backward compatibility but logs warning
+        import logging
+        logging.warning("MD5 is cryptographically broken. Use SHA256 instead.")
+        hasher = hashlib.sha256()
     else:
         raise ValueError(f"Unsupported hash algorithm: {algorithm}")
 
     # Convert data to bytes
     if isinstance(data, dict):
-        import json
-        data_bytes = json.dumps(data, sort_keys=True).encode('utf-8')
+        if use_canonical:
+            # Use canonical JSON serialization for deterministic output
+            from greenlang.serialization import canonical_dumps
+            data_bytes = canonical_dumps(data).encode('utf-8')
+        else:
+            # Fallback to standard JSON (for backward compatibility)
+            import json
+            data_bytes = json.dumps(data, sort_keys=True).encode('utf-8')
     elif isinstance(data, str):
         data_bytes = data.encode('utf-8')
     elif isinstance(data, bytes):

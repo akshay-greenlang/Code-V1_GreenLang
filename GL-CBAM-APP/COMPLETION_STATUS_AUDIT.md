@@ -210,7 +210,7 @@ Python was not found; run without arguments to install from the Microsoft Store.
 ```
 
 **Required Actions:**
-1. Set up Python 3.9+ environment
+1. Set up Python 3.10+ environment
 2. Install dependencies: `pip install -r requirements.txt`
 3. Run all 212 tests and provide results
 4. Execute demo pipeline end-to-end
@@ -332,7 +332,7 @@ The discrepancy between claimed 100% and verified 85% is due to:
 ### Immediate Actions (Before Production Launch)
 
 **Priority 1: Runtime Verification (2-4 hours)**
-1. Set up Python 3.9+ environment
+1. Set up Python 3.10+ environment
 2. Install all dependencies
 3. Run complete test suite: `pytest tests/ -v --cov`
 4. Execute demo pipeline end-to-end

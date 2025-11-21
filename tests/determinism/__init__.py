@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Determinism Testing Framework for GreenLang Phase 3.
 
 This module provides comprehensive determinism testing infrastructure for all agents,

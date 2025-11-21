@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pack Archive Utilities for GreenLang Hub
 """
@@ -73,7 +74,7 @@ def create_pack_archive(
     try:
         with tarfile.open(output_path, mode) as tar:
             # Add files to archive
-            for item in pack_path.iterdir():
+            for item in sorted(pack_path.iterdir()):
                 # Check if item should be excluded
                 if _should_exclude(item, exclude_patterns):
                     logger.debug(f"Excluding: {item}")
@@ -285,7 +286,7 @@ def _find_pack_root(extract_dir: Path) -> Path:
         return extract_dir
 
     # Check immediate subdirectories
-    subdirs = [d for d in extract_dir.iterdir() if d.is_dir()]
+    subdirs = [d for d in sorted(extract_dir.iterdir()) if d.is_dir()]
 
     if len(subdirs) == 1:
         # Single subdirectory, likely the pack root

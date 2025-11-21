@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Transport Calculator - ISO 14083:2023 Compliant Transport Calculations
 GL-VCCI Scope 3 Platform

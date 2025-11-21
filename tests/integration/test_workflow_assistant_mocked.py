@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Assistant workflow integration tests with mocked LLM.
 """

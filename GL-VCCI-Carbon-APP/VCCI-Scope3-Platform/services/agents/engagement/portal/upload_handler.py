@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Upload handler for supplier data submissions.
 
@@ -13,6 +14,8 @@ from io import StringIO
 
 from ..models import DataUpload, UploadStatus, ValidationResult
 from ..exceptions import FileFormatError, UploadValidationError
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -77,7 +80,7 @@ class UploadHandler:
             raise FileFormatError(file_type, self.supported_formats)
 
         # Generate upload ID
-        upload_id = f"upload_{uuid.uuid4().hex[:16]}"
+        upload_id = f"upload_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}"
 
         upload = DataUpload(
             upload_id=upload_id,
@@ -199,7 +202,7 @@ class UploadHandler:
         if not upload:
             raise ValueError(f"Upload {upload_id} not found")
 
-        upload.validated_at = datetime.utcnow()
+        upload.validated_at = DeterministicClock.utcnow()
         upload.validation_errors = validation_result.errors
         upload.data_quality_score = validation_result.data_quality_score
 

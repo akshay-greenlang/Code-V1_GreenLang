@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Production Environment Validation Script
 Version: 2.0.0
@@ -29,6 +30,7 @@ from typing import Dict, List, Tuple, Optional
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from enum import Enum
+from greenlang.determinism import DeterministicClock
 
 # Third-party imports (install with: pip install requests psycopg2-binary redis kubernetes boto3)
 try:
@@ -102,7 +104,7 @@ class ProductionValidator:
 
     def log(self, message: str, level: str = "INFO"):
         """Formatted logging"""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")
         color = {
             "INFO": self.COLOR_BLUE,
             "SUCCESS": self.COLOR_GREEN,
@@ -718,7 +720,7 @@ class ProductionValidator:
         print("\n" + "="*80)
         print(f"{self.COLOR_BLUE}GL-VCCI Production Environment Validation{self.COLOR_END}")
         print(f"{self.COLOR_BLUE}Environment: {self.environment.upper()}{self.COLOR_END}")
-        print(f"{self.COLOR_BLUE}Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}{self.COLOR_END}")
+        print(f"{self.COLOR_BLUE}Started: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}{self.COLOR_END}")
         print("="*80 + "\n")
 
         # Infrastructure Validations (Critical)
@@ -842,7 +844,7 @@ def main():
     if args.output_json:
         output = {
             "environment": args.env,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "duration": time.time() - validator.start_time,
             "results": [
                 {

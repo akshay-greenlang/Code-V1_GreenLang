@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Marketplace Database Models
 
@@ -12,6 +13,7 @@ from typing import List, Optional, Dict, Any
 from enum import Enum
 
 from sqlalchemy import (
+from greenlang.determinism import FinancialDecimal
     Column,
     Integer,
     String,
@@ -223,7 +225,7 @@ class MarketplaceAgent(Base):
             "category": self.category.name if self.category else None,
             "tags": [tag.name for tag in self.tags],
             "pricing_type": self.pricing_type,
-            "price": float(self.price) if self.price else 0,
+            "price": FinancialDecimal.from_string(self.price) if self.price else 0,
             "currency": self.currency,
             "downloads": self.downloads,
             "rating_avg": self.rating_avg,

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Load Testing Framework for GreenLang Agents.
 
 This module provides comprehensive load testing capabilities:

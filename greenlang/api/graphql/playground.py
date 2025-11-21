@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GraphQL Playground Integration
 Interactive API explorer with documentation and examples

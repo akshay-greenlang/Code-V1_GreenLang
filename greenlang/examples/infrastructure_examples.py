@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Infrastructure Examples
 Practical examples demonstrating all infrastructure components.
@@ -6,6 +7,7 @@ Practical examples demonstrating all infrastructure components.
 import asyncio
 import pandas as pd
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 # ============================================================================
@@ -121,14 +123,14 @@ async def example_emissions_calculation():
     ]
 
     # Execute in parallel
-    start_time = datetime.now()
+    start_time = DeterministicClock.now()
     results = await agent.batch_calculate(
         formula_name="scope1_emissions",
         inputs_list=inputs_list,
         parallel=True,
         use_processes=False  # Use thread pool
     )
-    duration = (datetime.now() - start_time).total_seconds()
+    duration = (DeterministicClock.now() - start_time).total_seconds()
 
     # Process results
     total_emissions = sum(r.value for r in results if r.success)
@@ -343,25 +345,25 @@ async def example_cached_pipeline():
 
     # First call - cache miss
     print("\nFirst call (cache miss):")
-    start = datetime.now()
+    start = DeterministicClock.now()
     factors = await cache_manager.get_or_compute(
         key="emission_factors_2024",
         compute_fn=compute_emission_factors,
         ttl=3600
     )
-    duration_miss = (datetime.now() - start).total_seconds()
+    duration_miss = (DeterministicClock.now() - start).total_seconds()
     print(f"  Duration: {duration_miss:.3f}s")
     print(f"  Factors: {factors}")
 
     # Second call - cache hit
     print("\nSecond call (cache hit):")
-    start = datetime.now()
+    start = DeterministicClock.now()
     factors = await cache_manager.get_or_compute(
         key="emission_factors_2024",
         compute_fn=compute_emission_factors,
         ttl=3600
     )
-    duration_hit = (datetime.now() - start).total_seconds()
+    duration_hit = (DeterministicClock.now() - start).total_seconds()
     print(f"  Duration: {duration_hit:.3f}s")
     print(f"  Speedup: {duration_miss / duration_hit:.1f}x")
 

@@ -223,7 +223,7 @@ kubectl port-forward deployment/csrd-app 8000:8000
 **Best for:** Custom deployments, development
 
 ### Prerequisites
-- Python 3.11+
+- Python 3.10+
 - PostgreSQL 15+
 - Redis 7+
 - 4GB RAM minimum

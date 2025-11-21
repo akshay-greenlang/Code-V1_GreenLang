@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Performance and scale testing infrastructure for GreenLang Phase 3.
 
 This package provides comprehensive performance testing capabilities:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Security Enhancement Tests
 GL-VCCI Scope 3 Platform
@@ -22,6 +23,7 @@ import pytest
 import asyncio
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, AsyncMock
+from greenlang.determinism import DeterministicClock
 
 # Set test environment variables
 os.environ["JWT_SECRET"] = "test_secret_key_minimum_32_characters_long"
@@ -219,9 +221,9 @@ class TestJWTRefreshTokens:
                 return_value={
                     "user_id": test_user_id,
                     "jti": payload["jti"],
-                    "issued_at": datetime.utcnow().isoformat(),
+                    "issued_at": DeterministicClock.utcnow().isoformat(),
                     "expires_at": (
-                        datetime.utcnow() + timedelta(days=7)
+                        DeterministicClock.utcnow() + timedelta(days=7)
                     ).isoformat(),
                 }
             )
@@ -252,9 +254,9 @@ class TestJWTRefreshTokens:
                 return_value={
                     "user_id": test_user_id,
                     "jti": payload["jti"],
-                    "issued_at": datetime.utcnow().isoformat(),
+                    "issued_at": DeterministicClock.utcnow().isoformat(),
                     "expires_at": (
-                        datetime.utcnow() + timedelta(days=7)
+                        DeterministicClock.utcnow() + timedelta(days=7)
                     ).isoformat(),
                 }
             )
@@ -692,7 +694,7 @@ class TestAPIKeys:
     @pytest.mark.asyncio
     async def test_create_api_key_with_expiration(self, redis_mock):
         """Test creating API key with expiration."""
-        expires_at = datetime.utcnow() + timedelta(days=30)
+        expires_at = DeterministicClock.utcnow() + timedelta(days=30)
 
         with patch(
             "backend.auth_api_keys.get_redis_client", return_value=redis_mock
@@ -837,7 +839,7 @@ class TestAPIKeys:
             "service_name": "test-service",
             "scopes": "read,write",
             "rate_limit": "1000",
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": DeterministicClock.utcnow().isoformat(),
             "is_active": "1",
         }
 
@@ -865,7 +867,7 @@ class TestAPIKeys:
                 "service_name": "test-service",
                 "scopes": "read",
                 "rate_limit": "1000",
-                "created_at": datetime.utcnow().isoformat(),
+                "created_at": DeterministicClock.utcnow().isoformat(),
                 "is_active": "1",
             }
         )
@@ -999,20 +1001,20 @@ class TestRequestSigning:
 
     def test_verify_timestamp_valid(self):
         """Test timestamp verification with valid timestamp."""
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = DeterministicClock.utcnow().isoformat()
 
         assert verify_timestamp(timestamp) is True
 
     def test_verify_timestamp_too_old(self):
         """Test timestamp verification with old timestamp."""
-        old_timestamp = (datetime.utcnow() - timedelta(minutes=10)).isoformat()
+        old_timestamp = (DeterministicClock.utcnow() - timedelta(minutes=10)).isoformat()
 
         assert verify_timestamp(old_timestamp) is False
 
     def test_verify_timestamp_future(self):
         """Test timestamp verification with future timestamp."""
         future_timestamp = (
-            datetime.utcnow() + timedelta(minutes=5)
+            DeterministicClock.utcnow() + timedelta(minutes=5)
         ).isoformat()
 
         assert verify_timestamp(future_timestamp) is False
@@ -1355,9 +1357,9 @@ class TestSecurityIntegration:
                 return_value={
                     "user_id": test_user_id,
                     "jti": payload["jti"],
-                    "issued_at": datetime.utcnow().isoformat(),
+                    "issued_at": DeterministicClock.utcnow().isoformat(),
                     "expires_at": (
-                        datetime.utcnow() + timedelta(days=7)
+                        DeterministicClock.utcnow() + timedelta(days=7)
                     ).isoformat(),
                 }
             )

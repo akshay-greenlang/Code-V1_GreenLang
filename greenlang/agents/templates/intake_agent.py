@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Intake Agent Template
 Multi-format Data Ingestion with Validation
@@ -15,6 +16,7 @@ from dataclasses import dataclass
 from enum import Enum
 import pandas as pd
 import json
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +69,7 @@ class IntakeResult:
         if self.metadata is None:
             self.metadata = {}
         if self.timestamp is None:
-            self.timestamp = datetime.utcnow()
+            self.timestamp = DeterministicClock.utcnow()
 
 
 class IntakeAgent:

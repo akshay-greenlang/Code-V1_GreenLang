@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """GreenLang Custom Exception Hierarchy.
 
 This module provides a comprehensive exception hierarchy for GreenLang with rich
@@ -45,6 +46,7 @@ from typing import Any, Dict, Optional
 from datetime import datetime
 import traceback as tb
 import json
+from greenlang.determinism import DeterministicClock
 
 
 # ==============================================================================
@@ -88,7 +90,7 @@ class GreenLangException(Exception):
         self.error_code = error_code or self._generate_error_code()
         self.agent_name = agent_name
         self.context = context or {}
-        self.timestamp = datetime.now()
+        self.timestamp = DeterministicClock.now()
         self.traceback_str = "".join(tb.format_stack()[:-1])
 
     def _generate_error_code(self) -> str:

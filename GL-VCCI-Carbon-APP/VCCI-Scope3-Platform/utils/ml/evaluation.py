@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI ML Module - Evaluation
 # Spend Classification ML System - Evaluation Framework
 
@@ -31,6 +32,7 @@ Usage:
 from utils.ml.evaluation import ModelEvaluator
 from utils.ml.spend_classification import SpendClassifier
 from utils.ml.training_data import TrainingDataLoader
+from greenlang.determinism import DeterministicClock
 
 # Load test data
 loader = TrainingDataLoader()
@@ -208,7 +210,7 @@ class ModelEvaluator:
         Returns:
             Evaluation results
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         logger.info(f"Evaluating classifier on {len(test_dataset)} test samples")
 
@@ -247,7 +249,7 @@ class ModelEvaluator:
         )
 
         # Add metadata
-        end_time = datetime.utcnow()
+        end_time = DeterministicClock.utcnow()
         results.evaluation_time_seconds = (end_time - start_time).total_seconds()
         results.metadata.update({
             "test_dataset_name": test_dataset.name,

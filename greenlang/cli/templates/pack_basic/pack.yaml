@@ -1,43 +1,21 @@
-name: "{{PACK_NAME}}"
-version: "1.0.0"
-kind: "pack"
-license: "MIT"
-
-# Security capabilities (default-deny if not specified)
+name: '{{PACK_NAME}}'
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
+contents:
+  pipelines:
+  - gl.yaml
 capabilities:
   net:
-    allow: false  # Set to true if network access needed
-    # outbound:
-    #   allowlist:
-    #     - "https://api.example.com/*"
+    allow: false
   fs:
-    allow: false  # Set to true if file access needed
-    # read:
-    #   allowlist:
-    #     - "${INPUT_DIR}/**"
-    #     - "${PACK_DATA_DIR}/**"
-    # write:
-    #   allowlist:
-    #     - "${RUN_TMP}/**"
+    allow: false
   clock:
-    allow: false  # Set to true for real-time clock access
+    allow: false
   subprocess:
-    allow: false  # Set to true for subprocess execution
-    # allowlist:
-    #   - "python"
-    #   - "node"
-
-contents:
-  pipelines: ["gl.yaml"]
-# Optional fields - uncomment as needed:
-# compat:
-#   greenlang: ">=0.3,<0.5"
-#   python: ">=3.10"
-# dependencies:
-#   - "pandas>=2.1"
-#   - "numpy>=1.24"
-# card: "CARD.md"
-# metadata:
-#   description: "{{PACK_DESCRIPTION}}"
-#   authors: ["{{AUTHOR_NAME}}"]
-#   tags: ["climate", "data-processing"]
+    allow: false

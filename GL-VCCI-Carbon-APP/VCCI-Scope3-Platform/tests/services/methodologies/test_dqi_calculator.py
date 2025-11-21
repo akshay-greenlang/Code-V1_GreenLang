@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Data Quality Index (DQI) Calculator
 

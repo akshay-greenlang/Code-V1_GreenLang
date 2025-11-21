@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Dependency Graph Visualizer
 
@@ -14,6 +15,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 from collections import defaultdict
+from greenlang.determinism import sorted_listdir
 
 
 class DependencyAnalyzer:
@@ -303,7 +305,7 @@ def main():
                 analyzer.analyze_directory(app)
     else:
         # Find all GL-* apps
-        for item in os.listdir(args.directory):
+        for item in sorted_listdir(args.directory):
             if item.startswith('GL-') and os.path.isdir(item):
                 print(f"Analyzing {item}...")
                 analyzer.analyze_directory(item)

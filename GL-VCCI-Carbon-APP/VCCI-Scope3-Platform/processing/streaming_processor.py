@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Streaming Data Processor
 GL-VCCI Scope 3 Platform - High-Performance Batch Processing

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Property-based tests for additivity and scaling properties."""
 
 from hypothesis import given, strategies as st, assume

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example: Using RAG Regulatory Compliance Components (INTL-104)
 

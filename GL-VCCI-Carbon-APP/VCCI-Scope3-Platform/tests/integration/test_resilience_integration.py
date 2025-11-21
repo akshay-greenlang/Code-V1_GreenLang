@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Resilience Integration Tests for GL-VCCI Scope 3 Platform
 

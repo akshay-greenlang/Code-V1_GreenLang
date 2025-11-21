@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Data Validation Framework
 
@@ -21,6 +22,7 @@ from pathlib import Path
 import logging
 
 from .models import (
+from greenlang.determinism import DeterministicClock
     ValidationResult,
     URIAccessibilityCheck,
     FactorRangeCheck,
@@ -111,9 +113,9 @@ class URIValidator(ValidationRule):
         try:
             await self._init_client()
 
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
             response = await self.client.head(uri, timeout=self.timeout)
-            response_time = (datetime.now() - start_time).total_seconds() * 1000
+            response_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
 
             if response.status_code == 200:
                 if response_time > 5000:  # Slow response
@@ -210,7 +212,7 @@ class DateFreshnessValidator(ValidationRule):
                 return False, errors, warnings
 
             # Calculate age
-            age_days = (datetime.now() - update_date).days
+            age_days = (DeterministicClock.now() - update_date).days
             age_years = age_days / 365.25
 
             # Check against thresholds
@@ -544,7 +546,7 @@ class EmissionFactorValidator:
         Returns:
             ValidationResult with detailed results
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         all_errors = []
         all_warnings = []
@@ -600,10 +602,10 @@ class EmissionFactorValidator:
             rule.required for rule in self.rules if rule.name in rules_failed
         )
 
-        duration = (datetime.now() - start_time).total_seconds() * 1000
+        duration = (DeterministicClock.now() - start_time).total_seconds() * 1000
 
         return ValidationResult(
-            validation_id=f"val_{factor_id}_{int(datetime.now().timestamp())}",
+            validation_id=f"val_{factor_id}_{int(DeterministicClock.now().timestamp())}",
             is_valid=is_valid,
             quality_score=quality_score,
             total_records=1,
@@ -628,7 +630,7 @@ class EmissionFactorValidator:
         Returns:
             Aggregated ValidationResult
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Load YAML file
         with open(yaml_path, 'r', encoding='utf-8') as f:
@@ -680,10 +682,10 @@ class EmissionFactorValidator:
         else:
             avg_quality_score = 0.0
 
-        duration = (datetime.now() - start_time).total_seconds() * 1000
+        duration = (DeterministicClock.now() - start_time).total_seconds() * 1000
 
         return ValidationResult(
-            validation_id=f"val_file_{Path(yaml_path).stem}_{int(datetime.now().timestamp())}",
+            validation_id=f"val_file_{Path(yaml_path).stem}_{int(DeterministicClock.now().timestamp())}",
             is_valid=valid_factors == total_factors,
             quality_score=avg_quality_score,
             total_records=total_factors,

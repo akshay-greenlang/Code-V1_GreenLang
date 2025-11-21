@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP S/4HANA Connector for GL-VCCI Scope 3 Platform
 GL-VCCI Scope 3 Platform

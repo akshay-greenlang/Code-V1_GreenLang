@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Collect CI context for GreenLang governance agents.
 This script gathers relevant information based on the agent type.

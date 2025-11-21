@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SupplierEngagementAgent v1 - Consent-aware supplier engagement and data collection.
 

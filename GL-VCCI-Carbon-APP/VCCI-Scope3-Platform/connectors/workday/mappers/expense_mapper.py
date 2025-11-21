@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday Expense to Logistics Mapper
 GL-VCCI Scope 3 Platform
@@ -16,6 +17,7 @@ from datetime import datetime
 import hashlib
 
 from ..extractors.hcm_extractor import ExpenseReportData
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -124,10 +126,10 @@ class ExpenseMapper:
         logistics_record["metadata"] = {
             "source_system": "Workday",
             "source_document_id": expense.expense_id,
-            "extraction_timestamp": datetime.utcnow().isoformat() + "Z",
+            "extraction_timestamp": DeterministicClock.utcnow().isoformat() + "Z",
             "validation_status": "Validated",
             "created_by": "workday-connector",
-            "created_at": datetime.utcnow().isoformat() + "Z",
+            "created_at": DeterministicClock.utcnow().isoformat() + "Z",
         }
 
         # Add data quality indicators

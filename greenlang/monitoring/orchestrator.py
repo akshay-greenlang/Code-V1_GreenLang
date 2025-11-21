@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Monitoring System Orchestrator
 ===============================
@@ -15,6 +16,8 @@ from datetime import datetime
 from pathlib import Path
 import yaml
 import sys
+import os
+from greenlang.determinism import DeterministicClock
 
 # Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
@@ -26,11 +29,16 @@ from collectors.health_checker import HealthChecker
 from reports.report_generator import ReportGenerator
 from alerts.alert_rules import AlertRuleEngine
 
+# Configure logging with platform-agnostic path
+LOG_DIR = Path(os.getenv("GREENLANG_LOG_DIR", "./logs"))
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_PATH = LOG_DIR / "monitoring.log"
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('monitoring.log'),
+        logging.FileHandler(LOG_PATH),
         logging.StreamHandler()
     ]
 )
@@ -147,7 +155,7 @@ class MonitoringOrchestrator:
 
             # Generate and save report
             report = self.violation_scanner.generate_report()
-            report_path = Path(self.config['reporting']['output_dir']) / f"violations_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+            report_path = Path(self.config['reporting']['output_dir']) / f"violations_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.txt"
             report_path.write_text(report)
 
             logger.info(f"Violation scan completed. Found {len(violations)} violations")
@@ -188,8 +196,8 @@ class MonitoringOrchestrator:
         try:
             # Gather data from various sources
             data = {
-                'period_start': datetime.now() - asyncio.timedelta(days=7),
-                'period_end': datetime.now(),
+                'period_start': DeterministicClock.now() - asyncio.timedelta(days=7),
+                'period_end': DeterministicClock.now(),
                 'ium': 96.5,
                 'ium_trend': 'Increasing',
                 'cost_savings': 12500,
@@ -291,9 +299,11 @@ class MonitoringOrchestrator:
 
         for dashboard in dashboards:
             try:
-                # Export to JSON
-                output_path = f"C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\monitoring\\dashboards\\{dashboard.dashboard_uid}.json"
-                dashboard.export_to_file(output_path)
+                # Export to JSON (platform-agnostic path)
+                dashboards_dir = Path(os.getenv("GREENLANG_MONITORING_DIR", Path(__file__).parent)) / "dashboards"
+                dashboards_dir.mkdir(parents=True, exist_ok=True)
+                output_path = dashboards_dir / f"{dashboard.dashboard_uid}.json"
+                dashboard.export_to_file(str(output_path))
                 logger.info(f"Dashboard exported: {dashboard.dashboard_title}")
 
                 # Deploy to Grafana (if API key is configured)
@@ -310,13 +320,16 @@ class MonitoringOrchestrator:
         logger.info("Deploying alert rules...")
 
         try:
-            # Export Prometheus rules
-            prometheus_path = "C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\monitoring\\alerts\\prometheus_rules.json"
-            self.alert_engine.export_prometheus_rules(prometheus_path)
+            # Export Prometheus rules (platform-agnostic paths)
+            alerts_dir = Path(os.getenv("GREENLANG_MONITORING_DIR", Path(__file__).parent)) / "alerts"
+            alerts_dir.mkdir(parents=True, exist_ok=True)
+
+            prometheus_path = alerts_dir / "prometheus_rules.json"
+            self.alert_engine.export_prometheus_rules(str(prometheus_path))
 
             # Export Grafana alerts
-            grafana_path = "C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\monitoring\\alerts\\grafana_alerts.json"
-            self.alert_engine.export_grafana_alerts(grafana_path)
+            grafana_path = alerts_dir / "grafana_alerts.json"
+            self.alert_engine.export_grafana_alerts(str(grafana_path))
 
             logger.info(f"Alert rules deployed: {len(self.alert_engine.rules)} rules")
         except Exception as e:
@@ -325,9 +338,11 @@ class MonitoringOrchestrator:
 
 async def main():
     """Main entry point"""
-    config_path = "C:\\Users\\aksha\\Code-V1_GreenLang\\greenlang\\monitoring\\config.yaml"
+    # Platform-agnostic config path
+    config_path = Path(os.getenv("GREENLANG_CONFIG_PATH",
+                                  Path(__file__).parent / "config.yaml"))
 
-    orchestrator = MonitoringOrchestrator(config_path)
+    orchestrator = MonitoringOrchestrator(str(config_path))
     orchestrator.initialize_components()
 
     # Deploy dashboards and alerts

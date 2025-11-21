@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Log Aggregator Agent
 ====================
@@ -15,6 +16,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
 import re
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +185,7 @@ class LogAggregator:
             for log_entry in logs:
                 doc = {
                     **log_entry,
-                    'aggregation_timestamp': datetime.now().isoformat()
+                    'aggregation_timestamp': DeterministicClock.now().isoformat()
                 }
 
                 # Bulk index would be more efficient
@@ -208,7 +210,7 @@ class LogAggregator:
         report = f"""
 Log Aggregation Summary Report
 ================================
-Timestamp: {datetime.now().isoformat()}
+Timestamp: {DeterministicClock.now().isoformat()}
 
 Performance Metrics:
 --------------------

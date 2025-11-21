@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Test loading the pipeline with GreenLang SDK."""
 
 import yaml

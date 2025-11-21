@@ -55,7 +55,7 @@ Build a production-ready CSRD/ESRS Digital Reporting Platform that automates sus
 
 **TODO:**
 - [ ] **ENV-001**: Set up development environment
-  - [ ] Configure Python 3.11+ virtual environment
+  - [ ] Configure Python 3.10+ virtual environment
   - [ ] Install core dependencies (pandas, pydantic, numpy)
   - [ ] Set up Git repository structure
   - [ ] Configure IDE (VS Code / PyCharm) with linters

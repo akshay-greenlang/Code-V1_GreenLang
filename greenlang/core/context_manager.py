@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unified Context Manager for GreenLang
 
@@ -13,6 +14,8 @@ from pathlib import Path
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from enum import Enum
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 class ContextType(Enum):
@@ -30,7 +33,7 @@ class ContextType(Enum):
 class BaseContext:
     """Base context class that all context types inherit from"""
 
-    context_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    context_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     context_type: ContextType = ContextType.EXECUTION
     created_at: datetime = field(default_factory=datetime.utcnow)
     metadata: Dict[str, Any] = field(default_factory=dict)
@@ -80,7 +83,7 @@ class ExecutionContext(BaseContext):
             {
                 "path": artifact_path,
                 "type": artifact_type,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
             }
         )
 
@@ -151,8 +154,8 @@ class TracingContext(BaseContext):
     def create_child_span(self) -> "TracingContext":
         """Create a child span context"""
         return TracingContext(
-            trace_id=self.trace_id or str(uuid.uuid4()),
-            span_id=str(uuid.uuid4()),
+            trace_id=self.trace_id or str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+            span_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             parent_span_id=self.span_id,
             baggage=self.baggage.copy(),
             parent_context_id=self.context_id,

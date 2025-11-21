@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 19: Property-based testing (additivity, scaling, unit round-trip)."""
 
 import pytest

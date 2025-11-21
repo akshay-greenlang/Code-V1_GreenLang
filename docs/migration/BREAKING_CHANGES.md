@@ -1125,7 +1125,7 @@ def test_sync_agent():
 ✅ BC-005: Execution Context (MEDIUM) - Add async_mode
 ✅ BC-006: Agent Registration (MEDIUM) - Add metadata
 ✅ BC-007: Environment Vars (LOW) - Rename to GL_*
-✅ BC-008: Dependencies (LOW) - Upgrade Python 3.9+
+✅ BC-008: Dependencies (LOW) - Upgrade Python 3.10+
 ✅ BC-009: Result Format (MEDIUM) - Use AgentStatus
 ✅ BC-010: Logging (LOW) - Switch to JSON
 ✅ BC-011: CLI Commands (LOW) - Update command names

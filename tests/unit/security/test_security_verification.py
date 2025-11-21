@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Security Verification Commands Test Suite
 =========================================
@@ -32,10 +33,15 @@ def run_command(cmd, cwd=None):
         # Set environment for proper encoding
         env = os.environ.copy()
         env['PYTHONIOENCODING'] = 'utf-8'
-        
+
+        # SECURITY FIX: Use shell=False to prevent command injection
+        import shlex
+        # Parse command into list for secure execution
+        cmd_parts = shlex.split(cmd) if isinstance(cmd, str) else cmd
+
         result = subprocess.run(
-            cmd,
-            shell=True,
+            cmd_parts,
+            shell=False,
             capture_output=True,
             text=True,
             encoding='utf-8',
@@ -114,8 +120,10 @@ def test_pack_publish_with_signing():
         # Create calculator.py
         calculator_py = """
 def execute(expression: str = "1+1") -> dict:
+    # SECURITY FIX: Use ast.literal_eval instead of eval()
+    import ast
     try:
-        result = eval(expression)
+        result = ast.literal_eval(expression)
         return {"result": result}
     except Exception as e:
         return {"error": str(e)}

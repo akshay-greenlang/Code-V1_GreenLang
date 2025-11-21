@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for AI-powered GridFactorAgent.
 
 This module tests the GridFactorAgentAI implementation, ensuring:

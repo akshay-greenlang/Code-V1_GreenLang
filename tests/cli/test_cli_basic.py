@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Basic CLI tests to catch command structure issues
 """

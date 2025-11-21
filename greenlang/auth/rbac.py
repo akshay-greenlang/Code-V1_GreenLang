@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Role-Based Access Control (RBAC) for GreenLang
 """
@@ -8,6 +9,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Set, Optional, Any
 import fnmatch
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -131,12 +133,12 @@ class Role:
     def add_permission(self, permission: Permission):
         """Add permission to role"""
         self.permissions.append(permission)
-        self.updated_at = datetime.utcnow()
+        self.updated_at = DeterministicClock.utcnow()
 
     def remove_permission(self, permission: Permission):
         """Remove permission from role"""
         self.permissions = [p for p in self.permissions if p != permission]
-        self.updated_at = datetime.utcnow()
+        self.updated_at = DeterministicClock.utcnow()
 
     def has_permission(
         self, resource: str, action: str, context: Dict[str, Any] = None
@@ -310,7 +312,7 @@ class RBACManager:
         if "parent_roles" in updates:
             role.parent_roles = updates["parent_roles"]
 
-        role.updated_at = datetime.utcnow()
+        role.updated_at = DeterministicClock.utcnow()
 
         logger.info(f"Updated role: {name}")
         return role

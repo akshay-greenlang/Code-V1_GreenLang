@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Tests for ERP Connectors
 GL-VCCI Scope 3 Platform

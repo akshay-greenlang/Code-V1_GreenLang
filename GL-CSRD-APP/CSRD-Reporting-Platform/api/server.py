@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD/ESRS Digital Reporting Platform - FastAPI Server
 
@@ -27,6 +28,8 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import structlog
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # SECURITY FIX (HIGH-SEC-002): Rate limiting
 try:
@@ -179,7 +182,7 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         version="1.0.0",
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=DeterministicClock.utcnow().isoformat(),
         uptime_seconds=time.time() - start_time,
     )
 
@@ -192,9 +195,24 @@ async def readiness_check():
     Checks if the service is ready to handle requests by testing
     connections to external dependencies.
     """
-    db_status = "connected"  # TODO: Check actual database connection
-    redis_status = "connected"  # TODO: Check actual Redis connection
-    weaviate_status = "connected"  # TODO: Check actual Weaviate connection
+    # NOTE: Actual connection checks implementation pending
+    # When implementing:
+    # 1. Add database connection singleton/pool manager
+    # 2. Add Redis client singleton
+    # 3. Add Weaviate client singleton
+    # 4. Execute health check on each service with timeout
+    # Example:
+    #   from database import db_manager
+    #   from cache import redis_client
+    #   from vector_store import weaviate_client
+    #   db_status = "connected" if await db_manager.ping() else "disconnected"
+    #   redis_status = "connected" if await redis_client.ping() else "disconnected"
+    #   weaviate_status = "connected" if await weaviate_client.is_ready() else "disconnected"
+
+    # Mock implementation - replace with actual service checks
+    db_status = "connected"
+    redis_status = "connected"
+    weaviate_status = "connected"
 
     # Determine overall status
     overall_status = "ready" if all([
@@ -218,7 +236,23 @@ async def metrics():
 
     Exposes application metrics for monitoring and alerting.
     """
-    # TODO: Implement actual Prometheus metrics
+    # NOTE: Prometheus metrics implementation pending
+    # When implementing:
+    # 1. Install prometheus_client: pip install prometheus-client
+    # 2. Create Counter, Gauge, Histogram, Summary metrics
+    # 3. Instrument all endpoints with @metrics.time() decorator
+    # 4. Track business metrics (pipeline success rate, validation errors, etc.)
+    # 5. Use prometheus_client.generate_latest() to export metrics
+    # Example:
+    #   from prometheus_client import Counter, Gauge, Histogram, generate_latest, CONTENT_TYPE_LATEST
+    #   REQUESTS = Counter('csrd_requests_total', 'Total requests', ['method', 'endpoint', 'status'])
+    #   UPTIME = Gauge('csrd_uptime_seconds', 'Application uptime')
+    #   PIPELINE_JOBS = Counter('csrd_pipeline_jobs_total', 'Total pipeline jobs', ['status'])
+    #   PIPELINE_DURATION = Histogram('csrd_pipeline_duration_seconds', 'Pipeline execution time')
+    #   UPTIME.set(time.time() - start_time)
+    #   return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+    # Mock implementation - replace with actual Prometheus client
     metrics_text = f"""# HELP csrd_requests_total Total number of requests
 # TYPE csrd_requests_total counter
 csrd_requests_total{{method="GET",endpoint="/health"}} 100
@@ -261,14 +295,14 @@ async def run_pipeline(
     import uuid
 
     # Generate unique job ID
-    job_id = str(uuid.uuid4())
+    job_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
     # Create job record
     job_record = {
         "job_id": job_id,
         "status": "queued",
         "request": request.dict(),
-        "started_at": datetime.utcnow().isoformat(),
+        "started_at": DeterministicClock.utcnow().isoformat(),
         "progress": 0,
     }
     pipeline_jobs[job_id] = job_record
@@ -346,7 +380,27 @@ async def validate_data(request: ValidationRequest):
     Runs IntakeAgent validation only without executing the full pipeline.
     Useful for pre-flight checks and data quality assessment.
     """
-    # TODO: Implement actual validation
+    # NOTE: Validation implementation pending
+    # When implementing:
+    # 1. Import IntakeAgent for schema validation
+    # 2. Load input file from request.input_file path
+    # 3. Execute IntakeAgent.validate() method
+    # 4. Return actual validation results
+    # Example:
+    #   from agents.intake_agent import IntakeAgent
+    #   intake = IntakeAgent()
+    #   validation_result = await intake.validate_file(
+    #       file_path=request.input_file,
+    #       schema_version=request.schema_version
+    #   )
+    #   return ValidationResponse(
+    #       is_valid=validation_result.is_valid,
+    #       errors=validation_result.errors,
+    #       warnings=validation_result.warnings,
+    #       data_quality_score=validation_result.quality_score
+    #   )
+
+    # Mock implementation - replace with actual IntakeAgent validation
     return ValidationResponse(
         is_valid=True,
         errors=[],
@@ -369,7 +423,29 @@ async def calculate_metric(
 
     Runs CalculatorAgent for a single metric without executing the full pipeline.
     """
-    # TODO: Implement metric calculation
+    # NOTE: Metric calculation implementation pending
+    # When implementing:
+    # 1. Import CalculatorAgent for metric calculations
+    # 2. Validate metric_id against ESRS metric registry (975 metrics)
+    # 3. Execute CalculatorAgent.calculate_metric() with input_data
+    # 4. Return calculated value with provenance hash
+    # Example:
+    #   from agents.calculator_agent import CalculatorAgent
+    #   calculator = CalculatorAgent()
+    #   result = await calculator.calculate_metric(
+    #       metric_id=metric_id,
+    #       input_data=input_data
+    #   )
+    #   return {
+    #       "metric_id": metric_id,
+    #       "value": result.value,
+    #       "unit": result.unit,
+    #       "calculation_method": result.method,
+    #       "data_quality": result.quality_score,
+    #       "provenance_hash": result.provenance_hash
+    #   }
+
+    # Mock implementation - replace with actual CalculatorAgent
     return {
         "metric_id": metric_id,
         "value": 0.0,
@@ -398,12 +474,39 @@ async def generate_report(
     - pdf: Human-readable PDF
     - excel: Excel workbook
     """
-    # TODO: Implement report generation
+    # NOTE: Report generation implementation pending
+    # When implementing:
+    # 1. Import ReportingAgent for report generation
+    # 2. Load company data from database
+    # 3. Execute ReportingAgent.generate_report() with format specification
+    # 4. Store generated report in file storage (S3, MinIO, etc.)
+    # 5. Return report metadata with download URL
+    # Example:
+    #   from agents.reporting_agent import ReportingAgent
+    #   reporting = ReportingAgent()
+    #   report = await reporting.generate_report(
+    #       company_name=company_name,
+    #       reporting_year=reporting_year,
+    #       output_format=format  # xbrl, json, pdf, excel
+    #   )
+    #   await storage.save_report(report.id, report.content)
+    #   return {
+    #       "report_id": report.id,
+    #       "status": "generated",
+    #       "format": format,
+    #       "download_url": f"/api/v1/report/download/{format}/{report.id}",
+    #       "file_size_bytes": len(report.content),
+    #       "generated_at": DeterministicClock.utcnow().isoformat()
+    #   }
+
+    # Mock implementation - replace with actual ReportingAgent
+    import uuid
+    report_id = f"REP-{reporting_year}-{str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8].upper()}"
     return {
-        "report_id": "REP-2024-001",
+        "report_id": report_id,
         "status": "generated",
         "format": format,
-        "download_url": f"/api/v1/report/download/{format}/REP-2024-001",
+        "download_url": f"/api/v1/report/download/{format}/{report_id}",
     }
 
 
@@ -425,9 +528,37 @@ async def assess_materiality(
     - Financial materiality (outside-in)
     - IRO identification (Impacts, Risks, Opportunities)
     """
-    # TODO: Implement materiality assessment
+    # NOTE: Materiality assessment implementation pending
+    # When implementing:
+    # 1. Import MaterialityAgent for double materiality assessment
+    # 2. Load company profile and sector-specific requirements
+    # 3. Execute MaterialityAgent.assess() with AI enablement flag
+    # 4. Store assessment results in database
+    # 5. Return assessment with material topics and scores
+    # Example:
+    #   from agents.materiality_agent import MaterialityAgent
+    #   materiality = MaterialityAgent()
+    #   assessment = await materiality.assess_double_materiality(
+    #       company_name=company_name,
+    #       sector=sector,
+    #       enable_ai=enable_ai  # Use RAG for stakeholder analysis
+    #   )
+    #   await db.save_assessment(assessment)
+    #   return {
+    #       "assessment_id": assessment.id,
+    #       "material_topics": [t.name for t in assessment.material_topics],
+    #       "impact_materiality_score": assessment.impact_score,
+    #       "financial_materiality_score": assessment.financial_score,
+    #       "iro_count": len(assessment.impacts_risks_opportunities),
+    #       "methodology": "ESRS 2 IRO-1",
+    #       "ai_enabled": enable_ai
+    #   }
+
+    # Mock implementation - replace with actual MaterialityAgent
+    import uuid
+    assessment_id = f"MAT-{DeterministicClock.utcnow().year}-{str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8].upper()}"
     return {
-        "assessment_id": "MAT-2024-001",
+        "assessment_id": assessment_id,
         "material_topics": [
             "Climate change mitigation",
             "Energy efficiency",
@@ -446,14 +577,76 @@ async def assess_materiality(
 async def startup_event():
     """Initialize services on startup."""
     logger.info("CSRD API server starting", version="1.0.0")
-    # TODO: Initialize database connections, cache, etc.
+
+    # NOTE: Service initialization implementation pending
+    # When implementing:
+    # 1. Initialize database connection pool
+    # 2. Initialize Redis cache client
+    # 3. Initialize Weaviate vector store client
+    # 4. Load ESRS standards and validation rules
+    # 5. Initialize all CSRD agents
+    # 6. Run health checks
+    # Example:
+    #   from database import init_db
+    #   from cache import init_redis
+    #   from vector_store import init_weaviate
+    #   from agents import load_all_agents
+    #   from esrs import load_standards
+    #
+    #   logger.info("Initializing database connection pool")
+    #   await init_db(os.getenv("DATABASE_URL"))
+    #
+    #   logger.info("Initializing Redis cache")
+    #   await init_redis(os.getenv("REDIS_URL"))
+    #
+    #   logger.info("Initializing Weaviate vector store")
+    #   await init_weaviate(os.getenv("WEAVIATE_URL"))
+    #
+    #   logger.info("Loading ESRS standards")
+    #   await load_standards()
+    #
+    #   logger.info("Initializing CSRD agents")
+    #   await load_all_agents()
+    #
+    #   logger.info("CSRD API server ready")
+
+    # Mock implementation - add actual initialization code above
+    pass
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Cleanup on shutdown."""
     logger.info("CSRD API server shutting down")
-    # TODO: Close database connections, cleanup resources
+
+    # NOTE: Service cleanup implementation pending
+    # When implementing:
+    # 1. Close database connection pool gracefully
+    # 2. Close Redis client connections
+    # 3. Close Weaviate client connections
+    # 4. Flush any pending logs or metrics
+    # 5. Save in-flight pipeline jobs state
+    # Example:
+    #   from database import close_db
+    #   from cache import close_redis
+    #   from vector_store import close_weaviate
+    #
+    #   logger.info("Closing database connections")
+    #   await close_db()
+    #
+    #   logger.info("Closing Redis connections")
+    #   await close_redis()
+    #
+    #   logger.info("Closing Weaviate connections")
+    #   await close_weaviate()
+    #
+    #   logger.info("Saving pipeline job state")
+    #   await save_pipeline_state(pipeline_jobs)
+    #
+    #   logger.info("CSRD API server shutdown complete")
+
+    # Mock implementation - add actual cleanup code above
+    pass
 
 
 # ============================================================================

@@ -1,513 +1,405 @@
-# ============================================================================
-# CBAM IMPORTER COPILOT - GREENLANG PACK DEFINITION
-# ============================================================================
-#
-# This pack provides end-to-end CBAM Transitional Registry reporting
-# for EU importers of carbon-intensive goods.
-#
-# Version: 1.0.0
-# Author: GreenLang CBAM Team
-# License: MIT
-# Target: EU CBAM Regulation (2023/956)
-#
-# ============================================================================
-
-# ----------------------------------------------------------------------------
-# PACK METADATA
-# ----------------------------------------------------------------------------
-
 name: cbam-importer-copilot
 version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
 display_name: CBAM Importer Copilot
 tagline: Zero-hallucination EU CBAM compliance reporting
+description: 'Complete end-to-end solution for EU CBAM Transitional Registry reporting.
 
+
+  Transforms raw shipment data into submission-ready quarterly reports with:
+
+  - 100% calculation accuracy (ZERO HALLUCINATION)
+
+  - Full audit trail and provenance
+
+  - <10 minute processing for 10,000 shipments
+
+  - Automated validation against 50+ CBAM compliance rules
+
+
+  Perfect for:
+
+  - EU importers of steel, cement, aluminum, fertilizers, hydrogen
+
+  - Compliance officers managing quarterly CBAM reports
+
+  - ERP systems integrating CBAM reporting
+
+  '
 author:
   name: GreenLang CBAM Team
   email: cbam@greenlang.io
   organization: GreenLang
-
-description: |
-  Complete end-to-end solution for EU CBAM Transitional Registry reporting.
-
-  Transforms raw shipment data into submission-ready quarterly reports with:
-  - 100% calculation accuracy (ZERO HALLUCINATION)
-  - Full audit trail and provenance
-  - <10 minute processing for 10,000 shipments
-  - Automated validation against 50+ CBAM compliance rules
-
-  Perfect for:
-  - EU importers of steel, cement, aluminum, fertilizers, hydrogen
-  - Compliance officers managing quarterly CBAM reports
-  - ERP systems integrating CBAM reporting
-
+license: MIT
 category: compliance
 tags:
-  - cbam
-  - carbon-border-adjustment
-  - eu-regulation
-  - emissions-reporting
-  - compliance
-  - zero-hallucination
-
-license: MIT
-
-# ----------------------------------------------------------------------------
-# AGENTS
-# ----------------------------------------------------------------------------
-
+- cbam
+- carbon-border-adjustment
+- eu-regulation
+- emissions-reporting
+- compliance
+- zero-hallucination
 agents:
-  # ==========================================================================
-  # AGENT 1: SHIPMENT INTAKE & VALIDATION
-  # ==========================================================================
+- name: shipment-intake-agent
+  display_name: Shipment Intake Agent
+  type: data-processor
+  description: 'Validates and enriches incoming shipment data.
 
-  - name: shipment-intake-agent
-    display_name: Shipment Intake Agent
-    type: data-processor
-    description: |
-      Validates and enriches incoming shipment data.
 
-      Responsibilities:
-      - Data ingestion from CSV/JSON/Excel
-      - Schema validation (50+ rules)
-      - CN code enrichment with product metadata
-      - Supplier linking and data quality assessment
+    Responsibilities:
 
-      Performance: 1000+ shipments/sec
+    - Data ingestion from CSV/JSON/Excel
 
-    implementation:
-      language: python
-      entry_point: agents/shipment_intake_agent.py
-      class: ShipmentIntakeAgent
+    - Schema validation (50+ rules)
 
-    inputs:
-      - name: shipments
-        description: Raw shipment data
-        formats: [csv, json, excel]
-        schema: schemas/shipment.schema.json
-        required: true
+    - CN code enrichment with product metadata
 
-      - name: cn_codes
-        description: EU Combined Nomenclature codes
-        format: json
-        path: data/cn_codes.json
-        required: true
+    - Supplier linking and data quality assessment
 
-      - name: cbam_rules
-        description: CBAM validation rules
-        format: yaml
-        path: rules/cbam_rules.yaml
-        required: true
 
-      - name: suppliers
-        description: Supplier profiles with actual emissions data
-        format: yaml
-        path: examples/demo_suppliers.yaml
-        required: false
+    Performance: 1000+ shipments/sec
 
-    outputs:
-      - name: validated_shipments
-        description: Validated and enriched shipments
-        format: json
-        schema: |
-          {
-            "metadata": {
-              "total_records": int,
-              "valid_records": int,
-              "invalid_records": int,
-              "warnings": int,
-              "processing_time_seconds": float,
-              "records_per_second": float
-            },
-            "shipments": [validated shipment records],
-            "errors": [error details],
-            "warnings": [warning details]
-          }
+    '
+  implementation:
+    language: python
+    entry_point: agents/shipment_intake_agent.py
+    class: ShipmentIntakeAgent
+  inputs:
+  - name: shipments
+    description: Raw shipment data
+    formats:
+    - csv
+    - json
+    - excel
+    schema: schemas/shipment.schema.json
+    required: true
+  - name: cn_codes
+    description: EU Combined Nomenclature codes
+    format: json
+    path: data/cn_codes.json
+    required: true
+  - name: cbam_rules
+    description: CBAM validation rules
+    format: yaml
+    path: rules/cbam_rules.yaml
+    required: true
+  - name: suppliers
+    description: Supplier profiles with actual emissions data
+    format: yaml
+    path: examples/demo_suppliers.yaml
+    required: false
+  outputs:
+  - name: validated_shipments
+    description: Validated and enriched shipments
+    format: json
+    schema: "{\n  \"metadata\": {\n    \"total_records\": int,\n    \"valid_records\"\
+      : int,\n    \"invalid_records\": int,\n    \"warnings\": int,\n    \"processing_time_seconds\"\
+      : float,\n    \"records_per_second\": float\n  },\n  \"shipments\": [validated\
+      \ shipment records],\n  \"errors\": [error details],\n  \"warnings\": [warning\
+      \ details]\n}\n"
+  tools:
+  - name: schema-validator
+    description: JSON Schema validation
+    deterministic: true
+  - name: cn-code-enricher
+    description: CN code metadata lookup
+    deterministic: true
+    database: data/cn_codes.json
+  - name: supplier-linker
+    description: Link shipments to supplier profiles
+    deterministic: true
+    database: examples/demo_suppliers.yaml
+  - name: business-rule-validator
+    description: CBAM compliance rule checking
+    deterministic: true
+    rules: rules/cbam_rules.yaml
+  performance:
+    target_throughput: 1000 shipments/sec
+    target_latency_p99: 50 ms per shipment
+    memory_footprint: <500 MB for 100K shipments
+- name: emissions-calculator-agent
+  display_name: Emissions Calculator Agent
+  type: calculator
+  description: 'Calculates embedded emissions with ZERO HALLUCINATION guarantee.
 
-    tools:
-      - name: schema-validator
-        description: JSON Schema validation
-        deterministic: true
 
-      - name: cn-code-enricher
-        description: CN code metadata lookup
-        deterministic: true
-        database: data/cn_codes.json
+    Responsibilities:
 
-      - name: supplier-linker
-        description: Link shipments to supplier profiles
-        deterministic: true
-        database: examples/demo_suppliers.yaml
+    - Emission factor selection (supplier actual > EU default)
 
-      - name: business-rule-validator
-        description: CBAM compliance rule checking
-        deterministic: true
-        rules: rules/cbam_rules.yaml
+    - Deterministic emissions calculation
 
-    performance:
-      target_throughput: 1000 shipments/sec
-      target_latency_p99: 50 ms per shipment
-      memory_footprint: <500 MB for 100K shipments
+    - Calculation method tracking (for audit trail)
 
-  # ==========================================================================
-  # AGENT 2: EMISSIONS CALCULATOR (ZERO HALLUCINATION)
-  # ==========================================================================
+    - Data quality assessment
 
-  - name: emissions-calculator-agent
-    display_name: Emissions Calculator Agent
-    type: calculator
-    description: |
-      Calculates embedded emissions with ZERO HALLUCINATION guarantee.
 
-      Responsibilities:
-      - Emission factor selection (supplier actual > EU default)
-      - Deterministic emissions calculation
-      - Calculation method tracking (for audit trail)
-      - Data quality assessment
+    ZERO HALLUCINATION GUARANTEE:
 
-      ZERO HALLUCINATION GUARANTEE:
-      ✅ Database lookups only (no LLM)
-      ✅ Python arithmetic only (no estimation)
-      ✅ 100% bit-perfect reproducibility
+    ✅ Database lookups only (no LLM)
 
-      Performance: <3 ms per shipment
+    ✅ Python arithmetic only (no estimation)
 
-    implementation:
-      language: python
-      entry_point: agents/emissions_calculator_agent.py
-      class: EmissionsCalculatorAgent
+    ✅ 100% bit-perfect reproducibility
 
-    inputs:
-      - name: validated_shipments
-        description: Output from Agent 1
-        format: json
-        required: true
 
-      - name: emission_factors
-        description: Emission factors database
-        format: python
-        path: data/emission_factors.py
-        required: true
+    Performance: <3 ms per shipment
 
-      - name: suppliers
-        description: Supplier actual emissions data
-        format: yaml
-        path: examples/demo_suppliers.yaml
-        required: false
+    '
+  implementation:
+    language: python
+    entry_point: agents/emissions_calculator_agent.py
+    class: EmissionsCalculatorAgent
+  inputs:
+  - name: validated_shipments
+    description: Output from Agent 1
+    format: json
+    required: true
+  - name: emission_factors
+    description: Emission factors database
+    format: python
+    path: data/emission_factors.py
+    required: true
+  - name: suppliers
+    description: Supplier actual emissions data
+    format: yaml
+    path: examples/demo_suppliers.yaml
+    required: false
+  - name: cbam_rules
+    description: CBAM calculation rules
+    format: yaml
+    path: rules/cbam_rules.yaml
+    required: true
+  outputs:
+  - name: shipments_with_emissions
+    description: Shipments with calculated emissions
+    format: json
+    schema: "{\n  \"metadata\": {\n    \"total_emissions_tco2\": float,\n    \"calculation_methods\"\
+      : {\n      \"default_values\": int,\n      \"actual_data\": int,\n      \"errors\"\
+      : int\n    },\n    \"ms_per_shipment\": float\n  },\n  \"shipments\": [shipments\
+      \ with emissions],\n  \"calculation_audit_trail\": [calculation details]\n}\n"
+  tools:
+  - name: emission-factor-lookup
+    description: Database lookup of emission factors
+    deterministic: true
+    database: data/emission_factors.py
+    hallucination_risk: ZERO (database-only)
+  - name: deterministic-calculator
+    description: Python arithmetic for emissions
+    deterministic: true
+    operations:
+    - multiply
+    - divide
+    - round
+    hallucination_risk: ZERO (no LLM, no estimation)
+  - name: supplier-actual-selector
+    description: Select supplier actual emissions
+    deterministic: true
+    priority: 1 (over defaults)
+  - name: audit-trail-generator
+    description: Track calculation provenance
+    deterministic: true
+  performance:
+    target_throughput: 300+ shipments/sec
+    target_latency: <3 ms per shipment
+    memory_footprint: <100 MB
+  guarantees:
+    zero_hallucination: true
+    deterministic: true
+    reproducible: true
+    audit_trail: complete
+- name: reporting-packager-agent
+  display_name: Reporting Packager Agent
+  type: aggregator-reporter
+  description: 'Generates final CBAM Transitional Registry report.
 
-      - name: cbam_rules
-        description: CBAM calculation rules
-        format: yaml
-        path: rules/cbam_rules.yaml
-        required: true
 
-    outputs:
-      - name: shipments_with_emissions
-        description: Shipments with calculated emissions
-        format: json
-        schema: |
-          {
-            "metadata": {
-              "total_emissions_tco2": float,
-              "calculation_methods": {
-                "default_values": int,
-                "actual_data": int,
-                "errors": int
-              },
-              "ms_per_shipment": float
-            },
-            "shipments": [shipments with emissions],
-            "calculation_audit_trail": [calculation details]
-          }
+    Responsibilities:
 
-    tools:
-      - name: emission-factor-lookup
-        description: Database lookup of emission factors
-        deterministic: true
-        database: data/emission_factors.py
-        hallucination_risk: ZERO (database-only)
+    - Multi-dimensional aggregations (by product, country, supplier)
 
-      - name: deterministic-calculator
-        description: Python arithmetic for emissions
-        deterministic: true
-        operations: [multiply, divide, round]
-        hallucination_risk: ZERO (no LLM, no estimation)
+    - Final CBAM compliance validation (50+ rules)
 
-      - name: supplier-actual-selector
-        description: Select supplier actual emissions
-        deterministic: true
-        priority: 1 (over defaults)
+    - EU Transitional Registry JSON report generation
 
-      - name: audit-trail-generator
-        description: Track calculation provenance
-        deterministic: true
+    - Human-readable summary (Markdown)
 
-    performance:
-      target_throughput: 300+ shipments/sec
-      target_latency: <3 ms per shipment
-      memory_footprint: <100 MB
 
-    guarantees:
-      zero_hallucination: true
-      deterministic: true
-      reproducible: true
-      audit_trail: complete
+    Performance: <1 second for 10,000 shipments
 
-  # ==========================================================================
-  # AGENT 3: REPORTING PACKAGER
-  # ==========================================================================
-
-  - name: reporting-packager-agent
-    display_name: Reporting Packager Agent
-    type: aggregator-reporter
-    description: |
-      Generates final CBAM Transitional Registry report.
-
-      Responsibilities:
-      - Multi-dimensional aggregations (by product, country, supplier)
-      - Final CBAM compliance validation (50+ rules)
-      - EU Transitional Registry JSON report generation
-      - Human-readable summary (Markdown)
-
-      Performance: <1 second for 10,000 shipments
-
-    implementation:
-      language: python
-      entry_point: agents/reporting_packager_agent.py
-      class: ReportingPackagerAgent
-
-    inputs:
-      - name: shipments_with_emissions
-        description: Output from Agent 2
-        format: json
-        required: true
-
-      - name: importer_info
-        description: EU importer declaration
-        format: json
-        schema: |
-          {
-            "importer_name": str,
-            "importer_country": str (EU27 code),
-            "importer_eori": str,
-            "declarant_name": str,
-            "declarant_position": str
-          }
-        required: true
-
-      - name: cbam_rules
-        description: CBAM compliance rules
-        format: yaml
-        path: rules/cbam_rules.yaml
-        required: true
-
-    outputs:
-      - name: cbam_report
-        description: Complete CBAM Transitional Registry report
-        format: json
-        schema: schemas/registry_output.schema.json
-        structure: |
-          {
-            "report_metadata": {report_id, quarter, generated_at},
-            "importer_declaration": {name, EORI, country, declarant},
-            "goods_summary": {total shipments, mass, breakdown},
-            "detailed_goods": [{shipment-level details}],
-            "emissions_summary": {total emissions, by product group},
-            "validation_results": {is_valid, errors, warnings},
-            "provenance": {pipeline performance, data sources}
-          }
-
-      - name: summary_markdown
-        description: Human-readable summary
-        format: markdown
-        optional: true
-
-    tools:
-      - name: multi-dimensional-aggregator
-        description: Aggregate emissions by multiple dimensions
-        deterministic: true
-        dimensions: [product_group, origin_country, supplier, calculation_method]
-
-      - name: compliance-validator
-        description: Final CBAM compliance checks
-        deterministic: true
-        rules: rules/cbam_rules.yaml
-        check_count: 50+
-
-      - name: report-generator
-        description: Generate EU Registry JSON
-        deterministic: true
-        output_schema: schemas/registry_output.schema.json
-
-      - name: summary-writer
-        description: Generate Markdown summary
-        deterministic: true
-        template: markdown
-
-    performance:
-      target_throughput: 10000+ shipments aggregated in <1s
-      memory_footprint: <200 MB
-
-# ----------------------------------------------------------------------------
-# PIPELINE
-# ----------------------------------------------------------------------------
-
+    '
+  implementation:
+    language: python
+    entry_point: agents/reporting_packager_agent.py
+    class: ReportingPackagerAgent
+  inputs:
+  - name: shipments_with_emissions
+    description: Output from Agent 2
+    format: json
+    required: true
+  - name: importer_info
+    description: EU importer declaration
+    format: json
+    schema: "{\n  \"importer_name\": str,\n  \"importer_country\": str (EU27 code),\n\
+      \  \"importer_eori\": str,\n  \"declarant_name\": str,\n  \"declarant_position\"\
+      : str\n}\n"
+    required: true
+  - name: cbam_rules
+    description: CBAM compliance rules
+    format: yaml
+    path: rules/cbam_rules.yaml
+    required: true
+  outputs:
+  - name: cbam_report
+    description: Complete CBAM Transitional Registry report
+    format: json
+    schema: schemas/registry_output.schema.json
+    structure: "{\n  \"report_metadata\": {report_id, quarter, generated_at},\n  \"\
+      importer_declaration\": {name, EORI, country, declarant},\n  \"goods_summary\"\
+      : {total shipments, mass, breakdown},\n  \"detailed_goods\": [{shipment-level\
+      \ details}],\n  \"emissions_summary\": {total emissions, by product group},\n\
+      \  \"validation_results\": {is_valid, errors, warnings},\n  \"provenance\":\
+      \ {pipeline performance, data sources}\n}\n"
+  - name: summary_markdown
+    description: Human-readable summary
+    format: markdown
+    optional: true
+  tools:
+  - name: multi-dimensional-aggregator
+    description: Aggregate emissions by multiple dimensions
+    deterministic: true
+    dimensions:
+    - product_group
+    - origin_country
+    - supplier
+    - calculation_method
+  - name: compliance-validator
+    description: Final CBAM compliance checks
+    deterministic: true
+    rules: rules/cbam_rules.yaml
+    check_count: 50+
+  - name: report-generator
+    description: Generate EU Registry JSON
+    deterministic: true
+    output_schema: schemas/registry_output.schema.json
+  - name: summary-writer
+    description: Generate Markdown summary
+    deterministic: true
+    template: markdown
+  performance:
+    target_throughput: 10000+ shipments aggregated in <1s
+    memory_footprint: <200 MB
 pipeline:
   name: cbam-end-to-end
   description: Complete CBAM reporting pipeline
-
   stages:
-    - stage: 1
-      name: Intake & Validation
-      agent: shipment-intake-agent
-      input: raw_shipments
-      output: validated_shipments
-      estimated_time: 30% of total
-
-    - stage: 2
-      name: Emissions Calculation
-      agent: emissions-calculator-agent
-      input: validated_shipments
-      output: shipments_with_emissions
-      estimated_time: 50% of total
-
-    - stage: 3
-      name: Report Generation
-      agent: reporting-packager-agent
-      input: [shipments_with_emissions, importer_info]
-      output: [cbam_report, summary_markdown]
-      estimated_time: 20% of total
-
+  - stage: 1
+    name: Intake & Validation
+    agent: shipment-intake-agent
+    input: raw_shipments
+    output: validated_shipments
+    estimated_time: 30% of total
+  - stage: 2
+    name: Emissions Calculation
+    agent: emissions-calculator-agent
+    input: validated_shipments
+    output: shipments_with_emissions
+    estimated_time: 50% of total
+  - stage: 3
+    name: Report Generation
+    agent: reporting-packager-agent
+    input:
+    - shipments_with_emissions
+    - importer_info
+    output:
+    - cbam_report
+    - summary_markdown
+    estimated_time: 20% of total
   performance:
     target_total_time: <10 minutes for 10000 shipments
-    target_throughput: >16 shipments/second end-to-end
-
-# ----------------------------------------------------------------------------
-# DEPENDENCIES
-# ----------------------------------------------------------------------------
-
+    target_throughput: '>16 shipments/second end-to-end'
+contents:
+  pipelines:
+  - pipeline/cbam_end_to_end.yaml
 dependencies:
-  python: ">=3.9"
-
+  python: '>=3.9'
   packages:
-    - name: pandas
-      version: ">=2.0.0"
-      purpose: Data processing and aggregation
-
-    - name: pydantic
-      version: ">=2.0.0"
-      purpose: Data validation and models
-
-    - name: jsonschema
-      version: ">=4.0.0"
-      purpose: JSON Schema validation
-
-    - name: pyyaml
-      version: ">=6.0"
-      purpose: YAML configuration parsing
-
-    - name: openpyxl
-      version: ">=3.1.0"
-      purpose: Excel file support
-
-# ----------------------------------------------------------------------------
-# DATA & REFERENCE FILES
-# ----------------------------------------------------------------------------
-
+  - name: pandas
+    version: '>=2.0.0'
+    purpose: Data processing and aggregation
+  - name: pydantic
+    version: '>=2.0.0'
+    purpose: Data validation and models
+  - name: jsonschema
+    version: '>=4.0.0'
+    purpose: JSON Schema validation
+  - name: pyyaml
+    version: '>=6.0'
+    purpose: YAML configuration parsing
+  - name: openpyxl
+    version: '>=3.1.0'
+    purpose: Excel file support
 data:
-  - path: data/cn_codes.json
-    description: EU Combined Nomenclature codes (30 CBAM products)
-    format: json
-    size: 240 lines
-    source: EU CBAM Regulation Annex I
-
-  - path: data/emission_factors.py
-    description: Emission factors database (14 product variants)
-    format: python
-    size: 1240 lines
-    sources: [IEA, IPCC, World Steel Association, IAI]
-
-  - path: data/EMISSION_FACTORS_SOURCES.md
-    description: Full citations for emission factors
-    format: markdown
-    size: 450 lines
-
+- path: data/cn_codes.json
+  description: EU Combined Nomenclature codes (30 CBAM products)
+  format: json
+  size: 240 lines
+  source: EU CBAM Regulation Annex I
+- path: data/emission_factors.py
+  description: Emission factors database (14 product variants)
+  format: python
+  size: 1240 lines
+  sources:
+  - IEA
+  - IPCC
+  - World Steel Association
+  - IAI
+- path: data/EMISSION_FACTORS_SOURCES.md
+  description: Full citations for emission factors
+  format: markdown
+  size: 450 lines
 rules:
-  - path: rules/cbam_rules.yaml
-    description: 50+ CBAM compliance validation rules
-    format: yaml
-    size: 400 lines
-    reference: EU CBAM Regulation 2023/956
-
+- path: rules/cbam_rules.yaml
+  description: 50+ CBAM compliance validation rules
+  format: yaml
+  size: 400 lines
+  reference: EU CBAM Regulation 2023/956
 schemas:
-  - path: schemas/shipment.schema.json
-    description: Input shipment data contract
-    format: json-schema
-    size: 150 lines
-
-  - path: schemas/supplier.schema.json
-    description: Supplier profile contract
-    format: json-schema
-    size: 200 lines
-
-  - path: schemas/registry_output.schema.json
-    description: EU CBAM Registry output format
-    format: json-schema
-    size: 350 lines
-
+- path: schemas/shipment.schema.json
+  description: Input shipment data contract
+  format: json-schema
+  size: 150 lines
+- path: schemas/supplier.schema.json
+  description: Supplier profile contract
+  format: json-schema
+  size: 200 lines
+- path: schemas/registry_output.schema.json
+  description: EU CBAM Registry output format
+  format: json-schema
+  size: 350 lines
 examples:
-  - path: examples/demo_shipments.csv
-    description: Sample shipments for testing
-    records: 20
-
-  - path: examples/demo_suppliers.yaml
-    description: Sample supplier profiles (3 quality tiers)
-    suppliers: 20
-
-# ----------------------------------------------------------------------------
-# USAGE
-# ----------------------------------------------------------------------------
-
+- path: examples/demo_shipments.csv
+  description: Sample shipments for testing
+  records: 20
+- path: examples/demo_suppliers.yaml
+  description: Sample supplier profiles (3 quality tiers)
+  suppliers: 20
 usage:
-  cli: |
-    # Complete pipeline
-    python cbam_pipeline.py \
-      --input examples/demo_shipments.csv \
-      --output output/cbam_report.json \
-      --summary output/cbam_summary.md \
-      --importer-name "Acme Steel EU BV" \
-      --importer-country NL \
-      --importer-eori NL123456789012 \
-      --declarant-name "John Smith" \
-      --declarant-position "Compliance Officer"
-
-  python_sdk: |
-    from agents import CBAMPipeline
-
-    # Initialize pipeline
-    pipeline = CBAMPipeline(
-        cn_codes_path="data/cn_codes.json",
-        cbam_rules_path="rules/cbam_rules.yaml",
-        suppliers_path="examples/demo_suppliers.yaml"
-    )
-
-    # Run pipeline
-    report = pipeline.run(
-        input_file="examples/demo_shipments.csv",
-        importer_info={
-            "importer_name": "Acme Steel EU BV",
-            "importer_country": "NL",
-            "importer_eori": "NL123456789012",
-            "declarant_name": "John Smith",
-            "declarant_position": "Compliance Officer"
-        },
-        output_report_path="output/cbam_report.json",
-        output_summary_path="output/cbam_summary.md"
-    )
-
-# ----------------------------------------------------------------------------
-# QUALITY GUARANTEES
-# ----------------------------------------------------------------------------
-
+  cli: "# Complete pipeline\npython cbam_pipeline.py \\\n  --input examples/demo_shipments.csv\
+    \ \\\n  --output output/cbam_report.json \\\n  --summary output/cbam_summary.md\
+    \ \\\n  --importer-name \"Acme Steel EU BV\" \\\n  --importer-country NL \\\n\
+    \  --importer-eori NL123456789012 \\\n  --declarant-name \"John Smith\" \\\n \
+    \ --declarant-position \"Compliance Officer\"\n"
+  python_sdk: "from agents import CBAMPipeline\n\n# Initialize pipeline\npipeline\
+    \ = CBAMPipeline(\n    cn_codes_path=\"data/cn_codes.json\",\n    cbam_rules_path=\"\
+    rules/cbam_rules.yaml\",\n    suppliers_path=\"examples/demo_suppliers.yaml\"\n\
+    )\n\n# Run pipeline\nreport = pipeline.run(\n    input_file=\"examples/demo_shipments.csv\"\
+    ,\n    importer_info={\n        \"importer_name\": \"Acme Steel EU BV\",\n   \
+    \     \"importer_country\": \"NL\",\n        \"importer_eori\": \"NL123456789012\"\
+    ,\n        \"declarant_name\": \"John Smith\",\n        \"declarant_position\"\
+    : \"Compliance Officer\"\n    },\n    output_report_path=\"output/cbam_report.json\"\
+    ,\n    output_summary_path=\"output/cbam_summary.md\"\n)\n"
 guarantees:
   calculation_accuracy: 100%
   zero_hallucination: true
@@ -515,74 +407,64 @@ guarantees:
   reproducible: true
   audit_trail: complete
   compliance_validation: 50+ rules
-
   performance:
-    - <10 minutes for 10,000 shipments
-    - <3 ms per shipment (emissions calculation)
-    - 1000+ shipments/sec (intake validation)
-
+  - <10 minutes for 10,000 shipments
+  - <3 ms per shipment (emissions calculation)
+  - 1000+ shipments/sec (intake validation)
   supported_formats:
-    input: [CSV, JSON, Excel]
-    output: [JSON, Markdown]
-
+    input:
+    - CSV
+    - JSON
+    - Excel
+    output:
+    - JSON
+    - Markdown
   cbam_coverage:
-    product_groups: [cement, steel, aluminum, fertilizers, hydrogen]
+    product_groups:
+    - cement
+    - steel
+    - aluminum
+    - fertilizers
+    - hydrogen
     cn_codes: 30 (covering ~80% of EU CBAM import volume)
     emission_factors: 14 product variants
-
-# ----------------------------------------------------------------------------
-# COMPLIANCE
-# ----------------------------------------------------------------------------
-
 compliance:
   regulations:
-    - name: EU CBAM Regulation
-      number: 2023/956
-      scope: Transitional Period (Q4 2023 - Q4 2025)
-
-    - name: CBAM Implementing Regulation
-      number: 2023/1773
-      scope: Reporting obligations and default values
-
+  - name: EU CBAM Regulation
+    number: 2023/956
+    scope: Transitional Period (Q4 2023 - Q4 2025)
+  - name: CBAM Implementing Regulation
+    number: 2023/1773
+    scope: Reporting obligations and default values
   reporting_frequency: Quarterly
-
   covered_goods:
-    - Cement (CN codes 2523*)
-    - Iron & Steel (CN codes 72*, 73*)
-    - Aluminum (CN codes 76*)
-    - Fertilizers (CN codes 31*)
-    - Hydrogen (CN codes 2804 10 00)
-
-# ----------------------------------------------------------------------------
-# METADATA
-# ----------------------------------------------------------------------------
-
+  - Cement (CN codes 2523*)
+  - Iron & Steel (CN codes 72*, 73*)
+  - Aluminum (CN codes 76*)
+  - Fertilizers (CN codes 31*)
+  - Hydrogen (CN codes 2804 10 00)
 metadata:
   created: 2025-10-15
   updated: 2025-10-15
-  greenlang_version: ">=0.3.0"
+  greenlang_version: '>=0.3.0'
   pack_schema_version: 1.0
-
   repository:
     url: https://github.com/akshay-greenlang/Code-V1_GreenLang
     path: GL-Applications/CBAM-Importer-Copilot
-
   documentation:
     readme: README.md
     build_journey: docs/BUILD_JOURNEY.md
     specs:
-      - specs/shipment_intake_agent_spec.yaml
-      - specs/emissions_calculator_agent_spec.yaml
-      - specs/reporting_packager_agent_spec.yaml
-
+    - specs/shipment_intake_agent_spec.yaml
+    - specs/emissions_calculator_agent_spec.yaml
+    - specs/reporting_packager_agent_spec.yaml
   support:
     email: cbam@greenlang.io
     issues: https://github.com/akshay-greenlang/Code-V1_GreenLang/issues
-
   keywords:
-    - cbam
-    - carbon-border-adjustment
-    - emissions-reporting
-    - eu-compliance
-    - zero-hallucination
-    - deterministic-ai
+  - cbam
+  - carbon-border-adjustment
+  - emissions-reporting
+  - eu-compliance
+  - zero-hallucination
+  - deterministic-ai

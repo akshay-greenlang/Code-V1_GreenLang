@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive test suite for BoilerReplacementAgent_AI.
 
 This module provides comprehensive test coverage for BoilerReplacementAgent_AI, ensuring:

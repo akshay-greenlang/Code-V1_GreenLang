@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ShipmentIntakeAgent_AI - Data Ingestion, Validation, and Enrichment for CBAM Shipments
 
@@ -25,6 +26,7 @@ import pandas as pd
 import yaml
 from jsonschema import Draft7Validator, ValidationError
 from pydantic import BaseModel, Field, validator
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -533,7 +535,7 @@ class ShipmentIntakeAgent:
         Returns:
             Result dictionary with metadata, validated shipments, and errors
         """
-        self.stats["start_time"] = datetime.now()
+        self.stats["start_time"] = DeterministicClock.now()
 
         # Read input
         df = self.read_shipments(input_file)
@@ -569,7 +571,7 @@ class ShipmentIntakeAgent:
             validated_shipments.append(shipment)
             all_errors.extend([issue.dict() for issue in issues])
 
-        self.stats["end_time"] = datetime.now()
+        self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
 
         # Build result

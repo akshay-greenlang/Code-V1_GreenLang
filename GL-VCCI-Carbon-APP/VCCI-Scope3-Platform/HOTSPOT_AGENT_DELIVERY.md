@@ -588,7 +588,7 @@ python services/agents/hotspot/example_usage.py
 ## 🙏 Acknowledgments
 
 Built with:
-- **Python 3.11+**
+- **Python 3.10+**
 - **Pydantic v2** for models
 - **NumPy** for calculations
 - **Pytest** for testing

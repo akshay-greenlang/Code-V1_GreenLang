@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSV Parser with Encoding Detection
 

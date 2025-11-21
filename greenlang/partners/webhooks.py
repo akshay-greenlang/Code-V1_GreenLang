@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Webhook System for GreenLang Partners
 
@@ -31,6 +32,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, relationship
 from pydantic import BaseModel, HttpUrl, validator
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks, status
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Setup
 logger = logging.getLogger(__name__)
@@ -239,7 +242,7 @@ class WebhookEvent:
     timestamp: datetime
     partner_id: str
     data: Dict[str, Any]
-    event_id: str = field(default_factory=lambda: str(uuid4()))
+    event_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
 
 
 @dataclass
@@ -416,7 +419,7 @@ class WebhookManager:
 
             # Create delivery record
             delivery = WebhookDeliveryModel(
-                id=f"del_{uuid4().hex[:16]}",
+                id=f"del_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}",
                 webhook_id=webhook.id,
                 event_type=event.event_type.value,
                 event_id=event.event_id,
@@ -491,12 +494,12 @@ class WebhookManager:
         if result.success:
             # Success
             delivery.status = DeliveryStatus.SUCCESS
-            delivery.completed_at = datetime.utcnow()
+            delivery.completed_at = DeterministicClock.utcnow()
 
             webhook.total_deliveries += 1
             webhook.successful_deliveries += 1
-            webhook.last_delivery_at = datetime.utcnow()
-            webhook.last_success_at = datetime.utcnow()
+            webhook.last_delivery_at = DeterministicClock.utcnow()
+            webhook.last_success_at = DeterministicClock.utcnow()
 
             logger.info(f"Webhook delivered successfully: {delivery_id}")
         else:
@@ -506,18 +509,18 @@ class WebhookManager:
             if delivery.attempt_count >= delivery.max_attempts:
                 # Max retries reached
                 delivery.status = DeliveryStatus.FAILED
-                delivery.completed_at = datetime.utcnow()
+                delivery.completed_at = DeterministicClock.utcnow()
 
                 webhook.total_deliveries += 1
                 webhook.failed_deliveries += 1
-                webhook.last_delivery_at = datetime.utcnow()
-                webhook.last_failure_at = datetime.utcnow()
+                webhook.last_delivery_at = DeterministicClock.utcnow()
+                webhook.last_failure_at = DeterministicClock.utcnow()
 
                 logger.error(f"Webhook delivery failed after {delivery.attempt_count} attempts: {delivery_id}")
             else:
                 # Schedule retry with exponential backoff
                 retry_delay = webhook.retry_delay_seconds * (2 ** (delivery.attempt_count - 1))
-                delivery.next_retry_at = datetime.utcnow() + timedelta(seconds=retry_delay)
+                delivery.next_retry_at = DeterministicClock.utcnow() + timedelta(seconds=retry_delay)
                 delivery.status = DeliveryStatus.RETRYING
 
                 logger.warning(
@@ -545,7 +548,7 @@ class WebhookManager:
         """
         Process all pending retries (for scheduled task)
         """
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         pending_deliveries = self.db.query(WebhookDeliveryModel).filter(
             WebhookDeliveryModel.status == DeliveryStatus.RETRYING,
             WebhookDeliveryModel.next_retry_at <= now
@@ -584,7 +587,7 @@ def create_webhook_app():
 
         # Create webhook
         webhook = WebhookModel(
-            id=f"wh_{uuid4().hex[:16]}",
+            id=f"wh_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}",
             partner_id=partner_id,
             url=str(webhook_data.url),
             secret=webhook_secret,
@@ -690,7 +693,7 @@ def create_webhook_app():
         if webhook_update.timeout_seconds is not None:
             webhook.timeout_seconds = webhook_update.timeout_seconds
 
-        webhook.updated_at = datetime.utcnow()
+        webhook.updated_at = DeterministicClock.utcnow()
         db.commit()
         db.refresh(webhook)
 
@@ -756,7 +759,7 @@ def create_webhook_app():
 
         event = WebhookEvent(
             event_type=test_data.event_type,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             partner_id=partner_id,
             data=test_payload
         )

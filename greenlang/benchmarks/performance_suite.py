@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Performance Benchmark Suite
 =====================================
@@ -40,6 +41,9 @@ from ..runtime.executor import Executor
 from ..sdk.base import Result, Agent, Pipeline
 from ..sdk.context import Context
 from ..packs.loader import PackLoader
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 @dataclass
@@ -59,7 +63,7 @@ class BenchmarkResult:
 
     def __post_init__(self):
         if not self.timestamp:
-            self.timestamp = datetime.utcnow().isoformat()
+            self.timestamp = DeterministicClock.utcnow().isoformat()
 
 
 @dataclass
@@ -348,7 +352,7 @@ class BenchmarkRunner:
                        load_test_result: Optional[LoadTestResult] = None) -> str:
         """Generate comprehensive performance report"""
         report = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "greenlang_version": "0.2.0",
             "system_info": {
                 "cpu_count": psutil.cpu_count(),
@@ -362,7 +366,7 @@ class BenchmarkRunner:
         }
 
         # Save report
-        report_file = self.output_dir / f"performance_report_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
+        report_file = self.output_dir / f"performance_report_{DeterministicClock.utcnow().strftime('%Y%m%d_%H%M%S')}.json"
         with open(report_file, "w") as f:
             json.dump(report, f, indent=2)
 
@@ -491,7 +495,7 @@ async def benchmark_agent_execution(benchmark: PerformanceBenchmark, iterations:
         agent = SyntheticAgent(complexity=complexity)
 
         iteration_start = time.perf_counter()
-        result = agent.run({"iteration": i, "size": random.randint(100, 1000)})
+        result = agent.run({"iteration": i, "size": deterministic_random().randint(100, 1000)})
         iteration_time = (time.perf_counter() - iteration_start) * 1000
 
         response_times.append(iteration_time)
@@ -615,7 +619,7 @@ async def benchmark_memory_intensive(benchmark: PerformanceBenchmark, iterations
 
         # Memory intensive operation
         agent = SyntheticAgent(complexity="memory_intensive")
-        data_size = random.randint(50000, 200000)  # Variable data sizes
+        data_size = deterministic_random().randint(50000, 200000)  # Variable data sizes
         result = agent.run({"size": data_size, "iteration": i})
 
         iteration_time = (time.perf_counter() - iteration_start) * 1000
@@ -666,8 +670,8 @@ async def benchmark_context_creation(benchmark: PerformanceBenchmark, iterations
         context = Context(
             inputs={
                 "iteration": i,
-                "data": {"value": random.random(), "timestamp": time.time()},
-                "metadata": {"benchmark": True, "id": str(uuid4())}
+                "data": {"value": deterministic_random().random(), "timestamp": time.time()},
+                "metadata": {"benchmark": True, "id": str(deterministic_uuid(__name__, str(DeterministicClock.now())))}
             },
             artifacts_dir=Path(tempfile.mkdtemp()) if i % 10 == 0 else None,
             backend="local"

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/utils/uncertainty.py
 
@@ -39,6 +40,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 import math
 import logging
+from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 
@@ -273,13 +275,13 @@ def monte_carlo_simulation(
 
         # Calculate statistics
         return {
-            "mean": float(np.mean(emission_samples)),
-            "std": float(np.std(emission_samples)),
-            "percentile_2_5": float(np.percentile(emission_samples, 2.5)),
-            "percentile_5": float(np.percentile(emission_samples, 5)),
-            "percentile_50": float(np.percentile(emission_samples, 50)),
-            "percentile_95": float(np.percentile(emission_samples, 95)),
-            "percentile_97_5": float(np.percentile(emission_samples, 97.5)),
+            "mean": FinancialDecimal.from_string(np.mean(emission_samples)),
+            "std": FinancialDecimal.from_string(np.std(emission_samples)),
+            "percentile_2_5": FinancialDecimal.from_string(np.percentile(emission_samples, 2.5)),
+            "percentile_5": FinancialDecimal.from_string(np.percentile(emission_samples, 5)),
+            "percentile_50": FinancialDecimal.from_string(np.percentile(emission_samples, 50)),
+            "percentile_95": FinancialDecimal.from_string(np.percentile(emission_samples, 95)),
+            "percentile_97_5": FinancialDecimal.from_string(np.percentile(emission_samples, 97.5)),
             "samples": emission_samples.tolist()
             if n_iterations <= 1000
             else None,  # Only return samples if small

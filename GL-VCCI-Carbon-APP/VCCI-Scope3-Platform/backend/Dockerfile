@@ -6,7 +6,7 @@
 # ==============================================================================
 # Stage 1: Dependencies Builder
 # ==============================================================================
-FROM python:3.11-slim as builder
+FROM python:3.10-slim as builder
 
 # Set working directory
 WORKDIR /build
@@ -32,7 +32,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 # ==============================================================================
 # Stage 2: Runtime Image
 # ==============================================================================
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 # Metadata
 LABEL maintainer="GL-VCCI Team <support@greenlang.ai>" \

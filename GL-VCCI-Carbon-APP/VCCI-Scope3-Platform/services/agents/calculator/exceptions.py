@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope3CalculatorAgent Exceptions
 GL-VCCI Scope 3 Platform

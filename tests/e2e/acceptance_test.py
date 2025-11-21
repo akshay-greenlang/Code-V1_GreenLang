@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Acceptance Test Suite
 ================================
@@ -19,6 +20,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import argparse
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 # Test result tracking
 class TestResult:
@@ -495,7 +497,7 @@ class AcceptanceTests:
         print("="*60)
         print("GREENLANG ACCEPTANCE TEST SUITE")
         print("="*60)
-        print(f"Started at: {datetime.now().isoformat()}")
+        print(f"Started at: {DeterministicClock.now().isoformat()}")
         print(f"Python version: {sys.version}")
         print("="*60)
         
@@ -570,7 +572,7 @@ def main():
     # Export results if requested
     if args.export_results:
         results = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "passed": tester.results.passed,
             "failed": [{"test": t, "reason": r} for t, r in tester.results.failed],
             "skipped": [{"test": t, "reason": r} for t, r in tester.results.skipped],

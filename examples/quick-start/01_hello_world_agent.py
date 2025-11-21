@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 1: Hello World Agent
 =============================

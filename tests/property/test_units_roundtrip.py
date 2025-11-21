@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Property-based tests for unit conversions and round-trips."""
 
 from hypothesis import given, strategies as st, assume

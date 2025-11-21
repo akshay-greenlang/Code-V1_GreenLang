@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Budget Tracking and Enforcement
 
@@ -15,6 +16,8 @@ from datetime import datetime, timedelta
 import pytest
 
 from greenlang.intelligence.budget import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     Budget,
     BudgetExceededError,
     BudgetMetrics,
@@ -120,7 +123,7 @@ class TestBudgetTracker:
     def test_record_usage(self, tracker):
         """Test recording usage"""
         usage = tracker.record_usage(
-            request_id=str(uuid.uuid4()),
+            request_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             model="gpt-4",
             input_tokens=500,
             output_tokens=300,
@@ -152,7 +155,7 @@ class TestBudgetTracker:
         # Add usage up to hourly limit
         for i in range(10):
             tracker.record_usage(
-                request_id=str(uuid.uuid4()),
+                request_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 model="gpt-4",
                 input_tokens=1000,
                 output_tokens=500,
@@ -200,7 +203,7 @@ class TestBudgetTracker:
         # Add usage (50% of hourly budget)
         for _ in range(5):
             tracker.record_usage(
-                str(uuid.uuid4()),
+                str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 "gpt-4",
                 1000,
                 500,
@@ -217,7 +220,7 @@ class TestBudgetTracker:
 
         while tracker.metrics.hourly_cost < target_cost:
             tracker.record_usage(
-                str(uuid.uuid4()),
+                str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 "gpt-4",
                 500,
                 300,
@@ -248,7 +251,7 @@ class TestBudgetTracker:
             input_tokens=1000,
             output_tokens=500,
             cost=0.06,
-            timestamp=datetime.now() - timedelta(hours=2),
+            timestamp=DeterministicClock.now() - timedelta(hours=2),
         )
         tracker.usage_history.append(old_usage)
 
@@ -296,7 +299,7 @@ class TestBudgetIntegration:
             try:
                 tracker.check_budget(model, input_tokens, output_tokens)
                 usage = tracker.record_usage(
-                    str(uuid.uuid4()),
+                    str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                     model,
                     input_tokens,
                     output_tokens,
@@ -328,7 +331,7 @@ class TestBudgetIntegration:
             try:
                 tracker.check_budget("gpt-4", 500, 300)
                 usage = tracker.record_usage(
-                    str(uuid.uuid4()),
+                    str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                     "gpt-4",
                     500,
                     300,

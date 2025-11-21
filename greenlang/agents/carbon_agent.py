@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Any, Dict, List
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 from templates.agent_monitoring import OperationalMonitoringMixin

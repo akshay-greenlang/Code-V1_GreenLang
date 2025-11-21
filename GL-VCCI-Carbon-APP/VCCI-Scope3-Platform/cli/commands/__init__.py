@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI CLI Commands Module
 Sub-commands for the VCCI CLI

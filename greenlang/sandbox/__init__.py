@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Sandbox System
 ==============
@@ -288,35 +289,41 @@ def _execute_in_subprocess(
 
     This provides stronger isolation but with higher overhead.
     """
-    import pickle
+    # SECURITY FIX: Replace pickle with json for secure serialization
+    # pickle is vulnerable to arbitrary code execution attacks
+    import json
+    # import pickle  # Disabled for security
     import base64
 
     # Serialize function and arguments
     try:
-        func_data = pickle.dumps((func, args, kwargs))
+        func_data = json.dumps((func, args, kwargs))
         func_b64 = base64.b64encode(func_data).decode("ascii")
     except Exception as e:
         raise ValueError(f"Function cannot be serialized for subprocess execution: {e}")
 
     # Create subprocess execution script
     script = f"""
-import pickle
+# SECURITY FIX: Replace pickle with json for secure serialization
+# pickle is vulnerable to arbitrary code execution attacks
+import json
+# import pickle  # Disabled for security
 import base64
 import sys
 import os
 
 # Deserialize function and arguments
 func_data = base64.b64decode("{func_b64}")
-func, args, kwargs = pickle.loads(func_data)
+func, args, kwargs = json.loads(func_data)
 
 # Set up sandbox context (basic version for subprocess)
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     result = func(*args, **kwargs)
-    print("GREENLANG_RESULT:" + base64.b64encode(pickle.dumps(result)).decode('ascii'))
+    print("GREENLANG_RESULT:" + base64.b64encode(json.dumps(result)).decode('ascii'))
 except Exception as e:
-    print("GREENLANG_ERROR:" + base64.b64encode(pickle.dumps(e)).decode('ascii'))
+    print("GREENLANG_ERROR:" + base64.b64encode(json.dumps(e)).decode('ascii'))
 """
 
     # Write script to temporary file
@@ -355,10 +362,10 @@ except Exception as e:
         for line in result.stdout.split("\n"):
             if line.startswith("GREENLANG_RESULT:"):
                 result_data = base64.b64decode(line[17:])
-                return pickle.loads(result_data)
+                return json.loads(result_data)
             elif line.startswith("GREENLANG_ERROR:"):
                 error_data = base64.b64decode(line[16:])
-                error = pickle.loads(error_data)
+                error = json.loads(error_data)
                 raise error
 
         # No result found - subprocess error

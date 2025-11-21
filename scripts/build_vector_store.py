@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang RAG Document Ingestion Pipeline
 Build and manage vector store from climate knowledge documents
@@ -11,6 +12,7 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -128,7 +130,7 @@ class GreenLangVectorStore:
                             doc.metadata.update({
                                 "source": str(file_path),
                                 "file_type": ext,
-                                "ingested_at": datetime.now().isoformat()
+                                "ingested_at": DeterministicClock.now().isoformat()
                             })
                         
                         documents.extend(docs)
@@ -251,7 +253,7 @@ class GreenLangVectorStore:
             "chunk_size": self.chunk_size,
             "chunk_overlap": self.chunk_overlap,
             "vector_store_type": "ChromaDB" if self.use_chroma else "FAISS",
-            "created_at": datetime.now().isoformat()
+            "created_at": DeterministicClock.now().isoformat()
         }
         
         metadata_path = self.vector_store_path / "metadata.json"

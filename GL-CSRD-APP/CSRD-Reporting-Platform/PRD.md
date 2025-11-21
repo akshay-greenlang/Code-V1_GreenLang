@@ -445,7 +445,7 @@ External Sources → IntakeAgent → MaterialityAgent → CalculatorAgent
 | Layer | Technology | Rationale |
 |-------|-----------|-----------|
 | **Orchestration** | GreenLang Framework | Zero-hallucination architecture |
-| **Agents** | Python 3.11+ | Scientific computing ecosystem |
+| **Agents** | Python 3.10+ | Scientific computing ecosystem |
 | **Data Processing** | Pandas, NumPy | High-performance data manipulation |
 | **Validation** | Pydantic, JSON Schema | Type safety and validation |
 | **AI/ML** | LangChain, OpenAI/Claude | Materiality assessment, RAG |

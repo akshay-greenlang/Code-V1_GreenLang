@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Hallucination Detection for Climate Data
 
@@ -32,6 +33,7 @@ import re
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 class HallucinationDetected(Exception):
@@ -130,7 +132,7 @@ class Citation(BaseModel):
     unit: str = Field(description="Unit from tool output")
     source: str = Field(description="JSON path or key where value was found")
     timestamp: str = Field(
-        default_factory=lambda: datetime.utcnow().isoformat(),
+        default_factory=lambda: DeterministicClock.utcnow().isoformat(),
         description="When verification occurred (UTC)"
     )
 

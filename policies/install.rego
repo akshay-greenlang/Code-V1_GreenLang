@@ -35,12 +35,11 @@ network_policy_ok {
     count(input.pack.policy.network) > 0
 }
 
-# Emission factor vintage must be recent
+# SECURITY FIX: Emission factor vintage is MANDATORY for all packs
+# No bypass allowed - all packs must declare EF vintage >= 2024
+# This ensures climate data quality and prevents use of outdated emission factors
 ef_vintage_ok {
-    not input.pack.policy.ef_vintage_min
-}
-
-ef_vintage_ok {
+    input.pack.policy.ef_vintage_min
     input.pack.policy.ef_vintage_min >= 2024
 }
 
@@ -70,7 +69,12 @@ deny_reason["Network policy allowlist is empty"] {
     count(input.pack.policy.network) == 0
 }
 
+deny_reason["Emission factor vintage missing"] {
+    not input.pack.policy.ef_vintage_min
+}
+
 deny_reason["Emission factor vintage too old"] {
+    input.pack.policy.ef_vintage_min
     input.pack.policy.ef_vintage_min < 2024
 }
 

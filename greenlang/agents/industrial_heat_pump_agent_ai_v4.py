@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AI-Powered Industrial Heat Pump Agent V4 - Phase 6 Shared Tools Migration
 GL Intelligence Infrastructure
@@ -33,6 +34,8 @@ from greenlang.intelligence.schemas.tools import ToolDef
 
 # Import shared tools from Phase 6 library
 from greenlang.agents.tools import (
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
     FinancialMetricsTool,
     GridIntegrationTool,
 )
@@ -213,7 +216,7 @@ class IndustrialHeatPumpAgentAI_V4(ReasoningAgent):
                             "tool": tool_call["name"],
                             "arguments": json.loads(tool_call["arguments"]),
                             "result": result,
-                            "timestamp": datetime.utcnow().isoformat() + "Z",
+                            "timestamp": DeterministicClock.utcnow().isoformat() + "Z",
                             "iteration": iteration
                         })
 

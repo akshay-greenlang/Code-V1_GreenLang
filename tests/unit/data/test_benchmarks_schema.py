@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for benchmarks data schema."""
 
 import json

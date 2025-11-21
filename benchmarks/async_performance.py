@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Async vs Sync Performance Benchmarks for GreenLang Agents.
 
 This module benchmarks the performance improvements from async architecture,

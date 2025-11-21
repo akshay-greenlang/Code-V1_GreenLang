@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Weekly Metrics Collection Script
 =================================
@@ -21,6 +22,7 @@ from typing import Dict, List, Optional, Any
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from greenlang.determinism import DeterministicClock
 
 
 class MetricsCollector:
@@ -89,7 +91,7 @@ class MetricsCollector:
         try:
             # Try pypistats.org API (public, no auth required)
             package_name = "greenlang-cli"
-            end_date = datetime.now()
+            end_date = DeterministicClock.now()
             start_date = end_date - timedelta(days=days)
 
             # pypistats.org provides JSON endpoint
@@ -201,7 +203,7 @@ class MetricsCollector:
 
     def generate_weekly_report(self) -> str:
         """Generate weekly metrics report"""
-        end_date = datetime.now()
+        end_date = DeterministicClock.now()
         start_date = end_date - timedelta(days=7)
 
         # Collect all metrics
@@ -267,7 +269,7 @@ class MetricsCollector:
 
 ---
 
-*Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}*
+*Generated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S UTC')}*
 """
         return report
 
@@ -279,7 +281,7 @@ class MetricsCollector:
         print(f"[OK] Saved report to {report_file}")
 
         # Save JSON data
-        json_file = self.metrics_dir / f"weekly_{datetime.now().strftime('%Y%m%d')}.json"
+        json_file = self.metrics_dir / f"weekly_{DeterministicClock.now().strftime('%Y%m%d')}.json"
         with open(json_file, "w", encoding='utf-8') as f:
             json.dump(metrics_data, f, indent=2, default=str)
         print(f"[OK] Saved metrics data to {json_file}")
@@ -327,7 +329,7 @@ class MetricsCollector:
 
         # Collect raw data
         metrics_data = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "pypi": self.get_pypi_stats(),
             "docker": self.get_docker_stats(),
             "packs": self.get_pack_installs(),

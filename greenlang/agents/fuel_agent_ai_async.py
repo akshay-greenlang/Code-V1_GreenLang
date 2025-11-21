@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Fuel Emissions Calculator with Async Architecture.
 
 This module provides an async-first version of FuelAgentAI using AsyncAgentBase

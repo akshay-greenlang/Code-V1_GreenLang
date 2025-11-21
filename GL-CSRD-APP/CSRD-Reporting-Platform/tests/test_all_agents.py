@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-CSRD-APP - All Agents Test Suite
 ====================================

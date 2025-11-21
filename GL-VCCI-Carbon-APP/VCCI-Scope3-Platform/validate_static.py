@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Static Validation Script for GL-VCCI Platform
 Validates all code files without requiring Python installation

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Purchase Requisition Mapper
 
@@ -17,6 +18,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +92,7 @@ class RequisitionMapper:
         try:
             return int(transaction_date[:4])
         except (ValueError, TypeError):
-            return datetime.now().year
+            return DeterministicClock.now().year
 
     def map_purchase_requisition(
         self,
@@ -117,7 +119,7 @@ class RequisitionMapper:
         # Transaction date (use creation date for requisitions)
         transaction_date = req_header.get("CreationDate", "")
         if not transaction_date:
-            transaction_date = datetime.now().strftime("%Y-%m-%d")
+            transaction_date = DeterministicClock.now().strftime("%Y-%m-%d")
 
         # Supplier information (may be suggested, not final)
         supplier_id_erp = str(req_line.get("SuggestedSupplierId", "")) if req_line.get("SuggestedSupplierId") else ""

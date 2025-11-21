@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # greenlang/agents/load_profile_agent.py
 
 try:

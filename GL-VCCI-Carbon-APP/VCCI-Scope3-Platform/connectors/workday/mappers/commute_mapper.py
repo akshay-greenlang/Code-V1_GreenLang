@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday Commute to Category 7 Mapper
 GL-VCCI Scope 3 Platform
@@ -16,6 +17,7 @@ from datetime import datetime
 import hashlib
 
 from ..extractors.hcm_extractor import CommuteData
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -117,10 +119,10 @@ class CommuteMapper:
         # Add metadata
         commute_record["metadata"] = {
             "source_system": "Workday",
-            "extraction_timestamp": datetime.utcnow().isoformat() + "Z",
+            "extraction_timestamp": DeterministicClock.utcnow().isoformat() + "Z",
             "validation_status": "Validated",
             "created_by": "workday-connector",
-            "created_at": datetime.utcnow().isoformat() + "Z",
+            "created_at": DeterministicClock.utcnow().isoformat() + "Z",
         }
 
         # Add data quality indicators

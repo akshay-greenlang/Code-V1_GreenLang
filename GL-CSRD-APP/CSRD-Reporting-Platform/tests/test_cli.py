@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD/ESRS Digital Reporting Platform - CLI Tests
 

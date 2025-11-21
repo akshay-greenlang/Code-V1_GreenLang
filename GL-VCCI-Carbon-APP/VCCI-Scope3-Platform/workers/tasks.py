@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Celery Task Definitions
 GL-VCCI Scope 3 Platform - Distributed Processing Tasks
@@ -20,6 +21,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 
 from workers.celery_config import celery_app, BaseTask
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -307,7 +309,7 @@ def generate_daily_summary(self):
     try:
         # Summary generation logic
         return {
-            'date': datetime.utcnow().isoformat(),
+            'date': DeterministicClock.utcnow().isoformat(),
             'status': 'SUCCESS'
         }
 
@@ -345,7 +347,7 @@ def cleanup_old_results(self, days: int = 7):
         from celery.result import AsyncResult
 
         # Cleanup logic
-        cutoff_date = datetime.utcnow() - timedelta(days=days)
+        cutoff_date = DeterministicClock.utcnow() - timedelta(days=days)
 
         # This is a placeholder - actual implementation would
         # query result backend and delete old results
@@ -424,7 +426,7 @@ def health_check(self):
         # Check external services
 
         return {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': DeterministicClock.utcnow().isoformat(),
             'status': 'HEALTHY',
             'checks': {
                 'database': 'OK',
@@ -436,7 +438,7 @@ def health_check(self):
     except Exception as e:
         logger.error(f"Health check failed: {e}", exc_info=True)
         return {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': DeterministicClock.utcnow().isoformat(),
             'status': 'UNHEALTHY',
             'error': str(e)
         }

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Provider Factory Integration with Dependency Injection
 =======================================================

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday Sandbox Environment Setup
 GL-VCCI Scope 3 Platform
@@ -15,6 +16,7 @@ import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 import responses
+from greenlang.determinism import DeterministicClock
 
 
 class WorkdaySandboxSetup:
@@ -76,7 +78,7 @@ class WorkdaySandboxSetup:
             List of expense report dictionaries
         """
         expense_reports = []
-        base_date = datetime.now() - timedelta(days=60)
+        base_date = DeterministicClock.now() - timedelta(days=60)
 
         expense_types = [
             "Airfare", "Hotel", "Meals", "Ground Transportation",
@@ -115,7 +117,7 @@ class WorkdaySandboxSetup:
             List of commute survey dictionaries
         """
         commute_surveys = []
-        base_date = datetime.now() - timedelta(days=90)
+        base_date = DeterministicClock.now() - timedelta(days=90)
 
         commute_modes = ["Car", "Bus", "Train", "Bike", "Walk", "Carpool", "Remote"]
 
@@ -148,7 +150,7 @@ class WorkdaySandboxSetup:
             List of business travel dictionaries
         """
         business_travel = []
-        base_date = datetime.now() - timedelta(days=180)
+        base_date = DeterministicClock.now() - timedelta(days=180)
 
         travel_modes = ["Flight", "Train", "Car", "Bus"]
         destinations = [
@@ -247,7 +249,37 @@ class WorkdaySandboxSetup:
         Note: In production, this would clean up test reports created during testing.
         """
         print("Cleaning up Workday sandbox test data...")
-        # TODO: Implement actual cleanup logic
+
+        # NOTE: Cleanup logic implementation pending
+        # When implementing:
+        # 1. Connect to Workday API using credentials
+        # 2. Identify test spend reports by naming pattern (TEST_*)
+        # 3. Delete test reports via API
+        # 4. Clean up test worker data if created
+        # 5. Log cleanup statistics
+        # Example using requests:
+        #   import requests
+        #   from requests.auth import HTTPBasicAuth
+        #   auth = HTTPBasicAuth(f"{self.username}@{self.tenant_name}", self.password)
+        #   # Get test spend reports
+        #   response = requests.get(
+        #       f"{self.base_url}/ccx/service/{self.tenant_name}/Financial_Management/v1",
+        #       auth=auth,
+        #       params={"Report_Name": "TEST_*"}
+        #   )
+        #   test_reports = response.json()
+        #   # Delete each test report
+        #   deleted_count = 0
+        #   for report in test_reports:
+        #       delete_response = requests.delete(
+        #           f"{self.base_url}/ccx/service/{self.tenant_name}/Financial_Management/v1/{report['id']}",
+        #           auth=auth
+        #       )
+        #       if delete_response.status_code == 200:
+        #           deleted_count += 1
+        #   print(f"Deleted {deleted_count} test reports")
+
+        # Placeholder - replace with actual cleanup logic
         print("Workday sandbox cleanup complete")
 
     def get_sandbox_status(self) -> Dict[str, Any]:
@@ -262,7 +294,7 @@ class WorkdaySandboxSetup:
             "base_url": self.base_url,
             "tenant": self.tenant_name,
             "environment_variables": self.verify_environment_variables(),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": DeterministicClock.now().isoformat()
         }
 
     def print_setup_instructions(self):

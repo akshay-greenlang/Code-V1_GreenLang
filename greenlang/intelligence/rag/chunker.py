@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Token-aware chunking for RAG system.
 

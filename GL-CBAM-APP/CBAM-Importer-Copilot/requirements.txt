@@ -111,7 +111,7 @@ passlib[bcrypt]>=1.7.4
 # - Why: Never store plaintext passwords
 
 # SECURITY: Encryption
-cryptography>=41.0.0
+cryptography>=46.0.0
 # - Purpose: Data encryption and cryptographic operations
 # - Why: Protect sensitive data at rest and in transit
 

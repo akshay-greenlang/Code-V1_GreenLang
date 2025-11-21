@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Production Key Management System for GreenLang
 
@@ -13,6 +14,7 @@ from typing import Optional, Dict, Any, Tuple, List
 from datetime import datetime, timedelta
 from dataclasses import dataclass, field, asdict
 from enum import Enum
+from greenlang.determinism import DeterministicClock
 
 try:
     from cryptography.hazmat.primitives import hashes, serialization
@@ -96,7 +98,7 @@ class KeyMetadata:
         """Check if key has expired"""
         if not self.expires_at:
             return False
-        return datetime.utcnow() > self.expires_at
+        return DeterministicClock.utcnow() > self.expires_at
 
 
 class KeyManager:
@@ -252,8 +254,8 @@ class KeyManager:
             key_id=key_id,
             key_type=key_type,
             purpose=purpose,
-            created_at=datetime.utcnow(),
-            expires_at=datetime.utcnow() + timedelta(days=expires_in_days),
+            created_at=DeterministicClock.utcnow(),
+            expires_at=DeterministicClock.utcnow() + timedelta(days=expires_in_days),
             owner=owner,
             algorithm=algorithm,
             public_key_hash=public_key_hash,
@@ -333,9 +335,9 @@ class KeyManager:
         builder = builder.issuer_name(issuer_name)
         builder = builder.public_key(private_key.public_key())
         builder = builder.serial_number(x509.random_serial_number())
-        builder = builder.not_valid_before(datetime.utcnow())
+        builder = builder.not_valid_before(DeterministicClock.utcnow())
         builder = builder.not_valid_after(
-            datetime.utcnow() + timedelta(days=validity_days)
+            DeterministicClock.utcnow() + timedelta(days=validity_days)
         )
 
         # Add extensions
@@ -430,7 +432,7 @@ class KeyManager:
             key_id=key_id,
             key_type=KeyType.RSA_2048,  # Default, should detect from key
             purpose=purpose,
-            created_at=datetime.utcnow(),
+            created_at=DeterministicClock.utcnow(),
             owner=owner,
         )
 
@@ -484,7 +486,7 @@ class KeyManager:
         if keep_old:
             import shutil
 
-            timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+            timestamp = DeterministicClock.utcnow().strftime("%Y%m%d_%H%M%S")
             archive_id = f"{key_id}_{timestamp}"
 
             # Move old files to archive
@@ -521,7 +523,7 @@ class KeyManager:
 
         import shutil
 
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = DeterministicClock.utcnow().strftime("%Y%m%d_%H%M%S")
 
         # Move files to revoked directory
         for ext, subdir in [

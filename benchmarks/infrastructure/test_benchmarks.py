@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Infrastructure Performance Benchmarks
 ==============================================
@@ -40,6 +41,7 @@ from pathlib import Path
 import tempfile
 
 import pytest
+from greenlang.determinism import deterministic_random
 
 
 # ============================================================================
@@ -192,7 +194,7 @@ class MockFactorBroker:
     async def resolve(self, factor_type: str, context: Dict):
         """Resolve emission factor."""
         # Simulate factor resolution with caching
-        cache_hit = random.random() < 0.7  # 70% cache hit rate
+        cache_hit = deterministic_random().random() < 0.7  # 70% cache hit rate
 
         if cache_hit:
             await asyncio.sleep(0.002)  # 2ms cache hit
@@ -416,13 +418,13 @@ class TestCacheBenchmarks:
 
             # Simulate workload (80% reads on existing keys, 20% new keys)
             for _ in range(1000):
-                if random.random() < 0.8:
+                if deterministic_random().random() < 0.8:
                     # Read existing key
-                    key = random.choice(sample_cache_keys[:100])
+                    key = deterministic_random().choice(sample_cache_keys[:100])
                     await cache.get(key, level="L1")
                 else:
                     # Read new key (miss)
-                    key = random.choice(sample_cache_keys[100:])
+                    key = deterministic_random().choice(sample_cache_keys[100:])
                     await cache.get(key, level="L1")
 
             return cache.get_hit_rate()

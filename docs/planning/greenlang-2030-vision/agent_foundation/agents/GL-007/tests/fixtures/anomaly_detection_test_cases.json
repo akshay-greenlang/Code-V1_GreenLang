@@ -1,0 +1,138 @@
+{
+  "test_cases": [
+    {
+      "case_id": "temperature_spike",
+      "description": "Sudden temperature spike indicating burner malfunction",
+      "real_time_data": {
+        "timestamp": "2025-11-21T10:30:00Z",
+        "temperatures": [185.0, 188.0, 245.0, 242.0],
+        "pressures": [-25.0, -24.5, -23.0, -22.5],
+        "flows": [1850.0, 1860.0, 1855.0, 1858.0],
+        "emissions": {
+          "nox_ppm": 45.0,
+          "co_ppm": 18.0,
+          "o2_percent": 3.5
+        },
+        "efficiency": 73.5,
+        "production_rate": 18.5
+      },
+      "expected_anomalies": [
+        {
+          "parameter": "flue_gas_temperature",
+          "anomaly_type": "spike",
+          "severity": "high",
+          "probable_causes": ["burner_malfunction", "control_valve_failure"]
+        }
+      ]
+    },
+    {
+      "case_id": "efficiency_drift",
+      "description": "Gradual efficiency degradation over time",
+      "real_time_data": {
+        "timestamp": "2025-11-21T14:00:00Z",
+        "temperatures": [195.0, 198.0, 200.0, 202.0],
+        "pressures": [-25.0, -25.0, -25.0, -25.0],
+        "flows": [1850.0, 1850.0, 1850.0, 1850.0],
+        "emissions": {
+          "nox_ppm": 48.0,
+          "co_ppm": 22.0,
+          "o2_percent": 4.2
+        },
+        "efficiency": 76.8,
+        "production_rate": 18.5
+      },
+      "expected_anomalies": [
+        {
+          "parameter": "thermal_efficiency",
+          "anomaly_type": "drift",
+          "severity": "medium",
+          "probable_causes": ["tube_fouling", "air_infiltration", "excess_air"]
+        }
+      ]
+    },
+    {
+      "case_id": "combustion_instability",
+      "description": "Oscillating CO levels indicating combustion problems",
+      "real_time_data": {
+        "timestamp": "2025-11-21T16:30:00Z",
+        "temperatures": [185.0, 185.0, 185.0, 185.0],
+        "pressures": [-25.0, -25.0, -25.0, -25.0],
+        "flows": [1850.0, 1850.0, 1850.0, 1850.0],
+        "emissions": {
+          "nox_ppm": 45.0,
+          "co_ppm": 85.0,
+          "o2_percent": 3.5
+        },
+        "efficiency": 81.0,
+        "production_rate": 18.5
+      },
+      "expected_anomalies": [
+        {
+          "parameter": "co_emissions",
+          "anomaly_type": "out_of_range",
+          "severity": "critical",
+          "probable_causes": ["incomplete_combustion", "fuel_air_ratio_imbalance", "burner_degradation"]
+        }
+      ]
+    },
+    {
+      "case_id": "normal_operation",
+      "description": "Normal operation within all control limits",
+      "real_time_data": {
+        "timestamp": "2025-11-21T12:00:00Z",
+        "temperatures": [185.0, 186.0, 184.0, 185.5],
+        "pressures": [-25.0, -24.8, -25.2, -25.0],
+        "flows": [1850.0, 1855.0, 1848.0, 1852.0],
+        "emissions": {
+          "nox_ppm": 45.0,
+          "co_ppm": 18.0,
+          "o2_percent": 3.5
+        },
+        "efficiency": 81.5,
+        "production_rate": 18.5
+      },
+      "expected_anomalies": []
+    },
+    {
+      "case_id": "multiple_anomalies",
+      "description": "Multiple simultaneous anomalies indicating serious issue",
+      "real_time_data": {
+        "timestamp": "2025-11-21T18:00:00Z",
+        "temperatures": [265.0, 268.0, 270.0, 272.0],
+        "pressures": [-15.0, -14.5, -14.0, -13.5],
+        "flows": [1650.0, 1640.0, 1630.0, 1620.0],
+        "emissions": {
+          "nox_ppm": 125.0,
+          "co_ppm": 95.0,
+          "o2_percent": 7.5
+        },
+        "efficiency": 65.5,
+        "production_rate": 15.2
+      },
+      "expected_anomalies": [
+        {
+          "parameter": "flue_gas_temperature",
+          "anomaly_type": "out_of_range",
+          "severity": "critical"
+        },
+        {
+          "parameter": "nox_emissions",
+          "anomaly_type": "out_of_range",
+          "severity": "critical"
+        },
+        {
+          "parameter": "thermal_efficiency",
+          "anomaly_type": "step_change",
+          "severity": "high"
+        }
+      ]
+    }
+  ],
+  "detection_parameters": {
+    "z_score_threshold": 2.5,
+    "moving_average_window": 20,
+    "min_duration_seconds": 60,
+    "false_positive_target_percent": 5.0,
+    "detection_rate_target_percent": 95.0
+  }
+}

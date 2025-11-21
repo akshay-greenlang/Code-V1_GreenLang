@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Fusion Cloud Connector Unit Tests
 GL-VCCI Scope 3 Platform

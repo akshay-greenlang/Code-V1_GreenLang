@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Test script for GreenLang runtime profiles and deterministic execution
 """
@@ -7,6 +8,7 @@ import json
 import random
 import tempfile
 from pathlib import Path
+from greenlang.determinism import deterministic_random
 
 # Test imports
 try:
@@ -40,9 +42,9 @@ def test_deterministic_config():
     config.apply()
     
     # Test random seed
-    random_value = random.random()
+    random_value = deterministic_random().random()
     random.seed(42)  # Reset seed
-    expected_value = random.random()
+    expected_value = deterministic_random().random()
     
     if random_value == expected_value:
         print("OK: Random seed applied correctly")
@@ -75,8 +77,8 @@ def test_local_executor():
                 "code": """
 import random
 random.seed(__seed__)  # Use deterministic seed
-outputs['value'] = random.random()
-outputs['list'] = [random.random() for _ in range(3)]
+outputs['value'] = deterministic_random().random()
+outputs['list'] = [deterministic_random().random() for _ in range(3)]
 """
             },
             {
@@ -183,7 +185,7 @@ def test_golden_tests():
                 "code": """
 import random
 random.seed(__seed__)
-outputs['result'] = inputs.get('x', 0) * 2 + random.random()
+outputs['result'] = inputs.get('x', 0) * 2 + deterministic_random().random()
 outputs['fixed'] = 42
 """
             }
@@ -314,7 +316,7 @@ def test_determinism_validation():
 import random
 random.seed(__seed__)
 outputs['result'] = inputs.get('value', 0) * 2
-outputs['random'] = random.random()
+outputs['random'] = deterministic_random().random()
 """
             }
         ]

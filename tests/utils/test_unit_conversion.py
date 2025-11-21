@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 tests/utils/test_unit_conversion.py
 

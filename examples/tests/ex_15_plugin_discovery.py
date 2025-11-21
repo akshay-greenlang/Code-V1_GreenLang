@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 15: Plugin discovery contract (illustrative)."""
 
 import pytest

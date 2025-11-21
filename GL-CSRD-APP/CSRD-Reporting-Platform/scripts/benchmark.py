@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Pipeline Performance Benchmarking Tool
 
@@ -31,6 +32,8 @@ import pandas as pd
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -183,7 +186,7 @@ class BenchmarkReport:
 
     def __init__(self, dataset_size: str, dataset_config: Dict[str, Any]):
         self.benchmark_id = f"benchmark_{int(time.time())}"
-        self.timestamp = datetime.now().isoformat()
+        self.timestamp = DeterministicClock.now().isoformat()
         self.dataset_size = dataset_size
         self.dataset_config = dataset_config
         self.agent_benchmarks: List[AgentBenchmark] = []
@@ -280,9 +283,9 @@ def generate_benchmark_data(num_records: int, output_path: Path) -> Path:
             "unit": metric["unit"],
             "period_start": "2024-01-01",
             "period_end": "2024-12-31",
-            "data_quality": random.choice(["high", "medium", "high", "high"]),  # 75% high quality
+            "data_quality": deterministic_random().choice(["high", "medium", "high", "high"]),  # 75% high quality
             "source_document": f"System_{i % 5 + 1}",
-            "verification_status": random.choice(["verified", "third_party_assured", "unverified"]),
+            "verification_status": deterministic_random().choice(["verified", "third_party_assured", "unverified"]),
             "notes": f"Synthetic data point {i}"
         }
         records.append(record)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Run ledger for deterministic execution tracking and audit trail
 """
@@ -10,6 +11,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 import logging
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +54,8 @@ def write_run_ledger(result: Any, ctx: Any, output_path: Optional[Path] = None) 
         "version": "1.0.0",
         "kind": "greenlang-run-ledger",
         "metadata": {
-            "started_at": getattr(ctx, "started_at", datetime.utcnow()).isoformat(),
-            "finished_at": datetime.utcnow().isoformat(),
+            "started_at": getattr(ctx, "started_at", DeterministicClock.utcnow()).isoformat(),
+            "finished_at": DeterministicClock.utcnow().isoformat(),
             "duration": time.time() - getattr(ctx, "start_time", time.time()),
             "status": "success" if getattr(result, "success", True) else "failed",
         },
@@ -319,12 +322,12 @@ class RunLedger:
             Run ID (UUID)
         """
         # Generate unique run ID
-        run_id = str(uuid.uuid4())
+        run_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
         # Create ledger entry
         entry = {
             "id": run_id,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "pipeline": pipeline,
             "input_hash": hashlib.sha256(
                 json.dumps(inputs, sort_keys=True).encode()
@@ -337,7 +340,7 @@ class RunLedger:
 
         # Add system metadata
         entry["metadata"].update(
-            {"recorded_at": datetime.utcnow().isoformat(), "ledger_version": "1.0.0"}
+            {"recorded_at": DeterministicClock.utcnow().isoformat(), "ledger_version": "1.0.0"}
         )
 
         # Append to ledger (JSONL format - one JSON object per line)
@@ -446,7 +449,7 @@ class RunLedger:
         Returns:
             Statistics dictionary
         """
-        since = datetime.utcnow() - timedelta(days=days)
+        since = DeterministicClock.utcnow() - timedelta(days=days)
         runs = self.list_runs(pipeline=pipeline, limit=10000, since=since)
 
         if not runs:
@@ -523,12 +526,12 @@ class RunLedger:
         Returns:
             Path to exported file
         """
-        since = datetime.utcnow() - timedelta(days=days)
+        since = DeterministicClock.utcnow() - timedelta(days=days)
         runs = self.list_runs(pipeline=pipeline, limit=10000, since=since)
 
         export_data = {
             "version": "1.0.0",
-            "exported_at": datetime.utcnow().isoformat(),
+            "exported_at": DeterministicClock.utcnow().isoformat(),
             "ledger_path": str(self.ledger_path),
             "filters": {"pipeline": pipeline, "days": days, "since": since.isoformat()},
             "runs": runs,
@@ -551,7 +554,7 @@ class RunLedger:
         Returns:
             Number of entries removed
         """
-        cutoff = datetime.utcnow() - timedelta(days=days_to_keep)
+        cutoff = DeterministicClock.utcnow() - timedelta(days=days_to_keep)
 
         # Read all entries
         kept_entries = []

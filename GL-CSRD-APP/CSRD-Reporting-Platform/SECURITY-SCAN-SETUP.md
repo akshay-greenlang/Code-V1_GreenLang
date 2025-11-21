@@ -15,7 +15,7 @@ This guide provides complete instructions for setting up and running the automat
 ### 1. Python Installation
 
 ```bash
-# Verify Python 3.11+ is installed
+# Verify Python 3.10+ is installed
 python --version  # Should show Python 3.11 or higher
 
 # If not installed, download from:

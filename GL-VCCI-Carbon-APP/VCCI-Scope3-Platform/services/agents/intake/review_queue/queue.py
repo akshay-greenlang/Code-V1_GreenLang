@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Review Queue Management
 
@@ -17,6 +18,7 @@ from datetime import datetime, timedelta
 from ..models import ReviewQueueItem, ReviewStatus, ReviewAction
 from ..config import get_config
 from ..exceptions import QueueItemNotFoundError, QueuePersistenceError
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -271,7 +273,7 @@ class ReviewQueue:
         ]
         if pending:
             oldest = min(pending, key=lambda x: x.created_at)
-            age = datetime.utcnow() - oldest.created_at
+            age = DeterministicClock.utcnow() - oldest.created_at
             stats["oldest_pending"] = {
                 "queue_item_id": oldest.queue_item_id,
                 "age_hours": age.total_seconds() / 3600,
@@ -303,7 +305,7 @@ class ReviewQueue:
             Number of items removed
         """
         days = days or self.config.auto_cleanup_days
-        cutoff = datetime.utcnow() - timedelta(days=days)
+        cutoff = DeterministicClock.utcnow() - timedelta(days=days)
 
         # Find old completed items
         to_remove = [

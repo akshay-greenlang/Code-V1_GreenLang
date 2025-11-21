@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Pipeline Validation Script for GreenLang Pipeline Spec v1.0
 

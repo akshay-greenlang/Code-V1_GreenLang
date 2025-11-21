@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Distributed tracing for GreenLang using OpenTelemetry
 """
@@ -9,6 +10,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from contextlib import contextmanager
 import uuid
+from greenlang.determinism import deterministic_random
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:
     from opentelemetry import trace
@@ -75,8 +78,8 @@ class SpanKind(Enum):
 class SpanContext:
     """Span context information"""
 
-    trace_id: str = field(default_factory=lambda: uuid.uuid4().hex)
-    span_id: str = field(default_factory=lambda: uuid.uuid4().hex[:16])
+    trace_id: str = field(default_factory=lambda: deterministic_uuid(__name__, str(DeterministicClock.now())).hex)
+    span_id: str = field(default_factory=lambda: deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16])
     parent_span_id: Optional[str] = None
     baggage: Dict[str, str] = field(default_factory=dict)
     attributes: Dict[str, Any] = field(default_factory=dict)
@@ -520,7 +523,7 @@ class RateSampler(SamplingStrategy):
         """Check if should sample based on rate"""
         import random
 
-        return random.random() < self.rate
+        return deterministic_random().random() < self.rate
 
 
 class ErrorSampler(SamplingStrategy):

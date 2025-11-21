@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PCF Exchange Service
 Product Carbon Footprint Exchange Protocol Support

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 gl init - Initialize new projects, packs, and datasets
 """

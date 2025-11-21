@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - SAP Integration E2E Test
@@ -34,6 +35,8 @@ from services.agents.intake.models import IngestionRecord, EntityType
 from services.agents.calculator.agent import Scope3CalculatorAgent
 from services.agents.calculator.models import Category1Input
 from services.agents.reporting.agent import Scope3ReportingAgent
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = get_logger(__name__)
 
@@ -281,13 +284,13 @@ class TestSAPIntegrationE2E:
                 source_file="SAP_S4HANA_EKKO_EKPO",
                 source_system=SourceSystem.SAP,
                 ingestion_format=IngestionFormat.JSON,
-                batch_id=f"SAP-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
+                batch_id=f"SAP-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}",
                 row_number=sap_suppliers.index(supplier) + 1,
                 original_data=supplier,
             )
 
             record = IngestionRecord(
-                record_id=f"SAP-{datetime.utcnow().strftime('%Y%m%d')}-{uuid4().hex[:8].upper()}",
+                record_id=f"SAP-{DeterministicClock.utcnow().strftime('%Y%m%d')}-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8].upper()}",
                 entity_type=EntityType.supplier,
                 tenant_id=tenant_id,
                 entity_name=supplier["name"],

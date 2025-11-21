@@ -11,6 +11,7 @@ import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 # Ensure UTF-8 output on Windows
 if sys.platform == "win32":
@@ -19,7 +20,7 @@ if sys.platform == "win32":
 class DoDVerifier:
     def __init__(self):
         self.results = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "version": "0.2.0",
             "checks": {},
             "summary": {"passed": 0, "failed": 0, "warnings": 0}

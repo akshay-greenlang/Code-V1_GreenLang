@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Resource Usage Tests for GreenLang Agents.
 
 This module tests resource consumption under load:

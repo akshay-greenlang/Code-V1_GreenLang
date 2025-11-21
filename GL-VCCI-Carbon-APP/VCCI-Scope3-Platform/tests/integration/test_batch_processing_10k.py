@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - Batch Processing 10K Suppliers Test
@@ -35,6 +36,10 @@ from services.agents.intake.agent import ValueChainIntakeAgent
 from services.agents.intake.models import IngestionRecord, EntityType, IngestionMetadata, SourceSystem, IngestionFormat
 from services.agents.calculator.agent import Scope3CalculatorAgent
 from services.agents.calculator.models import Category1Input
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
+from greenlang.determinism import deterministic_random
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = get_logger(__name__)
 
@@ -65,7 +70,7 @@ def generate_large_supplier_dataset(count: int = 10000) -> List[Dict[str, Any]]:
     spend_amounts = np.random.pareto(1.16, count) * 10000 + 5000
 
     categories = [1] * 7000 + [4] * 2000 + [6] * 1000
-    random.shuffle(categories)
+    deterministic_random().shuffle(categories)
 
     industries = [
         "Manufacturing", "Technology", "Retail", "Healthcare",
@@ -80,17 +85,17 @@ def generate_large_supplier_dataset(count: int = 10000) -> List[Dict[str, Any]]:
     for i in range(count):
         supplier = {
             "supplier_id": f"SUP-{i:06d}",
-            "name": f"Supplier {i:06d} {random.choice(['Inc', 'LLC', 'Corp', 'GmbH', 'Ltd'])}",
-            "spend_amount": float(spend_amounts[i]),
+            "name": f"Supplier {i:06d} {deterministic_random().choice(['Inc', 'LLC', 'Corp', 'GmbH', 'Ltd'])}",
+            "spend_amount": FinancialDecimal.from_string(spend_amounts[i]),
             "spend_currency": "USD",
             "category": categories[i],
-            "industry": random.choice(industries),
-            "naics_code": f"{random.randint(31, 33)}{random.randint(1000, 9999)}",
-            "country": random.choice(countries),
+            "industry": deterministic_random().choice(industries),
+            "naics_code": f"{deterministic_random().randint(31, 33)}{deterministic_random().randint(1000, 9999)}",
+            "country": deterministic_random().choice(countries),
             "year": 2024,
             "tier": 1 if i < count * 0.1 else (2 if i < count * 0.4 else 3),
             "has_pcf": i < count * 0.05,  # 5% have primary data
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": DeterministicClock.utcnow().isoformat(),
         }
         suppliers.append(supplier)
 
@@ -225,7 +230,7 @@ class TestBatchProcessing10K:
                 )
 
                 record = IngestionRecord(
-                    record_id=f"ING-{datetime.utcnow().strftime('%Y%m%d')}-{uuid4().hex[:8].upper()}",
+                    record_id=f"ING-{DeterministicClock.utcnow().strftime('%Y%m%d')}-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8].upper()}",
                     entity_type=EntityType.supplier,
                     tenant_id=tenant_id,
                     entity_name=supplier["name"],
@@ -454,7 +459,7 @@ class TestBatchProcessing10K:
                 )
 
                 record = IngestionRecord(
-                    record_id=f"LEAK-{uuid4().hex[:8]}",
+                    record_id=f"LEAK-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}",
                     entity_type=EntityType.supplier,
                     tenant_id=tenant_id,
                     entity_name=supplier["name"],
@@ -540,7 +545,7 @@ class TestBatchProcessing10K:
                     )
 
                     record = IngestionRecord(
-                        record_id=f"ERR-{uuid4().hex[:8]}",
+                        record_id=f"ERR-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}",
                         entity_type=EntityType.supplier,
                         tenant_id=tenant_id,
                         entity_name=supplier["name"],

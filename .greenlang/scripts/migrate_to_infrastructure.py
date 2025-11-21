@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 GreenLang Code Migration Tool
 
 Automatically detects custom code patterns and suggests GreenLang infrastructure replacements.
 Supports dry-run mode and auto-fix mode for safe migrations.
 """
 
+import logging
 import ast
 import argparse
 import os
@@ -224,7 +228,7 @@ api_key = config.get_secret('API_KEY')""",
                 tree = ast.parse(content)
                 imports = self._extract_imports(tree)
             except SyntaxError:
-                print(f"Warning: Could not parse {file_path} (syntax error)")
+                logger.warning(f"Could not parse {file_path} (syntax error)")
                 return suggestions
 
             # Check each pattern
@@ -568,7 +572,7 @@ def main():
     elif os.path.isdir(args.path):
         suggestions = tool.scan_directory(args.path)
     else:
-        print(f"Error: {args.path} is not a valid file or directory")
+        logger.error(f"{args.path} is not a valid file or directory")
         sys.exit(1)
 
     # Filter by category if specified

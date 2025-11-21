@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Memory Profiling Tool
 ====================
@@ -40,6 +41,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Optional
 import linecache
+from greenlang.determinism import DeterministicClock
 
 
 class MemoryProfiler:
@@ -388,7 +390,7 @@ class MemoryProfiler:
 <body>
     <div class="container">
         <h1>Memory Profile Report</h1>
-        <p class="timestamp">Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+        <p class="timestamp">Generated: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
 
         <div class="summary">
             <div class="summary-item">
@@ -526,11 +528,11 @@ class MemoryProfiler:
             Path to saved file
         """
         if filename is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
             filename = f"memory_snapshot_{timestamp}.json"
 
         snapshot_data = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "timeline": self.timeline,
             "stats": self.get_memory_stats()
         }

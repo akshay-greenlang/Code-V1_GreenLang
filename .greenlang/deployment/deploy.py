@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang-First Deployment CLI
 
@@ -24,6 +25,7 @@ import yaml
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -113,7 +115,7 @@ class GreenLangDeployer:
     def _log_deployment(self, action: str, component: str, status: str, details: str = ''):
         """Log deployment action."""
         entry = {
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': DeterministicClock.utcnow().isoformat(),
             'environment': self.environment,
             'action': action,
             'component': component,
@@ -390,7 +392,7 @@ class GreenLangDeployer:
         status = {
             'environment': self.environment,
             'namespace': namespace,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': DeterministicClock.utcnow().isoformat(),
             'components': {}
         }
 
@@ -439,7 +441,7 @@ class GreenLangDeployer:
         log_dir = SCRIPT_DIR / 'logs'
         log_dir.mkdir(exist_ok=True)
 
-        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        timestamp = DeterministicClock.utcnow().strftime('%Y%m%d_%H%M%S')
         log_file = log_dir / f'deployment_{self.environment}_{timestamp}.json'
 
         with open(log_file, 'w') as f:

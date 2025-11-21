@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 API Response Caching Middleware
 GL-VCCI Scope 3 Platform - Performance Optimization
@@ -32,6 +33,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.datastructures import Headers
 from redis.asyncio import Redis
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -292,7 +294,7 @@ class ResponseCacheMiddleware(BaseHTTPMiddleware):
             last_modified = None
             last_modified_header = None
             if self.default_strategy.last_modified_enabled:
-                last_modified = datetime.utcnow()
+                last_modified = DeterministicClock.utcnow()
                 last_modified_header = last_modified.strftime(
                     "%a, %d %b %Y %H:%M:%S GMT"
                 )
@@ -309,7 +311,7 @@ class ResponseCacheMiddleware(BaseHTTPMiddleware):
                 "etag": etag,
                 "last_modified": last_modified.isoformat() if last_modified else None,
                 "last_modified_header": last_modified_header,
-                "cached_at": datetime.utcnow().isoformat()
+                "cached_at": DeterministicClock.utcnow().isoformat()
             }
 
             # Add ETag header

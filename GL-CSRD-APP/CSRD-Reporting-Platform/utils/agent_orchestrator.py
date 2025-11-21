@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Agent Orchestrator
 
@@ -19,6 +20,7 @@ import yaml
 import logging
 from datetime import datetime
 import json
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +41,7 @@ class AgentExecutionResult:
         self.duration_seconds = duration_seconds
         self.output = output
         self.error = error
-        self.timestamp = datetime.now().isoformat()
+        self.timestamp = DeterministicClock.now().isoformat()
 
 
 class GreenLangAgentOrchestrator:
@@ -106,7 +108,7 @@ class GreenLangAgentOrchestrator:
         self.agents[agent_name] = {
             'callable': agent_callable,
             'type': agent_type,
-            'registered_at': datetime.now().isoformat()
+            'registered_at': DeterministicClock.now().isoformat()
         }
         logger.info(f"Registered agent: {agent_name} (type: {agent_type})")
 
@@ -233,7 +235,7 @@ class GreenLangAgentOrchestrator:
             'failed': failed,
             'execution_mode': execution_mode,
             'results': results,
-            'timestamp': datetime.now().isoformat()
+            'timestamp': DeterministicClock.now().isoformat()
         }
 
         logger.info(
@@ -351,7 +353,7 @@ class GreenLangAgentOrchestrator:
 
         context = {
             'input_data': input_data,
-            'timestamp': datetime.now().isoformat()
+            'timestamp': DeterministicClock.now().isoformat()
         }
 
         pipeline_results = {}
@@ -411,7 +413,7 @@ class GreenLangAgentOrchestrator:
         return {
             'status': overall_status,
             'stages': pipeline_results,
-            'timestamp': datetime.now().isoformat()
+            'timestamp': DeterministicClock.now().isoformat()
         }
 
     def save_execution_history(self, output_path: str):

@@ -1,9 +1,12 @@
-schema_version: 2.0.0
-id: ml/forecast_sarima_v1
 name: SARIMA Forecast Agent (Time-Series ML)
 version: 1.0.0
-summary: AI-powered SARIMA forecasting for time-series prediction with auto-tuning,
-  seasonality detection, confidence intervals, and multi-metric evaluation
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 tags:
 - ml
 - forecasting
@@ -14,98 +17,11 @@ tags:
 - ai-agent
 - statsmodels
 - citations
+id: ml/forecast_sarima_v1
+summary: AI-powered SARIMA forecasting for time-series prediction with auto-tuning,
+  seasonality detection, confidence intervals, and multi-metric evaluation
 owners:
 - greenlang-team
-license: MIT
-compute:
-  entrypoint: python://greenlang.agents.forecast_agent_sarima:execute
-  deterministic: true
-  timeout_s: 180
-  memory_limit_mb: 512
-  inputs:
-    data:
-      dtype: object
-      unit: '1'
-      description: 'Time-series DataFrame with DatetimeIndex (min: 2×seasonal_period
-        rows)'
-    target_column:
-      dtype: string
-      unit: '1'
-      description: Column name to forecast (e.g., 'energy_kwh')
-    forecast_horizon:
-      dtype: int32
-      unit: periods
-      description: Number of periods to forecast (1-365)
-      ge: 1
-      le: 365
-    seasonal_period:
-      dtype: int32
-      unit: periods
-      description: Seasonal cycle length (12=monthly, 7=daily, 24=hourly)
-    confidence_level:
-      dtype: float64
-      unit: fraction
-      description: Prediction interval confidence level (0.5-0.99)
-      default: 0.95
-      ge: 0.5
-      le: 0.99
-      required: false
-    auto_tune:
-      dtype: bool
-      unit: '1'
-      description: Enable grid search for optimal SARIMA parameters
-      default: true
-      required: false
-    exog_columns:
-      dtype: list
-      unit: '1'
-      description: Exogenous variables for SARIMAX modeling (optional)
-  outputs:
-    forecast:
-      dtype: list
-      description: Point forecasts for horizon
-      unit: '1'
-    lower_bound:
-      dtype: list
-      description: Lower confidence bound (e.g., 95%)
-      unit: '1'
-    upper_bound:
-      dtype: list
-      description: Upper confidence bound
-      unit: '1'
-    forecast_dates:
-      dtype: list
-      description: ISO 8601 date for each forecast
-      unit: '1'
-    model_params:
-      dtype: object
-      description: SARIMA model parameters (order, seasonal_order, AIC, BIC, auto_tuned)
-      unit: '1'
-    metrics:
-      dtype: object
-      description: Model performance metrics (RMSE, MAE, MAPE, train/test split)
-      unit: '1'
-    seasonality:
-      dtype: object
-      description: Seasonality analysis (period, strength, detected_peaks, method)
-      unit: '1'
-    stationarity:
-      dtype: object
-      description: Stationarity test results (ADF statistic, p-value, differencing_needed)
-      unit: '1'
-    preprocessing:
-      dtype: object
-      description: Data preprocessing summary (missing values, outliers, final length)
-      unit: '1'
-    explanation:
-      dtype: string
-      unit: '1'
-      description: AI-generated interpretation of forecast and patterns
-    metadata:
-      dtype: object
-      description: Execution metadata (agent_id, version, tokens, cost, time)
-      unit: '1'
-  factors: {}
 ai:
   system_prompt: 'You are a time-series forecasting expert for GreenLang.
 

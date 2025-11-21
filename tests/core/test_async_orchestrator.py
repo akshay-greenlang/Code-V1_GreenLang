@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for AsyncOrchestrator.
 
 This module tests async workflow execution with parallel step support.
@@ -23,6 +24,7 @@ from datetime import datetime
 from greenlang.core.async_orchestrator import AsyncOrchestrator
 from greenlang.core.workflow import Workflow, WorkflowStep
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from greenlang.determinism import DeterministicClock
 
 
 # Mock Agents for Testing
@@ -52,7 +54,7 @@ class MockSyncAgent(BaseAgent):
             data={
                 "agent_id": self.config.agent_id,
                 "input": input_data,
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": DeterministicClock.now().isoformat(),
                 "call_count": self.call_count,
             },
             metadata={"agent": self.config.agent_id},
@@ -84,7 +86,7 @@ try:
                 data={
                     "agent_id": self.agent_id,
                     "input": input_data,
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": DeterministicClock.now().isoformat(),
                     "call_count": self.call_count,
                 },
                 metadata={"agent": self.agent_id},

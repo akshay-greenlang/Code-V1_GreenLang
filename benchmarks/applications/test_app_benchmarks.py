@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Application Performance Benchmarks
 ===========================================
@@ -25,6 +26,7 @@ from pathlib import Path
 import sys
 
 import pytest
+from greenlang.determinism import deterministic_random
 
 
 # ============================================================================
@@ -87,9 +89,9 @@ def vcci_supplier_data():
         {
             "supplier_id": f"SUPP-{i:06d}",
             "name": f"Supplier {i}",
-            "country": random.choice(["CN", "US", "DE", "IN", "JP"]),
-            "sector": random.choice(["Manufacturing", "Services", "Energy"]),
-            "spend": random.randint(10000, 1000000),
+            "country": deterministic_random().choice(["CN", "US", "DE", "IN", "JP"]),
+            "sector": deterministic_random().choice(["Manufacturing", "Services", "Energy"]),
+            "spend": deterministic_random().randint(10000, 1000000),
             "currency": "USD"
         }
         for i in range(1000)
@@ -468,8 +470,8 @@ class TestVCCIBenchmarks:
             suppliers = [
                 {
                     "supplier_id": f"SUPP-{i:06d}",
-                    "spend": random.randint(10000, 1000000),
-                    "sector": random.choice(["Manufacturing", "Services"])
+                    "spend": deterministic_random().randint(10000, 1000000),
+                    "sector": deterministic_random().choice(["Manufacturing", "Services"])
                 }
                 for i in range(10000)
             ]

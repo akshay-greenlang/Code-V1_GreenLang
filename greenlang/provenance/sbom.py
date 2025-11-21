@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SBOM (Software Bill of Materials) Generator
 ============================================
@@ -13,6 +14,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:
     import pkg_resources
@@ -79,7 +82,7 @@ def generate_sbom(
         "serialNumber": f"urn:uuid:{_generate_uuid()}",
         "version": 1,
         "metadata": {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "tools": [
                 {"vendor": "GreenLang", "name": "greenlang-sbom", "version": "0.1.0"}
             ],
@@ -203,7 +206,7 @@ def _generate_spdx_sbom(pack_path: Path, output_path: Path) -> str:
         "name": f"{pack_name}-{pack_version}",
         "documentNamespace": f"https://greenlang.io/sbom/{pack_org}/{pack_name}-{pack_version}-{_generate_uuid()[:8]}",
         "creationInfo": {
-            "created": datetime.now().isoformat(),
+            "created": DeterministicClock.now().isoformat(),
             "creators": [
                 "Tool: GreenLang-SBOM-Generator-0.1.0",
                 f"Organization: {pack_org}",
@@ -221,7 +224,7 @@ def _generate_spdx_sbom(pack_path: Path, output_path: Path) -> str:
         "filesAnalyzed": True,
         "licenseConcluded": pack_license,
         "licenseDeclared": pack_license,
-        "copyrightText": f"Copyright (c) {datetime.now().year} {pack_org}",
+        "copyrightText": f"Copyright (c) {DeterministicClock.now().year} {pack_org}",
         "versionInfo": pack_version,
         "description": pack_description,
         "externalRefs": [],
@@ -437,7 +440,7 @@ def _generate_manual_sbom(pack_path: Path, output_path: Path) -> str:
         "serialNumber": f"urn:uuid:{_generate_uuid()}",
         "version": 1,
         "metadata": {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "tools": [
                 {"vendor": "GreenLang", "name": "greenlang-sbom", "version": "0.1.0"}
             ],
@@ -536,7 +539,7 @@ def _enhance_sbom(sbom_path: Path, pack_path: Path):
         [
             {"name": "greenlang:generated_by", "value": "greenlang-sbom"},
             {"name": "greenlang:pack_path", "value": str(pack_path)},
-            {"name": "greenlang:timestamp", "value": datetime.now().isoformat()},
+            {"name": "greenlang:timestamp", "value": DeterministicClock.now().isoformat()},
         ]
     )
 
@@ -583,7 +586,7 @@ def _generate_uuid() -> str:
     """Generate UUID for SBOM"""
     from uuid import uuid4
 
-    return str(uuid4())
+    return str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
 
 def _parse_requirement(req: str) -> Dict[str, Any]:
@@ -661,7 +664,7 @@ def merge_sboms(sboms: List[Dict[str, Any]]) -> Dict[str, Any]:
     merged["components"] = all_components
 
     # Update metadata
-    merged["metadata"]["timestamp"] = datetime.now().isoformat()
+    merged["metadata"]["timestamp"] = DeterministicClock.now().isoformat()
     merged["serialNumber"] = f"urn:uuid:{_generate_uuid()}"
 
     return merged

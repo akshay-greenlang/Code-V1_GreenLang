@@ -391,7 +391,7 @@ This audit was conducted through:
 - **NONE** - All code-level blockers resolved
 
 **Environment Requirements (Not Blockers):**
-- Python 3.9+ installation (standard deployment requirement)
+- Python 3.10+ installation (standard deployment requirement)
 - Virtual environment setup (standard practice)
 - Dependency installation via pip (automated via requirements.txt)
 

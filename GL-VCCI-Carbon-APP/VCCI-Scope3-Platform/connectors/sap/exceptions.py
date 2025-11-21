@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP S/4HANA Connector Custom Exceptions
 GL-VCCI Scope 3 Platform

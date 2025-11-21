@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Tests for Security Workflows
 Tests end-to-end security scenarios including install, run, and capability checks

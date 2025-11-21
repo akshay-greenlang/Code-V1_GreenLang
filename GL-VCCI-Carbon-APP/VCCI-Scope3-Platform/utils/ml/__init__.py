@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI ML Module
 # Spend Classification ML System - Module Exports
 

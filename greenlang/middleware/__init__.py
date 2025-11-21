@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """GreenLang Middleware Package.
 
 Provides middleware components for error handling, logging, monitoring, and more.

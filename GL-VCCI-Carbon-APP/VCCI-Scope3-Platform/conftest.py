@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Scope 3 Platform - Centralized Pytest Configuration
 Root-level conftest.py for shared fixtures across all test modules
@@ -17,6 +18,7 @@ import asyncio
 from unittest.mock import Mock, AsyncMock
 from typing import Dict, Any
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 # ============================================================================
@@ -111,7 +113,7 @@ def mock_provenance_builder():
     def mock_build(**kwargs):
         return ProvenanceChain(
             calculation_id=kwargs.get("calculation_id", "test-calc-001"),
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             inputs_hash="mock_input_hash",
             factors_used=[],
             tier_applied=kwargs.get("tier", "tier_1"),

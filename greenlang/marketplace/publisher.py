@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Agent Publishing Workflow
 
@@ -21,6 +22,7 @@ import logging
 from sqlalchemy.orm import Session
 
 from greenlang.marketplace.models import (
+from greenlang.determinism import DeterministicClock
     MarketplaceAgent,
     AgentVersion,
     AgentAsset,
@@ -252,7 +254,10 @@ class PublishingWorkflow:
     Manages the entire process from upload to publication.
     """
 
-    def __init__(self, session: Session, storage_path: str = "/tmp/marketplace"):
+    def __init__(self, session: Session, storage_path: str = None):
+        # SECURITY FIX: Use secure temporary directory instead of hardcoded /tmp
+        if storage_path is None:
+            storage_path = os.path.join(tempfile.gettempdir(), 'greenlang_marketplace')
         self.session = session
         self.storage_path = storage_path
         self.validator = AgentValidator()
@@ -277,7 +282,7 @@ class PublishingWorkflow:
         # Create draft agent
         draft = MarketplaceAgent(
             name="Untitled Agent",
-            slug=f"draft-{datetime.utcnow().timestamp()}",
+            slug=f"draft-{DeterministicClock.utcnow().timestamp()}",
             description="Draft agent",
             author_id=author_id,
             author_name=author_name,
@@ -671,9 +676,9 @@ class PublishingWorkflow:
             # Update agent status
             if draft.status == AgentStatus.DRAFT.value:
                 draft.status = AgentStatus.PUBLISHED.value
-                draft.published_at = datetime.utcnow()
+                draft.published_at = DeterministicClock.utcnow()
 
-            draft.last_version_at = datetime.utcnow()
+            draft.last_version_at = DeterministicClock.utcnow()
 
             self.session.commit()
 

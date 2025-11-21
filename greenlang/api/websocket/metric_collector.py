@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Background task for collecting and publishing metrics.
 
@@ -18,6 +19,7 @@ import redis.asyncio as aioredis
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -101,7 +103,7 @@ class SystemMetrics:
             }
 
             return {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
                 "cpu": {
                     "percent": sum(cpu_percent) / len(cpu_percent),
                     "percent_per_cpu": cpu_percent,
@@ -168,7 +170,7 @@ class WorkflowMetrics:
         try:
             # This would query actual workflow execution tables
             # For now, return placeholder data
-            current_time = datetime.utcnow()
+            current_time = DeterministicClock.utcnow()
             window_start = current_time - timedelta(seconds=time_window)
 
             metrics = {
@@ -220,7 +222,7 @@ class AgentMetrics:
             Dictionary of agent metrics
         """
         try:
-            current_time = datetime.utcnow()
+            current_time = DeterministicClock.utcnow()
             window_start = current_time - timedelta(seconds=time_window)
 
             metrics = {
@@ -282,7 +284,7 @@ class DistributedMetrics:
                 pass
 
             metrics = {
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
                 "redis": {
                     "connected_clients": info.get("connected_clients", 0),
                     "used_memory": info.get("used_memory", 0),

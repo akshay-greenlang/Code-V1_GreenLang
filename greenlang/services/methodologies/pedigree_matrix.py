@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ILCD Pedigree Matrix Implementation
 
@@ -31,6 +32,7 @@ from datetime import datetime
 
 from .models import PedigreeScore, UncertaintyResult
 from .constants import (
+from greenlang.determinism import DeterministicClock
     PedigreeIndicator,
     PEDIGREE_MATRIX,
     PEDIGREE_DESCRIPTIONS,
@@ -142,7 +144,7 @@ class PedigreeMatrixEvaluator:
             if self.config.pedigree.enable_temporal_adjustment:
                 reference_year = self.config.pedigree.reference_year
             else:
-                reference_year = datetime.now().year
+                reference_year = DeterministicClock.now().year
 
         age = abs(reference_year - data_year)
 
@@ -524,7 +526,7 @@ class PedigreeMatrixEvaluator:
             },
             "dimension_descriptions": descriptions,
             "improvement_opportunities": worst_dimensions,
-            "assessment_timestamp": datetime.utcnow().isoformat(),
+            "assessment_timestamp": DeterministicClock.utcnow().isoformat(),
         }
 
         logger.info(f"Generated quality report: quality={pedigree.quality_label}, DQI={dqi:.2f}")

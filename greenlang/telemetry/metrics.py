@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Metrics collection for GreenLang using Prometheus
 """
@@ -12,6 +13,8 @@ from enum import Enum
 import psutil
 import threading
 from collections import defaultdict
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatMessage
 
 try:
     from prometheus_client import (
@@ -620,7 +623,7 @@ class MetricsAggregator:
             value: Metric value
             timestamp: Timestamp (default: now)
         """
-        timestamp = timestamp or datetime.utcnow()
+        timestamp = timestamp or DeterministicClock.utcnow()
         self.metrics_buffer[metric_name].append((timestamp, value))
 
         # Clean old metrics
@@ -639,7 +642,7 @@ class MetricsAggregator:
         Returns:
             Aggregated metrics (min, max, avg, p50, p95, p99)
         """
-        cutoff = datetime.utcnow() - timedelta(minutes=window_minutes)
+        cutoff = DeterministicClock.utcnow() - timedelta(minutes=window_minutes)
         values = [v for t, v in self.metrics_buffer.get(metric_name, []) if t >= cutoff]
 
         if not values:
@@ -673,7 +676,7 @@ class MetricsAggregator:
 
     def _clean_old_metrics(self, metric_name: str):
         """Remove old metrics from buffer"""
-        cutoff = datetime.utcnow() - timedelta(hours=self.retention_hours)
+        cutoff = DeterministicClock.utcnow() - timedelta(hours=self.retention_hours)
         self.metrics_buffer[metric_name] = [
             (t, v) for t, v in self.metrics_buffer[metric_name] if t >= cutoff
         ]

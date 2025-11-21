@@ -1,53 +1,18 @@
-# GreenLang CLI - Locked Requirements
-# =====================================
-# This file contains pinned versions of all dependencies for greenlang-cli 0.3.0
-# to ensure consistent installations and avoid repeated downloads.
-#
-# Usage:
-#   pip install -r requirements-lock.txt
-#
-# To update this file:
-#   pip freeze > requirements-lock.txt (after fresh install)
-#
-# For offline installation, first run:
-#   Windows: scripts\setup-cache.bat
-#   Linux/Mac: scripts/setup-cache.sh
-
-# Core dependencies with exact versions
 annotated-types==0.7.0
-anyio==4.11.0
-attrs==25.3.0
-certifi==2025.8.3
-charset-normalizer==3.4.3
-click==8.3.0
+cffi==2.0.0
 colorama==0.4.6
-h11==0.16.0
-httpcore==1.0.9
-httpx==0.28.1
-idna==3.10
-jsonschema==4.25.1
-jsonschema-specifications==2025.9.1
-markdown-it-py==4.0.0
-mdurl==0.1.2
-networkx==3.5
+cryptography==46.0.3
+greenlet==3.2.4
+iniconfig==2.3.0
 packaging==25.0
-psutil==7.1.1
-pydantic==2.12.0
-pydantic-core==2.33.2
-pygments==2.19.2
-python-dotenv==1.1.1
-pyyaml==6.0.3
-referencing==0.36.2
-requests==2.32.5
-rich==14.2.0
-rpds-py==0.27.1
-shellingham==1.5.4
-sniffio==1.3.1
-tenacity==9.1.2
-typer==0.20.0
-typing-extensions==4.15.0
-typing-inspection==0.4.1
-urllib3==2.5.0
-
-# Main package
-greenlang-cli==0.3.0
+pluggy==1.6.0
+pycparser==2.23
+pydantic==2.12.4
+pydantic_core==2.41.5
+Pygments==2.19.2
+PyJWT==2.10.1
+pytest==9.0.1
+PyYAML==6.0.3
+SQLAlchemy==2.0.44
+typing-inspection==0.4.2
+typing_extensions==4.15.0

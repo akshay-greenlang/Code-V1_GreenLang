@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Data Processing Example
 
@@ -22,6 +23,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 from typing import List, Dict, Any
+from greenlang.determinism import DeterministicClock
 
 # Add the parent directory to the path so we can import greenlang
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
@@ -190,7 +192,7 @@ class PortfolioAnalyzer:
         print("\n🧮 Analyzing portfolio emissions...")
 
         portfolio_results = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "total_buildings": len(buildings_data),
             "successful_calculations": 0,
             "total_emissions_tons": 0,
@@ -344,7 +346,7 @@ class PortfolioAnalyzer:
         """Export results to various formats."""
         print("\n📊 Exporting results...")
 
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
         output_dir = Path(__file__).parent / "results"
         output_dir.mkdir(exist_ok=True)
 
@@ -387,7 +389,7 @@ class PortfolioAnalyzer:
             f.write("PORTFOLIO CARBON ANALYSIS - EXECUTIVE SUMMARY\n")
             f.write("=" * 50 + "\n\n")
 
-            f.write(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Analysis Date: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             f.write(f"Total Buildings Analyzed: {portfolio_results['total_buildings']}\n")
             f.write(f"Successful Calculations: {portfolio_results['successful_calculations']}\n")
             f.write(f"Total Portfolio Emissions: {portfolio_results['total_emissions_tons']:.2f} tCO2e\n")

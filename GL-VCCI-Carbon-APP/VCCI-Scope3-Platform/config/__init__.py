@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Configuration Module
 # Configuration management and settings
 

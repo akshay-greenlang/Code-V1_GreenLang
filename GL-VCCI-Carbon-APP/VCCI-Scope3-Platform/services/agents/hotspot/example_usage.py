@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 HotspotAnalysisAgent - Usage Examples
 GL-VCCI Scope 3 Platform

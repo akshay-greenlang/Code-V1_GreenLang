@@ -4,7 +4,7 @@
 # ==============================================================================
 
 # Use backend as base
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 # Metadata
 LABEL maintainer="GL-VCCI Team <support@greenlang.ai>" \

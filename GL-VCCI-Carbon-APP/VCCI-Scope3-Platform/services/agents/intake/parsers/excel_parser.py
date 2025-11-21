@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Excel Parser with Sheet Detection
 

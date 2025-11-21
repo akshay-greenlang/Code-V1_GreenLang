@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Weekly Demo Runner
 ==================
@@ -11,6 +12,7 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 # Add current directory to path for demo_agents
 sys.path.insert(0, str(Path(__file__).parent))
@@ -92,7 +94,7 @@ def create_results_report(report: dict):
     results_content = f"""# Weekly Demo Results - 2025-09-26
 
 ## Execution Summary
-- **Date**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+- **Date**: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}
 - **GreenLang Version**: 0.3.0
 - **Pipeline**: weekly-demo-2025-09-26
 - **Status**: Success

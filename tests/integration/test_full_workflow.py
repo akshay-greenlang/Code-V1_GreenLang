@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Comprehensive test of the full GL run pipeline workflow
 """

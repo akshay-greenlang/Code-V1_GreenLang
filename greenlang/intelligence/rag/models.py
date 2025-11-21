@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pydantic schemas for RAG system components.
 

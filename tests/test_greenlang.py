@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Quick test to verify GreenLang is working"""
 
 from greenlang.sdk import GreenLangClient

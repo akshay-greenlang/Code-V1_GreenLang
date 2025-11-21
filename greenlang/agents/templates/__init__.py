@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Agent Templates
 Reusable Agent Patterns for Sustainability Applications

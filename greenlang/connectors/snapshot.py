@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Connector Snapshot Manager - Deterministic Data Caching
 =======================================================

@@ -7,7 +7,7 @@
 ## Prerequisites
 
 - Docker and Docker Compose installed
-- Python 3.9+ (for the CBAM application)
+- Python 3.10+ (for the CBAM application)
 
 ---
 

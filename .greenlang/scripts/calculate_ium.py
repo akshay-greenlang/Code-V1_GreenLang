@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+logger = logging.getLogger(__name__)
 """
 Infrastructure Usage Metrics (IUM) Calculator
 ==============================================
@@ -16,6 +19,7 @@ Metrics:
     - Cache operations through CacheManager vs direct
 """
 
+import logging
 import ast
 import argparse
 import json
@@ -443,7 +447,7 @@ def main():
         # Analyze specific app
         app_paths = list(root_path.glob(f"**/{args.app}/**/*.py"))
         if not app_paths:
-            print(f"Error: No files found for app {args.app}", file=sys.stderr)
+            logger.error(f"No files found for app {args.app}", file=sys.stderr)
             return 1
 
         metrics = [analyze_file(p) for p in app_paths]

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Marginal Abatement Cost Curve Generator
 GL-VCCI Scope 3 Platform

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Scope 3 Platform - Structured Logging Configuration
 
@@ -34,6 +35,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Callable
 import threading
 import uuid
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 # ============================================================================
@@ -64,7 +67,7 @@ class CorrelationContext:
     @classmethod
     def new_correlation_id(cls) -> str:
         """Generate and set new correlation ID."""
-        correlation_id = str(uuid.uuid4())
+        correlation_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         cls.set_correlation_id(correlation_id)
         return correlation_id
 
@@ -150,7 +153,7 @@ class VCCIJsonFormatter(logging.Formatter):
         """Format log record as JSON."""
         # Build base log entry
         log_entry = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": DeterministicClock.utcnow().isoformat() + "Z",
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),

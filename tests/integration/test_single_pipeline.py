@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Debug script to test a single pipeline"""
 
 from greenlang.sdk.pipeline import Pipeline

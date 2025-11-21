@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Load Testing - Sustained Load Scenario
 
@@ -43,6 +44,7 @@ import time
 from collections import defaultdict
 
 from load_test_utils import (
+from greenlang.determinism import deterministic_random
     generate_csv_data,
     generate_realistic_procurement_data,
     monitor_system_resources,
@@ -86,7 +88,7 @@ class RealisticWorkflowTaskSet(SequentialTaskSet):
                     data = response.json()
                     # Pick a category for drill-down
                     if "by_category" in data and data["by_category"]:
-                        self.category = random.choice(list(data["by_category"].keys()))
+                        self.category = deterministic_random().choice(list(data["by_category"].keys()))
                     response.success()
                 except json.JSONDecodeError:
                     response.failure("Invalid JSON in dashboard")
@@ -110,7 +112,7 @@ class RealisticWorkflowTaskSet(SequentialTaskSet):
                     data = response.json()
                     # Pick a supplier for detail view
                     if "items" in data and data["items"]:
-                        self.supplier_id = data["items"][0].get("id", f"SUP-{random.randint(1, 10000)}")
+                        self.supplier_id = data["items"][0].get("id", f"SUP-{deterministic_random().randint(1, 10000)}")
                     response.success()
                 except json.JSONDecodeError:
                     response.failure("Invalid JSON in suppliers")
@@ -123,7 +125,7 @@ class RealisticWorkflowTaskSet(SequentialTaskSet):
     def step_3_supplier_detail(self):
         """Step 3: User views specific supplier details."""
         if not self.supplier_id:
-            self.supplier_id = f"SUP-{random.randint(1, 10000)}"
+            self.supplier_id = f"SUP-{deterministic_random().randint(1, 10000)}"
 
         with self.client.get(
             f"/api/suppliers/{self.supplier_id}",
@@ -142,7 +144,7 @@ class RealisticWorkflowTaskSet(SequentialTaskSet):
     def step_4_emissions_breakdown(self):
         """Step 4: User views emissions breakdown for supplier."""
         if not self.supplier_id:
-            self.supplier_id = f"SUP-{random.randint(1, 10000)}"
+            self.supplier_id = f"SUP-{deterministic_random().randint(1, 10000)}"
 
         with self.client.get(
             f"/api/emissions?supplier_id={self.supplier_id}",
@@ -161,7 +163,7 @@ class RealisticWorkflowTaskSet(SequentialTaskSet):
     def step_5_generate_report(self):
         """Step 5: User generates report (exit)."""
         if not self.supplier_id:
-            self.supplier_id = f"SUP-{random.randint(1, 10000)}"
+            self.supplier_id = f"SUP-{deterministic_random().randint(1, 10000)}"
 
         payload = {
             "report_type": "supplier_detail",
@@ -216,8 +218,8 @@ class SustainedLoadUser(HttpUser):
 
     def on_start(self):
         """Initialize user session."""
-        self.user_id = f"sustained_{random.randint(1, 10000)}"
-        self.correlation_id = f"sustained_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
+        self.user_id = f"sustained_{deterministic_random().randint(1, 10000)}"
+        self.correlation_id = f"sustained_{int(time.time() * 1000)}_{deterministic_random().randint(1000, 9999)}"
 
         # Authenticate
         with self.client.post(
@@ -264,7 +266,7 @@ class SustainedLoadUser(HttpUser):
     @task(2)
     def emissions_aggregate(self):
         """Aggregate emissions query (cache-friendly)."""
-        category = random.randint(1, 15)
+        category = deterministic_random().randint(1, 15)
 
         with self.client.get(
             f"/api/emissions/aggregate?category={category}",
@@ -281,9 +283,9 @@ class SustainedLoadUser(HttpUser):
     def create_calculation_sustained(self):
         """Create calculation (compute-intensive)."""
         payload = {
-            "category": random.choice([1, 4, 6]),
-            "tier": random.choice([1, 2, 3]),
-            "supplier_id": f"SUP-{random.randint(1, 10000)}",
+            "category": deterministic_random().choice([1, 4, 6]),
+            "tier": deterministic_random().choice([1, 2, 3]),
+            "supplier_id": f"SUP-{deterministic_random().randint(1, 10000)}",
             "product": "Steel plate",
             "quantity": random.uniform(100, 10000),
             "unit": "kg",

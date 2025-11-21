@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Unit Tests for Core Coverage - GreenLang Phase 5
 

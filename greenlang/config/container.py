@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Dependency Injection Container
 =========================================
@@ -436,14 +437,35 @@ def register_default_services(container: ServiceContainer):
     # Register configuration itself
     container.register_instance(GreenLangConfig, config)
 
-    # TODO: Register LLM provider based on config
-    # container.register_singleton(LLMProvider, lambda c: create_llm_provider(c.get_config()))
+    # NOTE: Service registration implementation pending
+    # When implementing:
+    # 1. Create LLM provider factory based on config (OpenAI, Anthropic, Azure, etc.)
+    # 2. Create database connection factory (PostgreSQL, MySQL, SQLite)
+    # 3. Create cache client factory (Redis, Memcached, in-memory)
+    # Example:
+    #   from greenlang.llm import LLMProvider, create_llm_provider
+    #   from greenlang.database import Database, create_database
+    #   from greenlang.cache import Cache, create_cache
+    #
+    #   # Register LLM provider based on config
+    #   container.register_singleton(
+    #       LLMProvider,
+    #       lambda c: create_llm_provider(c.resolve(GreenLangConfig))
+    #   )
+    #
+    #   # Register database connection (scoped per request)
+    #   container.register_scoped(
+    #       Database,
+    #       lambda c: create_database(c.resolve(GreenLangConfig))
+    #   )
+    #
+    #   # Register cache client (singleton)
+    #   container.register_singleton(
+    #       Cache,
+    #       lambda c: create_cache(c.resolve(GreenLangConfig))
+    #   )
 
-    # TODO: Register database based on config
-    # container.register_scoped(Database, lambda c: create_database(c.get_config()))
-
-    # TODO: Register cache based on config
-    # container.register_singleton(Cache, lambda c: create_cache(c.get_config()))
+    # Placeholder - uncomment and implement service factories above
 
     logger.info("Default services registered")
 

@@ -1,9 +1,12 @@
-schema_version: 2.0.0
-id: ml/anomaly_detection_iforest_v1
 name: Anomaly Detection Agent (Isolation Forest ML)
 version: 1.0.0
-summary: AI-powered Isolation Forest anomaly detection for identifying outliers in
-  climate and energy data with severity-based alerting and pattern analysis
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 tags:
 - ml
 - anomaly-detection
@@ -14,131 +17,11 @@ tags:
 - scikit-learn
 - unsupervised-learning
 - citations
+id: ml/anomaly_detection_iforest_v1
+summary: AI-powered Isolation Forest anomaly detection for identifying outliers in
+  climate and energy data with severity-based alerting and pattern analysis
 owners:
 - greenlang-team
-license: MIT
-compute:
-  entrypoint: python://greenlang.agents.anomaly_agent_iforest:execute
-  deterministic: true
-  timeout_s: 120
-  memory_limit_mb: 512
-  inputs:
-    data:
-      dtype: object
-      unit: '1'
-      description: Pandas DataFrame with numeric features for anomaly detection
-    contamination:
-      dtype: float64
-      unit: fraction
-      description: Expected proportion of anomalies in dataset (0-0.5)
-      default: 0.1
-      ge: 0.0
-      le: 0.5
-      required: false
-    n_estimators:
-      dtype: int32
-      unit: '1'
-      description: Number of isolation trees in ensemble
-      default: 100
-      ge: 10
-      le: 500
-      required: false
-    max_samples:
-      dtype: int32
-      unit: '1'
-      description: Number of samples to train each isolation tree
-      default: 256
-      ge: 2
-      required: false
-    max_features:
-      dtype: float64
-      unit: fraction
-      description: Fraction of features used for each tree (0-1)
-      default: 1.0
-      ge: 0.1
-      le: 1.0
-      required: false
-    bootstrap:
-      dtype: bool
-      unit: '1'
-      description: Whether to sample with replacement when building trees
-      default: false
-      required: false
-    feature_columns:
-      dtype: list
-      unit: '1'
-      description: Specific numeric feature columns to use (optional)
-    labels:
-      dtype: list
-      unit: '1'
-      description: True binary labels for evaluation (optional, enables metrics)
-  outputs:
-    anomalies:
-      dtype: list
-      description: Boolean array indicating anomalies (True=anomaly, False=normal)
-      unit: '1'
-    anomaly_scores:
-      dtype: list
-      description: Anomaly scores (-1 to 1, negative=anomaly, positive=normal)
-      unit: '1'
-    anomaly_indices:
-      dtype: list
-      description: Integer indices of detected anomalies in original data
-      unit: '1'
-    n_anomalies:
-      dtype: int32
-      unit: count
-      description: Total count of detected anomalies
-    n_normal:
-      dtype: int32
-      unit: count
-      description: Total count of normal data points
-    anomaly_rate:
-      dtype: float64
-      unit: fraction
-      description: Proportion of anomalies in dataset (0-1)
-    model_info:
-      dtype: object
-      description: IsolationForest model configuration metadata
-      unit: '1'
-    severity_distribution:
-      dtype: object
-      description: Count of anomalies by severity level (critical, high, medium, low)
-      unit: '1'
-    top_anomalies:
-      dtype: list
-      description: Top 10 ranked anomalies with details
-      unit: '1'
-    patterns:
-      dtype: object
-      description: Detected patterns in anomalies with feature importance
-      unit: '1'
-    alerts:
-      dtype: list
-      description: Actionable alerts for critical/high severity anomalies
-      unit: '1'
-    alert_summary:
-      dtype: object
-      description: Summary of generated alerts
-      unit: '1'
-    metrics:
-      dtype: object
-      description: Performance metrics (precision, recall, F1, ROC-AUC) if labels
-        provided
-      unit: '1'
-    explanation:
-      dtype: string
-      unit: '1'
-      description: AI-generated natural language explanation of results
-    citations:
-      dtype: object
-      description: Calculation citations and provenance
-      unit: '1'
-    metadata:
-      dtype: object
-      description: Execution metadata (tokens, cost, time)
-      unit: '1'
-  factors: {}
 ai:
   system_prompt: 'You are an anomaly detection expert for GreenLang climate and energy
     systems.

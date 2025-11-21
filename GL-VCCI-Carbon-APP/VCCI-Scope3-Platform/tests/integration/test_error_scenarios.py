@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - Error Scenarios E2E Test
@@ -32,6 +33,7 @@ from enum import Enum
 from uuid import uuid4
 
 from greenlang.telemetry import get_logger, MetricsCollector
+from greenlang.determinism import DeterministicClock
 
 logger = get_logger(__name__)
 
@@ -122,7 +124,7 @@ class CircuitBreaker:
     def _on_failure(self):
         """Handle failed call."""
         self.failure_count += 1
-        self.last_failure_time = datetime.utcnow()
+        self.last_failure_time = DeterministicClock.utcnow()
 
         if self.state == CircuitState.HALF_OPEN:
             # Failed during test, go back to OPEN
@@ -140,7 +142,7 @@ class CircuitBreaker:
         if not self.last_failure_time:
             return True
 
-        elapsed = (datetime.utcnow() - self.last_failure_time).total_seconds()
+        elapsed = (DeterministicClock.utcnow() - self.last_failure_time).total_seconds()
         return elapsed >= self.timeout_seconds
 
     def get_state(self) -> str:

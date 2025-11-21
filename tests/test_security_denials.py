@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Test security denial scenarios to ensure default-deny policies work correctly.
 """

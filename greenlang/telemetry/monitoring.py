@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Monitoring service with alerting and dashboards for GreenLang
 """
@@ -18,6 +19,7 @@ from .tracing import get_tracing_manager
 from .health import get_health_checker
 from .logging import get_log_aggregator
 from .performance import get_performance_monitor
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +209,7 @@ class AlertManager:
             if alert_id in self.active_alerts:
                 alert = self.active_alerts[alert_id]
                 alert.status = AlertStatus.RESOLVED
-                alert.resolved_at = datetime.utcnow()
+                alert.resolved_at = DeterministicClock.utcnow()
 
                 del self.active_alerts[alert_id]
 
@@ -225,7 +227,7 @@ class AlertManager:
             if alert_id in self.active_alerts:
                 alert = self.active_alerts[alert_id]
                 alert.status = AlertStatus.ACKNOWLEDGED
-                alert.acknowledged_at = datetime.utcnow()
+                alert.acknowledged_at = DeterministicClock.utcnow()
                 alert.acknowledged_by = user
 
                 logger.info(f"Alert acknowledged: {alert.name} by {user}")
@@ -237,7 +239,7 @@ class AlertManager:
 
     def get_alert_history(self, hours: int = 24) -> List[Alert]:
         """Get alert history"""
-        cutoff = datetime.utcnow() - timedelta(hours=hours)
+        cutoff = DeterministicClock.utcnow() - timedelta(hours=hours)
 
         with self._lock:
             return [alert for alert in self.alert_history if alert.fired_at >= cutoff]
@@ -283,9 +285,9 @@ class AlertManager:
                 if value is not None and rule.evaluate(value):
                     # Check duration requirement
                     if rule.name not in self._pending_alerts:
-                        self._pending_alerts[rule.name] = datetime.utcnow()
+                        self._pending_alerts[rule.name] = DeterministicClock.utcnow()
                     elif (
-                        datetime.utcnow() - self._pending_alerts[rule.name]
+                        DeterministicClock.utcnow() - self._pending_alerts[rule.name]
                     ).total_seconds() >= rule.duration:
                         # Fire alert
                         self.fire_alert(

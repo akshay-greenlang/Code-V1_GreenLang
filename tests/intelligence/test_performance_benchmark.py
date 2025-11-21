@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance Benchmarks for Tool Runtime (INTL-103 DoD Gap 5)
 

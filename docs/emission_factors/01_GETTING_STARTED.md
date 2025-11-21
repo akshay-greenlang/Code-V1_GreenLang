@@ -2,7 +2,7 @@
 
 **Time to First Calculation:** 5 minutes
 **Difficulty:** Beginner
-**Prerequisites:** Python 3.8+, pip
+**Prerequisites:** Python 3.10+, pip
 
 ---
 

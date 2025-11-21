@@ -1,0 +1,263 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://greenlang.io/schemas/cbam/policy-input/v1.0",
+  "title": "CBAM Policy Input Schema",
+  "description": "Policy input schema for CBAM Importer Copilot compliance and calculation policies",
+  "type": "object",
+  "required": ["version", "policy_type", "rules", "metadata"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of the policy"
+    },
+    "policy_type": {
+      "type": "string",
+      "enum": ["calculation", "validation", "compliance", "reporting"],
+      "description": "Type of policy being defined"
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["name", "description", "created", "updated"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "author": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "object",
+      "properties": {
+        "calculation_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/calculation_rule"
+          }
+        },
+        "validation_rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/validation_rule"
+          }
+        },
+        "compliance_checks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/compliance_check"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "emission_factors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["value", "unit", "source"],
+            "properties": {
+              "value": {
+                "type": "number",
+                "minimum": 0
+              },
+              "unit": {
+                "type": "string",
+                "enum": ["tCO2e/t", "kgCO2e/kg", "kgCO2e/unit"]
+              },
+              "source": {
+                "type": "string"
+              },
+              "uncertainty": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        },
+        "thresholds": {
+          "type": "object",
+          "properties": {
+            "minimum_quantity": {
+              "type": "number",
+              "minimum": 0
+            },
+            "maximum_emissions": {
+              "type": "number",
+              "minimum": 0
+            },
+            "reporting_threshold": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "cn_code_mappings": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "category": {
+                "type": "string",
+                "enum": ["cement", "steel", "aluminum", "fertilizers", "hydrogen", "electricity"]
+              },
+              "cbam_covered": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "outputs": {
+      "type": "object",
+      "properties": {
+        "report_format": {
+          "type": "string",
+          "enum": ["json", "xml", "pdf", "excel"]
+        },
+        "aggregation_levels": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["product", "country", "supplier", "quarter", "year"]
+          }
+        },
+        "required_fields": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "calculation_rule": {
+      "type": "object",
+      "required": ["id", "name", "formula", "applies_to"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "formula": {
+          "type": "string"
+        },
+        "applies_to": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "operator": {
+                "type": "string",
+                "enum": ["equals", "not_equals", "greater_than", "less_than", "contains", "in", "not_in"]
+              },
+              "value": {}
+            }
+          }
+        }
+      }
+    },
+    "validation_rule": {
+      "type": "object",
+      "required": ["id", "name", "field", "validation_type"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string"
+        },
+        "validation_type": {
+          "type": "string",
+          "enum": ["required", "format", "range", "enum", "pattern", "custom"]
+        },
+        "parameters": {
+          "type": "object"
+        },
+        "error_message": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["error", "warning", "info"]
+        }
+      }
+    },
+    "compliance_check": {
+      "type": "object",
+      "required": ["id", "name", "regulation", "check_type"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "regulation": {
+          "type": "string"
+        },
+        "article": {
+          "type": "string"
+        },
+        "check_type": {
+          "type": "string",
+          "enum": ["mandatory", "conditional", "recommended"]
+        },
+        "implementation": {
+          "type": "string"
+        },
+        "penalty": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope3CalculatorAgent Data Models
 GL-VCCI Scope 3 Platform

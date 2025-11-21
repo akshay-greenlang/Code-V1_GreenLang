@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 End-to-End Integration Test Suite
 GL-VCCI Scope 3 Platform

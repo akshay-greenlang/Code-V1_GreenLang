@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Report Generation with ChatSession Integration.
 
 This module provides an AI-enhanced version of the ReportAgent that uses
@@ -49,14 +50,9 @@ import logging
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 from templates.agent_monitoring import OperationalMonitoringMixin
 from greenlang.agents.report_agent import ReportAgent
-from greenlang.intelligence import (
-    ChatSession,
-    ChatMessage,
-    Role,
-    Budget,
-    BudgetExceeded,
-    create_provider,
-)
+# Fixed: Removed incomplete import
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 from greenlang.agents.citations import (
     EmissionFactorCitation,
@@ -137,7 +133,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 name="ReportAgentAI",
                 description="AI-powered emissions report generation with intelligent insights",
                 version="0.1.0",
-            )
         super().__init__(config)
         self.setup_monitoring(agent_name="report_agent_ai_agent")
 
@@ -199,7 +194,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["carbon_data"],
             },
-        )
 
         # Tool 2: Calculate trends (year-over-year analysis)
         self.calculate_trends_tool = ToolDef(
@@ -223,7 +217,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["current_emissions_tons"],
             },
-        )
 
         # Tool 3: Generate charts (visualization data)
         self.generate_charts_tool = ToolDef(
@@ -253,7 +246,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["emissions_breakdown"],
             },
-        )
 
         # Tool 4: Format report (framework-specific formatting)
         self.format_report_tool = ToolDef(
@@ -288,7 +280,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["framework", "carbon_data"],
             },
-        )
 
         # Tool 5: Check compliance (verify regulatory compliance)
         self.check_compliance_tool = ToolDef(
@@ -309,7 +300,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["framework", "report_data"],
             },
-        )
 
         # Tool 6: Generate executive summary
         self.generate_executive_summary_tool = ToolDef(
@@ -337,7 +327,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["total_emissions_tons", "emissions_breakdown"],
             },
-        )
 
     def _fetch_emissions_data_impl(self, carbon_data: Dict[str, Any]) -> Dict[str, Any]:
         """Tool implementation: Fetch and validate emissions data.
@@ -421,9 +410,8 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 "baseline_emissions_tons": baseline_emissions_tons,
             },
             output=trends,
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id=f"trends_{self._tool_call_count}",
-        )
         self._calculation_citations.append(calc_citation)
 
         return trends
@@ -795,14 +783,13 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
             AgentResult with formatted report and AI insights
         """
         with self.track_execution(input_data) as tracker:
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             # Validate input
             if not self.validate_input(input_data):
                 return AgentResult(
                     success=False,
                     error="Invalid input: 'carbon_data' with emissions required",
-                )
 
             try:
                 # Run async report generation
@@ -814,7 +801,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                     loop.close()
 
                 # Calculate duration
-                duration = (datetime.now() - start_time).total_seconds()
+                duration = (DeterministicClock.now() - start_time).total_seconds()
 
                 # Add performance metadata
                 if result.success:
@@ -830,7 +817,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 return AgentResult(
                     success=False,
                     error=f"Failed to generate report: {str(e)}",
-                )
 
     async def _execute_async(self, input_data: Dict[str, Any]) -> AgentResult:
         """Async execution with ChatSession.
@@ -898,7 +884,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
-            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -911,7 +896,6 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 input_data,
                 tool_results,
                 response.text if self.enable_ai_narrative else None,
-            )
 
             return AgentResult(
                 success=True,
@@ -926,14 +910,12 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                     "tool_calls": len(response.tool_calls),
                     "deterministic": True,
                 },
-            )
 
         except BudgetExceeded as e:
             self.logger.error(f"Budget exceeded: {e}")
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",
-            )
 
     def _build_prompt(self, input_data: Dict[str, Any]) -> str:
         """Build AI prompt for report generation.
@@ -1066,7 +1048,7 @@ IMPORTANT:
             "report": formatted_report.get("report", ""),
             "format": formatted_report.get("format", "markdown"),
             "framework": input_data.get("framework", "TCFD"),
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "total_co2e_tons": emissions_data.get("total_emissions_tons", 0),
             "total_co2e_kg": emissions_data.get("total_emissions_kg", 0),
             "emissions_breakdown": emissions_data.get("emissions_breakdown", []),
@@ -1130,7 +1112,6 @@ IMPORTANT:
         parts.append(
             f"This report documents total greenhouse gas emissions of {total_tons:.2f} metric tons CO2e "
             f"for the reporting period."
-        )
 
         # Primary source
         if "primary_source" in summary_data:
@@ -1139,7 +1120,6 @@ IMPORTANT:
             parts.append(
                 f"The primary emission source is {primary_source}, accounting for {primary_pct:.1f}% "
                 f"of total emissions."
-            )
 
         # Trend direction
         if trends and "direction" in trends:
@@ -1149,11 +1129,9 @@ IMPORTANT:
                 if direction == "increase":
                     parts.append(
                         f"Emissions increased by {change_pct:.1f}% compared to the previous period."
-                    )
                 else:
                     parts.append(
                         f"Emissions decreased by {change_pct:.1f}% compared to the previous period."
-                    )
 
         # Building context
         if "building_type" in summary_data:

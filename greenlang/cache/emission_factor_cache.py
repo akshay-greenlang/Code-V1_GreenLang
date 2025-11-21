@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/cache/emission_factor_cache.py
 
@@ -35,6 +36,7 @@ from collections import OrderedDict
 from threading import RLock
 import hashlib
 import json
+from greenlang.determinism import DeterministicClock
 
 
 class CacheEntry:
@@ -51,20 +53,20 @@ class CacheEntry:
             ttl_seconds: Time to live in seconds (default: 1 hour)
         """
         self.value = value
-        self.created_at = datetime.now()
+        self.created_at = DeterministicClock.now()
         self.ttl_seconds = ttl_seconds
         self.access_count = 0
-        self.last_accessed = datetime.now()
+        self.last_accessed = DeterministicClock.now()
 
     def is_expired(self) -> bool:
         """Check if cache entry has expired."""
-        age = (datetime.now() - self.created_at).total_seconds()
+        age = (DeterministicClock.now() - self.created_at).total_seconds()
         return age > self.ttl_seconds
 
     def access(self) -> Any:
         """Access cache entry and update statistics."""
         self.access_count += 1
-        self.last_accessed = datetime.now()
+        self.last_accessed = DeterministicClock.now()
         return self.value
 
 
@@ -357,7 +359,7 @@ class EmissionFactorCache:
         with self._lock:
             entries = []
             for key, entry in self._cache.items():
-                age_seconds = (datetime.now() - entry.created_at).total_seconds()
+                age_seconds = (DeterministicClock.now() - entry.created_at).total_seconds()
                 entries.append({
                     "key": key,
                     "access_count": entry.access_count,

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for BaseAgent - Core agent lifecycle and execution
 
@@ -16,6 +17,7 @@ from datetime import datetime
 from typing import Dict, Any
 
 from greenlang.agents.base import (
+from greenlang.determinism import DeterministicClock
     BaseAgent,
     AgentConfig,
     AgentResult,
@@ -69,7 +71,7 @@ class TestAgent(BaseAgent):
         return AgentResult(
             success=True,
             data={"result": "test_output", "input_echo": input_data},
-            timestamp=datetime.now()
+            timestamp=DeterministicClock.now()
         )
 
 
@@ -238,7 +240,7 @@ class TestAgentResult:
         result = AgentResult(
             success=True,
             data={"output": "test"},
-            timestamp=datetime.now()
+            timestamp=DeterministicClock.now()
         )
 
         assert result.success is True
@@ -251,7 +253,7 @@ class TestAgentResult:
         result = AgentResult(
             success=False,
             error="Test error message",
-            timestamp=datetime.now()
+            timestamp=DeterministicClock.now()
         )
 
         assert result.success is False

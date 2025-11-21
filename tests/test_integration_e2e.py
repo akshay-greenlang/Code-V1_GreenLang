@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration and End-to-End Tests
 

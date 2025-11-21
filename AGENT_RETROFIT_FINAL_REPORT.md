@@ -450,7 +450,7 @@ The project is ready for production deployment pending integration testing and m
 ### Appendix C: Technology Stack
 
 **Core Technologies:**
-- Python 3.9+
+- Python 3.10+
 - Pydantic for data validation
 - JSON Schema for tool definitions
 - LRU caching for performance

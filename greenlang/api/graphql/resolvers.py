@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GraphQL Resolvers with DataLoader Integration
 Comprehensive resolver implementation with N+1 query prevention
@@ -12,6 +13,8 @@ import uuid
 import base64
 
 from greenlang.api.graphql.types import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     Agent,
     Workflow,
     Execution,
@@ -531,7 +534,7 @@ class Query:
             active=user_data.get("active", True),
             roles=roles,
             permissions=permissions,
-            created_at=user_data.get("created_at", datetime.utcnow()),
+            created_at=user_data.get("created_at", DeterministicClock.utcnow()),
             last_login=None,
             metadata=user_data.get("metadata", {}),
         )
@@ -654,7 +657,7 @@ class Query:
             agent_count=len(orchestrator.list_agents()),
             workflow_count=len(orchestrator.list_workflows()),
             execution_count=len(orchestrator.get_execution_history()),
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             checks=checks,
         )
 
@@ -683,21 +686,21 @@ class Query:
                 name="executions_total",
                 value=float(len(context.orchestrator.get_execution_history())),
                 unit="count",
-                timestamp=datetime.utcnow(),
+                timestamp=DeterministicClock.utcnow(),
                 labels={"type": "total"},
             ),
             Metric(
                 name="agents_total",
                 value=float(len(context.orchestrator.list_agents())),
                 unit="count",
-                timestamp=datetime.utcnow(),
+                timestamp=DeterministicClock.utcnow(),
                 labels={"type": "total"},
             ),
             Metric(
                 name="workflows_total",
                 value=float(len(context.orchestrator.list_workflows())),
                 unit="count",
-                timestamp=datetime.utcnow(),
+                timestamp=DeterministicClock.utcnow(),
                 labels={"type": "total"},
             ),
         ]
@@ -753,7 +756,7 @@ class Mutation:
                 )
 
         agent_obj = DynamicAgent(config)
-        agent_id = str(uuid.uuid4())
+        agent_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
         # Register with orchestrator
         context.orchestrator.register_agent(agent_id, agent_obj)
@@ -918,7 +921,7 @@ class Mutation:
             metadata=input.metadata or {},
         )
 
-        workflow_id = str(uuid.uuid4())
+        workflow_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
         # Register with orchestrator
         context.orchestrator.register_workflow(workflow_id, workflow)
@@ -1037,7 +1040,7 @@ class Mutation:
             metadata=dict(workflow_obj.metadata),
         )
 
-        new_id = str(uuid.uuid4())
+        new_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         context.orchestrator.register_workflow(new_id, cloned)
 
         return _convert_workflow(new_id, cloned, [])
@@ -1079,8 +1082,8 @@ class Mutation:
             logger.error(f"Workflow execution failed: {e}")
             # Create failed execution
             execution = Execution(
-                id=strawberry.ID(str(uuid.uuid4())),
-                execution_id=f"failed_{uuid.uuid4()}",
+                id=strawberry.ID(str(deterministic_uuid(__name__, str(DeterministicClock.now())))),
+                execution_id=f"failed_{deterministic_uuid(__name__, str(DeterministicClock.now()))}",
                 workflow_id=strawberry.ID(input.workflow_id),
                 agent_id=None,
                 user_id=strawberry.ID(context.user_id),
@@ -1092,11 +1095,11 @@ class Mutation:
                 tags=input.tags or [],
                 step_results=[],
                 total_duration=None,
-                started_at=datetime.utcnow(),
-                completed_at=datetime.utcnow(),
+                started_at=DeterministicClock.utcnow(),
+                completed_at=DeterministicClock.utcnow(),
                 metadata={},
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=DeterministicClock.utcnow(),
+                updated_at=DeterministicClock.utcnow(),
             )
 
             return ExecutionResult(
@@ -1130,7 +1133,7 @@ class Mutation:
             )
 
             # Create execution record
-            execution_id = str(uuid.uuid4())
+            execution_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
             execution = Execution(
                 id=strawberry.ID(execution_id),
                 execution_id=f"agent_{execution_id}",
@@ -1145,11 +1148,11 @@ class Mutation:
                 tags=input.tags or [],
                 step_results=[],
                 total_duration=result.get("metadata", {}).get("execution_time_ms"),
-                started_at=datetime.utcnow(),
-                completed_at=datetime.utcnow(),
+                started_at=DeterministicClock.utcnow(),
+                completed_at=DeterministicClock.utcnow(),
                 metadata=result.get("metadata", {}),
-                created_at=datetime.utcnow(),
-                updated_at=datetime.utcnow(),
+                created_at=DeterministicClock.utcnow(),
+                updated_at=DeterministicClock.utcnow(),
             )
 
             return ExecutionResult(
@@ -1563,8 +1566,8 @@ def _convert_agent(
             custom_counters=stats.get("custom_counters", {}),
             custom_timers=stats.get("custom_timers", {}),
         ),
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=DeterministicClock.utcnow(),
+        updated_at=DeterministicClock.utcnow(),
     )
 
 
@@ -1598,8 +1601,8 @@ def _convert_workflow(
         output_mapping=workflow_obj.output_mapping,
         metadata=workflow_obj.metadata,
         tags=tags or [],
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=DeterministicClock.utcnow(),
+        updated_at=DeterministicClock.utcnow(),
     )
 
 
@@ -1628,7 +1631,7 @@ def _convert_execution_record(record: Dict[str, Any]) -> Execution:
             )
 
     return Execution(
-        id=strawberry.ID(record.get("execution_id", str(uuid.uuid4()))),
+        id=strawberry.ID(record.get("execution_id", str(deterministic_uuid(__name__, str(DeterministicClock.now()))))),
         execution_id=record.get("execution_id", ""),
         workflow_id=strawberry.ID(record.get("workflow_id")) if record.get("workflow_id") else None,
         agent_id=None,
@@ -1641,11 +1644,11 @@ def _convert_execution_record(record: Dict[str, Any]) -> Execution:
         tags=[],
         step_results=step_results,
         total_duration=None,
-        started_at=datetime.utcnow(),
-        completed_at=datetime.utcnow() if status == ExecutionStatus.COMPLETED else None,
+        started_at=DeterministicClock.utcnow(),
+        completed_at=DeterministicClock.utcnow() if status == ExecutionStatus.COMPLETED else None,
         metadata={},
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=DeterministicClock.utcnow(),
+        updated_at=DeterministicClock.utcnow(),
     )
 
 

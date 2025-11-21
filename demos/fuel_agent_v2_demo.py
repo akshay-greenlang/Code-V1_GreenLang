@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 demos/fuel_agent_v2_demo.py
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Category 9: Downstream Transportation & Distribution Calculator
 GL-VCCI Scope 3 Platform

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GraphQL Type Definitions using Strawberry
 Comprehensive type system for GreenLang GraphQL API

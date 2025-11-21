@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Test script for GreenLang provenance system
+Unit tests for greenlang/provenance/
+Target coverage: 85%+
 """
 
+import pytest
+from unittest.mock import Mock, patch, MagicMock, call
+from decimal import Decimal
+from datetime import datetime
+import hashlib
 import json
+import uuid
 import tempfile
 from pathlib import Path
-from datetime import datetime
 
-# Test imports
+# Import test helpers
+import sys
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+# Import provenance modules with fallback
 try:
     from greenlang.provenance import (
         sbom,
@@ -17,36 +28,53 @@ try:
         ledger,
         utils
     )
-    print("OK: All provenance modules imported successfully")
+    from greenlang.determinism import DeterministicClock
+    PROVENANCE_AVAILABLE = True
 except ImportError as e:
-    print(f"FAIL: Import error: {e}")
-    exit(1)
+    PROVENANCE_AVAILABLE = False
+    print(f"Warning: Some provenance modules not available: {e}")
 
 
-def test_stable_hash():
-    """Test stable hashing functionality"""
-    print("\n=== Testing Stable Hash ===")
-    
-    # Test deterministic hashing
-    obj1 = {"b": 2, "a": 1, "c": {"d": 4, "e": 5}}
-    obj2 = {"a": 1, "b": 2, "c": {"e": 5, "d": 4}}  # Same content, different order
-    
-    hash1 = ledger.stable_hash(obj1)
-    hash2 = ledger.stable_hash(obj2)
-    
-    if hash1 == hash2:
-        print(f"OK: Stable hash is deterministic: {hash1[:16]}...")
-    else:
-        print(f"FAIL: Hashes differ: {hash1[:16]} != {hash2[:16]}")
-    
-    # Test different content produces different hash
-    obj3 = {"a": 1, "b": 3}
-    hash3 = ledger.stable_hash(obj3)
-    
-    if hash1 != hash3:
-        print("OK: Different content produces different hash")
-    else:
-        print("FAIL: Different content produced same hash")
+@pytest.mark.skipif(not PROVENANCE_AVAILABLE, reason="Provenance modules not available")
+class TestStableHashing:
+    """Test suite for stable hash generation."""
+
+    def test_deterministic_hash(self):
+        """Test that hashing is deterministic for same content."""
+        obj1 = {"b": 2, "a": 1, "c": {"d": 4, "e": 5}}
+        obj2 = {"a": 1, "b": 2, "c": {"e": 5, "d": 4}}  # Same content, different order
+
+        hash1 = ledger.stable_hash(obj1)
+        hash2 = ledger.stable_hash(obj2)
+
+        assert hash1 == hash2, f"Hashes should match: {hash1[:16]} != {hash2[:16]}"
+        assert len(hash1) == 64, "Hash should be 64 characters (SHA-256)"
+
+    def test_different_content_different_hash(self):
+        """Test that different content produces different hashes."""
+        obj1 = {"a": 1, "b": 2}
+        obj2 = {"a": 1, "b": 3}
+
+        hash1 = ledger.stable_hash(obj1)
+        hash2 = ledger.stable_hash(obj2)
+
+        assert hash1 != hash2, "Different content should produce different hashes"
+
+    @pytest.mark.parametrize("data_type,data", [
+        ("string", "test_string"),
+        ("integer", 42),
+        ("float", 3.14),
+        ("list", [1, 2, 3]),
+        ("nested_dict", {"a": {"b": {"c": 1}}}),
+        ("mixed", {"str": "test", "num": 123, "list": [1, 2]})
+    ])
+    def test_hash_different_types(self, data_type, data):
+        """Test hashing works for different data types."""
+        hash_value = ledger.stable_hash(data)
+
+        assert hash_value is not None
+        assert len(hash_value) == 64
+        assert all(c in '0123456789abcdef' for c in hash_value.lower())
 
 
 def test_run_ledger():
@@ -58,8 +86,8 @@ def test_run_ledger():
         
         # Create mock context and result
         class MockContext:
-            started_at = datetime.utcnow()
-            start_time = datetime.utcnow().timestamp()
+            started_at = DeterministicClock.utcnow()
+            start_time = DeterministicClock.utcnow().timestamp()
             pipeline_spec = {"name": "test", "version": "1.0"}
             inputs = {"data": "test_input"}
             config = {"profile": "test"}

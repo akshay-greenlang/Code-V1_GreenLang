@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Category 8: Upstream Leased Assets Calculator
 GL-VCCI Scope 3 Platform

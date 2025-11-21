@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI-Carbon-APP Setup Configuration
 # Python package setup for Scope 3 Value Chain Carbon Intelligence Platform
 #
@@ -15,9 +16,9 @@ from setuptools import setup, find_packages
 import os
 import sys
 
-# Ensure Python 3.9+
-if sys.version_info < (3, 9):
-    print("ERROR: Python 3.9+ is required")
+# Ensure Python 3.10+
+if sys.version_info < (3, 10):
+    print("ERROR: Python 3.10+ is required")
     sys.exit(1)
 
 # Read README for long description
@@ -91,7 +92,6 @@ setup(
 
         # Python versions
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
@@ -109,7 +109,7 @@ setup(
     ],
 
     # Python version requirement
-    python_requires=">=3.9",
+    python_requires=">=3.10",
 
     # Keywords
     keywords=[

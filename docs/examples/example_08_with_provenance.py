@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 08: Agent with Provenance Tracking
 
@@ -14,6 +15,7 @@ from typing import Dict, Any
 from datetime import datetime
 import json
 from pathlib import Path
+from greenlang.determinism import DeterministicClock
 
 
 class ProvenanceTrackedCalculator(BaseCalculator):
@@ -48,7 +50,7 @@ class ProvenanceTrackedCalculator(BaseCalculator):
         record = {
             'record_id': f"prov_{len(self.provenance_records) + 1:04d}",
             'agent_name': self.config.name,
-            'timestamp_start': datetime.now().isoformat(),
+            'timestamp_start': DeterministicClock.now().isoformat(),
             'input_data': self._sanitize_data(input_data),
             'input_hash': self._hash_data(input_data)
         }
@@ -58,7 +60,7 @@ class ProvenanceTrackedCalculator(BaseCalculator):
         """Hook to record after execution."""
         if self.provenance_records:
             record = self.provenance_records[-1]
-            record['timestamp_end'] = datetime.now().isoformat()
+            record['timestamp_end'] = DeterministicClock.now().isoformat()
             record['success'] = result.success
             record['output_data'] = self._sanitize_data(result.data)
             record['output_hash'] = self._hash_data(result.data)
@@ -144,7 +146,7 @@ class ProvenanceTrackedCalculator(BaseCalculator):
         provenance_data = {
             'agent_name': self.config.name,
             'agent_version': self.config.version,
-            'export_timestamp': datetime.now().isoformat(),
+            'export_timestamp': DeterministicClock.now().isoformat(),
             'total_records': len(self.provenance_records),
             'records': self.provenance_records
         }

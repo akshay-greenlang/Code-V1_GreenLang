@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration test configuration and fixtures for GreenLang.
 """

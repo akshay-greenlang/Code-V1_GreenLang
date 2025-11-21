@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Provenance - Decorators Module
 Decorators for automatic provenance tracking.

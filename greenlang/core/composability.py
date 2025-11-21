@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Composability Framework - GLEL (GreenLang Expression Language)
 
@@ -37,6 +38,7 @@ from collections import defaultdict
 from datetime import datetime
 from enum import Enum
 from typing import (
+from greenlang.determinism import DeterministicClock
     Any, Dict, List, Optional, Union, TypeVar, Generic,
     Callable, AsyncIterator, Iterator, Tuple, Set
 )
@@ -100,7 +102,7 @@ class ExecutionContext:
     config: RunnableConfig
     provenance_chain: List[ProvenanceRecord] = field(default_factory=list)
     execution_id: str = field(default_factory=lambda: hashlib.sha256(
-        str(datetime.now()).encode()).hexdigest()[:16])
+        str(DeterministicClock.now()).encode()).hexdigest()[:16])
     start_time: datetime = field(default_factory=datetime.now)
     metrics: Dict[str, Any] = field(default_factory=dict)
     errors: List[Dict[str, Any]] = field(default_factory=list)
@@ -114,7 +116,7 @@ class ExecutionContext:
 
     def get_total_time_ms(self) -> float:
         """Get total execution time in milliseconds."""
-        return (datetime.now() - self.start_time).total_seconds() * 1000
+        return (DeterministicClock.now() - self.start_time).total_seconds() * 1000
 
 
 class BaseRunnable(ABC, Generic[T, U]):
@@ -236,7 +238,7 @@ class AgentRunnable(BaseRunnable[Dict[str, Any], Dict[str, Any]]):
     def invoke(self, input: Dict[str, Any], config: Optional[RunnableConfig] = None) -> Dict[str, Any]:
         """Synchronous agent invocation with provenance tracking."""
         config = config or self._config
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         try:
             # Execute agent
@@ -244,7 +246,7 @@ class AgentRunnable(BaseRunnable[Dict[str, Any], Dict[str, Any]]):
 
             # Calculate provenance if enabled
             if config.enable_provenance:
-                processing_time = (datetime.now() - start_time).total_seconds() * 1000
+                processing_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
                 provenance = self._calculate_provenance(input, result)
                 provenance.processing_time_ms = processing_time
 
@@ -263,7 +265,7 @@ class AgentRunnable(BaseRunnable[Dict[str, Any], Dict[str, Any]]):
     async def ainvoke(self, input: Dict[str, Any], config: Optional[RunnableConfig] = None) -> Dict[str, Any]:
         """Asynchronous agent invocation."""
         config = config or self._config
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         try:
             # Check if agent has async method
@@ -276,7 +278,7 @@ class AgentRunnable(BaseRunnable[Dict[str, Any], Dict[str, Any]]):
 
             # Calculate provenance if enabled
             if config.enable_provenance:
-                processing_time = (datetime.now() - start_time).total_seconds() * 1000
+                processing_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
                 provenance = self._calculate_provenance(input, result)
                 provenance.processing_time_ms = processing_time
 
@@ -312,12 +314,12 @@ class RunnableSequence(BaseRunnable[T, U]):
 
         result = input
         for runnable in self.runnables:
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
             result = runnable.invoke(result, config)
 
             # Track provenance
             if config.enable_provenance:
-                processing_time = (datetime.now() - start_time).total_seconds() * 1000
+                processing_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
                 provenance = runnable._calculate_provenance(input, result)
                 provenance.processing_time_ms = processing_time
                 context.add_provenance(provenance)
@@ -337,12 +339,12 @@ class RunnableSequence(BaseRunnable[T, U]):
 
         result = input
         for runnable in self.runnables:
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
             result = await runnable.ainvoke(result, config)
 
             # Track provenance
             if config.enable_provenance:
-                processing_time = (datetime.now() - start_time).total_seconds() * 1000
+                processing_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
                 provenance = runnable._calculate_provenance(input, result)
                 provenance.processing_time_ms = processing_time
                 context.add_provenance(provenance)
@@ -362,7 +364,7 @@ class RunnableSequence(BaseRunnable[T, U]):
 
         result = input
         for runnable in self.runnables:
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             # Stream from current runnable
             async for chunk in runnable.astream(result, config):
@@ -371,7 +373,7 @@ class RunnableSequence(BaseRunnable[T, U]):
 
             # Track provenance
             if config.enable_provenance:
-                processing_time = (datetime.now() - start_time).total_seconds() * 1000
+                processing_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
                 provenance = runnable._calculate_provenance(input, result)
                 provenance.processing_time_ms = processing_time
                 context.add_provenance(provenance)
@@ -587,12 +589,12 @@ class RunnableLambda(BaseRunnable[T, U]):
     def invoke(self, input: T, config: Optional[RunnableConfig] = None) -> U:
         """Invoke the lambda function."""
         config = config or self._config
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         result = self.func(input)
 
         if config.enable_provenance and isinstance(result, dict):
-            processing_time = (datetime.now() - start_time).total_seconds() * 1000
+            processing_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
             provenance = self._calculate_provenance(input, result)
             provenance.processing_time_ms = processing_time
             result['_lambda_provenance'] = provenance.dict()
@@ -602,12 +604,12 @@ class RunnableLambda(BaseRunnable[T, U]):
     async def ainvoke(self, input: T, config: Optional[RunnableConfig] = None) -> U:
         """Async invoke the lambda function."""
         config = config or self._config
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         result = await self.afunc(input)
 
         if config.enable_provenance and isinstance(result, dict):
-            processing_time = (datetime.now() - start_time).total_seconds() * 1000
+            processing_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
             provenance = self._calculate_provenance(input, result)
             provenance.processing_time_ms = processing_time
             result['_lambda_provenance'] = provenance.dict()

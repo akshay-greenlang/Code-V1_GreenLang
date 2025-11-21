@@ -1,3 +1,5 @@
+from greenlang.determinism import FinancialDecimal
+# -*- coding: utf-8 -*-
 """Demo Agent for GreenLang - Simple emissions calculator."""
 
 
@@ -22,7 +24,7 @@ class DemoAgent:
             Dictionary with 'emissions_kgco2'
         """
         load = float(params.get("load_kwh", 100.0))
-        gef = float(params.get("grid_emission_factor", 0.8))
+        gef = FinancialDecimal.from_string(params.get("grid_emission_factor", 0.8))
         emissions = load * gef
 
         return {
@@ -46,7 +48,7 @@ class DemoAgent:
 
         if "grid_emission_factor" in params:
             try:
-                val = float(params["grid_emission_factor"])
+                val = FinancialDecimal.from_string(params["grid_emission_factor"])
                 if val < 0:
                     raise ValueError("grid_emission_factor must be positive")
             except (TypeError, ValueError):

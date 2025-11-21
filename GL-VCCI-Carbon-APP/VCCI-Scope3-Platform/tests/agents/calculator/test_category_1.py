@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Test Suite for Category 1: Purchased Goods & Services
 GL-VCCI Scope 3 Platform

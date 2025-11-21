@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Simple DoD Verification
 =======================
@@ -12,6 +13,8 @@ import os
 import json
 from pathlib import Path
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 
 def run_command(cmd, description="", check=False):
@@ -57,7 +60,7 @@ def verify_coverage():
         tree = ET.parse(coverage_file)
         root = tree.getroot()
 
-        line_rate = float(root.get('line-rate', 0))
+        line_rate = FinancialDecimal.from_string(root.get('line-rate', 0))
         coverage_percent = line_rate * 100
 
         print(f"Current coverage: {coverage_percent:.2f}%")
@@ -133,7 +136,7 @@ def create_final_compliance_report():
     # Create final report
     final_report = {
         "greenlang_version": "0.2.0",
-        "dod_verification_date": datetime.now().isoformat(),
+        "dod_verification_date": DeterministicClock.now().isoformat(),
         "compliance_summary": {
             "total_checks": total_checks,
             "passed_checks": passed_checks,

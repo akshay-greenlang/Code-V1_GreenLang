@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 Agent Factory - Main LLM-Powered Code Generation System
 
 This module provides the core AgentFactory class for generating GreenLang agents
 from AgentSpec specifications using LLM-powered code generation.
+from greenlang.determinism import DeterministicClock
 
 Key Features:
 - Multi-step generation pipeline (tools → agent → tests → docs)
@@ -185,7 +187,7 @@ class AgentFactory:
         Returns:
             GenerationResult with generated code and validation results
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
         total_cost = 0.0
         attempts = 0
 
@@ -299,7 +301,7 @@ class AgentFactory:
             )
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Update global metrics
             self._total_agents_generated += 1
@@ -742,7 +744,7 @@ class AgentFactory:
         return {
             "agent_id": spec.id,
             "agent_version": spec.version,
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "generator": "AgentFactory",
             "generator_version": "0.1.0",
             "code_hash": calculate_code_hash(agent_code),

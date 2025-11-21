@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pydantic models for Supplier Engagement Agent.
 

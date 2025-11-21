@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Multi-tenancy Support for GreenLang
 """
@@ -10,6 +11,8 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Set
 import secrets
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:
     import jwt
@@ -190,7 +193,7 @@ class TenantSettings:
 class Tenant:
     """Tenant information"""
 
-    tenant_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    tenant_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     name: str = ""
     organization: str = ""
     tier: TenantTier = TenantTier.FREE
@@ -263,7 +266,7 @@ class TenantContext:
     permissions: Set[str] = field(default_factory=set)
 
     # Session info
-    session_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    session_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     created_at: datetime = field(default_factory=datetime.utcnow)
     expires_at: Optional[datetime] = None
 
@@ -274,7 +277,7 @@ class TenantContext:
 
     def is_valid(self) -> bool:
         """Check if context is valid"""
-        if self.expires_at and datetime.utcnow() > self.expires_at:
+        if self.expires_at and DeterministicClock.utcnow() > self.expires_at:
             return False
 
         if self.tenant and not self.tenant.active:
@@ -451,7 +454,7 @@ class TenantManager:
             if field in updates:
                 setattr(tenant, field, updates[field])
 
-        tenant.updated_at = datetime.utcnow()
+        tenant.updated_at = DeterministicClock.utcnow()
 
         logger.info(f"Updated tenant: {tenant_id}")
         return tenant
@@ -501,7 +504,14 @@ class TenantManager:
         except jwt.InvalidTokenError as e:
             logger.error(f"Invalid token: {e}")
             # For development, decode without verification
-            claims = jwt.decode(token, options={"verify_signature": False})
+            # SECURITY FIX: Verify JWT signature
+            import os
+            if os.getenv("GREENLANG_DEBUG_MODE") == "true":
+                logger.warning("JWT verification disabled - DEBUG only!")
+                claims = jwt.decode(token, options={"verify_signature": False})
+            else:
+                secret_key = os.getenv("JWT_SECRET_KEY", "default-secret-key-change-in-production")
+                claims = jwt.decode(token, secret_key, algorithms=["HS256"])
 
         tenant_id = claims.get("tenant_id")
         if not tenant_id:
@@ -558,7 +568,7 @@ class TenantManager:
             raise ValueError(f"Tenant not found: {tenant_id}")
 
         # Prepare claims
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         claims = {
             "tenant_id": tenant_id,
             "sub": user_id,

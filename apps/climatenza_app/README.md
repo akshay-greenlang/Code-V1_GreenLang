@@ -85,7 +85,7 @@ The feasibility analysis provides:
 ## Technical Notes
 
 - Built on GreenLang v0.0.1
-- Python 3.8+ required
+- Python 3.10+ required
 - Uses pandas for time-series analysis
 - Implements industry-standard solar thermal calculations
 - Supports both hot water and steam applications

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file contains corrected async test methods - copy these to replace lines 887-1050 in the main test file
 
     def test_full_async_execution_drying(self, agent, valid_input_drying):

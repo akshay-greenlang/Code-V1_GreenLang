@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Real-Time Alerting System
 =========================
@@ -14,6 +15,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 from enum import Enum
 import requests
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -429,7 +431,7 @@ class NotificationHandler:
                         }
                     ],
                     "footer": "GreenLang Monitoring",
-                    "ts": int(datetime.now().timestamp())
+                    "ts": int(DeterministicClock.now().timestamp())
                 }
             ]
         }
@@ -476,7 +478,7 @@ class NotificationHandler:
             {"<p><a href='" + alert['annotations']['runbook'] + "'>View Runbook</a></p>" if 'runbook' in alert['annotations'] else ""}
             <hr>
             <p style="color: #666; font-size: 12px;">
-                GreenLang Monitoring System - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+                GreenLang Monitoring System - {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}
             </p>
         </body>
         </html>

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 E2E Tests: Supplier Engagement + ML Workflows (Scenarios 26-43)
 
@@ -19,6 +20,8 @@ from uuid import uuid4
 import pytest
 
 from tests.e2e.conftest import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     E2ETestConfig,
     assert_dqi_in_range,
     assert_emissions_within_tolerance,
@@ -71,14 +74,14 @@ async def test_scenario_26_supplier_engagement_full_cycle(
     ]
 
     campaign = {
-        "campaign_id": str(uuid4()),
+        "campaign_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "name": "Q1 2026 PCF Data Collection",
         "tenant_id": test_tenant.id,
         "target_suppliers": top_suppliers,
         "target_count": 30,
         "cohort": "top_20_percent_spend",
         "email_sequence": ["initial", "reminder", "follow_up", "final"],
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": DeterministicClock.utcnow().isoformat()
     }
 
     # ----- Step 2: Send 4-Touch Email Campaign -----
@@ -148,8 +151,8 @@ async def test_scenario_26_supplier_engagement_full_cycle(
         for i in range(16):  # 16 suppliers visit portal
             portal_visits.append({
                 "supplier_id": f"SUP-{i:03d}",
-                "session_id": str(uuid4()),
-                "login_time": datetime.utcnow().isoformat(),
+                "session_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+                "login_time": DeterministicClock.utcnow().isoformat(),
                 "pages_viewed": ["dashboard", "pcf_upload", "instructions"],
                 "time_on_site_minutes": 15
             })
@@ -161,7 +164,7 @@ async def test_scenario_26_supplier_engagement_full_cycle(
 
     for i in range(16):  # 16 suppliers submit data (53% response rate)
         pcf_submissions.append({
-            "submission_id": str(uuid4()),
+            "submission_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             "supplier_id": f"SUP-{i:03d}",
             "format": "PACT_Pathfinder_2.0",
             "products": [
@@ -173,7 +176,7 @@ async def test_scenario_26_supplier_engagement_full_cycle(
                 }
                 for j in range(5)  # 5 products per supplier
             ],
-            "submitted_at": datetime.utcnow().isoformat()
+            "submitted_at": DeterministicClock.utcnow().isoformat()
         })
 
     # ----- Step 6: Validate Submitted Data -----
@@ -376,7 +379,7 @@ async def test_scenario_36_ml_entity_resolution_full_workflow(
             name = base_name
 
         supplier_names.append({
-            "source_id": str(uuid4()),
+            "source_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             "name": name,
             "source_system": ["SAP", "Oracle", "Workday"][i % 3]
         })
@@ -531,7 +534,7 @@ async def test_scenario_37_spend_classification_ml(
 
     for i, desc in enumerate(descriptions):
         line_items.append({
-            "line_item_id": str(uuid4()),
+            "line_item_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             "description": desc,
             "amount": 1000.0,
             "currency": "USD"

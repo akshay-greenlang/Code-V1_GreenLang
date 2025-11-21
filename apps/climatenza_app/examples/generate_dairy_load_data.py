@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generate sample dairy hourly load data for 3 years
 

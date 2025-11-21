@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 4: Multi-Tier Caching
 ==============================
@@ -8,6 +9,7 @@ Demonstrates L1/L2/L3 caching for performance optimization.
 import asyncio
 from datetime import datetime
 from greenlang.cache import initialize_cache_manager, get_cache_manager
+from greenlang.determinism import DeterministicClock
 
 
 async def main():
@@ -25,29 +27,29 @@ async def main():
     async def expensive_computation():
         print("  Computing (expensive)...")
         await asyncio.sleep(0.5)
-        return {"result": 42, "computed_at": datetime.now().isoformat()}
+        return {"result": 42, "computed_at": DeterministicClock.now().isoformat()}
 
     # First call - cache miss
     print("\nFirst call (cache miss):")
-    start = datetime.now()
+    start = DeterministicClock.now()
     result = await cache.get_or_compute(
         key="expensive_result",
         compute_fn=expensive_computation,
         ttl=3600
     )
-    duration = (datetime.now() - start).total_seconds()
+    duration = (DeterministicClock.now() - start).total_seconds()
     print(f"  Duration: {duration:.3f}s")
     print(f"  Result: {result}")
 
     # Second call - cache hit
     print("\nSecond call (cache hit):")
-    start = datetime.now()
+    start = DeterministicClock.now()
     result = await cache.get_or_compute(
         key="expensive_result",
         compute_fn=expensive_computation,
         ttl=3600
     )
-    duration = (datetime.now() - start).total_seconds()
+    duration = (DeterministicClock.now() - start).total_seconds()
     print(f"  Duration: {duration:.3f}s (should be much faster!)")
 
     # Get analytics

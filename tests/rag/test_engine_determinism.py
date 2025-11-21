@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for RAG engine and determinism wrapper.
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Test Data Generator for Emission Factors
 
@@ -21,6 +22,7 @@ from typing import List, Dict, Any, Optional
 from datetime import date, datetime, timedelta
 from dataclasses import dataclass, asdict
 import json
+from greenlang.determinism import deterministic_random
 
 
 @dataclass
@@ -228,15 +230,15 @@ class EmissionFactorGenerator:
         fuel_config = self.FUEL_TYPES[fuel_type]
 
         # Select geography
-        geography_name = random.choice(list(self.GEOGRAPHIES.keys()))
+        geography_name = deterministic_random().choice(list(self.GEOGRAPHIES.keys()))
         geography = self.GEOGRAPHIES[geography_name]
 
         # Select data source
-        source_name = random.choice(list(self.DATA_SOURCES.keys()))
+        source_name = deterministic_random().choice(list(self.DATA_SOURCES.keys()))
         source = self.DATA_SOURCES[source_name]
 
         # Select unit
-        unit = random.choice(fuel_config['units'])
+        unit = deterministic_random().choice(fuel_config['units'])
 
         # Calculate emission factor value
         ef_range_key = f"ef_range_{unit.replace('-', '_')}"
@@ -252,7 +254,7 @@ class EmissionFactorGenerator:
 
         # Generate temporal data
         year = 2020 + (index % 5)
-        last_updated = date(year, random.randint(1, 12), 1).isoformat()
+        last_updated = date(year, deterministic_random().randint(1, 12), 1).isoformat()
 
         # Generate data quality
         tier = source['typical_tier']
@@ -285,8 +287,8 @@ class EmissionFactorGenerator:
             region=geography['region'],
             data_quality_tier=tier,
             uncertainty_percent=round(uncertainty, 2),
-            confidence_95ci=round(ef_value * (uncertainty / 100) * 1.96, 4) if random.random() > 0.5 else None,
-            completeness_score=round(random.uniform(0.8, 1.0), 3) if random.random() > 0.3 else None,
+            confidence_95ci=round(ef_value * (uncertainty / 100) * 1.96, 4) if deterministic_random().random() > 0.5 else None,
+            completeness_score=round(random.uniform(0.8, 1.0), 3) if deterministic_random().random() > 0.3 else None,
             renewable_share=renewable_share,
             notes=f"Generated test factor for {fuel_type} in {geography_name}",
             metadata_json=json.dumps({
@@ -341,10 +343,10 @@ class EmissionFactorGenerator:
         scenarios = []
 
         for i in range(count):
-            fuel_type = random.choice(list(self.FUEL_TYPES.keys()))
+            fuel_type = deterministic_random().choice(list(self.FUEL_TYPES.keys()))
             fuel_config = self.FUEL_TYPES[fuel_type]
 
-            unit = random.choice(fuel_config['units'])
+            unit = deterministic_random().choice(fuel_config['units'])
             amount = random.uniform(10.0, 10000.0)
 
             # Expected emissions (rough estimate)

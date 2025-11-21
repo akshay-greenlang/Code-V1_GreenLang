@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Model Fallback Chains with Circuit Breaker
 
@@ -39,6 +40,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -271,7 +273,7 @@ class CircuitBreaker:
 
     def record_failure(self):
         """Record failed request"""
-        self.last_failure_time = datetime.now()
+        self.last_failure_time = DeterministicClock.now()
 
         if self.state == CircuitState.HALF_OPEN:
             # Test failed, open circuit again
@@ -293,7 +295,7 @@ class CircuitBreaker:
         if self.state == CircuitState.OPEN:
             # Check if cooldown period has passed
             if self.last_failure_time:
-                elapsed = (datetime.now() - self.last_failure_time).total_seconds()
+                elapsed = (DeterministicClock.now() - self.last_failure_time).total_seconds()
                 if elapsed >= self.recovery_timeout:
                     # Move to half-open for testing
                     self.state = CircuitState.HALF_OPEN

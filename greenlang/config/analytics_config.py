@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Configuration for analytics dashboard and metrics system.
 

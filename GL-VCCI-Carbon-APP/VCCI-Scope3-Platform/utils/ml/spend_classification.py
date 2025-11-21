@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI ML Module - Spend Classification
 # Spend Classification ML System - Main Classification Logic
 
@@ -37,6 +38,7 @@ Usage:
 ```python
 from utils.ml.spend_classification import SpendClassifier
 from utils.ml.config import MLConfig
+from greenlang.determinism import DeterministicClock
 
 # Initialize classifier
 config = MLConfig()
@@ -252,7 +254,7 @@ class SpendClassifier:
             # Add metadata
             result.metadata.update({
                 "classification_time_ms": (time.time() - start_time) * 1000,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
                 "description_length": len(description),
             })
 

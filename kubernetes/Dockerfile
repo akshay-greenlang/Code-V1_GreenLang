@@ -1,5 +1,5 @@
 # GreenLang Executor Docker Image
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 # Build arguments for version
 ARG GL_VERSION

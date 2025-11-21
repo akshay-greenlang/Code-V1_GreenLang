@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope 2 Calculator - Indirect Energy Emissions
 
@@ -14,6 +15,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Optional, Dict, Any
 from greenlang.calculation.core_calculator import (
+from greenlang.determinism import FinancialDecimal
     EmissionCalculator,
     CalculationRequest,
     CalculationResult,
@@ -117,7 +119,7 @@ class Scope2Calculator:
         gas_breakdown = None
         if calc_result.emissions_kg_co2e > 0:
             gas_breakdown = self.gas_calculator.decompose(
-                total_co2e_kg=float(calc_result.emissions_kg_co2e),
+                total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
                 fuel_type='electricity',  # Uses electricity default vector
             )
 
@@ -274,7 +276,7 @@ class Scope2Calculator:
         gas_breakdown = None
         if emissions_kg_co2e > 0:
             gas_breakdown = self.gas_calculator.decompose(
-                total_co2e_kg=float(emissions_kg_co2e),
+                total_co2e_kg=FinancialDecimal.from_string(emissions_kg_co2e),
                 fuel_type='electricity',
             )
 
@@ -345,7 +347,7 @@ class Scope2Calculator:
         gas_breakdown = None
         if calc_result.emissions_kg_co2e > 0:
             gas_breakdown = self.gas_calculator.decompose(
-                total_co2e_kg=float(calc_result.emissions_kg_co2e),
+                total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
                 fuel_type='electricity',  # Use similar composition
             )
 

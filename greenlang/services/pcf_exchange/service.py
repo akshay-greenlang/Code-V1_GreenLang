@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PCF Exchange Service Implementation
 Main orchestration service for PCF import/export
@@ -15,6 +16,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 
 from greenlang.services.pcf_exchange.models import (
+from greenlang.determinism import DeterministicClock
     PCFDataModel,
     PCFExchangeRequest,
     PCFExchangeResponse,
@@ -79,7 +81,7 @@ class PCFExchangeService:
                 return PCFExchangeResponse(
                     success=False,
                     validation_errors=validation_errors,
-                    timestamp=datetime.utcnow()
+                    timestamp=DeterministicClock.utcnow()
                 )
 
             # Route to appropriate client
@@ -93,7 +95,7 @@ class PCFExchangeService:
                 return PCFExchangeResponse(
                     success=False,
                     validation_errors=[f"Unknown target system: {request.target_system}"],
-                    timestamp=datetime.utcnow()
+                    timestamp=DeterministicClock.utcnow()
                 )
 
             if response.success:
@@ -110,7 +112,7 @@ class PCFExchangeService:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     def validate_pcf(
@@ -175,7 +177,7 @@ class PCFExchangeService:
             pcf_data=pcf_data if len(validation_errors) == 0 else None,
             validation_errors=validation_errors if validation_errors else None,
             warnings=warnings if warnings else None,
-            timestamp=datetime.utcnow()
+            timestamp=DeterministicClock.utcnow()
         )
 
     async def _exchange_pact(
@@ -193,7 +195,7 @@ class PCFExchangeService:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[f"Unknown operation: {request.operation}"],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     async def _exchange_catenax(
@@ -211,7 +213,7 @@ class PCFExchangeService:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[f"Unknown operation: {request.operation}"],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     async def _exchange_sap_sdx(
@@ -223,7 +225,7 @@ class PCFExchangeService:
         return PCFExchangeResponse(
             success=False,
             validation_errors=["SAP SDX integration not yet implemented"],
-            timestamp=datetime.utcnow()
+            timestamp=DeterministicClock.utcnow()
         )
 
     def _validate_request(

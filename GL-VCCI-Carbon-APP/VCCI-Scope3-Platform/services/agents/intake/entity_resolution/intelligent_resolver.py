@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Intelligent Entity Resolver - LLM-Powered Semantic Matching
 
@@ -17,6 +18,7 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     IngestionRecord,
     ResolvedEntity,
     EntityMatchCandidate,
@@ -502,7 +504,7 @@ Be conservative: only return matched=true if you're quite confident they're the 
         """Get result from LLM cache if not expired."""
         if cache_key in self.llm_cache:
             timestamp = self.llm_cache_timestamps.get(cache_key)
-            if timestamp and datetime.utcnow() - timestamp < self.cache_ttl:
+            if timestamp and DeterministicClock.utcnow() - timestamp < self.cache_ttl:
                 return self.llm_cache[cache_key]
             else:
                 # Expired - remove from cache
@@ -513,7 +515,7 @@ Be conservative: only return matched=true if you're quite confident they're the 
     def _add_to_llm_cache(self, cache_key: str, result: ResolvedEntity):
         """Add result to LLM cache."""
         self.llm_cache[cache_key] = result
-        self.llm_cache_timestamps[cache_key] = datetime.utcnow()
+        self.llm_cache_timestamps[cache_key] = DeterministicClock.utcnow()
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get resolution statistics."""

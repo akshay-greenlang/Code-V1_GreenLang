@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive Integration Tests for AI-Powered Agents.
 
 This module provides end-to-end integration tests for all 5 AI-powered agents:

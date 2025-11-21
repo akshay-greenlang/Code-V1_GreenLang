@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Golden Tests for Boiler-Solar Pack Determinism
 ===============================================

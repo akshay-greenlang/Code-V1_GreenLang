@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tutorial: Add a new country factor set.
 
 This example shows how to add emission factors for a new country

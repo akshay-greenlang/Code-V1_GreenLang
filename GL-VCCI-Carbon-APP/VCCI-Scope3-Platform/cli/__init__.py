@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI CLI Module
 # Command-line interface for VCCI Scope 3 Platform
 

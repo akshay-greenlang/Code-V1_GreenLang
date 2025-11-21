@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Analytics REST API
 ==================
@@ -17,6 +18,7 @@ from datetime import datetime, timedelta
 import logging
 from prometheus_client import Counter, Histogram, Gauge
 import asyncio
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -158,7 +160,7 @@ async def get_overall_ium(api_key: str = Depends(verify_api_key)):
             # In production, query Prometheus/TimescaleDB
             ium_data = {
                 "overall_ium": 96.5,
-                "timestamp": datetime.now(),
+                "timestamp": DeterministicClock.now(),
                 "applications": {
                     "csrd-reporting": 98.2,
                     "vcci-scope3": 95.8,
@@ -314,7 +316,7 @@ async def get_performance_metrics(
                 throughput_rps=245.6,
                 cache_hit_rate=0.78,
                 service="factor-broker",
-                timestamp=datetime.now()
+                timestamp=DeterministicClock.now()
             ),
             PerformanceMetrics(
                 p50_latency_ms=52.1,
@@ -324,7 +326,7 @@ async def get_performance_metrics(
                 throughput_rps=189.4,
                 cache_hit_rate=0.82,
                 service="entity-mdm",
-                timestamp=datetime.now()
+                timestamp=DeterministicClock.now()
             )
         ]
 
@@ -358,7 +360,7 @@ async def get_compliance_violations(
                 file_path="src/custom/llm_helper.py",
                 application="csrd-reporting",
                 team="csrd",
-                detected_at=datetime.now() - timedelta(hours=2),
+                detected_at=DeterministicClock.now() - timedelta(hours=2),
                 resolved=False
             ),
             ComplianceViolation(
@@ -368,7 +370,7 @@ async def get_compliance_violations(
                 file_path="src/utils/validators.py",
                 application="vcci-scope3",
                 team="carbon",
-                detected_at=datetime.now() - timedelta(hours=5),
+                detected_at=DeterministicClock.now() - timedelta(hours=5),
                 resolved=True
             )
         ]
@@ -443,7 +445,7 @@ async def get_health_status(api_key: str = Depends(verify_api_key)):
                 }
             },
             "uptime_percent": 99.96,
-            "last_incident": datetime.now() - timedelta(days=7)
+            "last_incident": DeterministicClock.now() - timedelta(days=7)
         }
 
         return HealthStatus(**health_data)

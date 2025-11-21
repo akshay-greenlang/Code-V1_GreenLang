@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Token Blacklist / Revocation System
 GL-VCCI Scope 3 Platform
@@ -24,6 +25,7 @@ import redis.asyncio as redis
 
 # Import auth manager from main auth module
 from backend.auth import get_auth_manager
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +110,7 @@ async def blacklist_token(
         auth_mgr.revoke_token(token, by="system", reason=reason)
 
         # Calculate TTL (time until token expires)
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         exp_datetime = auth_token.expires_at
 
         if not exp_datetime:
@@ -230,7 +232,7 @@ async def blacklist_all_user_tokens(
     key = f"blacklist:user:{user_id}"
     blacklist_data = {
         "reason": reason,
-        "blacklisted_at": datetime.utcnow().isoformat(),
+        "blacklisted_at": DeterministicClock.utcnow().isoformat(),
     }
 
     # Set with a long TTL (7 days - max refresh token lifetime)
@@ -420,7 +422,7 @@ async def cleanup_expired_blacklist_entries() -> int:
         if data and "expires_at" in data:
             expires_at = datetime.fromisoformat(data["expires_at"])
 
-            if expires_at <= datetime.utcnow():
+            if expires_at <= DeterministicClock.utcnow():
                 await redis_client.delete(key)
                 cleaned_count += 1
 

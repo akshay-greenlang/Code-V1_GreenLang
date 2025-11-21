@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Prompt Compression for Token Reduction
 

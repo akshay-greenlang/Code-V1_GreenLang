@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang AgentSpec v2 - Test Configuration and Shared Fixtures
 

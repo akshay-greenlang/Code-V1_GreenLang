@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example 6: Schema and Business Rules Validation
 ================================================

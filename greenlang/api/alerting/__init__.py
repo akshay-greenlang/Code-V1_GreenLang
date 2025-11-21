@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Alerting integration for GreenLang analytics.
 

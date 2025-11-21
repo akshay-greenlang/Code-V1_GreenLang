@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Tests for Factor Broker Service
 GL-VCCI Scope 3 Platform - Phase 6
@@ -23,6 +24,7 @@ from typing import Dict, Any
 
 # Import models and classes to test
 import sys
+from greenlang.determinism import DeterministicClock
 sys.path.insert(0, '/c/Users/aksha/Code-V1_GreenLang/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform')
 
 from services.factor_broker.broker import FactorBroker
@@ -103,7 +105,7 @@ def sample_factor_response():
             )
         ),
         provenance=ProvenanceInfo(
-            lookup_timestamp=datetime.utcnow(),
+            lookup_timestamp=DeterministicClock.utcnow(),
             cache_hit=False,
             is_proxy=False,
             fallback_chain=["ecoinvent"]
@@ -229,9 +231,9 @@ class TestFactorResolutionEcoinvent:
             # Run 100 requests to get p95 latency
             latencies = []
             for _ in range(100):
-                start = datetime.utcnow()
+                start = DeterministicClock.utcnow()
                 await broker.resolve(sample_factor_request)
-                latency_ms = (datetime.utcnow() - start).total_seconds() * 1000
+                latency_ms = (DeterministicClock.utcnow() - start).total_seconds() * 1000
                 latencies.append(latency_ms)
 
             # Calculate p95
@@ -603,7 +605,7 @@ class TestHealthCheck:
                 mock_source = Mock()
                 mock_source.health_check = AsyncMock(return_value={
                     "status": "healthy",
-                    "last_check": datetime.utcnow().isoformat()
+                    "last_check": DeterministicClock.utcnow().isoformat()
                 })
                 broker.sources[source_type] = mock_source
 

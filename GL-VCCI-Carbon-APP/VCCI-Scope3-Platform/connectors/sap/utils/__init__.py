@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # SAP Connector Utilities
 # Supporting infrastructure for SAP integration
 

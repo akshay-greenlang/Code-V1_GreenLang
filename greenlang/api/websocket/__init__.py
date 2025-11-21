@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 WebSocket API for real-time metrics streaming.
 

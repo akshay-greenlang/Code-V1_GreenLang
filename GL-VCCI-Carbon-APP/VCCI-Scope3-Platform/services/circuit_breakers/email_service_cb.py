@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Circuit Breaker for Email Service (SendGrid)
 
@@ -24,8 +25,10 @@ from dataclasses import dataclass
 import json
 import time
 from pathlib import Path
+import tempfile
 
 from greenlang.resilience import (
+from greenlang.determinism import DeterministicClock
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitOpenError,
@@ -85,7 +88,8 @@ class EmailServiceCircuitBreaker:
 
         # Set up email queue directory
         if queue_dir is None:
-            queue_dir = Path("/tmp/greenlang_email_queue")
+            # SECURITY FIX: Use secure temporary directory instead of hardcoded /tmp
+            queue_dir = Path(tempfile.gettempdir()) / "greenlang_email_queue"
         self.queue_dir = Path(queue_dir)
         self.queue_dir.mkdir(parents=True, exist_ok=True)
 
@@ -181,7 +185,7 @@ class EmailServiceCircuitBreaker:
                 "message": "Email service temporarily unavailable - queued for retry",
                 "email_id": None,
                 "queued": True,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
             }
 
     def send_batch(
@@ -323,7 +327,7 @@ class EmailServiceCircuitBreaker:
             "email_id": f"sendgrid_{int(time.time() * 1000)}",
             "to": email.to,
             "subject": email.subject,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
         }
 
     def _queue_email(self, email: Email):
@@ -348,7 +352,7 @@ class EmailServiceCircuitBreaker:
             "attachments": email.attachments,
             "html": email.html,
             "priority": email.priority,
-            "queued_at": datetime.utcnow().isoformat(),
+            "queued_at": DeterministicClock.utcnow().isoformat(),
         }
 
         with open(filepath, 'w') as f:

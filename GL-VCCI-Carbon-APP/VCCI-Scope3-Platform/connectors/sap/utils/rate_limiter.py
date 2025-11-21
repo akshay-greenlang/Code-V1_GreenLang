@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # SAP Rate Limiter
 # Token bucket algorithm for distributed rate limiting
 
@@ -21,6 +22,7 @@ Usage:
 ------
 ```python
 from connectors.sap.utils.rate_limiter import RateLimiter
+from greenlang.determinism import FinancialDecimal
 
 # Create rate limiter
 limiter = RateLimiter(rate=10, per=60)  # 10 requests per 60 seconds
@@ -120,16 +122,16 @@ class RateLimiter:
             if bucket_data:
                 # Parse existing bucket state
                 last_refill = bucket_data.get("last_refill", now)
-                available_tokens = bucket_data.get("tokens", float(self.rate))
+                available_tokens = bucket_data.get("tokens", FinancialDecimal.from_string(self.rate))
             else:
                 # Initialize new bucket
                 last_refill = now
-                available_tokens = float(self.rate)
+                available_tokens = FinancialDecimal.from_string(self.rate)
 
             # Calculate token refill
             time_passed = now - last_refill
             refill_tokens = (time_passed / self.per) * self.rate
-            available_tokens = min(available_tokens + refill_tokens, float(self.rate))
+            available_tokens = min(available_tokens + refill_tokens, FinancialDecimal.from_string(self.rate))
             last_refill = now
 
             # Check if enough tokens available
@@ -186,8 +188,8 @@ class RateLimiter:
         """
         if not self.cache_manager:
             return {
-                "tokens_remaining": float(self.rate),
-                "tokens_max": float(self.rate),
+                "tokens_remaining": FinancialDecimal.from_string(self.rate),
+                "tokens_max": FinancialDecimal.from_string(self.rate),
                 "reset_time": 0.0,
             }
 
@@ -199,13 +201,13 @@ class RateLimiter:
 
             if bucket_data:
                 last_refill = bucket_data.get("last_refill", now)
-                available_tokens = bucket_data.get("tokens", float(self.rate))
+                available_tokens = bucket_data.get("tokens", FinancialDecimal.from_string(self.rate))
 
                 # Calculate current tokens with refill
                 time_passed = now - last_refill
                 refill_tokens = (time_passed / self.per) * self.rate
                 current_tokens = min(
-                    available_tokens + refill_tokens, float(self.rate)
+                    available_tokens + refill_tokens, FinancialDecimal.from_string(self.rate)
                 )
 
                 # Calculate time until full
@@ -217,22 +219,22 @@ class RateLimiter:
 
                 return {
                     "tokens_remaining": current_tokens,
-                    "tokens_max": float(self.rate),
+                    "tokens_max": FinancialDecimal.from_string(self.rate),
                     "reset_time": reset_time,
                 }
             else:
                 # No bucket exists - full capacity
                 return {
-                    "tokens_remaining": float(self.rate),
-                    "tokens_max": float(self.rate),
+                    "tokens_remaining": FinancialDecimal.from_string(self.rate),
+                    "tokens_max": FinancialDecimal.from_string(self.rate),
                     "reset_time": 0.0,
                 }
 
         except Exception as e:
             logger.error(f"Error getting rate limit status: {e}")
             return {
-                "tokens_remaining": float(self.rate),
-                "tokens_max": float(self.rate),
+                "tokens_remaining": FinancialDecimal.from_string(self.rate),
+                "tokens_max": FinancialDecimal.from_string(self.rate),
                 "reset_time": 0.0,
             }
 

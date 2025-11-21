@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Load Testing - Ramp-Up Scenario
 
@@ -40,6 +41,7 @@ from io import BytesIO
 import time
 
 from load_test_utils import (
+from greenlang.determinism import deterministic_random
     generate_csv_data,
     generate_realistic_procurement_data,
     monitor_system_resources,
@@ -88,8 +90,8 @@ class RampUpUser(HttpUser):
             - Header setup
             - Initial state setup
         """
-        self.user_id = f"loadtest_{random.randint(1, 10000)}"
-        self.correlation_id = f"rampup_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
+        self.user_id = f"loadtest_{deterministic_random().randint(1, 10000)}"
+        self.correlation_id = f"rampup_{int(time.time() * 1000)}_{deterministic_random().randint(1000, 9999)}"
 
         # Authenticate
         with self.client.post(
@@ -160,7 +162,7 @@ class RampUpUser(HttpUser):
         Expected latency: p95 < 150ms
         Pagination: 100 items per page
         """
-        page = random.randint(1, 10)
+        page = deterministic_random().randint(1, 10)
         limit = 100
 
         with self.client.get(
@@ -191,11 +193,11 @@ class RampUpUser(HttpUser):
         Expected latency: p95 < 200ms (aggregate query)
         Filters: category, date range, limit
         """
-        category = random.randint(1, 15)  # Scope 3 categories 1-15
-        limit = random.choice([100, 500, 1000])
+        category = deterministic_random().randint(1, 15)  # Scope 3 categories 1-15
+        limit = deterministic_random().choice([100, 500, 1000])
 
         # Random date range (last 90 days)
-        days_ago = random.randint(1, 90)
+        days_ago = deterministic_random().randint(1, 90)
 
         with self.client.get(
             f"/api/emissions?category={category}&limit={limit}&days_ago={days_ago}",
@@ -223,7 +225,7 @@ class RampUpUser(HttpUser):
         Weight: 10% of all requests (combined with other tasks)
         Expected latency: p95 < 150ms
         """
-        supplier_id = f"SUP-{random.randint(1, 10000)}"
+        supplier_id = f"SUP-{deterministic_random().randint(1, 10000)}"
 
         with self.client.get(
             f"/api/suppliers/{supplier_id}",
@@ -251,18 +253,18 @@ class RampUpUser(HttpUser):
         """
         # Generate realistic calculation request
         categories = [1, 4, 6]  # Purchased goods, Transportation, Business travel
-        category = random.choice(categories)
+        category = deterministic_random().choice(categories)
 
         payload = {
             "category": category,
-            "tier": random.choice([1, 2, 3]),
-            "supplier_id": f"SUP-{random.randint(1, 10000)}",
-            "product": random.choice([
+            "tier": deterministic_random().choice([1, 2, 3]),
+            "supplier_id": f"SUP-{deterministic_random().randint(1, 10000)}",
+            "product": deterministic_random().choice([
                 "Steel plate", "Plastic resin", "Electronic components",
                 "Chemical compounds", "Textile materials"
             ]),
             "quantity": round(random.uniform(100, 10000), 2),
-            "unit": random.choice(["kg", "ton", "lb", "unit"]),
+            "unit": deterministic_random().choice(["kg", "ton", "lb", "unit"]),
             "spend_usd": round(random.uniform(1000, 100000), 2),
             "year": 2024
         }
@@ -297,7 +299,7 @@ class RampUpUser(HttpUser):
         File size: 100-500 rows
         """
         # Generate CSV data (100-500 rows)
-        num_rows = random.randint(100, 500)
+        num_rows = deterministic_random().randint(100, 500)
         csv_data = generate_csv_data(num_rows)
 
         # Create file-like object
@@ -339,9 +341,9 @@ class RampUpUser(HttpUser):
         """
         report_types = ["esrs_e1", "cdp", "ifrs_s2"]
         payload = {
-            "report_type": random.choice(report_types),
-            "year": random.choice([2023, 2024]),
-            "format": random.choice(["pdf", "json", "xlsx"])
+            "report_type": deterministic_random().choice(report_types),
+            "year": deterministic_random().choice([2023, 2024]),
+            "format": deterministic_random().choice(["pdf", "json", "xlsx"])
         }
 
         with self.client.post(

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 18: Environment overrides (region/format)."""
 
 import os

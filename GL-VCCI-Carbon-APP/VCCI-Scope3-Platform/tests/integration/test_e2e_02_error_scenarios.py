@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - E2E Error Scenario Tests
@@ -29,6 +30,7 @@ from datetime import datetime
 from typing import Dict, List, Any
 from uuid import uuid4
 from unittest.mock import patch, AsyncMock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 @pytest.mark.e2e
@@ -88,7 +90,7 @@ class TestErrorScenarios:
         # Arrange - Suppliers with obscure categories
         obscure_suppliers = [
             {
-                "supplier_id": str(uuid4()),
+                "supplier_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 "name": f"Supplier {i}",
                 "category": 99,  # Non-existent category
                 "spend_amount": 10000.0
@@ -414,7 +416,7 @@ class TestErrorScenarios:
             {
                 "name": "negative_spend",
                 "data": [{
-                    "supplier_id": str(uuid4()),
+                    "supplier_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                     "name": "Test",
                     "spend_amount": -1000.0  # Negative spend
                 }],
@@ -423,7 +425,7 @@ class TestErrorScenarios:
             {
                 "name": "future_date",
                 "data": [{
-                    "supplier_id": str(uuid4()),
+                    "supplier_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                     "name": "Test",
                     "created_at": "2030-01-01"  # Future date
                 }],
@@ -432,7 +434,7 @@ class TestErrorScenarios:
             {
                 "name": "invalid_category",
                 "data": [{
-                    "supplier_id": str(uuid4()),
+                    "supplier_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                     "name": "Test",
                     "category": 99  # Invalid category
                 }],

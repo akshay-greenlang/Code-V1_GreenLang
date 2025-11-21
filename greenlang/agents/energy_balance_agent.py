@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # greenlang/agents/energy_balance_agent.py
 
 try:

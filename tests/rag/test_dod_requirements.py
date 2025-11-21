@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 DoD-specific tests for INTL-104 RAG v1.
 

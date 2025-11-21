@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Batch Processing Performance Tests
 GL-VCCI Scope 3 Platform - Performance Benchmarking
@@ -30,6 +31,7 @@ from datetime import datetime, timedelta
 
 # Import processing modules
 from processing.batch_optimizer import (
+from greenlang.determinism import DeterministicClock
     AsyncBatchProcessor,
     LARGE_BATCH_CONFIG,
     BatchConfig
@@ -433,7 +435,7 @@ def generate_performance_report(test_results: Dict[str, Any]) -> str:
 # ============================================================================
 # Batch Processing Performance Report
 # GL-VCCI Scope 3 Platform
-# Generated: {datetime.utcnow().isoformat()}
+# Generated: {DeterministicClock.utcnow().isoformat()}
 # ============================================================================
 
 ## Summary

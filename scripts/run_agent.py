@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Run GreenLang governance agents with collected context.
 This script invokes the appropriate agent and returns structured results.
@@ -12,6 +13,7 @@ from pathlib import Path
 from typing import Dict, Any
 import anthropic
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 # Agent prompt templates
@@ -133,7 +135,7 @@ class AgentRunner:
                 'status': 'ERROR',
                 'error': str(e),
                 'agent': self.agent_type,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': DeterministicClock.now().isoformat()
             }
     
     def _parse_response(self, response_text: str) -> Dict[str, Any]:
@@ -208,7 +210,7 @@ class AgentRunner:
         
         response = mock_responses.get(self.agent_type, {'status': 'PASS'})
         response['agent'] = self.agent_type
-        response['timestamp'] = datetime.now().isoformat()
+        response['timestamp'] = DeterministicClock.now().isoformat()
         response['mock'] = True
         
         return response

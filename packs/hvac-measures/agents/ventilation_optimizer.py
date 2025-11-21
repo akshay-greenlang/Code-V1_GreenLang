@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Ventilation Optimizer Agent for indoor air quality and efficiency."""
 
 import json

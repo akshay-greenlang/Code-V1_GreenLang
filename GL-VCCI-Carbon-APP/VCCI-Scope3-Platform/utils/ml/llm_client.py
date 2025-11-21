@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI ML Module - LLM Client
 # Spend Classification ML System - LLM API Client with Caching
 

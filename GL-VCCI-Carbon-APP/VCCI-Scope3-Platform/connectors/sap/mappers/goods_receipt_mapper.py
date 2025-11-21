@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Goods Receipt Mapper
 
@@ -26,6 +27,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -142,7 +144,7 @@ class GoodsReceiptMapper:
         try:
             return int(shipment_date[:4])
         except (ValueError, TypeError):
-            return datetime.now().year
+            return DeterministicClock.now().year
 
     def map_goods_receipt(
         self,
@@ -182,7 +184,7 @@ class GoodsReceiptMapper:
         # Shipment date
         shipment_date = gr_header.get("PostingDate", "")
         if not shipment_date:
-            shipment_date = datetime.now().strftime("%Y-%m-%d")
+            shipment_date = DeterministicClock.now().strftime("%Y-%m-%d")
             logger.warning(f"GR {gr_header['MaterialDocument']}: Missing PostingDate, using today")
 
         # Destination (receiving plant)

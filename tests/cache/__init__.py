@@ -1,5 +1,2 @@
-"""
-tests/cache
-
-Cache tests for GreenLang Framework
-"""
+# -*- coding: utf-8 -*-
+"""Tests for GreenLang 4-Tier Caching System"""

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for GreenLang Provenance Hashing Module.
 
@@ -138,11 +139,15 @@ class TestHashFile:
         assert result["hash_value"] == expected_hash
 
     def test_hash_file_md5(self, temp_file):
-        """Test MD5 hashing (legacy support)."""
-        result = hash_file(temp_file, algorithm="md5")
+        """Test MD5 hashing (legacy support - now redirects to SHA256)."""
+        import pytest
+        # MD5 is deprecated and now uses SHA256 instead
+        with pytest.warns(UserWarning, match="MD5 is cryptographically broken"):
+            result = hash_file(temp_file, algorithm="md5")
 
-        assert result["hash_algorithm"] == "MD5"
-        assert len(result["hash_value"]) == 32  # MD5 hex digest length
+        # MD5 algorithm parameter now returns SHA256 hash with warning
+        assert result["hash_algorithm"] == "MD5"  # Algorithm name preserved for compatibility
+        assert len(result["hash_value"]) == 64  # SHA256 hex digest length (not 32 for MD5)
 
     def test_hash_file_chunked_reading(self, large_temp_file):
         """Test chunked reading for large files."""
@@ -261,6 +266,7 @@ class TestHashData:
 
     def test_hash_data_algorithms(self):
         """Test different hashing algorithms."""
+        import pytest
         data = "Test data"
 
         sha256_hash = hash_data(data, algorithm="sha256")
@@ -269,8 +275,10 @@ class TestHashData:
         sha512_hash = hash_data(data, algorithm="sha512")
         assert len(sha512_hash) == 128
 
-        md5_hash = hash_data(data, algorithm="md5")
-        assert len(md5_hash) == 32
+        # MD5 is deprecated and now uses SHA256 instead
+        with pytest.warns(UserWarning, match="MD5 is cryptographically broken"):
+            md5_hash = hash_data(data, algorithm="md5")
+        assert len(md5_hash) == 64  # SHA256 hex digest length (not 32 for MD5)
 
     def test_hash_data_empty_string(self):
         """Test hashing empty string."""

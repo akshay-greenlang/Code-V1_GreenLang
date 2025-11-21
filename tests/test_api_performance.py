@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 API Performance and Load Tests
 
@@ -21,6 +22,7 @@ import random
 from typing import List, Dict, Any
 
 from greenlang.api.main import app
+from greenlang.determinism import deterministic_random
 
 
 # ==================== TEST FIXTURES ====================
@@ -201,9 +203,9 @@ class TestLoadCapacity:
         batch_request = {
             "calculations": [
                 {
-                    "fuel_type": random.choice(["diesel", "gasoline", "natural_gas"]),
+                    "fuel_type": deterministic_random().choice(["diesel", "gasoline", "natural_gas"]),
                     "activity_amount": random.uniform(10, 1000),
-                    "activity_unit": random.choice(["gallons", "liters", "therms"]),
+                    "activity_unit": deterministic_random().choice(["gallons", "liters", "therms"]),
                     "geography": "US"
                 }
                 for _ in range(50)  # 50 calculations per batch
@@ -252,7 +254,7 @@ class TestLoadCapacity:
 
             # Mix of different request types
             for _ in range(100):
-                request_type = random.choice([
+                request_type = deterministic_random().choice([
                     make_health_request,
                     make_list_request,
                     make_calculation_request,

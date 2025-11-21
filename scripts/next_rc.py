@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Next RC Version Generator
 =========================
@@ -12,6 +13,7 @@ import sys
 import re
 from datetime import datetime
 from typing import List, Optional, Tuple
+from greenlang.determinism import DeterministicClock
 
 
 def get_git_tags() -> List[str]:
@@ -53,7 +55,7 @@ def parse_rc_version(tag: str) -> Optional[Tuple[str, str, str, int]]:
 
 def get_current_week() -> str:
     """Get current year and week in format: 2025w40"""
-    now = datetime.now()
+    now = DeterministicClock.now()
     year = now.year
     week = now.isocalendar()[1]
     return f"{year}w{week:02d}"

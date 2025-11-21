@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Framework Performance Benchmarking Suite
 ====================================================
@@ -27,6 +28,7 @@ from typing import Dict, Any, List, Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 import statistics
+from greenlang.determinism import DeterministicClock
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -715,7 +717,7 @@ def generate_console_report(results: List[BenchmarkResult]):
     print("\n" + "="*80)
     print("PERFORMANCE BENCHMARK REPORT")
     print("="*80)
-    print(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Generated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("="*80)
 
     for bench_result in results:
@@ -767,7 +769,7 @@ def generate_markdown_report(results: List[BenchmarkResult], output_file: Path):
     lines = [
         "# GreenLang Framework Performance Benchmark Results",
         "",
-        f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+        f"**Generated:** {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}",
         "",
         "## Executive Summary",
         ""

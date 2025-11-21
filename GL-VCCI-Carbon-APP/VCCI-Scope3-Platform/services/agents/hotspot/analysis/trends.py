@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Trend Analysis Engine
 GL-VCCI Scope 3 Platform

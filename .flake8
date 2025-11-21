@@ -1,0 +1,90 @@
+[flake8]
+# Maximum line length
+max-line-length = 120
+
+# Files and directories to exclude from checking
+exclude =
+    .git,
+    __pycache__,
+    docs/source/conf.py,
+    old,
+    build,
+    dist,
+    .venv,
+    venv,
+    env,
+    .tox,
+    .eggs,
+    *.egg,
+    migrations,
+    .pytest_cache,
+    .mypy_cache,
+    .coverage,
+    htmlcov,
+    node_modules,
+    .greenlang/deployment/,
+    tests/fixtures/
+
+# Error codes to ignore
+ignore =
+    # Allow lambda expressions (sometimes clearer than def)
+    E731,
+    # Allow line breaks before binary operators (W503 is deprecated in favor of W504)
+    W503,
+    # Don't require docstrings for magic methods
+    D105,
+    # Don't require docstrings for nested classes
+    D106,
+    # Allow TODO comments
+    T000,
+
+# Additional error codes to check for
+select =
+    # pyflakes errors
+    F,
+    # pycodestyle errors
+    E,
+    # pycodestyle warnings
+    W,
+    # McCabe complexity
+    C90,
+    # isort
+    I,
+    # pep8-naming
+    N,
+
+# McCabe complexity threshold
+max-complexity = 15
+
+# Format for error output
+format = %(path)s:%(row)d:%(col)d: %(code)s %(text)s
+
+# Show source code for errors
+show-source = True
+
+# Count total errors
+statistics = True
+
+# Per-file ignores for specific cases
+per-file-ignores =
+    # Test files can have longer lines and different conventions
+    tests/*:E501,F401,F811
+    # Init files may have unused imports by design
+    __init__.py:F401,F403
+    # Config files may have different rules
+    */config.py:E501
+    */settings.py:E501
+    # Migration files are auto-generated
+    */migrations/*:E501,F401
+
+# Inline comment spacing
+inline-quotes = double
+
+# Import order style
+import-order-style = google
+
+# Application directories (for import order)
+application-import-names = greenlang
+
+# Docstring convention
+docstring-convention = google

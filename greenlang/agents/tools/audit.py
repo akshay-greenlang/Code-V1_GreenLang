@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Tool Audit Logging
 =============================
@@ -29,6 +30,7 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional
 from dataclasses import dataclass, field, asdict
 from collections import defaultdict
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -207,7 +209,7 @@ class AuditLogger:
 
                 # Create log entry
                 entry = AuditLogEntry(
-                    timestamp=datetime.utcnow().isoformat() + "Z",
+                    timestamp=DeterministicClock.utcnow().isoformat() + "Z",
                     tool_name=tool_name,
                     user_id=user_id,
                     session_id=session_id,
@@ -294,7 +296,7 @@ class AuditLogger:
                     return
 
                 # Create rotated file name with timestamp
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
                 rotated_file = self.log_file.parent / f"{self.log_file.stem}_{timestamp}.jsonl"
 
                 # Rename current log file
@@ -311,7 +313,7 @@ class AuditLogger:
     def _cleanup_old_logs(self) -> None:
         """Delete log files older than retention period."""
         try:
-            cutoff_date = datetime.now() - timedelta(days=self.retention_days)
+            cutoff_date = DeterministicClock.now() - timedelta(days=self.retention_days)
 
             # Find all rotated log files
             pattern = f"{self.log_file.stem}_*.jsonl"

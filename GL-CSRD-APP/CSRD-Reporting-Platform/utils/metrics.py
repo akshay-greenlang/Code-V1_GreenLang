@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance Metrics and Monitoring
 
@@ -12,6 +13,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 import json
+from greenlang.determinism import DeterministicClock
 
 
 class PerformanceMonitor:
@@ -97,7 +99,7 @@ class PerformanceMonitor:
             Dictionary with metric summaries
         """
         summary = {
-            'collection_time': datetime.now().isoformat(),
+            'collection_time': DeterministicClock.now().isoformat(),
             'uptime_seconds': time.time() - self.start_time,
             'counters': self.metrics['counters'].copy(),
             'gauges': {

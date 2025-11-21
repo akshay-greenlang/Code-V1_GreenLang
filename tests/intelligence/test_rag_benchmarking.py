@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 RAG Retrieval Quality Benchmarking
 GL Intelligence Infrastructure

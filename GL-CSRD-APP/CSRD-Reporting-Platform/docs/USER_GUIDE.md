@@ -110,7 +110,7 @@ python examples/quick_start.py
 
 ### Standard Installation
 
-**1. Install Python 3.11+**
+**1. Install Python 3.10+**
 
 Check your Python version:
 ```bash

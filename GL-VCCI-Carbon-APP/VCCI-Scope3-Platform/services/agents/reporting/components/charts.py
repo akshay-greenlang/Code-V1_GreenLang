@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Chart Generator
 GL-VCCI Scope 3 Platform

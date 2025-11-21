@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Retry Pattern Tests for GL-VCCI Scope 3 Platform
 

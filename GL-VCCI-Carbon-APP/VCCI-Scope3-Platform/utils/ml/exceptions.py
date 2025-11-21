@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI ML Module - Custom Exceptions
 # Spend Classification ML System - Exception Hierarchy
 

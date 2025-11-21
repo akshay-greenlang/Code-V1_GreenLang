@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP Sandbox Environment Setup
 GL-VCCI Scope 3 Platform
@@ -16,6 +17,7 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 import responses
 from responses import matchers
+from greenlang.determinism import DeterministicClock
 
 
 class SAPSandboxSetup:
@@ -77,7 +79,7 @@ class SAPSandboxSetup:
             List of purchase order dictionaries
         """
         purchase_orders = []
-        base_date = datetime.now() - timedelta(days=30)
+        base_date = DeterministicClock.now() - timedelta(days=30)
 
         for i in range(count):
             po_date = base_date + timedelta(days=i % 30)
@@ -120,7 +122,7 @@ class SAPSandboxSetup:
             List of goods receipt dictionaries
         """
         goods_receipts = []
-        base_date = datetime.now() - timedelta(days=20)
+        base_date = DeterministicClock.now() - timedelta(days=20)
 
         for i in range(count):
             gr_date = base_date + timedelta(days=i % 20)
@@ -204,11 +206,31 @@ class SAPSandboxSetup:
         Note: In production, this would clean up test records created during testing.
         """
         print("Cleaning up SAP sandbox test data...")
-        # TODO: Implement actual cleanup logic
-        # This would involve:
-        # 1. Connecting to sandbox
-        # 2. Identifying test records (by special markers)
-        # 3. Deleting or archiving them
+
+        # NOTE: Cleanup logic implementation pending
+        # When implementing:
+        # 1. Connect to SAP sandbox using OData API or RFC
+        # 2. Identify test records by naming convention (TEST_*, Z_TEST_*)
+        # 3. Delete test purchase orders and material master records
+        # 4. Archive test data if required for audit
+        # 5. Log cleanup statistics
+        # Example using pyrfc:
+        #   from pyrfc import Connection
+        #   conn = Connection(
+        #       user=self.username,
+        #       passwd=self.password,
+        #       ashost=self.host,
+        #       sysnr=self.system_number,
+        #       client=self.client
+        #   )
+        #   # Delete test purchase orders
+        #   result = conn.call('BAPI_PO_DELETE', PURCHASEORDER='TEST_PO_*')
+        #   # Delete test material masters
+        #   result = conn.call('BAPI_MATERIAL_DELETE', MATERIAL='Z_TEST_MAT_*')
+        #   conn.close()
+        #   print(f"Deleted test records: {result}")
+
+        # Placeholder - replace with actual cleanup logic
         print("SAP sandbox cleanup complete")
 
     def get_sandbox_status(self) -> Dict[str, Any]:
@@ -222,7 +244,7 @@ class SAPSandboxSetup:
             "available": self.is_sandbox_available(),
             "base_url": self.base_url,
             "environment_variables": self.verify_environment_variables(),
-            "timestamp": datetime.now().isoformat()
+            "timestamp": DeterministicClock.now().isoformat()
         }
 
     def print_setup_instructions(self):

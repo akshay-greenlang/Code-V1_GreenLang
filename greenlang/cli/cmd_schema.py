@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Schema management commands for GreenLang CLI
 """

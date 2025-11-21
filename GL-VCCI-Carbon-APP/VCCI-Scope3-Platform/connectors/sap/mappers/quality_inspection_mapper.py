@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Quality Inspection Mapper
 
@@ -32,6 +33,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -230,7 +232,7 @@ class QualityInspectionMapper:
         try:
             return int(date_str[:4])
         except (ValueError, TypeError):
-            return datetime.now().year
+            return DeterministicClock.now().year
 
     def map_inspection_lot(
         self,
@@ -275,7 +277,7 @@ class QualityInspectionMapper:
                           inspection_lot.get("InspectionLotStartDate", "")
 
         if not transaction_date:
-            transaction_date = datetime.now().strftime("%Y-%m-%d")
+            transaction_date = DeterministicClock.now().strftime("%Y-%m-%d")
             logger.warning(f"Inspection lot {inspection_lot['InspectionLot']}: Missing date")
 
         # Facility information

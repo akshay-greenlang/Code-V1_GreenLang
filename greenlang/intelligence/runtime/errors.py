@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Error Taxonomy for Tool Runtime (INTL-103)
 

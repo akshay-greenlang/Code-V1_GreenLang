@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example Usage of GreenLang GraphQL API
 Demonstrates how to set up and use the GraphQL API

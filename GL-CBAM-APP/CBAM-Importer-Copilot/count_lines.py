@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 
 # Count lines in all Python files

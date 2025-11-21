@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI-Carbon-APP: Scope 3 Value Chain Carbon Intelligence Platform
 # Copyright © 2025 GreenLang Framework Team
 #

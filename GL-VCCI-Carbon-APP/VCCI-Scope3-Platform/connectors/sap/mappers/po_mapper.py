@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Purchase Order Mapper
 
@@ -31,6 +32,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -175,7 +177,7 @@ class PurchaseOrderMapper:
         try:
             return int(transaction_date[:4])
         except (ValueError, TypeError):
-            return datetime.now().year
+            return DeterministicClock.now().year
 
     def map_purchase_order(
         self,
@@ -211,7 +213,7 @@ class PurchaseOrderMapper:
         # Transaction date
         transaction_date = po_header.get("PurchaseOrderDate", "")
         if not transaction_date:
-            transaction_date = datetime.now().strftime("%Y-%m-%d")
+            transaction_date = DeterministicClock.now().strftime("%Y-%m-%d")
             logger.warning(f"PO {po_header['PurchaseOrder']}: Missing PurchaseOrderDate, using today")
 
         # Supplier information

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Priority 3C: Run Ledger Implementation - Validation Test
 =========================================================
@@ -17,6 +18,7 @@ import tempfile
 from pathlib import Path
 from datetime import datetime, timedelta
 from greenlang.provenance.ledger import RunLedger, write_run_ledger, verify_run_ledger
+from greenlang.determinism import DeterministicClock
 
 
 def test_run_ledger():
@@ -238,7 +240,7 @@ def test_single_run_ledger():
             metrics = {"score": 0.99}
         
         class MockContext:
-            started_at = datetime.utcnow()
+            started_at = DeterministicClock.utcnow()
             start_time = 0
             pipeline_spec = {"name": "test"}
             inputs = {"param": "value"}

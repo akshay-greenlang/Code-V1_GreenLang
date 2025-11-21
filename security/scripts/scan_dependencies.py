@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Dependency Vulnerability Scanner
 
@@ -28,6 +29,7 @@ from enum import Enum
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 import re
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -475,7 +477,7 @@ async def main():
 
     # Create scan result
     scan_result = ScanResult(
-        timestamp=datetime.utcnow().isoformat(),
+        timestamp=DeterministicClock.utcnow().isoformat(),
         total_packages=len(scanner.all_packages),
         vulnerabilities=unique_vulns,
         license_issues=licenses,

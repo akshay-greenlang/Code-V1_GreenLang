@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Usage Analytics and Tracking for GreenLang Partners
 
@@ -27,6 +28,8 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Depends, Query
 import pandas as pd
 import numpy as np
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()
@@ -221,7 +224,7 @@ class AnalyticsEngine:
 
         # Create usage record
         usage_record = UsageRecordModel(
-            id=f"usage_{uuid.uuid4().hex[:16]}",
+            id=f"usage_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}",
             partner_id=event.partner_id,
             timestamp=event.timestamp,
             endpoint=event.endpoint,
@@ -358,7 +361,7 @@ class AnalyticsEngine:
 
         # Create aggregation
         agg = MetricAggregationModel(
-            id=f"agg_{uuid.uuid4().hex[:16]}",
+            id=f"agg_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}",
             partner_id=partner_id,
             timestamp=timestamp,
             period=period,
@@ -557,7 +560,7 @@ async def aggregate_metrics_task(db: Session):
     partners = db.query(PartnerModel).all()
 
     # Aggregate for last hour
-    end_time = datetime.utcnow().replace(minute=0, second=0, microsecond=0)
+    end_time = DeterministicClock.utcnow().replace(minute=0, second=0, microsecond=0)
     start_time = end_time - timedelta(hours=1)
 
     for partner in partners:
@@ -587,7 +590,7 @@ if __name__ == "__main__":
     # Track event
     event = UsageEvent(
         partner_id="partner_123",
-        timestamp=datetime.utcnow(),
+        timestamp=DeterministicClock.utcnow(),
         endpoint="/api/workflows/execute",
         method="POST",
         status_code=200,
@@ -601,8 +604,8 @@ if __name__ == "__main__":
     # Get analytics
     response = analytics.get_analytics(
         "partner_123",
-        datetime.utcnow() - timedelta(days=30),
-        datetime.utcnow(),
+        DeterministicClock.utcnow() - timedelta(days=30),
+        DeterministicClock.utcnow(),
         TimeRange.DAY
     )
     print(response)

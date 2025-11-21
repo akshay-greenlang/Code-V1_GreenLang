@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Priority 2C: Context & Artifact Management - Validation Test
 =============================================================

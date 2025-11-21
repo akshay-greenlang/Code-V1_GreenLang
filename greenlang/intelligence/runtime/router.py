@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Provider Router - Intelligent Provider/Model Selection
 
@@ -44,7 +45,7 @@ Example:
 
 from __future__ import annotations
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Any
 from enum import Enum
 
 logger = logging.getLogger(__name__)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 05: CarbonAgent aggregation invariants."""
 
 import math

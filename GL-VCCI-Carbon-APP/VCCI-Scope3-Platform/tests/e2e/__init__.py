@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 End-to-End Test Suite for GL-VCCI Scope 3 Carbon Intelligence Platform
 

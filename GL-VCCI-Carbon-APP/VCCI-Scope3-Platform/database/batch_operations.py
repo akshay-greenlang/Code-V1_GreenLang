@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Database Batch Operations
 GL-VCCI Scope 3 Platform - High-Performance Database Operations

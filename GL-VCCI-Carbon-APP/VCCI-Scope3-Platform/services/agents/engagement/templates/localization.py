@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Localization support for email templates.
 

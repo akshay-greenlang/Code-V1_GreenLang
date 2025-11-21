@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """GreenLang Agent Exit Bar Validation Script.
 
 This script automates the validation of GreenLang AI agents against the
@@ -44,6 +45,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
+from greenlang.determinism import DeterministicClock
 
 
 class ExitBarValidator:
@@ -78,7 +80,7 @@ class ExitBarValidator:
     def _log(self, message: str, level: str = "INFO") -> None:
         """Log message if verbose mode enabled."""
         if self.verbose or level in ["ERROR", "WARNING"]:
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            timestamp = DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")
             print(f"[{timestamp}] [{level}] {message}")
 
     def _resolve_path_template(
@@ -594,7 +596,7 @@ class ExitBarValidator:
 
         return {
             "agent_name": agent_name,
-            "validation_date": datetime.now().isoformat(),
+            "validation_date": DeterministicClock.now().isoformat(),
             "overall_score": round(overall_score, 2),
             "total_points_earned": total_score,
             "total_points_possible": max_total_score,
@@ -613,7 +615,7 @@ class ExitBarValidator:
             Markdown report string
         """
         agent_name = results["agent_name"]
-        date = datetime.now().strftime("%Y-%m-%d")
+        date = DeterministicClock.now().strftime("%Y-%m-%d")
         score = results["overall_score"]
         status = results["readiness_status"]
         blockers = results["blockers"]
@@ -926,7 +928,7 @@ def main():
                     # Clear screen
                     print("\033[2J\033[H")  # ANSI clear screen
                     print(report)
-                    print(f"\n[Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}]")
+                    print(f"\n[Last updated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}]")
 
                     time.sleep(5)  # Wait 5 seconds
             except KeyboardInterrupt:

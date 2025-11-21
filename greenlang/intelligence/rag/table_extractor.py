@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Extract emission factor tables from climate PDFs.
 

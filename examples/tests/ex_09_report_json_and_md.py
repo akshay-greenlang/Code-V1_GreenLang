@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 09: ReportAgent JSON and Markdown generation."""
 
 import pytest

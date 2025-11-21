@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Cache Invalidation Tests for GreenLang
 Tests to ensure cache correctly invalidates when underlying data changes

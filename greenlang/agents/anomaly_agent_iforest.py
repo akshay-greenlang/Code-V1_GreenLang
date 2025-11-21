@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Isolation Forest Anomaly Detection Agent with ChatSession Integration.
 
 This module provides a production-ready Isolation Forest-based anomaly detection agent
@@ -57,6 +58,9 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 import warnings
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
+from greenlang.determinism import deterministic_random
 
 # Suppress sklearn warnings
 warnings.filterwarnings('ignore', category=UserWarning)
@@ -423,7 +427,7 @@ class IsolationForestAnomalyAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         Returns:
             Dict with anomaly detection results and AI interpretation
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Extract parameters
         data = input_data["data"]
@@ -496,7 +500,7 @@ class IsolationForestAnomalyAgent(Agent[Dict[str, Any], Dict[str, Any]]):
             )
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add metadata
             output["metadata"] = {
@@ -742,7 +746,7 @@ IMPORTANT:
         if not SKLEARN_AVAILABLE:
             # Mock predictions
             np.random.seed(42)
-            predictions = np.random.choice([1, -1], size=len(X), p=[0.9, 0.1])
+            predictions = np.deterministic_random().choice([1, -1], size=len(X), p=[0.9, 0.1])
         else:
             # Real predictions: 1 = normal, -1 = anomaly
             predictions = self._fitted_model.predict(X_scaled)
@@ -756,7 +760,7 @@ IMPORTANT:
             "anomaly_indices": anomaly_indices,
             "n_anomalies": int(np.sum(anomalies)),
             "n_normal": int(np.sum(~anomalies)),
-            "anomaly_rate": float(np.mean(anomalies)),
+            "anomaly_rate": FinancialDecimal.from_string(np.mean(anomalies)),
         }
 
     def _calculate_anomaly_scores_impl(
@@ -824,7 +828,7 @@ IMPORTANT:
                 "max_score": float(np.max(scores)),
                 "mean_score": float(np.mean(scores)),
             },
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id=f"anomaly_scores_{self._tool_call_count}",
         )
         self._calculation_citations.append(calc_citation)
@@ -941,7 +945,7 @@ IMPORTANT:
         if not SKLEARN_AVAILABLE:
             # Mock predictions
             np.random.seed(42)
-            predictions = np.random.choice([1, -1], size=len(X), p=[0.9, 0.1])
+            predictions = np.deterministic_random().choice([1, -1], size=len(X), p=[0.9, 0.1])
         else:
             predictions = self._fitted_model.predict(X_scaled)
 
@@ -1161,7 +1165,8 @@ IMPORTANT:
                             roc_auc = roc_auc_score(binary_labels, inverted_scores)
                         else:
                             roc_auc = 0.0
-                    except:
+                    except Exception as e:
+                        self.logger.warning(f"ROC-AUC calculation failed: {e}")
                         roc_auc = 0.0
 
                     output["metrics"] = {

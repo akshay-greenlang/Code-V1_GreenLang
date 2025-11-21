@@ -1,15 +1,19 @@
+# -*- coding: utf-8 -*-
 """
 Agent Registry for dynamic agent discovery and plugin support
 """
 
 import importlib
 import inspect
+import logging
 import os
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import pkg_resources
 import yaml
 import json
+
+logger = logging.getLogger(__name__)
 
 
 class AgentRegistry:
@@ -101,7 +105,7 @@ class AgentRegistry:
                 }
             except Exception as e:
                 # Log error but continue discovery
-                print(f"Failed to load entry point {entry_point.name}: {e}")
+                logger.error(f"Failed to load entry point {entry_point.name}: {e}")
 
     def _discover_custom_agents(self):
         """Discover custom agents from file system paths"""
@@ -151,7 +155,7 @@ class AgentRegistry:
                         "file_path": str(file_path),
                     }
         except Exception as e:
-            print(f"Failed to load custom agent from {file_path}: {e}")
+            logger.error(f"Failed to load custom agent from {file_path}: {e}")
 
     def _load_yaml_agent_definition(self, file_path: Path):
         """Load agent definition from YAML file"""
@@ -174,7 +178,7 @@ class AgentRegistry:
                     "file_path": str(file_path),
                 }
         except Exception as e:
-            print(f"Failed to load YAML agent from {file_path}: {e}")
+            logger.error(f"Failed to load YAML agent from {file_path}: {e}")
 
     def get_agent_info(self, agent_id: str) -> Optional[Dict[str, Any]]:
         """Get information about a specific agent
@@ -222,7 +226,7 @@ class AgentRegistry:
                 else:
                     return agent_class()
             except Exception as e:
-                print(f"Failed to instantiate agent {agent_id}: {e}")
+                logger.error(f"Failed to instantiate agent {agent_id}: {e}")
         return None
 
     def get_agent_template(self, base_agent: str = "base") -> str:

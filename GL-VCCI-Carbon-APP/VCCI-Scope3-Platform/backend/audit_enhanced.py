@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Enhanced Audit Logging System
 GL-VCCI Scope 3 Platform
@@ -27,6 +28,7 @@ from dataclasses import dataclass, field, asdict
 
 import boto3
 from botocore.exceptions import ClientError
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -321,7 +323,7 @@ class AuditLogger:
                 },
                 # Enable object lock for immutability (requires bucket configuration)
                 # ObjectLockMode='COMPLIANCE',
-                # ObjectLockRetainUntilDate=datetime.utcnow() + timedelta(days=2555),  # 7 years
+                # ObjectLockRetainUntilDate=DeterministicClock.utcnow() + timedelta(days=2555),  # 7 years
             )
 
         except ClientError as e:

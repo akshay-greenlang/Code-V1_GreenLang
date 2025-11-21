@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Request Batching for LLM API Optimization
 
@@ -33,6 +34,8 @@ import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Callable, Coroutine, Dict, List, Optional
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +185,7 @@ class RequestBatcher:
             Response from LLM
         """
         # Create request
-        request_id = str(uuid.uuid4())
+        request_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         future = asyncio.Future()
 
         batch_request = BatchRequest(
@@ -246,7 +249,7 @@ class RequestBatcher:
         logger.debug(f"Flushing batch of {batch_size} requests")
 
         # Calculate average wait time
-        now = datetime.now()
+        now = DeterministicClock.now()
         avg_wait = sum((now - req.timestamp).total_seconds() for req in batch) / batch_size
 
         # Process batch
@@ -412,10 +415,10 @@ class AdaptiveBatcher(RequestBatcher):
     ) -> Any:
         """Submit request with adaptive batching"""
         # Track request
-        self.recent_requests.append(datetime.now())
+        self.recent_requests.append(DeterministicClock.now())
 
         # Clean old requests (> 1 minute)
-        cutoff = datetime.now() - timedelta(seconds=60)
+        cutoff = DeterministicClock.now() - timedelta(seconds=60)
         self.recent_requests = [t for t in self.recent_requests if t >= cutoff]
 
         # Adjust batch parameters based on load

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Compatibility shim for core.greenlang -> greenlang migration
 This module will be deprecated in v0.3.0

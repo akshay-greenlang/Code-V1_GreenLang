@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Circuit Breaker for Factor Broker API Calls
 
@@ -22,6 +23,7 @@ import requests
 from datetime import datetime
 
 from greenlang.resilience import (
+from greenlang.determinism import DeterministicClock
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitOpenError,
@@ -177,7 +179,7 @@ class FactorBrokerCircuitBreaker:
             "region": region,
             "value": 0.5,  # kg CO2e per unit
             "unit": "kg_co2e",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "quality": "high",
         }
 
@@ -254,7 +256,7 @@ class FactorBrokerCircuitBreaker:
             "region": region,
             "value": 1.0,  # Conservative default
             "unit": "kg_co2e",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "quality": "fallback",
             "note": "Conservative default - external API unavailable",
         }

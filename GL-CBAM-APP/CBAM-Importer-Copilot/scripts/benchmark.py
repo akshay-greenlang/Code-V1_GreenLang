@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 CBAM Importer Copilot - Performance Benchmarks
 
@@ -22,6 +23,7 @@ import psutil
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any
+from greenlang.determinism import DeterministicClock
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -222,7 +224,7 @@ def benchmark_agent_3(emissions_data: Dict[str, Any], num_records: int) -> Dict[
 
     metadata = {
         'input_file': 'benchmark.csv',
-        'processing_date': datetime.now().isoformat()
+        'processing_date': DeterministicClock.now().isoformat()
     }
 
     monitor.start()
@@ -374,7 +376,7 @@ def run_benchmark_suite(config_name: str = 'medium') -> Dict[str, Any]:
 
     results = {
         'benchmark_config': config,
-        'timestamp': datetime.now().isoformat(),
+        'timestamp': DeterministicClock.now().isoformat(),
         'system_info': {
             'cpu_count': psutil.cpu_count(),
             'total_memory_mb': round(psutil.virtual_memory().total / 1024 / 1024, 2),

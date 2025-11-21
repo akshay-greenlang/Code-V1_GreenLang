@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Test the dev interface agents command"""
 
 from greenlang.cli.dev_interface import GreenLangDevInterface

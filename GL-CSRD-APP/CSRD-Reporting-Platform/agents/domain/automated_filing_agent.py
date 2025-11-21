@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Automated Filing Agent
 
@@ -21,6 +22,7 @@ import logging
 import json
 from datetime import datetime
 from lxml import etree
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -330,13 +332,13 @@ class CSRDAutomatedFilingAgent:
         # In production, this would make actual API call
         # For now, we simulate successful submission
 
-        submission_id = f"SUB-{country_code}-{company_lei}-{reporting_year}-{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        submission_id = f"SUB-{country_code}-{company_lei}-{reporting_year}-{DeterministicClock.now().strftime('%Y%m%d%H%M%S')}"
 
         result = {
             'status': 'success',
             'submission_id': submission_id,
             'confirmation_number': f"CONF-{submission_id}",
-            'submission_timestamp': datetime.now().isoformat(),
+            'submission_timestamp': DeterministicClock.now().isoformat(),
             'country_code': country_code,
             'company_lei': company_lei,
             'reporting_year': reporting_year,
@@ -388,7 +390,7 @@ class CSRDAutomatedFilingAgent:
         status = {
             'submission_id': submission_id,
             'status': 'accepted',
-            'last_updated': datetime.now().isoformat(),
+            'last_updated': DeterministicClock.now().isoformat(),
             'processing_stage': 'validation',
             'messages': [
                 'Package received',

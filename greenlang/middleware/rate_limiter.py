@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Enterprise Rate Limiting Middleware for GreenLang
 
@@ -14,6 +15,8 @@ from collections import defaultdict, deque
 from enum import Enum
 import threading
 from functools import wraps
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 
 class RateLimitStrategy(Enum):
@@ -124,7 +127,7 @@ class RateLimiter:
             return self._check_adaptive(client_id)
         else:
             return RateLimitStatus(
-                allowed=True, limit=0, remaining=0, reset_at=datetime.utcnow()
+                allowed=True, limit=0, remaining=0, reset_at=DeterministicClock.utcnow()
             )
 
     def _check_fixed_window(self, client_id: str) -> RateLimitStatus:
@@ -277,7 +280,7 @@ class RateLimiter:
         # In production, this would check actual system metrics
         import random
 
-        return random.random()
+        return deterministic_random().random()
 
 
 class TenantRateLimiter(RateLimiter):
@@ -349,7 +352,7 @@ class TenantRateLimiter(RateLimiter):
                 allowed=True,
                 limit=999999,
                 remaining=999999,
-                reset_at=datetime.utcnow() + timedelta(hours=1),
+                reset_at=DeterministicClock.utcnow() + timedelta(hours=1),
             )
 
         # Use tenant-specific config

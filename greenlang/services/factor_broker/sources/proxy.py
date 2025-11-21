@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Proxy Factor Source
 GL-VCCI Scope 3 Platform
@@ -15,6 +16,7 @@ import statistics
 
 from .base import FactorSource
 from ..models import (
+from greenlang.determinism import DeterministicClock
     FactorRequest,
     FactorResponse,
     FactorMetadata,
@@ -288,7 +290,7 @@ class ProxySource(FactorSource):
         Raises:
             ProxyCalculationError: If proxy calculation fails
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             self.validate_request(request)
@@ -327,7 +329,7 @@ class ProxySource(FactorSource):
                 source_version=self.version,
                 source_dataset_id=f"proxy_{category}_{region}",
                 gwp_standard=request.gwp_standard,
-                reference_year=datetime.utcnow().year,
+                reference_year=DeterministicClock.utcnow().year,
                 geographic_scope=region,
                 technology_scope="Category average",
                 data_quality=data_quality,
@@ -367,7 +369,7 @@ class ProxySource(FactorSource):
             response.provenance.calculation_hash = self.calculate_provenance_hash(response)
 
             # Log proxy calculation
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
             self.log_lookup(request, success=True, latency_ms=latency_ms)
 
             logger.warning(
@@ -380,7 +382,7 @@ class ProxySource(FactorSource):
         except ProxyCalculationError:
             raise
         except Exception as e:
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
             self.log_lookup(
                 request,
                 success=False,
@@ -405,7 +407,7 @@ class ProxySource(FactorSource):
         return {
             "status": "healthy",
             "latency_ms": 0.0,
-            "last_check": datetime.utcnow(),
+            "last_check": DeterministicClock.utcnow(),
             "error": None,
             "categories_available": len(self.category_factors)
         }

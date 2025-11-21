@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Main entry point for the gl CLI when running as module
 """

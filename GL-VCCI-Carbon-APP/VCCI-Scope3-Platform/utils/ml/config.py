@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI ML Module - Configuration
 # Spend Classification ML System - Configuration Models
 

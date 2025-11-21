@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Completeness Checker"""
 import logging
 from typing import Dict, Any, List

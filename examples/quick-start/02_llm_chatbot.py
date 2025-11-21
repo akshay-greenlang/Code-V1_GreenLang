@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 2: Simple LLM Chatbot
 ==============================

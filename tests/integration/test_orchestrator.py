@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Test script to verify orchestrator functionality"""
 
 from greenlang.core.orchestrator import Orchestrator

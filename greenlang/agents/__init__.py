@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Lazy imports to avoid requiring analytics dependencies at import time
 # Import base agent directly as it has no heavy dependencies
 from greenlang.agents.base import BaseAgent

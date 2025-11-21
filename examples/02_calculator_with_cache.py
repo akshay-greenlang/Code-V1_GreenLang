@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example 2: Calculator with Caching
 
@@ -21,6 +22,7 @@ from decimal import Decimal, getcontext
 from typing import Dict, Tuple
 import hashlib
 import time
+from greenlang.determinism import FinancialDecimal
 
 # Set decimal precision
 getcontext().prec = 10
@@ -74,7 +76,7 @@ class CachedCalculatorAgent(Agent[CalculationInput, Dict]):
     def _get_cache_key(self, input_data: CalculationInput) -> str:
         """Generate cache key from input"""
         key_string = f"{input_data.fuel_type}:{input_data.consumption}:{input_data.unit}"
-        return hashlib.md5(key_string.encode()).hexdigest()
+        return hashlib.sha256(key_string.encode()).hexdigest()
 
     def _convert_units(self, consumption: Decimal, from_unit: str, to_unit: str = "kWh") -> Decimal:
         """Convert units to standard unit"""
@@ -130,11 +132,11 @@ class CachedCalculatorAgent(Agent[CalculationInput, Dict]):
 
         result = {
             "fuel_type": input_data.fuel_type,
-            "consumption": float(input_data.consumption),
+            "consumption": FinancialDecimal.from_string(input_data.consumption),
             "unit": input_data.unit,
-            "emissions_kg": float(emissions_kg),
-            "emissions_tons": float(emissions_tons),
-            "emission_factor": float(factor),
+            "emissions_kg": FinancialDecimal.from_string(emissions_kg),
+            "emissions_tons": FinancialDecimal.from_string(emissions_tons),
+            "emission_factor": FinancialDecimal.from_string(factor),
             "calculation_time_ms": calculation_time * 1000,
             "from_cache": False,
             "cache_hits": self.cache_hits,

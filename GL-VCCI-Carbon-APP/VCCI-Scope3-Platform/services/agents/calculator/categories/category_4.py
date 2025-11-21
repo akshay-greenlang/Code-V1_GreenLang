@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 4: Upstream Transportation & Distribution Calculator
 GL-VCCI Scope 3 Platform
@@ -24,6 +25,7 @@ from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     Category4Input,
     CalculationResult,
     DataQualityInfo,
@@ -104,7 +106,7 @@ class Category4Calculator:
             TransportModeError: If transport mode is unsupported
             ISO14083ComplianceError: If calculation fails compliance
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         # Validate input
         self._validate_input(input_data)

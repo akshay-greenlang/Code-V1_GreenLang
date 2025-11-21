@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Test script to demonstrate enforcement system
 Creates example violations and shows how they're caught

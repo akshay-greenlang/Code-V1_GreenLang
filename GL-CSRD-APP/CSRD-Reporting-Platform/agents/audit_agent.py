@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AuditAgent - ESRS Compliance Audit & Validation Agent
 
@@ -30,6 +31,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -380,7 +382,7 @@ class AuditAgent:
         Returns:
             Validation result dictionary
         """
-        self.stats["start_time"] = datetime.now()
+        self.stats["start_time"] = DeterministicClock.now()
 
         # Merge all data for validation
         full_data = {
@@ -416,7 +418,7 @@ class AuditAgent:
         else:
             compliance_status = "PASS"
 
-        self.stats["end_time"] = datetime.now()
+        self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
 
         # Build compliance report
@@ -551,7 +553,7 @@ class AuditAgent:
         # Create audit package metadata
         audit_package = AuditPackage(
             package_id=package_id,
-            created_at=datetime.now().isoformat(),
+            created_at=DeterministicClock.now().isoformat(),
             company_name=company_name,
             reporting_year=reporting_year,
             compliance_status=compliance_report["compliance_report"]["compliance_status"],

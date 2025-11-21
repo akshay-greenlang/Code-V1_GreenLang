@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # SAP Delta Sync Jobs
 # Celery tasks for incremental SAP data synchronization
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Scanner for naked numbers in test fixtures and AI response files.
 

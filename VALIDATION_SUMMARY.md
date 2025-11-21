@@ -299,7 +299,7 @@ Code V1_GreenLang/
 
 ### Python Version
 - **Minimum:** Python 3.7+
-- **Recommended:** Python 3.9+
+- **Recommended:** Python 3.10+
 - **Tested:** Python 3.13
 
 ### Platform Support

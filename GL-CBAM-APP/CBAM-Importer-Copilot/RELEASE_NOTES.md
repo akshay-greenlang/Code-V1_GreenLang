@@ -239,7 +239,7 @@ python scripts/benchmark.py --config medium
 ### Requirements
 
 **System Requirements:**
-- Python 3.9+
+- Python 3.10+
 - 4GB RAM (8GB recommended)
 - GreenLang CLI v1.0+
 

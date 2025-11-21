@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from pydantic import BaseModel, Field, validator
 from typing import Optional, List, Dict, Any, Literal
 from enum import Enum

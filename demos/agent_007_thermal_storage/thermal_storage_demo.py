@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Thermal Storage Agent Demo Script
 Demonstrates real-world use cases for Agent #7: ThermalStorageAgent_AI

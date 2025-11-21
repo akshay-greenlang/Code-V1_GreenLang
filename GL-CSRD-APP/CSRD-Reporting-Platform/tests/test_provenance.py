@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD/ESRS Digital Reporting Platform - Provenance Tests
 ========================================================
@@ -831,11 +832,14 @@ class TestSHA256Hashing:
         """Test different hash algorithms."""
         sha256_hash = hash_file(sample_csv_file, algorithm="sha256")
         sha512_hash = hash_file(sample_csv_file, algorithm="sha512")
-        md5_hash = hash_file(sample_csv_file, algorithm="md5")
+
+        # MD5 is deprecated and now uses SHA256 instead
+        with pytest.warns(UserWarning, match="MD5 is cryptographically broken"):
+            md5_hash = hash_file(sample_csv_file, algorithm="md5")
 
         assert len(sha256_hash["hash_value"]) == 64
         assert len(sha512_hash["hash_value"]) == 128
-        assert len(md5_hash["hash_value"]) == 32
+        assert len(md5_hash["hash_value"]) == 64  # SHA256 hex digest length (not 32 for MD5)
 
     def test_hash_file_not_found(self):
         """Test hashing non-existent file."""

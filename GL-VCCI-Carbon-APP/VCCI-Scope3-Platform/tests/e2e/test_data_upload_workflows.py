@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 E2E Tests: Data Upload → Processing → Reporting Workflows (Scenarios 16-25)
 
@@ -26,6 +27,8 @@ from uuid import uuid4
 import pytest
 
 from tests.e2e.conftest import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     E2ETestConfig,
     assert_dqi_in_range,
     assert_emissions_within_tolerance,
@@ -91,14 +94,14 @@ async def test_scenario_16_csv_upload_pcf_integration(
     # Write 5,000 rows
     for i in range(5000):
         writer.writerow({
-            'po_number': f'PO-{uuid4().hex[:10].upper()}',
+            'po_number': f'PO-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:10].upper()}',
             'supplier_name': f'Supplier-{i % 100:03d}',  # 100 unique suppliers
             'item_description': f'Product {i % 200}',
             'quantity': 10,
             'unit_price': 100.0,
             'total_amount': 1000.0,
             'currency': 'USD',
-            'posting_date': (datetime.utcnow() - timedelta(days=i % 90)).isoformat(),
+            'posting_date': (DeterministicClock.utcnow() - timedelta(days=i % 90)).isoformat(),
             'category': 'Raw Materials'
         })
 
@@ -108,7 +111,7 @@ async def test_scenario_16_csv_upload_pcf_integration(
 
     # Mock upload result
     upload_result = {
-        "file_id": str(uuid4()),
+        "file_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "filename": "procurement_data.csv",
         "rows_uploaded": 5000,
         "file_size_bytes": 450000,
@@ -163,7 +166,7 @@ async def test_scenario_16_csv_upload_pcf_integration(
     performance_monitor.start_timer("initial_calculation")
 
     initial_calculation = {
-        "calculation_id": str(uuid4()),
+        "calculation_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "category": "1_purchased_goods_services",
         "tier_used": "tier_3_spend_based",
         "total_emissions_tco2e": 24567.89,
@@ -196,7 +199,7 @@ async def test_scenario_16_csv_upload_pcf_integration(
     pcf_imports = []
     for i in range(500):
         pcf_imports.append({
-            "pcf_id": str(uuid4()),
+            "pcf_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             "supplier_id": f"SUP-{i % 50:03d}",  # 50 suppliers with PCFs
             "product_id": f"PROD-{i % 100}",
             "pcf_value_kg_co2e": 15.5,
@@ -232,7 +235,7 @@ async def test_scenario_16_csv_upload_pcf_integration(
     performance_monitor.start_timer("recalculation")
 
     recalculation = {
-        "calculation_id": str(uuid4()),
+        "calculation_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "category": "1_purchased_goods_services",
         "tier_breakdown": {
             "tier_1_supplier_specific": {
@@ -284,7 +287,7 @@ async def test_scenario_16_csv_upload_pcf_integration(
 
     # ----- Step 9: Generate Before/After Comparison Report -----
     comparison_report = {
-        "report_id": str(uuid4()),
+        "report_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "tenant_id": test_tenant.id,
         "comparison_type": "tier_3_vs_tier_1",
         "before": {
@@ -343,7 +346,7 @@ async def test_scenario_17_excel_upload_hotspot_analysis(
     # ----- Step 1: Create and Upload Excel File -----
     # Mock Excel upload with multiple sheets
     excel_upload = {
-        "file_id": str(uuid4()),
+        "file_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "filename": "procurement_data.xlsx",
         "sheets": {
             "purchase_orders": {
@@ -445,7 +448,7 @@ async def test_scenario_17_excel_upload_hotspot_analysis(
 
     # ----- Step 6: Generate Hotspot Report -----
     hotspot_report = {
-        "report_id": str(uuid4()),
+        "report_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "tenant_id": test_tenant.id,
         "analysis_type": "pareto_80_20",
         "summary": {
@@ -511,7 +514,7 @@ async def test_scenario_18_xml_upload_iso14083(
 </shipments>"""
 
     xml_upload = {
-        "file_id": str(uuid4()),
+        "file_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "filename": "logistics_data.xml",
         "shipments_count": 1000,
         "file_size_bytes": 150000
@@ -554,7 +557,7 @@ async def test_scenario_18_xml_upload_iso14083(
 
     # ----- Step 4: Generate ISO 14083 Report -----
     iso_report = {
-        "report_id": str(uuid4()),
+        "report_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "standard": "ISO 14083:2023",
         "conformance_level": "full",
         "emissions_summary": {
@@ -599,7 +602,7 @@ async def test_scenario_19_pdf_ocr_extraction(
 
     # ----- Step 1: Upload PDF -----
     pdf_upload = {
-        "file_id": str(uuid4()),
+        "file_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "filename": "invoice_batch_001.pdf",
         "pages": 10,
         "file_size_bytes": 5_000_000
@@ -696,12 +699,12 @@ async def test_scenario_20_json_api_realtime(
         "tenant_id": test_tenant.id,
         "transactions": [
             {
-                "transaction_id": str(uuid4()),
+                "transaction_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 "supplier_name": f"Supplier {i}",
                 "amount": 1000.0,
                 "currency": "USD",
                 "category": "Raw Materials",
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": DeterministicClock.utcnow().isoformat()
             }
             for i in range(100)
         ]

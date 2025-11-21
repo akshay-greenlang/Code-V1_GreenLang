@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang I/O Utilities
 Multi-format data reading, writing, and resource management.

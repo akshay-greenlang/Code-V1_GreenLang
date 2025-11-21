@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 1: Purchased Goods & Services Calculator
 GL-VCCI Scope 3 Platform
@@ -17,6 +18,7 @@ from typing import Optional, Tuple, Dict, Any
 from datetime import datetime
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     Category1Input,
     CalculationResult,
     DataQualityInfo,
@@ -92,7 +94,7 @@ class Category1Calculator:
             DataValidationError: If input data is invalid
             TierFallbackError: If all tiers fail
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         # Validate input
         self._validate_input(input_data)

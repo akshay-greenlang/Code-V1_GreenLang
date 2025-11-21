@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Performance Report Generator
 
@@ -42,6 +43,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 import pandas as pd
 import matplotlib
+from greenlang.determinism import DeterministicClock
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -607,10 +609,10 @@ class PerformanceReportGenerator:
         template = Template(self.HTML_TEMPLATE)
         html = template.render(
             test_name=test_name,
-            test_date=datetime.now().strftime('%Y-%m-%d'),
+            test_date=DeterministicClock.now().strftime('%Y-%m-%d'),
             duration='N/A',
             host=host,
-            generated_at=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            generated_at=DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S'),
             summary=summary,
             charts=charts,
             targets=targets,

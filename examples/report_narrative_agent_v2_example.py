@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example Usage: Report Narrative Agent V2 (InsightAgent Pattern)
 Demonstrates the hybrid architecture: deterministic calculations + AI narratives

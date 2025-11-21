@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Create a sample PDF for demo corpus.
 

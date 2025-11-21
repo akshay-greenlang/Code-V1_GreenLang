@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Alert rule evaluation engine.
 
@@ -20,6 +21,7 @@ from dataclasses import dataclass, field
 import aiohttp
 from pydantic import BaseModel, Field, validator
 import redis.asyncio as aioredis
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -260,7 +262,7 @@ class AlertEngine:
             return
 
         rule = self.rules[rule_id]
-        rule.silenced_until = datetime.utcnow() + timedelta(seconds=duration)
+        rule.silenced_until = DeterministicClock.utcnow() + timedelta(seconds=duration)
 
         # Update in Redis
         await self.redis_client.set(
@@ -319,7 +321,7 @@ class AlertEngine:
                     continue
 
                 # Check if silenced
-                if rule.silenced_until and datetime.utcnow() < rule.silenced_until:
+                if rule.silenced_until and DeterministicClock.utcnow() < rule.silenced_until:
                     continue
 
                 try:
@@ -341,13 +343,13 @@ class AlertEngine:
 
         if last_eval:
             last_eval_time = datetime.fromisoformat(last_eval)
-            if (datetime.utcnow() - last_eval_time).total_seconds() < rule.evaluation_interval:
+            if (DeterministicClock.utcnow() - last_eval_time).total_seconds() < rule.evaluation_interval:
                 return
 
         # Update last evaluation time
         await self.redis_client.set(
             last_eval_key,
-            datetime.utcnow().isoformat()
+            DeterministicClock.utcnow().isoformat()
         )
 
         # Evaluate based on rule type
@@ -388,12 +390,12 @@ class AlertEngine:
         if triggered:
             if instance.state == AlertState.OK:
                 instance.state = AlertState.PENDING
-                instance.started_at = datetime.utcnow()
+                instance.started_at = DeterministicClock.utcnow()
 
             elif instance.state == AlertState.PENDING:
                 # Check if condition has been true for required duration
                 if rule.for_duration > 0:
-                    duration = (datetime.utcnow() - instance.started_at).total_seconds()
+                    duration = (DeterministicClock.utcnow() - instance.started_at).total_seconds()
                     if duration >= rule.for_duration:
                         instance.state = AlertState.FIRING
                         await self._send_notifications(rule, instance)
@@ -406,7 +408,7 @@ class AlertEngine:
                 instance.state = AlertState.RESOLVED
                 await self._send_notifications(rule, instance)
 
-        instance.last_evaluated = datetime.utcnow()
+        instance.last_evaluated = DeterministicClock.utcnow()
         instance.value = metric_value
 
         # Save instance
@@ -440,7 +442,7 @@ class AlertEngine:
             return
 
         # Check if metric is absent
-        absent_duration = (datetime.utcnow() - last_seen).total_seconds()
+        absent_duration = (DeterministicClock.utcnow() - last_seen).total_seconds()
         triggered = absent_duration >= duration
 
         instance = await self._get_or_create_instance(rule, absent_duration)
@@ -452,7 +454,7 @@ class AlertEngine:
             instance.state = AlertState.RESOLVED
             await self._send_notifications(rule, instance)
 
-        instance.last_evaluated = datetime.utcnow()
+        instance.last_evaluated = DeterministicClock.utcnow()
         self.alert_instances[instance.fingerprint] = instance
 
     async def _evaluate_anomaly_rule(self, rule: AlertRule) -> None:
@@ -547,8 +549,8 @@ class AlertEngine:
                 state=AlertState.OK,
                 value=value,
                 labels=labels,
-                started_at=datetime.utcnow(),
-                last_evaluated=datetime.utcnow(),
+                started_at=DeterministicClock.utcnow(),
+                last_evaluated=DeterministicClock.utcnow(),
                 fingerprint=fingerprint
             )
             self.alert_instances[fingerprint] = instance
@@ -564,7 +566,7 @@ class AlertEngine:
         """
         # Check group interval
         if instance.last_notified:
-            interval = (datetime.utcnow() - instance.last_notified).total_seconds()
+            interval = (DeterministicClock.utcnow() - instance.last_notified).total_seconds()
             if interval < rule.group_interval:
                 return
 
@@ -585,7 +587,7 @@ class AlertEngine:
             except Exception as e:
                 logger.error(f"Error sending notification via {channel}: {e}")
 
-        instance.last_notified = datetime.utcnow()
+        instance.last_notified = DeterministicClock.utcnow()
         instance.notification_count += 1
 
         # Save alert history
@@ -691,7 +693,7 @@ class AlertEngine:
                         {'title': 'Started', 'value': instance.started_at.isoformat(), 'short': True}
                     ],
                     'footer': 'GreenLang Alerts',
-                    'ts': int(datetime.utcnow().timestamp())
+                    'ts': int(DeterministicClock.utcnow().timestamp())
                 }
             ]
         }
@@ -802,14 +804,14 @@ class AlertEngine:
             'state': instance.state.value,
             'value': instance.value,
             'labels': instance.labels,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': DeterministicClock.utcnow().isoformat(),
             'fingerprint': instance.fingerprint
         }
 
         # Save to Redis sorted set
         await self.redis_client.zadd(
             f"alert:history:{rule.id}",
-            {json.dumps(history_entry): datetime.utcnow().timestamp()}
+            {json.dumps(history_entry): DeterministicClock.utcnow().timestamp()}
         )
 
         # Trim old history (keep last 1000 entries)
@@ -824,7 +826,7 @@ class AlertEngine:
         while self.running:
             await asyncio.sleep(3600)  # Run every hour
 
-            current_time = datetime.utcnow()
+            current_time = DeterministicClock.utcnow()
             to_remove = []
 
             for fingerprint, instance in self.alert_instances.items():

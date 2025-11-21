@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang AgentSpec V2.0 Validator
 Validates agent specifications against template and enforces tool-first design.

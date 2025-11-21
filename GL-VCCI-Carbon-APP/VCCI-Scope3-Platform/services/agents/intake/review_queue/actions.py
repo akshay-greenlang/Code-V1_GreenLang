@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Review Actions
 
@@ -14,6 +15,7 @@ from datetime import datetime
 
 from ..models import ReviewQueueItem, ReviewAction, ReviewStatus
 from ..exceptions import InvalidActionError, ReviewAlreadyCompletedError
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ class ReviewActions:
         item.resolved_canonical_name = canonical_name
         item.action_taken = ReviewAction.APPROVE
         item.reviewed_by = reviewer
-        item.reviewed_at = datetime.utcnow()
+        item.reviewed_at = DeterministicClock.utcnow()
         item.reviewer_notes = notes
 
         item.action_details = {
@@ -102,7 +104,7 @@ class ReviewActions:
         item.status = ReviewStatus.REJECTED
         item.action_taken = ReviewAction.REJECT
         item.reviewed_by = reviewer
-        item.reviewed_at = datetime.utcnow()
+        item.reviewed_at = DeterministicClock.utcnow()
         item.reviewer_notes = notes or reason
 
         item.action_details = {
@@ -145,7 +147,7 @@ class ReviewActions:
         item.resolved_canonical_name = merged_canonical_name
         item.action_taken = ReviewAction.MERGE
         item.reviewed_by = reviewer
-        item.reviewed_at = datetime.utcnow()
+        item.reviewed_at = DeterministicClock.utcnow()
         item.reviewer_notes = notes
 
         item.action_details = {
@@ -185,7 +187,7 @@ class ReviewActions:
         item.status = ReviewStatus.SPLIT
         item.action_taken = ReviewAction.SPLIT
         item.reviewed_by = reviewer
-        item.reviewed_at = datetime.utcnow()
+        item.reviewed_at = DeterministicClock.utcnow()
         item.reviewer_notes = notes
 
         item.action_details = {
@@ -226,7 +228,7 @@ class ReviewActions:
 
         item.action_details = {
             "info_requested": info_requested,
-            "requested_at": datetime.utcnow().isoformat(),
+            "requested_at": DeterministicClock.utcnow().isoformat(),
             "requested_by": reviewer,
         }
 

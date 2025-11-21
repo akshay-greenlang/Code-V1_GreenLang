@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Initial Phase 4 schema - Authentication and Authorization
 
 Revision ID: 001_phase4_init

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Infrastructure Health Checker
 
@@ -16,6 +17,7 @@ from typing import Dict, List, Any, Set, Tuple
 from dataclasses import dataclass, asdict, field
 from datetime import datetime
 from collections import defaultdict
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -620,7 +622,7 @@ class HealthChecker:
 
         # Create report
         report = HealthReport(
-            timestamp=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            timestamp=DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S"),
             directory=directory,
             metrics=metrics,
             issues=self.scanner.issues,

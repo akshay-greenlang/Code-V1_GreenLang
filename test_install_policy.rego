@@ -23,8 +23,10 @@ network_policy_present if {
 	count(input.pack.policy.network) > 0
 }
 
-# Emission factor vintage must be recent (2024+)
+# SECURITY FIX: Emission factor vintage is MANDATORY (2024+)
+# No bypass allowed - ensures climate data quality
 vintage_requirement_met if {
+	input.pack.policy.ef_vintage_min
 	input.pack.policy.ef_vintage_min >= 2024
 }
 
@@ -39,9 +41,16 @@ reason := "missing network allowlist - must specify allowed domains" if {
 	license_allowed
 }
 
+reason := "emission factor vintage missing - must declare ef_vintage_min" if {
+	license_allowed
+	network_policy_present
+	not input.pack.policy.ef_vintage_min
+}
+
 reason := "emission factor vintage too old - must be 2024 or newer" if {
 	license_allowed
 	network_policy_present
+	input.pack.policy.ef_vintage_min
 	not vintage_requirement_met
 }
 

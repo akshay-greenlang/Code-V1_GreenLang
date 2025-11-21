@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Financial Metrics Tools
 ==================================
@@ -319,7 +320,8 @@ class FinancialMetricsTool(BaseTool):
         try:
             # Use numpy's IRR calculation (more robust)
             return float(np.irr(cash_flows))
-        except:
+        except Exception as e:
+            self.logger.debug(f"Numpy IRR failed: {e}, trying Newton's method")
             try:
                 # Fallback to manual Newton's method
                 def npv_func(rate):
@@ -333,7 +335,8 @@ class FinancialMetricsTool(BaseTool):
                     return float(irr)
                 else:
                     return None
-            except:
+            except Exception as e:
+                self.logger.warning(f"IRR calculation failed: {e}")
                 return None
 
     def _calculate_simple_payback(self, cumulative_cash_flow: List[float]) -> Optional[float]:

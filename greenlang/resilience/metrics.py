@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Circuit Breaker Metrics for Prometheus
 

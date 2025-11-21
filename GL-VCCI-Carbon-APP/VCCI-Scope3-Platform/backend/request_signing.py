@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Request Signing & Verification System
 GL-VCCI Scope 3 Platform
@@ -28,6 +29,7 @@ from datetime import datetime, timedelta
 
 from fastapi import Request, HTTPException, status, Depends
 import redis.asyncio as redis
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -110,7 +112,7 @@ def generate_timestamp() -> str:
     Example:
         >>> timestamp = generate_timestamp()
     """
-    return datetime.utcnow().isoformat()
+    return DeterministicClock.utcnow().isoformat()
 
 
 def compute_signature(
@@ -239,7 +241,7 @@ def verify_timestamp(timestamp: str, tolerance_seconds: int = TIMESTAMP_TOLERANC
     """
     try:
         request_time = datetime.fromisoformat(timestamp)
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
 
         # Check if timestamp is too old
         age = now - request_time
@@ -527,7 +529,7 @@ async def log_signed_request(
     #     "signature_data": signature_data,
     #     "user_id": user_id,
     #     "ip_address": ip_address,
-    #     "timestamp": datetime.utcnow().isoformat(),
+    #     "timestamp": DeterministicClock.utcnow().isoformat(),
     # })
 
 

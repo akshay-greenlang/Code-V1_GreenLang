@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Load Testing Utilities
 
@@ -25,6 +26,8 @@ import psutil
 import requests
 from io import StringIO
 import csv as csv_module
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 
 # ============================================================================
@@ -95,9 +98,9 @@ class RealisticDataGenerator:
 
     def generate_supplier_name(self) -> str:
         """Generate realistic supplier company name."""
-        prefix = random.choice(self.SUPPLIER_PREFIXES)
-        type_ = random.choice(self.SUPPLIER_TYPES)
-        suffix = random.choice(self.SUPPLIER_SUFFIXES)
+        prefix = deterministic_random().choice(self.SUPPLIER_PREFIXES)
+        type_ = deterministic_random().choice(self.SUPPLIER_TYPES)
+        suffix = deterministic_random().choice(self.SUPPLIER_SUFFIXES)
         return f"{prefix} {type_} {suffix}"
 
     def generate_product_data(self) -> Tuple[str, str, str, float, str]:
@@ -107,9 +110,9 @@ class RealisticDataGenerator:
         Returns:
             Tuple of (category, product_name, unit, quantity, unit_price)
         """
-        category = random.choice(list(self.PRODUCTS.keys()))
-        product_name = random.choice(self.PRODUCTS[category])
-        unit = random.choice(self.UNITS[category])
+        category = deterministic_random().choice(list(self.PRODUCTS.keys()))
+        product_name = deterministic_random().choice(self.PRODUCTS[category])
+        unit = deterministic_random().choice(self.UNITS[category])
 
         # Log-normal distribution for realistic quantities
         if unit in ["kg", "lb", "ton"]:
@@ -135,8 +138,8 @@ class RealisticDataGenerator:
 
     def generate_location(self) -> Tuple[str, str]:
         """Generate realistic country and city pair."""
-        country = random.choice(self.COUNTRIES)
-        city = random.choice(self.CITIES.get(country, ["N/A"]))
+        country = deterministic_random().choice(self.COUNTRIES)
+        city = deterministic_random().choice(self.CITIES.get(country, ["N/A"]))
         return country, city
 
     def generate_transaction_id(self) -> str:
@@ -160,8 +163,8 @@ class RealisticDataGenerator:
         spend_usd = round(quantity * unit_price, 2)
 
         # Random dates within last year
-        days_ago = random.randint(1, 365)
-        transaction_date = (datetime.now() - timedelta(days=days_ago)).strftime("%Y-%m-%d")
+        days_ago = deterministic_random().randint(1, 365)
+        transaction_date = (DeterministicClock.now() - timedelta(days=days_ago)).strftime("%Y-%m-%d")
 
         return {
             "transaction_id": self.generate_transaction_id(),
@@ -176,9 +179,9 @@ class RealisticDataGenerator:
             "unit_price": unit_price,
             "spend_usd": spend_usd,
             "currency": "USD",
-            "department": random.choice(["Procurement", "Manufacturing", "R&D", "Operations"]),
-            "cost_center": f"CC-{random.randint(1000, 9999)}",
-            "buyer_email": f"buyer{random.randint(1, 100)}@company.com"
+            "department": deterministic_random().choice(["Procurement", "Manufacturing", "R&D", "Operations"]),
+            "cost_center": f"CC-{deterministic_random().randint(1000, 9999)}",
+            "buyer_email": f"buyer{deterministic_random().randint(1, 100)}@company.com"
         }
 
 
@@ -331,7 +334,7 @@ class SystemMonitor:
         net_recv_mb = (net_io.bytes_recv - self.initial_net_io.bytes_recv) / (1024 * 1024)
 
         return {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "elapsed_seconds": time.time() - self.start_time,
             "cpu": {
                 "percent_overall": cpu_percent,
@@ -460,7 +463,7 @@ class PerformanceValidator:
             Validation report with pass/fail for each metric
         """
         validation_report = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "latency": self.validate_latency(
                 results.get("p95_latency_ms", 0),
                 results.get("p99_latency_ms", 0)

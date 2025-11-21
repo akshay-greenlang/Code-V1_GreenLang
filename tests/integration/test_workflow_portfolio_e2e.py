@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Portfolio workflow integration tests.
 """
@@ -5,6 +6,7 @@ import pytest
 import json
 from pathlib import Path
 from tests.integration.utils import (
+from greenlang.determinism import FinancialDecimal
     load_fixture,
     assert_numerical_invariants,
     TestIOHelper
@@ -190,7 +192,7 @@ class TestPortfolioWorkflow:
         
         # Verify all buildings are in export
         for row in read_data:
-            assert float(row['Total Emissions (tons)']) > 0
+            assert FinancialDecimal.from_string(row['Total Emissions (tons)']) > 0
     
     def test_empty_portfolio(self, workflow_runner):
         """Test handling of empty portfolio."""

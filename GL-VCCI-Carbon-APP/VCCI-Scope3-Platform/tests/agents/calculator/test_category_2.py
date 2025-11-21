@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Category 2: Capital Goods Calculator
 GL-VCCI Scope 3 Platform
@@ -21,6 +22,7 @@ from unittest.mock import AsyncMock, Mock, patch
 from typing import Dict, Any
 
 from services.agents.calculator.categories.category_2 import (
+from greenlang.determinism import DeterministicClock
     Category2Calculator,
     ASSET_CATEGORIES,
     ASSET_EMISSION_FACTORS,
@@ -88,7 +90,7 @@ def mock_provenance_builder():
     builder.hash_factor_info = Mock(return_value="test_hash_123")
     builder.build = AsyncMock(return_value=ProvenanceChain(
         calculation_id="test_calc_123",
-        timestamp=datetime.utcnow(),
+        timestamp=DeterministicClock.utcnow(),
         category=2,
         tier=TierType.TIER_2,
         input_data_hash="input_hash_123",

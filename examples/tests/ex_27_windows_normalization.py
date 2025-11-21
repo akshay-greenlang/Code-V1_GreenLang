@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 27: Windows line-ending and path normalization."""
 
 import pytest

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 14: Small portfolio calculation via SDK."""
 
 import json

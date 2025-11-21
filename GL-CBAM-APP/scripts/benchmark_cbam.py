@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GL-CBAM-APP - Performance Benchmark Script
 
@@ -37,6 +38,7 @@ from datetime import datetime
 from decimal import Decimal
 import pandas as pd
 import traceback
+from greenlang.determinism import DeterministicClock
 
 # Add project paths
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -298,7 +300,7 @@ def generate_benchmark_report(results: Dict[str, Dict[str, Any]], output_path: P
     """Generate detailed benchmark report."""
     report = {
         "benchmark_metadata": {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "system_info": {
                 "cpu_count": psutil.cpu_count(),
                 "total_memory_gb": round(psutil.virtual_memory().total / (1024**3), 2),
@@ -337,7 +339,7 @@ def main():
     print("\n" + "="*70)
     print("GL-CBAM Performance Benchmark Suite")
     print("="*70)
-    print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Timestamp: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"System: {psutil.cpu_count()} CPUs, {psutil.virtual_memory().total / (1024**3):.1f} GB RAM")
     print("="*70)
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Add monitoring and changelog to existing GreenLang agents.
 
 This script automatically integrates operational monitoring and changelog
@@ -31,6 +32,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from datetime import datetime
 import json
+from greenlang.determinism import DeterministicClock
 
 
 class MonitoringIntegrator:
@@ -366,7 +368,7 @@ class MonitoringIntegrator:
 
         # Customize template
         agent_display_name = agent_file_name.replace("_", " ").title()
-        today = datetime.now().strftime("%Y-%m-%d")
+        today = DeterministicClock.now().strftime("%Y-%m-%d")
 
         # Replace placeholders (if any specific to agent)
         customized_content = template_content

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Celery Job Tests for SAP Connector
 GL-VCCI Scope 3 Platform

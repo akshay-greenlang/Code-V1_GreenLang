@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Import Emission Factors from YAML to SQLite Database
 
@@ -18,6 +19,8 @@ from pathlib import Path
 from datetime import datetime, date
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -125,7 +128,7 @@ class EmissionFactorImporter:
 
         # Default to today if parsing fails
         logger.warning(f"Could not parse date '{date_str}', using today's date")
-        return datetime.now().date().isoformat()
+        return DeterministicClock.now().date().isoformat()
 
     def extract_unit_variations(self, factor_data: Dict[str, Any], category: str, factor_id: str) -> tuple[Dict[str, float], str, float]:
         """
@@ -198,7 +201,7 @@ class EmissionFactorImporter:
             if key in factor_data:
                 gas_vectors.append({
                     'gas_type': gas.upper(),
-                    'kg_per_unit': float(factor_data[key]),
+                    'kg_per_unit': FinancialDecimal.from_string(factor_data[key]),
                     'gwp': factor_data.get(f'{gas}_gwp')
                 })
 
@@ -231,7 +234,7 @@ class EmissionFactorImporter:
             source_org = factor_data.get('source', 'Unknown')
             source_uri = factor_data.get('uri', factor_data.get('source_uri', 'https://example.com'))
             standard = factor_data.get('standard')
-            last_updated = self.normalize_date(factor_data.get('last_updated', datetime.now().date()))
+            last_updated = self.normalize_date(factor_data.get('last_updated', DeterministicClock.now().date()))
             year_applicable = factor_data.get('year', factor_data.get('year_applicable'))
 
             # Geographic scope

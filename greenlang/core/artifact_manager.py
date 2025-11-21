@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Centralized Artifact Manager for GreenLang
 
@@ -14,6 +15,7 @@ from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 import mimetypes
+from greenlang.determinism import DeterministicClock
 
 
 class ArtifactType(Enum):
@@ -90,7 +92,22 @@ class Artifact:
         """Check if artifact exists in storage"""
         if self.storage_type == ArtifactStorage.LOCAL:
             return self.storage_path.exists()
-        # TODO: Implement for cloud storage
+
+        # NOTE: Cloud storage implementation pending
+        # When implementing S3/Azure/GCS:
+        # if self.storage_type == ArtifactStorage.S3:
+        #     import boto3
+        #     s3 = boto3.client('s3')
+        #     try:
+        #         s3.head_object(Bucket=bucket, Key=key)
+        #         return True
+        #     except:
+        #         return False
+        # elif self.storage_type == ArtifactStorage.AZURE:
+        #     from azure.storage.blob import BlobServiceClient
+        #     blob_client = BlobServiceClient.from_connection_string(conn_str)
+        #     return blob_client.get_blob_client(container, blob).exists()
+
         return False
 
     def get_size(self) -> int:
@@ -104,7 +121,19 @@ class Artifact:
         if self.storage_type == ArtifactStorage.LOCAL:
             with open(self.storage_path, mode) as f:
                 return f.read()
-        # TODO: Implement for cloud storage
+
+        # NOTE: Cloud storage read implementation pending
+        # When implementing:
+        # if self.storage_type == ArtifactStorage.S3:
+        #     import boto3
+        #     s3 = boto3.client('s3')
+        #     obj = s3.get_object(Bucket=bucket, Key=key)
+        #     return obj['Body'].read()
+        # elif self.storage_type == ArtifactStorage.AZURE:
+        #     blob_client = BlobServiceClient.from_connection_string(conn_str)
+        #     downloader = blob_client.get_blob_client(container, blob).download_blob()
+        #     return downloader.readall()
+
         raise NotImplementedError(f"Storage type {self.storage_type} not implemented")
 
     def write(self, content: Union[str, bytes], mode: str = "wb") -> None:
@@ -114,7 +143,22 @@ class Artifact:
             with open(self.storage_path, mode) as f:
                 f.write(content)
         else:
-            # TODO: Implement for cloud storage
+            # NOTE: Cloud storage write implementation pending
+            # When implementing:
+            # if self.storage_type == ArtifactStorage.S3:
+            #     import boto3
+            #     s3 = boto3.client('s3')
+            #     s3.put_object(Bucket=bucket, Key=key, Body=content)
+            # elif self.storage_type == ArtifactStorage.AZURE:
+            #     blob_client = BlobServiceClient.from_connection_string(conn_str)
+            #     blob_client.get_blob_client(container, blob).upload_blob(content, overwrite=True)
+            # elif self.storage_type == ArtifactStorage.GCS:
+            #     from google.cloud import storage
+            #     client = storage.Client()
+            #     bucket = client.bucket(bucket_name)
+            #     blob = bucket.blob(blob_name)
+            #     blob.upload_from_string(content)
+
             raise NotImplementedError(
                 f"Storage type {self.storage_type} not implemented"
             )
@@ -205,7 +249,7 @@ class ArtifactManager:
             if "step_name" in context:
                 id_parts.append(context["step_name"])
 
-        id_parts.append(datetime.utcnow().isoformat())
+        id_parts.append(DeterministicClock.utcnow().isoformat())
         id_string = "_".join(id_parts)
 
         # Create a short hash for the ID
@@ -315,7 +359,7 @@ class ArtifactManager:
             artifact_type=artifact_type,
             size=size,
             hash=file_hash,
-            created_at=datetime.utcnow(),
+            created_at=DeterministicClock.utcnow(),
             created_by=context.get("user") if context else None,
             pipeline_id=context.get("pipeline_id") if context else None,
             run_id=context.get("run_id") if context else None,
@@ -513,7 +557,7 @@ class ArtifactManager:
 
     def cleanup_old_artifacts(self, days: int = 30) -> int:
         """Remove artifacts older than specified days"""
-        cutoff = datetime.utcnow().timestamp() - (days * 24 * 60 * 60)
+        cutoff = DeterministicClock.utcnow().timestamp() - (days * 24 * 60 * 60)
         removed = 0
 
         for artifact_id in list(self.artifacts.keys()):

@@ -73,7 +73,7 @@ GL-Taxonomy-APP/
 
 ## Technology Stack
 
-- **Backend:** Python 3.11+, FastAPI
+- **Backend:** Python 3.10+, FastAPI
 - **Database:** PostgreSQL 15, Redis
 - **AI/ML:** GPT-4/Claude, LangChain, RAG
 - **Frontend:** React 18, TypeScript, Material-UI
@@ -83,7 +83,7 @@ GL-Taxonomy-APP/
 ## Quick Start
 
 ### Prerequisites
-- Python 3.11+
+- Python 3.10+
 - Node.js 18+
 - PostgreSQL 15
 - Redis 7+

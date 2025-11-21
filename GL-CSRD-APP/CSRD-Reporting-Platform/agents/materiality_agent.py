@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 MaterialityAgent - AI-Powered Double Materiality Assessment Agent
 
@@ -57,6 +58,8 @@ from greenlang.intelligence.rag.models import DocMeta, QueryResult
 # Import validation utilities
 import sys
 from pathlib import Path as PathLib
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 sys.path.append(str(PathLib(__file__).parent.parent))
 from utils.validation import (
     validate_file_size,
@@ -300,8 +303,31 @@ class RAGSystem:
 
     def _index_documents(self):
         """Index documents into RAG engine (placeholder for now)."""
-        # TODO: Implement document indexing using RAGEngine.ingest_document()
-        # This would require converting dict documents to proper document format
+        # NOTE: Document indexing implementation pending
+        # When implementing:
+        # 1. Convert dictionary documents to RAGEngine document format
+        # 2. Call RAGEngine.ingest_document() for each document
+        # 3. Create embeddings for semantic search
+        # 4. Store in vector database (Weaviate)
+        # 5. Track indexing statistics
+        # Example:
+        #   if self.rag_engine:
+        #       for doc_type, docs in self.documents.items():
+        #           for doc in docs:
+        #               # Convert to RAGEngine format
+        #               rag_doc = {
+        #                   "content": doc.get("content", ""),
+        #                   "metadata": {
+        #                       "type": doc_type,
+        #                       "source": doc.get("source"),
+        #                       "date": doc.get("date")
+        #                   }
+        #               }
+        #               # Ingest into RAG engine
+        #               self.rag_engine.ingest_document(rag_doc)
+        #       logger.info(f"Indexed {len(self.documents)} documents into RAG engine")
+
+        # Placeholder - replace with actual RAGEngine integration
         pass
 
     async def retrieve(
@@ -1049,7 +1075,7 @@ Respond in JSON format:
             "topic_id": topic_id,
             "flag_type": flag_type,
             "reason": reason,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": DeterministicClock.now().isoformat()
         })
 
     # ========================================================================
@@ -1077,7 +1103,7 @@ Respond in JSON format:
         Returns:
             Complete materiality assessment result
         """
-        self.stats["start_time"] = datetime.now()
+        self.stats["start_time"] = DeterministicClock.now()
 
         methodology = methodology or MethodologyInfo(
             impact_threshold=self.impact_threshold,
@@ -1114,13 +1140,13 @@ Respond in JSON format:
         materiality_matrix = self.generate_materiality_matrix(material_topics)
 
         # Calculate statistics
-        self.stats["end_time"] = datetime.now()
+        self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
         avg_confidence = self.stats["total_confidence"] / self.stats["topics_assessed"] if self.stats["topics_assessed"] > 0 else 0.0
 
         # Build metadata
         metadata = AssessmentMetadata(
-            assessment_id=str(uuid.uuid4()),
+            assessment_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             assessment_date=self.stats["end_time"].isoformat(),
             reporting_period={
                 "year": company_context.get("reporting_scope", {}).get("reporting_year", 2024)

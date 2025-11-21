@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Provenance Module
 # SHA-256 provenance chain tracking for audit compliance
 

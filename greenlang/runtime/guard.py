@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Runtime Guard - Enforces capability-based security at runtime
 
@@ -23,6 +24,7 @@ from pathlib import Path
 from functools import wraps
 from urllib.parse import urlparse
 import fnmatch
+from greenlang.determinism import DeterministicClock
 
 # Import OS-level sandbox if available
 try:
@@ -303,7 +305,7 @@ class RuntimeGuard:
     ):
         """Record audit event"""
         event = {
-            "timestamp": datetime.datetime.utcnow().isoformat(),
+            "timestamp": datetime.DeterministicClock.utcnow().isoformat(),
             "capability": capability,
             "operation": operation,
             "target": target,

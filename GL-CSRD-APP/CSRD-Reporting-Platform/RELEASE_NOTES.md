@@ -128,7 +128,7 @@ The **European Sustainability Reporting Standards (ESRS)** define the exact disc
 ### System Requirements
 
 **Minimum:**
-- Python 3.11+
+- Python 3.10+
 - 8 GB RAM
 - 4 CPU cores
 - 10 GB disk space

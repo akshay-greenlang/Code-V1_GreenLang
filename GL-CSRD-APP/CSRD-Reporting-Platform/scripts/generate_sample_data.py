@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Sample Data Generator
 
@@ -32,6 +33,9 @@ import click
 import pandas as pd
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Add project root to path
 project_root = Path(__file__).parent.parent
@@ -169,11 +173,11 @@ def generate_value(metric_config: Dict[str, Any]) -> Any:
     min_val, max_val = metric_config["range"]
 
     if metric_config["type"] == "int":
-        return random.randint(int(min_val), int(max_val))
+        return deterministic_random().randint(int(min_val), int(max_val))
     elif metric_config["type"] == "float":
         value = random.uniform(min_val, max_val)
         # Round to 1-2 decimal places
-        return round(value, random.choice([1, 2]))
+        return round(value, deterministic_random().choice([1, 2]))
     else:
         return random.uniform(min_val, max_val)
 
@@ -246,7 +250,7 @@ def generate_esg_data(
                 "period_start": period_start,
                 "period_end": period_end,
                 "data_quality": random.choices(DATA_QUALITY_OPTIONS, weights=DATA_QUALITY_WEIGHTS)[0],
-                "source_document": random.choice(SOURCE_DOCUMENTS),
+                "source_document": deterministic_random().choice(SOURCE_DOCUMENTS),
                 "verification_status": random.choices(VERIFICATION_STATUS_OPTIONS, weights=VERIFICATION_WEIGHTS)[0],
                 "notes": f"Generated data point {i + 1}"
             }
@@ -266,48 +270,48 @@ def generate_company_profile(company_name: str = "Sample Corporation") -> Dict[s
     import uuid
 
     profile = {
-        "company_id": str(uuid.uuid4()),
+        "company_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "legal_name": f"{company_name} B.V.",
         "commercial_name": company_name,
-        "lei_code": f"549300{''.join([str(random.randint(0, 9)) for _ in range(12)])}",
-        "country": random.choice(["NL", "DE", "FR", "ES", "IT", "BE"]),
+        "lei_code": f"549300{''.join([str(deterministic_random().randint(0, 9)) for _ in range(12)])}",
+        "country": deterministic_random().choice(["NL", "DE", "FR", "ES", "IT", "BE"]),
         "registered_address": {
-            "street": f"{random.choice(['Main', 'Industrial', 'Technology', 'Business'])} Street {random.randint(1, 200)}",
-            "city": random.choice(["Amsterdam", "Berlin", "Paris", "Madrid", "Brussels"]),
-            "postal_code": f"{random.randint(1000, 9999)} AB",
+            "street": f"{deterministic_random().choice(['Main', 'Industrial', 'Technology', 'Business'])} Street {deterministic_random().randint(1, 200)}",
+            "city": deterministic_random().choice(["Amsterdam", "Berlin", "Paris", "Madrid", "Brussels"]),
+            "postal_code": f"{deterministic_random().randint(1000, 9999)} AB",
             "country": "NL"
         },
         "sector": {
-            "nace_code": random.choice(["25.11", "26.51", "35.11", "20.14"]),
+            "nace_code": deterministic_random().choice(["25.11", "26.51", "35.11", "20.14"]),
             "nace_description": "Manufacturing",
             "industry": "Manufacturing",
-            "sub_industry": random.choice(["Industrial Equipment", "Electronics", "Chemicals", "Food & Beverage"])
+            "sub_industry": deterministic_random().choice(["Industrial Equipment", "Electronics", "Chemicals", "Food & Beverage"])
         },
         "company_size": {
-            "employee_count": random.randint(500, 5000),
-            "employee_count_fte": random.randint(500, 5000),
-            "size_category": random.choice(["Large", "Medium"]),
-            "revenue_eur": random.randint(100000000, 1000000000),
-            "total_assets_eur": random.randint(80000000, 800000000)
+            "employee_count": deterministic_random().randint(500, 5000),
+            "employee_count_fte": deterministic_random().randint(500, 5000),
+            "size_category": deterministic_random().choice(["Large", "Medium"]),
+            "revenue_eur": deterministic_random().randint(100000000, 1000000000),
+            "total_assets_eur": deterministic_random().randint(80000000, 800000000)
         },
         "reporting_period": {
             "fiscal_year": 2024,
             "start_date": "2024-01-01",
             "end_date": "2024-12-31",
             "reporting_framework": "CSRD",
-            "first_year_csrd": random.choice([True, False])
+            "first_year_csrd": deterministic_random().choice([True, False])
         },
         "csrd_applicability": {
             "csrd_applicable": True,
-            "phase": random.choice(["Phase 1", "Phase 2"]),
+            "phase": deterministic_random().choice(["Phase 1", "Phase 2"]),
             "reason": "Large company, >500 employees",
             "first_report_due": "2025-04-30"
         },
         "stock_listing": {
-            "listed": random.choice([True, False]),
+            "listed": deterministic_random().choice([True, False]),
             "exchange": "Euronext Amsterdam",
             "ticker": f"{company_name[:4].upper()}.AS",
-            "isin": f"NL{''.join([str(random.randint(0, 9)) for _ in range(10)])}"
+            "isin": f"NL{''.join([str(deterministic_random().randint(0, 9)) for _ in range(10)])}"
         },
         "sustainability_governance": {
             "sustainability_committee": True,
@@ -320,13 +324,13 @@ def generate_company_profile(company_name: str = "Sample Corporation") -> Dict[s
             "esrs_working_group": True
         },
         "previous_reporting": {
-            "nfrd_reporting": random.choice([True, False]),
-            "gri_reporting": random.choice([True, False]),
-            "tcfd_reporting": random.choice([True, False]),
-            "cdp_reporting": random.choice([True, False])
+            "nfrd_reporting": deterministic_random().choice([True, False]),
+            "gri_reporting": deterministic_random().choice([True, False]),
+            "tcfd_reporting": deterministic_random().choice([True, False]),
+            "cdp_reporting": deterministic_random().choice([True, False])
         },
         "metadata": {
-            "created_date": datetime.now().isoformat(),
+            "created_date": DeterministicClock.now().isoformat(),
             "version": "1.0",
             "data_quality_score": round(random.uniform(0.85, 0.98), 2)
         }
@@ -355,7 +359,7 @@ def generate_materiality_assessment() -> Dict[str, Any]:
             "topic_name": "Water and Marine Resources",
             "impact_materiality_score": round(random.uniform(2.5, 4.5), 1),
             "financial_materiality_score": round(random.uniform(2.0, 4.0), 1),
-            "is_material": random.choice([True, False])
+            "is_material": deterministic_random().choice([True, False])
         },
         {
             "topic_id": "S1",
@@ -374,8 +378,8 @@ def generate_materiality_assessment() -> Dict[str, Any]:
     ]
 
     assessment = {
-        "assessment_id": f"mat_assess_{int(datetime.now().timestamp())}",
-        "assessment_date": datetime.now().isoformat(),
+        "assessment_id": f"mat_assess_{int(DeterministicClock.now().timestamp())}",
+        "assessment_date": DeterministicClock.now().isoformat(),
         "methodology": "ESRS 1 Double Materiality Assessment",
         "stakeholders_consulted": [
             "Employees",
@@ -385,7 +389,7 @@ def generate_materiality_assessment() -> Dict[str, Any]:
             "Local communities"
         ],
         "material_topics": material_topics,
-        "next_assessment_date": (datetime.now() + timedelta(days=1095)).isoformat()  # 3 years
+        "next_assessment_date": (DeterministicClock.now() + timedelta(days=1095)).isoformat()  # 3 years
     }
 
     console.print(f"[green]✓ Materiality assessment generated with {len(material_topics)} topics[/green]")

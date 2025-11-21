@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Campaign manager for supplier engagement campaigns.
 
@@ -11,6 +12,8 @@ from pathlib import Path
 import uuid
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     Campaign,
     CampaignStatus,
     EmailSequence,
@@ -136,10 +139,10 @@ class CampaignManager:
         self._validate_email_sequence(email_sequence)
 
         # Generate campaign ID
-        campaign_id = f"camp_{uuid.uuid4().hex[:12]}"
+        campaign_id = f"camp_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:12]}"
 
         # Set dates
-        start = start_date or datetime.utcnow()
+        start = start_date or DeterministicClock.utcnow()
         end = start + timedelta(days=duration_days)
 
         campaign = Campaign(
@@ -221,7 +224,7 @@ class CampaignManager:
             raise CampaignAlreadyActiveError(campaign_id)
 
         campaign.status = CampaignStatus.ACTIVE
-        campaign.updated_at = datetime.utcnow()
+        campaign.updated_at = DeterministicClock.utcnow()
 
         self._save_campaigns()
 
@@ -247,7 +250,7 @@ class CampaignManager:
 
         campaign = self.campaigns[campaign_id]
         campaign.status = CampaignStatus.PAUSED
-        campaign.updated_at = datetime.utcnow()
+        campaign.updated_at = DeterministicClock.utcnow()
 
         self._save_campaigns()
 
@@ -273,7 +276,7 @@ class CampaignManager:
 
         campaign = self.campaigns[campaign_id]
         campaign.status = CampaignStatus.COMPLETED
-        campaign.updated_at = datetime.utcnow()
+        campaign.updated_at = DeterministicClock.utcnow()
 
         self._save_campaigns()
 
@@ -345,7 +348,7 @@ class CampaignManager:
         if data_submissions is not None:
             campaign.data_submissions += data_submissions
 
-        campaign.updated_at = datetime.utcnow()
+        campaign.updated_at = DeterministicClock.utcnow()
 
         self._save_campaigns()
 

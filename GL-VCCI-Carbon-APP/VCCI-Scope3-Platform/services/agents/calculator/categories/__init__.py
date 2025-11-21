@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category calculators for Scope3CalculatorAgent.
 

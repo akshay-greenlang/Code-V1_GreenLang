@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Model evaluation framework for entity resolution.
 
@@ -14,6 +15,7 @@ import logging
 import json
 import numpy as np
 from sklearn.metrics import (
+from greenlang.determinism import DeterministicClock
     precision_score,
     recall_score,
     f1_score,
@@ -102,7 +104,7 @@ class ModelEvaluator:
 
             # Store results
             self._results = {
-                "evaluation_date": datetime.utcnow().isoformat(),
+                "evaluation_date": DeterministicClock.utcnow().isoformat(),
                 "num_test_pairs": len(test_pairs),
                 "threshold": threshold,
                 "metrics": metrics,

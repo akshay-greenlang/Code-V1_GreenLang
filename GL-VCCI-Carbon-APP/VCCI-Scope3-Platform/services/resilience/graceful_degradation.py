@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Graceful Degradation for GL-VCCI Scope 3 Platform.
 
 Tier-based degradation strategy to maintain service availability:
@@ -16,6 +17,7 @@ from datetime import datetime
 from enum import Enum
 from threading import Lock
 from typing import Any, Callable, Dict, List, Optional, Set
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +133,7 @@ class ServiceHealth:
         self.failure_count = 0
         self.error_message = None
         self.response_time_ms = response_time_ms
-        self.last_check = datetime.now()
+        self.last_check = DeterministicClock.now()
 
     def mark_failure(self, error: str) -> None:
         """Mark health check as failed.
@@ -141,7 +143,7 @@ class ServiceHealth:
         """
         self.failure_count += 1
         self.error_message = error
-        self.last_check = datetime.now()
+        self.last_check = DeterministicClock.now()
 
         # Update status based on failure count
         if self.failure_count >= 3:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Calculation Application
 =======================
@@ -30,6 +31,7 @@ from greenlang.provenance import ProvenanceTracker
 from greenlang.telemetry import get_logger, get_metrics_collector, TelemetryManager
 from greenlang.config import get_config_manager
 from greenlang.validation import ValidationFramework
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -292,10 +294,10 @@ class CalculationApplication:
         Returns:
             CalculationResult object
         """
-        operation_id = f"calc_{formula_name}_{datetime.now().isoformat()}"
+        operation_id = f"calc_{formula_name}_{DeterministicClock.now().isoformat()}"
 
         with self.provenance.track_operation(operation_id):
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             try:
                 self.logger.info(f"Calculating: {formula_name}")
@@ -344,7 +346,7 @@ class CalculationApplication:
                     unit=result.metadata.get("unit", "unknown"),
                     metadata=result.metadata,
                     provenance_id=self.provenance.get_record().record_id,
-                    duration_seconds=(datetime.now() - start_time).total_seconds()
+                    duration_seconds=(DeterministicClock.now() - start_time).total_seconds()
                 )
 
                 # Cache the result
@@ -389,7 +391,7 @@ class CalculationApplication:
         self.logger.info(f"Starting batch calculation of {len(calculations)} items")
 
         with self.provenance.track_operation("batch_calculation"):
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             if parallel:
                 # Use CalculatorAgent's batch processing
@@ -432,7 +434,7 @@ class CalculationApplication:
                     )
                     all_results.append(result)
 
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             self.logger.info(
                 f"Batch calculation completed: {len(all_results)} results in {duration:.2f}s"

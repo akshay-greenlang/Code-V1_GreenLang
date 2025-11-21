@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Framework - Global Commercial Building Emissions Example
 Demonstrates comprehensive building analysis across different countries
@@ -6,6 +7,7 @@ Demonstrates comprehensive building analysis across different countries
 from greenlang.sdk.enhanced_client import GreenLangClient
 import json
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 def analyze_us_office():
@@ -341,7 +343,7 @@ def generate_detailed_report():
     report = client.generate_report(analysis, format="markdown")
     
     # Save report
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
     report_file = f"hotel_report_{timestamp}.md"
     
     if report["success"]:

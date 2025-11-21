@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Mapping Validation and Quality Assurance
 
@@ -10,6 +11,7 @@ from datetime import datetime
 import re
 
 from .models import (
+from greenlang.determinism import DeterministicClock
     ValidationResult,
     CoverageAnalysis,
     MappingResult,
@@ -458,7 +460,7 @@ class CoverageAnalyzer:
             "naics": self._analyze_naics_quality(sample_size),
             "isic": self._analyze_isic_quality(sample_size),
             "taxonomy": self._analyze_taxonomy_quality(sample_size),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": DeterministicClock.utcnow().isoformat()
         }
 
         return quality_metrics

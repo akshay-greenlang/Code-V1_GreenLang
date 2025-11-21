@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 NAICS 2022 Database and Search Functions
 

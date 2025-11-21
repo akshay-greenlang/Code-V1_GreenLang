@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Async/Await Conversion Module
 GL-VCCI Scope 3 Platform - Performance Optimization

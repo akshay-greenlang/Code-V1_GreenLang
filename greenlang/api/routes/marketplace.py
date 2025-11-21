@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Marketplace API Routes
 
@@ -13,6 +14,7 @@ from sqlalchemy.orm import Session
 import logging
 
 from greenlang.marketplace.models import (
+from greenlang.determinism import FinancialDecimal
     MarketplaceAgent,
     AgentVersion,
     AgentReview,
@@ -578,7 +580,7 @@ async def get_revenue_stats(
     )
 
     return {
-        "total_revenue": float(stats.total_revenue),
+        "total_revenue": FinancialDecimal.from_string(stats.total_revenue),
         "period_revenue": float(stats.period_revenue),
         "total_purchases": stats.total_purchases,
         "period_purchases": stats.period_purchases,

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD/ESRS Digital Reporting Platform - Complete Pipeline Integration Tests
 
@@ -38,6 +39,7 @@ import pytest
 import yaml
 
 from csrd_pipeline import (
+from greenlang.determinism import deterministic_random
     AgentExecution,
     CSRDPipeline,
     PipelinePerformance,
@@ -143,7 +145,7 @@ def large_dataset_1k(tmp_path: Path, base_path: Path) -> Path:
             new_row = row.copy()
             # Add variation to values
             if pd.notna(row['value']):
-                new_row['value'] = float(row['value']) * (0.9 + np.random.random() * 0.2)
+                new_row['value'] = float(row['value']) * (0.9 + np.deterministic_random().random() * 0.2)
             rows.append(new_row)
 
     large_df = pd.DataFrame(rows)
@@ -167,7 +169,7 @@ def large_dataset_10k(tmp_path: Path, base_path: Path) -> Path:
             new_row = row.copy()
             # Add variation to values
             if pd.notna(row['value']):
-                new_row['value'] = float(row['value']) * (0.9 + np.random.random() * 0.2)
+                new_row['value'] = float(row['value']) * (0.9 + np.deterministic_random().random() * 0.2)
             rows.append(new_row)
 
     large_df = pd.DataFrame(rows)

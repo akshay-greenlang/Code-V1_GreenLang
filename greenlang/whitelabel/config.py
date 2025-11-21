@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 White-Label Configuration for GreenLang
 
@@ -24,6 +25,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, relationship
 from pydantic import BaseModel, HttpUrl, validator
 from fastapi import FastAPI, HTTPException, Depends, status
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 Base = declarative_base()
@@ -310,7 +313,7 @@ class WhiteLabelManager:
 
         # Create config
         config = WhiteLabelConfigModel(
-            id=f"wl_{uuid.uuid4().hex[:16]}",
+            id=f"wl_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}",
             partner_id=partner_id,
             brand_name=config_data.brand_name,
             logo_url=str(config_data.logo_url) if config_data.logo_url else None,
@@ -403,7 +406,7 @@ class WhiteLabelManager:
         if updates.show_powered_by is not None:
             config.show_powered_by = updates.show_powered_by
 
-        config.updated_at = datetime.utcnow()
+        config.updated_at = DeterministicClock.utcnow()
         self.db.commit()
         self.db.refresh(config)
 
@@ -488,7 +491,7 @@ class WhiteLabelManager:
 
         # Create domain config
         domain_config = DomainConfigModel(
-            id=f"dom_{uuid.uuid4().hex[:16]}",
+            id=f"dom_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}",
             partner_id=partner_id,
             domain=domain.lower(),
             cname_target="partners.greenlang.com",
@@ -527,7 +530,7 @@ class WhiteLabelManager:
             cname = socket.getfqdn(domain_config.domain)
             if domain_config.cname_target in cname:
                 domain_config.dns_verified = True
-                domain_config.dns_verified_at = datetime.utcnow()
+                domain_config.dns_verified_at = DeterministicClock.utcnow()
                 domain_config.status = DomainStatus.ACTIVE
                 self.db.commit()
 

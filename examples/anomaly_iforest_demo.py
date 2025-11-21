@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Interactive Demo for Isolation Forest Anomaly Detection Agent.
 
 This demo showcases the IsolationForestAnomalyAgent with three real-world scenarios:

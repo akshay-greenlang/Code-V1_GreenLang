@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Tests for Shared Services
 Demonstrates cross-service integration patterns

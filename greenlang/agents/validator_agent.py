@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 from typing import Any, Dict, List
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
+from greenlang.determinism import FinancialDecimal
 
 
 class InputValidatorAgent(BaseAgent):
@@ -101,7 +103,7 @@ class InputValidatorAgent(BaseAgent):
                 continue
 
             try:
-                consumption = float(consumption)
+                consumption = FinancialDecimal.from_string(consumption)
                 if consumption < 0:
                     errors.append(f"Fuel {idx+1}: Negative consumption value")
                     continue

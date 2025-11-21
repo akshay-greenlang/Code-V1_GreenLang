@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # greenlang/agents/field_layout_agent.py
 
 from typing import Dict, Any

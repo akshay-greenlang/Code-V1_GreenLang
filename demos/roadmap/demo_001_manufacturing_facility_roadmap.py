@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo Script #1: Manufacturing Facility Comprehensive Decarbonization Roadmap
 

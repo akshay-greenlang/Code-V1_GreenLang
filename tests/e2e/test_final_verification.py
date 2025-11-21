@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Final Comprehensive Verification Test
 ======================================
@@ -15,6 +16,7 @@ import tempfile
 from pathlib import Path
 import shutil
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 def run_command(cmd, capture=True):
@@ -383,9 +385,12 @@ def run_integration_test():
         # Create calculator agent
         calculator_code = '''
 def execute(expression="1+1", **kwargs):
-    """Simple calculator agent"""
+    """Simple calculator agent with safe evaluation"""
+    # SECURITY FIX: Replace eval() with ast.literal_eval for safe evaluation
+    import ast
     try:
-        result = eval(expression)
+        # Use ast.literal_eval for safe evaluation of literals only
+        result = ast.literal_eval(expression)
         return {"result": result, "expression": expression}
     except Exception as e:
         return {"error": str(e), "expression": expression}
@@ -457,7 +462,7 @@ def main():
     print("="*60)
     print("GREENLANG PLATFORM - FINAL VERIFICATION")
     print("="*60)
-    print(f"Timestamp: {datetime.now().isoformat()}")
+    print(f"Timestamp: {DeterministicClock.now().isoformat()}")
     print(f"Python: {sys.version}")
     print(f"Platform: {sys.platform}")
     

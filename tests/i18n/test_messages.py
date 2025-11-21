@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 tests/i18n/test_messages.py
 

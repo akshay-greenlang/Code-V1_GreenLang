@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Dict, Any, List, Optional
 from greenlang.agents.base import BaseAgent
 from greenlang.core.workflow import Workflow

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP ERP Connector
 
@@ -15,6 +16,7 @@ from typing import Dict, List, Any, Optional
 import pandas as pd
 from datetime import datetime
 import logging
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -176,7 +178,7 @@ class SAPConnector:
             Employee count data
         """
         if not date:
-            date = datetime.now()
+            date = DeterministicClock.now()
 
         logger.info(f"Fetching employee count as of {date.date()}")
 

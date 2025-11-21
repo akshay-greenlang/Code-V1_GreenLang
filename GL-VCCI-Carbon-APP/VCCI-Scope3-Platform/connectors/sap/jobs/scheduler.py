@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # SAP Job Scheduler
 # Celery Beat schedule configuration for SAP sync jobs
 

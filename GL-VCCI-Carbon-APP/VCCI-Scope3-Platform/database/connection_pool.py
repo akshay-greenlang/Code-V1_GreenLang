@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Database Connection Pooling Configuration
 GL-VCCI Scope 3 Platform - Performance Optimization
@@ -29,6 +30,7 @@ from contextlib import asynccontextmanager
 
 from sqlalchemy import create_engine, pool, event, text
 from sqlalchemy.ext.asyncio import (
+from greenlang.determinism import DeterministicClock
     create_async_engine,
     AsyncEngine,
     AsyncSession,
@@ -253,7 +255,7 @@ class ConnectionPoolMonitor:
             "total_checkouts": self.total_checkouts,
             "total_checkins": self.total_checkins,
             "errors": self.errors,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": DeterministicClock.utcnow().isoformat()
         }
 
         # Calculate utilization

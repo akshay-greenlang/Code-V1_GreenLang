@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Test Execution Framework for CSRD Reporting Platform
 ===================================================================
@@ -16,6 +17,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 import re
+from greenlang.determinism import DeterministicClock
 
 
 class TestRunner:
@@ -28,7 +30,7 @@ class TestRunner:
         self.reports_dir.mkdir(exist_ok=True)
 
         self.results = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "project": "CSRD-Reporting-Platform",
             "test_suites": {},
             "summary": {}

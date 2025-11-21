@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Integration Test Suite for GreenLang Infrastructure Platform
 =============================================================

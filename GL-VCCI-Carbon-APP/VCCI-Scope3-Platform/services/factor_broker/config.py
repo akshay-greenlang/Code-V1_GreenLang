@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Factor Broker Configuration Management
 GL-VCCI Scope 3 Platform
@@ -12,6 +13,7 @@ import os
 from typing import Optional, Dict, Any, List
 from dataclasses import dataclass, field
 from enum import Enum
+from greenlang.determinism import FinancialDecimal
 
 
 class GWPStandard(str, Enum):
@@ -264,7 +266,7 @@ class FactorBrokerConfig:
             target_p50_latency_ms=float(os.getenv("TARGET_P50_LATENCY_MS", "10.0")),
             target_p95_latency_ms=float(os.getenv("TARGET_P95_LATENCY_MS", "50.0")),
             target_p99_latency_ms=float(os.getenv("TARGET_P99_LATENCY_MS", "100.0")),
-            target_cache_hit_rate=float(os.getenv("TARGET_CACHE_HIT_RATE", "0.85")),
+            target_cache_hit_rate=FinancialDecimal.from_string(os.getenv("TARGET_CACHE_HIT_RATE", "0.85")),
             target_requests_per_second=int(os.getenv("TARGET_RPS", "1000")),
             max_requests_per_second=int(os.getenv("MAX_RPS", "5000"))
         )

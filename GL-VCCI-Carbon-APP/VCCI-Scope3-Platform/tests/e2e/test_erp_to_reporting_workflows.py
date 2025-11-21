@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 """
 E2E Tests: ERP → Calculation → Reporting Workflows (Scenarios 1-15)
 
 This module contains comprehensive end-to-end tests for the complete data flow
 from ERP systems through calculation engines to final reporting outputs.
+from greenlang.determinism import DeterministicClock
 
 Test Coverage:
 - Scenario 1: SAP → Cat 1 Calculation → ESRS E1 Report
@@ -68,7 +70,7 @@ async def test_scenario_01_sap_to_esrs_e1_report(
     await sap_sandbox.load_test_data("sap_test_data.json")
 
     # Extract POs for last quarter
-    end_date = datetime.utcnow()
+    end_date = DeterministicClock.utcnow()
     start_date = end_date - timedelta(days=90)
 
     extracted_pos = await sap_sandbox.extract_purchase_orders(start_date, end_date)
@@ -322,7 +324,7 @@ async def test_scenario_02_oracle_to_cdp_report(
     purchase_orders = test_data_factory.create_bulk_purchase_orders(1500)
     await oracle_sandbox.load_test_data("oracle_test_data.json")
 
-    end_date = datetime.utcnow()
+    end_date = DeterministicClock.utcnow()
     start_date = end_date - timedelta(days=90)
 
     extracted_pos = await oracle_sandbox.extract_purchase_orders(start_date, end_date)
@@ -414,7 +416,7 @@ async def test_scenario_03_workday_to_ifrs_s2_report(
 
     await workday_sandbox.load_test_data("workday_test_data.json")
 
-    end_date = datetime.utcnow()
+    end_date = DeterministicClock.utcnow()
     start_date = end_date - timedelta(days=90)
 
     extracted_expenses = await workday_sandbox.extract_expense_reports(
@@ -572,8 +574,8 @@ async def test_scenario_04_sap_to_iso14083_certificate(
             "transport_modes": ["sea", "air", "road"]
         },
         "validity": {
-            "issued_date": datetime.utcnow().isoformat(),
-            "valid_until": (datetime.utcnow() + timedelta(days=365)).isoformat()
+            "issued_date": DeterministicClock.utcnow().isoformat(),
+            "valid_until": (DeterministicClock.utcnow() + timedelta(days=365)).isoformat()
         }
     }
 

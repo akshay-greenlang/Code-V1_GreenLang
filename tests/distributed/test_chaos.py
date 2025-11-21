@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Chaos Testing for Distributed Execution.
 
 This module provides comprehensive chaos testing for the distributed orchestrator,
@@ -23,6 +24,7 @@ import random
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from unittest.mock import Mock, patch, AsyncMock
+from greenlang.determinism import DeterministicClock
 
 # Chaos testing requires these dependencies
 try:
@@ -92,7 +94,7 @@ class ChaosEngine:
         if node_id in self.orchestrator.nodes:
             node = self.orchestrator.nodes[node_id]
             node.status = NodeStatus.FAILED
-            node.last_heartbeat = datetime.utcnow() - timedelta(minutes=5)
+            node.last_heartbeat = DeterministicClock.utcnow() - timedelta(minutes=5)
 
             if not permanent:
                 # Schedule recovery after random delay

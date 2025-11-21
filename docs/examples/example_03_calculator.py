@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 03: Calculator Agent
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Validation Script for 24 Retrofitted GreenLang Agents
 

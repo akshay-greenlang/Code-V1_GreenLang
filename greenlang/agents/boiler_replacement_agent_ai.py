@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Boiler Replacement Agent with ChatSession Integration.
 
 This module provides an AI-enhanced agent for industrial boiler replacement analysis,
@@ -51,14 +52,9 @@ import math
 from typing_extensions import TypedDict, NotRequired
 
 from ..types import Agent, AgentResult, ErrorInfo
-from greenlang.intelligence import (
-    ChatSession,
-    ChatMessage,
-    Role,
-    Budget,
-    BudgetExceeded,
-    create_provider,
-)
+# Fixed: Removed incomplete import
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 from .citations import (
     EmissionFactorCitation,
@@ -328,7 +324,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 },
                 "required": ["boiler_type", "age_years", "stack_temperature_c"],
             },
-        )
 
         # Tool 2: Calculate annual fuel consumption
         self.calculate_annual_fuel_consumption_tool = ToolDef(
@@ -360,7 +355,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 },
                 "required": ["rated_capacity_kw", "average_load_factor", "annual_operating_hours", "boiler_efficiency"],
             },
-        )
 
         # Tool 3: Calculate solar thermal sizing
         self.calculate_solar_thermal_sizing_tool = ToolDef(
@@ -390,7 +384,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 },
                 "required": ["annual_heat_demand_mwh", "process_temperature_c", "latitude"],
             },
-        )
 
         # Tool 4: Calculate heat pump COP
         self.calculate_heat_pump_cop_tool = ToolDef(
@@ -421,7 +414,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 },
                 "required": ["sink_temperature_c", "source_temperature_c", "heat_pump_type"],
             },
-        )
 
         # Tool 5: Calculate hybrid system performance
         self.calculate_hybrid_system_performance_tool = ToolDef(
@@ -456,7 +448,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 },
                 "required": ["annual_heat_demand_mwh", "solar_fraction", "heat_pump_cop", "backup_fuel_type"],
             },
-        )
 
         # Tool 6: Estimate payback period
         self.estimate_payback_period_tool = ToolDef(
@@ -495,7 +486,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 },
                 "required": ["capital_cost_usd", "annual_energy_savings_mmbtu", "fuel_cost_per_mmbtu"],
             },
-        )
 
         # Tool 7: Calculate retrofit integration requirements
         self.calculate_retrofit_integration_requirements_tool = ToolDef(
@@ -524,7 +514,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 },
                 "required": ["existing_boiler_type", "replacement_technology", "rated_capacity_kw"],
             },
-        )
 
         # Tool 8: Compare replacement technologies
         self.compare_replacement_technologies_tool = ToolDef(
@@ -556,7 +545,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 },
                 "required": ["technologies", "annual_heat_demand_mwh"],
             },
-        )
 
     # =========================================================================
     # Tool Implementations
@@ -606,7 +594,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
         # Calculate actual efficiency
         actual_efficiency = base_efficiency * degradation_factor * (
             1 - stack_loss_percent / 100 - radiation_loss_percent / 100
-        )
         actual_efficiency = max(0.40, min(0.99, actual_efficiency))  # Reasonable bounds
 
         # Create calculation citation
@@ -622,9 +609,8 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 "excess_air_percent": excess_air_percent,
             },
             output={"value": actual_efficiency, "unit": "fraction"},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id=f"calc_eff_{self._tool_call_count}",
-        )
         self._calculation_citations.append(calc_citation)
 
         return {
@@ -738,7 +724,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
         # Collector area (m²)
         collector_area_m2 = (solar_energy_needed_mwh * 1000) / (
             solar_resource_kwh_m2_year * collector_efficiency
-        )
 
         # Storage volume (60 liters per m² collector area)
         storage_volume_m3 = (collector_area_m2 * 60) / 1000
@@ -871,7 +856,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
             solar_contribution_mwh  # Solar is "free" energy
             + heat_pump_electricity_mwh
             + (backup_fuel_consumed_mmbtu / 3.412)
-        )
         overall_efficiency = annual_heat_demand_mwh / total_energy_input_mwh
 
         return {
@@ -998,7 +982,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
         }
         retrofit_complexity = complexity_matrix.get(
             (existing_boiler_type, replacement_technology), "medium"
-        )
 
         # Estimate retrofit costs ($/kW)
         retrofit_cost_per_kw = {
@@ -1130,7 +1113,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
             weighted_score = sum(
                 scores.get(criterion, 75) * weight
                 for criterion, weight in criteria_weights.items()
-            )
 
             comparison_results.append({
                 "technology": tech,
@@ -1212,7 +1194,7 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
         Returns:
             AgentResult with replacement analysis and recommendations
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Validate input
         if not self.validate(payload):
@@ -1238,7 +1220,7 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result["success"]:
@@ -1330,7 +1312,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
-            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -1343,7 +1324,6 @@ class BoilerReplacementAgent_AI(Agent[BoilerReplacementInput, BoilerReplacementO
                 payload,
                 tool_results,
                 response.text if self.enable_explanations else None,
-            )
 
             return {
                 "success": True,
@@ -1574,7 +1554,7 @@ IMPORTANT:
 
         # Add feedback collection metadata
         output["_feedback_url"] = "/api/v1/feedback/boiler_replacement"
-        output["_session_id"] = f"session_{datetime.now().timestamp()}"
+        output["_session_id"] = f"session_{DeterministicClock.now().timestamp()}"
 
         return output
 
@@ -1614,7 +1594,6 @@ IMPORTANT:
                 boiler_type="firetube",
                 age_years=15,
                 stack_temperature_c=200,
-            )
 
             # Verify provider is available
             provider_status = "available" if self.provider else "unavailable"
@@ -1627,7 +1606,7 @@ IMPORTANT:
                 "version": self.version,
                 "agent_id": self.agent_id,
                 "provider": provider_status,
-                "last_successful_call": datetime.now().isoformat(),
+                "last_successful_call": DeterministicClock.now().isoformat(),
                 "metrics": {
                     "tool_call_count": self._tool_call_count,
                     "ai_call_count": self._ai_call_count,
@@ -1644,5 +1623,5 @@ IMPORTANT:
                 "version": self.version,
                 "agent_id": self.agent_id,
                 "error": str(e),
-                "timestamp": datetime.now().isoformat(),
+                "timestamp": DeterministicClock.now().isoformat(),
             }

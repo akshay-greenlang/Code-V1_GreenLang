@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Test Suite for Emission Factor Infrastructure
 
@@ -19,6 +20,7 @@ import shutil
 from pathlib import Path
 from datetime import date, datetime
 import sys
+from greenlang.determinism import DeterministicClock
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -493,7 +495,7 @@ class TestDataModels:
             emissions_metric_tons_co2e=0.268,
             factor_used=factor,
             factor_value_applied=2.68,
-            calculation_timestamp=datetime.now(),
+            calculation_timestamp=DeterministicClock.now(),
             audit_trail='abc123...'
         )
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Tests for GreenLang Shared Tools
 =============================================

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday Delta Sync Celery Jobs
 GL-VCCI Scope 3 Platform
@@ -23,6 +24,7 @@ from ..extractors.hcm_extractor import HCMExtractor
 from ..mappers.expense_mapper import ExpenseMapper
 from ..mappers.commute_mapper import CommuteMapper
 from ..exceptions import WorkdayConnectorError
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -170,7 +172,7 @@ def sync_expense_reports(self, tenant_id: str = "tenant-default") -> Dict[str, A
         WorkdayConnectorError: If sync fails
     """
     logger.info(f"Starting expense reports sync for tenant: {tenant_id}")
-    start_time = datetime.now()
+    start_time = DeterministicClock.now()
 
     try:
         # Initialize components
@@ -221,7 +223,7 @@ def sync_expense_reports(self, tenant_id: str = "tenant-default") -> Dict[str, A
         set_last_sync_date(redis_client, LAST_SYNC_KEY_EXPENSES, to_date)
 
         # Calculate statistics
-        elapsed = (datetime.now() - start_time).total_seconds()
+        elapsed = (DeterministicClock.now() - start_time).total_seconds()
 
         return {
             "status": "success",
@@ -266,7 +268,7 @@ def sync_commute_surveys(self, tenant_id: str = "tenant-default") -> Dict[str, A
         WorkdayConnectorError: If sync fails
     """
     logger.info(f"Starting commute surveys sync for tenant: {tenant_id}")
-    start_time = datetime.now()
+    start_time = DeterministicClock.now()
 
     try:
         # Initialize components
@@ -322,7 +324,7 @@ def sync_commute_surveys(self, tenant_id: str = "tenant-default") -> Dict[str, A
         set_last_sync_date(redis_client, LAST_SYNC_KEY_COMMUTES, to_date)
 
         # Calculate statistics
-        elapsed = (datetime.now() - start_time).total_seconds()
+        elapsed = (DeterministicClock.now() - start_time).total_seconds()
 
         return {
             "status": "success",

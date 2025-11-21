@@ -1,19 +1,24 @@
 name: test-gpl-pack
 version: 1.0.0
 kind: pack
+pack_schema_version: '1.0'
 description: A test pack with GPL license
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
 license: GPL-3.0
-authors:
-- name: Test User
-  email: test@example.com
 contents:
   pipelines:
-    - pipelines/simple.yaml
+  - pipelines/simple.yaml
   agents: []
   datasets: []
 dependencies:
 - name: greenlang-sdk
   version: '>=0.1.0'
+authors:
+- name: Test User
+  email: test@example.com
 security:
   sbom: sbom.spdx.json
   signatures: []

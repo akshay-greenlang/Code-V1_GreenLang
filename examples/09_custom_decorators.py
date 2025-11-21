@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example 9: Custom Decorators for Agent Methods
 ===============================================

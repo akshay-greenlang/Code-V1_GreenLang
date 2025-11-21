@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang-First Deployment Validation Suite
 
@@ -21,6 +22,7 @@ import requests
 from pathlib import Path
 from typing import Dict, List, Tuple
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 # Configure logging
 logging.basicConfig(
@@ -47,7 +49,7 @@ class GreenLangValidator:
         self.full = full
         self.results = {
             'environment': environment,
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': DeterministicClock.utcnow().isoformat(),
             'checks': [],
             'summary': {
                 'total': 0,
@@ -83,7 +85,7 @@ class GreenLangValidator:
             'status': status,  # pass, fail, warn
             'message': message,
             'details': details or {},
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': DeterministicClock.utcnow().isoformat()
         }
         self.results['checks'].append(check)
         self.results['summary']['total'] += 1
@@ -573,7 +575,7 @@ Detailed Results:
         reports_dir = SCRIPT_DIR / 'reports'
         reports_dir.mkdir(exist_ok=True)
 
-        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        timestamp = DeterministicClock.utcnow().strftime('%Y%m%d_%H%M%S')
         report_file = reports_dir / f'validation_{self.environment}_{timestamp}.json'
 
         with open(report_file, 'w') as f:

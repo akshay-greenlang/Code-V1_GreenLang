@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from typing import Optional, Dict, Any, List
 from functools import lru_cache
 from datetime import datetime
@@ -11,6 +12,7 @@ from .types import BoilerInput, BoilerOutput
 from greenlang.data.emission_factors import EmissionFactors
 from greenlang.utils.unit_converter import UnitConverter
 from greenlang.utils.performance_tracker import PerformanceTracker
+from greenlang.determinism import DeterministicClock
 
 
 class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
@@ -219,7 +221,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
         Returns:
             AgentResult containing calculated emissions and boiler metrics
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         with self.performance_tracker.track("boiler_calculation"):
             if not self.validate(payload):
@@ -309,7 +311,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
                 # Track historical data
                 self._track_historical_data(
                     {
-                        "timestamp": datetime.now().isoformat(),
+                        "timestamp": DeterministicClock.now().isoformat(),
                         "boiler_type": boiler_type,
                         "efficiency": efficiency,
                         "emissions_kg": co2e_emissions_kg,
@@ -318,7 +320,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
                 )
 
                 # Calculate execution time
-                execution_time = (datetime.now() - start_time).total_seconds()
+                execution_time = (DeterministicClock.now() - start_time).total_seconds()
                 self._execution_times.append(execution_time)
 
                 output: BoilerOutput = {
@@ -725,7 +727,7 @@ class BoilerAgent(Agent[BoilerInput, BoilerOutput]):
         Returns:
             str: File path of exported data
         """
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
 
         if format == "json":
             output_path = f"boiler_results_{timestamp}.json"

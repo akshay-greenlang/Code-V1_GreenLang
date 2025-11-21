@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday RaaS (Report as a Service) Connector
 GL-VCCI Scope 3 Platform

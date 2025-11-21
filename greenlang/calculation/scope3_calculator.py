@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope 3 Calculator - Value Chain Emissions
 
@@ -29,6 +30,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Optional, Dict, Any
 from greenlang.calculation.core_calculator import (
+from greenlang.determinism import FinancialDecimal
     EmissionCalculator,
     CalculationRequest,
     CalculationResult,
@@ -146,7 +148,7 @@ class Scope3Calculator:
         calc_result = self.calculator.calculate(request)
 
         gas_breakdown = self.gas_calculator.decompose(
-            total_co2e_kg=float(calc_result.emissions_kg_co2e),
+            total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
             fuel_type='electricity',  # Mixed composition
         )
 
@@ -217,7 +219,7 @@ class Scope3Calculator:
             calc_result.emissions_kg_co2e = total_emissions.quantize(Decimal('0.001'))
 
         gas_breakdown = self.gas_calculator.decompose(
-            total_co2e_kg=float(calc_result.emissions_kg_co2e),
+            total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
             fuel_type=fuel_type,
         )
 
@@ -279,7 +281,7 @@ class Scope3Calculator:
         calc_result = self.calculator.calculate(request)
 
         gas_breakdown = self.gas_calculator.decompose(
-            total_co2e_kg=float(calc_result.emissions_kg_co2e),
+            total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
             fuel_type='diesel' if 'truck' in mode else 'jet_fuel' if 'air' in mode else 'fuel_oil_no6',
         )
 
@@ -364,7 +366,7 @@ class Scope3Calculator:
                 calc_result.emissions_kg_co2e *= Decimal('4.0')
 
         gas_breakdown = self.gas_calculator.decompose(
-            total_co2e_kg=float(calc_result.emissions_kg_co2e),
+            total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
             fuel_type='jet_fuel' if 'air' in mode else 'diesel' if 'rail' in mode else 'electricity',
         )
 
@@ -430,7 +432,7 @@ class Scope3Calculator:
             gas_vector = {'CO2': 0.4, 'CH4_biogenic': 0.6}  # High methane from anaerobic decomposition
 
         gas_breakdown = self.gas_calculator.decompose(
-            total_co2e_kg=float(calc_result.emissions_kg_co2e),
+            total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
             gas_vector=gas_vector,
         )
 
@@ -545,7 +547,7 @@ class Scope3Calculator:
         gas_breakdown = None
         if calc_result.emissions_kg_co2e > 0:
             gas_breakdown = self.gas_calculator.decompose(
-                total_co2e_kg=float(calc_result.emissions_kg_co2e),
+                total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
                 fuel_type='gasoline' if 'gasoline' in mode else 'diesel',
             )
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Monitoring Module
 # Observability, metrics, logging, and alerting
 

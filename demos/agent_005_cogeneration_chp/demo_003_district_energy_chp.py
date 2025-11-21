@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo #3: District Energy CHP System Analysis
 Agent: CogenerationCHPAgent_AI (Agent #5)
@@ -77,6 +78,7 @@ from datetime import datetime
 import json
 
 from greenlang.agents.cogeneration_chp_agent_ai import (
+from greenlang.determinism import DeterministicClock
     CogenerationCHPAgentAI,
     CogenerationCHPConfig
 )
@@ -511,7 +513,7 @@ def main():
     print("=" * 60)
 
     print(f"\nCampus: State University (3M sq ft, 25 buildings)")
-    print(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d')}")
+    print(f"Analysis Date: {DeterministicClock.now().strftime('%Y-%m-%d')}")
 
     print(f"\nRecommended Solution:")
     print(f"  - Technology: Gas Turbine CHP")
@@ -586,7 +588,7 @@ def main():
     print("  - Export revenue opportunities")
     print("  - University board presentation")
 
-    print(f"\nDemo completed: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"\nDemo completed: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 80)
 
 

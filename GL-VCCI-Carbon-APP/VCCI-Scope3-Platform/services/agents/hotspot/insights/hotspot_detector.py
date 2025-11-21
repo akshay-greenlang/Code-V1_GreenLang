@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Hotspot Detector
 GL-VCCI Scope 3 Platform
@@ -18,6 +19,7 @@ import uuid
 from ..models import Hotspot, HotspotReport
 from ..config import HotspotCriteria, InsightPriority
 from ..exceptions import HotspotDetectionError, DataValidationError
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -234,7 +236,7 @@ class HotspotDetector:
             # Create hotspot if any rules triggered
             if triggered_rules:
                 hotspot = Hotspot(
-                    hotspot_id=str(uuid.uuid4())[:8],
+                    hotspot_id=str(deterministic_uuid(__name__, str(DeterministicClock.now())))[:8],
                     hotspot_type=dimension,
                     entity_name=entity_name,
                     emissions_tco2e=round(emissions, 2),

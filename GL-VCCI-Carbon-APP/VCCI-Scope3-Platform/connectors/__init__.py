@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Connectors Module
 # ERP system integrations (SAP, Oracle, Workday)
 

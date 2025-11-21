@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Logging Configuration for CSRD Pipeline
 
@@ -12,6 +13,7 @@ import sys
 from pathlib import Path
 from datetime import datetime
 from typing import Optional
+from greenlang.determinism import DeterministicClock
 
 
 def setup_logging(
@@ -102,7 +104,7 @@ def setup_pipeline_logging(pipeline_run_id: str) -> logging.Logger:
     log_dir = Path('logs')
     log_dir.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = DeterministicClock.now().strftime('%Y%m%d_%H%M%S')
     log_file = log_dir / f"pipeline_{pipeline_run_id}_{timestamp}.log"
 
     return setup_logging(

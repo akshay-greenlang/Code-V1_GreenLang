@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for ReportAgent - Executive Carbon Footprint Reporting.
 
 This module tests the ReportAgent implementation, ensuring:
@@ -20,6 +21,7 @@ import pytest
 from datetime import datetime
 from greenlang.agents.report_agent import ReportAgent
 from greenlang.agents.base import AgentConfig
+from greenlang.determinism import DeterministicClock
 
 
 class TestReportAgentInitialization:
@@ -169,7 +171,7 @@ class TestTextReportGeneration:
 
         assert "Report generated on" in report
         # Should have current date
-        current_year = datetime.now().year
+        current_year = DeterministicClock.now().year
         assert str(current_year) in report
 
     def test_text_report_without_building_info(self, agent):

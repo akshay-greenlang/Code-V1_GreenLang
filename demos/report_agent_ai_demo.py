@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """ReportAgentAI Demo - AI-Powered Emissions Report Generation
 
 This demo showcases the AI-powered ReportAgent, which generates

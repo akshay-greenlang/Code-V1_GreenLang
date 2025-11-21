@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SendGrid integration for email delivery (production-ready stub).
 
@@ -13,6 +14,7 @@ from datetime import datetime
 from ..models import EmailMessage, EmailResult, EmailStatus
 from ..config import SENDGRID_CONFIG
 from ..exceptions import EmailServiceError
+from greenlang.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -93,7 +95,7 @@ class SendGridService:
                 message_id=message.message_id,
                 supplier_id=message.supplier_id,
                 status=EmailStatus.SENT,
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
         except Exception as e:
@@ -104,7 +106,7 @@ class SendGridService:
                 supplier_id=message.supplier_id,
                 status=EmailStatus.FAILED,
                 error_message=str(e),
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     def send_batch(self, messages: list[EmailMessage]) -> list[EmailResult]:
@@ -139,5 +141,5 @@ class SendGridService:
         return {
             "message_id": message_id,
             "status": "delivered",
-            "delivered_at": datetime.utcnow().isoformat()
+            "delivered_at": DeterministicClock.utcnow().isoformat()
         }

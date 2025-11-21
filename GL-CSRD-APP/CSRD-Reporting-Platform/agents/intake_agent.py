@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 IntakeAgent - ESG Data Ingestion, Validation, and Enrichment for CSRD Reporting
 
@@ -41,6 +42,7 @@ from greenlang.sdk.base import Agent, Result, Metadata
 # Import validation utilities
 import sys
 from pathlib import Path as PathLib
+from greenlang.determinism import DeterministicClock
 sys.path.append(str(PathLib(__file__).parent.parent))
 from utils.validation import (
     validate_file_size,
@@ -728,7 +730,7 @@ class IntakeAgent(Agent[Dict[str, Any], Dict[str, Any]]):
             data_point["esrs_metadata"] = esrs_metadata.dict()
 
         # Add processing timestamp
-        data_point["processing_timestamp"] = datetime.now().isoformat()
+        data_point["processing_timestamp"] = DeterministicClock.now().isoformat()
 
         return data_point, warnings
 
@@ -798,7 +800,7 @@ class IntakeAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         Returns:
             Result dictionary with metadata, validated data, and quality report
         """
-        self.stats["start_time"] = datetime.now()
+        self.stats["start_time"] = DeterministicClock.now()
 
         # Read input
         df = self.read_esg_data(input_file)
@@ -855,7 +857,7 @@ class IntakeAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         # Assess data quality
         quality_score = self.assess_data_quality(df, enriched_data_points)
 
-        self.stats["end_time"] = datetime.now()
+        self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
 
         # Build result

@@ -1,49 +1,93 @@
-include README.md
+# MANIFEST.in - Controls what files are included in source distributions
+
+# Include important project files
 include LICENSE
+include README.md
 include CHANGELOG.md
-include VERSION.md
 include VERSION
-include requirements.txt
+include pyproject.toml
+include setup.py
+include requirements*.txt
+include requirements*.in
+
+# Include package data
+recursive-include greenlang *.yaml *.yml *.json *.jinja *.md
+recursive-include greenlang/schemas *.json
+recursive-include greenlang/data *
+recursive-include greenlang/configs *.yaml
+recursive-include greenlang/templates *
+recursive-include greenlang/cli/templates *
 
 # Include core package data
-recursive-include core/greenlang *.yaml *.yml *.json *.md
+recursive-include core *.yaml *.yml *.json *.md
 recursive-include core/greenlang/schemas *.json
+recursive-include core/greenlang/data *
 recursive-include core/greenlang/configs *.yaml
-recursive-include core/greenlang/data *.json
 recursive-include core/greenlang/policy/bundles *
-
-# Include legacy greenlang package data
-recursive-include greenlang/configs *.json *.yaml
-recursive-include greenlang/data *.json
-recursive-include greenlang/schemas *.json
 
 # Include agent templates
 recursive-include agents *.py *.md *.yaml
 
-# Include datasets
+# Include datasets (for source distribution only)
 recursive-include datasets *.json *.csv *.md
 recursive-exclude datasets/knowledge_base/vector_store *
-
-# Include example files
-recursive-include examples *.py *.yaml *.json *.md
-recursive-exclude examples __pycache__
 
 # Include workflow templates
 recursive-include workflows *.yaml
 
-# Include test fixtures
-recursive-include tests/fixtures *.json *.yaml
+# Include type stubs
+recursive-include greenlang *.pyi
+recursive-include core *.pyi
 
-# Exclude unnecessary files
-global-exclude *.pyc
-global-exclude *.pyo
+# Include shell scripts for CLI
+recursive-include greenlang *.sh *.bat *.ps1
+recursive-include scripts *.sh *.bat *.ps1
+
+# Exclude unnecessary files from distribution
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *~
 global-exclude *.swp
 global-exclude .DS_Store
-global-exclude __pycache__
-recursive-exclude * __pycache__
-recursive-exclude * *.egg-info
-recursive-exclude .github *
-exclude .gitignore
+global-exclude .gitignore
+global-exclude .git*
+
+# Exclude test files from wheel (but include in sdist)
+prune tests
+prune */tests
+prune */test_*
+
+# Exclude documentation from wheel
+prune docs
+prune */docs
+
+# Exclude development files
+prune .github
+prune .vscode
+prune .idea
+exclude .pre-commit-config.yaml
+exclude .flake8
+exclude .mypy.ini
 exclude tox.ini
-exclude mypy.ini
 exclude pytest.ini
+exclude .coveragerc
+exclude .readthedocs.yml
+
+# Exclude build artifacts
+prune build
+prune dist
+prune *.egg-info
+prune .eggs
+prune .tox
+prune .coverage*
+prune htmlcov
+prune .pytest_cache
+prune .ruff_cache
+prune .mypy_cache
+
+# Exclude temporary and cache files
+global-exclude .cache
+global-exclude .tmp
+global-exclude *.log
+global-exclude *.bak
+global-exclude *.orig

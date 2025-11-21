@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 02: Data Processor Agent
 

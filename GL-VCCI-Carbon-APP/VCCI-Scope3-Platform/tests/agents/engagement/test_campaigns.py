@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for campaign management and email scheduling.
 """
@@ -5,6 +6,7 @@ import pytest
 from datetime import datetime, timedelta
 
 from services.agents.engagement.campaigns import (
+from greenlang.determinism import DeterministicClock
     CampaignManager,
     EmailScheduler,
     CampaignAnalytics
@@ -72,7 +74,7 @@ class TestCampaignCreation:
             touches=[{"touch_number": 1, "day_offset": 0, "template": "touch_1_introduction"}]
         )
 
-        start = datetime.utcnow()
+        start = DeterministicClock.utcnow()
         campaign = campaign_manager.create_campaign(
             name="Test",
             target_suppliers=["SUP001"],

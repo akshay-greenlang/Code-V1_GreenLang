@@ -144,7 +144,7 @@ Over the past month, we successfully:
 - Compliance Review: Regulatory Compliance Team
 
 **Technology Stack:**
-- **Language:** Python 3.11+
+- **Language:** Python 3.10+
 - **Frameworks:** GreenLang Agent Factory, BaseAgent architecture, ChatSession integration
 - **AI Models:** GPT-4o, Claude 3.5 Sonnet (for MaterialityAgent and ReportingAgent narratives only)
 - **Testing:** pytest, pytest-cov, pytest-asyncio

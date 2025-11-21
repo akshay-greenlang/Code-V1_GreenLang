@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 17: Dataset provenance propagation."""
 
 import pytest

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Universal Operational Monitoring Mixin for GreenLang AI Agents.
 
 This module provides a production-ready monitoring mixin that can be added
@@ -34,6 +35,8 @@ from dataclasses import dataclass, asdict, field
 from enum import Enum
 from collections import deque, defaultdict
 import threading
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 class HealthStatus(Enum):
@@ -247,7 +250,7 @@ class OperationalMonitoringMixin:
         self._execution_history: deque = deque(maxlen=max_history)
         self._metrics_collector = MetricsCollector()
         self._alerts: List[Alert] = []
-        self._start_time = datetime.utcnow()
+        self._start_time = DeterministicClock.utcnow()
         self._last_error: Optional[str] = None
         self._error_count = 0
         self._success_count = 0
@@ -291,7 +294,7 @@ class OperationalMonitoringMixin:
         Yields:
             ExecutionTracker: Tracker object to update metrics
         """
-        execution_id = str(uuid.uuid4())
+        execution_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         start_time = time.time()
 
         class ExecutionTracker:
@@ -371,7 +374,7 @@ class OperationalMonitoringMixin:
             metrics = PerformanceMetrics(
                 execution_id=execution_id,
                 agent_name=self._monitoring_agent_name,
-                timestamp=datetime.utcnow().isoformat(),
+                timestamp=DeterministicClock.utcnow().isoformat(),
                 duration_ms=duration_ms,
                 cost_usd=tracker.cost_usd,
                 tokens_used=tracker.tokens_used,
@@ -495,7 +498,7 @@ class OperationalMonitoringMixin:
             checks["latency_acceptable"] = True
 
         # Uptime
-        uptime_seconds = (datetime.utcnow() - self._start_time).total_seconds()
+        uptime_seconds = (DeterministicClock.utcnow() - self._start_time).total_seconds()
         metrics["uptime_seconds"] = uptime_seconds
 
         # Total executions
@@ -513,7 +516,7 @@ class OperationalMonitoringMixin:
 
         result = HealthCheckResult(
             status=status,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=DeterministicClock.utcnow().isoformat(),
             checks=checks,
             metrics=metrics,
             last_error=self._last_error,
@@ -534,7 +537,7 @@ class OperationalMonitoringMixin:
         Returns:
             Dictionary with performance statistics
         """
-        cutoff_time = datetime.utcnow() - timedelta(minutes=window_minutes)
+        cutoff_time = DeterministicClock.utcnow() - timedelta(minutes=window_minutes)
 
         recent_metrics = [
             m for m in self._execution_history
@@ -630,7 +633,7 @@ class OperationalMonitoringMixin:
         for alert in self._alerts:
             if alert.alert_id == alert_id and not alert.resolved:
                 alert.resolved = True
-                alert.resolved_at = datetime.utcnow().isoformat()
+                alert.resolved_at = DeterministicClock.utcnow().isoformat()
 
                 self._log_structured("info", "Alert resolved", {
                     "alert_id": alert_id,
@@ -727,7 +730,7 @@ class OperationalMonitoringMixin:
             extra: Additional context
         """
         log_entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "level": level,
             "message": message,
             "agent": self._monitoring_agent_name,
@@ -754,9 +757,9 @@ class OperationalMonitoringMixin:
             return
 
         alert = Alert(
-            alert_id=str(uuid.uuid4()),
+            alert_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             severity=severity,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=DeterministicClock.utcnow().isoformat(),
             message=message,
             context=context,
             agent_name=self._monitoring_agent_name

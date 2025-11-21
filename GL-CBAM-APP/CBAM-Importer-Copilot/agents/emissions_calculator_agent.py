@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 EmissionsCalculatorAgent_AI - Calculate Embedded Emissions with ZERO HALLUCINATION
 
@@ -36,6 +37,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import yaml
 from pydantic import BaseModel, Field
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 # Add parent directory to path to import emission_factors
 sys.path.insert(0, str(Path(__file__).parent.parent / "data"))
@@ -383,9 +386,9 @@ class EmissionsCalculatorAgent:
         mass_tonnes = mass_kg / 1000.0
 
         # Step 2: Get emission factors (from database lookup above)
-        ef_direct = float(emission_factor.get("default_direct_tco2_per_ton", 0))
-        ef_indirect = float(emission_factor.get("default_indirect_tco2_per_ton", 0))
-        ef_total = float(emission_factor.get("default_total_tco2_per_ton", 0))
+        ef_direct = FinancialDecimal.from_string(emission_factor.get("default_direct_tco2_per_ton", 0))
+        ef_indirect = FinancialDecimal.from_string(emission_factor.get("default_indirect_tco2_per_ton", 0))
+        ef_total = FinancialDecimal.from_string(emission_factor.get("default_total_tco2_per_ton", 0))
 
         # Step 3: Calculate emissions (multiplication operator)
         direct_emissions = mass_tonnes * ef_direct
@@ -453,7 +456,7 @@ class EmissionsCalculatorAgent:
             direct_emissions_tco2=direct_emissions,
             indirect_emissions_tco2=indirect_emissions,
             total_emissions_tco2=total_emissions,
-            calculation_timestamp=datetime.now().isoformat(),
+            calculation_timestamp=DeterministicClock.now().isoformat(),
             validation_status="valid" if not warnings else "warning",
             notes=f"Calculated using {method}: {source}"
         )
@@ -477,7 +480,7 @@ class EmissionsCalculatorAgent:
         Returns:
             Result dictionary with shipments + emissions and warnings
         """
-        self.stats["start_time"] = datetime.now()
+        self.stats["start_time"] = DeterministicClock.now()
         self.stats["total_shipments"] = len(shipments)
 
         shipments_with_emissions = []
@@ -504,7 +507,7 @@ class EmissionsCalculatorAgent:
             shipments_with_emissions.append(shipment)
             all_warnings.extend([w.dict() for w in warnings])
 
-        self.stats["end_time"] = datetime.now()
+        self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
         ms_per_shipment = (processing_time * 1000) / len(shipments) if shipments else 0
 

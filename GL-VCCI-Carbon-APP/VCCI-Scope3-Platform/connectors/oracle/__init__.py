@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Oracle Fusion Cloud Connector
 # REST API integration for procurement and supply chain data extraction
 

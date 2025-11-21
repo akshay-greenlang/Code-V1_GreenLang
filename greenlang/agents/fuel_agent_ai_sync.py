@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Backward-compatible sync wrapper for AsyncFuelAgentAI.
 
 This module provides a drop-in replacement for the original FuelAgentAI that

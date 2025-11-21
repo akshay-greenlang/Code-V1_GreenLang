@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SBOM generation and verification commands for GreenLang CLI.
 

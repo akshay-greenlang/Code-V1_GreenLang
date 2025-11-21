@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Budget Enforcement Tests
 GL Intelligence Infrastructure

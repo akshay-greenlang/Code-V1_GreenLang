@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for AI-powered CarbonAgent.
 
 This module tests the CarbonAgentAI implementation, ensuring:

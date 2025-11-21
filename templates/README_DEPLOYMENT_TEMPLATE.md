@@ -22,7 +22,7 @@ This directory contains a universal deployment pack template and automation scri
    - Automated deployment pack generation for all 10 AI agents
    - Interactive and batch modes
    - Validation and dry-run capabilities
-   - Python 3.9+ compatible
+   - Python 3.10+ compatible
 
 3. **`README_DEPLOYMENT_TEMPLATE.md`** - This documentation
 

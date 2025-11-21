@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Async Agent Base Class
 ==================================
@@ -50,6 +51,7 @@ from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
 import yaml
 from pydantic import BaseModel, Field, ValidationError
 
+from greenlang.determinism import DeterministicClock, deterministic_uuid
 from greenlang.exceptions import (
     ExecutionError,
     TimeoutError as GLTimeoutError,
@@ -94,7 +96,7 @@ class AsyncAgentLifecycleState:
 class AsyncAgentExecutionContext(BaseModel):
     """Context object passed through async agent lifecycle."""
 
-    execution_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    execution_id: str = Field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     start_time: datetime = Field(default_factory=datetime.now)
     state: str = Field(default=AsyncAgentLifecycleState.UNINITIALIZED)
     metadata: Dict[str, Any] = Field(default_factory=dict)
@@ -469,8 +471,8 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
         """
         # Create execution context
         context = AsyncAgentExecutionContext(
-            execution_id=str(uuid.uuid4()),
-            start_time=datetime.now(),
+            execution_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+            start_time=DeterministicClock.now(),
             timeout_seconds=timeout,
         )
 
@@ -491,7 +493,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
             result = AgentResult(
                 success=True,
                 data=output if isinstance(output, dict) else output.__dict__,
-                timestamp=datetime.now(),
+                timestamp=DeterministicClock.now(),
             )
 
             # Finalize
@@ -506,7 +508,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
                 success=False,
                 error=f"Validation error: {str(e)}",
                 metadata={"validation_error": str(e)},
-                timestamp=datetime.now(),
+                timestamp=DeterministicClock.now(),
             )
 
         except GLTimeoutError as e:
@@ -516,7 +518,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
                 success=False,
                 error=f"Timeout error: {str(e)}",
                 metadata={"timeout_error": str(e)},
-                timestamp=datetime.now(),
+                timestamp=DeterministicClock.now(),
             )
 
         except Exception as e:
@@ -526,7 +528,7 @@ class AsyncAgentBase(ABC, Generic[InT, OutT]):
                 success=False,
                 error=str(e),
                 metadata={"errors": context.errors, "state": context.state},
-                timestamp=datetime.now(),
+                timestamp=DeterministicClock.now(),
             )
 
     # ==========================================================================

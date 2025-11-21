@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pytest Configuration and Fixtures for SAP Connector Tests
 GL-VCCI Scope 3 Platform

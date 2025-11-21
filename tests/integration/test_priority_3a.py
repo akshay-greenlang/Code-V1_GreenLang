@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Priority 3A: SBOM Generation Integration - Validation Test
 ===========================================================

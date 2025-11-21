@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Developer Guide - Comprehensive Examples
 This file demonstrates all features of GreenLang for developers

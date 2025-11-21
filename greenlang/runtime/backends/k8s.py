@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Kubernetes Backend for GreenLang Pipeline Execution
 """
@@ -10,6 +11,8 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 
 from .base import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     Backend,
     ExecutionContext,
     Pipeline,
@@ -95,12 +98,12 @@ class KubernetesBackend(Backend):
                 run_id=context.run_id,
                 pipeline_name=pipeline.name,
                 status=ExecutionStatus.FAILED,
-                start_time=datetime.utcnow(),
+                start_time=DeterministicClock.utcnow(),
                 errors=errors,
             )
 
         # Create job for each step (or orchestrate with workflow engine)
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             if len(pipeline.steps) == 1:
@@ -111,7 +114,7 @@ class KubernetesBackend(Backend):
                 # Multiple steps - create workflow
                 result = self._create_workflow(pipeline, context)
 
-            end_time = datetime.utcnow()
+            end_time = DeterministicClock.utcnow()
             duration = (end_time - start_time).total_seconds()
 
             return ExecutionResult(
@@ -134,7 +137,7 @@ class KubernetesBackend(Backend):
                 pipeline_name=pipeline.name,
                 status=ExecutionStatus.FAILED,
                 start_time=start_time,
-                end_time=datetime.utcnow(),
+                end_time=DeterministicClock.utcnow(),
                 errors=[str(e)],
             )
 
@@ -144,7 +147,7 @@ class KubernetesBackend(Backend):
         """Create Kubernetes Job for a pipeline step"""
 
         # Generate unique job name
-        job_name = f"gl-{pipeline.name}-{step.name}-{uuid.uuid4().hex[:8]}".lower()
+        job_name = f"gl-{pipeline.name}-{step.name}-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}".lower()
         job_name = job_name.replace("_", "-")[:63]  # K8s name limit
 
         # Prepare environment variables
@@ -257,7 +260,7 @@ class KubernetesBackend(Backend):
             "name": job_name,
             "pipeline": pipeline.name,
             "step": step.name,
-            "created_at": datetime.utcnow(),
+            "created_at": DeterministicClock.utcnow(),
         }
 
         logger.info(f"Created Kubernetes job: {job_name}")

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday RaaS Data Extractors
 GL-VCCI Scope 3 Platform

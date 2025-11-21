@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Example: Integrating Operational Monitoring into an Existing Agent.
 
 This example demonstrates:
@@ -14,6 +15,7 @@ Date: October 2025
 from typing import Dict, Any
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 from templates.agent_monitoring import (
+from greenlang.determinism import deterministic_random
     OperationalMonitoringMixin,
     HealthStatus,
     AlertSeverity
@@ -174,7 +176,7 @@ def test_health_checks():
     # Run some executions
     for i in range(5):
         agent.execute({
-            "emissions": [{"co2e_kg": random.randint(100, 1000)}]
+            "emissions": [{"co2e_kg": deterministic_random().randint(100, 1000)}]
         })
 
     # Perform health check
@@ -219,7 +221,7 @@ def test_performance_summary():
     for i in range(20):
         try:
             agent.execute({
-                "emissions": [{"co2e_kg": random.randint(100, 5000)}]
+                "emissions": [{"co2e_kg": deterministic_random().randint(100, 5000)}]
             })
         except Exception as e:
             pass  # Some might fail for testing
@@ -323,7 +325,7 @@ def test_prometheus_metrics():
     # Run some executions
     for i in range(5):
         agent.execute({
-            "emissions": [{"co2e_kg": random.randint(100, 1000)}]
+            "emissions": [{"co2e_kg": deterministic_random().randint(100, 1000)}]
         })
 
     # Export metrics
@@ -440,8 +442,8 @@ def production_example():
         try:
             result = agent.execute({
                 "emissions": [
-                    {"fuel_type": f"source_{j}", "co2e_kg": random.randint(100, 5000)}
-                    for j in range(random.randint(1, 5))
+                    {"fuel_type": f"source_{j}", "co2e_kg": deterministic_random().randint(100, 5000)}
+                    for j in range(deterministic_random().randint(1, 5))
                 ]
             })
 

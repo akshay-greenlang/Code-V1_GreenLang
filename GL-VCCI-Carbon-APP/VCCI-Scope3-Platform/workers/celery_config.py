@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Celery Worker Queue Configuration
 GL-VCCI Scope 3 Platform - Distributed Task Processing

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Agent Tests
 # Unit and integration tests for all 5 VCCI agents
 

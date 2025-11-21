@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 RAG governance with allowlist enforcement and approval workflow.
 
@@ -23,6 +24,7 @@ from dataclasses import dataclass, asdict
 from greenlang.intelligence.rag.models import DocMeta
 from greenlang.intelligence.rag.config import RAGConfig
 from greenlang.intelligence.rag.hashing import file_hash, sha256_str
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -321,7 +323,7 @@ class RAGGovernance:
             doc_path=doc_path,
             metadata=metadata,
             requested_by=requested_by or "unknown",
-            requested_at=datetime.utcnow(),
+            requested_at=DeterministicClock.utcnow(),
             approvers_required=approvers,
             approvers_voted=set(),
             votes_approve=0,
@@ -397,7 +399,7 @@ class RAGGovernance:
                 'approver': approver,
                 'vote': 'approve' if approve else 'reject',
                 'comment': comment,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': DeterministicClock.utcnow().isoformat()
             })
 
         logger.info(

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Real-Time Performance Dashboard
 ===============================
@@ -36,6 +37,8 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Any
 import json
 from pathlib import Path
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 
 try:
@@ -85,20 +88,20 @@ class PerformanceDashboard:
         runtime = time.time() - self.start_time
 
         # Add some variation
-        base_latency = 85 + random.randint(-20, 40)
-        base_throughput = 1200 + random.randint(-200, 300)
+        base_latency = 85 + deterministic_random().randint(-20, 40)
+        base_throughput = 1200 + deterministic_random().randint(-200, 300)
 
         metrics = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "runtime_seconds": runtime,
 
             # Infrastructure
             "llm": {
-                "p50_latency_ms": base_latency * 20 + random.randint(-50, 100),
-                "p95_latency_ms": base_latency * 22 + random.randint(-50, 150),
-                "p99_latency_ms": base_latency * 25 + random.randint(-100, 200),
+                "p50_latency_ms": base_latency * 20 + deterministic_random().randint(-50, 100),
+                "p95_latency_ms": base_latency * 22 + deterministic_random().randint(-50, 150),
+                "p99_latency_ms": base_latency * 25 + deterministic_random().randint(-100, 200),
                 "cache_hit_rate": 0.45 + random.uniform(0, 0.2),
-                "requests_per_sec": 15 + random.randint(-5, 10),
+                "requests_per_sec": 15 + deterministic_random().randint(-5, 10),
                 "error_rate": 0.002 + random.uniform(0, 0.01),
                 "cost_per_1m_tokens": 25 + random.uniform(-5, 5),
                 "slo_target_p95": 2000,
@@ -106,11 +109,11 @@ class PerformanceDashboard:
             },
 
             "cache": {
-                "l1_p95_latency_us": 5 + random.randint(-2, 5),
+                "l1_p95_latency_us": 5 + deterministic_random().randint(-2, 5),
                 "l2_p95_latency_ms": 2 + random.uniform(-0.5, 1),
-                "l3_p95_latency_ms": 80 + random.randint(-20, 30),
+                "l3_p95_latency_ms": 80 + deterministic_random().randint(-20, 30),
                 "overall_hit_rate": 0.55 + random.uniform(-0.1, 0.15),
-                "throughput_ops_sec": 250000 + random.randint(-50000, 100000),
+                "throughput_ops_sec": 250000 + deterministic_random().randint(-50000, 100000),
                 "slo_target_l1": 100,
                 "slo_target_l2": 5,
                 "slo_target_hit_rate": 0.50
@@ -119,9 +122,9 @@ class PerformanceDashboard:
             "database": {
                 "p50_latency_ms": base_latency * 0.6,
                 "p95_latency_ms": base_latency,
-                "p99_latency_ms": base_latency * 3 + random.randint(0, 100),
+                "p99_latency_ms": base_latency * 3 + deterministic_random().randint(0, 100),
                 "pool_utilization": 0.45 + random.uniform(-0.1, 0.2),
-                "queries_per_sec": 850 + random.randint(-100, 200),
+                "queries_per_sec": 850 + deterministic_random().randint(-100, 200),
                 "slow_queries_pct": 0.005 + random.uniform(0, 0.01),
                 "error_rate": 0.0005 + random.uniform(0, 0.001),
                 "slo_target_p95": 100,
@@ -129,9 +132,9 @@ class PerformanceDashboard:
             },
 
             "factor_broker": {
-                "p50_latency_ms": 18 + random.randint(-5, 10),
-                "p95_latency_ms": 35 + random.randint(-10, 20),
-                "p99_latency_ms": 90 + random.randint(-20, 30),
+                "p50_latency_ms": 18 + deterministic_random().randint(-5, 10),
+                "p95_latency_ms": 35 + deterministic_random().randint(-10, 20),
+                "p99_latency_ms": 90 + deterministic_random().randint(-20, 30),
                 "cache_hit_rate": 0.78 + random.uniform(-0.05, 0.10),
                 "accuracy": 0.96 + random.uniform(-0.02, 0.02),
                 "slo_target_p95": 50,
@@ -140,17 +143,17 @@ class PerformanceDashboard:
 
             # Applications
             "cbam": {
-                "single_p95_ms": 750 + random.randint(-100, 200),
+                "single_p95_ms": 750 + deterministic_random().randint(-100, 200),
                 "batch_throughput_sec": base_throughput * 4,
-                "memory_10k_mb": 280 + random.randint(-30, 50),
+                "memory_10k_mb": 280 + deterministic_random().randint(-30, 50),
                 "error_rate": 0.003 + random.uniform(0, 0.005),
                 "slo_target_latency": 1000,
                 "slo_target_throughput": 1000
             },
 
             "csrd": {
-                "materiality_ms": 3800 + random.randint(-500, 1000),
-                "full_pipeline_ms": 7500 + random.randint(-1000, 2000),
+                "materiality_ms": 3800 + deterministic_random().randint(-500, 1000),
+                "full_pipeline_ms": 7500 + deterministic_random().randint(-1000, 2000),
                 "accuracy": 0.97 + random.uniform(-0.01, 0.01),
                 "error_rate": 0.008 + random.uniform(0, 0.01),
                 "slo_target_materiality": 5000,
@@ -158,8 +161,8 @@ class PerformanceDashboard:
             },
 
             "vcci": {
-                "scope3_10k_sec": 150 + random.randint(-30, 50),
-                "throughput_sec": 65 + random.randint(-15, 25),
+                "scope3_10k_sec": 150 + deterministic_random().randint(-30, 50),
+                "throughput_sec": 65 + deterministic_random().randint(-15, 25),
                 "confidence": 0.87 + random.uniform(-0.05, 0.05),
                 "error_rate": 0.004 + random.uniform(0, 0.005),
                 "slo_target_time": 60,
@@ -168,10 +171,10 @@ class PerformanceDashboard:
 
             # System resources
             "resources": {
-                "cpu_percent": 45 + random.randint(-10, 20),
-                "memory_percent": 62 + random.randint(-5, 10),
-                "disk_percent": 38 + random.randint(-2, 5),
-                "network_mbps": 125 + random.randint(-20, 40)
+                "cpu_percent": 45 + deterministic_random().randint(-10, 20),
+                "memory_percent": 62 + deterministic_random().randint(-5, 10),
+                "disk_percent": 38 + deterministic_random().randint(-2, 5),
+                "network_mbps": 125 + deterministic_random().randint(-20, 40)
             }
         }
 
@@ -444,7 +447,7 @@ class PerformanceDashboard:
         # Header
         header = Panel(
             f"[bold cyan]GreenLang Performance Dashboard[/bold cyan]\n"
-            f"Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | "
+            f"Updated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')} | "
             f"Refresh: {self.refresh_interval}s | "
             f"Uptime: {int(metrics['runtime_seconds'])}s",
             style="white on blue"

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Production Smoke Tests for CSRD Reporting Platform
 ===================================================
@@ -16,6 +17,7 @@ import json
 from datetime import datetime
 from typing import Dict, List, Any
 import argparse
+from greenlang.determinism import DeterministicClock
 
 
 class SmokeTests:
@@ -24,7 +26,7 @@ class SmokeTests:
     def __init__(self, base_url: str = "https://csrd.prod.example.com"):
         self.base_url = base_url.rstrip('/')
         self.results = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "base_url": base_url,
             "tests": {},
             "summary": {}
@@ -317,7 +319,7 @@ class SmokeTests:
         print("CSRD PLATFORM - PRODUCTION SMOKE TESTS")
         print("="*80)
         print(f"Target: {self.base_url}")
-        print(f"Time: {datetime.now().isoformat()}")
+        print(f"Time: {DeterministicClock.now().isoformat()}")
         print("="*80)
 
         # Critical tests (must pass)

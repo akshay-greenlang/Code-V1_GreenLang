@@ -494,7 +494,7 @@ greenlang chat                        # AI assistant
 
 ### Technologies
 
-- **Python 3.8+:** Core language
+- **Python 3.10+:** Core language
 - **AST parsing:** Code analysis
 - **cProfile/pstats:** Performance profiling
 - **Streamlit:** Web UI framework
@@ -664,7 +664,7 @@ greenlang explore
 ### Dependencies
 
 **Required:**
-- Python 3.8+
+- Python 3.10+
 - Standard library modules
 
 **Optional (for AI features):**

@@ -989,7 +989,7 @@ Total agents across all domains:
 ### Appendix B: Technology Stack
 
 **Core Technologies:**
-- Python 3.9+
+- Python 3.10+
 - Claude AI (Anthropic) - Primary LLM
 - Tool-first architecture (function calling)
 - pytest (testing framework)

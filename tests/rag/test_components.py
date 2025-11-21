@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive component tests for RAG system.
 

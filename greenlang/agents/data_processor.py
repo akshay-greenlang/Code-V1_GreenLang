@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Data Processing Agent
 Specialized base class for data transformation and batch processing operations.
@@ -12,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
 from .base import BaseAgent, AgentConfig, AgentResult, AgentMetrics
+from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +74,7 @@ class BaseDataProcessor(BaseAgent):
         class CSVProcessor(BaseDataProcessor):
             def process_record(self, record: Dict[str, Any]) -> Dict[str, Any]:
                 # Transform a single record
-                record['price'] = float(record['price']) * 1.1
+                record['price'] = FinancialDecimal.from_string(record['price']) * 1.1
                 return record
 
             def validate_record(self, record: Dict[str, Any]) -> bool:

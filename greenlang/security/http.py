@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Secure HTTP Client
 ==================
@@ -18,6 +19,7 @@ from urllib3.util.retry import Retry
 
 from ..policy.enforcer import PolicyEnforcer
 from ..auth.auth import AuthManager
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -137,7 +139,7 @@ class SecureHTTPSession:
             "action": "http.request",
             "method": method,
             "url": url,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "env": os.getenv("GL_ENV", "prod"),
             "run_id": os.getenv("GL_RUN_ID"),
             "pack_id": os.getenv("GL_PACK_ID"),

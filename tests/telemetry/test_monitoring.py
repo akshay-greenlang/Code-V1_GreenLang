@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for GreenLang Monitoring & Observability
 """
@@ -10,6 +11,7 @@ from datetime import datetime, timedelta
 import asyncio
 
 from greenlang.telemetry.metrics import (
+from greenlang.determinism import DeterministicClock
     MetricsCollector, MetricType, CustomMetric,
     track_execution, track_resource, MetricsAggregator
 )
@@ -274,7 +276,7 @@ class TestLogging(unittest.TestCase):
         # Add logs
         for i in range(5):
             entry = LogEntry(
-                timestamp=datetime.utcnow(),
+                timestamp=DeterministicClock.utcnow(),
                 level=LogLevel.INFO,
                 message=f"Message {i}",
                 context=self.context
@@ -289,7 +291,7 @@ class TestLogging(unittest.TestCase):
         """Test error pattern detection"""
         # Add error logs
         error_entry = LogEntry(
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             level=LogLevel.ERROR,
             message="Database connection failed",
             context=self.context
@@ -304,7 +306,7 @@ class TestLogging(unittest.TestCase):
         # Add various logs
         for level in [LogLevel.INFO, LogLevel.WARNING, LogLevel.ERROR]:
             entry = LogEntry(
-                timestamp=datetime.utcnow(),
+                timestamp=DeterministicClock.utcnow(),
                 level=level,
                 message=f"Test {level.value}",
                 context=self.context

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tutorial: Build a custom workflow and export to XLSX.
 
 This example shows how to create a custom workflow that includes

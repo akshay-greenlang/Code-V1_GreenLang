@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tool Registry and Execution System
 

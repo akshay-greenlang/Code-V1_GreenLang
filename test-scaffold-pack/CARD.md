@@ -120,7 +120,7 @@ max_retries: 3
 ## Limitations
 
 - Maximum input size: 10MB
-- Requires Python 3.8+
+- Requires Python 3.10+
 
 ## Environmental Impact
 

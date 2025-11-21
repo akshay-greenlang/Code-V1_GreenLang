@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GraphQL Context
 Provides request context with authentication, authorization, and DataLoaders

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/agents/fuel_tools_v2.py
 

@@ -21,7 +21,7 @@ pre-commit run --all-files
 ## Prerequisites
 
 ### Required
-- **Python 3.8+** - Core runtime
+- **Python 3.10+** - Core runtime
 - **Node.js 18+** - Frontend and tooling
 - **Git 2.30+** - Version control
 

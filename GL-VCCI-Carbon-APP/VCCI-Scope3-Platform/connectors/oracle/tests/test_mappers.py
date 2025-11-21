@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Connector Mappers Tests
 GL-VCCI Scope 3 Platform
@@ -18,6 +19,7 @@ from connectors.oracle.mappers.po_mapper import PurchaseOrderMapper, Procurement
 from connectors.oracle.mappers.requisition_mapper import RequisitionMapper
 from connectors.oracle.mappers.shipment_mapper import ShipmentMapper
 from connectors.oracle.mappers.transport_mapper import TransportMapper
+from greenlang.determinism import DeterministicClock
 
 
 class TestPurchaseOrderMapper:
@@ -97,7 +99,7 @@ class TestPurchaseOrderMapper:
         year = po_mapper._extract_reporting_year("invalid-date")
 
         # Should return current year
-        assert year == datetime.now().year
+        assert year == DeterministicClock.now().year
 
     def test_map_purchase_order_basic(self, po_mapper, sample_purchase_order, sample_po_line):
         """Test basic PO mapping."""

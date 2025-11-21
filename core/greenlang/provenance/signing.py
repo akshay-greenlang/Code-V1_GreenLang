@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Artifact Signing and Verification
 ==================================
@@ -15,6 +16,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional, Tuple
 import logging
+from greenlang.determinism import DeterministicClock
 
 # Set up Windows encoding support for this module
 if sys.platform == "win32":
@@ -165,7 +167,7 @@ def sign_pack(pack_path: Path, key_path: Optional[Path] = None) -> Dict[str, Any
         "version": "1.0.0",
         "kind": "greenlang-pack-signature",
         "metadata": {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "pack": manifest.get("name", "unknown"),
             "version": manifest.get("version", "0.0.0"),
             "signer": os.environ.get("USER", "unknown"),
@@ -461,7 +463,7 @@ def create_keyless_signature(artifact_path: Path, identity: str) -> Dict[str, An
         "version": "1.0.0",
         "kind": "greenlang-keyless-signature",
         "metadata": {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "artifact": str(artifact_path.name),
             "identity": identity,
         },
@@ -470,7 +472,7 @@ def create_keyless_signature(artifact_path: Path, identity: str) -> Dict[str, An
             "identity": {
                 "issuer": "greenlang",
                 "subject": identity,
-                "verified_at": datetime.now().isoformat(),
+                "verified_at": DeterministicClock.now().isoformat(),
             },
             # In real implementation, would include:
             # - Transparency log entry

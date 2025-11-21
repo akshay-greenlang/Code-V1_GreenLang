@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Calculation engines for Scope3CalculatorAgent."""
 
 from .uncertainty_engine import UncertaintyEngine

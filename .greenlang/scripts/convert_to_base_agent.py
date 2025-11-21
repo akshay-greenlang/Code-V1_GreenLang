@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+logger = logging.getLogger(__name__)
 """
 GreenLang Agent Inheritance Converter
 
@@ -6,6 +9,7 @@ Converts custom agent classes to inherit from greenlang.sdk.base.Agent.
 Maps custom methods to Agent lifecycle hooks.
 """
 
+import logging
 import ast
 import astor
 import argparse
@@ -416,7 +420,7 @@ def main():
                 print(''.join(diff))
 
     else:
-        print(f"Error: {args.path} is not a valid file or directory")
+        logger.error(f"{args.path} is not a valid file or directory")
         sys.exit(1)
 
     if args.dry_run:

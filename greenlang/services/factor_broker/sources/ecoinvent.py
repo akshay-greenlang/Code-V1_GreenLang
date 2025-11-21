@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Ecoinvent Factor Source
 GL-VCCI Scope 3 Platform
@@ -15,6 +16,7 @@ from datetime import datetime
 import asyncio
 import aiohttp
 from tenacity import (
+from greenlang.determinism import DeterministicClock
     retry,
     stop_after_attempt,
     wait_exponential,
@@ -96,7 +98,7 @@ class EcoinventSource(FactorSource):
         self.api_key = config.api_key
         self.session: Optional[aiohttp.ClientSession] = None
         self.request_count = 0
-        self.last_request_time = datetime.utcnow()
+        self.last_request_time = DeterministicClock.utcnow()
 
     async def _get_session(self) -> aiohttp.ClientSession:
         """
@@ -130,7 +132,7 @@ class EcoinventSource(FactorSource):
             RateLimitExceededError: If rate limit is exceeded
         """
         # Simple rate limiting: 1000 requests per minute
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         time_diff = (now - self.last_request_time).total_seconds()
 
         if time_diff < 60:  # Within same minute
@@ -265,7 +267,7 @@ class EcoinventSource(FactorSource):
             SourceUnavailableError: If ecoinvent API is unavailable
             RateLimitExceededError: If rate limit is exceeded
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             self.validate_request(request)
@@ -290,7 +292,7 @@ class EcoinventSource(FactorSource):
 
             if not data or not data.get("results"):
                 # Factor not found in ecoinvent
-                latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+                latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
                 self.log_lookup(request, success=False, latency_ms=latency_ms)
                 return None
 
@@ -328,7 +330,7 @@ class EcoinventSource(FactorSource):
                 gwp_standard=request.gwp_standard,
                 reference_year=result.get("reference_year", 2024),
                 last_updated=datetime.fromisoformat(
-                    result.get("last_updated", datetime.utcnow().isoformat())
+                    result.get("last_updated", DeterministicClock.utcnow().isoformat())
                 ),
                 geographic_scope=region,
                 technology_scope=result.get("technology", "Average mix"),
@@ -367,7 +369,7 @@ class EcoinventSource(FactorSource):
             response.provenance.calculation_hash = self.calculate_provenance_hash(response)
 
             # Log successful lookup
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
             self.log_lookup(request, success=True, latency_ms=latency_ms)
 
             return response
@@ -375,7 +377,7 @@ class EcoinventSource(FactorSource):
         except (SourceUnavailableError, RateLimitExceededError):
             raise
         except Exception as e:
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
             self.log_lookup(
                 request,
                 success=False,
@@ -392,7 +394,7 @@ class EcoinventSource(FactorSource):
         Returns:
             Health status dictionary
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             # Try to fetch a known factor (e.g., "steel")
@@ -401,24 +403,24 @@ class EcoinventSource(FactorSource):
                 params={"name": "steel", "limit": 1}
             )
 
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
 
             return {
                 "status": "healthy",
                 "latency_ms": latency_ms,
-                "last_check": datetime.utcnow(),
+                "last_check": DeterministicClock.utcnow(),
                 "error": None,
                 "request_count": self.request_count,
                 "rate_limit": self.config.rate_limit
             }
 
         except Exception as e:
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
 
             return {
                 "status": "unhealthy",
                 "latency_ms": latency_ms,
-                "last_check": datetime.utcnow(),
+                "last_check": DeterministicClock.utcnow(),
                 "error": str(e)
             }
 

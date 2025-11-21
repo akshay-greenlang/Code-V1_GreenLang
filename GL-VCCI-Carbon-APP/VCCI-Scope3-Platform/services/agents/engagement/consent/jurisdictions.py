@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Jurisdiction-specific rules for GDPR, CCPA, and CAN-SPAM compliance.
 
@@ -10,6 +11,7 @@ from enum import Enum
 from ..config import EU_COUNTRIES, CCPA_JURISDICTIONS, get_jurisdiction_config
 from ..models import ConsentStatus, LawfulBasis
 from ..exceptions import JurisdictionNotSupportedError
+from greenlang.determinism import DeterministicClock
 
 
 class JurisdictionType(str, Enum):
@@ -105,7 +107,7 @@ class GDPRRules(JurisdictionRules):
         # Check if opt-out is within grace period
         if opt_out_date:
             grace_period = self.opt_out_grace_period()
-            if datetime.utcnow() < opt_out_date + grace_period:
+            if DeterministicClock.utcnow() < opt_out_date + grace_period:
                 return False
 
         # For marketing: requires explicit consent
@@ -177,7 +179,7 @@ class CCPARules(JurisdictionRules):
         # Check if opt-out is within grace period
         if opt_out_date:
             grace_period = self.opt_out_grace_period()
-            if datetime.utcnow() < opt_out_date + grace_period:
+            if DeterministicClock.utcnow() < opt_out_date + grace_period:
                 return False
 
         # Opt-out model: can contact unless opted out
@@ -241,7 +243,7 @@ class CANSPAMRules(JurisdictionRules):
         # Check if opt-out is within grace period (10 business days)
         if opt_out_date:
             grace_period = self.opt_out_grace_period()
-            if datetime.utcnow() < opt_out_date + grace_period:
+            if DeterministicClock.utcnow() < opt_out_date + grace_period:
                 return False
 
         # Opt-out model: can contact unless opted out

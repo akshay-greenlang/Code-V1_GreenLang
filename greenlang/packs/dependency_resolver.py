@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Advanced Dependency Resolver for GreenLang Packs
 
@@ -16,6 +17,7 @@ from datetime import datetime
 import networkx as nx
 from packaging import version, specifiers
 from packaging.requirements import Requirement
+from greenlang.determinism import DeterministicClock
 
 
 class ResolutionStrategy(Enum):
@@ -424,7 +426,7 @@ class DependencyResolver:
         """Generate a lock file from resolution result"""
         lock_data = {
             "version": "1.0",
-            "resolved_at": datetime.now().isoformat(),
+            "resolved_at": DeterministicClock.now().isoformat(),
             "strategy": self.strategy.value,
             "packages": {},
         }

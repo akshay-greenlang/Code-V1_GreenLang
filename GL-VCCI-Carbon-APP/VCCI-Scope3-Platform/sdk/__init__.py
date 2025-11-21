@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI SDK Module
 # Python SDK for programmatic access to VCCI Scope 3 Platform
 

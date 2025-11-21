@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 05: Batch Processing
 
@@ -12,6 +13,7 @@ You'll learn:
 from greenlang.agents import BaseDataProcessor, DataProcessorConfig
 from typing import Dict, Any
 import random
+from greenlang.determinism import deterministic_random
 
 
 class BuildingEmissionsProcessor(BaseDataProcessor):
@@ -125,17 +127,17 @@ def generate_sample_data(num_buildings=1000):
     for i in range(1, num_buildings + 1):
         building = {
             'building_id': f'B{i:05d}',
-            'area_sqft': random.randint(5000, 50000),
-            'electricity_kwh': random.randint(10000, 100000),
+            'area_sqft': deterministic_random().randint(5000, 50000),
+            'electricity_kwh': deterministic_random().randint(10000, 100000),
         }
 
         # 80% of buildings have natural gas
-        if random.random() < 0.8:
-            building['natural_gas_therms'] = random.randint(500, 5000)
+        if deterministic_random().random() < 0.8:
+            building['natural_gas_therms'] = deterministic_random().randint(500, 5000)
 
         # 20% of buildings have diesel backup generators
-        if random.random() < 0.2:
-            building['diesel_liters'] = random.randint(100, 1000)
+        if deterministic_random().random() < 0.2:
+            building['diesel_liters'] = deterministic_random().randint(100, 1000)
 
         buildings.append(building)
 

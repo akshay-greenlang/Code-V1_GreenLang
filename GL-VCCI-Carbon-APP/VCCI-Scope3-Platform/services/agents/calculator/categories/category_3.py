@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 3: Fuel and Energy-Related Activities Calculator
 GL-VCCI Scope 3 Platform
@@ -28,6 +29,7 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     Category3Input,
     CalculationResult,
     DataQualityInfo,
@@ -160,7 +162,7 @@ class Category3Calculator:
             DataValidationError: If input data is invalid
             TierFallbackError: If all tiers fail
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         # Validate input
         self._validate_input(input_data)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive tests for agent decorators.
 Tests @deterministic, @cached, @traced decorators and utilities.
@@ -12,6 +13,7 @@ from unittest.mock import Mock, patch, MagicMock
 from typing import Dict, Any
 
 from greenlang.agents.decorators import (
+from greenlang.determinism import deterministic_random
     deterministic,
     cached,
     traced,
@@ -47,7 +49,7 @@ class TestDeterministicDecorator:
         @deterministic(seed=123)
         def random_value():
             import random
-            return random.random()
+            return deterministic_random().random()
 
         result1 = random_value()
         result2 = random_value()
@@ -61,7 +63,7 @@ class TestDeterministicDecorator:
 
         @deterministic(seed=42)
         def numpy_random():
-            return np.random.random()
+            return np.deterministic_random().random()
 
         result1 = numpy_random()
         result2 = numpy_random()
@@ -809,7 +811,7 @@ class TestDecoratorComposition:
         def complex_func(x):
             call_count[0] += 1
             import random
-            return x + random.random()
+            return x + deterministic_random().random()
 
         result1 = complex_func(10)
         result2 = complex_func(10)
@@ -853,7 +855,7 @@ class TestDecoratorComposition:
         @deterministic(seed=42)
         def complex_process(self, x):
             import random
-            return x + random.random()
+            return x + deterministic_random().random()
 
         result1 = complex_process(agent, 10)
         result2 = complex_process(agent, 10)

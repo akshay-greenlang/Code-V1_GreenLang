@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Verification script for encryption implementation.
 

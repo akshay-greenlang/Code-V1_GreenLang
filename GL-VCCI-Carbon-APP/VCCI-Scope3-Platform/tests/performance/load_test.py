@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Load Testing Suite - GL-VCCI Scope 3 Platform
 Performance Optimization Team
@@ -35,6 +36,8 @@ from typing import Dict, Any, List
 
 from locust import HttpUser, task, between, events
 from locust.contrib.fasthttp import FastHttpUser
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
 
 
 # ============================================================================
@@ -48,9 +51,9 @@ class TestDataGenerator:
     def generate_emission_record() -> Dict[str, Any]:
         """Generate single emission record"""
         return {
-            "supplier_id": f"SUP-{random.randint(1, 1000):04d}",
-            "supplier_name": f"Supplier {random.randint(1, 1000)}",
-            "scope3_category": random.choice([
+            "supplier_id": f"SUP-{deterministic_random().randint(1, 1000):04d}",
+            "supplier_name": f"Supplier {deterministic_random().randint(1, 1000)}",
+            "scope3_category": deterministic_random().choice([
                 "CATEGORY_1",
                 "CATEGORY_2",
                 "CATEGORY_3",
@@ -62,10 +65,10 @@ class TestDataGenerator:
             "quantity": round(random.uniform(100, 10000), 2),
             "unit": "kWh",
             "transaction_date": (
-                datetime.now() - timedelta(days=random.randint(1, 365))
+                DeterministicClock.now() - timedelta(days=deterministic_random().randint(1, 365))
             ).isoformat(),
-            "region": random.choice(["US", "EU", "APAC", "LATAM"]),
-            "data_quality": random.choice(["primary", "secondary", "proxy"])
+            "region": deterministic_random().choice(["US", "EU", "APAC", "LATAM"]),
+            "data_quality": deterministic_random().choice(["primary", "secondary", "proxy"])
         }
 
     @staticmethod
@@ -80,11 +83,11 @@ class TestDataGenerator:
     def generate_supplier_record() -> Dict[str, Any]:
         """Generate supplier record for intake"""
         return {
-            "supplier_name": f"Test Supplier {random.randint(1, 10000)}",
-            "duns_number": f"{random.randint(100000000, 999999999)}",
-            "country": random.choice(["USA", "CHN", "DEU", "GBR", "JPN"]),
+            "supplier_name": f"Test Supplier {deterministic_random().randint(1, 10000)}",
+            "duns_number": f"{deterministic_random().randint(100000000, 999999999)}",
+            "country": deterministic_random().choice(["USA", "CHN", "DEU", "GBR", "JPN"]),
             "annual_spend_usd": round(random.uniform(10000, 10000000), 2),
-            "industry_code": f"NAICS-{random.randint(11, 99)}"
+            "industry_code": f"NAICS-{deterministic_random().randint(11, 99)}"
         }
 
 
@@ -120,7 +123,7 @@ class EmissionsCalculationUser(FastHttpUser):
     @task(1)
     def get_emission_factors(self):
         """Retrieve emission factors (cached)"""
-        category = random.choice([
+        category = deterministic_random().choice([
             "electricity",
             "natural_gas",
             "diesel",
@@ -219,8 +222,8 @@ class ReportingUser(FastHttpUser):
     @task
     def generate_emissions_report(self):
         """Generate emissions report"""
-        start_date = (datetime.now() - timedelta(days=365)).isoformat()
-        end_date = datetime.now().isoformat()
+        start_date = (DeterministicClock.now() - timedelta(days=365)).isoformat()
+        end_date = DeterministicClock.now().isoformat()
 
         with self.client.post(
             "/api/v1/reporting/emissions",
@@ -266,7 +269,7 @@ class MixedWorkloadUser(FastHttpUser):
     @task(20)
     def get_data(self):
         """Data retrieval (20% of traffic)"""
-        endpoint = random.choice([
+        endpoint = deterministic_random().choice([
             "/api/v1/intake/suppliers?limit=100",
             "/api/v1/factors/electricity",
             "/api/v1/calculator/history?limit=50"
@@ -288,8 +291,8 @@ class MixedWorkloadUser(FastHttpUser):
     @task(10)
     def generate_report(self):
         """Report generation (10% of traffic)"""
-        start_date = (datetime.now() - timedelta(days=30)).isoformat()
-        end_date = datetime.now().isoformat()
+        start_date = (DeterministicClock.now() - timedelta(days=30)).isoformat()
+        end_date = DeterministicClock.now().isoformat()
 
         self.client.post(
             "/api/v1/reporting/emissions",
@@ -313,7 +316,7 @@ def on_test_start(environment, **kwargs):
     print("GL-VCCI SCOPE 3 PLATFORM - LOAD TEST")
     print("=" * 80)
     print(f"Target host: {environment.host}")
-    print(f"Start time: {datetime.now().isoformat()}")
+    print(f"Start time: {DeterministicClock.now().isoformat()}")
     print("=" * 80 + "\n")
 
 
@@ -323,7 +326,7 @@ def on_test_stop(environment, **kwargs):
     print("\n" + "=" * 80)
     print("LOAD TEST COMPLETED")
     print("=" * 80)
-    print(f"End time: {datetime.now().isoformat()}")
+    print(f"End time: {DeterministicClock.now().isoformat()}")
     print("\nFinal Statistics:")
     print(f"  Total requests: {environment.stats.total.num_requests}")
     print(f"  Total failures: {environment.stats.total.num_failures}")

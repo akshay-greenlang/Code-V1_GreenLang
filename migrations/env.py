@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Alembic migration environment for GreenLang Phase 4
 """

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Agent Versioning System
 
@@ -15,6 +16,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
 from greenlang.marketplace.models import MarketplaceAgent, AgentVersion
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -493,7 +495,7 @@ class VersionManager:
         version.deprecated = True
         version.deprecated_reason = reason
         version.superseded_by = superseded_by
-        version.deprecated_at = datetime.now()
+        version.deprecated_at = DeterministicClock.now()
 
         self.session.commit()
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered Thermal Energy Storage Analyzer with ChatSession Integration.
 
 This module provides an AI-enhanced thermal energy storage analysis agent that uses
@@ -43,14 +44,9 @@ import logging
 import math
 
 from ..types import Agent, AgentResult, ErrorInfo
-from greenlang.intelligence import (
-    ChatSession,
-    ChatMessage,
-    Role,
-    Budget,
-    BudgetExceeded,
-    create_provider,
-)
+# Fixed: Removed incomplete import
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 
 
@@ -197,7 +193,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["peak_thermal_load_kw", "average_thermal_load_kw", "storage_duration_hours", "operating_temperature_c", "return_temperature_c"],
             },
-        )
 
         # Tool 2: Select Storage Technology
         self.select_storage_technology_tool = ToolDef(
@@ -238,7 +233,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["operating_temperature_c", "storage_duration_hours", "storage_capacity_kwh", "application"],
             },
-        )
 
         # Tool 3: Optimize Charge/Discharge
         self.optimize_charge_discharge_tool = ToolDef(
@@ -277,7 +271,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["storage_capacity_kwh", "charge_source", "charge_power_kw", "discharge_power_kw"],
             },
-        )
 
         # Tool 4: Calculate Thermal Losses
         self.calculate_thermal_losses_tool = ToolDef(
@@ -319,7 +312,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["storage_volume_m3", "storage_temperature_c", "insulation_type"],
             },
-        )
 
         # Tool 5: Integrate with Solar
         self.integrate_with_solar_tool = ToolDef(
@@ -370,7 +362,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["process_thermal_load_kw", "process_temperature_c", "latitude", "annual_irradiance_kwh_m2", "load_profile", "collector_type"],
             },
-        )
 
         # Tool 6: Calculate Economics
         self.calculate_economics_tool = ToolDef(
@@ -428,7 +419,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["storage_capacity_kwh", "technology", "annual_energy_savings_kwh", "energy_cost_usd_per_kwh"],
             },
-        )
 
     def _calculate_storage_capacity_impl(
         self,
@@ -1190,7 +1180,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
         Returns:
             AgentResult with storage analysis and AI explanation
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Validate input
         try:
@@ -1214,7 +1204,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result["success"]:
@@ -1311,7 +1301,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 temperature=0.0,  # Deterministic
                 seed=42,          # Reproducible
                 tool_choice="auto",
-            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -1470,7 +1459,7 @@ IMPORTANT:
         output["provenance"] = {
             "agent_id": self.agent_id,
             "agent_version": self.version,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
             "tools_used": list(tool_results.keys()),
             "deterministic": True,
             "temperature": 0.0,

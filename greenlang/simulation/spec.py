@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Scenario Spec v1 - SIM-401 Compliant Location
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Database Query Profiler
 =======================
@@ -38,6 +39,7 @@ from typing import List, Dict, Optional
 from dataclasses import dataclass, asdict
 from contextlib import contextmanager
 from collections import defaultdict
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -401,7 +403,7 @@ class DBProfiler:
 <body>
     <div class="container">
         <h1>Database Profile Report</h1>
-        <p>Generated: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
+        <p>Generated: {DeterministicClock.now().strftime("%Y-%m-%d %H:%M:%S")}</p>
 
         <div class="summary">
             <div class="summary-item">

@@ -1,9 +1,12 @@
-schema_version: 2.0.0
-id: buildings/recommendation_ai_v1
 name: Building Recommendation Agent (AI-Powered)
 version: 1.0.0
-summary: AI-powered carbon reduction recommendations with ROI analysis, implementation
-  roadmaps, and location-specific strategies for buildings
+kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+license: MIT
 tags:
 - buildings
 - recommendations
@@ -15,100 +18,11 @@ tags:
 - renewable
 - ai-agent
 - citations
+id: buildings/recommendation_ai_v1
+summary: AI-powered carbon reduction recommendations with ROI analysis, implementation
+  roadmaps, and location-specific strategies for buildings
 owners:
 - greenlang-team
-license: MIT
-compute:
-  entrypoint: python://greenlang.agents.recommendation_agent_ai:execute
-  deterministic: true
-  timeout_s: 120
-  memory_limit_mb: 512
-  inputs:
-    emissions_by_source:
-      dtype: object
-      unit: '1'
-      description: Annual emissions breakdown by source (electricity, natural_gas,
-        etc.)
-    building_type:
-      dtype: string
-      unit: '1'
-      description: Type of building
-      default: commercial_office
-      required: false
-    building_age:
-      dtype: int32
-      unit: years
-      description: Age of building in years
-      default: 10
-      ge: 0
-      le: 150
-      required: false
-    performance_rating:
-      dtype: string
-      unit: '1'
-      description: Current energy performance rating
-      default: Average
-      required: false
-    load_breakdown:
-      dtype: object
-      unit: '1'
-      description: Fraction of building load by end-use (HVAC, lighting, equipment)
-    country:
-      dtype: string
-      unit: '1'
-      description: Country code for location-specific recommendations
-      default: US
-      required: false
-    intensity:
-      dtype: object
-      unit: '1'
-      description: Optional intensity metrics (building_area_sqft, occupancy)
-  outputs:
-    recommendations:
-      dtype: list
-      description: Ranked recommendations (max 5 by default)
-      unit: '1'
-    total_recommendations:
-      dtype: int32
-      unit: '1'
-      description: Total recommendations identified
-    usage_analysis:
-      dtype: object
-      description: Energy usage pattern analysis
-      unit: '1'
-    potential_savings:
-      dtype: object
-      description: Potential emissions reduction estimates
-      unit: '1'
-    cost_savings:
-      dtype: object
-      description: Estimated annual cost savings
-      unit: '1'
-    roi_analysis:
-      dtype: object
-      description: ROI and payback calculations for all recommendations
-      unit: '1'
-    implementation_roadmap:
-      dtype: list
-      description: Phased implementation plan with timelines
-      unit: '1'
-    quick_wins:
-      dtype: list
-      description: Low-cost, quick-payback options (up to 3)
-      unit: '1'
-    high_impact:
-      dtype: list
-      description: High emissions reduction options (up to 3)
-      unit: '1'
-    ai_summary:
-      dtype: string
-      unit: '1'
-      description: AI-generated analysis and recommendations
-    citations:
-      dtype: list
-      description: Citation tracking for provenance
-      unit: '1'
-  factors: {}
 ai:
   system_prompt: 'You are a sustainability advisor for GreenLang helping organizations
     reduce carbon emissions.

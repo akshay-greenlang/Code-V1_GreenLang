@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # climatenza_app/schemas/feasibility.py
 
 from typing import Any, Dict, List, Literal, Optional

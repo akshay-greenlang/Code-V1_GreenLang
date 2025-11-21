@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 21: Caching example (second run faster, same bytes)."""
 
 import pytest

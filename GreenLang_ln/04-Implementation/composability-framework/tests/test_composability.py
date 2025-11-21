@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for GreenLang Composability Framework
 
@@ -13,6 +14,7 @@ import hashlib
 from typing import Dict, Any, List
 
 from greenlang.core.composability import (
+from greenlang.determinism import DeterministicClock
     BaseRunnable,
     AgentRunnable,
     RunnableSequence,
@@ -683,7 +685,7 @@ class TestRunnableLambda:
         """Test lambda with provenance tracking."""
 
         def add_timestamp(data: Dict[str, Any]) -> Dict[str, Any]:
-            return {**data, "timestamp": datetime.now().isoformat()}
+            return {**data, "timestamp": DeterministicClock.now().isoformat()}
 
         lambda_runnable = RunnableLambda(add_timestamp)
         config = RunnableConfig(enable_provenance=True)

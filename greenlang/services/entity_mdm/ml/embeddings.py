@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Embedding generation pipeline for entity resolution.
 
@@ -15,6 +16,24 @@ import json
 import logging
 from pathlib import Path
 import redis
+
+# Runtime check for optional ML dependencies
+try:
+    from greenlang.utils.ml_imports import check_ml_dependencies
+    check_ml_dependencies("Entity Resolution Embedding Pipeline")
+except ImportError as e:
+    raise ImportError(
+        "\n" + "=" * 80 + "\n"
+        "Missing Optional Dependencies: ML Features\n"
+        "=" * 80 + "\n\n"
+        "Entity resolution requires PyTorch and sentence-transformers.\n\n"
+        "To install ML dependencies, run:\n"
+        "  pip install greenlang-cli[ml]\n\n"
+        "Or install all AI capabilities:\n"
+        "  pip install greenlang-cli[ai-full]\n"
+        + "=" * 80 + "\n"
+    ) from e
+
 from sentence_transformers import SentenceTransformer
 import torch
 

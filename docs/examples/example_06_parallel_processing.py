@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 06: Parallel Processing
 
@@ -13,6 +14,7 @@ from greenlang.agents import BaseDataProcessor, DataProcessorConfig
 from typing import Dict, Any
 import time
 import random
+from greenlang.determinism import deterministic_random
 
 
 class CPUIntensiveProcessor(BaseDataProcessor):
@@ -96,7 +98,7 @@ class CPUIntensiveProcessor(BaseDataProcessor):
 def generate_test_data(size=1000):
     """Generate test dataset."""
     return [
-        {'id': i, 'value': random.randint(1000, 10000)}
+        {'id': i, 'value': deterministic_random().randint(1000, 10000)}
         for i in range(size)
     ]
 

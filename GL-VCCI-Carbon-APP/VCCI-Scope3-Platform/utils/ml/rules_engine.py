@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI ML Module - Rules Engine
 # Spend Classification ML System - Rule-Based Classifier
 

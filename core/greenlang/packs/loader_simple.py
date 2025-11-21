@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Simple pack loader for PR1 - validates manifest and referenced files.
 """

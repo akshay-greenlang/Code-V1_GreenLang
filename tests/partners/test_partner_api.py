@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for Partner API
 
@@ -13,6 +14,7 @@ from sqlalchemy.orm import sessionmaker
 import secrets
 
 from greenlang.partners.api import (
+from greenlang.determinism import DeterministicClock
     app,
     Base,
     PartnerModel,
@@ -478,8 +480,8 @@ class TestUsageStatistics:
 
     def test_get_usage_statistics_custom_range(self, client, auth_token, sample_partner):
         """Test getting usage statistics with custom date range"""
-        start_date = (datetime.utcnow() - timedelta(days=7)).isoformat()
-        end_date = datetime.utcnow().isoformat()
+        start_date = (DeterministicClock.utcnow() - timedelta(days=7)).isoformat()
+        end_date = DeterministicClock.utcnow().isoformat()
 
         response = client.get(
             f"/api/partners/{sample_partner.id}/usage",

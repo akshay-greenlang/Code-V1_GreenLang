@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Production Order Mapper
 
@@ -33,6 +34,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, Field
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +201,7 @@ class ProductionOrderMapper:
         try:
             return int(date_str[:4])
         except (ValueError, TypeError):
-            return datetime.now().year
+            return DeterministicClock.now().year
 
     def map_production_order(
         self,
@@ -238,7 +240,7 @@ class ProductionOrderMapper:
                   production_order.get("MfgOrderPlannedEndDate", "")
 
         if not start_date:
-            start_date = datetime.now().strftime("%Y-%m-%d")
+            start_date = DeterministicClock.now().strftime("%Y-%m-%d")
             logger.warning(f"Order {production_order['ManufacturingOrder']}: Missing start date")
         if not end_date:
             end_date = start_date

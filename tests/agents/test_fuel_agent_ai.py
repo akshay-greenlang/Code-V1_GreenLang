@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for AI-powered FuelAgent.
 
 This module tests the FuelAgentAI implementation, ensuring:

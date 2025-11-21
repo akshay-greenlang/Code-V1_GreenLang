@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 gl decarbonization - Generate comprehensive industrial decarbonization roadmaps
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Hash utilities for provenance tracking.
 """

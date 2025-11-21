@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Vector store abstraction for RAG system.
 

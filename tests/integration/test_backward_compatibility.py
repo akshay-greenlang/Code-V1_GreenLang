@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Backward compatibility and schema validation tests.
 """

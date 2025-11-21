@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Provenance utilities for tracking and verification
 """
@@ -7,6 +8,7 @@ import logging
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, List, Optional, Tuple
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +58,8 @@ class ProvenanceContext:
 
     def __init__(self, name: str = "default"):
         self.name = name
-        self.started_at = datetime.utcnow()
-        self.start_time = datetime.utcnow().timestamp()
+        self.started_at = DeterministicClock.utcnow()
+        self.start_time = DeterministicClock.utcnow().timestamp()
         self.inputs = {}
         self.outputs = {}
         self.artifacts = []
@@ -100,7 +102,7 @@ class ProvenanceContext:
             "type": sig_type,
             "value": value,
             "metadata": metadata or {},
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
         }
         self.signatures.append(signature)
 
@@ -182,7 +184,7 @@ def record_seed_info(
         "seed_path": seed_path or "root",
         "seed_child": seed_child,
         "spec_type": spec_type,
-        "recorded_at": datetime.utcnow().isoformat()
+        "recorded_at": DeterministicClock.utcnow().isoformat()
     }
 
     # Store in context metadata (extends existing pattern)
@@ -304,7 +306,7 @@ def generate_provenance_report(artifact_path: Path) -> Dict[str, Any]:
     """
     report = {
         "artifact": str(artifact_path),
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": DeterministicClock.utcnow().isoformat(),
         "checks": {},
         "metadata": {},
     }
@@ -381,7 +383,7 @@ def check_reproducibility(run1_path: Path, run2_path: Path) -> Dict[str, Any]:
 
     report = {
         "reproducible": comparison["identical"],
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": DeterministicClock.utcnow().isoformat(),
         "runs": {"run1": str(run1_path), "run2": str(run2_path)},
         "differences": comparison["differences"],
     }

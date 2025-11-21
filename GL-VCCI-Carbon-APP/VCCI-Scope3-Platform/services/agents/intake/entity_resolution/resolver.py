@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Entity Resolver - Main Resolution Orchestrator
 
@@ -13,6 +14,7 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     IngestionRecord,
     ResolvedEntity,
     EntityMatchCandidate,
@@ -250,7 +252,7 @@ class EntityResolver:
         if entity_name in self.cache:
             cached_time = self.cache_timestamps.get(entity_name)
             if cached_time:
-                age = datetime.utcnow() - cached_time
+                age = DeterministicClock.utcnow() - cached_time
                 if age.total_seconds() < self.config.cache_ttl_seconds:
                     return self.cache[entity_name]
                 else:
@@ -267,7 +269,7 @@ class EntityResolver:
         """Cache resolution result and return it."""
         if self.config.cache_enabled:
             self.cache[entity_name] = result
-            self.cache_timestamps[entity_name] = datetime.utcnow()
+            self.cache_timestamps[entity_name] = DeterministicClock.utcnow()
         return result
 
     def add_entity(self, entity_id: str, entity_data: Dict[str, Any]) -> None:

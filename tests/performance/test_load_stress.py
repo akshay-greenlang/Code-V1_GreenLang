@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance and Load Testing Suite
 

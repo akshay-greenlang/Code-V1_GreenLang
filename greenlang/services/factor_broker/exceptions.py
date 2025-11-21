@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Factor Broker Custom Exceptions
 GL-VCCI Scope 3 Platform

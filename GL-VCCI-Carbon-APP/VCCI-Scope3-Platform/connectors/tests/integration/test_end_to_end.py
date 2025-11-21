@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 End-to-End Integration Tests
 GL-VCCI Scope 3 Platform
@@ -18,6 +19,7 @@ from unittest.mock import MagicMock, patch
 
 from sap.client import SAPODataClient, create_query as sap_query
 from oracle.client import OracleRESTClient, create_query as oracle_query
+from greenlang.determinism import DeterministicClock
 
 
 @pytest.mark.integration
@@ -93,7 +95,7 @@ class TestSAPToIntakeAgent:
                 "source_system": "SAP",
                 "record_type": "purchase_order",
                 "raw_data": record,
-                "ingestion_timestamp": datetime.now().isoformat(),
+                "ingestion_timestamp": DeterministicClock.now().isoformat(),
                 "status": "pending_calculation"
             }
             processed_records.append(processed)
@@ -130,7 +132,7 @@ class TestOracleToIntakeAgent:
                 "source_system": "Oracle",
                 "record_type": "purchase_order",
                 "raw_data": record,
-                "ingestion_timestamp": datetime.now().isoformat(),
+                "ingestion_timestamp": DeterministicClock.now().isoformat(),
                 "status": "pending_calculation"
             }
             processed_records.append(processed)
@@ -162,7 +164,7 @@ class TestWorkdayToIntakeAgent:
                 "source_system": "Workday",
                 "record_type": "expense_report",
                 "raw_data": record,
-                "ingestion_timestamp": datetime.now().isoformat(),
+                "ingestion_timestamp": DeterministicClock.now().isoformat(),
                 "status": "pending_calculation"
             }
             processed_records.append(processed)
@@ -288,7 +290,7 @@ class TestEndToEndWithCalculator:
                 **record,
                 "emissions_co2e": 150.5,  # Mock calculation
                 "calculation_method": "spend-based",
-                "calculation_timestamp": datetime.now().isoformat(),
+                "calculation_timestamp": DeterministicClock.now().isoformat(),
                 "status": "calculated"
             }
             calculated_records.append(calculated)

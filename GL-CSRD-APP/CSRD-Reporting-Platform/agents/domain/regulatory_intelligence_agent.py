@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Regulatory Intelligence Agent
 
@@ -17,6 +18,7 @@ import json
 import yaml
 from pathlib import Path
 import logging
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -161,7 +163,7 @@ class CSRDRegulatoryIntelligenceAgent:
                         'url': doc_url,
                         'title': doc_title,
                         'hash': doc_hash,
-                        'found_date': datetime.now().isoformat()
+                        'found_date': DeterministicClock.now().isoformat()
                     })
 
         except requests.RequestException as e:
@@ -200,7 +202,7 @@ class CSRDRegulatoryIntelligenceAgent:
             'url': document['url'],
             'title': document['title'],
             'source': source['name'],
-            'processed_date': datetime.now().isoformat(),
+            'processed_date': DeterministicClock.now().isoformat(),
             'analysis': analysis
         })
 
@@ -288,7 +290,7 @@ class CSRDRegulatoryIntelligenceAgent:
         rules = []
 
         if analysis['requires_action']:
-            rule_id = f"ESRS-AUTO-{datetime.now().strftime('%Y%m%d')}"
+            rule_id = f"ESRS-AUTO-{DeterministicClock.now().strftime('%Y%m%d')}"
 
             rule = {
                 'rule_id': rule_id,
@@ -297,7 +299,7 @@ class CSRDRegulatoryIntelligenceAgent:
                 'source': regulatory_update['source']['name'],
                 'affected_standards': analysis['affected_standards'],
                 'requires_manual_review': True,
-                'created_date': datetime.now().isoformat(),
+                'created_date': DeterministicClock.now().isoformat(),
                 'url': regulatory_update['document']['url']
             }
 
@@ -336,7 +338,7 @@ class CSRDRegulatoryIntelligenceAgent:
         alerts_dir = Path('data/regulatory_alerts')
         alerts_dir.mkdir(parents=True, exist_ok=True)
 
-        alert_file = alerts_dir / f"alert_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        alert_file = alerts_dir / f"alert_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.json"
 
         with open(alert_file, 'w') as f:
             json.dump(update, f, indent=2)

@@ -67,7 +67,7 @@ python scripts/validate_exit_bar.py --checklist templates/exit_bar_checklist.yam
 **File:** `scripts/validate_exit_bar.py`
 **Purpose:** Automated exit bar validation
 **Size:** 32,663 bytes
-**Language:** Python 3.11+
+**Language:** Python 3.10+
 
 **Key Features:**
 - Automated validation of all 52 criteria

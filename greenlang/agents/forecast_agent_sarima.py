@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered SARIMA Forecasting Agent with ChatSession Integration.
 
 This module provides a production-ready SARIMA (Seasonal Autoregressive Integrated
@@ -57,6 +58,7 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 import warnings
+from greenlang.determinism import DeterministicClock
 
 # Suppress statsmodels warnings
 warnings.filterwarnings('ignore', category=UserWarning)
@@ -486,7 +488,7 @@ class SARIMAForecastAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         Returns:
             Dict with forecast results and AI interpretation
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Extract parameters
         data = input_data["data"]
@@ -561,7 +563,7 @@ class SARIMAForecastAgent(Agent[Dict[str, Any], Dict[str, Any]]):
             )
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add metadata
             output["metadata"] = {
@@ -1155,7 +1157,7 @@ IMPORTANT:
                 "mae": float(mae),
                 "mape": float(mape),
             },
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id=f"eval_{self._tool_call_count}",
         )
         self._calculation_citations.append(calc_citation)

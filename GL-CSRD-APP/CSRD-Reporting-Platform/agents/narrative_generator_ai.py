@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AI-Enhanced Narrative Generator for CSRD Reporting
 GL-CSRD Reporting Platform - INSIGHT PATH
@@ -29,6 +30,7 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from greenlang.agents.categories import AgentCategory, AgentMetadata
+from greenlang.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +66,7 @@ class AIGeneratedNarrative:
             self.rag_sources_used = []
 
         if self.generation_timestamp is None:
-            self.generation_timestamp = datetime.utcnow().isoformat() + "Z"
+            self.generation_timestamp = DeterministicClock.utcnow().isoformat() + "Z"
 
 
 class NarrativeGeneratorAI:

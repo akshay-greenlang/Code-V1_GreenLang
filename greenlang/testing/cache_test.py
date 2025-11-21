@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Cache Testing Framework
 ======================
@@ -17,6 +18,7 @@ import hashlib
 
 from .mocks import MockCacheManager
 from .assertions import assert_cache_hit_rate
+from greenlang.determinism import deterministic_random
 
 
 class CacheTestCase(unittest.TestCase):
@@ -259,13 +261,13 @@ class CacheTestCase(unittest.TestCase):
         keys = [f"key_{i}" for i in range(int(num_operations * (1 - hit_probability)))]
 
         for i in range(num_operations):
-            if random.random() < hit_probability and i > 0:
+            if deterministic_random().random() < hit_probability and i > 0:
                 # Simulate cache hit
-                key = random.choice(keys[:i])
+                key = deterministic_random().choice(keys[:i])
                 self.get_cache(key)
             else:
                 # Simulate cache miss and set
-                key = random.choice(keys)
+                key = deterministic_random().choice(keys)
                 self.set_cache(key, f"value_{i}")
                 self.get_cache(key)
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Composability Framework Examples
 
@@ -21,6 +22,8 @@ from typing import Dict, List, Any
 from pydantic import BaseModel, Field
 
 from greenlang.core.composability import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
     AgentRunnable,
     RunnableSequence,
     RunnableParallel,
@@ -60,7 +63,7 @@ class IntakeAgent:
                 "natural_gas_mmbtu": 1000,
                 "fleet_miles": 25000
             },
-            "intake_timestamp": datetime.now().isoformat(),
+            "intake_timestamp": DeterministicClock.now().isoformat(),
             "status": "VALIDATED"
         }
 
@@ -119,7 +122,7 @@ class CalculationAgent:
         # Add calculation metadata for provenance
         input_data["emissions"] = emissions
         input_data["calculation_method"] = "IPCC_2021_TIER1"
-        input_data["calculation_timestamp"] = datetime.now().isoformat()
+        input_data["calculation_timestamp"] = DeterministicClock.now().isoformat()
 
         return input_data
 
@@ -141,7 +144,7 @@ class ReportingAgent:
             "scope1_emissions_kg_co2e": emissions.get("scope1_total", 0),
             "scope2_emissions_kg_co2e": emissions.get("scope2_total", 0),
             "validation_status": input_data.get("validation_status"),
-            "report_generated_at": datetime.now().isoformat(),
+            "report_generated_at": DeterministicClock.now().isoformat(),
             "report_format": "GRI_STANDARD",
             "full_data": input_data  # Include complete data for audit trail
         }
@@ -222,7 +225,7 @@ class RiskAssessmentAgent:
 
         return {
             "risk_assessment": risks,
-            "assessment_date": datetime.now().isoformat(),
+            "assessment_date": DeterministicClock.now().isoformat(),
             "input_data": input_data
         }
 
@@ -328,7 +331,7 @@ class UnreliableAgent:
         logger.info(f"UnreliableAgent attempt #{self.attempt_count}")
 
         import random
-        if random.random() < self.failure_rate and self.attempt_count < 3:
+        if deterministic_random().random() < self.failure_rate and self.attempt_count < 3:
             raise RuntimeError(f"Random failure on attempt {self.attempt_count}")
 
         return {
@@ -433,7 +436,7 @@ class AggregationAgent:
                 "total_emissions": total_emissions,
                 "scope1_total": scope1_total,
                 "scope2_total": scope2_total,
-                "aggregation_timestamp": datetime.now().isoformat()
+                "aggregation_timestamp": DeterministicClock.now().isoformat()
             },
             "facility_details": input_data
         }
@@ -615,7 +618,7 @@ def example_lambda_functions():
         """Add processing metadata."""
         return {
             **data,
-            "processed_at": datetime.now().isoformat(),
+            "processed_at": DeterministicClock.now().isoformat(),
             "processing_version": "1.0.0"
         }
 
@@ -670,7 +673,7 @@ class PrimaryDataSource:
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Try to fetch from primary source."""
         import random
-        if random.random() < 0.7:  # 70% failure rate
+        if deterministic_random().random() < 0.7:  # 70% failure rate
             raise ConnectionError("Primary data source unavailable")
 
         return {

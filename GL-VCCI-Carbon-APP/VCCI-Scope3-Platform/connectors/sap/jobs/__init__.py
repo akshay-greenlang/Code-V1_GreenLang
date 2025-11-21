@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # SAP Jobs
 # Celery tasks for SAP data synchronization
 

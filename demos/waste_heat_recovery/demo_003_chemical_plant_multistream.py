@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo Script #3: Chemical Plant Multi-Stream Waste Heat Recovery
 

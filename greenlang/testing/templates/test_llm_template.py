@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 LLM Integration Test Template
 ==============================

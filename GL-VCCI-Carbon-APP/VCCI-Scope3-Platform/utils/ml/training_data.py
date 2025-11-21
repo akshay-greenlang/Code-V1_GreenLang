@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI ML Module - Training Data
 # Spend Classification ML System - Training Data Management
 
@@ -37,6 +38,7 @@ Usage:
 ------
 ```python
 from utils.ml.training_data import TrainingDataLoader, TrainingDataset
+from greenlang.determinism import deterministic_random
 
 # Load training data
 loader = TrainingDataLoader()
@@ -433,7 +435,7 @@ class TrainingDataLoader:
                     continue
 
                 # Shuffle
-                random.shuffle(category_examples)
+                deterministic_random().shuffle(category_examples)
 
                 # Split
                 n = len(category_examples)
@@ -447,7 +449,7 @@ class TrainingDataLoader:
         else:
             # Random split
             examples = dataset.examples.copy()
-            random.shuffle(examples)
+            deterministic_random().shuffle(examples)
 
             n = len(examples)
             train_end = int(n * train_ratio)
@@ -523,7 +525,7 @@ class TrainingDataLoader:
 
                 # Simple duplication (can be extended with more sophisticated methods)
                 for _ in range(needed):
-                    original = random.choice(category_examples)
+                    original = deterministic_random().choice(category_examples)
 
                     # Create augmented example
                     augmented = TrainingExample(

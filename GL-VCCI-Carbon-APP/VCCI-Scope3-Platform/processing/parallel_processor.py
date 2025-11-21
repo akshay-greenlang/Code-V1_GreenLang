@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Parallel Processing Engine
 GL-VCCI Scope 3 Platform - Concurrent Processing Optimization

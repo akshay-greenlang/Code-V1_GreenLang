@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI Load Testing - Endurance Test Scenario
 
@@ -46,6 +47,8 @@ from datetime import datetime
 from collections import defaultdict
 
 from load_test_utils import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_random
     generate_csv_data,
     generate_realistic_procurement_data,
     monitor_system_resources,
@@ -85,7 +88,7 @@ class EnduranceTestUser(HttpUser):
 
     def on_start(self):
         """Initialize user session."""
-        self.user_id = f"endurance_{random.randint(1, 10000)}"
+        self.user_id = f"endurance_{deterministic_random().randint(1, 10000)}"
         self.operation_count = 0
 
         # Authenticate
@@ -137,7 +140,7 @@ class EnduranceTestUser(HttpUser):
         ]
 
         # Randomly select and execute operation
-        operation = random.choice(operations)
+        operation = deterministic_random().choice(operations)
         operation()
 
         self.operation_count += 1
@@ -166,14 +169,14 @@ class EnduranceTestUser(HttpUser):
     def _calculation(self):
         """Create calculation - compute intensive."""
         payload = {
-            "category": random.choice([1, 4, 6]),
-            "tier": random.choice([1, 2, 3]),
-            "supplier_id": f"SUP-{random.randint(1, 10000)}",
-            "product": random.choice([
+            "category": deterministic_random().choice([1, 4, 6]),
+            "tier": deterministic_random().choice([1, 2, 3]),
+            "supplier_id": f"SUP-{deterministic_random().randint(1, 10000)}",
+            "product": deterministic_random().choice([
                 "Steel plate", "Plastic resin", "Electronic components"
             ]),
             "quantity": random.uniform(100, 10000),
-            "unit": random.choice(["kg", "ton", "lb"]),
+            "unit": deterministic_random().choice(["kg", "ton", "lb"]),
             "spend_usd": random.uniform(1000, 100000)
         }
 
@@ -191,7 +194,7 @@ class EnduranceTestUser(HttpUser):
 
     def _upload(self):
         """File upload - I/O intensive."""
-        num_rows = random.randint(50, 200)
+        num_rows = deterministic_random().randint(50, 200)
         csv_data = generate_csv_data(num_rows)
 
         files = {
@@ -217,9 +220,9 @@ class EnduranceTestUser(HttpUser):
     def _report(self):
         """Generate report - mixed operations."""
         payload = {
-            "report_type": random.choice(["esrs_e1", "cdp", "ifrs_s2"]),
-            "year": random.choice([2023, 2024]),
-            "format": random.choice(["json", "pdf", "xlsx"])
+            "report_type": deterministic_random().choice(["esrs_e1", "cdp", "ifrs_s2"]),
+            "year": deterministic_random().choice([2023, 2024]),
+            "format": deterministic_random().choice(["json", "pdf", "xlsx"])
         }
 
         with self.client.post(
@@ -237,8 +240,8 @@ class EnduranceTestUser(HttpUser):
     def _entity_resolution(self):
         """Entity resolution - ML operations."""
         payload = {
-            "supplier_name": f"Global Steel Corp {random.randint(1, 100)}",
-            "country": random.choice(["USA", "Germany", "China", "Japan"]),
+            "supplier_name": f"Global Steel Corp {deterministic_random().randint(1, 100)}",
+            "country": deterministic_random().choice(["USA", "Germany", "China", "Japan"]),
             "confidence_threshold": 0.85
         }
 
@@ -256,7 +259,7 @@ class EnduranceTestUser(HttpUser):
 
     def _supplier_engagement(self):
         """Supplier engagement - email operations."""
-        supplier_id = f"SUP-{random.randint(1, 10000)}"
+        supplier_id = f"SUP-{deterministic_random().randint(1, 10000)}"
 
         with self.client.post(
             f"/api/suppliers/{supplier_id}/engage",
@@ -273,9 +276,9 @@ class EnduranceTestUser(HttpUser):
     def _emissions_query(self):
         """Complex emissions query - database intensive."""
         filters = {
-            "category": random.choice([1, 4, 6]),
-            "year": random.choice([2023, 2024]),
-            "limit": random.choice([100, 500, 1000])
+            "category": deterministic_random().choice([1, 4, 6]),
+            "year": deterministic_random().choice([2023, 2024]),
+            "limit": deterministic_random().choice([100, 500, 1000])
         }
 
         with self.client.get(
@@ -292,10 +295,10 @@ class EnduranceTestUser(HttpUser):
     def _batch_calculation(self):
         """Batch calculation - queue operations."""
         items = []
-        for _ in range(random.randint(5, 20)):
+        for _ in range(deterministic_random().randint(5, 20)):
             items.append({
-                "category": random.choice([1, 4, 6]),
-                "tier": random.choice([1, 2, 3]),
+                "category": deterministic_random().choice([1, 4, 6]),
+                "tier": deterministic_random().choice([1, 2, 3]),
                 "quantity": random.uniform(100, 1000),
                 "unit": "kg",
                 "spend_usd": random.uniform(1000, 10000)
@@ -316,7 +319,7 @@ class EnduranceTestUser(HttpUser):
     def _cache_operations(self):
         """Cache-focused operations to test cache stability."""
         # Query frequently accessed data (should hit cache)
-        category = random.randint(1, 3)  # Focus on few categories for cache hits
+        category = deterministic_random().randint(1, 3)  # Focus on few categories for cache hits
 
         with self.client.get(
             f"/api/emissions/aggregate?category={category}",
@@ -331,11 +334,11 @@ class EnduranceTestUser(HttpUser):
 
     def _update_operations(self):
         """Update operations to test database transactions."""
-        supplier_id = f"SUP-{random.randint(1, 1000)}"
+        supplier_id = f"SUP-{deterministic_random().randint(1, 1000)}"
 
         payload = {
-            "name": f"Updated Supplier {random.randint(1, 1000)}",
-            "contact_email": f"contact{random.randint(1, 1000)}@supplier.com"
+            "name": f"Updated Supplier {deterministic_random().randint(1, 1000)}",
+            "contact_email": f"contact{deterministic_random().randint(1, 1000)}@supplier.com"
         }
 
         with self.client.put(
@@ -388,7 +391,7 @@ def collect_hourly_metrics(stats):
         p95 = stats.total.get_response_time_percentile(0.95)
         fail_ratio = stats.total.fail_ratio
 
-        hourly_metrics['timestamp'].append(datetime.now().isoformat())
+        hourly_metrics['timestamp'].append(DeterministicClock.now().isoformat())
         hourly_metrics['memory_percent'].append(resources['memory']['percent'])
         hourly_metrics['cpu_percent'].append(resources['cpu']['percent_overall'])
         hourly_metrics['p95_latency'].append(p95)
@@ -398,7 +401,7 @@ def collect_hourly_metrics(stats):
         # Print hourly summary
         hour = len(hourly_metrics['timestamp'])
         print(f"\n{'='*80}")
-        print(f"HOUR {hour} SUMMARY ({datetime.now().strftime('%Y-%m-%d %H:%M:%S')})")
+        print(f"HOUR {hour} SUMMARY ({DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')})")
         print(f"{'='*80}")
         print(f"Memory: {resources['memory']['percent']:.1f}%")
         print(f"CPU: {resources['cpu']['percent_overall']:.1f}%")
@@ -417,7 +420,7 @@ def on_test_start(environment, **kwargs):
     print(f"Duration: 24 hours")
     print(f"Users: 500 concurrent")
     print(f"Focus: Memory leaks, connection leaks, long-term stability")
-    print(f"Start time: {datetime.now().isoformat()}")
+    print(f"Start time: {DeterministicClock.now().isoformat()}")
     print("=" * 80)
 
     # Start background monitoring
@@ -440,7 +443,7 @@ def on_test_stop(environment, **kwargs):
     print("\n" + "=" * 80)
     print("GL-VCCI ENDURANCE TEST COMPLETED")
     print("=" * 80)
-    print(f"End time: {datetime.now().isoformat()}")
+    print(f"End time: {DeterministicClock.now().isoformat()}")
 
     stats = environment.stats
 

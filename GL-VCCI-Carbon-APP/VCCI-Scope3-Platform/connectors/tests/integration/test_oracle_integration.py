@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Integration Tests
 GL-VCCI Scope 3 Platform
@@ -17,6 +18,7 @@ from datetime import datetime, timedelta
 
 from oracle.client import OracleRESTClient, create_query
 from oracle.exceptions import (
+from greenlang.determinism import DeterministicClock
     OracleConnectionError,
     OracleAuthenticationError,
     OracleRateLimitError,
@@ -84,7 +86,7 @@ class TestOraclePurchaseOrderExtraction:
     def test_extract_with_date_filter(self, oracle_client: OracleRESTClient):
         """Test extraction with date range filter."""
         # Filter for recent orders
-        cutoff_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        cutoff_date = (DeterministicClock.now() - timedelta(days=30)).strftime("%Y-%m-%d")
         query = create_query().q(
             f"CreationDate >= '{cutoff_date}T00:00:00'"
         ).limit(10)
@@ -160,7 +162,7 @@ class TestOracleDeltaSync:
     def test_delta_sync_by_date(self, oracle_client: OracleRESTClient):
         """Test delta sync using LastUpdateDate."""
         # Get records modified in last 7 days
-        cutoff_date = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        cutoff_date = (DeterministicClock.now() - timedelta(days=7)).strftime("%Y-%m-%d")
         query = create_query().q(
             f"LastUpdateDate >= '{cutoff_date}T00:00:00'"
         ).limit(50)
@@ -282,7 +284,7 @@ class TestOracleEndToEnd:
     def test_e2e_with_filters(self, oracle_client: OracleRESTClient):
         """Test end-to-end flow with complex filters."""
         # Extract with date and status filters
-        cutoff_date = (datetime.now() - timedelta(days=60)).strftime("%Y-%m-%d")
+        cutoff_date = (DeterministicClock.now() - timedelta(days=60)).strftime("%Y-%m-%d")
         query = create_query().q(
             f"CreationDate >= '{cutoff_date}T00:00:00' and Status='APPROVED'"
         ).limit(10)

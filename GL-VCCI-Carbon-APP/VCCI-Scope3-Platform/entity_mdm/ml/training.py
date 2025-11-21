@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Training pipeline for entity resolution models.
 
@@ -21,6 +22,7 @@ from entity_mdm.ml.config import MLConfig, TrainingConfig
 from entity_mdm.ml.matching_model import MatchingModel, EntityPair
 from entity_mdm.ml.evaluation import ModelEvaluator
 from entity_mdm.ml.exceptions import TrainingException
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -248,7 +250,7 @@ class TrainingPipeline:
 
             # Store history
             self._history = {
-                "training_date": datetime.utcnow().isoformat(),
+                "training_date": DeterministicClock.utcnow().isoformat(),
                 "num_train_pairs": len(train_pairs),
                 "num_val_pairs": len(val_pairs) if val_pairs else 0,
                 "epochs": len(history["train_loss"]),

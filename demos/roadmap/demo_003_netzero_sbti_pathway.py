@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo Script #3: Net-Zero Pathway with Science-Based Targets (SBTi) Alignment
 

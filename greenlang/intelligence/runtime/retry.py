@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Retry Logic with Exponential Backoff
 
@@ -19,6 +20,7 @@ import random
 import time
 from typing import TypeVar, Callable, Any, Optional
 from functools import wraps
+from greenlang.determinism import deterministic_random
 
 T = TypeVar("T")
 
@@ -76,7 +78,7 @@ class RetryConfig:
 
         if self.jitter:
             # Add ±25% jitter
-            jitter_factor = 1.0 + (random.random() - 0.5) * 0.5
+            jitter_factor = 1.0 + (deterministic_random().random() - 0.5) * 0.5
             delay *= jitter_factor
 
         return delay

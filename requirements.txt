@@ -30,11 +30,13 @@ redis==5.0.1  # Caching layer (license-compliant 24h TTL)
 pandas==2.1.4  # Data handling
 
 # Entity MDM Service
-sentence-transformers==2.3.1  # Vector embeddings for entity matching
-weaviate-client==4.4.1  # Vector database for entity storage
-torch==2.1.2  # PyTorch for BERT models
-transformers==4.37.2  # BERT re-ranking models
-scikit-learn==1.4.0  # ML utilities
+# MOVED TO OPTIONAL DEPENDENCIES [ml] and [vector-db]
+# Install with: pip install greenlang-cli[ml,vector-db]
+# sentence-transformers==2.3.1  # Vector embeddings for entity matching
+# weaviate-client==4.4.1  # Vector database for entity storage
+# torch==2.1.2  # PyTorch for BERT models
+# transformers==4.37.2  # BERT re-ranking models
+# scikit-learn==1.4.0  # ML utilities
 
 # Methodologies Service
 scipy==1.12.0  # Statistical distributions for Monte Carlo
@@ -71,16 +73,18 @@ pybreaker==1.0.2  # Circuit breaker pattern for external service protection
 # =============================================================================
 # VECTOR DATABASE INTEGRATION
 # =============================================================================
-chromadb==0.4.22  # ChromaDB for development/local vector storage
-pinecone-client==3.0.2  # Pinecone Serverless for production cloud deployment
-faiss-cpu==1.7.4  # FAISS for fast local vector similarity search
-qdrant-client==1.7.3  # Qdrant vector database (optional)
+# MOVED TO OPTIONAL DEPENDENCY [vector-db]
+# Install with: pip install greenlang-cli[vector-db]
+# chromadb==0.4.22  # ChromaDB for development/local vector storage
+# pinecone-client==3.0.2  # Pinecone Serverless for production cloud deployment
+# faiss-cpu==1.7.4  # FAISS for fast local vector similarity search
+# qdrant-client==1.7.3  # Qdrant vector database (optional)
 
 # =============================================================================
 # JWT AUTHENTICATION
 # =============================================================================
 PyJWT==2.8.0  # JWT token encoding and validation with signature verification
-cryptography==42.0.5  # Cryptographic backend for JWT (UPDATED - CVE-2024-0727 fix)
+cryptography==46.0.3  # Cryptographic backend for JWT (UPDATED - Latest security patches)
 
 # =============================================================================
 # SECURITY - SAFE EXPRESSION EVALUATION
@@ -91,8 +95,10 @@ simpleeval==0.9.13  # Safe evaluation of Python expressions (replaces eval/exec)
 # SECURITY NOTES
 # =============================================================================
 # CRITICAL UPDATES:
-# 1. cryptography==42.0.5 - Updated from 42.0.2 to fix CVE-2024-0727 (CVSS 9.1)
-#    - OpenSSL DoS vulnerability in PKCS#12 processing
+# 1. cryptography==46.0.3 - Updated from 42.0.5 to latest (v46 series)
+#    - Includes all security patches from 43.x, 44.x, 45.x series
+#    - Improved cryptographic algorithm support
+#    - Better performance and compatibility
 # 2. All dependencies pinned to exact versions (==) to prevent supply chain attacks
 # 3. requests==2.31.0 - Latest stable with CVE fixes
 # 4. httpx==0.26.0 - Security patches included
@@ -113,14 +119,26 @@ simpleeval==0.9.13  # Safe evaluation of Python expressions (replaces eval/exec)
 # =============================================================================
 # INSTALLATION
 # =============================================================================
-# Production:
-#   pip install -r requirements.txt
+# Minimal install (no ML/vector databases - saves 250MB):
+#   pip install greenlang-cli
+#
+# With ML capabilities (PyTorch, transformers, sentence-transformers):
+#   pip install greenlang-cli[ml]
+#
+# With vector databases (Weaviate, ChromaDB, Pinecone, Qdrant, FAISS):
+#   pip install greenlang-cli[vector-db]
+#
+# Full AI capabilities (LLM + ML + Vector DBs):
+#   pip install greenlang-cli[ai-full]
+#
+# All features (includes server, analytics, etc):
+#   pip install greenlang-cli[all]
 #
 # Development:
 #   pip install -e ".[dev,test]"
 #
-# All Features:
-#   pip install -e ".[all]"
+# Legacy requirements.txt install (for backwards compatibility):
+#   pip install -r requirements.txt
 #
 # With hash verification (maximum security):
 #   pip install --require-hashes -r requirements.txt

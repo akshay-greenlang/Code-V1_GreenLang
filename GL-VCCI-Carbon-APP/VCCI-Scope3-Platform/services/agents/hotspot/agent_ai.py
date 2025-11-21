@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AI-Enhanced HotspotAnalysisAgent with Root Cause Investigation
 GL-VCCI Scope 3 Platform - INSIGHT PATH
@@ -22,6 +23,7 @@ from datetime import datetime
 
 from .agent import HotspotAnalysisAgent
 from .models import (
+from greenlang.determinism import DeterministicClock
     HotspotReport,
     ParetoAnalysis,
     SegmentationAnalysis,
@@ -512,7 +514,7 @@ Be specific. Use numbers. Cite evidence. Focus on CAUSATION.
             short_term_actions=action_plan.get("short_term", []),
             long_term_actions=action_plan.get("long_term", []),
 
-            investigation_timestamp=datetime.utcnow().isoformat() + "Z",
+            investigation_timestamp=DeterministicClock.utcnow().isoformat() + "Z",
             rag_sources_used=rag_sources,
             confidence_score=confidence,
             ai_model_version="claude-sonnet-3.5"

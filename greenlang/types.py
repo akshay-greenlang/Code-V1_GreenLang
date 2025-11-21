@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Core type definitions and contracts for GreenLang.
 
 This module provides the foundational types used throughout the GreenLang system,

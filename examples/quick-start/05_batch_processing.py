@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example 5: Parallel Batch Processing
 =====================================
@@ -8,6 +9,7 @@ Demonstrates parallel batch processing with CalculatorAgent.
 import asyncio
 from datetime import datetime
 from greenlang.agents.templates import CalculatorAgent
+from greenlang.determinism import DeterministicClock
 
 
 async def main():
@@ -39,25 +41,25 @@ async def main():
 
     # Sequential processing
     print("\nSequential Processing:")
-    start = datetime.now()
+    start = DeterministicClock.now()
     sequential_results = []
     for inputs in inputs_list:
         result = await agent.calculate("emissions", inputs)
         sequential_results.append(result.value)
-    sequential_duration = (datetime.now() - start).total_seconds()
+    sequential_duration = (DeterministicClock.now() - start).total_seconds()
     print(f"  Duration: {sequential_duration:.3f}s")
     print(f"  Results: {sequential_results}")
 
     # Parallel processing
     print("\nParallel Processing:")
-    start = datetime.now()
+    start = DeterministicClock.now()
     parallel_results = await agent.batch_calculate(
         formula_name="emissions",
         inputs_list=inputs_list,
         parallel=True,
         use_processes=False
     )
-    parallel_duration = (datetime.now() - start).total_seconds()
+    parallel_duration = (DeterministicClock.now() - start).total_seconds()
     print(f"  Duration: {parallel_duration:.3f}s")
     print(f"  Results: {[r.value for r in parallel_results]}")
 

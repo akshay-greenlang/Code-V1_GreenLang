@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit tests for Fine-Grained Permission Model (Phase 4)
 

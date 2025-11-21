@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 Clean version output for DoD verification
 Suppresses warnings and provides clean version output

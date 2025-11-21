@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit Tests for Category 10: Processing of Sold Products
 GL-VCCI Scope 3 Platform

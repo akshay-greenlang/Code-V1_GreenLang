@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Export Engines - GL-VCCI Scope 3 Platform"""
 from .pdf_exporter import PDFExporter
 from .excel_exporter import ExcelExporter

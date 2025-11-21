@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 20: Parallel workflow determinism."""
 
 import pytest

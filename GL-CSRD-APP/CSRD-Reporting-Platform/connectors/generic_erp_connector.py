@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generic ERP Connector
 
@@ -12,6 +13,7 @@ from typing import Dict, List, Any, Optional
 import pandas as pd
 from datetime import datetime
 import logging
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +115,7 @@ class GenericERPConnector:
         return {
             'status': 'success',
             'data': [],
-            'timestamp': datetime.now().isoformat()
+            'timestamp': DeterministicClock.now().isoformat()
         }
 
     def _mock_energy_data(self) -> pd.DataFrame:
@@ -191,8 +193,11 @@ class GenericERPConnector:
         """
         logger.info(f"Fetching supplier data for {reporting_year}")
 
-        query = f"SELECT * FROM purchases WHERE year = {reporting_year}"
-        return self.execute_sql(query)
+        # SECURITY FIX: Use parameterized query to prevent SQL injection
+        # Never use string formatting or concatenation for SQL queries
+        query = "SELECT * FROM purchases WHERE year = :year"
+        params = {"year": reporting_year}
+        return self.execute_sql(query, params)
 
     def get_waste_disposal(self, start_date: datetime, end_date: datetime) -> pd.DataFrame:
         """

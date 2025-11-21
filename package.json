@@ -1,0 +1,59 @@
+{
+  "name": "greenlang-monorepo",
+  "version": "1.0.0",
+  "description": "GreenLang Platform - Monorepo for all GreenLang applications and services",
+  "private": true,
+  "workspaces": [
+    "greenlang/frontend",
+    "GL-VCCI-Carbon-APP/VCCI-Scope3-Platform/frontend",
+    "GL-CBAM-APP/CBAM-Importer-Copilot/frontend",
+    "GL-CSRD-APP/CSRD-Reporting-Platform/frontend",
+    "GL-EUDR-APP/EUDR-Deforestation-Platform/frontend",
+    "GL-SB253-APP/SB253-Climate-Disclosure/frontend",
+    "GL-Taxonomy-APP/EU-Taxonomy-Alignment/frontend"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
+    "test:e2e": "turbo run test:e2e",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "type-check": "turbo run type-check",
+    "format": "turbo run format",
+    "dev": "turbo run dev --parallel",
+    "dev:greenlang": "turbo run dev --filter=@greenlang/frontend",
+    "dev:vcci": "turbo run dev --filter=@greenlang/vcci-scope3-frontend",
+    "dev:cbam": "turbo run dev --filter=@greenlang/cbam-frontend",
+    "dev:csrd": "turbo run dev --filter=@greenlang/csrd-frontend",
+    "deploy": "turbo run deploy",
+    "docker:build": "turbo run docker:build",
+    "coverage": "turbo run coverage",
+    "security:scan": "turbo run security:scan",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "graph": "turbo run build --graph=dependency-graph.html"
+  },
+  "devDependencies": {
+    "turbo": "^1.11.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0",
+    "python": ">=3.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/greenlang-ai/greenlang-platform.git"
+  },
+  "keywords": [
+    "greenlang",
+    "carbon-accounting",
+    "sustainability",
+    "climate-tech",
+    "monorepo",
+    "turborepo"
+  ],
+  "author": "GreenLang Team <support@greenlang.ai>",
+  "license": "MIT"
+}

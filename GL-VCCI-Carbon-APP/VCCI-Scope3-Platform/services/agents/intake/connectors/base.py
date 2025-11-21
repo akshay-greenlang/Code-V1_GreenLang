@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Base ERP Connector - Abstract base class for ERP integrations."""
 import logging
 from typing import Dict, List, Any, Optional

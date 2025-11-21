@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Generate Golden Fixtures for Connector Testing
 ===============================================

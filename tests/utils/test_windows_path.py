@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive test suite for Windows PATH utilities.
 

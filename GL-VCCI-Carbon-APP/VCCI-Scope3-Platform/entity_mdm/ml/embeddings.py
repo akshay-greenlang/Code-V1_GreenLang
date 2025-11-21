@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Embedding generation pipeline for entity resolution.
 

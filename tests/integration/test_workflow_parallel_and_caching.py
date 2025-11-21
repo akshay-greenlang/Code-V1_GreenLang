@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Parallel execution and caching integration tests.
 """

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Validation Framework
 Comprehensive validation system with JSON Schema, business rules, and data quality checks.

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang AgentSpec v2 Foundation
 ==================================
@@ -47,6 +48,8 @@ from pydantic import BaseModel, Field, ValidationError
 from greenlang.specs.agentspec_v2 import AgentSpecV2
 from greenlang.specs.errors import GLValidationError, GLVErr
 from greenlang.types import AgentResult
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -399,8 +402,8 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
 
         # Create execution context
         context = AgentExecutionContext(
-            execution_id=str(uuid.uuid4()),
-            start_time=datetime.now(),
+            execution_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+            start_time=DeterministicClock.now(),
         )
 
         self._execution_count += 1
@@ -423,7 +426,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
             result = AgentResult(
                 success=True,
                 data=validated_output if isinstance(validated_output, dict) else validated_output.__dict__,
-                timestamp=datetime.now(),
+                timestamp=DeterministicClock.now(),
             )
 
             # Finalize
@@ -438,7 +441,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
                 success=False,
                 error=f"Validation error ({e.code}): {e.message}",
                 metadata={"validation_path": e.path, "code": e.code},
-                timestamp=datetime.now(),
+                timestamp=DeterministicClock.now(),
             )
 
         except Exception as e:
@@ -448,7 +451,7 @@ class AgentSpecV2Base(ABC, Generic[InT, OutT]):
                 success=False,
                 error=str(e),
                 metadata={"errors": context.errors, "state": context.state},
-                timestamp=datetime.now(),
+                timestamp=DeterministicClock.now(),
             )
 
     # ==========================================================================

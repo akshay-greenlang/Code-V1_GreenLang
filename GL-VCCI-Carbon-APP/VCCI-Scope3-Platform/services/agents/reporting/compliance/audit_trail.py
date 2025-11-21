@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Audit Trail Generator
 GL-VCCI Scope 3 Platform
@@ -14,6 +15,7 @@ import hashlib
 import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +56,7 @@ class AuditTrailGenerator:
 
         package = {
             "audit_id": self._generate_audit_id(report_metadata),
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": DeterministicClock.utcnow().isoformat(),
             "report_metadata": report_metadata,
             "data_lineage": self._build_data_lineage(emissions_data),
             "calculation_evidence": self._build_calculation_evidence(calculations),
@@ -140,7 +142,7 @@ class AuditTrailGenerator:
 
     def _generate_audit_id(self, metadata: Dict[str, Any]) -> str:
         """Generate unique audit ID."""
-        timestamp = datetime.utcnow().isoformat()
+        timestamp = DeterministicClock.utcnow().isoformat()
         data = f"{metadata.get('report_id', '')}_{timestamp}"
         return hashlib.sha256(data.encode()).hexdigest()[:16].upper()
 

@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 GreenLang Application Generator
 
 Create complete GreenLang applications with a single command.
 Generates full project structure, infrastructure setup, tests, and CI/CD.
 """
 
+import logging
 import argparse
 import os
 import sys
@@ -1035,7 +1039,7 @@ class AppGenerator:
         # App name
         app_name = input("Application name: ").strip()
         if not app_name:
-            print("Error: Application name is required")
+            logger.error(f" Application name is required")
             sys.exit(1)
 
         # Template selection

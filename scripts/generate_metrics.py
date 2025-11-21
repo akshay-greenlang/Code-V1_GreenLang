@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Metrics Generator
 ===========================
@@ -27,6 +28,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any, Union
 import argparse
 import logging
+from greenlang.determinism import DeterministicClock
 
 # Import optional dependencies with fallbacks
 try:
@@ -283,7 +285,7 @@ class MetricsGenerator:
             stats["by_organization"][org] = {
                 "installs": installs,
                 "packs": org_packs,
-                "last_install": datetime.now() - timedelta(days=hash(org) % 30)
+                "last_install": DeterministicClock.now() - timedelta(days=hash(org) % 30)
             }
             stats["total_installs"] += installs
 
@@ -368,8 +370,8 @@ class MetricsGenerator:
         # Compile complete metrics
         metrics = {
             "metadata": {
-                "timestamp": datetime.now().isoformat(),
-                "date": datetime.now().strftime("%Y-%m-%d"),
+                "timestamp": DeterministicClock.now().isoformat(),
+                "date": DeterministicClock.now().strftime("%Y-%m-%d"),
                 "greenlang_version": GREENLANG_VERSION,
                 "metrics_version": "1.0",
                 "collection_method": "mock" if self.use_mock_data else "api",
@@ -397,7 +399,7 @@ class MetricsGenerator:
     def save_metrics(self, metrics: Dict[str, Any], filename: Optional[str] = None) -> Path:
         """Save metrics to JSON file."""
         if filename is None:
-            filename = f"{datetime.now().strftime('%Y-%m-%d')}.json"
+            filename = f"{DeterministicClock.now().strftime('%Y-%m-%d')}.json"
 
         output_path = self.output_dir / filename
 

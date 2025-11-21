@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Thermal Energy Storage Engineering Datasets
 ============================================

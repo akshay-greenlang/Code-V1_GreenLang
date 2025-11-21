@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Advanced Security Headers Middleware
 GL-VCCI Scope 3 Platform
@@ -24,6 +25,7 @@ from datetime import datetime
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -415,7 +417,7 @@ class CSPViolationReport:
         self.source_file = data.get("source-file")
         self.line_number = data.get("line-number")
         self.column_number = data.get("column-number")
-        self.timestamp = datetime.utcnow()
+        self.timestamp = DeterministicClock.utcnow()
 
     def to_dict(self):
         """Convert to dictionary for logging."""
@@ -466,7 +468,7 @@ class CTViolationReport:
         self.served_certificate_chain = data.get("served-certificate-chain", [])
         self.validated_certificate_chain = data.get("validated-certificate-chain", [])
         self.scts = data.get("scts", [])
-        self.timestamp = datetime.utcnow()
+        self.timestamp = DeterministicClock.utcnow()
 
     def to_dict(self):
         """Convert to dictionary for logging."""

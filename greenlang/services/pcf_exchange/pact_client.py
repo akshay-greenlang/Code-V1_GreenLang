@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PACT Pathfinder v2.0 Client
 Partnership for Carbon Transparency - Pathfinder Framework
@@ -14,6 +15,8 @@ import httpx
 import uuid
 
 from greenlang.services.pcf_exchange.models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     PCFDataModel,
     PCFExchangeResponse,
 )
@@ -87,8 +90,8 @@ class PACTPathfinderClient:
             return PCFExchangeResponse(
                 success=True,
                 pcf_data=pcf_data,
-                exchange_id=str(uuid.uuid4()),
-                timestamp=datetime.utcnow()
+                exchange_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+                timestamp=DeterministicClock.utcnow()
             )
 
         except httpx.HTTPStatusError as e:
@@ -96,7 +99,7 @@ class PACTPathfinderClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[f"HTTP {e.response.status_code}: {e.response.text}"],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
         except Exception as e:
@@ -104,7 +107,7 @@ class PACTPathfinderClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     async def publish_pcf(self, pcf_data: PCFDataModel) -> PCFExchangeResponse:
@@ -130,8 +133,8 @@ class PACTPathfinderClient:
             return PCFExchangeResponse(
                 success=True,
                 pcf_data=pcf_data,
-                exchange_id=str(uuid.uuid4()),
-                timestamp=datetime.utcnow()
+                exchange_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+                timestamp=DeterministicClock.utcnow()
             )
 
         except httpx.HTTPStatusError as e:
@@ -139,7 +142,7 @@ class PACTPathfinderClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[f"HTTP {e.response.status_code}: {e.response.text}"],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
         except Exception as e:
@@ -147,7 +150,7 @@ class PACTPathfinderClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     async def list_pcfs(
@@ -209,8 +212,8 @@ class PACTPathfinderClient:
             return PCFExchangeResponse(
                 success=True,
                 pcf_data=pcf_data,
-                exchange_id=str(uuid.uuid4()),
-                timestamp=datetime.utcnow()
+                exchange_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+                timestamp=DeterministicClock.utcnow()
             )
 
         except Exception as e:
@@ -218,7 +221,7 @@ class PACTPathfinderClient:
             return PCFExchangeResponse(
                 success=False,
                 validation_errors=[str(e)],
-                timestamp=datetime.utcnow()
+                timestamp=DeterministicClock.utcnow()
             )
 
     async def delete_pcf(self, pcf_id: str) -> bool:

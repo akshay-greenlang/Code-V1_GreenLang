@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for GreenLang Exception Hierarchy.
 
 Comprehensive test suite covering:
@@ -20,6 +21,7 @@ import json
 from datetime import datetime
 
 from greenlang.exceptions import (
+from greenlang.determinism import DeterministicClock
     # Base
     GreenLangException,
     # Agent exceptions
@@ -487,8 +489,8 @@ class TestEdgeCases:
 
     def test_timestamp_is_recent(self):
         """Exception timestamp is recent."""
-        before = datetime.now()
+        before = DeterministicClock.now()
         exc = GreenLangException("Test")
-        after = datetime.now()
+        after = DeterministicClock.now()
 
         assert before <= exc.timestamp <= after

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP Financial Accounting (FI) Extractor
 
@@ -19,6 +20,7 @@ from typing import Any, Dict, Iterator, List, Optional
 from pydantic import BaseModel, Field
 
 from .base import BaseExtractor, ExtractionConfig
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -239,7 +241,7 @@ class FIExtractor(BaseExtractor):
         if active_leases_only:
             # Only active leases (start date <= today and end date >= today)
             from datetime import datetime
-            today = datetime.now().strftime("%Y-%m-%d")
+            today = DeterministicClock.now().strftime("%Y-%m-%d")
             additional_filters.append(f"LeaseStartDate le datetime'{today}'")
             additional_filters.append(f"LeaseEndDate ge datetime'{today}'")
 

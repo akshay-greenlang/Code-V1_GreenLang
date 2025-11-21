@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit Tests for GraphQL Resolvers
 Tests all query and mutation resolvers

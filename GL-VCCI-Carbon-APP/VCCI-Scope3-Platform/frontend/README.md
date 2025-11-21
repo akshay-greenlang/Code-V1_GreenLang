@@ -4,13 +4,15 @@ React-based frontend application for the GL-VCCI Scope 3 Carbon Intelligence Pla
 
 ## Technology Stack
 
-- **React 18.2** - UI framework
-- **TypeScript 5.3** - Type-safe JavaScript
-- **Material-UI 5.14** - Component library
-- **Redux Toolkit 1.9** - State management
-- **React Router 6.20** - Routing
-- **Recharts 2.10** - Data visualization
-- **Axios 1.6** - HTTP client
+- **React 18.3** - UI framework
+- **TypeScript 5.4** - Type-safe JavaScript
+- **Vite 5.2** - Build tool (fast HMR, optimized builds)
+- **Material-UI 5.15** - Component library
+- **Redux Toolkit 2.2** - State management
+- **React Router 6.23** - Routing
+- **Recharts 2.12** - Data visualization
+- **Axios 1.7** - HTTP client
+- **Vitest 1.6** - Unit testing framework
 
 ## Project Structure
 
@@ -75,35 +77,43 @@ npm install
 Create a `.env` file in the frontend directory:
 
 ```env
-REACT_APP_API_URL=http://localhost:8000/api/v1
+VITE_API_URL=http://localhost:8000/api/v1
 ```
+
+Note: Vite requires environment variables to be prefixed with `VITE_` instead of `REACT_APP_`.
 
 ### Development
 
 ```bash
-# Start development server (http://localhost:3000)
-npm start
+# Start Vite development server (http://localhost:3000)
+npm run dev
 ```
 
-The app will automatically reload when you make changes.
+The app features lightning-fast Hot Module Replacement (HMR) with Vite.
 
 ### Production Build
 
 ```bash
-# Create optimized production build
+# Type check and create optimized production build
 npm run build
+
+# Preview production build locally
+npm run preview
 ```
 
-Build output will be in the `build/` directory.
+Build output will be in the `dist/` directory.
 
 ### Testing
 
 ```bash
-# Run tests
+# Run tests with Vitest
 npm test
 
+# Run tests with UI
+npm run test:ui
+
 # Run tests with coverage
-npm test -- --coverage
+npm run test:coverage
 ```
 
 ### Linting & Formatting
@@ -112,8 +122,14 @@ npm test -- --coverage
 # Lint code
 npm run lint
 
-# Format code
+# Lint and auto-fix
+npm run lint:fix
+
+# Format code with Prettier
 npm run format
+
+# Type check
+npm run type-check
 ```
 
 ## Features
@@ -161,10 +177,11 @@ npm run format
 
 The frontend communicates with the backend API through the `api.ts` service layer:
 
-- **Base URL**: Configured via `REACT_APP_API_URL`
+- **Base URL**: Configured via `VITE_API_URL` environment variable
 - **Authentication**: JWT token in `Authorization` header
 - **Error Handling**: Global error interceptor
 - **Request Timeout**: 30 seconds (configurable)
+- **Proxy**: Vite dev server proxies `/api` requests to backend
 
 ### API Endpoints Used
 
@@ -252,13 +269,15 @@ PORT=3001 npm start
 ```
 
 **API connection errors:**
-- Check `REACT_APP_API_URL` in `.env`
+- Check `VITE_API_URL` in `.env`
 - Verify backend is running
 - Check CORS configuration
+- Restart Vite dev server after changing .env
 
 **Build failures:**
 - Clear node_modules: `rm -rf node_modules && npm install`
-- Clear build cache: `rm -rf build`
+- Clear Vite cache: `rm -rf node_modules/.vite`
+- Clear build output: `rm -rf dist`
 
 ## Contributing
 

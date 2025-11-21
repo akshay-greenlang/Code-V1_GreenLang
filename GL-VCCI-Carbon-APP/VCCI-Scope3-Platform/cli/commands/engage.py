@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI CLI - Engage Command
 Supplier engagement campaign management and email orchestration.
@@ -24,6 +25,7 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich import box
 from rich.text import Text
 from rich.tree import Tree
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Import the engagement agent
 try:
@@ -351,7 +353,7 @@ def create_campaign(
 
             # Mock campaign ID
             import uuid
-            campaign_id = f"CAMP-{uuid.uuid4().hex[:8].upper()}"
+            campaign_id = f"CAMP-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8].upper()}"
 
             progress.update(task, completed=True)
 

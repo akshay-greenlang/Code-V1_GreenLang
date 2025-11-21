@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-CBAM-APP - Agent V2 Test Suite
 ==================================

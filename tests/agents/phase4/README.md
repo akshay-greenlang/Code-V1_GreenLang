@@ -224,7 +224,7 @@ numpy>=1.24.0
 ```
 
 ### Environment
-- Python 3.9+
+- Python 3.10+
 - No external APIs required (all mocked)
 - No database connections required
 - Fully isolated unit tests

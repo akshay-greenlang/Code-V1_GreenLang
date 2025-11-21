@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Agents Module
 # 5 Core Agents for Scope 3 Value Chain Carbon Intelligence
 

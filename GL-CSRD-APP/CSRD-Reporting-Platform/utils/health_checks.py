@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Health Check and Metrics Module for CSRD Reporting Platform
 =============================================================
@@ -14,6 +15,7 @@ import psutil
 import time
 from prometheus_client import Counter, Histogram, Gauge, generate_latest, REGISTRY
 from fastapi import APIRouter, Response
+from greenlang.determinism import DeterministicClock
 
 
 # ============================================================================
@@ -165,7 +167,7 @@ async def health_check_basic() -> Dict[str, Any]:
     """
     return {
         "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": DeterministicClock.now().isoformat(),
         "service": "csrd-reporting-platform",
         "version": "1.0.0"
     }
@@ -213,7 +215,7 @@ async def health_check_ready() -> Dict[str, Any]:
 
     return {
         "status": overall_status,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": DeterministicClock.now().isoformat(),
         "checks": checks
     }
 
@@ -229,7 +231,7 @@ async def health_check_live() -> Dict[str, Any]:
 
     return {
         "status": "alive",
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": DeterministicClock.now().isoformat(),
         "uptime_seconds": time.time() - START_TIME
     }
 
@@ -254,7 +256,7 @@ async def health_check_startup() -> Dict[str, Any]:
 
     return {
         "status": "ready",
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": DeterministicClock.now().isoformat(),
         "checks": checks
     }
 

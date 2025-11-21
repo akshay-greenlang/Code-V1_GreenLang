@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example 4: Multi-Format Reporter (Markdown, HTML, Excel)
 =========================================================
@@ -18,6 +19,7 @@ from pathlib import Path
 from typing import Dict, Any, List
 from datetime import datetime
 from greenlang.sdk.base import Report, Metadata
+from greenlang.determinism import DeterministicClock
 
 
 class EmissionsReporter(Report):
@@ -55,7 +57,7 @@ class EmissionsReporter(Report):
         # Header
         report_lines.append("# Emissions Calculation Report")
         report_lines.append("")
-        report_lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report_lines.append(f"**Generated:** {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report_lines.append("")
 
         # Executive Summary
@@ -116,7 +118,7 @@ class EmissionsReporter(Report):
 
         # Header
         html_parts.append("<h1>Emissions Calculation Report</h1>")
-        html_parts.append(f"<p><strong>Generated:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>")
+        html_parts.append(f"<p><strong>Generated:</strong> {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}</p>")
 
         # Summary
         html_parts.append('<div class="summary">')
@@ -152,7 +154,7 @@ class EmissionsReporter(Report):
         """Generate JSON report"""
         report_data = {
             "report_metadata": {
-                "generated_at": datetime.now().isoformat(),
+                "generated_at": DeterministicClock.now().isoformat(),
                 "generator": "GreenLang Emissions Reporter",
                 "version": "1.0.0"
             },

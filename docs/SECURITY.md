@@ -79,6 +79,50 @@ These are the secure defaults for production:
 - `GL_ALLOW_UNSIGNED_FOR_DEV=1`: Allow unsigned packs (development only)
 - `GL_ALLOW_PRIVATE_HOSTS_FOR_DEV=1`: Allow localhost/private IPs (development only)
 
+## Secrets Management
+
+### Environment Variables for Sensitive Data
+
+**CRITICAL**: Never hardcode credentials in source code. Always use environment variables.
+
+#### Best Practices
+
+1. **Use Environment Variables**: All API keys, tokens, and passwords must be loaded from environment variables
+2. **Validate at Startup**: Add validation to ensure required environment variables are set
+3. **Use .env.example**: Document required environment variables in `.env.example` files
+4. **Never Commit .env**: Ensure `.env` files are in `.gitignore`
+
+#### Example - Secure API Key Usage
+
+```python
+# BAD - Hardcoded credential (SECURITY BLOCKER)
+API_KEY = "sk-1234567890abcdef"
+
+# GOOD - Environment variable with validation
+import os
+
+API_KEY = os.getenv("OPENAI_API_KEY")
+if not API_KEY:
+    raise ValueError("OPENAI_API_KEY environment variable is required")
+```
+
+#### Required Environment Variables
+
+See `.env.example` in the project root for all required environment variables:
+- `OPENAI_API_KEY`: OpenAI API key for AI features
+- `JWT_SECRET_KEY`: JWT signing secret (production only)
+- Additional service-specific keys documented in component `.env.example` files
+
+### Recent Security Fixes (2025-01-21)
+
+**Fixed Hardcoded Credentials**:
+- Removed hardcoded OpenAI API key from `.greenlang/test_sample.py`
+- Replaced hardcoded API key in `docs/planning/greenlang-2030-vision/data-architecture/3-redis-cache-architecture.py`
+- Added environment variable validation with proper error messages
+- Created `.env.example` template for test samples
+
+All credentials now loaded from environment variables with validation.
+
 ## Security Checks
 
 ### Running Security Checks Locally

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive boundary tests for BenchmarkAgent."""
 
 import pytest

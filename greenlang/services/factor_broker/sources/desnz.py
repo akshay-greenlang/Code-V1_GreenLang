@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 DESNZ UK Factor Source
 GL-VCCI Scope 3 Platform
@@ -15,6 +16,7 @@ from datetime import datetime
 import asyncio
 import aiohttp
 from tenacity import (
+from greenlang.determinism import DeterministicClock
     retry,
     stop_after_attempt,
     wait_exponential,
@@ -199,7 +201,7 @@ class DESNZSource(FactorSource):
             DataQualityIndicator instance
         """
         # DESNZ has high quality data for UK
-        current_year = datetime.utcnow().year
+        current_year = DeterministicClock.utcnow().year
 
         # Reliability: 5 (government data)
         reliability = 5
@@ -246,7 +248,7 @@ class DESNZSource(FactorSource):
         Raises:
             SourceUnavailableError: If DESNZ API is unavailable
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             self.validate_request(request)
@@ -277,7 +279,7 @@ class DESNZSource(FactorSource):
 
             if not data or not data.get("data"):
                 # Factor not found
-                latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+                latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
                 self.log_lookup(request, success=False, latency_ms=latency_ms)
                 return None
 
@@ -346,7 +348,7 @@ class DESNZSource(FactorSource):
             response.provenance.calculation_hash = self.calculate_provenance_hash(response)
 
             # Log successful lookup
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
             self.log_lookup(request, success=True, latency_ms=latency_ms)
 
             return response
@@ -354,7 +356,7 @@ class DESNZSource(FactorSource):
         except SourceUnavailableError:
             raise
         except Exception as e:
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
             self.log_lookup(
                 request,
                 success=False,
@@ -395,7 +397,7 @@ class DESNZSource(FactorSource):
         Returns:
             Health status dictionary
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             # Try to fetch electricity factor for UK
@@ -404,22 +406,22 @@ class DESNZSource(FactorSource):
                 params={"category": "electricity", "year": 2024, "limit": 1}
             )
 
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
 
             return {
                 "status": "healthy",
                 "latency_ms": latency_ms,
-                "last_check": datetime.utcnow(),
+                "last_check": DeterministicClock.utcnow(),
                 "error": None
             }
 
         except Exception as e:
-            latency_ms = (datetime.utcnow() - start_time).total_seconds() * 1000
+            latency_ms = (DeterministicClock.utcnow() - start_time).total_seconds() * 1000
 
             return {
                 "status": "unhealthy",
                 "latency_ms": latency_ms,
-                "last_check": datetime.utcnow(),
+                "last_check": DeterministicClock.utcnow(),
                 "error": str(e)
             }
 

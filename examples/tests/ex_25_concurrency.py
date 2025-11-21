@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 25: Concurrency example (run same workflow N times; results identical)."""
 
 import pytest

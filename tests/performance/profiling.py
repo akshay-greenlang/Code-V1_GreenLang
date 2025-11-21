@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Performance Profiling Suite for GreenLang Agents.
 
 This module provides comprehensive profiling capabilities:

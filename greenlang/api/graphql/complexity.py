@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GraphQL Query Complexity Analysis
 Prevents expensive queries and enforces depth/cost limits

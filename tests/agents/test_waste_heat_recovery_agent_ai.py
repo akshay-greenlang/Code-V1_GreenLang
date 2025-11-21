@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Test Suite for WasteHeatRecoveryAgent_AI
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Permission Change Audit Trail for GreenLang
 
@@ -27,6 +28,9 @@ from typing import Any, Dict, List, Optional, Set
 from pathlib import Path
 from collections import defaultdict
 import uuid
+from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.intelligence import ChatMessage
+from greenlang.determinism import DeterministicClock, deterministic_uuid
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +94,7 @@ class PermissionAuditEvent:
     """Immutable audit event for permission changes."""
 
     # Event identity
-    event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    event_id: str = field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
     timestamp: datetime = field(default_factory=datetime.utcnow)
     change_type: PermissionChangeType = field(default=PermissionChangeType.PERMISSION_CREATED)
     severity: AuditSeverity = field(default=AuditSeverity.INFO)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Reporting Agent Template
 Multi-format Export with Compliance Checking
@@ -15,6 +16,7 @@ from dataclasses import dataclass
 from enum import Enum
 import pandas as pd
 import json
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -75,7 +77,7 @@ class ReportResult:
         if self.metadata is None:
             self.metadata = {}
         if self.timestamp is None:
-            self.timestamp = datetime.utcnow()
+            self.timestamp = DeterministicClock.utcnow()
 
 
 class ReportingAgent:
@@ -524,7 +526,7 @@ class ReportingAgent:
                     {data_html}
                     <h2>Visualizations</h2>
                     {"".join(charts_html)}
-                    <p><em>Generated: {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC</em></p>
+                    <p><em>Generated: {DeterministicClock.utcnow().strftime("%Y-%m-%d %H:%M:%S")} UTC</em></p>
                 </body>
                 </html>
                 """

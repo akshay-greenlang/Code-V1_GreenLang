@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Demo: AI-Powered Carbon Footprint Aggregation
 
 This script demonstrates the CarbonAgentAI which enhances the original CarbonAgent

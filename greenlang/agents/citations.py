@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Citation Data Structures for AI Agents
 

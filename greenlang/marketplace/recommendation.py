@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Recommendation Engine
 
@@ -16,6 +17,8 @@ from sqlalchemy import func, and_, or_, desc
 from sqlalchemy.orm import Session
 
 from greenlang.marketplace.models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
     MarketplaceAgent,
     AgentInstall,
     AgentPurchase,
@@ -269,8 +272,8 @@ class ContentBasedFilter:
             score += 0.4 * jaccard
 
         # Price range similarity (10%)
-        price1 = float(agent1.price) if agent1.price else 0
-        price2 = float(agent2.price) if agent2.price else 0
+        price1 = FinancialDecimal.from_string(agent1.price) if agent1.price else 0
+        price2 = FinancialDecimal.from_string(agent2.price) if agent2.price else 0
 
         if agent1.pricing_type == agent2.pricing_type:
             price_diff = abs(price1 - price2)
@@ -419,7 +422,7 @@ class PopularityBasedRecommender:
         Returns:
             List of trending agents
         """
-        since = datetime.utcnow() - timedelta(days=days)
+        since = DeterministicClock.utcnow() - timedelta(days=days)
 
         # Count recent installs
         recent_installs = self.session.query(
@@ -509,7 +512,7 @@ class PopularityBasedRecommender:
         Returns:
             List of new and noteworthy agents
         """
-        since = datetime.utcnow() - timedelta(days=days)
+        since = DeterministicClock.utcnow() - timedelta(days=days)
 
         agents = self.session.query(MarketplaceAgent).filter(
             and_(
@@ -525,7 +528,7 @@ class PopularityBasedRecommender:
 
         recommendations = []
         for agent in agents:
-            days_old = (datetime.utcnow() - agent.published_at).days
+            days_old = (DeterministicClock.utcnow() - agent.published_at).days
             recommendations.append(RecommendationScore(
                 agent_id=str(agent.id),
                 agent=agent,

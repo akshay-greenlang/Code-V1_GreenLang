@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 10: Minimal YAML workflow with orchestrator."""
 
 import json

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AI-powered RecommendationAgent with ChatSession Integration.
 
 This module provides an AI-enhanced version of the RecommendationAgent that uses
@@ -49,14 +50,9 @@ import logging
 
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
 from greenlang.agents.recommendation_agent import RecommendationAgent
-from greenlang.intelligence import (
-    ChatSession,
-    ChatMessage,
-    Role,
-    Budget,
-    BudgetExceeded,
-    create_provider,
-)
+# Fixed: Removed incomplete import
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatSession, ChatMessage
 from greenlang.intelligence.schemas.tools import ToolDef
 from greenlang.agents.citations import (
     EmissionFactorCitation,
@@ -132,7 +128,6 @@ class RecommendationAgentAI(BaseAgent):
                 name="RecommendationAgentAI",
                 description="AI-powered recommendation generation with intelligent insights",
                 version="0.1.0",
-            )
         super().__init__(config)
 
         # Initialize original recommendation agent for tool implementations
@@ -188,7 +183,6 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["emissions_by_source"],
             },
-        )
 
         # Tool 2: Calculate ROI for recommendations
         self.calculate_roi_tool = ToolDef(
@@ -222,7 +216,6 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["recommendations", "current_emissions_kg"],
             },
-        )
 
         # Tool 3: Rank recommendations by priority
         self.rank_recommendations_tool = ToolDef(
@@ -245,7 +238,6 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["recommendations"],
             },
-        )
 
         # Tool 4: Estimate savings
         self.estimate_savings_tool = ToolDef(
@@ -270,7 +262,6 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["recommendations", "current_emissions_kg"],
             },
-        )
 
         # Tool 5: Generate implementation plan
         self.generate_implementation_plan_tool = ToolDef(
@@ -296,7 +287,6 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["recommendations"],
             },
-        )
 
     def _analyze_energy_usage_impl(
         self,
@@ -449,9 +439,8 @@ class RecommendationAgentAI(BaseAgent):
                 "total_potential_savings_usd": round(total_savings, 2),
                 "total_emissions_reduction_kg": round(total_reduction, 2),
             },
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id=f"roi_calc_{self._tool_call_count}",
-        )
         self._calculation_citations.append(calc_citation)
 
         return {
@@ -531,7 +520,6 @@ class RecommendationAgentAI(BaseAgent):
         savings = self.rec_agent._calculate_savings_potential(
             recommendations,
             emissions_by_source
-        )
 
         # Calculate cost savings if provided
         cost_savings = {}
@@ -626,14 +614,13 @@ class RecommendationAgentAI(BaseAgent):
         Returns:
             AgentResult with recommendations and AI insights
         """
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         # Validate input
         if not self.validate_input(input_data):
             return AgentResult(
                 success=False,
                 error="Invalid input: building analysis data required",
-            )
 
         try:
             # Run async calculation
@@ -645,7 +632,7 @@ class RecommendationAgentAI(BaseAgent):
                 loop.close()
 
             # Calculate duration
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             # Add performance metadata
             if result.success:
@@ -661,7 +648,6 @@ class RecommendationAgentAI(BaseAgent):
             return AgentResult(
                 success=False,
                 error=f"Failed to generate recommendations: {str(e)}",
-            )
 
     async def _execute_async(self, input_data: Dict[str, Any]) -> AgentResult:
         """Async execution with ChatSession.
@@ -717,7 +703,6 @@ class RecommendationAgentAI(BaseAgent):
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
-            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -730,7 +715,6 @@ class RecommendationAgentAI(BaseAgent):
                 input_data,
                 tool_results,
                 response.text if self.enable_ai_summary else None,
-            )
 
             return AgentResult(
                 success=True,
@@ -744,14 +728,12 @@ class RecommendationAgentAI(BaseAgent):
                     "tool_calls": len(response.tool_calls),
                     "deterministic": True,
                 },
-            )
 
         except BudgetExceeded as e:
             self.logger.error(f"Budget exceeded: {e}")
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",
-            )
 
     def _build_prompt(self, input_data: Dict[str, Any]) -> str:
         """Build AI prompt for recommendation generation.

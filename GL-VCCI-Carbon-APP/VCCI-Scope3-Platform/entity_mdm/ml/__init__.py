@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Entity Resolution ML Module for GL-VCCI Scope 3 Carbon Intelligence Platform.
 

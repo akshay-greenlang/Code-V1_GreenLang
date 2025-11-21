@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Health Checker Agent
 ====================
@@ -15,6 +16,7 @@ from datetime import datetime
 import aiohttp
 from dataclasses import dataclass
 from enum import Enum
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +135,7 @@ class HealthChecker:
                 service_name=service_name,
                 status=HealthStatus.UNKNOWN,
                 response_time_ms=0,
-                last_check=datetime.now(),
+                last_check=DeterministicClock.now(),
                 error_message="Unknown check type"
             )
 
@@ -143,13 +145,13 @@ class HealthChecker:
         config: Dict[str, Any]
     ) -> ServiceHealth:
         """Check HTTP-based service"""
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         try:
             timeout = aiohttp.ClientTimeout(total=config['timeout'])
             async with aiohttp.ClientSession(timeout=timeout) as session:
                 async with session.get(config['url']) as response:
-                    response_time = (datetime.now() - start_time).total_seconds() * 1000
+                    response_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
 
                     if response.status == 200:
                         # Try to parse response for additional metadata
@@ -160,14 +162,15 @@ class HealthChecker:
                                 'uptime': data.get('uptime'),
                                 'dependencies': data.get('dependencies')
                             }
-                        except:
+                        except Exception as e:
+                            logger.debug(f"Failed to parse health response metadata for {service_name}: {e}")
                             metadata = {}
 
                         return ServiceHealth(
                             service_name=service_name,
                             status=HealthStatus.HEALTHY,
                             response_time_ms=response_time,
-                            last_check=datetime.now(),
+                            last_check=DeterministicClock.now(),
                             metadata=metadata
                         )
                     else:
@@ -175,7 +178,7 @@ class HealthChecker:
                             service_name=service_name,
                             status=HealthStatus.DEGRADED,
                             response_time_ms=response_time,
-                            last_check=datetime.now(),
+                            last_check=DeterministicClock.now(),
                             error_message=f"HTTP {response.status}"
                         )
 
@@ -184,7 +187,7 @@ class HealthChecker:
                 service_name=service_name,
                 status=HealthStatus.UNHEALTHY,
                 response_time_ms=config['timeout'] * 1000,
-                last_check=datetime.now(),
+                last_check=DeterministicClock.now(),
                 error_message="Request timeout"
             )
         except Exception as e:
@@ -192,7 +195,7 @@ class HealthChecker:
                 service_name=service_name,
                 status=HealthStatus.UNHEALTHY,
                 response_time_ms=0,
-                last_check=datetime.now(),
+                last_check=DeterministicClock.now(),
                 error_message=str(e)
             )
 
@@ -202,7 +205,7 @@ class HealthChecker:
         config: Dict[str, Any]
     ) -> ServiceHealth:
         """Check Redis service"""
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         try:
             import redis.asyncio as redis
@@ -213,7 +216,7 @@ class HealthChecker:
             )
 
             await client.ping()
-            response_time = (datetime.now() - start_time).total_seconds() * 1000
+            response_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
 
             # Get Redis info
             info = await client.info()
@@ -229,7 +232,7 @@ class HealthChecker:
                 service_name=service_name,
                 status=HealthStatus.HEALTHY,
                 response_time_ms=response_time,
-                last_check=datetime.now(),
+                last_check=DeterministicClock.now(),
                 metadata=metadata
             )
 
@@ -238,7 +241,7 @@ class HealthChecker:
                 service_name=service_name,
                 status=HealthStatus.UNHEALTHY,
                 response_time_ms=0,
-                last_check=datetime.now(),
+                last_check=DeterministicClock.now(),
                 error_message=str(e)
             )
 
@@ -248,7 +251,7 @@ class HealthChecker:
         config: Dict[str, Any]
     ) -> ServiceHealth:
         """Check PostgreSQL service"""
-        start_time = datetime.now()
+        start_time = DeterministicClock.now()
 
         try:
             import asyncpg
@@ -260,7 +263,7 @@ class HealthChecker:
 
             # Simple health check query
             result = await conn.fetchval('SELECT 1')
-            response_time = (datetime.now() - start_time).total_seconds() * 1000
+            response_time = (DeterministicClock.now() - start_time).total_seconds() * 1000
 
             # Get database stats
             db_size = await conn.fetchval(
@@ -281,7 +284,7 @@ class HealthChecker:
                 service_name=service_name,
                 status=HealthStatus.HEALTHY,
                 response_time_ms=response_time,
-                last_check=datetime.now(),
+                last_check=DeterministicClock.now(),
                 metadata=metadata
             )
 
@@ -290,7 +293,7 @@ class HealthChecker:
                 service_name=service_name,
                 status=HealthStatus.UNHEALTHY,
                 response_time_ms=0,
-                last_check=datetime.now(),
+                last_check=DeterministicClock.now(),
                 error_message=str(e)
             )
 
@@ -324,7 +327,7 @@ class HealthChecker:
         report = f"""
 Infrastructure Health Check Report
 ====================================
-Timestamp: {datetime.now().isoformat()}
+Timestamp: {DeterministicClock.now().isoformat()}
 Overall Status: {overall_status.value.upper()}
 
 Service Health Details:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Dependency Resolution System
 

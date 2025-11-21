@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit Tests for Category 12: End-of-Life Treatment of Sold Products
 GL-VCCI Scope 3 Platform

@@ -64,11 +64,25 @@ image_signed if {
     sig.verified == true
 }
 
-# Verify SBOM is attached
+# SECURITY FIX: Verify SBOM is attached AND contains actual component data
+# This prevents empty/placeholder SBOMs from bypassing security checks
 sbom_attached if {
     input.image.sbom
     input.image.sbom.format in {"spdx", "cyclonedx"}
     input.image.sbom.attached == true
+    sbom_has_components
+}
+
+# Validate SBOM contains actual components (not empty)
+sbom_has_components if {
+    input.image.sbom.components
+    count(input.image.sbom.components) > 0
+}
+
+# Alternative field names depending on SBOM format
+sbom_has_components if {
+    input.image.sbom.packages
+    count(input.image.sbom.packages) > 0
 }
 
 # Check vulnerability scan results
@@ -122,6 +136,13 @@ deny[msg] if {
 deny[msg] if {
     not sbom_attached
     msg := "Image must have SBOM attached (SPDX or CycloneDX format)"
+}
+
+deny[msg] if {
+    input.image.sbom
+    input.image.sbom.attached == true
+    not sbom_has_components
+    msg := "SBOM is attached but contains no components - empty SBOMs not allowed"
 }
 
 deny[msg] if {

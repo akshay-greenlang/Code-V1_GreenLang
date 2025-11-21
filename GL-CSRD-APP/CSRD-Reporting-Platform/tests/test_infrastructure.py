@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-CSRD-APP - Infrastructure Test Suite
 ========================================

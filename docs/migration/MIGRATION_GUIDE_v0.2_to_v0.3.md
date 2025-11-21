@@ -433,7 +433,7 @@ Before starting the migration, ensure:
 - [ ] Test migration on staging environment first
 - [ ] Schedule maintenance window (15-30 minutes recommended)
 - [ ] Notify users of planned downtime
-- [ ] Verify Python 3.9+ is installed
+- [ ] Verify Python 3.10+ is installed
 - [ ] Ensure all dependencies are compatible
 - [ ] Review custom agent code for async compatibility
 
@@ -495,7 +495,7 @@ ls -lh agent_packs_v0.2_backup.tar.gz
 # Check current Python version
 python --version
 
-# If < 3.9, install Python 3.9+
+# If < 3.9, install Python 3.10+
 # Ubuntu/Debian
 sudo apt update
 sudo apt install python3.9 python3.9-venv
@@ -510,7 +510,7 @@ brew install python@3.9
 #### Update GreenLang Package
 
 ```bash
-# Create new virtual environment with Python 3.9+
+# Create new virtual environment with Python 3.10+
 python3.9 -m venv venv_v0.3
 source venv_v0.3/bin/activate  # Linux/macOS
 # OR

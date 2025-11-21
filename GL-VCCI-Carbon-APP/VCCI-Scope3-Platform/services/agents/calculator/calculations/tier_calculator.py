@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tier Calculator - 3-Tier Calculation Waterfall Utilities
 GL-VCCI Scope 3 Platform
@@ -19,6 +20,7 @@ from datetime import datetime
 from ..config import TierType
 from ..models import CalculationResult, DataQualityInfo
 from ..exceptions import TierFallbackError, CalculationError
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -311,7 +313,7 @@ class TierCalculator:
 
         # Minimal provenance (caller should enhance)
         provenance = ProvenanceChain(
-            calculation_timestamp=datetime.utcnow(),
+            calculation_timestamp=DeterministicClock.utcnow(),
             calculation_hash="placeholder",
             data_lineage=[]
         )

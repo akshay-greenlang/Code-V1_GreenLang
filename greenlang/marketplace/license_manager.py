@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 License Management System
 
@@ -18,6 +19,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
 from greenlang.marketplace.models import AgentPurchase, MarketplaceAgent, AgentInstall
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +97,7 @@ class LicenseGenerator:
             License key string
         """
         # Create unique identifier
-        unique_id = uuid.uuid4().hex[:8]
+        unique_id = deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]
 
         # Combine data
         data = f"{agent_id[:8]}{user_id[:8]}{unique_id}"
@@ -192,10 +195,10 @@ class LicenseValidator:
 
         # Check expiration (for subscriptions)
         if purchase.subscription_period_end:
-            if datetime.utcnow() > purchase.subscription_period_end:
+            if DeterministicClock.utcnow() > purchase.subscription_period_end:
                 # Check grace period (7 days)
                 grace_end = purchase.subscription_period_end + timedelta(days=7)
-                if datetime.utcnow() > grace_end:
+                if DeterministicClock.utcnow() > grace_end:
                     errors.append("License expired")
                     return LicenseValidation(valid=False, license=None, errors=errors)
                 else:
@@ -276,7 +279,7 @@ class LicenseValidator:
             return LicenseStatus.REVOKED
 
         if purchase.subscription_period_end:
-            if datetime.utcnow() > purchase.subscription_period_end:
+            if DeterministicClock.utcnow() > purchase.subscription_period_end:
                 return LicenseStatus.EXPIRED
 
         return LicenseStatus.ACTIVE
@@ -408,7 +411,7 @@ class LicenseManager:
 
             # Deactivate
             install.active = False
-            install.uninstalled_at = datetime.utcnow()
+            install.uninstalled_at = DeterministicClock.utcnow()
 
             self.session.commit()
 
@@ -499,7 +502,7 @@ class LicenseManager:
 
             for install in installs:
                 install.active = False
-                install.uninstalled_at = datetime.utcnow()
+                install.uninstalled_at = DeterministicClock.utcnow()
 
             self.session.commit()
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 22: Backward compatibility for old workflow YAML."""
 
 import pytest

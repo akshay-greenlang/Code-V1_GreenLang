@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Emission Factor Data Models
 
@@ -21,6 +22,7 @@ from datetime import datetime, date
 from enum import Enum
 import hashlib
 import json
+from greenlang.determinism import DeterministicClock
 
 
 class DataQualityTier(str, Enum):
@@ -250,7 +252,7 @@ class EmissionFactor(BaseModel):
 
     def is_stale(self, max_age_years: int = 3) -> bool:
         """Check if factor is stale (older than max_age_years)."""
-        years_old = (datetime.now().date() - self.last_updated).days / 365.25
+        years_old = (DeterministicClock.now().date() - self.last_updated).days / 365.25
         return years_old > max_age_years
 
 
@@ -276,7 +278,7 @@ class EmissionResult(BaseModel):
         ...     activity_unit="gallons",
         ...     emissions_kg_co2e=1021.0,
         ...     factor_used=diesel_factor,
-        ...     calculation_timestamp=datetime.now(),
+        ...     calculation_timestamp=DeterministicClock.now(),
         ...     audit_trail="abc123..."
         ... )
     """

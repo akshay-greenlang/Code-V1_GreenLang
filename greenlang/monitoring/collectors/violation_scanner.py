@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Violation Scanner Agent
 ========================
@@ -16,6 +17,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import re
 import ast
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -135,7 +137,7 @@ class ViolationScanner:
                         line_number = content[:match.start()].count('\n') + 1
 
                         violation = Violation(
-                            id=f"V{datetime.now().strftime('%Y%m%d%H%M%S')}{len(self.violations)}",
+                            id=f"V{DeterministicClock.now().strftime('%Y%m%d%H%M%S')}{len(self.violations)}",
                             type=violation_type,
                             severity=config['severity'],
                             file_path=str(file_path.relative_to(self.codebase_path)),
@@ -143,7 +145,7 @@ class ViolationScanner:
                             message=config['message'],
                             application=app_info['application'],
                             team=app_info['team'],
-                            detected_at=datetime.now(),
+                            detected_at=DeterministicClock.now(),
                             auto_fixable=config['auto_fixable']
                         )
                         self.violations.append(violation)
@@ -195,7 +197,7 @@ class ViolationScanner:
             adr_path = file_path.parent / 'ADR' / f'{file_path.stem}.md'
             if not adr_path.exists():
                 violation = Violation(
-                    id=f"V{datetime.now().strftime('%Y%m%d%H%M%S')}{len(self.violations)}",
+                    id=f"V{DeterministicClock.now().strftime('%Y%m%d%H%M%S')}{len(self.violations)}",
                     type='missing_adr',
                     severity='warning',
                     file_path=str(file_path.relative_to(self.codebase_path)),
@@ -203,7 +205,7 @@ class ViolationScanner:
                     message=f'File has {custom_lines} lines of custom code without ADR.',
                     application=app_info['application'],
                     team=app_info['team'],
-                    detected_at=datetime.now(),
+                    detected_at=DeterministicClock.now(),
                     auto_fixable=False
                 )
                 self.violations.append(violation)
@@ -230,7 +232,7 @@ class ViolationScanner:
 
                 if len(functions) > 0:
                     violation = Violation(
-                        id=f"V{datetime.now().strftime('%Y%m%d%H%M%S')}{len(self.violations)}",
+                        id=f"V{DeterministicClock.now().strftime('%Y%m%d%H%M%S')}{len(self.violations)}",
                         type='missing_tests',
                         severity='info',
                         file_path=str(file_path.relative_to(self.codebase_path)),
@@ -238,12 +240,12 @@ class ViolationScanner:
                         message=f'File has {len(functions)} functions but no test file.',
                         application=app_info['application'],
                         team=app_info['team'],
-                        detected_at=datetime.now(),
+                        detected_at=DeterministicClock.now(),
                         auto_fixable=False
                     )
                     self.violations.append(violation)
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to parse AST for test coverage check in {file_path}: {e}")
 
     def generate_report(self) -> str:
         """Generate violation report"""
@@ -260,7 +262,7 @@ class ViolationScanner:
         report = f"""
 Policy Violation Scan Report
 =============================
-Scan Time: {datetime.now().isoformat()}
+Scan Time: {DeterministicClock.now().isoformat()}
 Codebase: {self.codebase_path}
 
 Summary:
@@ -322,7 +324,7 @@ async def main():
     print(report)
 
     # Save report to file
-    report_path = Path(codebase_path) / "greenlang" / "monitoring" / "reports" / f"violations_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+    report_path = Path(codebase_path) / "greenlang" / "monitoring" / "reports" / f"violations_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.txt"
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(report)
 

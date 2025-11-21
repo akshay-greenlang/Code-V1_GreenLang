@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """AgentSpec v2 Migration Validation Tests - Batch 1.
 
 This test suite validates the AgentSpec v2 pack.yaml files for the first

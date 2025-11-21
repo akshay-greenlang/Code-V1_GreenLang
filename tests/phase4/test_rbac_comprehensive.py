@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive RBAC/ABAC Test Suite for Phase 4
 Over 100 tests covering all aspects of role-based and attribute-based access control
@@ -18,6 +19,7 @@ import uuid
 from datetime import datetime, timedelta
 
 from greenlang.auth.rbac import (
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     RBACManager,
     Role,
     Permission as RBACPermission,
@@ -493,7 +495,7 @@ class TestUserRoleAssignment:
 
     def test_user_id_uuid(self, rbac_manager):
         """Test user IDs as UUIDs"""
-        user_id = str(uuid.uuid4())
+        user_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         rbac_manager.assign_role(user_id, "developer")
         roles = rbac_manager.get_user_roles(user_id)
         assert "developer" in roles

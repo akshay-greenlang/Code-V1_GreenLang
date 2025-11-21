@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 01: Basic FuelAgent electricity calculation (dataset-driven)."""
 
 import math

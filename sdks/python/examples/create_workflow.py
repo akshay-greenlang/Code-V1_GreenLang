@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example: Create a workflow using GreenLang SDK
 

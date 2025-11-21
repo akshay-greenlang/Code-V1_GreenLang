@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 JSON Schema Type Aliases and Helpers
 

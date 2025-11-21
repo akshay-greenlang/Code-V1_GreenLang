@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Supplier Switching Scenario Module
 GL-VCCI Scope 3 Platform

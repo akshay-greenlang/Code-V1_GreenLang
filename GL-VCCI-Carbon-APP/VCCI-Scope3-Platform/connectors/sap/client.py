@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAP S/4HANA OData Client
 GL-VCCI Scope 3 Platform

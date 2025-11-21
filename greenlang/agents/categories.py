@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Agent Category Definitions
 GL Intelligence Infrastructure

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for pipeline retry and error handling functionality.
 

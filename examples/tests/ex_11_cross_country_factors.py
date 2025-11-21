@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 11: Cross-country comparison (dataset-driven)."""
 
 import pytest

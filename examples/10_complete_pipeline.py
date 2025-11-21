@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example 10: Complete Multi-Agent Pipeline
 ==========================================
@@ -25,6 +26,7 @@ from datetime import datetime
 from greenlang.sdk.base import Agent, Result, Metadata, Report
 from greenlang.sdk.pipeline import Pipeline as BasePipeline
 from greenlang.sdk.context import Context
+from greenlang.determinism import DeterministicClock
 
 
 class IntakeAgent(Agent[str, Dict[str, Any]]):
@@ -69,7 +71,7 @@ class IntakeAgent(Agent[str, Dict[str, Any]]):
             "buildings": buildings,
             "source_file": str(csv_path),
             "record_count": len(buildings),
-            "loaded_at": datetime.utcnow().isoformat()
+            "loaded_at": DeterministicClock.utcnow().isoformat()
         }
 
 
@@ -143,7 +145,7 @@ class CalculatorAgent(Agent[Dict[str, Any], Dict[str, Any]]):
                 "average_emissions_tons": round(total_emissions / len(results), 2),
                 "country": country
             },
-            "calculated_at": datetime.utcnow().isoformat()
+            "calculated_at": DeterministicClock.utcnow().isoformat()
         }
 
 
@@ -200,7 +202,7 @@ class ReportGeneratorAgent(Agent[Dict[str, Any], Dict[str, Any]]):
                 "csv": str(csv_path)
             },
             "summary": input_data["summary"],
-            "generated_at": datetime.utcnow().isoformat()
+            "generated_at": DeterministicClock.utcnow().isoformat()
         }
 
     def _generate_markdown(self, data: Dict[str, Any]) -> str:
@@ -210,7 +212,7 @@ class ReportGeneratorAgent(Agent[Dict[str, Any], Dict[str, Any]]):
         # Header
         lines.append("# Building Emissions Report")
         lines.append("")
-        lines.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"**Generated:** {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append("")
 
         # Summary

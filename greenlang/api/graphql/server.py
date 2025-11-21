@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GraphQL Server Setup
 FastAPI-based GraphQL server with Strawberry

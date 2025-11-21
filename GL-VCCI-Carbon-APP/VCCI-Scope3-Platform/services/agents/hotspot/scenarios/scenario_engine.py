@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scenario Modeling Engine
 GL-VCCI Scope 3 Platform

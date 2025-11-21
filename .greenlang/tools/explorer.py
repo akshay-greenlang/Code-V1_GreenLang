@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 Interactive Infrastructure Explorer
 
 Web-based interactive explorer using Streamlit.
 Browse infrastructure by category, view docs, try examples.
 """
 
+import logging
 import argparse
 import sys
 import os
@@ -15,7 +19,7 @@ try:
     HAS_STREAMLIT = True
 except ImportError:
     HAS_STREAMLIT = False
-    print("Warning: streamlit not installed. Run: pip install streamlit")
+    logger.warning(f" streamlit not installed. Run: pip install streamlit")
 
 # Import catalog from infra_search
 sys.path.insert(0, os.path.dirname(__file__))
@@ -211,7 +215,7 @@ def quick_start_page():
 def main():
     """CLI entry point."""
     if not HAS_STREAMLIT:
-        print("Error: streamlit is not installed")
+        logger.error(f" streamlit is not installed")
         print("Install with: pip install streamlit")
         sys.exit(1)
 

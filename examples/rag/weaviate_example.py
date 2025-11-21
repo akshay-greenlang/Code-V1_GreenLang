@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Example: Using Weaviate as vector store for production RAG.
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Key Provider Interface for GreenLang
 ====================================

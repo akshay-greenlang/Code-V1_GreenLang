@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Simple test for version checking without loading all dependencies."""
 
 import sys

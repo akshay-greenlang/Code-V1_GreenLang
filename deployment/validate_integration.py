@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Platform - Integration Validation Script
 ===================================================
@@ -22,6 +23,7 @@ from typing import Dict, List, Tuple
 import psycopg2
 import redis
 import pika
+from greenlang.determinism import DeterministicClock
 
 # Configuration
 BASE_URLS = {
@@ -66,7 +68,7 @@ def log_result(test_name: str, status: str, message: str, details: Dict = None):
         'test': test_name,
         'status': status,
         'message': message,
-        'timestamp': datetime.now().isoformat(),
+        'timestamp': DeterministicClock.now().isoformat(),
         'details': details or {}
     }
     results['details'].append(result)
@@ -281,7 +283,7 @@ def test_rabbitmq_connectivity():
         # Test publish/consume
         test_message = json.dumps({
             'test': 'integration',
-            'timestamp': datetime.now().isoformat()
+            'timestamp': DeterministicClock.now().isoformat()
         })
 
         channel.basic_publish(
@@ -377,7 +379,7 @@ def generate_report():
     print("\n" + "="*80)
     print("INTEGRATION VALIDATION REPORT")
     print("="*80)
-    print(f"Timestamp: {datetime.now().isoformat()}")
+    print(f"Timestamp: {DeterministicClock.now().isoformat()}")
     print(f"\nResults:")
     print(f"  ✓ Passed:  {results['passed']}")
     print(f"  ✗ Failed:  {results['failed']}")
@@ -388,7 +390,7 @@ def generate_report():
     print(f"\nSuccess Rate: {success_rate:.1f}%")
 
     # Save detailed report
-    report_file = f"integration_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    report_file = f"integration_report_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(report_file, 'w') as f:
         json.dump(results, f, indent=2)
 

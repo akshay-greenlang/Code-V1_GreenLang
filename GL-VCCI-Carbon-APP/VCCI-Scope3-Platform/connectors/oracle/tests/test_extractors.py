@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Connector Extractors Tests
 GL-VCCI Scope 3 Platform

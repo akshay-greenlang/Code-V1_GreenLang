@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Fallback Mechanisms and Graceful Degradation.
 
 Production-grade fallback patterns for resilient systems:

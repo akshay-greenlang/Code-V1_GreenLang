@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Agent Decorators
 Decorators for enhancing agent functionality with caching, determinism, and tracing.
@@ -10,6 +11,7 @@ import hashlib
 import json
 import logging
 import time
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +121,7 @@ class TTLCache:
         """Get value from cache if not expired."""
         if key in self.cache:
             entry = self.cache[key]
-            if datetime.now() < entry["expires_at"]:
+            if DeterministicClock.now() < entry["expires_at"]:
                 return entry["value"]
             else:
                 # Expired, remove
@@ -135,8 +137,8 @@ class TTLCache:
 
         self.cache[key] = {
             "value": value,
-            "created_at": datetime.now(),
-            "expires_at": datetime.now() + timedelta(seconds=self.ttl_seconds)
+            "created_at": DeterministicClock.now(),
+            "expires_at": DeterministicClock.now() + timedelta(seconds=self.ttl_seconds)
         }
 
     def clear(self):

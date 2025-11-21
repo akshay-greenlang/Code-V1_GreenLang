@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Infrastructure Usage Report Generator
 
@@ -15,6 +16,7 @@ from pathlib import Path
 from typing import List, Dict, Set, Tuple
 from collections import defaultdict
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 class UsageAnalyzer:
@@ -179,7 +181,7 @@ class ReportGenerator:
         lines.append("=" * 80)
         lines.append("GreenLang Infrastructure Usage Report")
         lines.append("=" * 80)
-        lines.append(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"Generated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append(f"Directory: {analysis['directory']}")
         lines.append("")
 
@@ -449,7 +451,7 @@ class ReportGenerator:
     <div class="container">
         <div class="header">
             <h1>GreenLang Infrastructure Usage Report</h1>
-            <p>Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p>Generated: {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
             <p>Directory: {analysis['directory']}</p>
         </div>
 

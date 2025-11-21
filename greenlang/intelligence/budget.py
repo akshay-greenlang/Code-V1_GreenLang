@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Budget Tracking and Enforcement for LLM API Costs
 
@@ -31,6 +32,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -422,7 +425,7 @@ class BudgetTracker:
 
     def _calculate_period_cost(self, hours: int = 0, days: int = 0) -> float:
         """Calculate cost for time period"""
-        cutoff = datetime.now() - timedelta(hours=hours, days=days)
+        cutoff = DeterministicClock.now() - timedelta(hours=hours, days=days)
 
         period_cost = sum(
             usage.cost
@@ -484,7 +487,7 @@ class BudgetTracker:
     def clear_history(self, before: Optional[datetime] = None):
         """Clear usage history before date"""
         if before is None:
-            before = datetime.now() - timedelta(days=90)  # Keep 90 days
+            before = DeterministicClock.now() - timedelta(days=90)  # Keep 90 days
 
         self.usage_history = [
             usage for usage in self.usage_history
@@ -515,7 +518,7 @@ if __name__ == "__main__":
     # Simulate requests
     print("\n1. Simulating requests:")
     for i in range(5):
-        request_id = str(uuid.uuid4())
+        request_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
         model = "gpt-4o" if i % 2 == 0 else "gpt-3.5-turbo"
         input_tokens = 500
         output_tokens = 300

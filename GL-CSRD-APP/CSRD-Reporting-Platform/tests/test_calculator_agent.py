@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD/ESRS Digital Reporting Platform - CalculatorAgent Tests
 
@@ -27,6 +28,7 @@ import pytest
 import yaml
 
 from agents.calculator_agent import (
+from greenlang.determinism import DeterministicClock
     CalculatedMetric,
     CalculationError,
     CalculationProvenance,
@@ -1138,7 +1140,7 @@ class TestPydanticModels:
             value=12500.5,
             unit="tCO2e",
             calculation_method="deterministic",
-            timestamp=datetime.now().isoformat()
+            timestamp=DeterministicClock.now().isoformat()
         )
 
         assert metric.metric_code == "E1-1"
@@ -1167,7 +1169,7 @@ class TestPydanticModels:
             inputs={"a": 1000, "b": 2000},
             output=3000.0,
             unit="tCO2e",
-            timestamp=datetime.now().isoformat()
+            timestamp=DeterministicClock.now().isoformat()
         )
 
         assert prov.zero_hallucination is True

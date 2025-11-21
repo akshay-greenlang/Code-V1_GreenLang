@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Security Hardening Refactoring Script
 Team 7: Input Validation & Security Hardening

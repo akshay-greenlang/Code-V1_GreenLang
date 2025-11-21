@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/data/emission_factor_record.py
 

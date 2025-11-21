@@ -1,0 +1,46 @@
+# GL-007 FurnacePerformanceMonitor Test Dependencies
+# Version: 1.0.0
+# Date: 2025-11-21
+
+# Core Testing Framework
+pytest>=7.4.0
+pytest-cov>=4.1.0                # Coverage reporting
+pytest-asyncio>=0.21.0           # Async test support
+pytest-benchmark>=4.0.0          # Performance benchmarking
+pytest-xdist>=3.3.0              # Parallel test execution
+pytest-timeout>=2.1.0            # Test timeout handling
+pytest-html>=3.2.0               # HTML test reports
+pytest-mock>=3.11.1              # Enhanced mocking
+
+# Data Generation and Mocking
+faker>=19.0.0                    # Realistic test data generation
+factory-boy>=3.3.0               # Test fixture factories
+freezegun>=1.2.2                 # Time mocking
+
+# Scientific Computing (for calculations)
+numpy>=1.24.0
+scipy>=1.10.0
+pandas>=2.0.0
+
+# Data Validation
+pydantic>=2.0.0
+jsonschema>=4.19.0
+
+# Code Quality
+black>=23.7.0                    # Code formatting
+flake8>=6.1.0                    # Linting
+mypy>=1.5.0                      # Type checking
+pylint>=2.17.0                   # Code analysis
+
+# Coverage Tools
+coverage[toml]>=7.3.0
+codecov>=2.1.13
+
+# Performance Profiling
+pytest-profiling>=1.7.0
+memory-profiler>=0.61.0
+
+# Additional Test Utilities
+hypothesis>=6.82.0               # Property-based testing
+responses>=0.23.1                # HTTP mocking
+aioresponses>=0.7.4              # Async HTTP mocking

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Fake LLM Provider for Unit Testing
 

@@ -3,7 +3,7 @@
 # Build: docker build -t greenlang-api:1.0.0 .
 # Run: docker run -p 8000:8000 greenlang-api:1.0.0
 
-FROM python:3.11-slim
+FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app

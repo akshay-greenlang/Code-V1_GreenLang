@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Database base configuration and utilities for Phase 4
 """

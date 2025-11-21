@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Webhook Security Module for GreenLang
 
@@ -20,6 +21,7 @@ import logging
 from fastapi import HTTPException, Request, Header
 from pydantic import BaseModel
 import redis
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -546,7 +548,7 @@ if __name__ == "__main__":
     payload = {
         "event": "workflow.completed",
         "event_id": "evt_123",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": DeterministicClock.utcnow().isoformat(),
         "partner_id": "partner_456",
         "data": {
             "workflow_id": "wf_789",

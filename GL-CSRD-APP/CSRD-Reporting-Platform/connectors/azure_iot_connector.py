@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Azure IoT Hub Connector
 
@@ -11,6 +12,7 @@ Date: 2025-10-18
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 import logging
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +49,7 @@ class AzureIoTConnector:
             'device_id': device_id,
             'device_type': device_type,
             'metadata': metadata or {},
-            'registered_at': datetime.now().isoformat()
+            'registered_at': DeterministicClock.now().isoformat()
         }
         logger.info(f"Registered device: {device_id} (type: {device_type})")
 
@@ -77,7 +79,7 @@ class AzureIoTConnector:
 
         # Default time range to last hour
         if not end_time:
-            end_time = datetime.now()
+            end_time = DeterministicClock.now()
         if not start_time:
             start_time = end_time - timedelta(hours=1)
 
@@ -113,7 +115,7 @@ class AzureIoTConnector:
             'measurement': measurement,
             'start_time': start_time.isoformat(),
             'end_time': end_time.isoformat(),
-            'timestamp': datetime.now().isoformat()
+            'timestamp': DeterministicClock.now().isoformat()
         }
 
     async def fetch_all_devices(
@@ -188,7 +190,7 @@ class AzureIoTConnector:
             'aggregation': aggregation,
             'value': result_value,
             'device_count': len(device_ids),
-            'timestamp': datetime.now().isoformat()
+            'timestamp': DeterministicClock.now().isoformat()
         }
 
     def get_device_status(self, device_id: str) -> Dict[str, Any]:
@@ -211,7 +213,7 @@ class AzureIoTConnector:
         return {
             'device_id': device_id,
             'status': 'online',
-            'last_activity': datetime.now().isoformat(),
+            'last_activity': DeterministicClock.now().isoformat(),
             'connection_state': 'connected'
         }
 

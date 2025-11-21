@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Training Metrics Tracking System
 
@@ -16,6 +17,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 import pandas as pd
 import matplotlib.pyplot as plt
+from greenlang.determinism import DeterministicClock
 
 
 class TrainingMetricsTracker:
@@ -127,7 +129,7 @@ class TrainingMetricsTracker:
             INSERT INTO workshop_completions
             (developer_id, workshop_number, completion_date, score, time_spent_minutes)
             VALUES (?, ?, ?, ?, ?)
-        """, (developer_id, workshop_number, datetime.now().isoformat(),
+        """, (developer_id, workshop_number, DeterministicClock.now().isoformat(),
               score, time_spent_minutes))
 
         conn.commit()
@@ -146,7 +148,7 @@ class TrainingMetricsTracker:
             INSERT INTO certification_attempts
             (developer_id, level, attempt_number, attempt_date, score, passed, time_spent_minutes)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (developer_id, level, attempt_number, datetime.now().isoformat(),
+        """, (developer_id, level, attempt_number, DeterministicClock.now().isoformat(),
               score, passed, time_spent_minutes))
 
         conn.commit()
@@ -183,7 +185,7 @@ class TrainingMetricsTracker:
             (developer_id, survey_date, overall_rating, workshop_rating,
              materials_rating, support_rating, comments)
             VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (developer_id, datetime.now().isoformat(), overall_rating,
+        """, (developer_id, DeterministicClock.now().isoformat(), overall_rating,
               workshop_rating, materials_rating, support_rating, comments))
 
         conn.commit()
@@ -345,7 +347,7 @@ class TrainingMetricsTracker:
 
         report = []
         report.append("# GreenLang Training Metrics Report")
-        report.append(f"\n**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        report.append(f"\n**Generated:** {DeterministicClock.now().strftime('%Y-%m-%d %H:%M:%S')}")
         report.append("\n---\n")
 
         # Workshop Completion Rates

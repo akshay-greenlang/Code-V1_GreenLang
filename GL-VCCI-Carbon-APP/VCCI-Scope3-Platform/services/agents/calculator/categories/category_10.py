@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 10: Processing of Sold Products Calculator
 GL-VCCI Scope 3 Platform
@@ -15,6 +16,7 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     Category10Input,
     CalculationResult,
     DataQualityInfo,
@@ -87,7 +89,7 @@ class Category10Calculator:
             DataValidationError: If input data is invalid
             CalculationError: If calculation fails
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         # Validate input
         self._validate_input(input_data)

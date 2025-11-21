@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ValueChain Intake Agent - Main Agent Class
 
@@ -29,6 +30,8 @@ from greenlang.sdk.base import Agent, Metadata, Result
 from greenlang.cache import CacheManager, get_cache_manager
 from greenlang.db import get_engine, get_session, DatabaseConnectionPool
 from greenlang.telemetry import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     MetricsCollector,
     StructuredLogger,
     get_logger,
@@ -261,8 +264,8 @@ class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
         with create_span(name="intake_process_batch", attributes={"record_count": len(input_data)}):
             return self.process_batch(
                 records=input_data,
-                batch_id=f"BATCH-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}",
-                start_time=datetime.utcnow()
+                batch_id=f"BATCH-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}",
+                start_time=DeterministicClock.utcnow()
             )
 
     def ingest_file(
@@ -308,8 +311,8 @@ class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
                 f"(format={format}, entity_type={entity_type})"
             )
 
-            start_time = datetime.utcnow()
-            batch_id = f"BATCH-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}-{uuid.uuid4().hex[:6].upper()}"
+            start_time = DeterministicClock.utcnow()
+            batch_id = f"BATCH-{DeterministicClock.utcnow().strftime('%Y%m%d%H%M%S')}-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:6].upper()}"
 
             # Parse file (using validated path)
             parsed_records = self._parse_file(validated_path, format, column_mapping)
@@ -369,8 +372,8 @@ class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
             BatchProcessingError: If batch processing fails
         """
         try:
-            batch_id = batch_id or f"BATCH-{uuid.uuid4().hex[:8].upper()}"
-            start_time = start_time or datetime.utcnow()
+            batch_id = batch_id or f"BATCH-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8].upper()}"
+            start_time = start_time or DeterministicClock.utcnow()
 
             logger.info(f"Processing batch {batch_id}: {len(records)} records")
 
@@ -426,7 +429,7 @@ class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
                     })
 
             # Calculate statistics
-            processing_time = (datetime.utcnow() - start_time).total_seconds()
+            processing_time = (DeterministicClock.utcnow() - start_time).total_seconds()
             records_per_second = len(records) / processing_time if processing_time > 0 else 0
 
             statistics = IngestionStatistics(
@@ -466,7 +469,7 @@ class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
                 quality_summary=quality_summary,
                 gap_analysis=gap_analysis,
                 started_at=start_time,
-                completed_at=datetime.utcnow(),
+                completed_at=DeterministicClock.utcnow(),
             )
 
             # Update stats
@@ -526,7 +529,7 @@ class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
 
         # Stub implementation - would analyze entity database for gaps
         report = GapAnalysisReport(
-            generated_at=datetime.utcnow(),
+            generated_at=DeterministicClock.utcnow(),
             missing_suppliers_by_category={},
             missing_products_by_supplier={},
             quality_summary={
@@ -617,7 +620,7 @@ class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
 
             # Create ingestion record
             ingestion_record = IngestionRecord(
-                record_id=f"ING-{datetime.utcnow().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}",
+                record_id=f"ING-{DeterministicClock.utcnow().strftime('%Y%m%d')}-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8].upper()}",
                 entity_type=EntityType(entity_type),
                 tenant_id=self.tenant_id,
                 entity_name=entity_name,
@@ -644,7 +647,7 @@ class ValueChainIntakeAgent(Agent[List[IngestionRecord], IngestionResult]):
                 priority = "high"
 
         return ReviewQueueItem(
-            queue_item_id=f"QUEUE-{datetime.utcnow().strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}",
+            queue_item_id=f"QUEUE-{DeterministicClock.utcnow().strftime('%Y%m%d')}-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8].upper()}",
             record_id=record.record_id,
             entity_type=record.entity_type,
             original_name=record.entity_name,

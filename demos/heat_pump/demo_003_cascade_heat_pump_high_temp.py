@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo Script #3: Cascade Heat Pump System for High-Temperature Industrial Application
 

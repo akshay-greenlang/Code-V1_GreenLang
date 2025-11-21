@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Weaviate vector store for entity resolution.
 
@@ -12,11 +13,30 @@ from typing import List, Optional, Dict, Any, Tuple
 import logging
 import time
 from datetime import datetime
+import numpy as np
+from greenlang.determinism import DeterministicClock
+
+# Runtime check for optional vector database dependencies
+try:
+    from greenlang.utils.ml_imports import check_vector_db_dependencies
+    check_vector_db_dependencies("weaviate", "Entity Resolution Vector Store")
+except ImportError as e:
+    raise ImportError(
+        "\n" + "=" * 80 + "\n"
+        "Missing Optional Dependencies: Vector Database\n"
+        "=" * 80 + "\n\n"
+        "Entity resolution vector store requires Weaviate client.\n\n"
+        "To install vector database dependencies, run:\n"
+        "  pip install greenlang-cli[vector-db]\n\n"
+        "Or install all AI capabilities:\n"
+        "  pip install greenlang-cli[ai-full]\n"
+        + "=" * 80 + "\n"
+    ) from e
+
 import weaviate
 from weaviate.classes.config import Configure, Property, DataType
 from weaviate.classes.query import MetadataQuery
 from weaviate.util import generate_uuid5
-import numpy as np
 
 from entity_mdm.ml.config import MLConfig, WeaviateConfig
 from entity_mdm.ml.embeddings import EmbeddingPipeline
@@ -76,7 +96,7 @@ class SupplierEntity:
             "website": self.website,
             "industry": self.industry,
             "metadata": self.metadata,
-            "indexed_at": datetime.utcnow().isoformat(),
+            "indexed_at": DeterministicClock.utcnow().isoformat(),
         }
 
     def get_search_text(self) -> str:

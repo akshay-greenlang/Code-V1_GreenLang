@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for GreenLang Pack Manifest v1.0 Specification
 """

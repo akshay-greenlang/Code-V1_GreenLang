@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """JSON Exporter - GL-VCCI Scope 3 Platform v1.0.0"""
 import json
 import logging

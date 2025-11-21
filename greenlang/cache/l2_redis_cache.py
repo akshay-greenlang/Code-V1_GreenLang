@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang L2 Redis Cache Implementation
 

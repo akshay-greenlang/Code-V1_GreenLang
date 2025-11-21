@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang AI Assistant with RAG (Retrieval-Augmented Generation)
 Provides evidence-based answers using vector search and LLM

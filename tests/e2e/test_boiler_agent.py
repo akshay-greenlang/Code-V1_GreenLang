@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """Test the boiler agent with correct data format"""
 
 from greenlang.sdk import GreenLangClient

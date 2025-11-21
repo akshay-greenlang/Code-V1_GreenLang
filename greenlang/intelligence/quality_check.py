@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Quality Check and Validation for LLM Responses
 
@@ -31,6 +32,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Set, Tuple
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -542,7 +544,7 @@ class QualityChecker:
         quality_score.calculate_overall()
 
         # Add metadata
-        quality_score.metadata["timestamp"] = datetime.now().isoformat()
+        quality_score.metadata["timestamp"] = DeterministicClock.now().isoformat()
         quality_score.metadata["response_length"] = len(response)
         quality_score.metadata["num_errors"] = len(quality_score.errors)
 

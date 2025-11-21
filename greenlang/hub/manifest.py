@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Manifest Handling Utilities for GreenLang Packs
 """
@@ -10,6 +11,7 @@ from datetime import datetime
 from pydantic import BaseModel, Field, validator
 import hashlib
 import yaml
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -297,7 +299,7 @@ def create_manifest(
         "description": description,
         "modules": modules,
         "resources": resources,
-        "build_date": datetime.utcnow(),
+        "build_date": DeterministicClock.utcnow(),
         **kwargs,
     }
 

@@ -1,0 +1,300 @@
+name: Pre-commit Quality Gates
+
+on:
+  pull_request:
+    branches: [master, main, develop]
+  push:
+    branches: [master, main, develop]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20.x'
+
+jobs:
+  pre-commit:
+    name: Pre-commit Hooks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            shellcheck \
+            hadolint \
+            tflint
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit
+          pip install -r requirements.txt || echo "No requirements.txt found"
+
+      - name: Cache pre-commit environments
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-${{ runner.os }}-
+
+      - name: Run pre-commit hooks
+        run: |
+          pre-commit run --all-files --show-diff-on-failure
+        env:
+          SKIP: no-commit-to-branch  # Skip branch name checks in CI
+
+      - name: Upload pre-commit results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-commit-results
+          path: |
+            .pre-commit.log
+            **/*.diff
+          retention-days: 7
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: Run Bandit
+        run: |
+          pip install bandit[toml]
+          bandit -r . -c .bandit -f json -o bandit-report.json || true
+
+      - name: Run Safety
+        run: |
+          pip install safety
+          safety check --json --output safety-report.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+          retention-days: 30
+
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install black isort flake8 mypy pylint ruff
+          pip install -r requirements.txt || echo "No requirements.txt found"
+
+      - name: Run Black
+        run: black --check --diff .
+
+      - name: Run isort
+        run: isort --check-only --diff .
+
+      - name: Run Flake8
+        run: flake8 . --count --show-source --statistics
+
+      - name: Run MyPy
+        run: mypy . --ignore-missing-imports || true
+
+      - name: Run Pylint
+        run: |
+          find . -name "*.py" -not -path "*/\.*" | xargs pylint --rcfile=pyproject.toml || true
+
+      - name: Run Ruff
+        run: ruff check . --output-format=github
+
+  frontend-quality:
+    name: Frontend Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: contains(github.event.head_commit.modified, '.ts') || contains(github.event.head_commit.modified, '.tsx') || contains(github.event.head_commit.modified, '.js') || contains(github.event.head_commit.modified, '.jsx')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci || npm install
+
+      - name: Run ESLint
+        run: |
+          npx eslint . --ext .js,.jsx,.ts,.tsx --max-warnings=0
+
+      - name: Run Prettier
+        run: |
+          npx prettier --check "**/*.{js,jsx,ts,tsx,json,css,scss,md}"
+
+      - name: Run TypeScript compiler
+        run: |
+          npx tsc --noEmit || true
+
+  infrastructure-validation:
+    name: Infrastructure Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: contains(github.event.head_commit.modified, '.tf') || contains(github.event.head_commit.modified, 'Dockerfile') || contains(github.event.head_commit.modified, '.yaml')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Validate Dockerfiles
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: "**/Dockerfile*"
+          recursive: true
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Format Check
+        run: |
+          find . -name "*.tf" -not -path "*/.terraform/*" | xargs terraform fmt -check
+
+      - name: Terraform Validate
+        run: |
+          for dir in $(find . -name "*.tf" -not -path "*/.terraform/*" -exec dirname {} \; | sort -u); do
+            echo "Validating $dir"
+            cd "$dir"
+            terraform init -backend=false
+            terraform validate
+            cd -
+          done
+
+      - name: Validate Kubernetes YAML
+        run: |
+          for file in $(find . -path "*/kubernetes/*.yaml" -o -path "*/k8s/*.yaml"); do
+            echo "Validating $file"
+            kubectl --dry-run=client -f "$file" validate || echo "Validation failed for $file"
+          done
+
+  custom-validations:
+    name: GreenLang Custom Validations
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml jsonschema
+
+      - name: Validate pack.yaml files
+        run: |
+          find . -name "pack.yaml" | xargs -I {} python scripts/pre-commit/check-greenlang-spec.py {}
+
+      - name: Check for hardcoded secrets
+        run: |
+          find . -name "*.py" -not -path "*/\.*" | xargs python scripts/pre-commit/check-security.py
+
+      - name: Validate agent configurations
+        run: |
+          find . -path "*/agents/*/pack.yaml" | xargs -I {} python scripts/pre-commit/validate-agent-config.py {}
+
+      - name: Validate database migrations
+        run: |
+          find . -path "*/migrations/*.py" -not -name "__init__.py" | xargs -I {} python scripts/pre-commit/validate-migrations.py {} || true
+
+  summary:
+    name: Quality Gates Summary
+    runs-on: ubuntu-latest
+    needs: [pre-commit, security-scan, code-quality, custom-validations]
+    if: always()
+
+    steps:
+      - name: Check job statuses
+        run: |
+          echo "Pre-commit: ${{ needs.pre-commit.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Custom Validations: ${{ needs.custom-validations.result }}"
+
+      - name: Generate summary
+        run: |
+          echo "# Quality Gates Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Pre-commit Hooks | ${{ needs.pre-commit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Code Quality | ${{ needs.code-quality.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Custom Validations | ${{ needs.custom-validations.result }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if any check failed
+        if: |
+          needs.pre-commit.result == 'failure' ||
+          needs.security-scan.result == 'failure' ||
+          needs.code-quality.result == 'failure' ||
+          needs.custom-validations.result == 'failure'
+        run: |
+          echo "One or more quality gates failed!"
+          exit 1

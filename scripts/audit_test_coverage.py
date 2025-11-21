@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Test Coverage Audit Script for GreenLang Phase 5
 
@@ -28,6 +29,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Any
 import subprocess
 import re
+from greenlang.determinism import DeterministicClock
 
 # Add project root to Python path
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -486,7 +488,7 @@ Coverage Audit Summary:
 """
 
         return CoverageAuditReport(
-            timestamp=datetime.now().isoformat(),
+            timestamp=DeterministicClock.now().isoformat(),
             overall_coverage=overall_coverage,
             overall_branch_coverage=branch_coverage,
             total_statements=total_statements,

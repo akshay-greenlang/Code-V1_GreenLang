@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 gl run - Execute pipelines and packs
 """

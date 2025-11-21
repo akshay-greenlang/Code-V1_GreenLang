@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 JSONL (JSON Lines) logger for structured logging of GreenLang runs
 """
@@ -7,6 +8,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
+from greenlang.determinism import DeterministicClock
 
 
 class JSONLLogger:
@@ -51,7 +53,7 @@ class JSONLLogger:
             level: Log level (DEBUG, INFO, WARNING, ERROR)
         """
         event = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": DeterministicClock.utcnow().isoformat() + "Z",
             "elapsed_seconds": round(time.time() - self.start_time, 3),
             "event_type": event_type,
             "level": level,

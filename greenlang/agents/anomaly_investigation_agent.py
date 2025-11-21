@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Anomaly Investigation Agent with Root Cause Analysis
 GL Intelligence Infrastructure - INSIGHT PATH
@@ -24,6 +25,7 @@ import logging
 from greenlang.agents.base_agents import InsightAgent, AuditEntry
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.agents.anomaly_agent_iforest import IsolationForestAnomalyAgent
+from greenlang.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -766,7 +768,7 @@ Temperature: 0.6 for consistency while allowing analytical reasoning."""
 
         report = f"""
 # ANOMALY INVESTIGATION REPORT
-Generated: {datetime.utcnow().isoformat()}Z
+Generated: {DeterministicClock.utcnow().isoformat()}Z
 
 ## Executive Summary
 - **System:** {system_type} (ID: {system_id})
@@ -877,7 +879,7 @@ Generated: {datetime.utcnow().isoformat()}Z
 - **Investigation Depth:** {context.get('investigation_depth', 'standard')}
 - **RAG Knowledge Sources:** 4 collections queried
 - **Tools Executed:** {sum(1 for v in tool_evidence.values() if v is not None)}
-- **Report Generated:** {datetime.utcnow().isoformat()}Z
+- **Report Generated:** {DeterministicClock.utcnow().isoformat()}Z
 
 ---
 
@@ -891,7 +893,7 @@ Generated: {datetime.utcnow().isoformat()}Z
         """Format report when no anomalies are detected."""
         return f"""
 # ANOMALY INVESTIGATION REPORT
-Generated: {datetime.utcnow().isoformat()}Z
+Generated: {DeterministicClock.utcnow().isoformat()}Z
 
 ## Executive Summary
 - **System:** {context.get('system_type', 'energy system')} (ID: {context.get('system_id', 'unknown')})

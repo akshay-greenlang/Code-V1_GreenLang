@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Modal Shift Scenario Module
 GL-VCCI Scope 3 Platform

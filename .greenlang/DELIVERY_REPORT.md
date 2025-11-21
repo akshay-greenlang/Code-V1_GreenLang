@@ -54,7 +54,7 @@ Successfully created and deployed a comprehensive enforcement system that ensure
 
 **File:** `C:\Users\aksha\Code-V1_GreenLang\.greenlang\hooks\pre-commit`
 **Lines of Code:** 352
-**Language:** Python 3.8+
+**Language:** Python 3.10+
 
 **Features Implemented:**
 - ✅ AST-based Python code analysis
@@ -123,7 +123,7 @@ chmod +x .git/hooks/pre-commit
 
 **File:** `C:\Users\aksha\Code-V1_GreenLang\.greenlang\linters\infrastructure_first.py`
 **Lines of Code:** 404
-**Language:** Python 3.8+
+**Language:** Python 3.10+
 
 **Features Implemented:**
 - ✅ Full AST traversal and analysis
@@ -203,7 +203,7 @@ opa test .greenlang/policies/infrastructure-first.rego
 
 **File:** `C:\Users\aksha\Code-V1_GreenLang\.greenlang\scripts\calculate_ium.py`
 **Lines of Code:** 508
-**Language:** Python 3.8+
+**Language:** Python 3.10+
 
 **Features Implemented:**
 - ✅ AST-based code analysis

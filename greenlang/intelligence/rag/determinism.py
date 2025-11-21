@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Deterministic RAG wrapper for replay mode and caching.
 
@@ -22,6 +23,7 @@ from datetime import datetime
 from greenlang.intelligence.rag.models import QueryResult, Chunk, RAGCitation
 from greenlang.intelligence.rag.hashing import query_hash, canonicalize_text
 from greenlang.intelligence.rag.config import RAGConfig
+from greenlang.determinism import DeterministicClock
 
 
 class DeterministicRAG:
@@ -69,7 +71,7 @@ class DeterministicRAG:
         self.cache_path = cache_path or Path(".rag_cache.json")
         self.cache: Dict[str, Any] = {
             "version": "1.0",
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": DeterministicClock.utcnow().isoformat(),
             "queries": {},
         }
 
@@ -125,7 +127,7 @@ class DeterministicRAG:
     def _save_cache(self) -> None:
         """Save cache to disk."""
         # Update timestamp
-        self.cache["updated_at"] = datetime.utcnow().isoformat()
+        self.cache["updated_at"] = DeterministicClock.utcnow().isoformat()
 
         # Ensure directory exists
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -261,7 +263,7 @@ class DeterministicRAG:
                 "query": query,
                 "params": params,
                 "result": result.dict(),
-                "cached_at": datetime.utcnow().isoformat(),
+                "cached_at": DeterministicClock.utcnow().isoformat(),
             }
             self._save_cache()
 
@@ -270,7 +272,7 @@ class DeterministicRAG:
     def clear_cache(self) -> None:
         """Clear all cached queries."""
         self.cache["queries"] = {}
-        self.cache["cleared_at"] = datetime.utcnow().isoformat()
+        self.cache["cleared_at"] = DeterministicClock.utcnow().isoformat()
         if self.mode in ("replay", "record"):
             self._save_cache()
 

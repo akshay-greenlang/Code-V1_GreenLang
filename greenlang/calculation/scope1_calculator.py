@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Scope 1 Calculator - Direct GHG Emissions
 
@@ -14,6 +15,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import Optional, Dict, Any
 from greenlang.calculation.core_calculator import (
+from greenlang.determinism import FinancialDecimal
     EmissionCalculator,
     CalculationRequest,
     CalculationResult,
@@ -117,7 +119,7 @@ class Scope1Calculator:
         gas_breakdown = None
         if include_gas_breakdown and calc_result.emissions_kg_co2e > 0:
             gas_breakdown = self.gas_calculator.decompose(
-                total_co2e_kg=float(calc_result.emissions_kg_co2e),
+                total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
                 fuel_type=fuel_type,
             )
 
@@ -179,7 +181,7 @@ class Scope1Calculator:
 
         # Process emissions typically 100% CO2
         gas_breakdown = self.gas_calculator.decompose(
-            total_co2e_kg=float(calc_result.emissions_kg_co2e),
+            total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
             gas_vector={'CO2': 1.0},
         )
 
@@ -261,7 +263,7 @@ class Scope1Calculator:
 
         # Fugitive emissions are 100% the refrigerant gas
         gas_breakdown = self.gas_calculator.decompose(
-            total_co2e_kg=float(calc_result.emissions_kg_co2e),
+            total_co2e_kg=FinancialDecimal.from_string(calc_result.emissions_kg_co2e),
             gas_vector={refrigerant_type: 1.0},
         )
 

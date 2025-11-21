@@ -156,7 +156,7 @@ System performance validation and failure scenario testing.
 ### Prerequisites
 
 ```bash
-# Python 3.11+
+# Python 3.10+
 python --version
 
 # Install dependencies

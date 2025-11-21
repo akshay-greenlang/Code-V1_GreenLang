@@ -1,61 +1,65 @@
 name: hvac-measures
 version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
 description: HVAC system optimization and measurement calculations
-author: GreenLang Team
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
 license: Apache-2.0
-
-domain: hvac
-keywords:
+agents:
+- name: thermal_comfort
+  type: hvac.thermal_comfort
+  version: 1.0.0
+- name: energy_calculator
+  type: hvac.energy_calculator
+  version: 1.0.0
+- name: ventilation_optimizer
+  type: hvac.ventilation_optimizer
+  version: 1.0.0
+contents:
+  pipelines:
+  - gl.yaml
+dependencies:
+- numpy>=1.24.0
+- pandas>=2.0.0
+- matplotlib>=3.7.0
+- reportlab>=4.0.0
+- scipy>=1.10.0
+metadata:
+  authors:
+  - GreenLang Team
+  domain: hvac
+  tags:
   - hvac
   - energy-efficiency
   - thermal-comfort
   - ventilation
   - cooling
   - heating
-
-dependencies:
-  - numpy>=1.24.0
-  - pandas>=2.0.0
-  - matplotlib>=3.7.0
-  - reportlab>=4.0.0
-  - scipy>=1.10.0
-
-agents:
-  - name: thermal_comfort
-    type: hvac.thermal_comfort
-    version: 1.0.0
-  - name: energy_calculator
-    type: hvac.energy_calculator
-    version: 1.0.0
-  - name: ventilation_optimizer
-    type: hvac.ventilation_optimizer
-    version: 1.0.0
-
 datasets:
-  - name: hvac_performance
-    path: datasets/hvac_performance.csv
-    format: csv
-  - name: climate_zones
-    path: datasets/climate_zones.json
-    format: json
-
+- name: hvac_performance
+  path: datasets/hvac_performance.csv
+  format: csv
+- name: climate_zones
+  path: datasets/climate_zones.json
+  format: json
 models:
-  - name: efficiency_predictor
-    path: models/efficiency_predictor.pkl
-    framework: scikit-learn
-
+- name: efficiency_predictor
+  path: models/efficiency_predictor.pkl
+  framework: scikit-learn
 registry:
   uri: ghcr.io/greenlang/packs/hvac-measures
   tags:
-    - latest
-    - v1.0.0
-
+  - latest
+  - v1.0.0
 policy:
-  min_python: "3.9"
-  max_memory: "2GB"
+  min_python: '3.9'
+  max_memory: 2GB
   allowed_imports:
-    - numpy
-    - pandas
-    - matplotlib
-    - scipy
+  - numpy
+  - pandas
+  - matplotlib
+  - scipy
   blocked_licenses: []

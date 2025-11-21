@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pareto Analysis Engine
 GL-VCCI Scope 3 Platform

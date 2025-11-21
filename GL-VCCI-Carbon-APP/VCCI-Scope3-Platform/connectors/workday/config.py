@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday RaaS Connector Configuration Management
 GL-VCCI Scope 3 Platform
@@ -14,6 +15,7 @@ import os
 from typing import Optional, Dict, Any, List
 from enum import Enum
 from pydantic import BaseModel, Field, validator
+from greenlang.determinism import FinancialDecimal
 
 
 class WorkdayEnvironment(str, Enum):
@@ -271,7 +273,7 @@ class WorkdayConnectorConfig(BaseModel):
         timeout_config = TimeoutConfig(
             connect_timeout=float(os.getenv("WORKDAY_CONNECT_TIMEOUT", "10.0")),
             read_timeout=float(os.getenv("WORKDAY_READ_TIMEOUT", "60.0")),
-            total_timeout=float(os.getenv("WORKDAY_TOTAL_TIMEOUT", "120.0"))
+            total_timeout=FinancialDecimal.from_string(os.getenv("WORKDAY_TOTAL_TIMEOUT", "120.0"))
         )
 
         # Default batch size

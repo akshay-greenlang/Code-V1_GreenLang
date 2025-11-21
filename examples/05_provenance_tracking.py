@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example 5: Complete Provenance and Audit Trail
 ===============================================
@@ -19,6 +20,7 @@ from datetime import datetime
 from typing import Dict, Any
 from greenlang.sdk.base import Agent, Result, Metadata
 from greenlang.provenance.ledger import RunLedger, stable_hash
+from greenlang.determinism import DeterministicClock
 
 
 class ProvenanceTrackedCalculator(Agent[Dict[str, Any], Dict[str, Any]]):
@@ -58,7 +60,7 @@ class ProvenanceTrackedCalculator(Agent[Dict[str, Any], Dict[str, Any]]):
         input_hash = stable_hash(input_data)
 
         # Start execution timestamp
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         # Perform calculation
         energy_data = input_data["energy_data"]
@@ -97,8 +99,8 @@ class ProvenanceTrackedCalculator(Agent[Dict[str, Any], Dict[str, Any]]):
             "input_hash": input_hash,
             "output_hash": output_hash,
             "start_time": start_time.isoformat(),
-            "end_time": datetime.utcnow().isoformat(),
-            "duration_ms": (datetime.utcnow() - start_time).total_seconds() * 1000,
+            "end_time": DeterministicClock.utcnow().isoformat(),
+            "duration_ms": (DeterministicClock.utcnow() - start_time).total_seconds() * 1000,
             "agent_id": self.metadata.id,
             "agent_version": self.metadata.version,
             "factors_used": {

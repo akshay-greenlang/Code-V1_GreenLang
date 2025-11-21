@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Telemetry and Audit Logging
 
@@ -20,6 +21,7 @@ import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Protocol, Callable
 from pydantic import BaseModel, Field
+from greenlang.determinism import DeterministicClock
 
 
 class TelemetryEvent(BaseModel):
@@ -31,7 +33,7 @@ class TelemetryEvent(BaseModel):
 
     event_type: str = Field(description="Event type (llm.chat, tool.execute, etc.)")
     timestamp: str = Field(
-        default_factory=lambda: datetime.utcnow().isoformat(),
+        default_factory=lambda: DeterministicClock.utcnow().isoformat(),
         description="ISO 8601 timestamp (UTC)",
     )
     run_id: Optional[str] = Field(

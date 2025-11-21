@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for RecommendationAgent.
 
 This module tests the RecommendationAgent implementation, ensuring:

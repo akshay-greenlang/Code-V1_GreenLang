@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Disaster Recovery Drill Automation for GreenLang
 
@@ -17,6 +18,7 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Any, List
+from greenlang.determinism import DeterministicClock
 
 
 class DRDrillAutomation:
@@ -25,7 +27,7 @@ class DRDrillAutomation:
     def __init__(self, repo_root: Path):
         self.repo_root = repo_root
         self.results = {
-            "drill_date": datetime.utcnow().isoformat(),
+            "drill_date": DeterministicClock.utcnow().isoformat(),
             "scenarios": {},
             "rto_target": "4 hours",
             "rpo_target": "1 hour",
@@ -38,7 +40,7 @@ class DRDrillAutomation:
         print("DR DRILL: Database Failover")
         print("="*80)
 
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
         steps = []
 
         # Step 1: Verify primary database
@@ -91,7 +93,7 @@ class DRDrillAutomation:
         })
         time.sleep(1)
 
-        end_time = datetime.utcnow()
+        end_time = DeterministicClock.utcnow()
         total_duration = (end_time - start_time).total_seconds()
 
         # Calculate RTO compliance
@@ -122,7 +124,7 @@ class DRDrillAutomation:
         print("DR DRILL: Region Failover")
         print("="*80)
 
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
         steps = []
 
         # Step 1: Detect region failure
@@ -205,7 +207,7 @@ class DRDrillAutomation:
         })
         time.sleep(1)
 
-        end_time = datetime.utcnow()
+        end_time = DeterministicClock.utcnow()
         total_duration = (end_time - start_time).total_seconds()
 
         # Calculate RTO compliance
@@ -242,7 +244,7 @@ class DRDrillAutomation:
         print("DR DRILL: Backup Restore")
         print("="*80)
 
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
         steps = []
 
         # Step 1: Identify latest backup
@@ -285,7 +287,7 @@ class DRDrillAutomation:
         })
         time.sleep(1)
 
-        end_time = datetime.utcnow()
+        end_time = DeterministicClock.utcnow()
         total_duration = (end_time - start_time).total_seconds()
 
         result = {

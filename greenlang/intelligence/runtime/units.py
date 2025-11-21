@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit System & Normalization (INTL-103)
 

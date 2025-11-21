@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 LDAP/Active Directory Authentication Provider for GreenLang
 
@@ -28,6 +29,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import threading
 import time
+from greenlang.determinism import DeterministicClock
 
 try:
     import ldap3
@@ -216,8 +218,8 @@ class LDAPConnectionPool:
                     # Connection is stale, create new one
                     try:
                         conn.unbind()
-                    except:
-                        pass
+                    except Exception as e:
+                        logger.debug(f"Failed to unbind stale LDAP connection: {e}")
 
             # Create new connection if pool is not full
             if self._created_count < self._max_size:
@@ -240,14 +242,15 @@ class LDAPConnectionPool:
                 try:
                     conn.unbind()
                     self._created_count -= 1
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Failed to unbind/decrement LDAP connection: {e}")
 
     def _is_connection_valid(self, conn: Connection) -> bool:
         """Check if connection is still valid"""
         try:
             return conn.bound and not conn.closed
-        except:
+        except Exception as e:
+            logger.debug(f"Connection validation failed: {e}")
             return False
 
     def close_all(self) -> None:
@@ -256,8 +259,8 @@ class LDAPConnectionPool:
             for conn in self._pool:
                 try:
                     conn.unbind()
-                except:
-                    pass
+                except Exception as e:
+                    logger.debug(f"Failed to unbind LDAP connection: {e}")
             self._pool.clear()
             self._created_count = 0
 
@@ -456,7 +459,7 @@ class LDAPProvider:
                 last_name=self._get_attribute(entry, self.config.user_last_name_attribute),
                 display_name=self._get_attribute(entry, self.config.user_name_attribute),
                 attributes=entry.entry_attributes_as_dict,
-                last_sync=datetime.utcnow(),
+                last_sync=DeterministicClock.utcnow(),
                 is_active=True
             )
 
@@ -624,7 +627,7 @@ class LDAPProvider:
             Dictionary with sync statistics
         """
         with self._sync_lock:
-            start_time = datetime.utcnow()
+            start_time = DeterministicClock.utcnow()
             stats = {
                 "users_added": 0,
                 "users_updated": 0,
@@ -716,7 +719,7 @@ class LDAPProvider:
                 last_name=self._get_attribute(entry, self.config.user_last_name_attribute),
                 display_name=self._get_attribute(entry, self.config.user_name_attribute),
                 attributes=entry.entry_attributes_as_dict,
-                last_sync=datetime.utcnow(),
+                last_sync=DeterministicClock.utcnow(),
                 is_active=True
             )
 

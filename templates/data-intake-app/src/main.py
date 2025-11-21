@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Data Intake Application
 =======================
@@ -26,6 +27,7 @@ from datetime import datetime
 
 from greenlang.agents.templates import IntakeAgent, DataFormat
 from greenlang.validation import (
+from greenlang.determinism import DeterministicClock
     ValidationFramework,
     SchemaValidator,
     RulesEngine,
@@ -216,10 +218,10 @@ class DataIntakeApplication:
         Returns:
             Ingestion result dictionary with statistics
         """
-        operation_id = f"ingest_{Path(file_path).stem}_{datetime.now().isoformat()}"
+        operation_id = f"ingest_{Path(file_path).stem}_{DeterministicClock.now().isoformat()}"
 
         with self.provenance.track_operation(operation_id):
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             try:
                 self.logger.info(f"Starting ingestion: {file_path} ({format.value})")
@@ -248,7 +250,7 @@ class DataIntakeApplication:
                     return {
                         "success": False,
                         "errors": [str(issue) for issue in result.validation_issues],
-                        "duration_seconds": (datetime.now() - start_time).total_seconds()
+                        "duration_seconds": (DeterministicClock.now() - start_time).total_seconds()
                     }
 
                 # Track provenance
@@ -276,7 +278,7 @@ class DataIntakeApplication:
                     "rows_read": result.rows_read,
                     "rows_valid": result.rows_valid,
                     "validation_issues": len(result.validation_issues),
-                    "duration_seconds": (datetime.now() - start_time).total_seconds(),
+                    "duration_seconds": (DeterministicClock.now() - start_time).total_seconds(),
                     "provenance_id": self.provenance.get_record().record_id,
                     "data_sample": result.data.head(5).to_dict() if result.data is not None else None
                 }
@@ -303,7 +305,7 @@ class DataIntakeApplication:
                 return {
                     "success": False,
                     "error": str(e),
-                    "duration_seconds": (datetime.now() - start_time).total_seconds()
+                    "duration_seconds": (DeterministicClock.now() - start_time).total_seconds()
                 }
 
     async def _store_in_database(self, data: pd.DataFrame) -> None:
@@ -346,7 +348,7 @@ class DataIntakeApplication:
         self.logger.info(f"Starting batch ingestion of {len(file_configs)} files")
 
         with self.provenance.track_operation("batch_ingestion"):
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             if parallel:
                 # Parallel ingestion using asyncio
@@ -379,7 +381,7 @@ class DataIntakeApplication:
                 "successful": successful,
                 "failed": len(file_configs) - successful,
                 "total_rows_ingested": total_rows,
-                "duration_seconds": (datetime.now() - start_time).total_seconds(),
+                "duration_seconds": (DeterministicClock.now() - start_time).total_seconds(),
                 "individual_results": results
             }
 

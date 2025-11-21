@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
+import logging
 import re
 import os
 from typing import Dict, Any, Optional
 from pathlib import Path
 from dotenv import load_dotenv
+
+logger = logging.getLogger(__name__)
 from greenlang.core.orchestrator import Orchestrator
 from greenlang.core.workflow import WorkflowBuilder
 from greenlang.agents import (
@@ -49,7 +53,7 @@ class AIAssistant:
                 self._rag_assistant = RAGAssistant(api_key=api_key)
                 self._use_rag = True
             except Exception as e:
-                print(f"Warning: Could not initialize RAG assistant: {e}")
+                logger.warning(f"Could not initialize RAG assistant: {e}")
                 self._use_rag = False
         else:
             self._use_rag = False
@@ -62,17 +66,17 @@ class AIAssistant:
                 self.client = OpenAI(api_key=self.api_key)
                 self.llm_available = True
             except Exception as e:
-                print(f"Warning: Could not initialize OpenAI client: {e}")
+                logger.warning(f"Could not initialize OpenAI client: {e}")
                 self.llm_available = False
         else:
             self.llm_available = False
             if not OPENAI_AVAILABLE:
-                print(
-                    "Warning: OpenAI library not installed. Install with: pip install openai"
+                logger.warning(
+                    "OpenAI library not installed. Install with: pip install openai"
                 )
             if not self.api_key:
-                print(
-                    "Warning: No OpenAI API key found. Set OPENAI_API_KEY in .env file"
+                logger.warning(
+                    "No OpenAI API key found. Set OPENAI_API_KEY in .env file"
                 )
 
     def _setup_orchestrator(self) -> Orchestrator:

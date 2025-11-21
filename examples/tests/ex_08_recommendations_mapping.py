@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 08: RecommendationAgent deterministic mapping."""
 
 import pytest

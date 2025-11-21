@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-CBAM-APP - Integration Test Suite V2
 ========================================

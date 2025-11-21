@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 gl pack - Pack management commands
 """

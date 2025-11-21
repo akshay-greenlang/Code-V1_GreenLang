@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Travel Calculator - Business Travel Emissions Calculations
 GL-VCCI Scope 3 Platform

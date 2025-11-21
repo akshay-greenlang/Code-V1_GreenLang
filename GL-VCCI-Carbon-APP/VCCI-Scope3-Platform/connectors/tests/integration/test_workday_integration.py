@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday Integration Tests
 GL-VCCI Scope 3 Platform
@@ -14,6 +15,7 @@ import pytest
 import time
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
+from greenlang.determinism import DeterministicClock
 
 
 @pytest.mark.integration
@@ -55,8 +57,8 @@ class TestWorkdayExpenseReportExtraction:
 
     def test_extract_with_date_range(self, mock_workday_client):
         """Test extraction with date range filtering."""
-        start_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
-        end_date = datetime.now().strftime("%Y-%m-%d")
+        start_date = (DeterministicClock.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        end_date = DeterministicClock.now().strftime("%Y-%m-%d")
 
         mock_workday_client.extract_expense_reports.return_value = [
             {

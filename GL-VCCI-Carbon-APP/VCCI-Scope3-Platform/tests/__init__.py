@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Test Suite
 # Comprehensive test suite for VCCI Scope 3 Platform
 

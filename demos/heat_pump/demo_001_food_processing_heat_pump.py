@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Demo Script #1: Food Processing Heat Pump Analysis
 

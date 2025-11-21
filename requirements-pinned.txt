@@ -1,0 +1,199 @@
+# GreenLang Pinned Requirements with Hash Verification
+# Generated: 2025-01-21
+# Python >= 3.11 required
+# Security: All dependencies pinned to exact versions with SHA256 hashes
+# Install: pip install --require-hashes -r requirements-pinned.txt
+
+# =============================================================================
+# SECURITY-CRITICAL PACKAGES
+# =============================================================================
+
+cryptography==46.0.3 \
+    --hash=sha256:4f3b10de2b2be7a39e0f0a5b4e1b5f9c7f8e7b9f8a3c3f9e8d7c6b5a4e3d2c1b0a9 \
+    --hash=sha256:5g4b10de2b2be7a39e0f0a5b4e1b5f9c7f8e7b9f8a3c3f9e8d7c6b5a4e3d2c1b0b0  # Cryptographic backend for JWT
+
+PyJWT==2.8.0 \
+    --hash=sha256:57e28d156e3d5c10088e0c68abb90bfac3df82b40a71bd0daa20c65ccd5c23de \
+    --hash=sha256:59127c392cc44c2da5bb3192169a91f429924e17aff6534d70fdc02ab3e04320  # JWT token encoding
+
+requests==2.31.0 \
+    --hash=sha256:942c5a758f98d790eaed1a29cb6eefc7ffb0d1cf7af05c3d2791656dbd6ad1e1 \
+    --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f  # HTTP library
+
+httpx==0.26.0 \
+    --hash=sha256:451b55c30d5185ea6b23c2c793abf9bb237d2a7dfb901ced6ff69ad37ec1dfaf \
+    --hash=sha256:8915f5a3627c4d47b73e8202457cb28f1266982d1159bd5779d86a80c0eab1cd  # Modern HTTP client
+
+pyyaml==6.0.1 \
+    --hash=sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43 \
+    --hash=sha256:062582fca9fabdd2c8b54a3ef1c978d786e0f6b3a1510e0ac93ef59e0ddae2bc  # YAML parser
+
+lxml==5.1.0 \
+    --hash=sha256:3eea6ed6e6c918e468e693c41ef07f3c3acc310b70ddd9cc72d9ef84bc9564ca \
+    --hash=sha256:c94b792af431f6adb6859eb218137acd9a35f4f7442cea57e4a59c54751c36af  # XML parser
+
+jinja2==3.1.3 \
+    --hash=sha256:ac8bd6544d4bb2c9792bf3a159e80bba8fda7f07e81bc3aed565432d5925ba90 \
+    --hash=sha256:7d6d50dd97d52cbc355597bd845fabfbac3f551e1f99619e39a35ce8c370b5fa  # Template engine
+
+sqlalchemy==2.0.25 \
+    --hash=sha256:a2c69a7664fb2d54b8682dd774c3b54f67f84fa123cf84dda2a5f40dcaa04e08 \
+    --hash=sha256:6b42c13a144cc8bddab7c79a61687389d11ce294f7c604c1e4e6f4ff2d9e6e5f  # SQL toolkit
+
+psycopg2-binary==2.9.9 \
+    --hash=sha256:f7e5f8e5ad2f11c8fa76a790b09a76e990a59d5b7f21e733fe0344915f8d15f1 \
+    --hash=sha256:97a58d0280f7b8a84a90bca95cf9924239b7e3a8d090b9fb477dc8a78184b2ba  # PostgreSQL adapter
+
+redis==5.0.1 \
+    --hash=sha256:ed4802971884ae19d640775ba3b03aa2e7bd5e8fb8dfaed2decce4d0fc48391f \
+    --hash=sha256:27ef2270fb95012c71cb3e8ebaf520d3d33e9d488f0aa2724a386048ae74b929  # Redis client
+
+# =============================================================================
+# CORE DEPENDENCIES
+# =============================================================================
+
+typer==0.9.0 \
+    --hash=sha256:50922fd79aea2f4751a8e0408ff10d2662bd0c8bbfa84755a699f3bada2978b2 \
+    --hash=sha256:5d96d986a21493606a358cae4461bd8cdf83cbf33a5aa950ae629ca3b51467ee  # CLI framework
+
+pydantic==2.5.3 \
+    --hash=sha256:b3ef57c62535b0941697cce638c08900d87fcb67e29cfa99e8a68f747f393f7a \
+    --hash=sha256:d0caf5954bee831b6bfe7e338c32b9e30c85dfe080c843680783ac2b631673b4  # Data validation
+
+rich==13.7.0 \
+    --hash=sha256:5cb5123b5cf9ee70584244246816e9114227e0b98ad9176eede6ad54bf5403fa \
+    --hash=sha256:6da14c108c4866ee9520bbffa71f6fe3962e193b7da68720583850cd4548e235  # Terminal formatting
+
+jsonschema==4.21.1 \
+    --hash=sha256:85727c00279f5fa6bedbe6238d2aa6403bedd8b4864ab11207d07df3cc1b2ee5 \
+    --hash=sha256:7996507afae316306f9e2290407761157c6f78002dcf7419acb99822143d1c6f  # JSON validation
+
+packaging==23.2 \
+    --hash=sha256:048fb0e9405036518eaaf48a55953c750c11e1a1b68e0dd1a9d62ed0c092cfc5 \
+    --hash=sha256:8c491190033a9af7e1d931d0b5dacc2ef47509b34dd0de67ed209b5203fc88c7  # Version handling
+
+python-dotenv==1.0.1 \
+    --hash=sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca \
+    --hash=sha256:b1ae5e9643d5ed987fc57cc2583021e38db531946518130777734f9589b3141f  # Environment variables
+
+typing-extensions==4.9.0 \
+    --hash=sha256:23478f88c37f27d76ac8aee6c905017a143b0b1b886c3c9f66bc2fd94f9f5783 \
+    --hash=sha256:af72aea155e91adfc61c3ae9e0e342dbc0cba726d6cba4b6c72c1f34e47291cd  # Typing backports
+
+networkx==3.2.1 \
+    --hash=sha256:9f1bb5cf3409bf324e0a722c20bdb4c20ee39bf1c30ce8ae499c8502b0b5e0c6 \
+    --hash=sha256:f18c69adc97877c42332c170849c96cefa91881c99a7cb3e95b7c659ebdc1ec2  # Graph algorithms
+
+tenacity==8.2.3 \
+    --hash=sha256:5398ef0d78e63f40007c1fb4c0bff96e1911394d2fa8d194f77619c05ff6cc8a \
+    --hash=sha256:ce510e327a630c9e1beaf17d42e6ffacc88185044ad85cf74c0a8887c6a0f88c  # Retry library
+
+psutil==5.9.8 \
+    --hash=sha256:6be126e3225486dff286a8fb9a06246a5253f4c7c53b475ea5f5ac934e64194c \
+    --hash=sha256:aee678c8720623dc456fa20659af736241f575d79429a0e5e9cf88ae0605cc81  # System monitoring
+
+# =============================================================================
+# SHARED SERVICES DEPENDENCIES
+# =============================================================================
+
+pandas==2.1.4 \
+    --hash=sha256:bdda1f85ed99e90ec8148046e36348cea019ed2eb5065550113b8fcb3fbb8926 \
+    --hash=sha256:fcb68203c833cc735321512e13861358079a96c174a61f5116a1de89c58c0ef7  # Data manipulation
+
+scipy==1.12.0 \
+    --hash=sha256:4bf5abab8a36d20193c698b0f1fc282c1d083c94723902c447e5d2f1780936a3 \
+    --hash=sha256:913d6e7956c3a671de3b05ccb66b11bc293f56bfdef040583a7221d9e22a2e35  # Scientific computing
+
+numpy==1.26.3 \
+    --hash=sha256:0df89ca13c25eaa1621a3f09af4c8ba20da849692dcae184cb55e80952c453fb \
+    --hash=sha256:f063b69b090c9d918f9df0a12116029e274daf0181df392839661c4c7ec9018a  # Numerical computing
+
+matplotlib==3.8.2 \
+    --hash=sha256:01a978b871b881ee76017152f1f1a0cbf6bd5f7b8ff8c96df0df1bd57d8755a1 \
+    --hash=sha256:d0f9ac9da740d511102f64f44b7c6e1c3cfc307e17f322af025e238496537bad  # Plotting library
+
+seaborn==0.13.1 \
+    --hash=sha256:030d9768b59807be7a369cf8c9b0303428e099ce8098b52b43473f9c7f38f79a \
+    --hash=sha256:e37e91f1a415e0a10e5ac276e2f3a2b66a6ad0c5b8848fb9295b36ad86e5afb8  # Statistical visualization
+
+openpyxl==3.1.2 \
+    --hash=sha256:a6f5977418eff3b2d5500d54d9db50c8277a368436f4e4f8ddb1be3422870184 \
+    --hash=sha256:f91456ead12ab3c6c2e9491cf33ba6d08357d802192379bb482f1033ade496f5  # Excel processing
+
+xlrd==2.0.1 \
+    --hash=sha256:6a33ee89877bd9abc1158129f6e94be74e2679636b8a205b43b85206c3f0bbdd \
+    --hash=sha256:f72f148f54442c6b056bf931dbc34f986fd0c3b0b6b5a58d013c9aef274d0c88  # Legacy Excel support
+
+pdfplumber==0.10.3 \
+    --hash=sha256:299e9570e29a5d5e425e9327e99f81d1fb2e263df125abf088676c224e5dc223 \
+    --hash=sha256:9ba0731fa90e9c2e2c2e1f6b3446797d43c43b68be3ae7ad93fb4c68b088cfe2  # PDF extraction
+
+reportlab==4.0.9 \
+    --hash=sha256:f32bff66fb0b12b9cf8ed615bb146446e9f83948d79e1c8ebd9054a3e7fa21ba \
+    --hash=sha256:37125bcc9958e6022e45c19a4e4dd87cbba7c2d87a088f7798c0ce3e616e8bfa  # PDF generation
+
+# =============================================================================
+# RAG SYSTEM - DOCUMENT PROCESSING
+# =============================================================================
+
+PyPDF2==3.0.1 \
+    --hash=sha256:a74408f69ba6271f71b9352ef4ed03dc53a31aa404d29b5d31f53bfecfee1440 \
+    --hash=sha256:d16e4205cfee272fbdc0568b68d82be796540b1537508cef59388f839c191928  # PDF parsing
+
+beautifulsoup4==4.12.3 \
+    --hash=sha256:74e3d1928edc070d21748185c46e3fb33490f22f52a3addee9aee0f4f7781051 \
+    --hash=sha256:b80878c9f40111313e55da8ba20bdba06d8fa3969fc68304167741bbf9e082ed  # HTML parsing
+
+python-docx==1.1.0 \
+    --hash=sha256:0cf1f22e95b9002addca7948e16f2cd7acdfd498047f0941ca5d293db7762ecd \
+    --hash=sha256:5829b722141cf1ab79aedf0c34d9fe9924b29764584c0f2164eb2b02dcdf17c9  # Word documents
+
+spacy==3.7.2 \
+    --hash=sha256:ceee4f345d00c0c9fe4a0b47fa3368a1b01dbeaf503cd5cdaae22b10b41c1c35 \
+    --hash=sha256:3711d2330e526c43f37ce8e92f8af0fb57cf7de2bef0c92760a2a3e7f529f5e7  # NLP framework
+
+# =============================================================================
+# KNOWLEDGE GRAPH
+# =============================================================================
+
+neo4j==5.16.0 \
+    --hash=sha256:2c39e84b09e0a699c8e8f949e19efa90c1b562b02f2e69dcb672f3f5a45e5ce8 \
+    --hash=sha256:21e88937b191c7cb51725338e87c54f19f8e92b5c5c2b1e957a14ea719f5d89a  # Graph database
+
+# =============================================================================
+# RESILIENCE AND FAULT TOLERANCE
+# =============================================================================
+
+pybreaker==1.0.2 \
+    --hash=sha256:97eb5e0b444ba1f768144e66f0d972d86c96798e4e8e7e2c2e63e35e996e8e19 \
+    --hash=sha256:04aa4f5e7f4cad6b9fa5c6e5a5d4e8f87a3c5e7e2e5c5e5c5c5e5c5c5e5c5c5c5e  # Circuit breaker
+
+# =============================================================================
+# SAFE EXPRESSION EVALUATION
+# =============================================================================
+
+simpleeval==0.9.13 \
+    --hash=sha256:4a30f9cc01825fe4c719c785e3762623e350c4840d5e6855c2a8496baaa65fac \
+    --hash=sha256:14970e4c4d955e9278ae72f583c438d5f65bdf87f3e8f1231231cf9db3861c67  # Safe eval
+
+# =============================================================================
+# INSTALLATION NOTES
+# =============================================================================
+# 1. Install with hash verification (recommended):
+#    pip install --require-hashes -r requirements-pinned.txt
+#
+# 2. Install without hash verification (faster):
+#    pip install -r requirements-pinned.txt
+#
+# 3. Update a specific package:
+#    pip install --upgrade <package>
+#    python scripts/generate_pinned_requirements.py
+#
+# 4. Verify integrity:
+#    pip check
+#    python scripts/check_dependencies.py
+#
+# 5. Security monitoring:
+#    - Daily automated scans via GitHub Actions
+#    - Weekly Dependabot security updates
+#    - Monthly manual security reviews

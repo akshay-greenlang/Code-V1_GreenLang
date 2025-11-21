@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for GLRNG Statistical Properties - Sanity checks
 

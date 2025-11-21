@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Deployment Module
 # Infrastructure-as-Code and deployment configurations
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Scripts Module
 # Utility scripts for setup, maintenance, and operations
 

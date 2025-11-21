@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Tests for GraphQL API
 End-to-end tests for the complete GraphQL API

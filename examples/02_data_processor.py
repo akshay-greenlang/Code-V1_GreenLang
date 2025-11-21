@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Example 2: CSV Batch Processor with Error Handling
 ===================================================
@@ -15,6 +16,7 @@ from pathlib import Path
 from typing import Dict, Any, List
 from dataclasses import dataclass
 from greenlang.sdk.base import Agent, Result, Metadata
+from greenlang.determinism import FinancialDecimal
 
 
 @dataclass
@@ -161,7 +163,7 @@ class BuildingBatchProcessor(Agent[str, Dict[str, Any]]):
                 "electricity_tons": round(elec_emissions, 2),
                 "gas_tons": round(gas_emissions, 2),
                 "area_sqm": float(row.get("area_sqm", 0)),
-                "intensity_kgco2e_sqm": round((total_emissions * 1000) / float(row.get("area_sqm", 1)), 2)
+                "intensity_kgco2e_sqm": round((total_emissions * 1000) / FinancialDecimal.from_string(row.get("area_sqm", 1)), 2)
             }
 
         except KeyError as e:

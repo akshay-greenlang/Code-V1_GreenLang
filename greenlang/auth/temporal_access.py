@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Time-Based Access Controls for GreenLang
 
@@ -33,6 +34,8 @@ import uuid
 from pydantic import BaseModel, Field, validator
 
 from greenlang.auth.permissions import Permission
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -182,7 +185,7 @@ class TemporalPermission(BaseModel):
     """
 
     temporal_id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
+        default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         description="Unique temporal permission identifier"
     )
 
@@ -244,7 +247,7 @@ class TemporalPermission(BaseModel):
         Returns:
             True if permission is active at the given time
         """
-        check_time = check_time or datetime.utcnow()
+        check_time = check_time or DeterministicClock.utcnow()
 
         # Check date range
         if self.valid_from and check_time < self.valid_from:
@@ -273,7 +276,7 @@ class TemporalPermission(BaseModel):
     def is_expired(self) -> bool:
         """Check if permission has permanently expired."""
         if self.valid_until:
-            return datetime.utcnow() > self.valid_until
+            return DeterministicClock.utcnow() > self.valid_until
         return False
 
     def to_dict(self) -> Dict[str, Any]:
@@ -341,7 +344,7 @@ class TemporalAccessManager:
         self.cleanup_interval_minutes = cleanup_interval_minutes
         self._temporal_permissions: Dict[str, TemporalPermission] = {}
         self._user_permissions: Dict[str, Set[str]] = defaultdict(set)  # user_id -> temporal_ids
-        self._last_cleanup: datetime = datetime.utcnow()
+        self._last_cleanup: datetime = DeterministicClock.utcnow()
 
         self._stats = {
             'total_permissions': 0,
@@ -473,7 +476,7 @@ class TemporalAccessManager:
             List of active permissions
         """
         temporal_perms = self.get_user_temporal_permissions(user_id, active_only=False)
-        check_time = check_time or datetime.utcnow()
+        check_time = check_time or DeterministicClock.utcnow()
 
         active = []
         for temp_perm in temporal_perms:
@@ -508,12 +511,12 @@ class TemporalAccessManager:
             self._stats['cleanups_performed'] += 1
             logger.info(f"Cleaned up {count} expired temporal permissions")
 
-        self._last_cleanup = datetime.utcnow()
+        self._last_cleanup = DeterministicClock.utcnow()
         return count
 
     def auto_cleanup_if_needed(self):
         """Perform cleanup if interval has passed."""
-        elapsed = (datetime.utcnow() - self._last_cleanup).total_seconds() / 60
+        elapsed = (DeterministicClock.utcnow() - self._last_cleanup).total_seconds() / 60
 
         if elapsed >= self.cleanup_interval_minutes:
             self.cleanup_expired()
@@ -649,7 +652,7 @@ def create_temporary_permission(
     Returns:
         Created temporal permission
     """
-    now = datetime.utcnow()
+    now = DeterministicClock.utcnow()
     expiry = now + timedelta(days=days)
 
     return manager.create_temporal_permission(

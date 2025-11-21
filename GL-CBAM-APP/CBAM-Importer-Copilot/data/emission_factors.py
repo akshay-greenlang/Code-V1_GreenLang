@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CBAM Emission Factors Database (Demo Mode - Synthetic Data)
 

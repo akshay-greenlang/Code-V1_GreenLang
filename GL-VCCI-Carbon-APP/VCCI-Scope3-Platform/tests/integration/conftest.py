@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - Integration Test Fixtures
@@ -35,6 +36,8 @@ import pandas as pd
 import redis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # ============================================================================
 # Database Fixtures
@@ -125,8 +128,8 @@ class SupplierFactory:
     ) -> Dict[str, Any]:
         """Create a test supplier."""
         return {
-            "supplier_id": supplier_id or str(uuid4()),
-            "name": name or f"Test Supplier {uuid4().hex[:8]}",
+            "supplier_id": supplier_id or str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+            "name": name or f"Test Supplier {deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}",
             "category": category,
             "spend_amount": spend,
             "spend_currency": "USD",
@@ -134,8 +137,8 @@ class SupplierFactory:
             "country": "United States",
             "industry": "Manufacturing",
             "naics_code": "334111",
-            "created_at": datetime.utcnow().isoformat(),
-            "updated_at": datetime.utcnow().isoformat()
+            "created_at": DeterministicClock.utcnow().isoformat(),
+            "updated_at": DeterministicClock.utcnow().isoformat()
         }
 
     @staticmethod
@@ -183,7 +186,7 @@ class EmissionDataFactory:
             "emissions_unit": "kg CO2e",
             "uncertainty": 0.15,
             "tier": 1,
-            "calculated_at": datetime.utcnow().isoformat(),
+            "calculated_at": DeterministicClock.utcnow().isoformat(),
             "method": "spend-based"
         }
 
@@ -362,7 +365,7 @@ def mock_calculator_agent():
         "status": "success",
         "calculations": [
             EmissionDataFactory.create_calculation_result(
-                supplier_id=str(uuid4()),
+                supplier_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 category=1,
                 emissions=50.0
             )
@@ -380,7 +383,7 @@ def mock_hotspot_agent():
         "status": "success",
         "hotspots": [
             {
-                "supplier_id": str(uuid4()),
+                "supplier_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 "emissions": 1000.0,
                 "rank": 1,
                 "percentage": 15.0
@@ -408,7 +411,7 @@ def mock_reporting_agent():
     mock = AsyncMock()
     mock.generate_report.return_value = {
         "status": "success",
-        "report_id": str(uuid4()),
+        "report_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "format": "pdf",
         "file_path": "/tmp/report.pdf"
     }
@@ -443,12 +446,12 @@ def performance_monitor():
 
         def start(self, metric_name: str):
             """Start timing a metric."""
-            self.start_time = datetime.utcnow()
+            self.start_time = DeterministicClock.utcnow()
 
         def stop(self, metric_name: str):
             """Stop timing and record metric."""
             if self.start_time:
-                duration = (datetime.utcnow() - self.start_time).total_seconds()
+                duration = (DeterministicClock.utcnow() - self.start_time).total_seconds()
                 self.metrics[metric_name] = duration
                 self.start_time = None
 
@@ -467,12 +470,12 @@ def performance_monitor():
 def mock_auth_token():
     """Mock JWT authentication token."""
     return {
-        "access_token": "mock_access_token_" + uuid4().hex,
-        "refresh_token": "mock_refresh_token_" + uuid4().hex,
+        "access_token": "mock_access_token_" + deterministic_uuid(__name__, str(DeterministicClock.now())).hex,
+        "refresh_token": "mock_refresh_token_" + deterministic_uuid(__name__, str(DeterministicClock.now())).hex,
         "token_type": "Bearer",
         "expires_in": 3600,
-        "user_id": str(uuid4()),
-        "tenant_id": str(uuid4())
+        "user_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
+        "tenant_id": str(deterministic_uuid(__name__, str(DeterministicClock.now())))
     }
 
 
@@ -480,10 +483,10 @@ def mock_auth_token():
 def mock_user():
     """Mock authenticated user."""
     return {
-        "user_id": str(uuid4()),
+        "user_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "username": "test_user",
         "email": "test@example.com",
-        "tenant_id": str(uuid4()),
+        "tenant_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "roles": ["user", "analyst"],
         "permissions": ["read", "write", "calculate"]
     }
@@ -497,7 +500,7 @@ def mock_user():
 def mock_tenant():
     """Mock tenant data."""
     return {
-        "tenant_id": str(uuid4()),
+        "tenant_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         "name": "Test Tenant",
         "plan": "enterprise",
         "features": ["calculations", "reporting", "integrations"],

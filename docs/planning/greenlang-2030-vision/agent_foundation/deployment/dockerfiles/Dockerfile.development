@@ -1,0 +1,190 @@
+# Development Dockerfile for GreenLang AI Agents
+# Includes debugging tools, hot reload, and development utilities
+
+FROM python:3.10-bullseye
+
+# Install development tools and dependencies
+RUN apt-get update && apt-get install -y \
+    # Build tools
+    build-essential \
+    cmake \
+    pkg-config \
+    # Debugging tools
+    gdb \
+    strace \
+    ltrace \
+    valgrind \
+    # Network tools
+    net-tools \
+    iputils-ping \
+    curl \
+    wget \
+    telnet \
+    dnsutils \
+    tcpdump \
+    # Process tools
+    htop \
+    procps \
+    lsof \
+    # Version control
+    git \
+    git-lfs \
+    # Editors
+    vim \
+    nano \
+    # Database clients
+    postgresql-client \
+    redis-tools \
+    sqlite3 \
+    # Python tools
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    # Node.js for frontend tools
+    nodejs \
+    npm \
+    # Additional utilities
+    jq \
+    tree \
+    tmux \
+    screen \
+    zip \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python development packages
+RUN pip install --upgrade pip setuptools wheel && \
+    pip install \
+    # Development tools
+    ipython \
+    ipdb \
+    pdbpp \
+    ptpython \
+    # Testing
+    pytest \
+    pytest-cov \
+    pytest-asyncio \
+    pytest-mock \
+    pytest-xdist \
+    pytest-timeout \
+    hypothesis \
+    tox \
+    # Code quality
+    black \
+    isort \
+    flake8 \
+    pylint \
+    mypy \
+    bandit \
+    safety \
+    # Profiling
+    py-spy \
+    memory-profiler \
+    line-profiler \
+    cProfile \
+    snakeviz \
+    # Documentation
+    sphinx \
+    sphinx-rtd-theme \
+    sphinxcontrib-asyncio \
+    # Hot reload
+    watchdog \
+    python-dotenv \
+    # Jupyter
+    jupyter \
+    jupyterlab \
+    notebook \
+    # API development
+    fastapi \
+    uvicorn[standard] \
+    httpx \
+    requests \
+    # Debugging
+    remote-pdb \
+    web-pdb \
+    wdb
+
+# Install AI/ML development tools
+RUN pip install \
+    # Experiment tracking
+    mlflow \
+    wandb \
+    tensorboard \
+    # Model debugging
+    torch \
+    torchvision \
+    tensorflow \
+    transformers \
+    # Data tools
+    pandas \
+    numpy \
+    scikit-learn \
+    matplotlib \
+    seaborn \
+    plotly
+
+# Create development user
+RUN useradd -m -s /bin/bash -u 1000 developer && \
+    usermod -aG sudo developer && \
+    echo "developer ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# Create development directories
+RUN mkdir -p /workspace /data /models /logs /notebooks && \
+    chown -R developer:developer /workspace /data /models /logs /notebooks
+
+# Switch to development user
+USER developer
+WORKDIR /workspace
+
+# Configure git
+RUN git config --global user.name "Developer" && \
+    git config --global user.email "dev@greenlang.io" && \
+    git config --global init.defaultBranch main
+
+# Install VS Code server (for remote development)
+RUN curl -fsSL https://code-server.dev/install.sh | sh
+
+# Configure shell
+RUN echo 'export PS1="\[\033[01;32m\]dev@greenlang\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]$ "' >> ~/.bashrc && \
+    echo 'alias ll="ls -alF"' >> ~/.bashrc && \
+    echo 'alias la="ls -A"' >> ~/.bashrc && \
+    echo 'alias l="ls -CF"' >> ~/.bashrc && \
+    echo 'alias dev="cd /workspace"' >> ~/.bashrc
+
+# Python development environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/workspace:$PYTHONPATH \
+    DEVELOPMENT=true \
+    DEBUG=true \
+    LOG_LEVEL=DEBUG \
+    RELOAD=true \
+    JUPYTER_ENABLE_LAB=true
+
+# Expose ports for development
+# 8000: FastAPI
+# 8080: Alternative API
+# 8888: Jupyter
+# 8989: Code Server
+# 5678: Debug adapter
+# 6006: TensorBoard
+# 5000: MLflow
+EXPOSE 8000 8080 8888 8989 5678 6006 5000
+
+# Volume mounts for development
+VOLUME ["/workspace", "/data", "/models", "/logs", "/notebooks"]
+
+# Development entrypoint with hot reload
+COPY scripts/dev_entrypoint.sh /usr/local/bin/dev_entrypoint.sh
+RUN sudo chmod +x /usr/local/bin/dev_entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/dev_entrypoint.sh"]
+
+# Default command starts development server with hot reload
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "/workspace"]
+
+# Metadata
+LABEL description="Development environment for GreenLang AI Agents" \
+      environment="development" \
+      tools="jupyter,vscode,debugging,profiling" \
+      hot_reload="enabled"

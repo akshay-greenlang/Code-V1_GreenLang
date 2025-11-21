@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Climatenza AI Schemas - Data validation and contracts
 """

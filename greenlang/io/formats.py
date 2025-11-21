@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Format Registry
 Format detection and conversion utilities.

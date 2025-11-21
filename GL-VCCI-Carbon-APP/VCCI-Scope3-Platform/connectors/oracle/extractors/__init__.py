@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Fusion Cloud Extractors
 

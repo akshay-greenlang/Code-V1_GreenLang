@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Emission Factors Database Schema
 
@@ -286,7 +287,22 @@ def create_database(db_path: str, overwrite: bool = False) -> bool:
         logger.info(f"Tables created: {', '.join(tables)}")
 
         # Get table counts
+        # SECURITY FIX: Validate table names against whitelist before SQL execution
+        # This prevents SQL injection via malicious table names
+        allowed_tables = {
+            'emission_factors',
+            'factor_units',
+            'factor_gas_vectors',
+            'calculation_audit_log'
+        }
+
         for table in expected_tables:
+            # SECURITY: Whitelist validation - only allow known table names
+            if table not in allowed_tables:
+                logger.error(f"Table name not in whitelist: {table}")
+                raise ValueError(f"Invalid table name: {table}")
+
+            # Safe to use in query after whitelist validation
             cursor.execute(f"SELECT COUNT(*) FROM {table}")
             count = cursor.fetchone()[0]
             logger.info(f"  {table}: {count} rows")
@@ -451,7 +467,23 @@ def get_database_info(db_path: str) -> dict:
         WHERE type='table'
         ORDER BY name;
     """)
+
+    # SECURITY FIX: Whitelist table names to prevent SQL injection
+    allowed_tables = {
+        'emission_factors',
+        'factor_units',
+        'factor_gas_vectors',
+        'calculation_audit_log',
+        'sqlite_sequence'  # System table
+    }
+
     for (table_name,) in cursor.fetchall():
+        # SECURITY: Validate table name against whitelist
+        if table_name not in allowed_tables:
+            logger.warning(f"Skipping unknown table: {table_name}")
+            continue
+
+        # Safe to use in query after whitelist validation
         cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
         count = cursor.fetchone()[0]
         info['tables'][table_name] = count

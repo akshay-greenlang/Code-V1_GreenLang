@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ===============================================================================
 GL-VCCI Scope 3 Platform - E2E Data Flow Tests
@@ -25,6 +26,8 @@ from typing import Dict, List, Any
 from uuid import uuid4
 import json
 import hashlib
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
 @pytest.mark.e2e
@@ -65,7 +68,7 @@ class TestDataFlowScenarios:
 
         lineage_tracker["nodes"].append({
             "stage": "intake",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "input_hash": initial_data_hash,
             "output_hash": hashlib.md5(
                 json.dumps(intake_result, sort_keys=True).encode()
@@ -82,7 +85,7 @@ class TestDataFlowScenarios:
 
         lineage_tracker["nodes"].append({
             "stage": "calculate",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "input_hash": lineage_tracker["nodes"][-1]["output_hash"],
             "output_hash": hashlib.md5(
                 json.dumps(calc_result, sort_keys=True).encode()
@@ -98,7 +101,7 @@ class TestDataFlowScenarios:
 
         lineage_tracker["nodes"].append({
             "stage": "hotspot",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "input_hash": lineage_tracker["nodes"][-1]["output_hash"],
             "output_hash": hashlib.md5(
                 json.dumps(hotspot_result, sort_keys=True).encode()
@@ -115,7 +118,7 @@ class TestDataFlowScenarios:
 
         lineage_tracker["nodes"].append({
             "stage": "reporting",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "input_hash": lineage_tracker["nodes"][-1]["output_hash"],
             "output_hash": hashlib.md5(
                 json.dumps(report_result, sort_keys=True).encode()
@@ -165,10 +168,10 @@ class TestDataFlowScenarios:
         for supplier in test_suppliers:
             supplier["provenance"] = {
                 "source": "SAP",
-                "extracted_at": datetime.utcnow().isoformat(),
+                "extracted_at": DeterministicClock.utcnow().isoformat(),
                 "extracted_by": "automated_sync",
                 "source_table": "SUPPLIERS",
-                "source_id": str(uuid4())
+                "source_id": str(deterministic_uuid(__name__, str(DeterministicClock.now())))
             }
 
         # Act - Calculate with provenance tracking
@@ -184,7 +187,7 @@ class TestDataFlowScenarios:
                 "source_system": test_suppliers[i]["provenance"]["source"],
                 "emission_factor_source": "EPA 2024",
                 "calculation_method": "spend-based",
-                "calculated_at": datetime.utcnow().isoformat(),
+                "calculated_at": DeterministicClock.utcnow().isoformat(),
                 "calculated_by": "calculator_agent_v2",
                 "version": "2.0.0"
             }
@@ -230,9 +233,9 @@ class TestDataFlowScenarios:
         def log_audit_event(event_type: str, details: Dict[str, Any]):
             """Log an audit event."""
             audit_log.append({
-                "event_id": str(uuid4()),
+                "event_id": str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
                 "event_type": event_type,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
                 "user_id": user["user_id"],
                 "tenant_id": user["tenant_id"],
                 "details": details
@@ -374,7 +377,7 @@ class TestDataFlowScenarios:
         # Scenario 2: Time-based invalidation
         # Simulate cache expiration
         cache_ttl = 3600  # 1 hour
-        cached_time = datetime.utcnow() - timedelta(seconds=cache_ttl + 1)
+        cached_time = DeterministicClock.utcnow() - timedelta(seconds=cache_ttl + 1)
 
         # Cache should be expired
         mock_redis.get.return_value = None
@@ -413,7 +416,7 @@ class TestDataFlowScenarios:
         initial_suppliers = supplier_factory.create_batch(count=100)
 
         # Add timestamps
-        base_time = datetime.utcnow()
+        base_time = DeterministicClock.utcnow()
         for i, supplier in enumerate(initial_suppliers):
             supplier["created_at"] = base_time.isoformat()
             supplier["updated_at"] = base_time.isoformat()
@@ -429,7 +432,7 @@ class TestDataFlowScenarios:
         assert full_sync_result["suppliers_processed"] == 100
 
         # Record last sync time
-        last_sync_time = datetime.utcnow()
+        last_sync_time = DeterministicClock.utcnow()
 
         # Simulate changes after initial sync
         # - 10 new suppliers

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Deterministic LLM Caching for Audit Replay
 
@@ -57,6 +58,7 @@ import sqlite3
 import threading
 from datetime import datetime, timezone
 from enum import Enum
+from greenlang.serialization import canonical_dumps, canonical_hash
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional
 
@@ -361,8 +363,8 @@ class SQLiteCacheBackend(CacheBackend):
                     entry.temperature,
                     entry.seed,
                     entry.timestamp,
-                    json.dumps(entry.response.model_dump()),
-                    json.dumps(entry.metadata),
+                    canonical_dumps(entry.response.model_dump()),
+                    canonical_dumps(entry.metadata),
                 ),
             )
 
@@ -588,18 +590,18 @@ class DeterministicLLM:
         """
         hasher = hashlib.sha256()
 
-        # Hash messages
+        # Hash messages using canonical JSON
         for msg in messages:
-            hasher.update(msg.model_dump_json().encode())
+            hasher.update(canonical_dumps(msg.model_dump()).encode())
 
-        # Hash tools
+        # Hash tools using canonical JSON
         if tools:
             for tool in tools:
-                hasher.update(tool.model_dump_json().encode())
+                hasher.update(canonical_dumps(tool.model_dump()).encode())
 
-        # Hash JSON schema
+        # Hash JSON schema using canonical JSON
         if json_schema:
-            hasher.update(json.dumps(json_schema, sort_keys=True).encode())
+            hasher.update(canonical_dumps(json_schema).encode())
 
         # Hash sampling parameters
         hasher.update(f"{temperature}".encode())
@@ -625,10 +627,9 @@ class DeterministicLLM:
         Returns:
             SHA-256 hash as hex string with "sha256:" prefix
         """
-        hasher = hashlib.sha256()
-        for msg in messages:
-            hasher.update(msg.model_dump_json().encode())
-        return f"sha256:{hasher.hexdigest()}"
+        # Use canonical_hash for consistent hashing
+        messages_data = [msg.model_dump() for msg in messages]
+        return f"sha256:{canonical_hash(messages_data)}"
 
     async def chat(
         self,

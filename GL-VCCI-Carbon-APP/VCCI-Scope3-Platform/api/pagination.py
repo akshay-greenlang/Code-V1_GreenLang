@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Cursor-Based Pagination Implementation
 GL-VCCI Scope 3 Platform - Performance Optimization

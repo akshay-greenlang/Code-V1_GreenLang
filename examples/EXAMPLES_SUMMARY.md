@@ -309,7 +309,7 @@ Both can coexist and serve different purposes:
 - Standard library: csv, json, pathlib, concurrent.futures
 
 ### Compatibility
-- Python 3.8+
+- Python 3.10+
 - Cross-platform (Windows, Linux, macOS)
 - No external API dependencies
 - All data self-contained

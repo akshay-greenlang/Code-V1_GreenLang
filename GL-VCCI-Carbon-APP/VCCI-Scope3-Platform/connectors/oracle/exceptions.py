@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Oracle Fusion Cloud Connector Custom Exceptions
 GL-VCCI Scope 3 Platform

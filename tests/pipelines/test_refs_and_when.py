@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for pipeline reference resolution and condition evaluation.
 

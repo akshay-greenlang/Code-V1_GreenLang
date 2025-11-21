@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Uncertainty Quantification
 
@@ -15,6 +16,7 @@ import numpy as np
 from dataclasses import dataclass
 from typing import Optional, Tuple
 from decimal import Decimal
+from greenlang.determinism import FinancialDecimal
 
 
 @dataclass
@@ -153,8 +155,8 @@ class UncertaintyCalculator:
         emissions_samples = activity_samples * factor_samples
 
         # Calculate statistics
-        mean_emissions = float(np.mean(emissions_samples))
-        std_emissions = float(np.std(emissions_samples))
+        mean_emissions = FinancialDecimal.from_string(np.mean(emissions_samples))
+        std_emissions = FinancialDecimal.from_string(np.std(emissions_samples))
 
         # Confidence intervals
         ci_95_lower, ci_95_upper = np.percentile(emissions_samples, [2.5, 97.5])

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for emission factors data schema."""
 
 import json

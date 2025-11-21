@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GL-VCCI CLI - Intake Command
 File ingestion and data validation for value chain data.

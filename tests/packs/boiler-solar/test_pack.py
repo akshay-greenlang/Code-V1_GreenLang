@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Basic tests for boiler-solar pack.
 """

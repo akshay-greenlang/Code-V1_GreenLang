@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Compliance and Validation Components
 GL-VCCI Scope 3 Platform

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ERP Connector Module Generator
 
@@ -19,6 +20,7 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional
 from datetime import datetime
+from greenlang.determinism import DeterministicClock
 
 
 # Module specifications database
@@ -191,7 +193,7 @@ Carbon Impact: {self.spec['carbon_impact']}
 
 Author: GL-VCCI Team 4 - ERP Integration Expansion
 Version: 1.0.0
-Generated: {datetime.now().strftime('%Y-%m-%d')}
+Generated: {DeterministicClock.now().strftime('%Y-%m-%d')}
 """
 
 import logging
@@ -283,7 +285,7 @@ Maps {self.erp.upper()} {self.spec['name']} data to VCCI {self.spec['schema']} s
 
 Author: GL-VCCI Team 4 - ERP Integration Expansion
 Version: 1.0.0
-Generated: {datetime.now().strftime('%Y-%m-%d')}
+Generated: {DeterministicClock.now().strftime('%Y-%m-%d')}
 """
 
 import logging
@@ -408,7 +410,7 @@ Tests for {self.erp.upper()} {self.spec['name']} Extractor
 
 Author: GL-VCCI Team 4 - ERP Integration Expansion
 Version: 1.0.0
-Generated: {datetime.now().strftime('%Y-%m-%d')}
+Generated: {DeterministicClock.now().strftime('%Y-%m-%d')}
 """
 
 import pytest

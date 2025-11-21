@@ -45,7 +45,7 @@ Thank you for your interest in contributing to the GL-VCCI Scope 3 Value Chain C
 
 Before contributing, ensure you have:
 
-- **Python 3.9+** (3.11+ recommended)
+- **Python 3.10+** (3.11+ recommended)
 - **Git** (version control)
 - **PostgreSQL 15+** (for local development)
 - **Redis 7+** (for caching)

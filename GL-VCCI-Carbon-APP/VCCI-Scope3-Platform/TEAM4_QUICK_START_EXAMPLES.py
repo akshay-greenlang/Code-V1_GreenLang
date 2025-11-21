@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Team 4 ERP Connector Modules - Quick Start Examples
 

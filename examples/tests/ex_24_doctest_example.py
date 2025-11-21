@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Example 24: Doctest/xdoctest example linking from docs.
 
 This module demonstrates how to embed testable examples in docstrings

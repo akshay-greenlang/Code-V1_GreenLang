@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # greenlang/agents/site_input_agent.py
 
 import yaml

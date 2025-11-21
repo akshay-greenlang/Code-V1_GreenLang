@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # greenlang/agents/solar_resource_agent.py
 
 try:

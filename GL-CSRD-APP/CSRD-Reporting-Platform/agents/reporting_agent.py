@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 ReportingAgent - XBRL Reporting & ESEF Packaging Agent
 
@@ -44,6 +45,7 @@ from pydantic import BaseModel, Field
 # Import validation utilities
 import sys
 from pathlib import Path as PathLib
+from greenlang.determinism import DeterministicClock
 sys.path.append(str(PathLib(__file__).parent.parent))
 from utils.validation import (
     validate_file_size,
@@ -955,7 +957,7 @@ class PDFGenerator:
 
         pdf_info = {
             "file_path": str(output_path),
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "company": metadata.get("company_name", ""),
             "reporting_period": metadata.get("reporting_period", ""),
             "page_count": 0,  # Would be actual page count in production
@@ -1041,7 +1043,7 @@ class ESEFPackager:
             package_id=f"{self.company_lei}_{self.reporting_date}",
             company_lei=self.company_lei,
             reporting_period_end=self.reporting_date,
-            created_at=datetime.now().isoformat(),
+            created_at=DeterministicClock.now().isoformat(),
             file_count=len(files),
             total_size_bytes=output_path.stat().st_size,
             validation_status="valid",
@@ -1271,7 +1273,7 @@ class ReportingAgent:
         Returns:
             Report generation result
         """
-        self.stats["start_time"] = datetime.now()
+        self.stats["start_time"] = DeterministicClock.now()
         output_dir = Path(output_dir)
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1349,7 +1351,7 @@ class ReportingAgent:
             "company_name": company_name,
             "reporting_period_start": reporting_period_start,
             "reporting_period_end": reporting_period_end,
-            "generated_at": datetime.now().isoformat(),
+            "generated_at": DeterministicClock.now().isoformat(),
             "language": language,
             "total_facts": len(facts),
             "validation_status": validation_result["validation_status"]
@@ -1362,7 +1364,7 @@ class ReportingAgent:
             output_path=esef_zip_path
         )
 
-        self.stats["end_time"] = datetime.now()
+        self.stats["end_time"] = DeterministicClock.now()
         processing_time = (self.stats["end_time"] - self.stats["start_time"]).total_seconds()
 
         # Build result

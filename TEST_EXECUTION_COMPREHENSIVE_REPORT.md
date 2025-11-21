@@ -23,7 +23,7 @@ Impact: CANNOT EXECUTE TESTS
 ```
 
 **Required Actions Before Test Execution:**
-1. Install Python 3.9+ (recommended: Python 3.11)
+1. Install Python 3.10+ (recommended: Python 3.11)
 2. Add Python to system PATH
 3. Install pip package manager
 4. Create virtual environments for each application

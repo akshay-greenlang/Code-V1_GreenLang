@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Interactive SARIMA Forecasting Demo.
 
 This demo showcases the SARIMA Forecast Agent with three real-world scenarios:

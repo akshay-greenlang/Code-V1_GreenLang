@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Runtime Executor
 ================
@@ -23,6 +24,8 @@ from ..sdk.base import Result
 from ..sdk.context import Context
 from ..packs.loader import PackLoader
 import yaml
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:
     import numpy as np
@@ -348,8 +351,8 @@ class Executor:
         Returns:
             Execution result
         """
-        run_id = str(uuid4())
-        run_start = datetime.now()
+        run_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
+        run_start = DeterministicClock.now()
 
         logger.info(f"Starting run {run_id} for pipeline {pipeline_ref}")
 
@@ -382,7 +385,7 @@ class Executor:
                 return Result(success=False, error=f"Unknown profile: {self.profile}")
 
             # Record run
-            run_end = datetime.now()
+            run_end = DeterministicClock.now()
             run_record = {
                 "run_id": run_id,
                 "pipeline": pipeline_ref,
@@ -411,7 +414,7 @@ class Executor:
         """
         logger.info(f"Executing pipeline locally: {pipeline.get('name', 'unnamed')}")
 
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             # Apply deterministic settings
@@ -465,7 +468,7 @@ class Executor:
             if self.deterministic and self.det_config.normalize_floats:
                 outputs = self._normalize_outputs(outputs)
 
-            duration = (datetime.utcnow() - start_time).total_seconds()
+            duration = (DeterministicClock.utcnow() - start_time).total_seconds()
 
             return Result(
                 success=True,
@@ -480,7 +483,7 @@ class Executor:
 
         except Exception as e:
             logger.error(f"Pipeline execution failed: {e}")
-            duration = (datetime.utcnow() - start_time).total_seconds()
+            duration = (DeterministicClock.utcnow() - start_time).total_seconds()
 
             return Result(
                 success=False,
@@ -500,7 +503,7 @@ class Executor:
             f"Executing pipeline on Kubernetes: {pipeline.get('name', 'unnamed')}"
         )
 
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             # Generate Kubernetes Job manifest
@@ -538,7 +541,7 @@ class Executor:
                 if self.deterministic and self.det_config.normalize_floats:
                     outputs = self._normalize_outputs(outputs)
 
-                duration = (datetime.utcnow() - start_time).total_seconds()
+                duration = (DeterministicClock.utcnow() - start_time).total_seconds()
 
                 return Result(
                     success=True,
@@ -563,7 +566,7 @@ class Executor:
 
         except Exception as e:
             logger.error(f"Kubernetes execution failed: {e}")
-            duration = (datetime.utcnow() - start_time).total_seconds()
+            duration = (DeterministicClock.utcnow() - start_time).total_seconds()
 
             return Result(
                 success=False,
@@ -577,8 +580,30 @@ class Executor:
 
     def _run_cloud(self, pipeline: Dict[str, Any], context: Dict[str, Any]) -> Result:
         """Execute pipeline on cloud functions"""
-        # TODO: Implement cloud execution
-        # This would invoke Lambda/Cloud Functions for each step
+        # NOTE: Cloud execution implementation pending
+        # When implementing:
+        # 1. Package each pipeline step as serverless function
+        # 2. Deploy to AWS Lambda / Google Cloud Functions / Azure Functions
+        # 3. Invoke functions sequentially or in parallel
+        # 4. Handle state passing between functions
+        # 5. Collect results and errors
+        # Example for AWS Lambda:
+        #   import boto3
+        #   lambda_client = boto3.client('lambda')
+        #   results = []
+        #   for step in pipeline['steps']:
+        #       response = lambda_client.invoke(
+        #           FunctionName=f"greenlang-{step['name']}",
+        #           InvocationType='RequestResponse',
+        #           Payload=json.dumps({'context': context, 'step': step})
+        #       )
+        #       result = json.loads(response['Payload'].read())
+        #       if not result.get('success'):
+        #           return Result(success=False, error=result.get('error'))
+        #       context.update(result.get('output', {}))
+        #       results.append(result)
+        #   return Result(success=True, output=context)
+
         return Result(success=False, error="Cloud execution not yet implemented")
 
     def _prepare_step_input(
@@ -650,7 +675,7 @@ class Executor:
             "error": result.error if not result.success else None,
             "artifacts": context.get("artifacts", []),
             "profile": self.profile,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": DeterministicClock.now().isoformat(),
         }
 
         # Save run.json
@@ -756,7 +781,7 @@ class Executor:
         """Create Kubernetes Job manifest"""
         import uuid
 
-        job_name = f"greenlang-{pipeline.get('name', 'job')}-{uuid.uuid4().hex[:8]}"
+        job_name = f"greenlang-{pipeline.get('name', 'job')}-{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:8]}"
 
         # Basic Job manifest
         manifest = {

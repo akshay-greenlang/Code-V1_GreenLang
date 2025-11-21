@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Tests for Factor Broker Source Adapters
 GL-VCCI Scope 3 Platform - Phase 6

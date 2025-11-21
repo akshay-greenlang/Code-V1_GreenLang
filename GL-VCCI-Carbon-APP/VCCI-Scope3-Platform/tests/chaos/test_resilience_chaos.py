@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Chaos Engineering Tests for GL-VCCI Scope 3 Platform
 
@@ -24,6 +25,7 @@ from enum import Enum
 
 from greenlang.intelligence.fallback import FallbackManager, ModelConfig
 from greenlang.intelligence.providers.resilience import ResilientHTTPClient
+from greenlang.determinism import deterministic_random
 
 
 # =============================================================================
@@ -87,23 +89,23 @@ class ChaosInjector:
         # Inject chaos based on type
         if chaos_type == ChaosType.LATENCY:
             # Add random latency
-            latency = random.randint(*self.config.latency_ms_range) / 1000.0
+            latency = deterministic_random().randint(*self.config.latency_ms_range) / 1000.0
             await asyncio.sleep(latency)
 
         elif chaos_type == ChaosType.FAILURE:
             # Random failure
-            if random.random() < self.config.failure_rate:
+            if deterministic_random().random() < self.config.failure_rate:
                 self.failure_count += 1
                 raise Exception(f"Chaos: Injected failure #{self.failure_count}")
 
         elif chaos_type == ChaosType.TIMEOUT:
             # Force timeout
-            if random.random() < self.config.failure_rate:
+            if deterministic_random().random() < self.config.failure_rate:
                 await asyncio.sleep(10.0)  # Very long delay
 
         elif chaos_type == ChaosType.RATE_LIMIT:
             # Simulate rate limit
-            if random.random() < self.config.failure_rate:
+            if deterministic_random().random() < self.config.failure_rate:
                 self.failure_count += 1
                 raise Exception("429 Rate limit exceeded (chaos)")
 

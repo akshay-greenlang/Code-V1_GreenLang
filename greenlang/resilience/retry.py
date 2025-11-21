@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Retry Logic with Exponential Backoff and Jitter.
 
 Production-grade retry decorator with configurable policies:

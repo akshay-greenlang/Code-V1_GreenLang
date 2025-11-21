@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 PCF Exchange Data Models
 PACT Pathfinder v2.0 Compatible Models

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Partner API Module for GreenLang
 
@@ -36,6 +37,7 @@ from sqlalchemy import create_engine, Column, String, Integer, DateTime, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker, relationship
 import redis
+from greenlang.determinism import DeterministicClock
 
 # Logging setup
 logging.basicConfig(level=logging.INFO)
@@ -383,9 +385,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     """Create a JWT access token"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = DeterministicClock.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = DeterministicClock.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return encoded_jwt
@@ -499,7 +501,7 @@ async def get_current_partner_from_api_key(
     if api_key.status != APIKeyStatus.ACTIVE:
         raise HTTPException(status_code=401, detail="API key is not active")
 
-    if api_key.expires_at and api_key.expires_at < datetime.utcnow():
+    if api_key.expires_at and api_key.expires_at < DeterministicClock.utcnow():
         api_key.status = APIKeyStatus.EXPIRED
         db.commit()
         raise HTTPException(status_code=401, detail="API key has expired")
@@ -512,7 +514,7 @@ async def get_current_partner_from_api_key(
         raise HTTPException(status_code=403, detail="Partner account is not active")
 
     # Update last used timestamp
-    api_key.last_used_at = datetime.utcnow()
+    api_key.last_used_at = DeterministicClock.utcnow()
     db.commit()
 
     return partner
@@ -606,7 +608,7 @@ async def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=403, detail="Account is not active")
 
     # Update last login
-    partner.last_login = datetime.utcnow()
+    partner.last_login = DeterministicClock.utcnow()
     db.commit()
 
     # Create access token
@@ -674,7 +676,7 @@ async def update_partner(
     if partner_update.webhook_url:
         current_partner.webhook_url = str(partner_update.webhook_url)
 
-    current_partner.updated_at = datetime.utcnow()
+    current_partner.updated_at = DeterministicClock.utcnow()
     db.commit()
     db.refresh(current_partner)
 
@@ -744,7 +746,7 @@ async def create_api_key(
     # Set expiration
     expires_at = None
     if key_data.expires_in_days:
-        expires_at = datetime.utcnow() + timedelta(days=key_data.expires_in_days)
+        expires_at = DeterministicClock.utcnow() + timedelta(days=key_data.expires_in_days)
 
     # Create API key record
     api_key_model = APIKeyModel(
@@ -848,7 +850,7 @@ async def get_usage_statistics(
 
     # Default to last 30 days
     if not end_date:
-        end_date = datetime.utcnow()
+        end_date = DeterministicClock.utcnow()
     if not start_date:
         start_date = end_date - timedelta(days=30)
 
@@ -911,7 +913,7 @@ async def get_billing_information(
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Current billing period (month)
-    now = datetime.utcnow()
+    now = DeterministicClock.utcnow()
     period_start = datetime(now.year, now.month, 1)
     if now.month == 12:
         period_end = datetime(now.year + 1, 1, 1)
@@ -963,7 +965,7 @@ async def get_billing_information(
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+    return {"status": "healthy", "timestamp": DeterministicClock.utcnow().isoformat()}
 
 
 # Create tables

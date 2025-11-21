@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Configuration Examples for Enterprise Authentication
 

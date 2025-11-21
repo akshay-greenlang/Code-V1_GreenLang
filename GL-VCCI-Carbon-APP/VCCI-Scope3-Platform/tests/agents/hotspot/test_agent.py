@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Test Suite for HotspotAnalysisAgent
 GL-VCCI Scope 3 Platform

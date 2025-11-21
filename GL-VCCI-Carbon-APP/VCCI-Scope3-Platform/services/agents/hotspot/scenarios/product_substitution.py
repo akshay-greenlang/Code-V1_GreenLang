@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Product Substitution Scenario Module
 GL-VCCI Scope 3 Platform

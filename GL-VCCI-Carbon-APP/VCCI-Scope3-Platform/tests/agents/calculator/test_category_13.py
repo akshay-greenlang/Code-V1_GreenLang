@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 13: Downstream Leased Assets Calculator Tests
 GL-VCCI Scope 3 Platform
@@ -20,6 +21,7 @@ from unittest.mock import Mock, AsyncMock, patch
 from pydantic import ValidationError
 
 from services.agents.calculator.categories.category_13 import (
+from greenlang.determinism import DeterministicClock
     Category13Calculator,
     Category13Input,
     BuildingType,
@@ -71,7 +73,7 @@ def mock_provenance_builder():
     builder = Mock()
     builder.build = Mock(return_value=Mock(
         calculation_id="test_calc_id",
-        timestamp=datetime.utcnow(),
+        timestamp=DeterministicClock.utcnow(),
         category=13,
         tier=TierType.TIER_1,
         input_data_hash="test_hash",

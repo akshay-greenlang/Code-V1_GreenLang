@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 MMR (Maximal Marginal Relevance) retrieval for RAG system.
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Example: CacheManager + DatabaseManager
 ====================================================
@@ -10,6 +11,7 @@ from datetime import datetime
 import pandas as pd
 from greenlang.cache import initialize_cache_manager, get_cache_manager
 from greenlang.db import DatabaseManager
+from greenlang.determinism import DeterministicClock
 
 
 async def main():
@@ -44,7 +46,7 @@ async def main():
             "facility_id": facility_id,
             "emissions": 1500.5,
             "year": 2024,
-            "retrieved_at": datetime.now().isoformat()
+            "retrieved_at": DeterministicClock.now().isoformat()
         }
 
     # Function with cache-aside pattern
@@ -69,18 +71,18 @@ async def main():
 
     # Test 1: First call (cache miss)
     print("\n[Test 1] First call - Cache MISS expected:")
-    start = datetime.now()
+    start = DeterministicClock.now()
     data1 = await get_facility_emissions("FAC-001")
-    duration1 = (datetime.now() - start).total_seconds()
+    duration1 = (DeterministicClock.now() - start).total_seconds()
 
     print(f"  Result: {data1}")
     print(f"  Duration: {duration1:.3f}s")
 
     # Test 2: Second call (cache hit)
     print("\n[Test 2] Second call - Cache HIT expected:")
-    start = datetime.now()
+    start = DeterministicClock.now()
     data2 = await get_facility_emissions("FAC-001")
-    duration2 = (datetime.now() - start).total_seconds()
+    duration2 = (DeterministicClock.now() - start).total_seconds()
 
     print(f"  Result: {data2}")
     print(f"  Duration: {duration2:.3f}s")
@@ -88,9 +90,9 @@ async def main():
 
     # Test 3: Different facility (cache miss)
     print("\n[Test 3] Different facility - Cache MISS expected:")
-    start = datetime.now()
+    start = DeterministicClock.now()
     data3 = await get_facility_emissions("FAC-002")
-    duration3 = (datetime.now() - start).total_seconds()
+    duration3 = (DeterministicClock.now() - start).total_seconds()
 
     print(f"  Result: {data3}")
     print(f"  Duration: {duration3:.3f}s")

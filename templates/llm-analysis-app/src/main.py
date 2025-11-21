@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 LLM-Powered Analysis Application
 =================================
@@ -34,6 +35,7 @@ from greenlang.provenance import ProvenanceTracker
 from greenlang.telemetry import get_logger, get_metrics_collector, TelemetryManager
 from greenlang.config import get_config_manager
 from greenlang.cache import initialize_cache_manager, get_cache_manager
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -169,10 +171,10 @@ Always:
         Returns:
             AnalysisResult object
         """
-        operation_id = f"analyze_{datetime.now().isoformat()}"
+        operation_id = f"analyze_{DeterministicClock.now().isoformat()}"
 
         with self.provenance.track_operation(operation_id):
-            start_time = datetime.now()
+            start_time = DeterministicClock.now()
 
             try:
                 self.logger.info(f"Analyzing query: {query[:100]}...")
@@ -198,7 +200,7 @@ Always:
                         cost_usd=0.0,
                         cached=True,
                         provenance_id=self.provenance.get_record().record_id,
-                        duration_seconds=(datetime.now() - start_time).total_seconds(),
+                        duration_seconds=(DeterministicClock.now() - start_time).total_seconds(),
                         metadata={"cached": True}
                     )
 
@@ -291,7 +293,7 @@ Always:
                     cost_usd=cost_usd,
                     cached=False,
                     provenance_id=self.provenance.get_record().record_id,
-                    duration_seconds=(datetime.now() - start_time).total_seconds(),
+                    duration_seconds=(DeterministicClock.now() - start_time).total_seconds(),
                     metadata={
                         "rag_docs_count": len(rag_context),
                         "streaming": stream

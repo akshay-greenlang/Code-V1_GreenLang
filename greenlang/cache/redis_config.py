@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Redis configuration for Phase 4 session storage and caching
 """

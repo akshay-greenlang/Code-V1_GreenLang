@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Tool Rate Limiting
 =============================
@@ -25,6 +26,7 @@ import logging
 from typing import Dict, Optional, Tuple
 from dataclasses import dataclass
 from collections import defaultdict
+from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +153,7 @@ class TokenBucket:
             New TokenBucket instance
         """
         return cls(
-            rate=float(rate),
+            rate=FinancialDecimal.from_string(rate),
             capacity=capacity,
             tokens=float(capacity),  # Start full
             last_update=time.time()

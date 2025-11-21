@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # GL-VCCI Utilities Module
 # Shared utility functions and helpers
 

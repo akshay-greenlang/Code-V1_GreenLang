@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Performance Regression Tests for GreenLang Agents.
 
 This module provides automated performance regression detection:
@@ -38,6 +39,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+from greenlang.determinism import DeterministicClock
 
 # Try importing async agents
 try:
@@ -404,7 +406,7 @@ class RegressionTester:
         current = PerformanceBaseline(
             test_name=test_name,
             version="1.0.0",
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             mean_latency_ms=parallel_time * 1000,
             median_latency_ms=parallel_time * 1000,
             p95_latency_ms=parallel_time * 1000,
@@ -473,7 +475,7 @@ class RegressionTester:
         return PerformanceBaseline(
             test_name=test_name,
             version="1.0.0",
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             mean_latency_ms=statistics.mean(latencies),
             median_latency_ms=statistics.median(latencies),
             p95_latency_ms=sorted_latencies[int(len(sorted_latencies) * 0.95)],

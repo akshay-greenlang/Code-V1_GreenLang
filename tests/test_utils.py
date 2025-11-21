@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Test utility functions shared across test modules."""
 
 import math

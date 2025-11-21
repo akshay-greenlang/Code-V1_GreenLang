@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Tests for Factor Broker Cache Manager
 GL-VCCI Scope 3 Platform - Phase 6
@@ -23,6 +24,7 @@ import hashlib
 import json
 
 import sys
+from greenlang.determinism import DeterministicClock
 sys.path.insert(0, '/c/Users/aksha/Code-V1_GreenLang/GL-VCCI-Carbon-APP/VCCI-Scope3-Platform')
 
 from services.factor_broker.cache import FactorCache
@@ -78,7 +80,7 @@ def sample_response():
             geographic_scope="US"
         ),
         provenance=ProvenanceInfo(
-            lookup_timestamp=datetime.utcnow(),
+            lookup_timestamp=DeterministicClock.utcnow(),
             cache_hit=False,
             is_proxy=False,
             fallback_chain=["ecoinvent"]

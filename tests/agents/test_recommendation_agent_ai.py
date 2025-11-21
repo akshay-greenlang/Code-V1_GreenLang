@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for AI-powered RecommendationAgent.
 
 This module tests the RecommendationAgentAI implementation, ensuring:

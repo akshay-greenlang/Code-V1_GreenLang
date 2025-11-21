@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pack Registry
 =============
@@ -15,6 +16,7 @@ import hashlib
 import importlib.metadata
 
 from .manifest import PackManifest
+from greenlang.determinism import DeterministicClock
 
 
 logger = logging.getLogger(__name__)
@@ -82,7 +84,7 @@ class PackRegistry:
         try:
             data = {
                 "version": "0.1.0",
-                "updated_at": datetime.now().isoformat(),
+                "updated_at": DeterministicClock.now().isoformat(),
                 "packs": [asdict(pack) for pack in self.packs.values()],
             }
             with open(self.registry_file, "w") as f:
@@ -129,7 +131,7 @@ class PackRegistry:
                         version=manifest.version,
                         location=str(pack_dir),
                         manifest=manifest.model_dump(),
-                        installed_at=datetime.now().isoformat(),
+                        installed_at=DeterministicClock.now().isoformat(),
                         hash=self._calculate_directory_hash(pack_dir),
                         verified=True,  # Entry points are pip-installed, assume verified
                     )
@@ -160,7 +162,7 @@ class PackRegistry:
                 continue
 
             # Look for subdirectories with pack.yaml
-            for subdir in pack_dir.iterdir():
+            for subdir in sorted(pack_dir.iterdir()):
                 if not subdir.is_dir():
                     continue
 
@@ -177,7 +179,7 @@ class PackRegistry:
                             version=manifest.version,
                             location=str(subdir),
                             manifest=manifest.model_dump(),
-                            installed_at=datetime.now().isoformat(),
+                            installed_at=DeterministicClock.now().isoformat(),
                             hash=pack_hash,
                             verified=False,  # Local packs need verification
                         )
@@ -238,7 +240,7 @@ class PackRegistry:
             version=manifest.version,
             location=str(pack_path),
             manifest=manifest.model_dump(),
-            installed_at=datetime.now().isoformat(),
+            installed_at=DeterministicClock.now().isoformat(),
             hash=pack_hash,
             verified=verify,
         )

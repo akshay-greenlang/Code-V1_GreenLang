@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 HotspotAnalysisAgent Data Models
 GL-VCCI Scope 3 Platform

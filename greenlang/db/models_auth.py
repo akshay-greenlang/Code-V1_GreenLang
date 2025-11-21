@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Database models for Phase 4 Authentication and Authorization
 

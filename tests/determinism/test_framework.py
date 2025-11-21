@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Core Determinism Testing Framework.
 
 This module provides the DeterminismTester class for hash-based reproducibility

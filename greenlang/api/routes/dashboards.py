@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 REST API endpoints for dashboard management.
 
@@ -19,6 +20,7 @@ from sqlalchemy.future import select
 
 from greenlang.api.dependencies import get_current_user, get_db
 from greenlang.db.models_analytics import (
+from greenlang.determinism import DeterministicClock
     Dashboard,
     DashboardWidget,
     DashboardShare,
@@ -422,7 +424,7 @@ async def share_dashboard(
     # Calculate expiration
     expires_at = None
     if share_data.expiresIn:
-        expires_at = datetime.utcnow() + timedelta(hours=share_data.expiresIn)
+        expires_at = DeterministicClock.utcnow() + timedelta(hours=share_data.expiresIn)
 
     # Create share
     share = DashboardShare(
@@ -475,7 +477,7 @@ async def get_shared_dashboard(
 
     # Update access statistics
     share.accessed_count += 1
-    share.last_accessed_at = datetime.utcnow()
+    share.last_accessed_at = DeterministicClock.utcnow()
     await db.commit()
 
     # Get dashboard

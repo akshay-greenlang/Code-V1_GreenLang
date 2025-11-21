@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Platform - Quick Start Example
 

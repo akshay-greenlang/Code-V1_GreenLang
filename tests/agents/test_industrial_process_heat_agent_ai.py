@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Comprehensive test suite for IndustrialProcessHeatAgent_AI.
 
 This module provides comprehensive test coverage for IndustrialProcessHeatAgent_AI, ensuring:

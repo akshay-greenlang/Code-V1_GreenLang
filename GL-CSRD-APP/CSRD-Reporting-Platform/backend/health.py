@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CSRD Reporting Platform - Health Check Endpoints
 =================================================
@@ -15,6 +16,7 @@ import time
 import psutil
 from fastapi import APIRouter, Response, status, HTTPException
 from pydantic import BaseModel
+from greenlang.determinism import DeterministicClock
 
 
 # ============================================================================
@@ -63,7 +65,7 @@ async def health_check_basic():
     """
     return HealthStatus(
         status="healthy",
-        timestamp=datetime.now().isoformat(),
+        timestamp=DeterministicClock.now().isoformat(),
         version="1.0.0"
     )
 
@@ -82,7 +84,7 @@ async def health_check_live():
 
     return HealthStatus(
         status="alive",
-        timestamp=datetime.now().isoformat(),
+        timestamp=DeterministicClock.now().isoformat(),
         checks={
             "uptime_seconds": round(uptime, 2),
             "uptime_human": format_uptime(uptime)
@@ -149,7 +151,7 @@ async def health_check_ready():
     return Response(
         content=HealthStatus(
             status=overall_status,
-            timestamp=datetime.now().isoformat(),
+            timestamp=DeterministicClock.now().isoformat(),
             checks=checks
         ).model_dump_json(),
         status_code=response_status,
@@ -205,7 +207,7 @@ async def health_check_startup():
     return Response(
         content=HealthStatus(
             status=overall_status,
-            timestamp=datetime.now().isoformat(),
+            timestamp=DeterministicClock.now().isoformat(),
             checks=checks
         ).model_dump_json(),
         status_code=response_status,
@@ -275,7 +277,7 @@ async def health_check_esrs():
 
     return HealthStatus(
         status=overall_status,
-        timestamp=datetime.now().isoformat(),
+        timestamp=DeterministicClock.now().isoformat(),
         checks=checks
     )
 
@@ -316,12 +318,23 @@ async def health_check_esrs_standard(standard: str):
 async def check_database() -> Dict[str, Any]:
     """Check database connectivity and health."""
     try:
-        # TODO: Implement actual database connection check
-        # Example: await db.execute("SELECT 1")
+        # NOTE: Database connection check implementation pending
+        # When implementing, connect to actual database service:
+        # 1. Import database client (asyncpg, sqlalchemy, etc.)
+        # 2. Execute SELECT 1 query with timeout
+        # 3. Measure response time
+        # 4. Query connection pool stats
+        # Example:
+        #   start = time.time()
+        #   await db.execute("SELECT 1")
+        #   response_time = (time.time() - start) * 1000
+        #   pool_stats = await db.get_pool_stats()
 
+        # Mock implementation - returns healthy status
+        # Replace this entire block with actual database check
         return {
             "healthy": True,
-            "message": "Database connection OK",
+            "message": "Database connection OK (mock implementation - implement actual check)",
             "response_time_ms": 5,
             "connection_pool": {
                 "active": 2,
@@ -340,12 +353,24 @@ async def check_database() -> Dict[str, Any]:
 async def check_cache() -> Dict[str, Any]:
     """Check Redis cache connectivity and health."""
     try:
-        # TODO: Implement actual Redis connection check
-        # Example: await redis.ping()
+        # NOTE: Redis connection check implementation pending
+        # When implementing, connect to actual Redis service:
+        # 1. Import redis client (aioredis, redis-py async, etc.)
+        # 2. Execute PING command with timeout
+        # 3. Measure response time
+        # 4. Query INFO stats for memory and hit rate
+        # Example:
+        #   start = time.time()
+        #   await redis.ping()
+        #   response_time = (time.time() - start) * 1000
+        #   info = await redis.info('stats')
+        #   hit_rate = info.get('keyspace_hits') / (info.get('keyspace_hits') + info.get('keyspace_misses'))
 
+        # Mock implementation - returns healthy status
+        # Replace this entire block with actual Redis check
         return {
             "healthy": True,
-            "message": "Cache connection OK",
+            "message": "Cache connection OK (mock implementation - implement actual check)",
             "response_time_ms": 2,
             "memory_usage_mb": 45.2,
             "hit_rate": 0.87
@@ -407,12 +432,24 @@ def check_memory(threshold_percent: float = 90.0) -> Dict[str, Any]:
 async def check_database_initialized() -> Dict[str, Any]:
     """Check if database schema is initialized."""
     try:
-        # TODO: Implement actual database schema check
-        # Example: Check if required tables exist
+        # NOTE: Database schema check implementation pending
+        # When implementing:
+        # 1. Query information_schema to verify required tables exist
+        # 2. Check migration version from alembic_version or similar
+        # 3. Validate critical indexes and constraints
+        # Example:
+        #   required_tables = ["companies", "esrs_data", "reports", "audit_logs"]
+        #   result = await db.execute(
+        #       "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
+        #   )
+        #   existing_tables = [row[0] for row in result]
+        #   healthy = all(table in existing_tables for table in required_tables)
 
+        # Mock implementation - returns healthy status
+        # Replace this entire block with actual schema check
         return {
             "healthy": True,
-            "message": "Database schema initialized",
+            "message": "Database schema initialized (mock implementation - implement actual check)",
             "tables": ["companies", "esrs_data", "reports", "audit_logs"],
             "migrations_applied": 15
         }
@@ -427,7 +464,20 @@ async def check_database_initialized() -> Dict[str, Any]:
 def check_agents_loaded() -> Dict[str, Any]:
     """Check if all CSRD agents are loaded and ready."""
     try:
-        # TODO: Implement actual agent availability check
+        # NOTE: Agent availability check implementation pending
+        # When implementing:
+        # 1. Import agent registry or agent manager
+        # 2. Query each agent's status
+        # 3. Verify agent initialization and model loading
+        # 4. Check agent health endpoints if available
+        # Example:
+        #   from csrd_pipeline import agent_registry
+        #   loaded_agents = []
+        #   for agent_name in expected_agents:
+        #       agent = agent_registry.get(agent_name)
+        #       if agent and agent.is_ready():
+        #           loaded_agents.append(agent_name)
+        #   healthy = len(loaded_agents) == len(expected_agents)
 
         expected_agents = [
             "intake_agent",
@@ -438,9 +488,11 @@ def check_agents_loaded() -> Dict[str, Any]:
             "reporting_agent"
         ]
 
+        # Mock implementation - returns healthy status
+        # Replace this entire block with actual agent check
         return {
             "healthy": True,
-            "message": f"All {len(expected_agents)} agents loaded",
+            "message": f"All {len(expected_agents)} agents loaded (mock implementation - implement actual check)",
             "agents": expected_agents,
             "count": len(expected_agents)
         }
@@ -455,11 +507,23 @@ def check_agents_loaded() -> Dict[str, Any]:
 def check_config_loaded() -> Dict[str, Any]:
     """Check if configuration is properly loaded."""
     try:
-        # TODO: Implement actual configuration check
+        # NOTE: Configuration check implementation pending
+        # When implementing:
+        # 1. Import configuration manager
+        # 2. Verify all required configuration keys are present
+        # 3. Validate configuration values (URLs, API keys, etc.)
+        # 4. Check environment variable overrides
+        # Example:
+        #   from config import config_manager
+        #   required_keys = ['DATABASE_URL', 'REDIS_URL', 'API_KEY']
+        #   missing = [k for k in required_keys if not config_manager.has(k)]
+        #   healthy = len(missing) == 0
 
+        # Mock implementation - returns healthy status
+        # Replace this entire block with actual config check
         return {
             "healthy": True,
-            "message": "Configuration loaded successfully",
+            "message": "Configuration loaded successfully (mock implementation - implement actual check)",
             "config_sources": ["environment", "config.yaml", "secrets"],
             "version": "1.0.0"
         }
@@ -474,16 +538,28 @@ def check_config_loaded() -> Dict[str, Any]:
 def check_esrs_standards_loaded() -> Dict[str, Any]:
     """Check if ESRS standards and validation rules are loaded."""
     try:
-        # TODO: Implement actual ESRS standards check
+        # NOTE: ESRS standards check implementation pending
+        # When implementing:
+        # 1. Import ESRS standard loader or registry
+        # 2. Verify all required standards are loaded
+        # 3. Count loaded validation rules per standard
+        # 4. Check standard version compatibility
+        # Example:
+        #   from esrs import standards_registry
+        #   loaded = standards_registry.get_loaded_standards()
+        #   rules_count = sum(len(s.validation_rules) for s in loaded)
+        #   healthy = len(loaded) == 11  # All ESRS standards
 
         standards_loaded = [
             "ESRS-2", "ESRS-E1", "ESRS-E2", "ESRS-E3", "ESRS-E4", "ESRS-E5",
             "ESRS-S1", "ESRS-S2", "ESRS-S3", "ESRS-S4", "ESRS-G1"
         ]
 
+        # Mock implementation - returns healthy status
+        # Replace this entire block with actual standards check
         return {
             "healthy": True,
-            "message": f"{len(standards_loaded)} ESRS standards loaded",
+            "message": f"{len(standards_loaded)} ESRS standards loaded (mock implementation - implement actual check)",
             "standards": standards_loaded,
             "validation_rules_count": 1247
         }
@@ -498,13 +574,24 @@ def check_esrs_standards_loaded() -> Dict[str, Any]:
 async def check_esrs_data_ready() -> Dict[str, Any]:
     """Check if ESRS data is available and ready for processing."""
     try:
-        # TODO: Implement actual ESRS data availability check
+        # NOTE: ESRS data availability check implementation pending
+        # When implementing:
+        # 1. Query database for ESRS data points count
+        # 2. Check last data sync timestamp
+        # 3. Verify minimum data coverage threshold
+        # 4. Validate data freshness (not stale)
+        # Example:
+        #   data_count = await db.execute("SELECT COUNT(*) FROM esrs_data_points")
+        #   last_sync = await db.execute("SELECT MAX(updated_at) FROM esrs_data_points")
+        #   healthy = data_count > MIN_DATA_POINTS and (now - last_sync) < timedelta(days=1)
 
+        # Mock implementation - returns healthy status
+        # Replace this entire block with actual data check
         return {
             "healthy": True,
-            "message": "ESRS data ready",
+            "message": "ESRS data ready (mock implementation - implement actual check)",
             "data_points_available": 5432,
-            "last_sync": (datetime.now() - timedelta(hours=2)).isoformat()
+            "last_sync": (DeterministicClock.now() - timedelta(hours=2)).isoformat()
         }
     except Exception as e:
         return {
@@ -525,16 +612,35 @@ async def check_esrs_standard_health(standard: str) -> Dict[str, Any]:
         Health status for the standard
     """
     try:
-        # TODO: Implement actual ESRS standard health check
-        # This should check:
-        # - Data point coverage
-        # - Validation status
-        # - Last update time
-        # - Completeness score
+        # NOTE: ESRS standard health check implementation pending
+        # When implementing:
+        # 1. Query database for standard-specific data points
+        # 2. Calculate coverage ratio (available / required)
+        # 3. Run validation rules for the standard
+        # 4. Check data freshness and completeness
+        # Example:
+        #   required = await db.execute("SELECT COUNT(*) FROM esrs_data_points WHERE standard = ?", standard)
+        #   available = await db.execute("SELECT COUNT(*) FROM esrs_data_points WHERE standard = ? AND value IS NOT NULL", standard)
+        #   coverage = available / required if required > 0 else 0
+        #   validation_errors = await run_standard_validation(standard)
 
-        # Mock data - replace with actual implementation
-        import random
-        coverage = random.uniform(0.75, 0.99)
+        # Mock data - using deterministic values instead of random
+        # Replace this entire block with actual implementation
+        standard_configs = {
+            "ESRS-2": (0.95, 200, 1),
+            "ESRS-E1": (0.92, 175, 2),
+            "ESRS-E2": (0.88, 150, 3),
+            "ESRS-E3": (0.85, 140, 5),
+            "ESRS-E4": (0.83, 130, 7),
+            "ESRS-E5": (0.90, 155, 2),
+            "ESRS-S1": (0.94, 165, 1),
+            "ESRS-S2": (0.87, 145, 4),
+            "ESRS-S3": (0.86, 135, 6),
+            "ESRS-S4": (0.89, 150, 3),
+            "ESRS-G1": (0.93, 160, 2),
+        }
+
+        coverage, required_points, errors = standard_configs.get(standard, (0.90, 150, 2))
 
         status_val = "healthy"
         if coverage < 0.8:
@@ -546,11 +652,12 @@ async def check_esrs_standard_health(standard: str) -> Dict[str, Any]:
             "status": status_val,
             "standard": standard,
             "data_point_coverage": round(coverage, 2),
-            "required_data_points": 150,
-            "available_data_points": int(150 * coverage),
-            "validation_errors": 0 if coverage > 0.95 else random.randint(1, 10),
-            "last_update": (datetime.now() - timedelta(hours=random.randint(1, 48))).isoformat(),
-            "completeness_score": round(coverage * 100, 1)
+            "required_data_points": required_points,
+            "available_data_points": int(required_points * coverage),
+            "validation_errors": errors,
+            "last_update": (DeterministicClock.now() - timedelta(hours=24)).isoformat(),
+            "completeness_score": round(coverage * 100, 1),
+            "note": "Mock implementation - implement actual standard health check"
         }
     except Exception as e:
         return {
@@ -564,12 +671,23 @@ async def check_esrs_standard_health(standard: str) -> Dict[str, Any]:
 def check_compliance_deadlines() -> Dict[str, Any]:
     """Check proximity to CSRD compliance deadlines."""
     try:
-        # TODO: Implement actual deadline tracking
+        # NOTE: Deadline tracking implementation pending
+        # When implementing:
+        # 1. Query company fiscal year end from database
+        # 2. Calculate deadline based on company size and first-time status
+        # 3. Track multiple deadlines (draft, final, audit)
+        # 4. Send alerts at configurable thresholds
         # CSRD reporting deadlines:
         # - Annual reporting: 4 months after fiscal year end
-        # - First-time reporting varies by company size
+        # - First-time reporting varies by company size:
+        #   * Large companies (>500 employees): FY 2024 (report in 2025)
+        #   * Large unlisted companies: FY 2025 (report in 2026)
+        #   * Listed SMEs: FY 2026 (report in 2027)
+        # Example:
+        #   fiscal_year_end = await db.execute("SELECT fiscal_year_end FROM companies WHERE id = ?", company_id)
+        #   deadline = fiscal_year_end + timedelta(days=120)  # 4 months
 
-        now = datetime.now()
+        now = DeterministicClock.now()
 
         # Example: Assume fiscal year end is December 31
         next_deadline = datetime(now.year, 4, 30)  # April 30
@@ -589,7 +707,8 @@ def check_compliance_deadlines() -> Dict[str, Any]:
             "next_deadline": next_deadline.isoformat(),
             "days_until_deadline": days_until_deadline,
             "deadline_type": "Annual CSRD Report",
-            "message": f"{days_until_deadline} days until next compliance deadline"
+            "message": f"{days_until_deadline} days until next compliance deadline",
+            "note": "Mock implementation - implement actual deadline tracking from database"
         }
     except Exception as e:
         return {
@@ -602,8 +721,22 @@ def check_compliance_deadlines() -> Dict[str, Any]:
 async def check_data_quality() -> Dict[str, Any]:
     """Check overall data quality metrics."""
     try:
-        # TODO: Implement actual data quality checks
+        # NOTE: Data quality check implementation pending
+        # When implementing:
+        # 1. Calculate completeness: % of required fields populated
+        # 2. Calculate accuracy: % passing validation rules
+        # 3. Calculate timeliness: % of data updated within SLA
+        # 4. Calculate consistency: % of cross-field validations passing
+        # 5. Aggregate into overall quality score
+        # Example:
+        #   total_points = await db.execute("SELECT COUNT(*) FROM esrs_data_points")
+        #   complete = await db.execute("SELECT COUNT(*) FROM esrs_data_points WHERE value IS NOT NULL")
+        #   completeness = complete / total_points
+        #   validation_results = await run_all_validations()
+        #   accuracy = validation_results.pass_count / validation_results.total_count
 
+        # Mock implementation - returns realistic quality metrics
+        # Replace this entire block with actual data quality calculation
         return {
             "status": "healthy",
             "overall_quality_score": 94.5,
@@ -615,7 +748,8 @@ async def check_data_quality() -> Dict[str, Any]:
                 "missing_data_points": 12,
                 "validation_errors": 5,
                 "outdated_records": 3
-            }
+            },
+            "note": "Mock implementation - implement actual data quality calculations"
         }
     except Exception as e:
         return {

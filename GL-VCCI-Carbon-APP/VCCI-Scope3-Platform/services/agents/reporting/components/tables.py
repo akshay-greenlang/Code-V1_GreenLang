@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Table Generator
 GL-VCCI Scope 3 Platform

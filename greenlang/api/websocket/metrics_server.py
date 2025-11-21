@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 """
 WebSocket server for real-time metric streaming.
 
 This module implements a FastAPI WebSocket server that streams metrics
 from Redis pub/sub to connected clients with authentication, filtering,
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatMessage
 compression, and rate limiting.
 """
 
@@ -168,7 +171,7 @@ class MetricAggregator:
                     "name": metric_name,
                     "type": "counter",
                     "value": total,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": DeterministicClock.utcnow().isoformat(),
                     "tags": first_metric.get("tags", {}),
                     "count": len(metrics)
                 })
@@ -184,7 +187,7 @@ class MetricAggregator:
                     "value": avg_value,
                     "min": min_value,
                     "max": max_value,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": DeterministicClock.utcnow().isoformat(),
                     "tags": first_metric.get("tags", {}),
                     "count": len(metrics)
                 })
@@ -199,7 +202,7 @@ class MetricAggregator:
                     "name": metric_name,
                     "type": "histogram",
                     "values": all_values,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": DeterministicClock.utcnow().isoformat(),
                     "tags": first_metric.get("tags", {}),
                     "count": len(all_values)
                 })
@@ -627,7 +630,7 @@ class MetricsWebSocketServer:
         try:
             channel = request.get("channel")
             start_time = request.get("start_time")
-            end_time = request.get("end_time", datetime.utcnow().isoformat())
+            end_time = request.get("end_time", DeterministicClock.utcnow().isoformat())
 
             if not channel or not start_time:
                 await client.send_error("Missing required fields: channel, start_time")

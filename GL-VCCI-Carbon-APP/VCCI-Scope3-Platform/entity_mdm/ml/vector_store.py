@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Weaviate vector store for entity resolution.
 
@@ -21,6 +22,7 @@ import numpy as np
 from entity_mdm.ml.config import MLConfig, WeaviateConfig
 from entity_mdm.ml.embeddings import EmbeddingPipeline
 from entity_mdm.ml.exceptions import VectorStoreException
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +78,7 @@ class SupplierEntity:
             "website": self.website,
             "industry": self.industry,
             "metadata": self.metadata,
-            "indexed_at": datetime.utcnow().isoformat(),
+            "indexed_at": DeterministicClock.utcnow().isoformat(),
         }
 
     def get_search_text(self) -> str:

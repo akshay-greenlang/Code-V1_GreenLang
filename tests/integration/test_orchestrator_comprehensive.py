@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Comprehensive test to identify any issues in orchestrator.py"""
 
 import sys

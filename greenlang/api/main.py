@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 greenlang/api/main.py
 
@@ -28,6 +29,8 @@ import asyncio
 from greenlang.data.emission_factor_database import EmissionFactorDatabase
 from greenlang.data.emission_factor_record import EmissionFactorRecord
 from .models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     CalculationRequest,
     CalculationResponse,
     BatchCalculationRequest,
@@ -194,7 +197,7 @@ async def get_current_user(
 @app.middleware("http")
 async def add_request_tracking(request: Request, call_next):
     """Add request ID and response time tracking"""
-    request_id = str(uuid.uuid4())
+    request_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
     request.state.request_id = request_id
 
     start_time = time.time()
@@ -516,7 +519,7 @@ async def calculate_emissions(
         total_co2e = factor.gwp_100yr.co2e_total * activity
 
         # Generate calculation ID
-        calc_id = f"calc_{uuid.uuid4().hex[:12]}"
+        calc_id = f"calc_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:12]}"
         calculation_counter += 1
 
         return CalculationResponse(
@@ -525,7 +528,7 @@ async def calculate_emissions(
             emissions_tonnes_co2e=total_co2e / 1000.0,
             emissions_by_gas=emissions_by_gas,
             factor_used=_factor_to_summary(factor),
-            timestamp=datetime.now()
+            timestamp=DeterministicClock.now()
         )
 
     except HTTPException:
@@ -570,7 +573,7 @@ async def calculate_batch(
             results.append(calc_response)
             total_emissions += calc_response.emissions_kg_co2e
 
-        batch_id = f"batch_{uuid.uuid4().hex[:12]}"
+        batch_id = f"batch_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:12]}"
 
         return BatchCalculationResponse(
             batch_id=batch_id,
@@ -578,7 +581,7 @@ async def calculate_batch(
             total_emissions_tonnes_co2e=total_emissions / 1000.0,
             calculations=results,
             count=len(results),
-            timestamp=datetime.now()
+            timestamp=DeterministicClock.now()
         )
 
     except Exception as e:
@@ -754,7 +757,7 @@ async def get_statistics(
             calculations_today=calculation_counter,
             cache_stats=cache_stats,
             uptime_seconds=time.time() - app_start_time,
-            timestamp=datetime.now()
+            timestamp=DeterministicClock.now()
         )
 
     except Exception as e:
@@ -845,7 +848,7 @@ async def health_check(request: Request) -> HealthResponse:
         return HealthResponse(
             status="healthy",
             version="1.0.0",
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             database=db_status,
             cache=cache_status,
             uptime_seconds=time.time() - app_start_time
@@ -871,7 +874,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         content={
             "error": "http_error",
             "message": exc.detail,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": DeterministicClock.now().isoformat()
         }
     )
 
@@ -886,7 +889,7 @@ async def general_exception_handler(request: Request, exc: Exception):
         content={
             "error": "internal_error",
             "message": "An internal error occurred",
-            "timestamp": datetime.now().isoformat()
+            "timestamp": DeterministicClock.now().isoformat()
         }
     )
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Permission Delegation Mechanism for GreenLang
 
@@ -34,6 +35,8 @@ import uuid
 from pydantic import BaseModel, Field, validator
 
 from greenlang.auth.permissions import Permission, PermissionEffect
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +89,7 @@ class DelegationConstraint(BaseModel):
 
         elif self.constraint_type == "time_window":
             # constraint_value should be {"start_hour": 9, "end_hour": 17}
-            current_hour = datetime.now().hour
+            current_hour = DeterministicClock.now().hour
             start = self.constraint_value.get("start_hour", 0)
             end = self.constraint_value.get("end_hour", 24)
             return start <= current_hour < end
@@ -105,7 +108,7 @@ class PermissionDelegation(BaseModel):
     """
 
     delegation_id: str = Field(
-        default_factory=lambda: str(uuid.uuid4()),
+        default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
         description="Unique delegation identifier"
     )
 
@@ -181,7 +184,7 @@ class PermissionDelegation(BaseModel):
         if self.status != DelegationStatus.ACTIVE:
             return False
 
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
 
         # Check effective_from
         if self.effective_from and now < self.effective_from:
@@ -200,7 +203,7 @@ class PermissionDelegation(BaseModel):
     def is_expired(self) -> bool:
         """Check if delegation has expired."""
         if self.expires_at:
-            return datetime.utcnow() > self.expires_at
+            return DeterministicClock.utcnow() > self.expires_at
         return False
 
     def check_constraints(self, context: Dict[str, Any]) -> bool:
@@ -235,7 +238,7 @@ class PermissionDelegation(BaseModel):
             reason: Reason for revocation
         """
         self.status = DelegationStatus.REVOKED
-        self.revoked_at = datetime.utcnow()
+        self.revoked_at = DeterministicClock.utcnow()
         self.revoked_by = revoked_by
         self.revocation_reason = reason
 
@@ -372,7 +375,7 @@ class DelegationManager:
         # Calculate expiration
         expires_at = None
         if duration:
-            start = effective_from or datetime.utcnow()
+            start = effective_from or DeterministicClock.utcnow()
             expires_at = start + duration
 
         # Create delegation

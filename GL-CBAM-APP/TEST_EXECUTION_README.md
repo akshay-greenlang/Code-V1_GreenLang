@@ -465,7 +465,7 @@ After running tests, you'll find:
 
 Before running tests, verify:
 
-- [ ] Python 3.9+ installed
+- [ ] Python 3.10+ installed
 - [ ] All dependencies installed (`pip install -r requirements-test.txt`)
 - [ ] In correct directory (GL-CBAM-APP root)
 - [ ] Data files present (data/, rules/, examples/)

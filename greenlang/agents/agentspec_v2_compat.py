@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AgentSpec v2 Backward Compatibility Wrapper
 ============================================

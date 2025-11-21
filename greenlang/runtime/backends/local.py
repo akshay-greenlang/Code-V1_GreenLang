@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Local Backend for GreenLang Pipeline Execution (Development)
 """
@@ -14,6 +15,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 
 from .base import (
+from greenlang.determinism import DeterministicClock
     Backend,
     ExecutionContext,
     Pipeline,
@@ -74,11 +76,11 @@ class LocalBackend(Backend):
                 run_id=context.run_id,
                 pipeline_name=pipeline.name,
                 status=ExecutionStatus.FAILED,
-                start_time=datetime.utcnow(),
+                start_time=DeterministicClock.utcnow(),
                 errors=errors,
             )
 
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         try:
             if len(pipeline.steps) == 1:
@@ -88,7 +90,7 @@ class LocalBackend(Backend):
                 # Multiple steps
                 result = self._run_workflow(pipeline, context)
 
-            end_time = datetime.utcnow()
+            end_time = DeterministicClock.utcnow()
             duration = (end_time - start_time).total_seconds()
 
             return ExecutionResult(
@@ -111,7 +113,7 @@ class LocalBackend(Backend):
                 pipeline_name=pipeline.name,
                 status=ExecutionStatus.FAILED,
                 start_time=start_time,
-                end_time=datetime.utcnow(),
+                end_time=DeterministicClock.utcnow(),
                 errors=[str(e)],
             )
 
@@ -388,9 +390,9 @@ class LocalBackend(Backend):
 
         # Optionally clean up files
         if self.config.get("cleanup_files", False):
-            for pipeline_dir in self.working_dir.iterdir():
+            for pipeline_dir in sorted(self.working_dir.iterdir()):
                 if pipeline_dir.is_dir():
-                    for step_dir in pipeline_dir.iterdir():
+                    for step_dir in sorted(pipeline_dir.iterdir()):
                         if run_id in str(step_dir):
                             import shutil
 

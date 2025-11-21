@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Streaming I/O
 Memory-efficient streaming for large datasets.

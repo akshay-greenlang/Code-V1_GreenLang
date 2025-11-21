@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Comprehensive Database Tests for Emission Factors
 
@@ -23,6 +24,7 @@ import sys
 import threading
 import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from greenlang.determinism import deterministic_random
 
 # Add parent to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -80,10 +82,10 @@ def large_dataset_db(temp_db):
     factors = []
 
     for i in range(500):
-        fuel_type = random.choice(fuel_types)
-        region = random.choice(regions)
-        scope = random.choice(scopes)
-        source = random.choice(sources)
+        fuel_type = deterministic_random().choice(fuel_types)
+        region = deterministic_random().choice(regions)
+        scope = deterministic_random().choice(scopes)
+        source = deterministic_random().choice(sources)
 
         factor_id = f"factor_{i:04d}_{fuel_type}_{region.replace(' ', '_').lower()}"
         name = f"Test Factor {i:04d} - {fuel_type.title()} in {region}"
@@ -91,16 +93,16 @@ def large_dataset_db(temp_db):
         # Realistic emission factor ranges
         if fuel_type == 'diesel':
             ef_value = random.uniform(2.5, 3.2)
-            unit = random.choice(['liter', 'gallon', 'kg'])
+            unit = deterministic_random().choice(['liter', 'gallon', 'kg'])
         elif fuel_type == 'natural_gas':
             ef_value = random.uniform(1.8, 2.1)
-            unit = random.choice(['m3', 'therms', 'MMBtu'])
+            unit = deterministic_random().choice(['m3', 'therms', 'MMBtu'])
         elif fuel_type == 'electricity':
             ef_value = random.uniform(0.2, 0.6)
             unit = 'kwh'
         else:
             ef_value = random.uniform(1.0, 5.0)
-            unit = random.choice(['liter', 'kg', 'm3'])
+            unit = deterministic_random().choice(['liter', 'kg', 'm3'])
 
         factor = (
             factor_id,
@@ -121,7 +123,7 @@ def large_dataset_db(temp_db):
             'US' if region == 'United States' else region[:2].upper(),
             None,
             'North America' if region in ['United States', 'Canada', 'Mexico'] else 'Europe',
-            random.choice(['Tier 1', 'Tier 2', 'Tier 3']),
+            deterministic_random().choice(['Tier 1', 'Tier 2', 'Tier 3']),
             random.uniform(3.0, 15.0),
             None,
             None,

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Performance Tracker Utility
 
@@ -13,6 +14,7 @@ from datetime import datetime
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from collections import defaultdict
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -271,7 +273,7 @@ class PerformanceTracker:
         Returns:
             str: Path to the exported file
         """
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        timestamp = DeterministicClock.now().strftime("%Y%m%d_%H%M%S")
         filename = f"performance_{self.agent_id}_{timestamp}.{format}"
 
         if format == "json":

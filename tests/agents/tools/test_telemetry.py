@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for GreenLang Tool Telemetry System
 ==========================================
@@ -16,6 +17,7 @@ import time
 from datetime import datetime
 
 from greenlang.agents.tools.telemetry import (
+from greenlang.determinism import DeterministicClock
     TelemetryCollector,
     ToolMetrics,
     get_telemetry,
@@ -200,7 +202,7 @@ class TestTelemetryCollector:
 
     def test_last_called_timestamp(self):
         """Test last_called timestamp is updated."""
-        before = datetime.now()
+        before = DeterministicClock.now()
 
         self.collector.record_execution(
             tool_name="test_tool",
@@ -208,7 +210,7 @@ class TestTelemetryCollector:
             success=True
         )
 
-        after = datetime.now()
+        after = DeterministicClock.now()
 
         metrics = self.collector.get_tool_metrics("test_tool")
         assert metrics.last_called is not None

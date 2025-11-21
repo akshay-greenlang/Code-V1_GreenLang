@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 SAML 2.0 Authentication Provider for GreenLang
 
@@ -33,6 +34,8 @@ from typing import Dict, List, Optional, Any, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
 import xml.etree.ElementTree as ET
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:
     from onelogin.saml2.auth import OneLogin_Saml2_Auth
@@ -199,7 +202,7 @@ class SAMLRequestCache:
         self._cleanup()
 
         # Add new entry
-        self._cache[request_id] = datetime.utcnow()
+        self._cache[request_id] = DeterministicClock.utcnow()
 
         # Enforce max size
         if len(self._cache) > self._max_size:
@@ -216,7 +219,7 @@ class SAMLRequestCache:
 
     def _cleanup(self) -> None:
         """Remove expired entries"""
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         expired = [
             req_id for req_id, timestamp in self._cache.items()
             if (now - timestamp).total_seconds() > self._ttl
@@ -256,9 +259,9 @@ class SAMLCertificateManager:
         ).serial_number(
             x509.random_serial_number()
         ).not_valid_before(
-            datetime.utcnow()
+            DeterministicClock.utcnow()
         ).not_valid_after(
-            datetime.utcnow() + timedelta(days=validity_days)
+            DeterministicClock.utcnow() + timedelta(days=validity_days)
         ).add_extension(
             x509.SubjectAlternativeName([
                 x509.DNSName("localhost"),
@@ -287,7 +290,7 @@ class SAMLCertificateManager:
             )
 
             # Check expiration
-            now = datetime.utcnow()
+            now = DeterministicClock.utcnow()
             if now < cert.not_valid_before or now > cert.not_valid_after:
                 logger.warning("Certificate is expired or not yet valid")
                 return False
@@ -485,7 +488,7 @@ class SAMLProvider:
         """
         try:
             # Create request
-            request_id = f"GREENLANG_{uuid.uuid4().hex}"
+            request_id = f"GREENLANG_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex}"
 
             # Prepare request data for python3-saml
             req = self._prepare_request({})
@@ -593,9 +596,9 @@ class SAMLProvider:
             subject=name_id,
             not_before=None,  # Would need custom XML parsing
             not_on_or_after=None,  # Would need custom XML parsing
-            authn_instant=datetime.utcnow(),
+            authn_instant=DeterministicClock.utcnow(),
             authn_context="",  # Would need custom XML parsing
-            assertion_id=f"assertion_{uuid.uuid4().hex}",
+            assertion_id=f"assertion_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex}",
             raw_xml=auth.get_last_response_xml() or ""
         )
 
@@ -631,7 +634,7 @@ class SAMLProvider:
     def _create_session(self, user: SAMLUser, assertion: SAMLAssertion) -> SAMLSession:
         """Create SAML session"""
         session_id = secrets.token_urlsafe(32)
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
 
         session = SAMLSession(
             session_id=session_id,
@@ -725,7 +728,7 @@ class SAMLProvider:
             return False
 
         # Check expiration
-        if datetime.utcnow() > session.expires_at:
+        if DeterministicClock.utcnow() > session.expires_at:
             del self.sessions[session_id]
             return False
 
@@ -750,7 +753,7 @@ class SAMLProvider:
 
     def cleanup_expired_sessions(self) -> int:
         """Remove expired sessions"""
-        now = datetime.utcnow()
+        now = DeterministicClock.utcnow()
         expired = [
             sid for sid, session in self.sessions.items()
             if now > session.expires_at

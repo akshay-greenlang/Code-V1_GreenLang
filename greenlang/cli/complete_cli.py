@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Complete GreenLang CLI with all required features
 """
@@ -18,6 +19,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.progress import (
+from greenlang.determinism import DeterministicClock
     Progress,
     SpinnerColumn,
     TextColumn,
@@ -186,7 +188,7 @@ GREENLANG_LOG_LEVEL=INFO
         "metadata": {
             "name": "Sample Dataset",
             "version": "1.0.0",
-            "created": datetime.now().isoformat(),
+            "created": DeterministicClock.now().isoformat(),
         },
         "data": {
             "fuels": [
@@ -466,7 +468,7 @@ def run(ctx: CLIContext, pipeline_file: str, input: Optional[str], no_cache: boo
     """Execute pipeline with caching and progress tracking"""
 
     # Generate run ID
-    run_id = f"run_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    run_id = f"run_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}"
     run_dir = RUNS_DIR / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -592,7 +594,7 @@ def report(ctx: CLIContext, run_id: str, format: str, output: Optional[str]):
     if not run_dir.exists():
         console.print(f"[red]Run '{run_id}' not found[/red]")
         console.print("Available runs:")
-        for run in RUNS_DIR.iterdir():
+        for run in sorted(RUNS_DIR.iterdir()):
             if run.is_dir():
                 console.print(f"  • {run.name}")
         sys.exit(1)

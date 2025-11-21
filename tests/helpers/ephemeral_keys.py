@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Ephemeral Key Generation for Testing
 ====================================

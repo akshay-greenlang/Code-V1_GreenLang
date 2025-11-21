@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 15: Investments Calculator Tests (PCAF Standard)
 GL-VCCI Scope 3 Platform
@@ -20,6 +21,7 @@ from datetime import datetime
 from unittest.mock import Mock, AsyncMock
 
 from services.agents.calculator.categories.category_15 import (
+from greenlang.determinism import DeterministicClock
     Category15Calculator,
     Category15Input,
     AssetClass,
@@ -62,7 +64,7 @@ def mock_provenance_builder():
     builder = Mock()
     builder.build = Mock(return_value=Mock(
         calculation_id="test_calc_id",
-        timestamp=datetime.utcnow(),
+        timestamp=DeterministicClock.utcnow(),
         category=15,
         tier=TierType.TIER_1,
         input_data_hash="test_hash",

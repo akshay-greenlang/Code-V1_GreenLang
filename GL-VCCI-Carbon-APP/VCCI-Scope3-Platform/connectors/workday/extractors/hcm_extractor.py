@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Workday HCM Data Extractor
 GL-VCCI Scope 3 Platform
@@ -18,6 +19,7 @@ from pydantic import BaseModel, Field, validator
 
 from .base import BaseExtractor
 from ..exceptions import WorkdayDataError
+from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)
 
@@ -266,7 +268,7 @@ class HCMExtractor(BaseExtractor):
             employee_name=raw.get("Employee", ""),
             expense_date=expense_date,
             expense_category=raw.get("Expense_Category", "Other"),
-            amount=float(raw.get("Amount", 0)),
+            amount=FinancialDecimal.from_string(raw.get("Amount", 0)),
             currency=raw.get("Currency", "USD"),
             origin_city=raw.get("Origin_City"),
             destination_city=raw.get("Destination_City"),

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Demo: Grid Carbon Intensity Lookup (Updated to use deterministic version)
 
 DEPRECATION NOTICE: This demo has been updated to use GridFactorAgent (deterministic)

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Agent Factory - Code Validators
 
@@ -23,6 +24,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass
 import logging
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -618,7 +620,7 @@ class CodeValidator:
         - temperature=0 in ChatSession calls
         - seed=42 in ChatSession calls
         - No random number generation
-        - No datetime.now() (except for logging)
+        - No DeterministicClock.now() (except for logging)
         - All calculations use tools
 
         Args:
@@ -648,11 +650,11 @@ class CodeValidator:
                                 line=node.lineno,
                             ))
 
-                # Check for datetime.now() (except in logging)
+                # Check for DeterministicClock.now() (except in logging)
                 if isinstance(node, ast.Call):
                     if isinstance(node.func, ast.Attribute):
                         if node.func.attr == "now":
-                            # Check if it's datetime.now()
+                            # Check if it's DeterministicClock.now()
                             if isinstance(node.func.value, ast.Name):
                                 if node.func.value.id == "datetime":
                                     # Check if in logging context
@@ -660,7 +662,7 @@ class CodeValidator:
                                     warnings.append(ValidationError(
                                         severity="minor",
                                         category="determinism",
-                                        message="Use of datetime.now() (may affect determinism)",
+                                        message="Use of DeterministicClock.now() (may affect determinism)",
                                         line=node.lineno,
                                     ))
 

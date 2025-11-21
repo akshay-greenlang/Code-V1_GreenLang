@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Simple test to verify CI setup."""
 import pytest
 

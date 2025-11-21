@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Configuration Recommendations for GL-VCCI Resilience Patterns.
 
 Production-ready configurations for different scenarios and environments.

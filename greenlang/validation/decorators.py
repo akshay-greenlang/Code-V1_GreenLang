@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Validation Decorators
 Decorators for easy validation integration.

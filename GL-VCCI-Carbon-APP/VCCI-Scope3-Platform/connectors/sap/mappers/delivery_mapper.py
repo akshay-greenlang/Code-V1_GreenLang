@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Delivery Mapper
 
@@ -27,6 +28,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -157,7 +159,7 @@ class DeliveryMapper:
         try:
             return int(shipment_date[:4])
         except (ValueError, TypeError):
-            return datetime.now().year
+            return DeterministicClock.now().year
 
     def map_outbound_delivery(
         self,
@@ -190,7 +192,7 @@ class DeliveryMapper:
         # Shipment date (prefer actual over planned)
         shipment_date = delivery_header.get("ActualDeliveryDate") or delivery_header.get("DeliveryDate", "")
         if not shipment_date:
-            shipment_date = datetime.now().strftime("%Y-%m-%d")
+            shipment_date = DeterministicClock.now().strftime("%Y-%m-%d")
             logger.warning(f"Delivery {delivery_header['OutboundDelivery']}: Missing delivery date, using today")
 
         # Transport mode

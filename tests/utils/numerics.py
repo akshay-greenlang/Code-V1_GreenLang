@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Numeric utilities for testing."""
 
 import math

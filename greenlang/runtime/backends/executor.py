@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Pipeline Executor for GreenLang Runtime
 """
@@ -11,6 +12,7 @@ from datetime import datetime
 import yaml
 
 from .base import (
+from greenlang.determinism import DeterministicClock
     Pipeline,
     PipelineStep,
     ExecutionContext,
@@ -107,7 +109,7 @@ class PipelineExecutor:
                 run_id=context.run_id,
                 pipeline_name=pipeline.name,
                 status=ExecutionStatus.FAILED,
-                start_time=datetime.utcnow(),
+                start_time=DeterministicClock.utcnow(),
                 errors=[str(e)],
             )
 

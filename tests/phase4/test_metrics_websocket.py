@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Tests for WebSocket metrics server and metric collection.
 
@@ -13,6 +14,7 @@ from unittest.mock import Mock, AsyncMock, patch, MagicMock
 
 import msgpack
 from greenlang.api.websocket.metrics_server import (
+from greenlang.determinism import DeterministicClock
     MetricsWebSocketServer,
     ClientConnection,
     MetricFilter,
@@ -174,7 +176,7 @@ class TestMetricsWebSocketServer:
                 "name": "cpu.percent",
                 "type": "gauge",
                 "value": 70.0 + i,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": DeterministicClock.utcnow().isoformat()
             }
             aggregator.add_metric(metric)
 

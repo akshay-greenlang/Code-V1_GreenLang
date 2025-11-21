@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Integration Example: Pipeline + TelemetryManager
 =================================================
@@ -9,6 +10,7 @@ import asyncio
 from datetime import datetime
 from greenlang.core import Pipeline, PipelineStage
 from greenlang.telemetry import TelemetryManager, get_logger, get_metrics_collector, get_tracer
+from greenlang.determinism import DeterministicClock
 
 
 async def main():
@@ -106,7 +108,7 @@ async def main():
     logger.info("Starting monitored pipeline execution")
     metrics.increment("pipeline.executions.started")
 
-    start_time = datetime.now()
+    start_time = DeterministicClock.now()
 
     with tracer.start_span("pipeline_execution") as span:
         try:
@@ -116,7 +118,7 @@ async def main():
                 logger.info(f"Executing stage: {stage.name}")
                 context = await stage.handler(context)
 
-            duration = (datetime.now() - start_time).total_seconds()
+            duration = (DeterministicClock.now() - start_time).total_seconds()
 
             span.set_attribute("pipeline.duration", duration)
             span.set_attribute("pipeline.success", True)

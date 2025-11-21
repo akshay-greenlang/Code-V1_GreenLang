@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 GreenLang Developer Interface - VS Code-like Terminal UI
 """
@@ -25,6 +26,8 @@ from rich import box
 
 from greenlang.sdk import GreenLangClient, WorkflowBuilder, AgentBuilder
 from greenlang.core.workflow import Workflow
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import FinancialDecimal
 
 console = Console()
 
@@ -276,7 +279,7 @@ gl run workflows/main.yaml
             fuels.append(
                 {
                     "fuel_type": "electricity",
-                    "consumption": float(electricity),
+                    "consumption": FinancialDecimal.from_string(electricity),
                     "unit": "kWh",
                 }
             )
@@ -287,7 +290,7 @@ gl run workflows/main.yaml
             fuels.append(
                 {
                     "fuel_type": "natural_gas",
-                    "consumption": float(gas),
+                    "consumption": FinancialDecimal.from_string(gas),
                     "unit": "therms",
                 }
             )
@@ -296,7 +299,7 @@ gl run workflows/main.yaml
         diesel = Prompt.ask("Diesel (gallons)", default="0")
         if float(diesel) > 0:
             fuels.append(
-                {"fuel_type": "diesel", "consumption": float(diesel), "unit": "gallons"}
+                {"fuel_type": "diesel", "consumption": FinancialDecimal.from_string(diesel), "unit": "gallons"}
             )
 
         # Building info (optional)
@@ -314,7 +317,7 @@ gl run workflows/main.yaml
 
         # Calculate
         with console.status("Calculating emissions..."):
-            results = self.calculate_emissions(fuels, float(area), building_type)
+            results = self.calculate_emissions(fuels, FinancialDecimal.from_string(area), building_type)
 
         # Display results
         self.display_calculation_results(results)
@@ -438,7 +441,7 @@ Percentile: Top {results['benchmark']['percentile']}%
         if Confirm.ask("\nSave results to file?"):
             filename = Prompt.ask(
                 "Filename",
-                default=f"emissions_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                default=f"emissions_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.json",
             )
             with open(filename, "w") as f:
                 json.dump(results, f, indent=2)
@@ -1015,7 +1018,7 @@ class {name}Agent(BaseAgent):
                     
                     normalized_fuels.append({{
                         "type": fuel_type,
-                        "amount": float(amount),
+                        "amount": FinancialDecimal.from_string(amount),
                         "unit": unit
                     }})
                 
@@ -1227,7 +1230,7 @@ class {name}Agent(BaseAgent):
             result_data = {{
                 "report": report,
                 "format": format_type,
-                "generated_at": datetime.now().isoformat(),
+                "generated_at": DeterministicClock.now().isoformat(),
                 "summary": {{
                     "total_emissions_kg": carbon_data.get("total_emissions_kg", 0),
                     "total_emissions_tons": carbon_data.get("total_emissions_kg", 0) / 1000
@@ -1786,7 +1789,7 @@ class {name}Agent(BaseAgent):
                 fuels.append(
                     {
                         "fuel_type": "electricity",
-                        "consumption": float(electricity),
+                        "consumption": FinancialDecimal.from_string(electricity),
                         "unit": "kWh",
                     }
                 )
@@ -1796,7 +1799,7 @@ class {name}Agent(BaseAgent):
                 fuels.append(
                     {
                         "fuel_type": "natural_gas",
-                        "consumption": float(gas),
+                        "consumption": FinancialDecimal.from_string(gas),
                         "unit": "therms",
                     }
                 )
@@ -2244,7 +2247,7 @@ Execute a registered workflow.
             # List projects in workspace
             projects = [
                 d
-                for d in self.workspace.iterdir()
+                for d in sorted(self.workspace.iterdir())
                 if d.is_dir() and (d / "greenlang.yaml").exists()
             ]
 
@@ -2320,7 +2323,7 @@ Execute a registered workflow.
         console.print(Panel("📊 Benchmark Analysis", style="cyan"))
 
         # Get parameters
-        emissions_kg = float(Prompt.ask("Total emissions (kg CO2e)"))
+        emissions_kg = FinancialDecimal.from_string(Prompt.ask("Total emissions (kg CO2e)"))
         area = float(Prompt.ask("Building area (sqft)"))
         building_type = Prompt.ask(
             "Building type",
@@ -2367,7 +2370,7 @@ Improvement needed: {data['comparison']['improvement_to_good']:.2f} kg CO2e/sqft
 
             # Save option
             if Confirm.ask("Save benchmark results?"):
-                filename = f"benchmark_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+                filename = f"benchmark_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.json"
                 with open(filename, "w") as f:
                     json.dump(data, f, indent=2)
                 console.print(f"[green]Results saved to {filename}[/green]")
@@ -2382,12 +2385,12 @@ Improvement needed: {data['comparison']['improvement_to_good']:.2f} kg CO2e/sqft
             # Export emissions data
             format = Prompt.ask("Format", choices=["json", "csv", "excel"])
             filename = Prompt.ask(
-                "Filename", default=f"emissions_{datetime.now().strftime('%Y%m%d')}"
+                "Filename", default=f"emissions_{DeterministicClock.now().strftime('%Y%m%d')}"
             )
 
             # Get sample data (in real use, this would be from calculations)
             data = {
-                "date": datetime.now().isoformat(),
+                "date": DeterministicClock.now().isoformat(),
                 "emissions": {
                     "electricity": 385.0,
                     "natural_gas": 530.0,
@@ -2512,7 +2515,7 @@ Improvement needed: {data['comparison']['improvement_to_good']:.2f} kg CO2e/sqft
 
         # Save profile
         if Confirm.ask("\nSave profile data?"):
-            filename = f"profile_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            filename = f"profile_{DeterministicClock.now().strftime('%Y%m%d_%H%M%S')}.json"
             with open(filename, "w") as f:
                 json.dump(
                     {

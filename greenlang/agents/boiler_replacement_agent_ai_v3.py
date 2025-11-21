@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 AI-Powered Boiler Replacement Agent V3 - Phase 3 Transformation
 GL Intelligence Infrastructure
@@ -31,6 +32,7 @@ import math
 from greenlang.agents.base_agents import ReasoningAgent
 from greenlang.agents.categories import AgentCategory, AgentMetadata
 from greenlang.intelligence.schemas.tools import ToolDef
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -199,7 +201,7 @@ class BoilerReplacementAgentAI_V3(ReasoningAgent):
                             "tool": tool_call["name"],
                             "arguments": json.loads(tool_call["arguments"]),
                             "result": result,
-                            "timestamp": datetime.utcnow().isoformat() + "Z",
+                            "timestamp": DeterministicClock.utcnow().isoformat() + "Z",
                             "iteration": iteration
                         })
 

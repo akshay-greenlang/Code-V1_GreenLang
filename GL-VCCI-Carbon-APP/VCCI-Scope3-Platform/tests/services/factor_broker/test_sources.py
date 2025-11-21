@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Factor Source Tests
 GL-VCCI Scope 3 Platform

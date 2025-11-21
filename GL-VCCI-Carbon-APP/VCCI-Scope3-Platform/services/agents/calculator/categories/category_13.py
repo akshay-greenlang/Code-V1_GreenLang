@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Category 13: Downstream Leased Assets Calculator
 GL-VCCI Scope 3 Platform
@@ -23,6 +24,7 @@ from datetime import datetime
 from enum import Enum
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
     Category13Input,
     CalculationResult,
     DataQualityInfo,
@@ -124,7 +126,7 @@ class Category13Calculator:
             DataValidationError: If input data is invalid
             CalculationError: If calculation fails
         """
-        start_time = datetime.utcnow()
+        start_time = DeterministicClock.utcnow()
 
         # Validate input
         self._validate_input(input_data)
@@ -319,7 +321,7 @@ class Category13Calculator:
 
         # Provenance
         provenance = self.provenance_builder.build(
-            calculation_id=f"cat13_{input_data.asset_id}_{datetime.utcnow().timestamp()}",
+            calculation_id=f"cat13_{input_data.asset_id}_{DeterministicClock.utcnow().timestamp()}",
             category=13,
             tier=TierType.TIER_2,
             input_data=input_data.model_dump(),
@@ -404,7 +406,7 @@ class Category13Calculator:
 
         # Provenance
         provenance = self.provenance_builder.build(
-            calculation_id=f"cat13_{input_data.asset_id}_{datetime.utcnow().timestamp()}",
+            calculation_id=f"cat13_{input_data.asset_id}_{DeterministicClock.utcnow().timestamp()}",
             category=13,
             tier=TierType.TIER_3,
             input_data=input_data.model_dump(),

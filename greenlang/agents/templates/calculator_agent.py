@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Calculator Agent Template
 Zero-Hallucination Calculations with Provenance
@@ -18,6 +19,7 @@ import json
 import asyncio
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import multiprocessing
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -414,7 +416,7 @@ class CalculatorAgent:
 
         self._formula_metadata[name] = {
             "required_inputs": required_inputs or [],
-            "registered_at": datetime.utcnow(),
+            "registered_at": DeterministicClock.utcnow(),
         }
 
         logger.info(f"Registered formula: {name}")
@@ -477,7 +479,7 @@ class CalculatorAgent:
             "formula": formula_name,
             "inputs": inputs,
             "result": result_value,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
             "version": self.version,
         }
         provenance_hash = hashlib.sha256(
@@ -488,7 +490,7 @@ class CalculatorAgent:
             calculation_id=calc_id,
             formula=formula_name,
             inputs=inputs,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             agent_version=self.version,
             dependencies=[],
             hash=provenance_hash

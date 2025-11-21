@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Timeout Management for Different Operation Types.
 
 Production-grade timeout decorator with operation-specific configurations:

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Email scheduler for campaign automation.
 
@@ -9,6 +10,8 @@ from datetime import datetime, timedelta
 import uuid
 
 from ..models import (
+from greenlang.determinism import DeterministicClock
+from greenlang.determinism import deterministic_uuid, DeterministicClock
     Campaign,
     EmailMessage,
     EmailStatus,
@@ -131,7 +134,7 @@ class EmailScheduler:
         rendered = render_template(template, personalization_data)
 
         # Generate message ID
-        message_id = f"msg_{uuid.uuid4().hex[:16]}"
+        message_id = f"msg_{deterministic_uuid(__name__, str(DeterministicClock.now())).hex[:16]}"
 
         # Create email message
         message = EmailMessage(
@@ -176,7 +179,7 @@ class EmailScheduler:
         Returns:
             List of due messages
         """
-        cutoff = before or datetime.utcnow()
+        cutoff = before or DeterministicClock.utcnow()
 
         due_messages = [
             msg for msg in self.scheduled_messages.values()
@@ -200,7 +203,7 @@ class EmailScheduler:
         if message_id in self.scheduled_messages:
             message = self.scheduled_messages[message_id]
             message.status = EmailStatus.SENT
-            message.sent_at = sent_at or datetime.utcnow()
+            message.sent_at = sent_at or DeterministicClock.utcnow()
             logger.debug(f"Marked message {message_id} as sent")
 
     def mark_delivered(
@@ -218,7 +221,7 @@ class EmailScheduler:
         if message_id in self.scheduled_messages:
             message = self.scheduled_messages[message_id]
             message.status = EmailStatus.DELIVERED
-            message.delivered_at = delivered_at or datetime.utcnow()
+            message.delivered_at = delivered_at or DeterministicClock.utcnow()
             logger.debug(f"Marked message {message_id} as delivered")
 
     def mark_opened(
@@ -236,7 +239,7 @@ class EmailScheduler:
         if message_id in self.scheduled_messages:
             message = self.scheduled_messages[message_id]
             message.status = EmailStatus.OPENED
-            message.opened_at = opened_at or datetime.utcnow()
+            message.opened_at = opened_at or DeterministicClock.utcnow()
             logger.debug(f"Marked message {message_id} as opened")
 
     def mark_clicked(
@@ -254,7 +257,7 @@ class EmailScheduler:
         if message_id in self.scheduled_messages:
             message = self.scheduled_messages[message_id]
             message.status = EmailStatus.CLICKED
-            message.clicked_at = clicked_at or datetime.utcnow()
+            message.clicked_at = clicked_at or DeterministicClock.utcnow()
             logger.debug(f"Marked message {message_id} as clicked")
 
     def mark_failed(

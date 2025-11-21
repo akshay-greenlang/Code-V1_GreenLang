@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GraphQL Subscriptions for Real-Time Updates
 WebSocket-based subscriptions with connection management
@@ -12,6 +13,7 @@ import logging
 from collections import defaultdict
 
 from greenlang.api.graphql.types import (
+from greenlang.determinism import DeterministicClock
     ExecutionUpdate,
     ExecutionStatusUpdate,
     ExecutionProgress,
@@ -208,7 +210,7 @@ class SubscriptionManager:
         update = ExecutionUpdate(
             event=event,
             execution=execution,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
         )
 
         # Broadcast to specific subscribers
@@ -237,7 +239,7 @@ class SubscriptionManager:
             execution_id=strawberry.ID(execution_id),
             old_status=old_status,
             new_status=new_status,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
         )
 
         await self._broadcast(self.execution_subscribers[execution_id], update)
@@ -270,7 +272,7 @@ class SubscriptionManager:
             total_steps=total_steps,
             progress=completed_steps / total_steps if total_steps > 0 else 0.0,
             estimated_time_remaining=estimated_time,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
         )
 
         await self._broadcast(self.execution_subscribers[execution_id], progress)
@@ -293,7 +295,7 @@ class SubscriptionManager:
         update = AgentUpdate(
             event=event,
             agent=agent,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
         )
 
         await self._broadcast(self.agent_subscribers[agent_id], update)
@@ -318,7 +320,7 @@ class SubscriptionManager:
         update = WorkflowUpdate(
             event=event,
             workflow=workflow,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
         )
 
         await self._broadcast(self.workflow_subscribers[workflow_id], update)
@@ -378,7 +380,7 @@ class SubscriptionManager:
             memory_usage=memory_usage,
             active_executions=len(self.execution_subscribers),
             requests_per_second=0.0,  # TODO: Track actual RPS
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
         )
 
     def get_subscriber_counts(self) -> Dict[str, int]:

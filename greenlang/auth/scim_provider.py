@@ -1,8 +1,12 @@
+# -*- coding: utf-8 -*-
 """
 SCIM 2.0 User Provisioning Provider for GreenLang
 
 This module implements a SCIM 2.0 server for automated user and group provisioning
 from identity providers like Okta, Azure AD, and OneLogin.
+from greenlang.determinism import DeterministicClock, deterministic_uuid
+from greenlang.intelligence import ChatMessage
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 SCIM (System for Cross-domain Identity Management) is a standard for automating
 user provisioning and deprovisioning.
@@ -394,14 +398,14 @@ class SCIMProvider:
     def create_user(self, user_data: Dict[str, Any]) -> SCIMUser:
         """Create a new user"""
         # Generate ID
-        user_id = str(uuid.uuid4())
+        user_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
         # Parse user data
         user = self._parse_user_data(user_data)
         user.id = user_id
 
         # Create meta
-        now = datetime.utcnow().isoformat() + "Z"
+        now = DeterministicClock.utcnow().isoformat() + "Z"
         user.meta = SCIMMeta(
             resourceType="User",
             created=now,
@@ -440,7 +444,7 @@ class SCIMProvider:
 
         # Preserve creation time
         old_meta = self.users[user_id].meta
-        now = datetime.utcnow().isoformat() + "Z"
+        now = DeterministicClock.utcnow().isoformat() + "Z"
         updated_user.meta = SCIMMeta(
             resourceType="User",
             created=old_meta.created if old_meta else now,
@@ -484,7 +488,7 @@ class SCIMProvider:
                 self._apply_patch_remove(user, path)
 
         # Update meta
-        now = datetime.utcnow().isoformat() + "Z"
+        now = DeterministicClock.utcnow().isoformat() + "Z"
         if user.meta:
             user.meta.lastModified = now
 
@@ -572,14 +576,14 @@ class SCIMProvider:
     def create_group(self, group_data: Dict[str, Any]) -> SCIMGroup:
         """Create a new group"""
         # Generate ID
-        group_id = str(uuid.uuid4())
+        group_id = str(deterministic_uuid(__name__, str(DeterministicClock.now())))
 
         # Parse group data
         group = self._parse_group_data(group_data)
         group.id = group_id
 
         # Create meta
-        now = datetime.utcnow().isoformat() + "Z"
+        now = DeterministicClock.utcnow().isoformat() + "Z"
         group.meta = SCIMMeta(
             resourceType="Group",
             created=now,
@@ -621,7 +625,7 @@ class SCIMProvider:
 
         # Preserve creation time
         old_meta = self.groups[group_id].meta
-        now = datetime.utcnow().isoformat() + "Z"
+        now = DeterministicClock.utcnow().isoformat() + "Z"
         updated_group.meta = SCIMMeta(
             resourceType="Group",
             created=old_meta.created if old_meta else now,
@@ -845,9 +849,9 @@ class SCIMProvider:
             return
 
         event = SCIMWebhookEvent(
-            event_id=str(uuid.uuid4()),
+            event_id=str(deterministic_uuid(__name__, str(DeterministicClock.now()))),
             event_type=event_type,
-            timestamp=datetime.utcnow(),
+            timestamp=DeterministicClock.utcnow(),
             resource_type=resource_type,
             resource_id=resource_id,
             operation=operation,

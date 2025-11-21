@@ -1,65 +1,62 @@
 name: boiler-solar
 version: 1.0.0
 kind: pack
+pack_schema_version: '1.0'
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
 license: Apache-2.0
+contents:
+  pipelines:
+  - gl.yaml
+  agents:
+  - agents/boiler_analyzer.py
+  - agents/solar_estimator.py
+  datasets:
+  - datasets/weather_data.csv
+  - datasets/equipment_specs.json
+  - datasets/emission_factors.csv
+  reports: []
 publisher: greenlang-official
-
-# Declare required capabilities (v1.0 object format)
 capabilities:
   fs:
     allow: true
     read:
       allowlist:
-        - "${INPUT_DIR}/**"
-        - "${PACK_DATA_DIR}/**"
+      - ${INPUT_DIR}/**
+      - ${PACK_DATA_DIR}/**
     write:
       allowlist:
-        - "${RUN_TMP}/**"
+      - ${RUN_TMP}/**
   net:
     allow: true
     outbound:
       allowlist:
-        - "https://api.weather.gov/*"
-        - "https://solcast.com/*"
+      - https://api.weather.gov/*
+      - https://solcast.com/*
   clock:
     allow: false
   subprocess:
     allow: false
-
 compat:
-  greenlang: ">=0.1.0"
-  python: ">=3.10"
-
-contents:
-  pipelines:
-    - gl.yaml
-  agents:
-    - agents/boiler_analyzer.py
-    - agents/solar_estimator.py
-  datasets:
-    - datasets/weather_data.csv
-    - datasets/equipment_specs.json
-    - datasets/emission_factors.csv
-  reports: []
-
+  greenlang: '>=0.1.0'
+  python: '>=3.10'
 policy:
   network:
-    - api.weather.gov
-    - solcast.com
+  - api.weather.gov
+  - solcast.com
   data_residency:
-    - US
-    - EU
+  - US
+  - EU
   ef_vintage_min: 2024
   license_allowlist:
-    - Apache-2.0
-    - MIT
-    - Commercial
-
+  - Apache-2.0
+  - MIT
+  - Commercial
 security:
   sbom: sbom.json
   signatures: []
-
 tests:
-  - tests/*.py
-
+- tests/*.py
 card: CARD.md

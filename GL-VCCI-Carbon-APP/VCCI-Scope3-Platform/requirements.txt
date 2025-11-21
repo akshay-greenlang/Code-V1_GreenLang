@@ -11,11 +11,19 @@
 # ============================================================================
 # GREENLANG FRAMEWORK (Core Dependencies)
 # ============================================================================
-greenlang-core>=0.3.0
-greenlang-agents>=0.3.0
-greenlang-validation>=0.3.0
-greenlang-provenance>=0.3.0
-greenlang-io>=0.3.0
+# REMOVED: greenlang-core, greenlang-agents, greenlang-validation, greenlang-provenance, greenlang-io
+# REASON: These packages don't exist yet as separate PyPI packages
+# SOLUTION: Use relative imports from monorepo or install from local path:
+#   pip install -e ../../core
+#   pip install -e ../../greenlang
+#   pip install -e ../../GreenLang_2030/agent_foundation
+# OR: Install the main greenlang-cli package which includes core functionality:
+#   pip install -e ../../
+# greenlang-core>=0.3.0
+# greenlang-agents>=0.3.0
+# greenlang-validation>=0.3.0
+# greenlang-provenance>=0.3.0
+# greenlang-io>=0.3.0
 
 # ============================================================================
 # DATA PROCESSING & ANALYSIS
@@ -189,7 +197,7 @@ tqdm>=4.66.0  # Progress bars
 # ============================================================================
 # SECURITY & AUTHENTICATION
 # ============================================================================
-cryptography>=41.0.0  # Encryption and cryptography
+cryptography>=46.0.0  # Encryption and cryptography
 pyjwt>=2.8.0  # JWT token handling
 passlib[bcrypt]>=1.7.4  # Password hashing
 python-jose[cryptography]>=3.3.0  # JOSE (JWT, JWS, JWE) implementation

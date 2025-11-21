@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for Citation Infrastructure and Integration.
 
 This module tests the citation system implementation, ensuring:
@@ -16,6 +17,7 @@ import re
 import pytest
 from datetime import datetime
 from greenlang.agents.citations import (
+from greenlang.determinism import DeterministicClock
     EmissionFactorCitation,
     CalculationCitation,
     DataSourceCitation,
@@ -39,7 +41,7 @@ class TestCitationDataStructures:
             confidence="high",
             region="US",
             gwp_set="AR5",
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
         )
 
         assert citation.source == "EPA GHG Inventory"
@@ -59,7 +61,7 @@ class TestCitationDataStructures:
             formula="Emissions = Amount × EF",
             inputs={"amount": 1000, "ef": 53.06},
             output={"emissions_kg": 53060},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id="calc_1",
         )
 
@@ -76,7 +78,7 @@ class TestCitationDataStructures:
             source_name="Grid Intensity Database",
             source_type="database",
             query={"region": "US", "table": "grid_factors"},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
         )
 
         assert citation.source_name == "Grid Intensity Database"
@@ -96,7 +98,7 @@ class TestCitationDataStructures:
             confidence="high",
             region="US",
             gwp_set="AR5",
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
         )
 
         citation_dict = citation.dict()
@@ -312,7 +314,7 @@ class TestCitationReset:
             formula="test = 1 + 1",
             inputs={"a": 1, "b": 1},
             output={"result": 2},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id="test_1",
         )
         agent._calculation_citations.append(citation)
@@ -340,7 +342,7 @@ class TestCitationExport:
             formula="result = a + b",
             inputs={"a": 10, "b": 20},
             output={"result": 30},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id="calc_1",
         )
 
@@ -381,7 +383,7 @@ class TestCitationBundle:
             formula="Emissions = Amount × EF",
             inputs={"amount": 1000, "ef": 53.06},
             output={"emissions_kg": 53060},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id="calc_1",
         )
 
@@ -414,7 +416,7 @@ class TestCitationBundle:
             formula="Emissions = Amount × EF",
             inputs={"amount": 1000, "ef": 53.06},
             output={"emissions_kg": 53060},
-            timestamp=datetime.now(),
+            timestamp=DeterministicClock.now(),
             tool_call_id="calc_1",
         )
 

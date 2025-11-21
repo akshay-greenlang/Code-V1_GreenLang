@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
+
+logger = logging.getLogger(__name__)
 Configuration Generator
 
 Generate configuration files for GreenLang applications.
 Supports multiple environments (dev, staging, prod) and secure defaults.
 """
 
+import logging
 import argparse
 import os
 import sys
@@ -283,7 +287,7 @@ class ConfigWizard:
         # Get app name
         app_name = input("Application name: ").strip()
         if not app_name:
-            print("Error: Application name is required")
+            logger.error(f" Application name is required")
             sys.exit(1)
 
         # Features
@@ -409,7 +413,7 @@ Examples:
                     print(f"  - {issue}")
 
         except Exception as e:
-            print(f"Error: {e}")
+            logger.error(f" {e}")
             sys.exit(1)
 
         sys.exit(0)

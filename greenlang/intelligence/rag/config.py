@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 RAG system configuration with security controls and allowlisting.
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Hub Index System
 ================
@@ -12,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
+from greenlang.determinism import DeterministicClock
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +115,7 @@ class HubIndex:
                 cache_time = datetime.fromisoformat(
                     cache_data.get("updated_at", "1970-01-01T00:00:00")
                 )
-                age = datetime.now() - cache_time
+                age = DeterministicClock.now() - cache_time
 
                 if age.total_seconds() < 3600:  # 1 hour
                     logger.debug("Using cached index data")
@@ -172,7 +174,7 @@ class HubIndex:
         logger.error("Could not load index from any source")
         self._index_data = {
             "version": "1.0",
-            "updated_at": datetime.now().isoformat(),
+            "updated_at": DeterministicClock.now().isoformat(),
             "packs": {},
         }
         return self._index_data
@@ -310,7 +312,7 @@ class HubIndex:
 
         # Update or create entry
         self._index_data.setdefault("packs", {})[pack_key] = asdict(entry)
-        self._index_data["updated_at"] = datetime.now().isoformat()
+        self._index_data["updated_at"] = DeterministicClock.now().isoformat()
 
         # Save to cache
         with open(self.cache_file, "w") as f:
@@ -328,7 +330,7 @@ class HubIndex:
         """
         index_data = {
             "version": "1.0",
-            "updated_at": datetime.now().isoformat(),
+            "updated_at": DeterministicClock.now().isoformat(),
             "packs": {},
         }
 
@@ -367,8 +369,8 @@ class HubIndex:
                     description=manifest.get("description", ""),
                     license=manifest.get("license", "Apache-2.0"),
                     card_summary=card_summary,
-                    created_at=datetime.now().isoformat(),
-                    updated_at=datetime.now().isoformat(),
+                    created_at=DeterministicClock.now().isoformat(),
+                    updated_at=DeterministicClock.now().isoformat(),
                     download_count=0,
                     tags=manifest.get("tags", []),
                     oci_ref=f"ghcr.io/{org}/{slug}",

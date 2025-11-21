@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 CBAM Importer Copilot Pipeline v2 - Refactored with GreenLang SDK
 
@@ -24,6 +25,7 @@ from typing import Any, Dict, Optional
 # GreenLang SDK Infrastructure
 from greenlang.sdk.base import Pipeline, Metadata, Result
 from greenlang.telemetry.metrics import track_execution, get_metrics_collector
+from greenlang.determinism import DeterministicClock
 
 # Import v2 agents
 sys.path.insert(0, str(Path(__file__).parent / "agents"))
@@ -138,7 +140,7 @@ class CBAMPipeline_v2(Pipeline):
         Returns:
             Result container with final report or error
         """
-        pipeline_start = datetime.now()
+        pipeline_start = DeterministicClock.now()
 
         logger.info("="*80)
         logger.info("CBAM PIPELINE V2 EXECUTION STARTED")
@@ -166,10 +168,10 @@ class CBAMPipeline_v2(Pipeline):
             logger.info("STAGE 1: SHIPMENT INTAKE & VALIDATION")
             logger.info("─" * 80)
 
-            stage1_start = datetime.now()
+            stage1_start = DeterministicClock.now()
             intake_agent = self.agents[0]
             validated_output = intake_agent.process_file(input_file)
-            stage1_end = datetime.now()
+            stage1_end = DeterministicClock.now()
             stage1_time = (stage1_end - stage1_start).total_seconds()
 
             agent_executions.append({
@@ -201,11 +203,11 @@ class CBAMPipeline_v2(Pipeline):
             logger.info("STAGE 2: EMISSIONS CALCULATION (ZERO HALLUCINATION)")
             logger.info("─" * 80)
 
-            stage2_start = datetime.now()
+            stage2_start = DeterministicClock.now()
             calculator_agent = self.agents[1]
             shipments = validated_output['shipments']
             calculated_output = calculator_agent.calculate_batch(shipments)
-            stage2_end = datetime.now()
+            stage2_end = DeterministicClock.now()
             stage2_time = (stage2_end - stage2_start).total_seconds()
 
             agent_executions.append({
@@ -234,14 +236,14 @@ class CBAMPipeline_v2(Pipeline):
             logger.info("STAGE 3: REPORT GENERATION & VALIDATION")
             logger.info("─" * 80)
 
-            stage3_start = datetime.now()
+            stage3_start = DeterministicClock.now()
             packager_agent = self.agents[2]
             shipments_with_emissions = calculated_output['shipments']
             final_report = packager_agent.generate_report(
                 shipments_with_emissions,
                 importer_info
             )
-            stage3_end = datetime.now()
+            stage3_end = DeterministicClock.now()
             stage3_time = (stage3_end - stage3_start).total_seconds()
 
             agent_executions.append({
@@ -261,7 +263,7 @@ class CBAMPipeline_v2(Pipeline):
             # PIPELINE SUMMARY
             # ================================================================
 
-            pipeline_time = (datetime.now() - pipeline_start).total_seconds()
+            pipeline_time = (DeterministicClock.now() - pipeline_start).total_seconds()
 
             logger.info("="*80)
             logger.info("PIPELINE EXECUTION COMPLETE")

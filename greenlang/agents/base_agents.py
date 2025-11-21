@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Base Agent Classes for Intelligence Paradox Architecture
 GL Intelligence Infrastructure
@@ -19,6 +20,7 @@ import hashlib
 import json
 
 from greenlang.agents.categories import AgentCategory, AgentMetadata
+from greenlang.determinism import DeterministicClock
 
 
 @dataclass
@@ -151,7 +153,7 @@ class DeterministicAgent(ABC):
         ).hexdigest()
 
         entry = AuditEntry(
-            timestamp=datetime.utcnow().isoformat() + "Z",
+            timestamp=DeterministicClock.utcnow().isoformat() + "Z",
             agent_name=self.__class__.__name__,
             operation=operation,
             inputs=inputs,
@@ -500,7 +502,7 @@ class InsightAgent(ABC):
             ).hexdigest()
 
             entry = AuditEntry(
-                timestamp=datetime.utcnow().isoformat() + "Z",
+                timestamp=DeterministicClock.utcnow().isoformat() + "Z",
                 agent_name=self.__class__.__name__,
                 operation=operation,
                 inputs=inputs,

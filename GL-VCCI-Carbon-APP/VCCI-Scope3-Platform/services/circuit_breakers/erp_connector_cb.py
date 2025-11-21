@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Circuit Breaker for ERP System Connectors
 
@@ -23,6 +24,7 @@ from datetime import datetime
 import time
 
 from greenlang.resilience import (
+from greenlang.determinism import DeterministicClock
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitOpenError,
@@ -225,7 +227,7 @@ class ERPConnectorCircuitBreaker:
                 "status": "unavailable",
                 "circuit_state": "open",
                 "message": "Circuit breaker is open - system unavailable",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": DeterministicClock.utcnow().isoformat(),
             }
 
     def _fetch_suppliers_from_erp(
@@ -267,7 +269,7 @@ class ERPConnectorCircuitBreaker:
                 "status": "active",
                 "country": "US",
                 "system": system,
-                "fetched_at": datetime.utcnow().isoformat(),
+                "fetched_at": DeterministicClock.utcnow().isoformat(),
             }
             for i in range(min(limit, 10))  # Return up to 10 for simulation
         ]
@@ -304,7 +306,7 @@ class ERPConnectorCircuitBreaker:
                 "currency": "USD",
                 "date": start_date,
                 "system": system,
-                "fetched_at": datetime.utcnow().isoformat(),
+                "fetched_at": DeterministicClock.utcnow().isoformat(),
             }
             for i in range(5)  # Return 5 for simulation
         ]
@@ -322,7 +324,7 @@ class ERPConnectorCircuitBreaker:
             "system": system,
             "status": "connected",
             "latency_ms": 50,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": DeterministicClock.utcnow().isoformat(),
         }
 
     def _get_circuit_breaker(self, system: str) -> CircuitBreaker:

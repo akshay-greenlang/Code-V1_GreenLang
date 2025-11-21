@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 GreenLang Data Readers
 Multi-format data reading with automatic format detection.

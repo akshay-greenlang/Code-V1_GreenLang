@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Embedding provider abstraction for RAG system.
 

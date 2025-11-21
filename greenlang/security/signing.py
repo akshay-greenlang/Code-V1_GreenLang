@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Secure Signing Provider Abstraction for GreenLang
 =================================================
@@ -19,6 +20,22 @@ from pathlib import Path
 from typing import Optional, Dict, Any, TypedDict
 from datetime import datetime
 from dataclasses import dataclass
+from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import ChatMessage
+
+# Import KMS providers
+try:
+    from .kms import (
+        create_kms_provider,
+        detect_kms_provider,
+        KMSConfig,
+        KMSProviderError,
+        KMSSigningError,
+    )
+    KMS_AVAILABLE = True
+except ImportError:
+    KMS_AVAILABLE = False
+    logger.info("KMS providers not available")
 
 logger = logging.getLogger(__name__)
 
@@ -201,7 +218,7 @@ class SigstoreKeylessSigner(Signer):
                     else None
                 ),
                 algorithm="sigstore-keyless",
-                timestamp=datetime.now().isoformat(),
+                timestamp=DeterministicClock.now().isoformat(),
                 public_key=None,  # Keyless doesn't use persistent keys
             )
 
@@ -255,7 +272,7 @@ class EphemeralKeypairSigner(Signer):
             cert_chain=None,
             transparency_entry=None,
             algorithm="ed25519",
-            timestamp=datetime.now().isoformat(),
+            timestamp=DeterministicClock.now().isoformat(),
             public_key=self.public_key_pem,
         )
 
@@ -272,32 +289,105 @@ class EphemeralKeypairSigner(Signer):
 
 class ExternalKMSSigner(Signer):
     """
-    External KMS signer (placeholder for future implementation)
+    External KMS signer with support for multiple cloud providers
 
-    Will support:
+    Supports:
     - AWS KMS
-    - HashiCorp Vault
     - Azure Key Vault
     - Google Cloud KMS
+
+    Features:
+    - Automatic provider detection
+    - Key caching with TTL
+    - Retry logic with exponential backoff
+    - Async signing support
     """
 
     def __init__(self, config: Optional[SigningConfig] = None):
         """Initialize KMS signer"""
+        if not KMS_AVAILABLE:
+            raise RuntimeError(
+                "KMS support not available. Install required provider: "
+                "pip install boto3  # for AWS\n"
+                "pip install azure-keyvault-keys azure-identity  # for Azure\n"
+                "pip install google-cloud-kms  # for GCP"
+            )
+
         self.config = config or SigningConfig.from_env()
 
         if not self.config.kms_key_id:
             raise ValueError("KMS key ID required for KMS signing")
 
-        # TODO: Initialize KMS client based on provider
-        raise NotImplementedError("KMS signing not yet implemented")
+        # Create KMS configuration
+        kms_config = KMSConfig(
+            provider=os.environ.get("GL_KMS_PROVIDER", ""),
+            key_id=self.config.kms_key_id,
+            region=os.environ.get("GL_KMS_REGION", os.environ.get("AWS_REGION")),
+            cache_ttl_seconds=int(os.environ.get("GL_KMS_CACHE_TTL", "300")),
+            max_retries=int(os.environ.get("GL_KMS_MAX_RETRIES", "3")),
+            timeout_seconds=int(os.environ.get("GL_KMS_TIMEOUT", "30")),
+        )
+
+        # Add provider-specific configuration
+        kms_config.aws_profile = os.environ.get("AWS_PROFILE")
+        kms_config.azure_tenant_id = os.environ.get("AZURE_TENANT_ID")
+        kms_config.azure_vault_url = os.environ.get("AZURE_KEY_VAULT_URL")
+        kms_config.gcp_project_id = os.environ.get("GCP_PROJECT_ID", os.environ.get("GOOGLE_CLOUD_PROJECT"))
+        kms_config.gcp_location_id = os.environ.get("GCP_LOCATION", "global")
+        kms_config.gcp_keyring_id = os.environ.get("GCP_KEYRING")
+
+        # Create KMS provider
+        try:
+            self.kms_provider = create_kms_provider(kms_config)
+            self.provider_name = self.kms_provider.config.provider
+            logger.info(f"Initialized {self.provider_name.upper()} KMS signer with key {self.config.kms_key_id}")
+        except KMSProviderError as e:
+            raise RuntimeError(f"Failed to initialize KMS provider: {e}")
 
     def sign(self, payload: bytes) -> SignResult:
         """Sign using external KMS"""
-        raise NotImplementedError("KMS signing not yet implemented")
+        try:
+            # Sign using KMS provider
+            kms_result = self.kms_provider.sign(payload)
+
+            # Convert to our SignResult format
+            return SignResult(
+                signature=kms_result["signature"],
+                cert_chain=None,  # KMS doesn't use certificates
+                transparency_entry=None,  # No transparency log for KMS
+                algorithm=kms_result["algorithm"],
+                timestamp=kms_result["timestamp"],
+                public_key=None,  # Will be fetched separately if needed
+            )
+
+        except KMSSigningError as e:
+            logger.error(f"KMS signing failed: {e}")
+            raise RuntimeError(f"Failed to sign with KMS: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error during KMS signing: {e}")
+            raise RuntimeError(f"Unexpected KMS signing error: {e}")
 
     def get_signer_info(self) -> Dict[str, Any]:
         """Get signer information"""
-        return {"type": "kms", "key_id": self.config.kms_key_id, "provider": "unknown"}
+        info = {
+            "type": "kms",
+            "provider": self.provider_name,
+            "key_id": self.config.kms_key_id,
+        }
+
+        # Add provider-specific info
+        try:
+            key_info = self.kms_provider.get_cached_key_info()
+            info.update({
+                "algorithm": key_info.algorithm.value,
+                "enabled": key_info.enabled,
+                "rotation_enabled": key_info.rotation_enabled,
+                "created_at": key_info.created_at.isoformat() if key_info.created_at else None,
+            })
+        except Exception as e:
+            logger.warning(f"Could not fetch key info: {e}")
+
+        return info
 
 
 class SigstoreBundleVerifier(Verifier):

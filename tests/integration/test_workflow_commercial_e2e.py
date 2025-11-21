@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 End-to-end integration test for commercial building workflow.
 """
