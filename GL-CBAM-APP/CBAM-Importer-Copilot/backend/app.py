@@ -23,6 +23,7 @@ Version: 1.0.0
 Author: GreenLang CBAM Team (Team A3: Monitoring & Observability)
 """
 
+import os
 import time
 import uuid
 from contextlib import asynccontextmanager

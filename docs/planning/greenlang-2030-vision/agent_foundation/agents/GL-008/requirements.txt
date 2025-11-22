@@ -1,0 +1,56 @@
+# GL-008 TRAPCATCHER - SteamTrapInspector Dependencies
+# Python 3.10+ required
+
+# Core Dependencies
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.0,<2.0.0
+
+# Machine Learning & Signal Processing
+scikit-learn>=1.3.0,<2.0.0
+librosa>=0.10.0,<1.0.0  # Audio/acoustic analysis
+opencv-python>=4.8.0,<5.0.0  # Thermal imaging
+Pillow>=10.0.0,<11.0.0  # Image processing
+
+# Data Handling
+pandas>=2.0.0,<3.0.0
+pyarrow>=12.0.0,<13.0.0  # Fast data serialization
+
+# Agent Foundation (Internal)
+# Assumes agent_foundation is available in parent directory
+# agent-foundation>=1.0.0
+
+# LLM Integration
+anthropic>=0.25.0,<1.0.0  # Claude API (optional, deterministic only)
+openai>=1.0.0,<2.0.0  # OpenAI API (optional)
+
+# Async & Concurrency
+asyncio>=3.4.3
+aiofiles>=23.0.0,<24.0.0
+
+# Logging & Monitoring
+python-json-logger>=2.0.7,<3.0.0
+prometheus-client>=0.18.0,<1.0.0  # Metrics
+
+# Configuration & Validation
+pydantic>=2.0.0,<3.0.0
+pyyaml>=6.0.0,<7.0.0
+python-dotenv>=1.0.0,<2.0.0
+
+# Testing (development)
+pytest>=7.4.0,<8.0.0
+pytest-asyncio>=0.21.0,<1.0.0
+pytest-cov>=4.1.0,<5.0.0
+pytest-mock>=3.11.0,<4.0.0
+
+# Code Quality (development)
+black>=23.7.0,<24.0.0
+ruff>=0.0.285,<1.0.0
+mypy>=1.5.0,<2.0.0
+
+# Documentation (development)
+mkdocs>=1.5.0,<2.0.0
+mkdocs-material>=9.0.0,<10.0.0
+
+# Performance & Profiling (development)
+memory-profiler>=0.61.0,<1.0.0
+line-profiler>=4.0.0,<5.0.0

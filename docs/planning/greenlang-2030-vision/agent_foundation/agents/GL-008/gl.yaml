@@ -1,0 +1,368 @@
+# GL-008 TRAPCATCHER - GreenLang Agent Specification
+# AgentSpec v2.0 Compliant
+
+agent_metadata:
+  agent_id: "GL-008"
+  agent_name: "TRAPCATCHER"
+  agent_class: "SteamTrapInspector"
+  version: "1.0.0"
+  category: "industrial-monitoring"
+  domain: "steam-systems"
+  priority: "P2"
+  maturity: "production"
+  created_date: "2025-01-22"
+  last_updated: "2025-01-22"
+
+mission:
+  primary_function: "Automated steam trap failure detection and diagnostics"
+  value_proposition: "Reduce energy waste and maintenance costs through proactive steam trap monitoring"
+  target_users:
+    - "Industrial facility managers"
+    - "Energy engineers"
+    - "Maintenance technicians"
+    - "Sustainability officers"
+
+market_analysis:
+  total_addressable_market_usd: 3000000000
+  serviceable_addressable_market_usd: 1500000000
+  target_market_share_percent: 5
+  target_revenue_year_1_usd: 75000000
+  deployment_timeline: "2026-Q2"
+  competitive_advantages:
+    - "Multi-modal analysis (acoustic + thermal + operational)"
+    - "Zero-hallucination deterministic calculations"
+    - "Industry-standard compliance (ASME, Spirax Sarco, DOE)"
+    - "Predictive maintenance with RUL prediction"
+    - "Fleet-wide optimization capabilities"
+
+environmental_impact:
+  addressable_emissions_gt_co2e_per_year: 0.15
+  realistic_reduction_gt_co2e_per_year: 0.03  # 20% penetration
+  energy_savings_potential_percent: 25  # 15-30% range
+  typical_savings_per_facility_usd_per_year: 150000
+
+technical_architecture:
+  execution_model: "async"
+  deterministic: true
+  temperature: 0.0
+  seed: 42
+
+  compute_requirements:
+    min_cpu_cores: 1
+    max_cpu_cores: 4
+    min_memory_gb: 0.5
+    max_memory_gb: 2
+    gpu_required: false
+    storage_gb: 5
+
+  performance_targets:
+    max_execution_time_ms: 3000
+    target_execution_time_ms: 1500
+    max_cost_per_query_usd: 0.50
+    target_cost_per_query_usd: 0.10
+    test_coverage_percent: 85
+    code_quality_score: 90
+
+tools:
+  - tool_id: "analyze_acoustic_signature"
+    description: "Analyze ultrasonic acoustic signature for steam trap failure detection using FFT and spectral analysis"
+    deterministic: true
+    category: "signal_processing"
+    physics_basis: "ASTM E1316 Ultrasonic Testing, ISO 18436-8 Condition Monitoring"
+    input_schema:
+      type: "object"
+      required: ["trap_id", "signal", "sampling_rate_hz"]
+      properties:
+        trap_id:
+          type: "string"
+          description: "Unique trap identifier"
+        signal:
+          type: "array"
+          items:
+            type: "number"
+          description: "Time-domain acoustic signal (20-100 kHz)"
+        sampling_rate_hz:
+          type: "integer"
+          minimum: 100000
+          maximum: 500000
+          description: "Signal sampling rate"
+        trap_type:
+          type: "string"
+          enum: ["thermostatic", "mechanical", "thermodynamic", "inverted_bucket", "float_thermostatic", "disc", "bimetallic", "balanced_pressure"]
+    output_schema:
+      type: "object"
+      properties:
+        failure_probability:
+          type: "number"
+          minimum: 0
+          maximum: 1
+        failure_mode:
+          type: "string"
+          enum: ["normal", "failed_open", "failed_closed", "leaking", "plugged", "cavitation", "worn_seat"]
+        confidence_score:
+          type: "number"
+          minimum: 0
+          maximum: 1
+        spectral_features:
+          type: "object"
+
+  - tool_id: "analyze_thermal_pattern"
+    description: "Analyze IR thermal imaging pattern for trap health assessment and condensate pooling detection"
+    deterministic: true
+    category: "thermal_analysis"
+    physics_basis: "Stefan-Boltzmann law, ASME PTC 19.3 Temperature Measurement"
+    input_schema:
+      type: "object"
+      required: ["trap_id", "temperature_upstream_c", "temperature_downstream_c"]
+      properties:
+        trap_id:
+          type: "string"
+        temperature_upstream_c:
+          type: "number"
+          minimum: 0
+          maximum: 300
+        temperature_downstream_c:
+          type: "number"
+          minimum: 0
+          maximum: 300
+        thermal_image:
+          type: "array"
+          description: "Optional IR image array"
+    output_schema:
+      type: "object"
+      properties:
+        trap_health_score:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        temperature_differential_c:
+          type: "number"
+        anomalies_detected:
+          type: "array"
+        condensate_pooling_detected:
+          type: "boolean"
+
+  - tool_id: "diagnose_trap_failure"
+    description: "Multi-modal failure diagnosis integrating acoustic, thermal, and operational data with root cause analysis"
+    deterministic: true
+    category: "diagnostics"
+    physics_basis: "Multi-sensor fusion, weighted voting classification"
+    input_schema:
+      type: "object"
+      required: ["trap_id", "sensor_data"]
+      properties:
+        trap_id:
+          type: "string"
+        sensor_data:
+          type: "object"
+          description: "Operational sensor data (pressure, temperature, flow)"
+        acoustic_result:
+          type: "object"
+          description: "Optional acoustic analysis result"
+        thermal_result:
+          type: "object"
+          description: "Optional thermal analysis result"
+    output_schema:
+      type: "object"
+      properties:
+        failure_mode:
+          type: "string"
+        root_cause:
+          type: "string"
+        failure_severity:
+          type: "string"
+          enum: ["normal", "low", "medium", "high", "critical"]
+        recommended_action:
+          type: "string"
+        urgency_hours:
+          type: "integer"
+
+  - tool_id: "calculate_energy_loss"
+    description: "Calculate steam loss, energy waste, and cost impact using Napier's equation for orifice flow"
+    deterministic: true
+    category: "energy_calculation"
+    physics_basis: "Napier's equation, Spirax Sarco Steam Engineering, DOE Steam Tip Sheet #1"
+    formula: "W = 24.24 * P * D² * C (lb/hr steam loss)"
+    input_schema:
+      type: "object"
+      required: ["trap_id", "orifice_diameter_in", "steam_pressure_psig"]
+      properties:
+        trap_id:
+          type: "string"
+        orifice_diameter_in:
+          type: "number"
+          minimum: 0.0625
+          maximum: 1.0
+          description: "Trap orifice diameter (1/16 - 1 inch)"
+        steam_pressure_psig:
+          type: "number"
+          minimum: 0
+          maximum: 600
+        failure_severity:
+          type: "number"
+          minimum: 0
+          maximum: 1
+    output_schema:
+      type: "object"
+      properties:
+        steam_loss_kg_hr:
+          type: "number"
+        energy_loss_gj_yr:
+          type: "number"
+        cost_loss_usd_yr:
+          type: "number"
+        co2_emissions_kg_yr:
+          type: "number"
+
+  - tool_id: "prioritize_maintenance"
+    description: "Fleet-wide maintenance prioritization using multi-factor scoring and ROI optimization"
+    deterministic: true
+    category: "optimization"
+    physics_basis: "Linear weighted scoring, NPV/payback analysis"
+    input_schema:
+      type: "object"
+      required: ["trap_fleet"]
+      properties:
+        trap_fleet:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              trap_id:
+                type: "string"
+              failure_mode:
+                type: "string"
+              energy_loss_usd_yr:
+                type: "number"
+              process_criticality:
+                type: "integer"
+                minimum: 1
+                maximum: 10
+    output_schema:
+      type: "object"
+      properties:
+        priority_list:
+          type: "array"
+        recommended_schedule:
+          type: "array"
+        expected_roi_percent:
+          type: "number"
+        payback_months:
+          type: "number"
+
+  - tool_id: "predict_remaining_useful_life"
+    description: "Weibull distribution-based RUL prediction with confidence intervals"
+    deterministic: true
+    category: "predictive_analytics"
+    physics_basis: "Weibull reliability analysis, MTBF statistical modeling"
+    formula: "R(t) = exp(-(t/η)^β) where β=2.5, η from MTBF"
+    input_schema:
+      type: "object"
+      required: ["trap_id", "current_age_days"]
+      properties:
+        trap_id:
+          type: "string"
+        current_age_days:
+          type: "integer"
+          minimum: 0
+        current_health_score:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        historical_failures:
+          type: "array"
+          items:
+            type: "integer"
+    output_schema:
+      type: "object"
+      properties:
+        rul_days:
+          type: "number"
+        rul_confidence_lower:
+          type: "number"
+        rul_confidence_upper:
+          type: "number"
+        failure_probability_curve:
+          type: "array"
+
+  - tool_id: "calculate_cost_benefit"
+    description: "Financial analysis for repair vs. replace decisions with NPV, IRR, payback calculation"
+    deterministic: true
+    category: "financial_analysis"
+    physics_basis: "Discounted cash flow analysis, NPV/IRR calculations"
+    formula: "NPV = Σ(Savings_t / (1+r)^t) - Initial_Cost"
+    input_schema:
+      type: "object"
+      required: ["trap_id", "action", "annual_energy_loss_usd"]
+      properties:
+        trap_id:
+          type: "string"
+        action:
+          type: "string"
+          enum: ["repair", "replace"]
+        annual_energy_loss_usd:
+          type: "number"
+        expected_service_life_years:
+          type: "integer"
+          minimum: 1
+          maximum: 15
+    output_schema:
+      type: "object"
+      properties:
+        npv_usd:
+          type: "number"
+        irr_percent:
+          type: "number"
+        payback_months:
+          type: "number"
+        decision_recommendation:
+          type: "string"
+
+ai_integration:
+  enabled: true
+  purpose: "classification_only"
+  provider: "anthropic"
+  model: "claude-3-haiku"
+  temperature: 0.0
+  seed: 42
+  max_tokens: 500
+  use_cases:
+    - "Trap condition classification"
+    - "Failure mode categorization"
+    - "Maintenance urgency assessment"
+  constraints:
+    - "Never used for numeric calculations"
+    - "Always deterministic (temp=0.0)"
+    - "Fallback to rule-based if LLM unavailable"
+
+data_sources:
+  - name: "steam_thermodynamic_tables"
+    type: "internal"
+    description: "ASME steam property tables for pressure-enthalpy calculations"
+    format: "json"
+
+  - name: "acoustic_failure_signatures"
+    type: "ml_model"
+    description: "Pre-trained models for acoustic pattern recognition"
+    format: "pkl"
+
+  - name: "thermal_classifier"
+    type: "ml_model"
+    description: "CNN-based thermal image classification"
+    format: "h5"
+
+compliance:
+  zero_secrets: true
+  provenance_tracking: true
+  audit_trail: true
+  data_residency: "configurable"
+  encryption_at_rest: true
+  encryption_in_transit: true
+
+quality_metrics:
+  code_coverage_percent: 85
+  documentation_coverage_percent: 100
+  type_hint_coverage_percent: 100
+  linting_score: 95
+  security_scan_status: "pass"
+  performance_benchmark_status: "pass"

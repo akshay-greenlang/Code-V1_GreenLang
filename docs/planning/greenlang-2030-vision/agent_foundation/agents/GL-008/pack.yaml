@@ -1,0 +1,194 @@
+# GL-008 TRAPCATCHER - SteamTrapInspector Package Manifest
+# GreenLang Pack Specification v1.0
+
+metadata:
+  pack_id: "gl-008-trapcatcher"
+  pack_name: "SteamTrapInspector"
+  agent_id: "GL-008"
+  version: "1.0.0"
+  description: "Automated steam trap failure detection and energy loss quantification using multi-modal analysis (acoustic, thermal, operational)"
+  author: "GreenLang Foundation"
+  license: "Apache-2.0"
+  homepage: "https://greenlang.org/agents/gl-008"
+  repository: "https://github.com/greenlang/agents/gl-008"
+  documentation: "https://docs.greenlang.org/agents/gl-008"
+  tags:
+    - "steam-trap"
+    - "predictive-maintenance"
+    - "energy-efficiency"
+    - "acoustic-analysis"
+    - "thermal-imaging"
+    - "industrial"
+    - "monitoring"
+  category: "industrial-optimization"
+  market_size_usd: 3000000000  # $3B TAM
+  target_deployment: "2026-Q2"
+  priority: "P2"
+
+runtime:
+  python_version: ">=3.10,<4.0"
+  entrypoint: "steam_trap_inspector.py"
+  main_class: "SteamTrapInspector"
+  async_execution: true
+  requires_gpu: false
+  min_memory_mb: 512
+  max_memory_mb: 2048
+  min_cpu_cores: 1
+  max_cpu_cores: 4
+
+dependencies:
+  python:
+    - "numpy>=1.24.0,<2.0.0"
+    - "scipy>=1.10.0,<2.0.0"
+    - "scikit-learn>=1.3.0,<2.0.0"
+    - "librosa>=0.10.0,<1.0.0"
+    - "opencv-python>=4.8.0,<5.0.0"
+    - "pandas>=2.0.0,<3.0.0"
+    - "pydantic>=2.0.0,<3.0.0"
+    - "pyyaml>=6.0.0,<7.0.0"
+    - "aiofiles>=23.0.0,<24.0.0"
+    - "python-json-logger>=2.0.7,<3.0.0"
+
+  external_services:
+    - service: "anthropic"
+      optional: true
+      purpose: "LLM classification (deterministic, temp=0.0)"
+    - service: "cmms"
+      optional: true
+      purpose: "Maintenance management integration"
+    - service: "bms"
+      optional: true
+      purpose: "Building management system integration"
+
+  data_sources:
+    - name: "steam_properties"
+      type: "internal"
+      description: "Steam thermodynamic property tables (ASME)"
+    - name: "acoustic_signatures"
+      type: "ml_model"
+      description: "Pre-trained acoustic failure detection models"
+    - name: "thermal_patterns"
+      type: "ml_model"
+      description: "Thermal imaging classification models"
+
+capabilities:
+  tools:
+    - name: "analyze_acoustic_signature"
+      deterministic: true
+      description: "FFT-based ultrasonic analysis for leak detection"
+      inputs: ["acoustic_signal", "sampling_rate", "trap_type"]
+      outputs: ["failure_probability", "failure_mode", "confidence"]
+
+    - name: "analyze_thermal_pattern"
+      deterministic: true
+      description: "IR thermography analysis for trap health assessment"
+      inputs: ["temperature_upstream", "temperature_downstream", "thermal_image"]
+      outputs: ["health_score", "temperature_differential", "anomalies"]
+
+    - name: "diagnose_trap_failure"
+      deterministic: true
+      description: "Multi-modal failure diagnosis with root cause analysis"
+      inputs: ["sensor_data", "acoustic_result", "thermal_result"]
+      outputs: ["failure_mode", "root_cause", "severity", "urgency"]
+
+    - name: "calculate_energy_loss"
+      deterministic: true
+      description: "Napier equation-based steam loss and cost calculation"
+      inputs: ["orifice_diameter", "steam_pressure", "failure_mode"]
+      outputs: ["steam_loss_kg_hr", "energy_loss_gj_yr", "cost_usd_yr", "co2_kg_yr"]
+
+    - name: "prioritize_maintenance"
+      deterministic: true
+      description: "Fleet-wide maintenance optimization with ROI"
+      inputs: ["trap_fleet", "energy_losses", "criticality_scores"]
+      outputs: ["priority_list", "schedule", "roi_percent"]
+
+    - name: "predict_remaining_useful_life"
+      deterministic: true
+      description: "Weibull-based RUL prediction with confidence intervals"
+      inputs: ["current_age", "degradation_rate", "historical_failures"]
+      outputs: ["rul_days", "confidence_bounds", "failure_probability_curve"]
+
+    - name: "calculate_cost_benefit"
+      deterministic: true
+      description: "NPV/IRR analysis for repair vs. replace decisions"
+      inputs: ["maintenance_cost", "annual_savings", "service_life"]
+      outputs: ["npv", "irr", "payback_months", "decision"]
+
+  operation_modes:
+    - "monitor"     # Real-time monitoring with multi-modal analysis
+    - "diagnose"    # Comprehensive failure diagnosis
+    - "predict"     # Predictive maintenance with RUL
+    - "prioritize"  # Fleet-wide maintenance prioritization
+    - "report"      # Performance reporting
+    - "fleet"       # Multi-trap coordination
+
+standards_compliance:
+  - name: "ASME PTC 25"
+    description: "Pressure Relief Devices"
+    version: "2014"
+
+  - name: "Spirax Sarco Steam Engineering"
+    description: "Steam system best practices"
+    version: "latest"
+
+  - name: "DOE Best Practices"
+    description: "Industrial steam systems"
+    version: "2012"
+
+  - name: "ASTM E1316"
+    description: "Ultrasonic Testing"
+    version: "2020"
+
+  - name: "ISO 18436-8"
+    description: "Condition Monitoring - Ultrasonics"
+    version: "2013"
+
+performance_targets:
+  acoustic_detection_accuracy: 0.95  # >95%
+  thermal_classification_accuracy: 0.90  # >90%
+  rul_prediction_accuracy: 0.80  # Within ±20%
+  energy_loss_calculation_accuracy: 0.98  # ±2%
+  execution_time_ms: 3000  # <3 seconds typical
+  cache_hit_rate: 0.85  # >85%
+  test_coverage: 0.85  # >85%
+
+ai_configuration:
+  deterministic: true
+  temperature: 0.0  # Exact, no approximation
+  seed: 42  # Fixed for reproducibility
+  llm_purpose: "classification_only"  # Never for calculations
+  max_llm_cost_per_query_usd: 0.05
+  fallback_mode: "pure_deterministic"  # If LLM unavailable
+
+security:
+  zero_secrets: true
+  provenance_tracking: true
+  audit_logging: true
+  encryption_at_rest: true
+  encryption_in_transit: true
+  rbac_enabled: true
+
+deployment:
+  container_image: "greenlang/gl-008-trapcatcher:1.0.0"
+  platform: "kubernetes"
+  min_replicas: 1
+  max_replicas: 10
+  autoscaling_metric: "cpu_utilization"
+  autoscaling_target: 70
+  health_check_endpoint: "/health"
+  metrics_endpoint: "/metrics"
+  log_level: "INFO"
+
+business_metrics:
+  market_segment: "industrial-steam-systems"
+  target_customers: ["manufacturing", "chemical", "pharmaceutical", "food-processing"]
+  typical_savings_percent: 20  # 15-30% range
+  typical_payback_months: 12  # 6-18 month range
+  addressable_emissions_gt_co2e: 0.15  # Steam system losses globally
+
+license:
+  type: "Apache-2.0"
+  commercial_use: true
+  attribution_required: true
+  patent_grant: true

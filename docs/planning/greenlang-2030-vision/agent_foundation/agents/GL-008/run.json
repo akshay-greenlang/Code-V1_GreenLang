@@ -1,0 +1,212 @@
+{
+  "agent_runtime_config": {
+    "agent_id": "GL-008-TRAPCATCHER",
+    "agent_name": "SteamTrapInspector",
+    "version": "1.0.0",
+    "execution_mode": "async",
+    "entry_point": "steam_trap_inspector.SteamTrapInspector"
+  },
+
+  "compute_configuration": {
+    "min_cpu_cores": 1,
+    "max_cpu_cores": 4,
+    "min_memory_mb": 512,
+    "max_memory_mb": 2048,
+    "gpu_enabled": false,
+    "timeout_seconds": 30,
+    "max_concurrent_executions": 10
+  },
+
+  "ai_configuration": {
+    "deterministic": true,
+    "temperature": 0.0,
+    "seed": 42,
+    "llm_provider": "anthropic",
+    "llm_model": "claude-3-haiku",
+    "max_tokens": 500,
+    "enable_llm": true,
+    "llm_purpose": "classification_only",
+    "fallback_mode": "deterministic",
+    "max_llm_cost_per_query_usd": 0.05,
+    "budget_limit_usd_per_day": 10.0
+  },
+
+  "operation_modes": {
+    "default_mode": "monitor",
+    "available_modes": [
+      "monitor",
+      "diagnose",
+      "predict",
+      "prioritize",
+      "report",
+      "fleet"
+    ],
+    "mode_descriptions": {
+      "monitor": "Real-time trap monitoring with multi-modal analysis",
+      "diagnose": "Comprehensive failure diagnosis and root cause",
+      "predict": "Predictive maintenance with RUL calculation",
+      "prioritize": "Fleet-wide maintenance prioritization",
+      "report": "Performance reporting and analytics",
+      "fleet": "Multi-trap coordination and optimization"
+    }
+  },
+
+  "inspection_configuration": {
+    "default_inspection_method": "multi_modal",
+    "acoustic_config": {
+      "frequency_range_hz": [20000, 100000],
+      "sampling_rate_hz": 250000,
+      "detection_threshold_db": 45.0,
+      "noise_floor_db": 30.0
+    },
+    "thermal_config": {
+      "image_resolution": [640, 480],
+      "temperature_range_c": [0, 250],
+      "delta_t_threshold_c": 10.0,
+      "emissivity": 0.95
+    },
+    "monitoring_interval_seconds": 300,
+    "enable_real_time_monitoring": true
+  },
+
+  "energy_loss_configuration": {
+    "default_steam_pressure_psig": 100.0,
+    "default_steam_cost_usd_per_1000lb": 8.50,
+    "operating_hours_per_year": 8760,
+    "co2_factor_kg_per_mmbtu": 53.06
+  },
+
+  "maintenance_configuration": {
+    "inspection_interval_days": 90,
+    "preventive_maintenance_days": 365,
+    "emergency_response_hours": 4,
+    "maintenance_cost_per_trap_usd": 150.0,
+    "replacement_cost_per_trap_usd": 500.0,
+    "labor_cost_per_hour_usd": 75.0
+  },
+
+  "alert_thresholds": {
+    "critical_energy_loss_threshold_usd_yr": 10000.0,
+    "high_priority_threshold_usd_yr": 5000.0,
+    "medium_priority_threshold_usd_yr": 2000.0,
+    "health_score_critical_threshold": 40,
+    "health_score_warning_threshold": 60
+  },
+
+  "performance_configuration": {
+    "enable_caching": true,
+    "cache_ttl_seconds": 300,
+    "cache_max_size": 1000,
+    "enable_metrics": true,
+    "metrics_export_interval_seconds": 60,
+    "enable_audit_logging": true
+  },
+
+  "ml_models": {
+    "acoustic_model_path": "ml_models/acoustic_anomaly_detector.pkl",
+    "thermal_model_path": "ml_models/thermal_cnn.h5",
+    "rul_model_path": "ml_models/rul_predictor.pkl",
+    "model_version": "1.0.0",
+    "confidence_threshold": 0.85
+  },
+
+  "integration_configuration": {
+    "cmms_integration_enabled": false,
+    "cmms_api_endpoint": null,
+    "bms_integration_enabled": false,
+    "bms_api_endpoint": null,
+    "webhook_enabled": false,
+    "webhook_url": null
+  },
+
+  "error_handling": {
+    "max_retries": 3,
+    "retry_delay_seconds": 1.0,
+    "enable_error_recovery": true,
+    "fallback_to_degraded_mode": true
+  },
+
+  "logging": {
+    "log_level": "INFO",
+    "log_format": "json",
+    "log_directory": "./logs",
+    "enable_file_logging": true,
+    "enable_console_logging": true,
+    "max_log_file_size_mb": 100,
+    "log_retention_days": 30
+  },
+
+  "security": {
+    "zero_secrets": true,
+    "provenance_tracking": true,
+    "enable_encryption_at_rest": true,
+    "enable_encryption_in_transit": true,
+    "enable_rbac": false,
+    "require_authentication": false
+  },
+
+  "monitoring": {
+    "enable_prometheus_metrics": true,
+    "metrics_port": 9090,
+    "health_check_endpoint": "/health",
+    "metrics_endpoint": "/metrics",
+    "health_check_interval_seconds": 30
+  },
+
+  "example_inputs": {
+    "monitor_mode": {
+      "operation_mode": "monitor",
+      "trap_data": {
+        "trap_id": "TRAP-001",
+        "trap_type": "thermodynamic",
+        "acoustic_data": {
+          "signal": [],
+          "sampling_rate_hz": 250000
+        },
+        "thermal_data": {
+          "temperature_upstream_c": 150.0,
+          "temperature_downstream_c": 90.0
+        },
+        "orifice_diameter_in": 0.125,
+        "steam_pressure_psig": 100.0
+      }
+    },
+    "fleet_mode": {
+      "operation_mode": "fleet",
+      "fleet_data": [
+        {
+          "trap_id": "TRAP-001",
+          "failure_mode": "failed_open",
+          "energy_loss_usd_yr": 12000,
+          "process_criticality": 8
+        },
+        {
+          "trap_id": "TRAP-002",
+          "failure_mode": "normal",
+          "energy_loss_usd_yr": 0,
+          "process_criticality": 5
+        }
+      ]
+    }
+  },
+
+  "standards_compliance": [
+    "ASME PTC 25 (Pressure Relief Devices)",
+    "Spirax Sarco Steam Engineering Principles",
+    "DOE Best Practices for Steam Systems",
+    "ASTM E1316 (Ultrasonic Testing)",
+    "ISO 18436-8 (Condition Monitoring - Ultrasonics)"
+  ],
+
+  "deployment": {
+    "container_image": "greenlang/gl-008-trapcatcher:1.0.0",
+    "platform": "kubernetes",
+    "namespace": "greenlang-agents",
+    "service_name": "steam-trap-inspector",
+    "replicas": 1,
+    "autoscaling_enabled": true,
+    "min_replicas": 1,
+    "max_replicas": 10,
+    "target_cpu_utilization_percent": 70
+  }
+}
