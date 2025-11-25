@@ -12,12 +12,16 @@ from .pipeline import Pipeline as PipelineRunner
 from .builder import AgentBuilder, WorkflowBuilder
 
 
-# Lazy import for GreenLangClient
+# Lazy import for GreenLangClient and EnhancedClient
 def __getattr__(name):
     if name == "GreenLangClient":
         from .client import GreenLangClient
 
         return GreenLangClient
+    if name == "EnhancedClient":
+        from .enhanced_client import EnhancedClient
+
+        return EnhancedClient
     raise AttributeError(f"module 'greenlang.sdk' has no attribute '{name}'")
 
 
@@ -31,6 +35,7 @@ __all__ = [
     "Artifact",
     "PipelineRunner",
     "GreenLangClient",
+    "EnhancedClient",
     "AgentBuilder",
     "WorkflowBuilder",
 ]

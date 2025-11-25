@@ -23,9 +23,9 @@ class TestCBAMPipeline:
     @pytest.fixture
     def cbam_pipeline(self):
         """Create CBAM pipeline instance."""
-        from GL-CBAM-APP.cbam_pipeline import CBAMPipeline
+        # from GL_CBAM_APP.cbam_pipeline import CBAMPipeline  # Module path needs fix
 
-        with patch('GL-CBAM-APP.cbam_pipeline.CBAMPipeline.__init__', return_value=None):
+        with patch('cbam_pipeline.CBAMPipeline.__init__', return_value=None):
             pipeline = CBAMPipeline.__new__(CBAMPipeline)
             pipeline.name = "CBAM Pipeline"
             pipeline.stages = []
@@ -132,9 +132,9 @@ class TestCSRDPipeline:
     @pytest.fixture
     def csrd_pipeline(self):
         """Create CSRD pipeline instance."""
-        from GL-CSRD-APP.csrd_pipeline import CSRDPipeline
+        # from GL_CSRD_APP.csrd_pipeline import CSRDPipeline  # Module path needs fix
 
-        with patch('GL-CSRD-APP.csrd_pipeline.CSRDPipeline.__init__', return_value=None):
+        with patch('csrd_pipeline.CSRDPipeline.__init__', return_value=None):
             pipeline = CSRDPipeline.__new__(CSRDPipeline)
             pipeline.name = "CSRD Pipeline"
             pipeline.stages = []
@@ -248,9 +248,9 @@ class TestVCCIPipeline:
     @pytest.fixture
     def vcci_pipeline(self):
         """Create VCCI pipeline instance."""
-        from GL-VCCI-Carbon-APP.vcci_pipeline import VCCIPipeline
+        # from GL_VCCI_Carbon_APP.vcci_pipeline import VCCIPipeline  # Module path needs fix
 
-        with patch('GL-VCCI-Carbon-APP.vcci_pipeline.VCCIPipeline.__init__', return_value=None):
+        with patch('vcci_pipeline.VCCIPipeline.__init__', return_value=None):
             pipeline = VCCIPipeline.__new__(VCCIPipeline)
             pipeline.name = "VCCI Pipeline"
             return pipeline

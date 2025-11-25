@@ -449,7 +449,8 @@ class TestCascadingFailurePrevention:
 
         # Service A should stay up in degraded mode
         assert all(isinstance(r, dict) for r in results)
-        assert most_degraded = sum(1 for r in results if r.get("status") == "degraded") > 5
+        most_degraded = sum(1 for r in results if r.get("status") == "degraded")
+        assert most_degraded > 5
 
     @pytest.mark.asyncio
     async def test_bulkhead_isolation(self):

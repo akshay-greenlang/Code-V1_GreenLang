@@ -32,10 +32,11 @@ from greenlang.intelligence.schemas.tools import ToolDef
 
 # Import shared tools from Phase 6 library
 from greenlang.agents.tools import (
+FinancialMetricsTool,
+
+)
 from greenlang.determinism import DeterministicClock
 from greenlang.intelligence import ChatSession, ChatMessage
-    FinancialMetricsTool,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,6 @@ class BoilerReplacementAgentAI_V4(ReasoningAgent):
             },
             session=chat_session,
             rag_engine=rag_engine
-        )
     """
 
     category = AgentCategory.RECOMMENDATION
@@ -83,7 +83,7 @@ class BoilerReplacementAgentAI_V4(ReasoningAgent):
         description="Boiler replacement analysis with shared tool library integration"
     )
 
-    # Standard boiler efficiency ranges (ASME PTC 4.1)
+        # Standard boiler efficiency ranges (ASME PTC 4.1)
     BOILER_EFFICIENCY_RANGES = {
         "firetube": {"low": 75, "typical": 80, "high": 85},
         "watertube": {"low": 78, "typical": 82, "high": 88},
@@ -740,7 +740,6 @@ Be thorough. Be precise. Follow ASME standards."""
         # Assign rankings
         for i, opt in enumerate(scored_options):
             opt["ranking"] = i + 1
-        )
 
         return {
             "ranked_options": scored_options,
@@ -890,7 +889,6 @@ Be thorough. Be precise. Follow ASME standards."""
         multiplier = regional_multipliers.get(region, 1.0)
 
         total_cost = (equipment_cost + installation_cost + controls_cost) * multiplier
-        )
 
         return {
             "equipment_cost_usd": round(equipment_cost, 2),
@@ -978,7 +976,6 @@ Be thorough. Be precise. Follow ASME standards."""
         for entry in trace:
             tool = entry.get("tool", "unknown")
             counts[tool] = counts.get(tool, 0) + 1
-        )
         return counts
 
     def _count_shared_tools(self, trace: List[Dict]) -> Dict[str, int]:

@@ -292,6 +292,7 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["recommendations"],
             },
+        )
 
     def _analyze_energy_usage_impl(
         self,
@@ -446,6 +447,7 @@ class RecommendationAgentAI(BaseAgent):
             },
             timestamp=DeterministicClock.now(),
             tool_call_id=f"roi_calc_{self._tool_call_count}",
+        )
         self._calculation_citations.append(calc_citation)
 
         return {
@@ -495,7 +497,6 @@ class RecommendationAgentAI(BaseAgent):
         # Add ranking
         for idx, rec in enumerate(ranked):
             rec["rank"] = idx + 1
-        )
 
         return {
             "ranked_recommendations": ranked,
@@ -526,6 +527,7 @@ class RecommendationAgentAI(BaseAgent):
         savings = self.rec_agent._calculate_savings_potential(
             recommendations,
             emissions_by_source
+        )
 
         # Calculate cost savings if provided
         cost_savings = {}
@@ -627,6 +629,7 @@ class RecommendationAgentAI(BaseAgent):
             return AgentResult(
                 success=False,
                 error="Invalid input: building analysis data required",
+            )
 
         try:
             # Run async calculation
@@ -654,6 +657,7 @@ class RecommendationAgentAI(BaseAgent):
             return AgentResult(
                 success=False,
                 error=f"Failed to generate recommendations: {str(e)}",
+            )
 
     async def _execute_async(self, input_data: Dict[str, Any]) -> AgentResult:
         """Async execution with ChatSession.
@@ -709,6 +713,7 @@ class RecommendationAgentAI(BaseAgent):
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
+            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -721,6 +726,7 @@ class RecommendationAgentAI(BaseAgent):
                 input_data,
                 tool_results,
                 response.text if self.enable_ai_summary else None,
+            )
 
             return AgentResult(
                 success=True,
@@ -734,12 +740,14 @@ class RecommendationAgentAI(BaseAgent):
                     "tool_calls": len(response.tool_calls),
                     "deterministic": True,
                 },
+            )
 
         except BudgetExceeded as e:
             self.logger.error(f"Budget exceeded: {e}")
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",
+            )
 
     def _build_prompt(self, input_data: Dict[str, Any]) -> str:
         """Build AI prompt for recommendation generation.

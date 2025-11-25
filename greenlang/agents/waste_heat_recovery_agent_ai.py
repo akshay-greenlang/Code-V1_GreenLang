@@ -215,9 +215,7 @@ class ThermodynamicProperties:
 
         # Temperature correction for density (ideal gas law approximation)
         temp_rankine = temperature_f + 459.67
-        )
         temp_ref_rankine = 70 + 459.67
-        )
         temp_correction = temp_ref_rankine / temp_rankine
 
         return {
@@ -522,6 +520,7 @@ class WasteHeatCharacterization:
         return cls.PROCESS_WASTE_HEAT.get(
             process_type,
             cls.PROCESS_WASTE_HEAT["boiler_exhaust"]  # Default
+        )
 
 
 # ============================================================================
@@ -787,6 +786,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
                 name="WasteHeatRecoveryAgent_AI",
                 description="AI-powered waste heat recovery analysis with heat transfer modeling",
                 version="1.0.0",
+            )
         super().__init__(config)
 
         # Configuration
@@ -995,9 +995,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
         # Calculate exergy (available work) using Carnot efficiency
         # Exergy = Q × (1 - T_ambient / T_source)
         t_ambient_rankine = 70 + 459.67
-        )
         t_source_rankine = inlet_temp + 459.67
-        )
         carnot_efficiency = 1 - (t_ambient_rankine / t_source_rankine)
         exergy_mmbtu_yr = practical_mmbtu_yr * carnot_efficiency
 
@@ -1164,6 +1162,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
             hot_side_in_f, hot_side_out_f,
             cold_side_in_f, cold_side_out_f,
             flow_arrangement
+        )
 
         # Get U-value for technology
         tech_data = HeatExchangerTechnology.TECHNOLOGIES.get(technology, {})
@@ -1350,7 +1349,6 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
         # Sulfuric acid dew point: T_dp ≈ 280-320°F (depends on SO3 concentration)
         if sulfur_content_ppm > 100:
             acid_dew_point_f = 280 + (sulfur_content_ppm / 100) * 10
-        )
             acid_dew_point_f = min(acid_dew_point_f, 340)
 
             if temp_f < acid_dew_point_f + 20:
@@ -1435,9 +1433,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
         # Calculate fouling resistance impact on heat transfer
         # Typical fouling resistance: 0.001-0.005 hr·ft²·°F/Btu
         fouling_resistance = 0.001 + (risk_score / 100) * 0.004
-        )
         u_value_degradation_percent = (fouling_resistance / (fouling_resistance + 0.01)) * 30
-        )
 
         return {
             "overall_risk_level": overall_risk,
@@ -1503,12 +1499,10 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
         for year in range(1, project_lifetime_years + 1):
             # Escalate energy savings
             savings_this_year = annual_savings_usd * ((1 + energy_cost_escalation_rate) ** (year - 1))
-        )
             net_cashflow = savings_this_year - annual_maintenance_cost_usd
 
             # Discount to present value
             discount_factor = (1 + discount_rate) ** year
-        )
             discounted_cashflow = net_cashflow / discount_factor
 
             cumulative_discounted_cashflow += discounted_cashflow
@@ -1535,9 +1529,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
             dnpv_dirr = 0
 
             for year in range(1, project_lifetime_years + 1):
-        )
                 savings_this_year = annual_savings_usd * ((1 + energy_cost_escalation_rate) ** (year - 1))
-        )
                 net_cashflow = savings_this_year - annual_maintenance_cost_usd
 
                 npv_at_irr += net_cashflow / ((1 + irr) ** year)
@@ -1744,6 +1736,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
                 return AgentResult(
                     success=False,
                     error="Invalid input: missing required fields",
+            )
 
             # Run async analysis
             loop = asyncio.new_event_loop()
@@ -1770,6 +1763,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
             return AgentResult(
                 success=False,
                 error=f"Failed to analyze waste heat recovery: {str(e)}",
+            )
 
     def _validate_input(self, input_data: Dict[str, Any]) -> bool:
         """Validate input data against schema."""
@@ -1799,6 +1793,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
             include_hvac_systems=input_data.get("include_hvac_systems", True),
             include_compressed_air=input_data.get("include_compressed_air", True),
             minimum_temperature_f=input_data.get("minimum_temperature_f", 120),
+        )
 
         return AgentResult(
             success=True,
@@ -1815,6 +1810,7 @@ class WasteHeatRecoveryAgent_AI(BaseAgent):
                 "deterministic": True,
                 "tool_calls": self._tool_call_count,
             },
+        )
 
     def health_check(self) -> Dict[str, Any]:
         """Agent health check for monitoring."""

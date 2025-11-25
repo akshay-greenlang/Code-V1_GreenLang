@@ -1,4 +1,9 @@
 {
+  "error": {
+    "message": null,
+    "traceback": null,
+    "type": "ExecutionError"
+  },
   "execution": {
     "backend": "local",
     "environment": {},
@@ -6,22 +11,52 @@
   },
   "kind": "greenlang-run-ledger",
   "metadata": {
-    "duration": -4.76837158203125e-07,
-    "finished_at": "2025-09-12T13:04:28.411347",
-    "started_at": "2025-09-12T13:04:28.411338",
-    "status": "success"
+    "duration": 0.622992992401123,
+    "finished_at": "2025-11-25T13:50:30+00:00",
+    "started_at": "2025-11-25T13:50:30+00:00",
+    "status": "failed"
   },
   "metrics": {},
-  "outputs": {},
+  "outputs": {
+    "count": 42,
+    "result": "success"
+  },
   "spec": {
-    "artifacts": {},
-    "artifacts_list": [],
+    "artifacts": {
+      "output1": "\\tmp\\output1.json",
+      "output2": "\\tmp\\output2.csv"
+    },
+    "artifacts_list": [
+      {
+        "hash": null,
+        "metadata": {},
+        "name": "unknown",
+        "path": "",
+        "type": "file"
+      },
+      {
+        "hash": null,
+        "metadata": {},
+        "name": "unknown",
+        "path": "",
+        "type": "file"
+      }
+    ],
     "config_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-    "inputs_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-    "ledger_hash": "cdacb97a3489cf8b6594ed0653c0fb072150a9bf402c56c9eb13a886b0996c3d",
+    "inputs_hash": "083022094ebeae33582f33e27401035a4387190ce5527a0aaffa96b86c0fbe85",
+    "ledger_hash": "d521a104a204c950b899f8f4e51652d768f84e2cff963698d140aa3396d27e6e",
     "pipeline_hash": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
-    "sbom_ref": null,
-    "signatures": [],
+    "sbom_ref": "\\tmp\\sbom.json",
+    "signatures": [
+      {
+        "metadata": {
+          "algorithm": "SHA-256"
+        },
+        "timestamp": "2025-11-25T13:50:30+00:00",
+        "type": "sha256",
+        "value": "abc123def456"
+      }
+    ],
     "versions": {}
   },
   "version": "1.0.0"

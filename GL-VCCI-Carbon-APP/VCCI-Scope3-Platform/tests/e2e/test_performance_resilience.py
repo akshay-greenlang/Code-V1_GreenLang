@@ -24,9 +24,9 @@ from uuid import uuid4
 
 import pytest
 
-from tests.e2e.conftest import (
 from greenlang.determinism import deterministic_random
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from tests.e2e.conftest import (
     E2ETestConfig,
     assert_throughput_target_met,
     assert_latency_target_met,

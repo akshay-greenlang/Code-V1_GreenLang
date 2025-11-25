@@ -163,6 +163,8 @@ grafana_data/
 # Backup files
 *.bak
 *.backup
+*.py.backup
+*.py.bak
 *.old
 
 # Temporary files
@@ -171,6 +173,7 @@ grafana_data/
 
 # Windows artifacts
 nul
+C:*
 
 # Turborepo
 .turbo/

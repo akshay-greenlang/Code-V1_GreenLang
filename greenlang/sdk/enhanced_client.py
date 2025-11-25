@@ -700,3 +700,13 @@ class GreenLangClient:
             else:
                 items.append((new_key, v))
         return dict(items)
+
+
+# Alias for backward compatibility and alternative naming convention
+EnhancedClient = GreenLangClient
+
+
+__all__ = [
+    "GreenLangClient",
+    "EnhancedClient",
+]

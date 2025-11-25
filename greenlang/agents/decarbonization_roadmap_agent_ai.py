@@ -323,11 +323,13 @@ class DecarbonizationRoadmapAgentAI:
             # Load Agent #1: Industrial Process Heat
             self._sub_agents_cache['heat_agent'] = IndustrialProcessHeatAgent_AI(
                 budget_usd=0.50  # Allocate $0.50 per sub-agent
+            )
             logger.debug("Loaded IndustrialProcessHeatAgent_AI")
 
             # Load Agent #2: Boiler Replacement
             self._sub_agents_cache['boiler_agent'] = BoilerReplacementAgent_AI(
                 budget_usd=0.50
+            )
             logger.debug("Loaded BoilerReplacementAgent_AI")
 
             # Try to load supporting agents (optional, may not exist yet)
@@ -392,6 +394,7 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["fuel_consumption", "electricity_kwh", "grid_region"],
             },
+        )
 
         # Tool #2: Technology Assessment
         self._tool_assess_technologies = ToolDef(
@@ -415,6 +418,7 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["baseline_data", "capital_budget_usd"],
             },
+        )
 
         # Tool #3: Scenario Modeling
         self._tool_model_scenarios = ToolDef(
@@ -442,6 +446,7 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["baseline_emissions", "technologies", "target_year"],
             },
+        )
 
         # Tool #4: Implementation Roadmap
         self._tool_build_roadmap = ToolDef(
@@ -465,6 +470,7 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["selected_scenario", "technologies"],
             },
+        )
 
         # Tool #5: Financial Analysis
         self._tool_calculate_financials = ToolDef(
@@ -488,6 +494,7 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["roadmap_data"],
             },
+        )
 
         # Tool #6: Risk Assessment
         self._tool_assess_risks = ToolDef(
@@ -512,6 +519,7 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["technologies"],
             },
+        )
 
         # Tool #7: Compliance Analysis
         self._tool_analyze_compliance = ToolDef(
@@ -535,6 +543,7 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["facility_location"],
             },
+        )
 
         # Tool #8: Pathway Optimization
         self._tool_optimize_pathway = ToolDef(
@@ -562,6 +571,7 @@ class DecarbonizationRoadmapAgentAI:
                 },
                 "required": ["scenarios", "risk_data"],
             },
+        )
 
         # Register all tools
         self._all_tools = [
@@ -631,7 +641,6 @@ class DecarbonizationRoadmapAgentAI:
 
         for iteration in range(max_iterations):
             # Calculate NPV at current rate: f(r) = -I + Σ(CF/(1+r)^t)
-        )
             npv = -initial_investment
             for t in range(1, years + 1):
                 npv += annual_cash_flow / ((1 + rate) ** t)
@@ -965,7 +974,6 @@ class DecarbonizationRoadmapAgentAI:
                 scope3_breakdown["custom"] = value_chain["custom_scope3_kg_co2e"]
 
         total_emissions = scope1_total + scope2_total + scope3_total
-        )
 
         return {
             "total_emissions_kg_co2e": round(total_emissions, 2),
@@ -1029,10 +1037,12 @@ class DecarbonizationRoadmapAgentAI:
                     # Already in async context, use existing loop
                     technology_options = loop.run_until_complete(
                         self._call_sub_agents_async(baseline_data, capital_budget_usd)
+                    )
                 else:
                     # Create new event loop
                     technology_options = asyncio.run(
                         self._call_sub_agents_async(baseline_data, capital_budget_usd)
+                    )
 
                 logger.info(f"Sub-agent coordination completed: {len(technology_options)} technologies assessed")
 
@@ -1389,17 +1399,18 @@ class DecarbonizationRoadmapAgentAI:
 
         # IRR Calculation (Newton-Raphson method for exact solution)
         # Solve: 0 = -Investment + Σ(Cash_Flow_t / (1 + IRR)^t)
-        )
         irr_estimate = self._calculate_irr_newton_raphson(
             initial_investment=net_investment,
             annual_cash_flow=annual_savings,
-            years=years
+            years=years,
+        )
 
         # Levelized Cost of Abatement (LCOA)
         total_reduction = (
             roadmap_data.get("phase1_quick_wins", {}).get("expected_reduction_kg_co2e", 0) +
             roadmap_data.get("phase2_core_decarbonization", {}).get("expected_reduction_kg_co2e", 0) +
             roadmap_data.get("phase3_deep_decarbonization", {}).get("expected_reduction_kg_co2e", 0)
+        )
 
         # LCOA = (CAPEX + PV(OPEX) - PV(Energy_Savings)) / PV(Emissions_Reduced)
         # Proper implementation per GHG Protocol
@@ -1414,7 +1425,6 @@ class DecarbonizationRoadmapAgentAI:
         pv_savings = sum(annual_savings / ((1 + discount_rate) ** t) for t in range(1, years + 1))
 
         # Net lifecycle cost = CAPEX + PV(OPEX) - PV(Savings) - Incentives
-        )
         net_lifecycle_cost = total_capex + pv_opex - pv_savings - total_incentives
 
         # Lifetime emissions reduction in metric tons
@@ -1553,7 +1563,6 @@ class DecarbonizationRoadmapAgentAI:
         ]
 
         all_risks = technical_risks + financial_risks + operational_risks + regulatory_risks
-        )
 
         high_risks = [r for r in all_risks if r["risk_score"] >= 12]
         medium_risks = [r for r in all_risks if 6 <= r["risk_score"] < 12]
@@ -1807,6 +1816,7 @@ class DecarbonizationRoadmapAgentAI:
                 carbon_score * weights["carbon"] +
                 risk_score * weights["risk"] +
                 strategic_score * weights["strategic"]
+            )
 
             scenario_scores.append({
                 "pathway_name": scenario_name.replace("_", " ").title(),
@@ -1971,6 +1981,7 @@ Provide a comprehensive executive summary and actionable next steps."""
                 temperature=0.0,  # DETERMINISTIC (required)
                 seed=42,  # REPRODUCIBLE (required)
                 tool_choice="auto",
+            )
 
             # Execute tool calls
             tool_results = {}
@@ -2007,17 +2018,20 @@ Provide a comprehensive executive summary and actionable next steps."""
                     "temperature": 0.0,
                     "seed": 42,
                 },
+            )
 
         except BudgetExceeded as e:
             logger.error(f"Budget exceeded: {e}")
             return AgentResult(
                 success=False,
                 error=f"Budget exceeded: {e}",
+            )
         except Exception as e:
             logger.error(f"Execution error: {e}", exc_info=True)
             return AgentResult(
                 success=False,
                 error=f"Execution error: {str(e)}",
+            )
 
     def _build_output(
         self,

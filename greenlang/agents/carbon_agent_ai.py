@@ -252,6 +252,7 @@ class CarbonAgentAI(BaseAgent):
                 },
                 "required": ["breakdown"],
             },
+        )
 
     def _aggregate_emissions_impl(self, emissions: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Tool implementation: Aggregate emissions from multiple sources.
@@ -292,6 +293,7 @@ class CarbonAgentAI(BaseAgent):
                 unit="kgCO2e",
                 version="2025.1",
                 confidence="high",
+            )
             self._current_citations.append(citation)
 
         return {
@@ -477,6 +479,7 @@ class CarbonAgentAI(BaseAgent):
             return AgentResult(
                 success=False,
                 error="Invalid input: 'emissions' list required",
+            )
 
         # Reset citations for new run
         self._current_citations = []
@@ -501,6 +504,7 @@ class CarbonAgentAI(BaseAgent):
                     "agent": "CarbonAgentAI",
                     "num_sources": 0,
                 },
+            )
 
         try:
             # Run async calculation
@@ -528,6 +532,7 @@ class CarbonAgentAI(BaseAgent):
             return AgentResult(
                 success=False,
                 error=f"Failed to aggregate carbon emissions: {str(e)}",
+            )
 
     async def _execute_async(self, input_data: Dict[str, Any]) -> AgentResult:
         """Async execution with ChatSession.
@@ -581,6 +586,7 @@ class CarbonAgentAI(BaseAgent):
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
+            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -593,6 +599,7 @@ class CarbonAgentAI(BaseAgent):
                 input_data,
                 tool_results,
                 response.text if self.enable_ai_summary else None,
+            )
 
             return AgentResult(
                 success=True,
@@ -609,12 +616,14 @@ class CarbonAgentAI(BaseAgent):
                     "temperature": 0.0,  # Deterministic temperature
                     "deterministic": True,
                 },
+            )
 
         except BudgetExceeded as e:
             self.logger.error(f"Budget exceeded: {e}")
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",
+            )
 
     def _build_prompt(self, input_data: Dict[str, Any]) -> str:
         """Build AI prompt for aggregation.
@@ -725,6 +734,7 @@ IMPORTANT:
         output["summary"] = self.carbon_agent._generate_summary(
             output["total_co2e_tons"],
             output["emissions_breakdown"],
+        )
 
         # Add AI summary if enabled
         if ai_summary and self.enable_ai_summary:

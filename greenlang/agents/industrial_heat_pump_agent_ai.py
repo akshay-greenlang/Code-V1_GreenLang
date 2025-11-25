@@ -674,9 +674,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
         cop_heating = carnot_cop * carnot_efficiency
 
         # Part-load degradation: COP_partload = COP_actual × (0.9 + 0.1 × PLR)
-        )
         part_load_factor = 0.9 + 0.1 * part_load_ratio
-        )
         cop_heating = cop_heating * part_load_factor
 
         # Capacity degradation factor at part load
@@ -717,6 +715,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
             output={"cop_heating": cop_heating, "carnot_cop": carnot_cop},
             timestamp=DeterministicClock.now(),
             tool_call_id=f"hp_cop_{self._tool_call_count}",
+        )
         self._calculation_citations.append(calc_citation)
 
         return {
@@ -878,6 +877,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
             blended_rate = (
                 energy_charge_usd_per_kwh * peak_multiplier * peak_fraction +
                 energy_charge_usd_per_kwh * off_peak_fraction
+            )
         else:
             blended_rate = energy_charge_usd_per_kwh
 
@@ -1017,11 +1017,8 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
 
         for i in range(number_of_stages):
             stage_number = i + 1
-        )
             stage_source_temp = source_temperature_f + (i * lift_per_stage)
-        )
             stage_sink_temp = source_temperature_f + ((i + 1) * lift_per_stage)
-        )
             stage_lift = lift_per_stage
 
             # Select refrigerant based on temperature
@@ -1035,7 +1032,6 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
             # Calculate stage COP (using screw compressor as default)
             T_source_R = stage_source_temp + 459.67
             T_sink_R = stage_sink_temp + 459.67
-        )
             carnot_cop = T_sink_R / (T_sink_R - T_source_R)
             stage_cop = carnot_cop * 0.525  # Screw compressor efficiency
 
@@ -1285,6 +1281,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                     actual_source_temp_f=source_temp,
                     actual_sink_temp_f=sink_temp,
                     heat_pump_type=heat_pump_type,
+                )
 
                 capacity_tons = degrad["actual_capacity_tons"]
                 cop = degrad["actual_cop"]
@@ -1537,6 +1534,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
+            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -1549,6 +1547,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 payload,
                 tool_results,
                 response.text if self.enable_explanations else None,
+            )
 
             return {
                 "success": True,
@@ -1737,6 +1736,7 @@ IMPORTANT:
         baseline_fuel_cost_per_mmbtu = payload.get("baseline_fuel_cost_usd_per_mmbtu", 8.0)
         baseline_operating_cost_usd = (
             payload["annual_heating_load_mmbtu"] / payload["baseline_efficiency"] * baseline_fuel_cost_per_mmbtu
+        )
 
         # Annual cost savings
         annual_cost_savings_usd = baseline_operating_cost_usd - annual_operating_cost_usd
@@ -1752,6 +1752,7 @@ IMPORTANT:
         # Simple payback
         simple_payback_years = (
             estimated_capex_usd / annual_cost_savings_usd if annual_cost_savings_usd > 0 else 999
+        )
 
         # NPV 20-year (simplified: assume 8% discount rate)
         discount_rate = 0.08
@@ -1858,6 +1859,7 @@ IMPORTANT:
                 compressor_type="screw",
                 refrigerant="R134a",
                 part_load_ratio=0.80,
+            )
 
             # Verify provider is available
             provider_status = "available" if self.provider else "unavailable"

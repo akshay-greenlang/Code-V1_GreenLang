@@ -345,12 +345,12 @@ class TestBusinessValue:
 
         # Cost with router (smart routing)
         simple_provider, simple_model = router.select_provider(
-            QueryType.SIMPLE_CALC, budget_cents=5, LatencyRequirement.REALTIME
+            QueryType.SIMPLE_CALC, budget_cents=5, latency_requirement=LatencyRequirement.REALTIME
         )
         simple_cost = router.estimate_cost(simple_provider, simple_model, 2000)
 
         complex_provider, complex_model = router.select_provider(
-            QueryType.COMPLEX_ANALYSIS, budget_cents=50, LatencyRequirement.BATCH
+            QueryType.COMPLEX_ANALYSIS, budget_cents=50, latency_requirement=LatencyRequirement.BATCH
         )
         complex_cost = router.estimate_cost(complex_provider, complex_model, 5000)
 

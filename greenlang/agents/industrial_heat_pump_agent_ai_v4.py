@@ -34,11 +34,12 @@ from greenlang.intelligence.schemas.tools import ToolDef
 
 # Import shared tools from Phase 6 library
 from greenlang.agents.tools import (
+FinancialMetricsTool,
+    GridIntegrationTool,
+
+)
 from greenlang.determinism import DeterministicClock
 from greenlang.intelligence import ChatSession, ChatMessage
-    FinancialMetricsTool,
-    GridIntegrationTool,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,6 @@ class IndustrialHeatPumpAgentAI_V4(ReasoningAgent):
             },
             session=chat_session,
             rag_engine=rag_engine
-        )
     """
 
     category = AgentCategory.RECOMMENDATION
@@ -87,7 +87,7 @@ class IndustrialHeatPumpAgentAI_V4(ReasoningAgent):
         description="Industrial heat pump analysis with shared tool library integration"
     )
 
-    # Heat pump technology types
+        # Heat pump technology types
     HEAT_PUMP_TYPES = {
         "air_source": {"temp_limit_c": 60, "typical_cop": 3.0, "capex_per_kw": 400},
         "water_source": {"temp_limit_c": 80, "typical_cop": 4.0, "capex_per_kw": 600},
@@ -710,9 +710,7 @@ Be thorough. Be precise. Be practical."""
         """Calculate COP using Carnot efficiency method."""
         # Carnot COP
         supply_k = supply_temp_c + 273.15
-        )
         source_k = source_temp_c + 273.15
-        )
         carnot_cop = supply_k / (supply_k - source_k)
 
         # Empirical efficiency factors
@@ -814,7 +812,6 @@ Be thorough. Be precise. Be practical."""
 
             # COP for this stage
             carnot_cop = (next_temp + 273.15) / lift_per_stage
-        )
             actual_cop = carnot_cop * 0.48  # Industrial HP efficiency
 
             stages.append({
@@ -903,13 +900,12 @@ Be thorough. Be precise. Be practical."""
         curve_points = []
 
         for source_temp in range(temp_range_c["min"], temp_range_c["max"] + 1, 5):
-        )
             supply_temp = 80  # Design supply temperature
 
             cop_result = self._tool_calculate_cop(
                 supply_temp_c=supply_temp,
                 source_temp_c=source_temp,
-                heat_pump_type=heat_pump_type
+                heat_pump_type=heat_pump_type,
             )
 
             curve_points.append({
@@ -987,7 +983,7 @@ Be thorough. Be precise. Be practical."""
         design_cop = self._tool_calculate_cop(
             supply_temp_c=supply_temp_c,
             source_temp_c=source_temp_c,
-            heat_pump_type="industrial_hp"
+            heat_pump_type="industrial_hp",
         )
 
         # Seasonal COP if requested
@@ -998,7 +994,7 @@ Be thorough. Be precise. Be practical."""
                 cop_result = self._tool_calculate_cop(
                     supply_temp_c=supply_temp_c,
                     source_temp_c=amb_temp,
-                    heat_pump_type="industrial_hp"
+                    heat_pump_type="industrial_hp",
                 )
                 cop_values.append(cop_result["actual_cop"])
             seasonal_cop = sum(cop_values) / len(cop_values)
@@ -1011,7 +1007,7 @@ Be thorough. Be precise. Be practical."""
                     supply_temp_c=supply_temp_c,
                     source_temp_c=source_temp_c,
                     heat_pump_type="industrial_hp",
-                    part_load_ratio=load
+                    part_load_ratio=load,
                 )
                 part_load_cops[f"{int(load*100)}%"] = cop_result["actual_cop"]
 
@@ -1071,7 +1067,6 @@ Be thorough. Be precise. Be practical."""
         for entry in trace:
             tool = entry.get("tool", "unknown")
             counts[tool] = counts.get(tool, 0) + 1
-        )
         return counts
 
     def _count_shared_tools(self, trace: List[Dict]) -> Dict[str, int]:

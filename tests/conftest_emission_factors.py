@@ -370,4 +370,4 @@ def test_example(populated_db, emission_factor_client, performance_timer):
     performance_timer.stop()
 
     assert factor.factor_id == 'diesel_us_2024'
-    assert performance_timer.elapsed_ms() < 10  # <10ms target
+    assert performance_timer.elapsed_ms() < 10  # <10ms target"""

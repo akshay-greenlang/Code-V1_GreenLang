@@ -471,6 +471,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["baseline_emissions_kg_co2e", "solar_fraction", "annual_heat_demand_mwh"],
             },
+        )
 
     def _calculate_process_heat_demand_impl(
         self,
@@ -675,6 +676,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
         annual_solar_energy_needed_mwh = (heat_demand_kw * 8760 / 1000) * solar_fraction
         collector_area_m2 = (annual_solar_energy_needed_mwh * 1000) / (
             annual_irradiance * collector_efficiency
+        )
 
         # Storage volume (rule of thumb: 50-75 liters per m² collector)
         storage_volume_m3 = (collector_area_m2 * 60) / 1000  # liters to m³
@@ -817,6 +819,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
         # Maximum reduction = baseline × solar_fraction - solar_lifecycle_emissions
         max_reduction_kg_co2e = (
             baseline_emissions_kg_co2e * solar_fraction - solar_lifecycle_emissions
+        )
 
         # Reduction percentage
         reduction_percentage = (max_reduction_kg_co2e / baseline_emissions_kg_co2e) * 100
@@ -998,6 +1001,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
         # Calculate annual operating hours
         operating_hours_per_year = (
             operating_hours_per_day * (days_per_week / 7) * 365
+        )
 
         # Create ChatSession with tools
         session = ChatSession(self.provider)
@@ -1053,6 +1057,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
+            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -1065,6 +1070,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 payload,
                 tool_results,
                 response.text if self.enable_explanations else None,
+            )
 
             return {
                 "success": True,
@@ -1174,6 +1180,7 @@ IMPORTANT:
                 elif name == "calculate_temperature_requirements":
                     results["temperature_requirements"] = (
                         self._calculate_temperature_requirements_impl(**args)
+                    )
                 elif name == "calculate_energy_intensity":
                     results["energy_intensity"] = self._calculate_energy_intensity_impl(**args)
                 elif name == "estimate_solar_thermal_fraction":
@@ -1185,6 +1192,7 @@ IMPORTANT:
                 elif name == "calculate_decarbonization_potential":
                     results["decarbonization"] = self._calculate_decarbonization_potential_impl(
                         **args
+                    )
             except Exception as e:
                 self.logger.warning(f"Tool call {name} failed: {e}")
                 # Continue processing other tools
@@ -1219,6 +1227,7 @@ IMPORTANT:
         storage_volume_m3 = solar_data.get("storage_volume_m3", 0.0)
         technology_recommendation = solar_data.get(
             "technology_recommendation", "Solar thermal system"
+        )
 
         # Extract backup fuel data
         backup_data = tool_results.get("backup_fuel", {})
@@ -1264,6 +1273,7 @@ IMPORTANT:
         if intensity_data:
             output["energy_intensity_kwh_per_unit"] = intensity_data.get(
                 "energy_intensity_kwh_per_unit"
+            )
 
         if annual_backup_energy_mwh:
             output["annual_backup_energy_mwh"] = annual_backup_energy_mwh
@@ -1331,6 +1341,7 @@ IMPORTANT:
                 process_type="pasteurization",
                 production_rate=100,
                 temperature_requirement=72,
+            )
 
             # Verify provider is available
             provider_status = "available" if self.provider else "unavailable"

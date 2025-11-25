@@ -10,6 +10,8 @@ from .checkpointing import (
     CheckpointManager,
     CheckpointStrategy,
     CheckpointStatus,
+    POSTGRES_AVAILABLE,
+    REDIS_AVAILABLE,
 )
 from .idempotency import (
     IdempotencyManager,
@@ -22,6 +24,9 @@ __all__ = [
     "CheckpointManager",
     "CheckpointStrategy",
     "CheckpointStatus",
+    # Availability flags
+    "POSTGRES_AVAILABLE",
+    "REDIS_AVAILABLE",
     # Idempotency
     "IdempotencyManager",
     "IdempotencyStatus",

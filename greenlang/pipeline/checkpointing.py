@@ -24,9 +24,23 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, asdict, field
 from contextlib import contextmanager
 
-import psycopg2
-from psycopg2.extras import Json
-import redis
+# Optional database dependencies with guarded imports
+try:
+    import psycopg2
+    from psycopg2.extras import Json
+    POSTGRES_AVAILABLE = True
+except ImportError:
+    psycopg2 = None
+    Json = None
+    POSTGRES_AVAILABLE = False
+
+try:
+    import redis
+    REDIS_AVAILABLE = True
+except ImportError:
+    redis = None
+    REDIS_AVAILABLE = False
+
 from pydantic import BaseModel, Field, validator
 
 logger = logging.getLogger(__name__)
@@ -264,6 +278,11 @@ class DatabaseCheckpointStorage(CheckpointStorage):
 
     def __init__(self, connection_string: str):
         """Initialize database storage."""
+        if not POSTGRES_AVAILABLE:
+            raise ImportError(
+                "psycopg2 is required for database checkpoint storage. "
+                "Install with: pip install psycopg2-binary"
+            )
         self.connection_string = connection_string
         self._create_tables()
         logger.info("Initialized database checkpoint storage")
@@ -493,6 +512,11 @@ class RedisCheckpointStorage(CheckpointStorage):
                  db: int = 0, password: Optional[str] = None,
                  ttl_seconds: int = 86400):  # 24 hours default TTL
         """Initialize Redis storage."""
+        if not REDIS_AVAILABLE:
+            raise ImportError(
+                "redis is required for Redis checkpoint storage. "
+                "Install with: pip install redis"
+            )
         self.redis_client = redis.Redis(
             host=host,
             port=port,
@@ -1096,3 +1120,24 @@ class CheckpointManager:
             stats['newest_checkpoint'] = sorted_checkpoints[-1].timestamp.isoformat()
 
         return stats
+
+
+__all__ = [
+    # Enums
+    "CheckpointStrategy",
+    "CheckpointStatus",
+    # Data classes
+    "CheckpointMetadata",
+    "PipelineCheckpoint",
+    # Storage backends
+    "CheckpointStorage",
+    "FileCheckpointStorage",
+    "DatabaseCheckpointStorage",
+    "RedisCheckpointStorage",
+    "MemoryCheckpointStorage",
+    # Manager
+    "CheckpointManager",
+    # Availability flags
+    "POSTGRES_AVAILABLE",
+    "REDIS_AVAILABLE",
+]

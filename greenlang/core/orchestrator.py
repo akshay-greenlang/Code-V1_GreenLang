@@ -595,3 +595,15 @@ class Orchestrator:
                 for step in workflow.steps
             ],
         }
+
+
+# Alias for backward compatibility and alternative naming convention
+WorkflowOrchestrator = Orchestrator
+
+
+__all__ = [
+    "Orchestrator",
+    "WorkflowOrchestrator",
+    "ExecutionState",
+    "PolicyExecutionContext",
+]

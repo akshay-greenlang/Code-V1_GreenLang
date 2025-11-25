@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
-# This file contains corrected async test methods - copy these to replace lines 887-1050 in the main test file
+"""
+This file contains corrected async test methods.
+Copy these to replace lines 887-1050 in the main test file.
+"""
+from unittest.mock import patch, AsyncMock, Mock
+
+
+class TestIndustrialProcessHeatAgentAsync:
+    """Async test methods for IndustrialProcessHeatAgent."""
 
     def test_full_async_execution_drying(self, agent, valid_input_drying):
         """Test full async execution with mocked ChatSession for drying process."""

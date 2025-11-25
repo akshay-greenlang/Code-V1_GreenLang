@@ -1186,3 +1186,14 @@ class Executor:
             raise ValueError(f"Unknown sandbox policy: {policy_name}")
 
         logger.info(f"Set sandbox policy to: {policy_name}")
+
+
+# Alias for backward compatibility and alternative naming convention
+PipelineExecutor = Executor
+
+
+__all__ = [
+    "Executor",
+    "PipelineExecutor",
+    "DeterministicConfig",
+]

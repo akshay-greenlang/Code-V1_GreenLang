@@ -30,7 +30,7 @@ import hashlib
 import secrets
 import uuid
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Any, Tuple
+from typing import Dict, List, Optional, Any, Tuple, TYPE_CHECKING
 from dataclasses import dataclass, field
 from enum import Enum
 import xml.etree.ElementTree as ET
@@ -43,6 +43,11 @@ try:
     from onelogin.saml2.errors import OneLogin_Saml2_Error
     SAML_AVAILABLE = True
 except ImportError:
+    # Create placeholder classes for type hints when SAML is not available
+    OneLogin_Saml2_Auth = None
+    OneLogin_Saml2_Settings = None
+    OneLogin_Saml2_Utils = None
+    OneLogin_Saml2_Error = Exception  # Use base Exception for except handler
     SAML_AVAILABLE = False
 
 from cryptography import x509
@@ -572,7 +577,7 @@ class SAMLProvider:
             logger.error(f"Unexpected error processing SAML response: {e}")
             raise SAMLError(f"Response processing failed: {e}")
 
-    def _parse_assertion(self, auth: OneLogin_Saml2_Auth) -> SAMLAssertion:
+    def _parse_assertion(self, auth: "OneLogin_Saml2_Auth") -> SAMLAssertion:
         """Parse SAML assertion from auth object"""
         attributes = auth.get_attributes()
 

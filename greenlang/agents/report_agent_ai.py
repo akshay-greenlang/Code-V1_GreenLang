@@ -333,6 +333,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["total_emissions_tons", "emissions_breakdown"],
             },
+        )
 
     def _fetch_emissions_data_impl(self, carbon_data: Dict[str, Any]) -> Dict[str, Any]:
         """Tool implementation: Fetch and validate emissions data.
@@ -418,6 +419,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
             output=trends,
             timestamp=DeterministicClock.now(),
             tool_call_id=f"trends_{self._tool_call_count}",
+        )
         self._calculation_citations.append(calc_citation)
 
         return trends
@@ -796,6 +798,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 return AgentResult(
                     success=False,
                     error="Invalid input: 'carbon_data' with emissions required",
+                )
 
             try:
                 # Run async report generation
@@ -823,6 +826,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 return AgentResult(
                     success=False,
                     error=f"Failed to generate report: {str(e)}",
+                )
 
     async def _execute_async(self, input_data: Dict[str, Any]) -> AgentResult:
         """Async execution with ChatSession.
@@ -890,6 +894,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 temperature=0.0,  # Deterministic
                 seed=42,  # Reproducible
                 tool_choice="auto",
+            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd
@@ -902,6 +907,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 input_data,
                 tool_results,
                 response.text if self.enable_ai_narrative else None,
+            )
 
             return AgentResult(
                 success=True,
@@ -916,12 +922,14 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                     "tool_calls": len(response.tool_calls),
                     "deterministic": True,
                 },
+            )
 
         except BudgetExceeded as e:
             self.logger.error(f"Budget exceeded: {e}")
             return AgentResult(
                 success=False,
                 error=f"AI budget exceeded: {str(e)}",
+            )
 
     def _build_prompt(self, input_data: Dict[str, Any]) -> str:
         """Build AI prompt for report generation.
@@ -1118,6 +1126,7 @@ IMPORTANT:
         parts.append(
             f"This report documents total greenhouse gas emissions of {total_tons:.2f} metric tons CO2e "
             f"for the reporting period."
+        )
 
         # Primary source
         if "primary_source" in summary_data:
@@ -1126,6 +1135,7 @@ IMPORTANT:
             parts.append(
                 f"The primary emission source is {primary_source}, accounting for {primary_pct:.1f}% "
                 f"of total emissions."
+            )
 
         # Trend direction
         if trends and "direction" in trends:
@@ -1135,9 +1145,11 @@ IMPORTANT:
                 if direction == "increase":
                     parts.append(
                         f"Emissions increased by {change_pct:.1f}% compared to the previous period."
+                    )
                 else:
                     parts.append(
                         f"Emissions decreased by {change_pct:.1f}% compared to the previous period."
+                    )
 
         # Building context
         if "building_type" in summary_data:

@@ -424,6 +424,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["storage_capacity_kwh", "technology", "annual_energy_savings_kwh", "energy_cost_usd_per_kwh"],
             },
+        )
 
     def _calculate_storage_capacity_impl(
         self,
@@ -942,7 +943,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
             storage_boost = 0.35
 
         solar_fraction_with_storage = min(0.95, solar_fraction_no_storage + storage_boost)
-        )
         solar_fraction_improvement_percent = (solar_fraction_with_storage - solar_fraction_no_storage) / solar_fraction_no_storage * 100
 
         # Backup capacity
@@ -957,9 +957,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
         collectors_cost = collector_area_m2 * capex_per_m2
         storage_cost = storage_capacity_kwh * 22  # $22/kWh for hot water
         piping_controls_cost = (collectors_cost + storage_cost) * 0.25
-        )
         installation_cost = (collectors_cost + storage_cost + piping_controls_cost) * 0.15
-        )
 
         system_capex_usd = collectors_cost + storage_cost + piping_controls_cost + installation_cost
 
@@ -969,7 +967,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
         discount_rate = 0.06
         lifetime_years = 25
         crf = discount_rate * (1 + discount_rate)**lifetime_years / ((1 + discount_rate)**lifetime_years - 1)
-        )
         lcoh_usd_per_kwh = (system_capex_usd * crf) / (annual_solar_energy_delivered_mwh * 1000)
 
         # Design recommendations
@@ -1080,7 +1077,6 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
         # LCOE_storage
         # CRF = r(1+r)^n / [(1+r)^n - 1]
         crf = discount_rate * (1 + discount_rate)**system_lifetime_years / ((1 + discount_rate)**system_lifetime_years - 1)
-        )
         lcoe_storage_usd_per_kwh = (capex_usd * crf + annual_opex_usd) / annual_energy_savings_kwh if annual_energy_savings_kwh > 0 else 0
 
         # Financial rating
@@ -1311,6 +1307,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 temperature=0.0,  # Deterministic
                 seed=42,          # Reproducible
                 tool_choice="auto",
+            )
 
             # Track cost
             self._total_cost_usd += response.usage.cost_usd

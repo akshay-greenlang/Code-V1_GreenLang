@@ -447,4 +447,4 @@ Mixed Workload:
 - All endpoints within SLO
 - Resource utilization balanced
 - Cache hit rate > 50%
-- Database connection pool < 80%
+- Database connection pool < 80%"""

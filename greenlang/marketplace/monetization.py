@@ -20,12 +20,12 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, and_, desc
 
 from greenlang.marketplace.models import (
-from greenlang.determinism import FinancialDecimal
-from greenlang.determinism import deterministic_uuid, DeterministicClock
     MarketplaceAgent,
     AgentPurchase,
     PricingType,
 )
+from greenlang.determinism import FinancialDecimal
+from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)
 
