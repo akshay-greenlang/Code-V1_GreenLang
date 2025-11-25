@@ -35,7 +35,6 @@ from dataclasses import dataclass, asdict, field
 from enum import Enum
 from collections import deque, defaultdict
 import threading
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 

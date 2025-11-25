@@ -11,9 +11,8 @@ import json
 from pathlib import Path
 import uuid
 
-from ..models import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from ..models import (
     Campaign,
     CampaignStatus,
     EmailSequence,

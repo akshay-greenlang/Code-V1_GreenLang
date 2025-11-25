@@ -12,8 +12,8 @@ from datetime import datetime, timedelta
 import random
 from typing import Dict, Any, List
 
-from mock_servers import (
 from greenlang.determinism import DeterministicClock
+from mock_servers import (
     MockOPCUAServer,
     MockModbusServer,
     MockSAPServer,

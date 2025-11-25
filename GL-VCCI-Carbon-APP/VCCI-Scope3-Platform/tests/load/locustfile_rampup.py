@@ -40,8 +40,8 @@ from locust.runners import MasterRunner, WorkerRunner
 from io import BytesIO
 import time
 
-from load_test_utils import (
 from greenlang.determinism import deterministic_random
+from load_test_utils import (
     generate_csv_data,
     generate_realistic_procurement_data,
     monitor_system_resources,

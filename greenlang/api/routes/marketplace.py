@@ -13,8 +13,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 import logging
 
-from greenlang.marketplace.models import (
 from greenlang.determinism import FinancialDecimal
+from greenlang.marketplace.models import (
     MarketplaceAgent,
     AgentVersion,
     AgentReview,

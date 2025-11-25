@@ -36,7 +36,6 @@ import pandas as pd
 import redis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # ============================================================================

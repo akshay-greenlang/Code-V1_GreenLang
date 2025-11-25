@@ -128,6 +128,7 @@ class RecommendationAgentAI(BaseAgent):
                 name="RecommendationAgentAI",
                 description="AI-powered recommendation generation with intelligent insights",
                 version="0.1.0",
+            )
         super().__init__(config)
 
         # Initialize original recommendation agent for tool implementations
@@ -183,6 +184,7 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["emissions_by_source"],
             },
+        )
 
         # Tool 2: Calculate ROI for recommendations
         self.calculate_roi_tool = ToolDef(
@@ -216,6 +218,7 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["recommendations", "current_emissions_kg"],
             },
+        )
 
         # Tool 3: Rank recommendations by priority
         self.rank_recommendations_tool = ToolDef(
@@ -238,6 +241,7 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["recommendations"],
             },
+        )
 
         # Tool 4: Estimate savings
         self.estimate_savings_tool = ToolDef(
@@ -262,6 +266,7 @@ class RecommendationAgentAI(BaseAgent):
                 },
                 "required": ["recommendations", "current_emissions_kg"],
             },
+        )
 
         # Tool 5: Generate implementation plan
         self.generate_implementation_plan_tool = ToolDef(
@@ -490,6 +495,7 @@ class RecommendationAgentAI(BaseAgent):
         # Add ranking
         for idx, rec in enumerate(ranked):
             rec["rank"] = idx + 1
+        )
 
         return {
             "ranked_recommendations": ranked,

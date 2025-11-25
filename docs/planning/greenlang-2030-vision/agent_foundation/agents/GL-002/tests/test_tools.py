@@ -19,8 +19,8 @@ import hashlib
 from decimal import Decimal
 
 # Import tool modules (adjust based on actual implementation)
-from greenlang_boiler_efficiency.tools import (
 from greenlang.determinism import DeterministicClock
+from greenlang_boiler_efficiency.tools import (
     EfficiencyOptimizer,
     DiagnosticAnalyzer,
     ReportGenerator,

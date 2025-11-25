@@ -22,8 +22,8 @@ from typing import Any, Dict
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 
-from greenlang.agents.base import (
 from greenlang.determinism import DeterministicClock
+from greenlang.agents.base import (
     BaseAgent,
     AgentConfig,
     AgentResult,

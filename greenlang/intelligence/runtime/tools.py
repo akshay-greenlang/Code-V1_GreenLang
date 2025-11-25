@@ -27,8 +27,8 @@ from jsonschema import Draft202012Validator, ValidationError
 from jsonpath_ng import parse as jsonpath_parse
 
 from .schemas import Quantity, Claim, ASSISTANT_STEP_SCHEMA, QUANTITY_SCHEMA
-from .errors import (
 from greenlang.determinism import DeterministicClock
+from .errors import (
     GLValidationError,
     GLRuntimeError,
     GLSecurityError,

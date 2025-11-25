@@ -710,7 +710,9 @@ Be thorough. Be precise. Be practical."""
         """Calculate COP using Carnot efficiency method."""
         # Carnot COP
         supply_k = supply_temp_c + 273.15
+        )
         source_k = source_temp_c + 273.15
+        )
         carnot_cop = supply_k / (supply_k - source_k)
 
         # Empirical efficiency factors
@@ -812,6 +814,7 @@ Be thorough. Be precise. Be practical."""
 
             # COP for this stage
             carnot_cop = (next_temp + 273.15) / lift_per_stage
+        )
             actual_cop = carnot_cop * 0.48  # Industrial HP efficiency
 
             stages.append({
@@ -900,6 +903,7 @@ Be thorough. Be precise. Be practical."""
         curve_points = []
 
         for source_temp in range(temp_range_c["min"], temp_range_c["max"] + 1, 5):
+        )
             supply_temp = 80  # Design supply temperature
 
             cop_result = self._tool_calculate_cop(
@@ -1067,6 +1071,7 @@ Be thorough. Be precise. Be practical."""
         for entry in trace:
             tool = entry.get("tool", "unknown")
             counts[tool] = counts.get(tool, 0) + 1
+        )
         return counts
 
     def _count_shared_tools(self, trace: List[Dict]) -> Dict[str, int]:

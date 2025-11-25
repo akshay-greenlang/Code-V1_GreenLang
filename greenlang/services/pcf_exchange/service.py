@@ -15,8 +15,8 @@ import logging
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from greenlang.services.pcf_exchange.models import (
 from greenlang.determinism import DeterministicClock
+from greenlang.services.pcf_exchange.models import (
     PCFDataModel,
     PCFExchangeRequest,
     PCFExchangeResponse,

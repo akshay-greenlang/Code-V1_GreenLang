@@ -17,7 +17,6 @@ from typing import Dict, Any
 # Import test framework
 import sys
 import os
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 

@@ -631,6 +631,7 @@ class DecarbonizationRoadmapAgentAI:
 
         for iteration in range(max_iterations):
             # Calculate NPV at current rate: f(r) = -I + Σ(CF/(1+r)^t)
+        )
             npv = -initial_investment
             for t in range(1, years + 1):
                 npv += annual_cash_flow / ((1 + rate) ** t)
@@ -964,6 +965,7 @@ class DecarbonizationRoadmapAgentAI:
                 scope3_breakdown["custom"] = value_chain["custom_scope3_kg_co2e"]
 
         total_emissions = scope1_total + scope2_total + scope3_total
+        )
 
         return {
             "total_emissions_kg_co2e": round(total_emissions, 2),
@@ -1387,6 +1389,7 @@ class DecarbonizationRoadmapAgentAI:
 
         # IRR Calculation (Newton-Raphson method for exact solution)
         # Solve: 0 = -Investment + Σ(Cash_Flow_t / (1 + IRR)^t)
+        )
         irr_estimate = self._calculate_irr_newton_raphson(
             initial_investment=net_investment,
             annual_cash_flow=annual_savings,
@@ -1411,6 +1414,7 @@ class DecarbonizationRoadmapAgentAI:
         pv_savings = sum(annual_savings / ((1 + discount_rate) ** t) for t in range(1, years + 1))
 
         # Net lifecycle cost = CAPEX + PV(OPEX) - PV(Savings) - Incentives
+        )
         net_lifecycle_cost = total_capex + pv_opex - pv_savings - total_incentives
 
         # Lifetime emissions reduction in metric tons
@@ -1549,6 +1553,7 @@ class DecarbonizationRoadmapAgentAI:
         ]
 
         all_risks = technical_risks + financial_risks + operational_risks + regulatory_risks
+        )
 
         high_risks = [r for r in all_risks if r["risk_score"] >= 12]
         medium_risks = [r for r in all_risks if 6 <= r["risk_score"] < 12]

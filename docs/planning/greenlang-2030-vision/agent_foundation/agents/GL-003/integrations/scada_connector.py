@@ -15,7 +15,6 @@ from enum import Enum
 from collections import deque, defaultdict
 
 from .base_connector import BaseConnector, ConnectionConfig, ConnectionState
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 logger = logging.getLogger(__name__)

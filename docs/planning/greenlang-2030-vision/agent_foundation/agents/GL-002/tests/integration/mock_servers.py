@@ -12,7 +12,6 @@ from datetime import datetime
 from typing import Dict, Any, List
 from aiohttp import web
 import json
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 

@@ -21,21 +21,40 @@ jobs:
           extra_args: --no-update --fail
 
   pip-audit:
+    name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
-          pip install -U pip pip-audit
-          pip install -r requirements.txt || true
+          python -m pip install --upgrade pip
+          pip install pip-audit
+          pip install -r requirements.txt || pip install -e . || true
 
       - name: Run pip-audit
-        run: pip-audit --strict --desc
+        run: |
+          pip-audit --strict --desc on
+
+      - name: Generate vulnerability report
+        if: always()
+        run: |
+          pip-audit --format json --output pip-audit-report.json || true
+          echo "Vulnerability scan completed. Check pip-audit-report.json for details."
+
+      - name: Upload vulnerability report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: pip-audit-report.json
+          retention-days: 30
+          if-no-files-found: warn
 
   dependency-scan:
     runs-on: ubuntu-latest

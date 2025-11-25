@@ -15,8 +15,8 @@ import asyncio
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
-from ..models import (
 from greenlang.determinism import DeterministicClock
+from ..models import (
     Category10Input,
     CalculationResult,
     DataQualityInfo,

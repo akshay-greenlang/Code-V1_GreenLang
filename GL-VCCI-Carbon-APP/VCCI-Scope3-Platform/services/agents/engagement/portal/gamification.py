@@ -8,8 +8,8 @@ import logging
 from typing import Dict, List, Optional
 from datetime import datetime
 
-from ..models import (
 from greenlang.determinism import DeterministicClock
+from ..models import (
     SupplierProgress,
     SupplierBadge,
     BadgeType,

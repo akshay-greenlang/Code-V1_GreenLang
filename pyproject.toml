@@ -99,6 +99,8 @@ data = [
 ]
 llm = [
   "openai==1.12.0",
+  # LangChain: Required for core GreenLang RAG tools (scripts/build_vector_store.py, greenlang/cli/assistant_rag.py)
+  # NOTE: GL-CSRD-APP uses greenlang.intelligence abstraction layer instead of direct LangChain imports
   "langchain==0.1.9",
   "langchain-openai==0.0.5",
   "langchain-community==0.0.24",
@@ -253,6 +255,9 @@ python_functions = ["test_*"]
 asyncio_mode = "auto"
 
 # Add coverage reporting to pytest runs
+# NOTE: Coverage threshold is set to 85% (minimum for CI gate).
+# 95% is aspirational but too strict for CI enforcement.
+# See .github/workflows/ci.yml for the authoritative CI threshold.
 addopts = [
     "-v",                                               # Verbose output
     "--tb=short",                                       # Short traceback format
@@ -262,7 +267,7 @@ addopts = [
     "--cov-report=term-missing:skip-covered",           # Terminal report
     "--cov-report=html:.coverage_html",                 # HTML report
     "--cov-report=xml:coverage.xml",                    # XML report for CI
-    "--cov-fail-under=95",                              # Fail if coverage < 95%
+    "--cov-fail-under=85",                              # Fail if coverage < 85% (matches CI)
 ]
 
 [tool.coverage.run]
@@ -285,6 +290,8 @@ omit = [
 
 [tool.coverage.report]
 # Coverage reporting configuration
+# NOTE: 85% is the enforced minimum (matches CI gate in .github/workflows/ci.yml).
+# 95% is aspirational for mature modules but not enforced at CI level.
 exclude_lines = [
     "pragma: no cover",
     "def __repr__",
@@ -303,7 +310,7 @@ exclude_lines = [
 precision = 2
 show_missing = true
 skip_covered = false
-fail_under = 95                                          # Enforce 95% coverage minimum
+fail_under = 85                                          # Enforce 85% coverage minimum (matches CI)
 
 [tool.coverage.html]
 directory = ".coverage_html"                             # HTML report directory

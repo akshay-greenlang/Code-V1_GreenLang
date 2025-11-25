@@ -19,7 +19,6 @@ from pathlib import Path
 from datetime import datetime, date
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 
 # Add parent directory to path for imports

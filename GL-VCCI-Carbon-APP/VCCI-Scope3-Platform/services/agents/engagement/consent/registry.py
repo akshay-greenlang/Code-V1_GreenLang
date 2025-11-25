@@ -11,8 +11,8 @@ import json
 from pathlib import Path
 
 from ..models import ConsentRecord, ConsentStatus, LawfulBasis
-from ..exceptions import (
 from greenlang.determinism import DeterministicClock
+from ..exceptions import (
     ConsentNotGrantedError,
     OptOutViolationError,
     SupplierNotFoundError

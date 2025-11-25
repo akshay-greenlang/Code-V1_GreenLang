@@ -2,8 +2,11 @@
 #
 # Build: docker build -t greenlang-api:1.0.0 .
 # Run: docker run -p 8000:8000 greenlang-api:1.0.0
+#
+# NOTE: Python 3.11 is the standardized version for GreenLang core infrastructure.
+# See pyproject.toml for supported versions (3.10, 3.11, 3.12).
 
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app

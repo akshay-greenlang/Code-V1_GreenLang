@@ -34,9 +34,8 @@ import uuid
 
 from pydantic import BaseModel, Field, validator
 
-from greenlang.auth.permissions import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.auth.permissions import (
     Permission,
     PermissionEffect,
     PermissionEvaluator,

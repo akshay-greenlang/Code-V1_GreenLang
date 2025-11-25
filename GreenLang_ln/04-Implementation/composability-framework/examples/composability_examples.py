@@ -21,9 +21,8 @@ from datetime import datetime
 from typing import Dict, List, Any
 from pydantic import BaseModel, Field
 
-from greenlang.core.composability import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
+from greenlang.core.composability import (
     AgentRunnable,
     RunnableSequence,
     RunnableParallel,

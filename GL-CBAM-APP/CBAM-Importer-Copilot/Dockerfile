@@ -2,14 +2,16 @@
 # GL-CBAM-APP - Production Dockerfile
 # ============================================================================
 # Multi-stage build for optimized production container
-# Base: Python 3.10 (slim)
+# Base: Python 3.11 (slim) - Standardized GreenLang version
 # Features: Security hardening, minimal attack surface, health checks
 # ============================================================================
 
 # ----------------------------------------------------------------------------
 # STAGE 1: Builder - Install dependencies
 # ----------------------------------------------------------------------------
-FROM python:3.10-slim AS builder
+# NOTE: Python 3.11 is the standardized version for GreenLang core infrastructure.
+# See pyproject.toml for supported versions (3.10, 3.11, 3.12).
+FROM python:3.11-slim AS builder
 
 LABEL maintainer="GreenLang CBAM Team <cbam@greenlang.com>"
 LABEL description="GL-CBAM-APP Backend API - Builder Stage"
@@ -50,7 +52,7 @@ RUN pip install --no-cache-dir \
 # ----------------------------------------------------------------------------
 # STAGE 2: Runtime - Production image
 # ----------------------------------------------------------------------------
-FROM python:3.10-slim AS runtime
+FROM python:3.11-slim AS runtime
 
 LABEL maintainer="GreenLang CBAM Team <cbam@greenlang.com>"
 LABEL description="GL-CBAM-APP Backend API - Production"

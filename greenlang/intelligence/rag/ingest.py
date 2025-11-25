@@ -22,8 +22,8 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 
-from greenlang.intelligence.rag.models import (
 from greenlang.determinism import DeterministicClock
+from greenlang.intelligence.rag.models import (
     DocMeta,
     Chunk,
     IngestionManifest,

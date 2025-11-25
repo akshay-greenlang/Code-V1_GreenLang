@@ -10,8 +10,8 @@ from collections import defaultdict
 from datetime import datetime
 import re
 
-from .models import (
 from greenlang.determinism import DeterministicClock
+from .models import (
     ValidationResult,
     CoverageAnalysis,
     MappingResult,

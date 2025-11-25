@@ -32,7 +32,6 @@ from datetime import datetime, timezone
 from collections import defaultdict
 import numpy as np
 from decimal import Decimal, getcontext
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 logger = logging.getLogger(__name__)

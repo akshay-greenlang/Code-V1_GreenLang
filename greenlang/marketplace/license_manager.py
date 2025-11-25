@@ -19,7 +19,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
 from greenlang.marketplace.models import AgentPurchase, MarketplaceAgent, AgentInstall
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

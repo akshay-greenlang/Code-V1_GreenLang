@@ -10,8 +10,8 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import (
 from greenlang.determinism import DeterministicClock
+from sqlalchemy import (
     Column,
     String,
     Text,

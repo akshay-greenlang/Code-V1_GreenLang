@@ -10,8 +10,8 @@ from datetime import datetime
 from typing import Dict, Any
 
 from ..redis_streams_broker import RedisStreamsBroker
-from ..patterns import (
 from greenlang.determinism import DeterministicClock
+from ..patterns import (
     RequestReplyPattern,
     PubSubPattern,
     WorkQueuePattern,

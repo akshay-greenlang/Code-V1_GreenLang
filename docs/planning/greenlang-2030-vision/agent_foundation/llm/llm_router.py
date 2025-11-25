@@ -50,9 +50,8 @@ from threading import Lock
 from typing import Any, Dict, List, Optional, Tuple
 
 from .circuit_breaker import CircuitBreaker, CircuitBreakerOpenError
-from .providers.base_provider import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
+from .providers.base_provider import (
     BaseLLMProvider,
     GenerationRequest,
     GenerationResponse,

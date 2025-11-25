@@ -36,8 +36,8 @@ import redis.asyncio as redis
 from redis.asyncio import Redis, ConnectionPool, Sentinel
 from redis.asyncio.retry import Retry
 from redis.backoff import ExponentialBackoff
-from redis.exceptions import (
 from greenlang.determinism import DeterministicClock
+from redis.exceptions import (
     ConnectionError,
     TimeoutError,
     RedisError,

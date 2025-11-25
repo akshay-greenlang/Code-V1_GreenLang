@@ -16,8 +16,8 @@ import asyncio
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from redis_manager import (
 from greenlang.determinism import DeterministicClock
+from redis_manager import (
     RedisManager,
     RedisConfig,
     RedisClusterMode,

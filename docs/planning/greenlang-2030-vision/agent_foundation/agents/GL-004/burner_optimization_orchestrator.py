@@ -45,7 +45,6 @@ from integrations.scada_integration import SCADAIntegration
 
 from config import settings
 from monitoring.metrics import metrics_collector
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

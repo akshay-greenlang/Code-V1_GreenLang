@@ -8,6 +8,23 @@ from greenlang.exceptions import ValidationError
 
 
 class WorkflowStep(BaseModel):
+    """
+    Represents a single step in a workflow execution.
+
+    Each step maps to an agent execution with optional input/output mapping,
+    conditional execution, and failure handling configuration.
+
+    Attributes:
+        name: Unique step identifier within the workflow
+        agent_id: ID of the agent to execute for this step
+        description: Human-readable step description
+        input_mapping: Maps step inputs from workflow context
+        output_key: Key to store step output in workflow context
+        condition: Expression to evaluate before executing step
+        on_failure: Action on failure (stop, skip, or continue)
+        retry_count: Number of retry attempts on failure
+    """
+
     name: str = Field(..., description="Step name")
     agent_id: str = Field(..., description="ID of the agent to execute")
     description: Optional[str] = Field(None, description="Step description")
@@ -25,8 +42,65 @@ class WorkflowStep(BaseModel):
     )
     retry_count: int = Field(default=0, description="Number of retries on failure")
 
+    def to_policy_doc(self) -> Dict[str, Any]:
+        """
+        Convert step to a policy-safe document for OPA evaluation.
+
+        This method creates a sanitized dictionary suitable for policy
+        enforcement. It exposes only the structural information needed
+        for policy decisions while excluding runtime state.
+
+        Returns:
+            Dict[str, Any]: Policy-safe document containing:
+                - name: Step name
+                - agent_id: Agent identifier
+                - has_condition: Whether step has conditional execution
+                - on_failure: Failure handling strategy
+                - input_keys: List of input mapping keys (not values)
+                - has_output: Whether step produces output
+
+        Example:
+            >>> step = WorkflowStep(name="validate", agent_id="validator")
+            >>> doc = step.to_policy_doc()
+            >>> # Use in policy evaluation
+        """
+        return {
+            "name": self.name,
+            "agent_id": self.agent_id,
+            "has_condition": self.condition is not None,
+            "on_failure": self.on_failure,
+            "input_keys": list(self.input_mapping.keys()) if self.input_mapping else [],
+            "has_output": self.output_key is not None,
+        }
+
 
 class Workflow(BaseModel):
+    """
+    Represents a complete workflow definition with steps and configuration.
+
+    A workflow is an ordered sequence of steps, where each step executes
+    an agent with specific inputs and outputs. Workflows support conditional
+    execution, failure handling, and output mapping.
+
+    Attributes:
+        name: Unique workflow identifier
+        description: Human-readable workflow description
+        version: Semantic version string
+        steps: Ordered list of workflow steps
+        output_mapping: Maps final workflow output from execution context
+        metadata: Additional workflow metadata for extensions
+
+    Example:
+        >>> workflow = Workflow(
+        ...     name="carbon-calculation",
+        ...     description="Calculate carbon emissions",
+        ...     steps=[
+        ...         WorkflowStep(name="intake", agent_id="intake_agent"),
+        ...         WorkflowStep(name="calculate", agent_id="calc_agent"),
+        ...     ]
+        ... )
+    """
+
     name: str = Field(..., description="Workflow name")
     description: str = Field(..., description="Workflow description")
     version: str = Field(default="0.0.1", description="Workflow version")
@@ -37,6 +111,56 @@ class Workflow(BaseModel):
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Additional metadata"
     )
+
+    def to_policy_doc(self) -> Dict[str, Any]:
+        """
+        Convert workflow to a policy-safe document for OPA evaluation.
+
+        This method creates a sanitized dictionary suitable for policy
+        enforcement. It includes structural information about the workflow
+        and its steps while excluding sensitive runtime state and actual
+        input/output values.
+
+        The policy document follows the format expected by GreenLang's
+        OPA policy bundles (bundles/run.rego).
+
+        Returns:
+            Dict[str, Any]: Policy-safe document containing:
+                - name: Workflow name
+                - version: Workflow version
+                - description: Workflow description
+                - step_count: Number of steps in workflow
+                - steps: List of step policy documents
+                - output_keys: List of output mapping keys
+                - metadata: Workflow metadata (filtered for policy use)
+                - agents: List of unique agent IDs used in workflow
+
+        Example:
+            >>> workflow = Workflow(name="test", description="Test workflow", steps=[...])
+            >>> policy_doc = workflow.to_policy_doc()
+            >>> # Use with OPA evaluation
+            >>> from greenlang.policy import check_run
+            >>> check_run(workflow, context)  # Uses to_policy_doc() internally
+        """
+        # Extract unique agent IDs for capability checking
+        agent_ids = list(set(step.agent_id for step in self.steps))
+
+        # Filter metadata for policy-relevant keys only
+        policy_metadata = {
+            k: v for k, v in self.metadata.items()
+            if k in ("region", "environment", "classification", "owner", "tags")
+        }
+
+        return {
+            "name": self.name,
+            "version": self.version,
+            "description": self.description,
+            "step_count": len(self.steps),
+            "steps": [step.to_policy_doc() for step in self.steps],
+            "output_keys": list(self.output_mapping.keys()) if self.output_mapping else [],
+            "metadata": policy_metadata,
+            "agents": agent_ids,
+        }
 
     @classmethod
     def from_yaml(cls, yaml_path: str) -> "Workflow":

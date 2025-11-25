@@ -27,8 +27,8 @@ import time
 from pathlib import Path
 import tempfile
 
-from greenlang.resilience import (
 from greenlang.determinism import DeterministicClock
+from greenlang.resilience import (
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitOpenError,

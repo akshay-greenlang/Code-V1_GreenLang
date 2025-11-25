@@ -17,8 +17,8 @@ from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
 from oracle.client import OracleRESTClient, create_query
-from oracle.exceptions import (
 from greenlang.determinism import DeterministicClock
+from oracle.exceptions import (
     OracleConnectionError,
     OracleAuthenticationError,
     OracleRateLimitError,

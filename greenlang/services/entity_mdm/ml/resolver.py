@@ -22,9 +22,8 @@ from entity_mdm.ml.config import MLConfig, ResolutionConfig
 from entity_mdm.ml.embeddings import EmbeddingPipeline
 from entity_mdm.ml.vector_store import VectorStore, SupplierEntity
 from entity_mdm.ml.matching_model import MatchingModel
-from entity_mdm.ml.exceptions import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from entity_mdm.ml.exceptions import (
     InsufficientCandidatesException,
     ModelNotTrainedException,
 )

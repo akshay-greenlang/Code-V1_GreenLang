@@ -16,9 +16,8 @@ import math
 from sqlalchemy import func, and_, or_, desc
 from sqlalchemy.orm import Session
 
-from greenlang.marketplace.models import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
+from greenlang.marketplace.models import (
     MarketplaceAgent,
     AgentInstall,
     AgentPurchase,

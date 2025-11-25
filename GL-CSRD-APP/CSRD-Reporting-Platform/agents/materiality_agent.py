@@ -58,7 +58,6 @@ from greenlang.intelligence.rag.models import DocMeta, QueryResult
 # Import validation utilities
 import sys
 from pathlib import Path as PathLib
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 sys.path.append(str(PathLib(__file__).parent.parent))
 from utils.validation import (

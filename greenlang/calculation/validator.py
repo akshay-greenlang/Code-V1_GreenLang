@@ -15,8 +15,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
 from decimal import Decimal
-from greenlang.calculation.core_calculator import (
 from greenlang.determinism import FinancialDecimal
+from greenlang.calculation.core_calculator import (
     CalculationRequest,
     CalculationResult,
     CalculationStatus,

@@ -25,7 +25,6 @@ from typing import Dict, Any, List
 import json
 import requests
 from datetime import datetime
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 

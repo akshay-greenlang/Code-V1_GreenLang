@@ -4,7 +4,7 @@
 #
 # Installation: pip install -r requirements.txt
 #
-# Python Version: >=3.11
+# Python Version: >=3.10
 #
 # ============================================================================
 
@@ -68,6 +68,9 @@ tiktoken>=0.6.0               # OpenAI tokenizer
 
 # REMOVED: langchain, langchain-*, pinecone-client, weaviate-client
 # REASON: Replaced by greenlang.intelligence.runtime.ChatSession and greenlang.intelligence.rag.RAGEngine
+# NOTE: LangChain IS available in pyproject.toml [llm] optional dependency for core GreenLang RAG tools
+#       (scripts/build_vector_store.py, greenlang/cli/assistant_rag.py). This app uses GreenLang's
+#       abstraction layer instead of direct LangChain imports for cleaner architecture.
 
 # ----------------------------------------------------------------------------
 # WEB FRAMEWORK & API
@@ -246,6 +249,6 @@ watchdog>=4.0.0               # Filesystem event monitoring
 #    pip install -r requirements.txt -r requirements-dev.txt
 #
 # 5. Verify installation:
-#    python -c "import pandas, fastapi, langchain, arelle; print('All imports successful')"
+#    python -c "import pandas, fastapi, arelle; print('All imports successful')"
 #
 # ============================================================================

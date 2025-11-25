@@ -14,7 +14,6 @@ from datetime import datetime, timedelta
 from enum import Enum
 import struct
 import statistics
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 # Third-party imports (would be actual in production)

@@ -12,8 +12,8 @@ import asyncio
 import logging
 from collections import defaultdict
 
-from greenlang.api.graphql.types import (
 from greenlang.determinism import DeterministicClock
+from greenlang.api.graphql.types import (
     ExecutionUpdate,
     ExecutionStatusUpdate,
     ExecutionProgress,

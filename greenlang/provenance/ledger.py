@@ -11,7 +11,6 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 import logging
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

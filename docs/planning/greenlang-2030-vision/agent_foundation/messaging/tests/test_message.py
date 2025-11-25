@@ -9,8 +9,8 @@ import pytest
 import json
 from datetime import datetime, timedelta
 
-from ..message import (
 from greenlang.determinism import DeterministicClock
+from ..message import (
     Message,
     MessageBatch,
     MessageAck,

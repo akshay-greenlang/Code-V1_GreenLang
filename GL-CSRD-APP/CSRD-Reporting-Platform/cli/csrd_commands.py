@@ -28,8 +28,8 @@ from typing import Any, Dict, Optional
 import click
 from rich.console import Console
 from rich.panel import Panel
-from rich.progress import (
 from greenlang.determinism import DeterministicClock
+from rich.progress import (
     BarColumn,
     Progress,
     SpinnerColumn,

@@ -26,7 +26,6 @@ from pathlib import Path
 from contextvars import ContextVar
 import structlog
 from pythonjsonlogger import jsonlogger
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 

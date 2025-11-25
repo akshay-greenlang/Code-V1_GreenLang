@@ -15,8 +15,8 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 import asyncio
 import aiohttp
-from tenacity import (
 from greenlang.determinism import DeterministicClock
+from tenacity import (
     retry,
     stop_after_attempt,
     wait_exponential,

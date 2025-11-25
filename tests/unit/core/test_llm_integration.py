@@ -19,8 +19,8 @@ from datetime import datetime, timedelta
 import asyncio
 from typing import Dict, Any
 
-from greenlang_core.llm import (
 from greenlang.determinism import DeterministicClock
+from greenlang_core.llm import (
     LLMProvider,
     AnthropicProvider,
     OpenAIProvider,

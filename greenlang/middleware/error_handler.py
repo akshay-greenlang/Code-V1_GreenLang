@@ -33,8 +33,8 @@ import logging
 import sys
 import traceback
 
-from greenlang.exceptions import (
 from greenlang.determinism import DeterministicClock
+from greenlang.exceptions import (
     GreenLangException,
     AgentException,
     WorkflowException,

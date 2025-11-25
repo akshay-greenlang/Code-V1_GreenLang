@@ -13,8 +13,8 @@ from datetime import datetime
 
 import strawberry
 
-from greenlang.api.graphql.types import (
 from greenlang.determinism import DeterministicClock
+from greenlang.api.graphql.types import (
     Agent,
     Workflow,
     Execution,

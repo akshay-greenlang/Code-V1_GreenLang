@@ -133,6 +133,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 name="ReportAgentAI",
                 description="AI-powered emissions report generation with intelligent insights",
                 version="0.1.0",
+            )
         super().__init__(config)
         self.setup_monitoring(agent_name="report_agent_ai_agent")
 
@@ -194,6 +195,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["carbon_data"],
             },
+        )
 
         # Tool 2: Calculate trends (year-over-year analysis)
         self.calculate_trends_tool = ToolDef(
@@ -217,6 +219,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["current_emissions_tons"],
             },
+        )
 
         # Tool 3: Generate charts (visualization data)
         self.generate_charts_tool = ToolDef(
@@ -246,6 +249,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["emissions_breakdown"],
             },
+        )
 
         # Tool 4: Format report (framework-specific formatting)
         self.format_report_tool = ToolDef(
@@ -280,6 +284,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["framework", "carbon_data"],
             },
+        )
 
         # Tool 5: Check compliance (verify regulatory compliance)
         self.check_compliance_tool = ToolDef(
@@ -300,6 +305,7 @@ class ReportAgentAI(OperationalMonitoringMixin, BaseAgent):
                 },
                 "required": ["framework", "report_data"],
             },
+        )
 
         # Tool 6: Generate executive summary
         self.generate_executive_summary_tool = ToolDef(

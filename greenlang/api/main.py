@@ -28,9 +28,8 @@ import asyncio
 
 from greenlang.data.emission_factor_database import EmissionFactorDatabase
 from greenlang.data.emission_factor_record import EmissionFactorRecord
-from .models import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from .models import (
     CalculationRequest,
     CalculationResponse,
     BatchCalculationRequest,

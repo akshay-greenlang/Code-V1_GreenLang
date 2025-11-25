@@ -20,8 +20,8 @@ from datetime import datetime
 from unittest.mock import Mock, AsyncMock, patch
 from pydantic import ValidationError
 
-from services.agents.calculator.categories.category_13 import (
 from greenlang.determinism import DeterministicClock
+from services.agents.calculator.categories.category_13 import (
     Category13Calculator,
     Category13Input,
     BuildingType,

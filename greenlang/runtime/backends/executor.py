@@ -11,8 +11,8 @@ from typing import Dict, List, Any, Optional, Union
 from datetime import datetime
 import yaml
 
-from .base import (
 from greenlang.determinism import DeterministicClock
+from .base import (
     Pipeline,
     PipelineStep,
     ExecutionContext,

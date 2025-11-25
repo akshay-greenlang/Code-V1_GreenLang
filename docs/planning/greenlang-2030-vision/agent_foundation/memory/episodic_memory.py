@@ -18,7 +18,6 @@ from collections import Counter, defaultdict
 import numpy as np
 from dataclasses import dataclass
 import asyncio
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 

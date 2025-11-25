@@ -89,7 +89,7 @@ EFFICIENCY_CALCULATION_TEST: Dict[str, Any] = {
                 "formula": "efficiency = 100 - losses",
                 "losses_components": ["stack_loss", "radiation_loss", "blowdown_loss"]
             },
-            "description": "Indirect method using flue gas analysis"
+            description="Indirect method using flue gas analysis"
         )
     ],
     "primary_metric": "calculation_accuracy",

@@ -66,8 +66,7 @@ from contextlib import asynccontextmanager
 
 from greenlang.core.async_orchestrator import AsyncOrchestrator
 from greenlang.core.workflow import Workflow
-from greenlang.determinism import DeterministicClock
-from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.determinism import DeterministicClock, deterministic_uuid
 
 # Redis imports with fallback
 try:

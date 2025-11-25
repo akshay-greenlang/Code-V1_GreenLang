@@ -17,7 +17,6 @@ import logging
 import json
 import xml.etree.ElementTree as ET
 from abc import ABC, abstractmethod
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 from greenlang.determinism import deterministic_random
 

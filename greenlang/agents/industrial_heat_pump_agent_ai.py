@@ -310,6 +310,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["heat_pump_type", "source_temperature_f", "sink_temperature_f", "compressor_type", "refrigerant"],
             },
+        )
 
         # Tool 2: Select heat pump technology
         self.select_heat_pump_technology_tool = ToolDef(
@@ -358,6 +359,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["required_temperature_f", "annual_heating_load_mmbtu", "load_profile_type", "climate_zone", "available_heat_sources", "space_constraints"],
             },
+        )
 
         # Tool 3: Calculate annual operating costs
         self.calculate_annual_operating_costs_tool = ToolDef(
@@ -411,6 +413,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["heat_pump_capacity_tons", "average_cop", "annual_heat_delivered_mmbtu", "electricity_rate_structure", "energy_charge_usd_per_kwh"],
             },
+        )
 
         # Tool 4: Calculate capacity degradation
         self.calculate_capacity_degradation_tool = ToolDef(
@@ -450,6 +453,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["rated_capacity_tons", "rated_cop", "rated_source_temp_f", "rated_sink_temp_f", "actual_source_temp_f", "actual_sink_temp_f", "heat_pump_type"],
             },
+        )
 
         # Tool 5: Design cascade heat pump system
         self.design_cascade_heat_pump_system_tool = ToolDef(
@@ -482,6 +486,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["source_temperature_f", "final_sink_temperature_f", "total_heating_capacity_mmbtu_hr"],
             },
+        )
 
         # Tool 6: Calculate thermal storage sizing
         self.calculate_thermal_storage_sizing_tool = ToolDef(
@@ -527,6 +532,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["peak_heating_load_mmbtu_hr", "average_heating_load_mmbtu_hr", "storage_strategy", "storage_medium", "storage_temperature_range_f"],
             },
+        )
 
         # Tool 7: Calculate emissions reduction
         self.calculate_emissions_reduction_tool = ToolDef(
@@ -572,6 +578,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["annual_heat_delivered_mmbtu", "heat_pump_cop", "baseline_fuel_type", "baseline_efficiency", "grid_region", "grid_emissions_factor_kg_co2e_per_kwh"],
             },
+        )
 
         # Tool 8: Generate performance curve
         self.generate_performance_curve_tool = ToolDef(
@@ -614,6 +621,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
                 },
                 "required": ["heat_pump_type", "rated_capacity_tons", "rated_cop", "rated_conditions", "temperature_range"],
             },
+        )
 
     # ==========================================================================
     # Tool Implementations (8 methods)
@@ -666,7 +674,9 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
         cop_heating = carnot_cop * carnot_efficiency
 
         # Part-load degradation: COP_partload = COP_actual × (0.9 + 0.1 × PLR)
+        )
         part_load_factor = 0.9 + 0.1 * part_load_ratio
+        )
         cop_heating = cop_heating * part_load_factor
 
         # Capacity degradation factor at part load
@@ -1007,8 +1017,11 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
 
         for i in range(number_of_stages):
             stage_number = i + 1
+        )
             stage_source_temp = source_temperature_f + (i * lift_per_stage)
+        )
             stage_sink_temp = source_temperature_f + ((i + 1) * lift_per_stage)
+        )
             stage_lift = lift_per_stage
 
             # Select refrigerant based on temperature
@@ -1022,6 +1035,7 @@ class IndustrialHeatPumpAgent_AI(Agent[IndustrialHeatPumpInput, IndustrialHeatPu
             # Calculate stage COP (using screw compressor as default)
             T_source_R = stage_source_temp + 459.67
             T_sink_R = stage_sink_temp + 459.67
+        )
             carnot_cop = T_sink_R / (T_sink_R - T_source_R)
             stage_cop = carnot_cop * 0.525  # Screw compressor efficiency
 

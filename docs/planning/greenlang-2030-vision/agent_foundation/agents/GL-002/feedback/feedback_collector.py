@@ -24,8 +24,8 @@ import asyncio
 import asyncpg
 import hashlib
 
-from .feedback_models import (
 from greenlang.determinism import DeterministicClock
+from .feedback_models import (
     OptimizationFeedback,
     FeedbackStats,
     SatisfactionTrend,

@@ -14,8 +14,8 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 import asyncio
 
-from .models import (
 from greenlang.determinism import DeterministicClock
+from .models import (
     FactorRequest,
     FactorResponse,
     GWPComparisonRequest,

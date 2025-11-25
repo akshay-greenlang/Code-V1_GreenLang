@@ -16,8 +16,8 @@ import logging
 from sqlalchemy import func, and_, or_
 from sqlalchemy.orm import Session
 
-from greenlang.marketplace.models import (
 from greenlang.determinism import DeterministicClock
+from greenlang.marketplace.models import (
     MarketplaceAgent,
     AgentReview,
     AgentInstall,

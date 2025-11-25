@@ -12,8 +12,8 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 
-from greenlang.api.alerting.alert_engine import (
 from greenlang.determinism import DeterministicClock
+from greenlang.api.alerting.alert_engine import (
     AlertEngine,
     AlertRule,
     AlertState,

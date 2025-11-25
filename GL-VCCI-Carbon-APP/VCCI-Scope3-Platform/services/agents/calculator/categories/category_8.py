@@ -29,8 +29,8 @@ from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 from enum import Enum
 
-from ..models import (
 from greenlang.determinism import FinancialDecimal
+from ..models import (
     Category8Input,
     CalculationResult,
     DataQualityInfo,

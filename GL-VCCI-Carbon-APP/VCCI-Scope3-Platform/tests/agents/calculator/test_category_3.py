@@ -21,8 +21,8 @@ import json
 from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 
-from services.agents.calculator.categories.category_3 import (
 from greenlang.determinism import DeterministicClock
+from services.agents.calculator.categories.category_3 import (
     Category3Calculator,
     FUEL_TYPES,
 )

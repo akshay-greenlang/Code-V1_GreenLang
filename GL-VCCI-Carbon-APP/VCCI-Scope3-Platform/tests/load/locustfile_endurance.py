@@ -46,9 +46,8 @@ import time
 from datetime import datetime
 from collections import defaultdict
 
-from load_test_utils import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
+from load_test_utils import (
     generate_csv_data,
     generate_realistic_procurement_data,
     monitor_system_resources,

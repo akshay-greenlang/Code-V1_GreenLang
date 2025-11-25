@@ -29,8 +29,8 @@ Reference: GHG Protocol Scope 3 Standard
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Optional, Dict, Any
-from greenlang.calculation.core_calculator import (
 from greenlang.determinism import FinancialDecimal
+from greenlang.calculation.core_calculator import (
     EmissionCalculator,
     CalculationRequest,
     CalculationResult,

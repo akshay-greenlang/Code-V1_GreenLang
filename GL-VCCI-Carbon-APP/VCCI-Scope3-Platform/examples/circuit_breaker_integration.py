@@ -13,8 +13,8 @@ from typing import Dict, Any, List
 from datetime import datetime
 
 # Circuit breaker imports
-from services.circuit_breakers import (
 from greenlang.determinism import DeterministicClock
+from services.circuit_breakers import (
     get_factor_broker_cb,
     get_llm_provider_cb,
     get_erp_connector_cb,

@@ -18,8 +18,8 @@ import logging
 import json
 from enum import Enum
 
-from .models import (
 from greenlang.determinism import DeterministicClock
+from .models import (
     ChangeRequest,
     ChangeType,
     ReviewStatus,

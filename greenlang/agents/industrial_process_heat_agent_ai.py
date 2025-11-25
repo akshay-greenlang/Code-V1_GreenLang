@@ -291,6 +291,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["process_type", "production_rate", "temperature_requirement"],
             },
+        )
 
         # Tool 2: Calculate temperature requirements
         self.calculate_temperature_requirements_tool = ToolDef(
@@ -312,6 +313,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["process_type"],
             },
+        )
 
         # Tool 3: Calculate energy intensity
         self.calculate_energy_intensity_tool = ToolDef(
@@ -336,6 +338,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["heat_demand_kw", "production_rate"],
             },
+        )
 
         # Tool 4: Estimate solar thermal fraction
         self.estimate_solar_fraction_tool = ToolDef(
@@ -375,6 +378,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["process_temperature", "load_profile", "latitude", "heat_demand_kw"],
             },
+        )
 
         # Tool 5: Calculate backup fuel requirements
         self.calculate_backup_fuel_tool = ToolDef(
@@ -410,6 +414,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["peak_heat_demand_kw", "solar_fraction", "backup_type", "annual_energy_mwh"],
             },
+        )
 
         # Tool 6: Estimate emissions baseline
         self.estimate_emissions_baseline_tool = ToolDef(
@@ -435,6 +440,7 @@ class IndustrialProcessHeatAgent_AI(Agent[IndustrialProcessHeatInput, Industrial
                 },
                 "required": ["annual_heat_demand_mwh", "current_fuel_type"],
             },
+        )
 
         # Tool 7: Calculate decarbonization potential
         self.calculate_decarbonization_potential_tool = ToolDef(

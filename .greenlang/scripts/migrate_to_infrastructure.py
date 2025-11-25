@@ -442,6 +442,7 @@ api_key = config.get_secret('API_KEY')""",
 
         for i, suggestion in enumerate(suggestions, 1):
             confidence_class = 'high' if suggestion.pattern.confidence >= 0.8 else 'medium' if suggestion.pattern.confidence >= 0.6 else 'low'
+            suggested_code_html = '<br>'.join(suggestion.suggested_code.split('\n'))
 
             html += f"""        <div class="suggestion">
             <div class="suggestion-header">
@@ -458,7 +459,7 @@ api_key = config.get_secret('API_KEY')""",
             <div class="code original">{suggestion.original_code.strip()}</div>
 
             <p><strong>Suggested replacement:</strong></p>
-            <div class="code">{'<br>'.join(suggestion.suggested_code.split('\\n'))}</div>
+            <div class="code">{suggested_code_html}</div>
         </div>
 """
 

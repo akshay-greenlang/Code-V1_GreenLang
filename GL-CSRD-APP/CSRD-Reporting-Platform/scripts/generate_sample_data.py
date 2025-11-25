@@ -33,7 +33,6 @@ import click
 import pandas as pd
 from rich.console import Console
 from rich.progress import Progress, BarColumn, TextColumn, TimeRemainingColumn
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 

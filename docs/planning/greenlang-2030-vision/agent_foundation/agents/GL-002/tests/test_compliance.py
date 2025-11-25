@@ -17,8 +17,8 @@ import math
 from typing import Dict, Any, List
 
 # Import components to test
-from greenlang_boiler_efficiency import (
 from greenlang.determinism import DeterministicClock
+from greenlang_boiler_efficiency import (
     BoilerEfficiencyOrchestrator,
     ComplianceValidator,
     EmissionsCalculator,

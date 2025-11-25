@@ -19,8 +19,8 @@ import asyncio
 from datetime import datetime
 from unittest.mock import Mock, AsyncMock
 
-from services.agents.calculator.categories.category_14 import (
 from greenlang.determinism import DeterministicClock
+from services.agents.calculator.categories.category_14 import (
     Category14Calculator,
     Category14Input,
     FranchiseType,

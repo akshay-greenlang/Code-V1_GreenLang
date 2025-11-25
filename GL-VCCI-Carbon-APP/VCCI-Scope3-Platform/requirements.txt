@@ -1,6 +1,6 @@
 # GL-VCCI-Carbon-APP: Scope 3 Platform Requirements
 # Version: 2.0.0 (CTO v2 Strategic Plan)
-# Python 3.9+ required, 3.11+ recommended
+# Python >= 3.10 required
 #
 # Installation:
 #   pip install -r requirements.txt

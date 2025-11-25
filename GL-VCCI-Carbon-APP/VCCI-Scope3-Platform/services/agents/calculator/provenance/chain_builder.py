@@ -9,9 +9,8 @@ import uuid
 from datetime import datetime
 from typing import Dict, Any, Optional, List
 
-from ..models import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from ..models import (
     ProvenanceChain,
     DataQualityInfo,
     EmissionFactorInfo,

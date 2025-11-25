@@ -33,7 +33,6 @@ import redis
 from playwright.async_api import Browser, Page, async_playwright
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Configure logging

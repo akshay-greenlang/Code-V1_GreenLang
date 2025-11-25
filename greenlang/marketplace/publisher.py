@@ -21,8 +21,8 @@ import logging
 
 from sqlalchemy.orm import Session
 
-from greenlang.marketplace.models import (
 from greenlang.determinism import DeterministicClock
+from greenlang.marketplace.models import (
     MarketplaceAgent,
     AgentVersion,
     AgentAsset,

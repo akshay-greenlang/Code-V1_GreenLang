@@ -7,7 +7,9 @@ services:
       dockerfile: Dockerfile.runner
       args:
         GL_VERSION: "0.3.0"
-        BUILD_DATE: "${BUILD_DATE:-2024-01-01T00:00:00Z}"
+        # BUILD_DATE should be set by CI/CD pipeline
+        # Example: BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        BUILD_DATE: "${BUILD_DATE:-unset}"
         VCS_REF: "${GITHUB_SHA:-local}"
     image: greenlang/core-runner:local
     container_name: greenlang-runner
@@ -46,7 +48,9 @@ services:
       dockerfile: Dockerfile.full
       args:
         GL_VERSION: "0.3.0"
-        BUILD_DATE: "${BUILD_DATE:-2024-01-01T00:00:00Z}"
+        # BUILD_DATE should be set by CI/CD pipeline
+        # Example: BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        BUILD_DATE: "${BUILD_DATE:-unset}"
         VCS_REF: "${GITHUB_SHA:-local}"
     image: greenlang/core-full:local
     container_name: greenlang-full

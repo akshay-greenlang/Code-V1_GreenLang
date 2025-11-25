@@ -38,8 +38,8 @@ import pandas as pd
 import pytest
 import yaml
 
-from csrd_pipeline import (
 from greenlang.determinism import deterministic_random
+from csrd_pipeline import (
     AgentExecution,
     CSRDPipeline,
     PipelinePerformance,

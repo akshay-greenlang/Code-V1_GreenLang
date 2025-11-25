@@ -16,9 +16,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from greenlang.db.base import Base, reset_engine
-from greenlang.db.models_auth import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.db.models_auth import (
     User,
     Role,
     Permission,

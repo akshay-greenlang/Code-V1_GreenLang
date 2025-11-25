@@ -128,6 +128,7 @@ class CarbonAgentAI(BaseAgent):
                 name="CarbonAgentAI",
                 description="AI-powered carbon footprint aggregation with intelligent insights",
                 version="0.1.0",
+            )
         super().__init__(config)
 
         # Initialize original carbon agent for tool implementations
@@ -182,6 +183,7 @@ class CarbonAgentAI(BaseAgent):
                 },
                 "required": ["emissions"],
             },
+        )
 
         # Tool 2: Calculate breakdown (percentage by source)
         self.calculate_breakdown_tool = ToolDef(
@@ -202,6 +204,7 @@ class CarbonAgentAI(BaseAgent):
                 },
                 "required": ["emissions", "total_kg"],
             },
+        )
 
         # Tool 3: Calculate intensity metrics
         self.calculate_intensity_tool = ToolDef(
@@ -225,6 +228,7 @@ class CarbonAgentAI(BaseAgent):
                 },
                 "required": ["total_kg"],
             },
+        )
 
         # Tool 4: Generate recommendations
         self.generate_recommendations_tool = ToolDef(

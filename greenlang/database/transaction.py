@@ -15,7 +15,6 @@ import traceback
 import uuid
 from enum import Enum
 from dataclasses import dataclass, field
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

@@ -20,7 +20,6 @@ import string
 from datetime import date, datetime
 from typing import List, Dict, Any
 import sys
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 # Add project root to path
@@ -372,4 +371,3 @@ def test_example(populated_db, emission_factor_client, performance_timer):
 
     assert factor.factor_id == 'diesel_us_2024'
     assert performance_timer.elapsed_ms() < 10  # <10ms target
-"""

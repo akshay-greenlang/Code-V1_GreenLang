@@ -32,8 +32,8 @@ from typing import Optional, Dict, Any, List
 from datetime import datetime
 from enum import Enum
 
-from ..models import (
 from greenlang.determinism import DeterministicClock
+from ..models import (
     Category15Input,
     CalculationResult,
     DataQualityInfo,

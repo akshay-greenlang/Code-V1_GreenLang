@@ -33,8 +33,8 @@ from contextlib import contextmanager, asynccontextmanager
 from collections import deque
 import statistics
 
-from prometheus_client import (
 from greenlang.determinism import DeterministicClock
+from prometheus_client import (
     Counter,
     Histogram,
     Gauge,

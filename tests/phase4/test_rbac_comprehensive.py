@@ -18,8 +18,8 @@ import pytest
 import uuid
 from datetime import datetime, timedelta
 
-from greenlang.auth.rbac import (
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.auth.rbac import (
     RBACManager,
     Role,
     Permission as RBACPermission,

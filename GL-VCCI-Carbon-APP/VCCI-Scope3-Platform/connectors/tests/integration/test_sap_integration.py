@@ -17,8 +17,8 @@ from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
 from sap.client import SAPODataClient, create_query
-from sap.exceptions import (
 from greenlang.determinism import DeterministicClock
+from sap.exceptions import (
     SAPConnectionError,
     SAPAuthenticationError,
     SAPRateLimitError,

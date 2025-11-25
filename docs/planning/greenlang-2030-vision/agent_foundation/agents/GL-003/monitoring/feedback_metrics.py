@@ -19,8 +19,8 @@ import logging
 import asyncpg
 import asyncio
 
-from prometheus_client import (
 from greenlang.determinism import DeterministicClock
+from prometheus_client import (
     Counter,
     Gauge,
     Histogram,

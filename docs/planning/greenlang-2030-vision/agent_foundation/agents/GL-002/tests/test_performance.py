@@ -21,9 +21,8 @@ import tracemalloc
 import gc
 
 # Import components to test
-from greenlang_boiler_efficiency import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
+from greenlang_boiler_efficiency import (
     BoilerEfficiencyOrchestrator,
     BoilerInput,
     AgentConfig,

@@ -11,7 +11,6 @@ from enum import Enum
 from pathlib import Path
 from typing import Dict, List, Optional, Any, Set
 import secrets
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:

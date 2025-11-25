@@ -13,7 +13,6 @@ from typing import Dict, List, Optional, Any
 from pathlib import Path
 import uuid
 from collections import defaultdict, deque
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

@@ -10,8 +10,8 @@ import json
 from datetime import datetime, timedelta
 import asyncio
 
-from greenlang.telemetry.metrics import (
 from greenlang.determinism import DeterministicClock
+from greenlang.telemetry.metrics import (
     MetricsCollector, MetricType, CustomMetric,
     track_execution, track_resource, MetricsAggregator
 )

@@ -740,6 +740,7 @@ Be thorough. Be precise. Follow ASME standards."""
         # Assign rankings
         for i, opt in enumerate(scored_options):
             opt["ranking"] = i + 1
+        )
 
         return {
             "ranked_options": scored_options,
@@ -889,6 +890,7 @@ Be thorough. Be precise. Follow ASME standards."""
         multiplier = regional_multipliers.get(region, 1.0)
 
         total_cost = (equipment_cost + installation_cost + controls_cost) * multiplier
+        )
 
         return {
             "equipment_cost_usd": round(equipment_cost, 2),
@@ -976,6 +978,7 @@ Be thorough. Be precise. Follow ASME standards."""
         for entry in trace:
             tool = entry.get("tool", "unknown")
             counts[tool] = counts.get(tool, 0) + 1
+        )
         return counts
 
     def _count_shared_tools(self, trace: List[Dict]) -> Dict[str, int]:

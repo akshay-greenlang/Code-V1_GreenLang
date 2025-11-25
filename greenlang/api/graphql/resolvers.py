@@ -12,9 +12,8 @@ import logging
 import uuid
 import base64
 
-from greenlang.api.graphql.types import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.api.graphql.types import (
     Agent,
     Workflow,
     Execution,

@@ -17,8 +17,8 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from greenlang.partners.webhooks import (
 from greenlang.determinism import DeterministicClock
+from greenlang.partners.webhooks import (
     WebhookModel,
     WebhookDeliveryModel,
     WebhookEventType,

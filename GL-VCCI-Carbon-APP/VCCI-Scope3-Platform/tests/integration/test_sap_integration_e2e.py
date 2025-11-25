@@ -35,7 +35,6 @@ from services.agents.intake.models import IngestionRecord, EntityType
 from services.agents.calculator.agent import Scope3CalculatorAgent
 from services.agents.calculator.models import Category1Input
 from services.agents.reporting.agent import Scope3ReportingAgent
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = get_logger(__name__)

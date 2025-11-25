@@ -19,8 +19,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from greenlang.api.dependencies import get_current_user, get_db
-from greenlang.db.models_analytics import (
 from greenlang.determinism import DeterministicClock
+from greenlang.db.models_analytics import (
     Dashboard,
     DashboardWidget,
     DashboardShare,

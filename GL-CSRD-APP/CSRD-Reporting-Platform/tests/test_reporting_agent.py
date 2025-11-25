@@ -2889,6 +2889,3 @@ def test_xxe_parameter_entity_attack_blocked():
     # Should raise ValueError
     with pytest.raises(ValueError, match="DOCTYPE declarations not allowed|Entity declarations not allowed"):
         validate_xml_input(xxe_payload)
-
-
-"""

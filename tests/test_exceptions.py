@@ -20,8 +20,8 @@ import pytest
 import json
 from datetime import datetime
 
-from greenlang.exceptions import (
 from greenlang.determinism import DeterministicClock
+from greenlang.exceptions import (
     # Base
     GreenLangException,
     # Agent exceptions

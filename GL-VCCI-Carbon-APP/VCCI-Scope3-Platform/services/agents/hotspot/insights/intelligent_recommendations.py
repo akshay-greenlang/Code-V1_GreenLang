@@ -18,9 +18,8 @@ import uuid
 from typing import List, Dict, Any, Optional
 from datetime import datetime
 
-from ..models import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from ..models import (
     Insight,
     InsightReport,
     HotspotReport,

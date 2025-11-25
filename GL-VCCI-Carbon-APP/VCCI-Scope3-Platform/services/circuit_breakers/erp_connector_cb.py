@@ -23,8 +23,8 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 import time
 
-from greenlang.resilience import (
 from greenlang.determinism import DeterministicClock
+from greenlang.resilience import (
     CircuitBreaker,
     CircuitBreakerConfig,
     CircuitOpenError,

@@ -20,8 +20,8 @@ from unittest.mock import Mock, patch, AsyncMock
 import asyncio
 from typing import Dict, Any
 
-from greenlang.agents.decarbonization_roadmap_agent_ai import (
 from greenlang.determinism import FinancialDecimal
+from greenlang.agents.decarbonization_roadmap_agent_ai import (
     DecarbonizationRoadmapAgentAI,
     DecarbonizationRoadmapInput,
     DecarbonizationRoadmapOutput,
@@ -924,4 +924,3 @@ Expected Actual Coverage: 85-90%
 Run with:
     pytest tests/agents/test_decarbonization_roadmap_agent_ai.py -v
     pytest tests/agents/test_decarbonization_roadmap_agent_ai.py --cov=greenlang.agents.decarbonization_roadmap_agent_ai --cov-report=html
-"""

@@ -16,7 +16,6 @@ from pathlib import Path
 from typing import Dict, Any, Generator
 from datetime import datetime
 import numpy as np
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 # Add parent directory to path

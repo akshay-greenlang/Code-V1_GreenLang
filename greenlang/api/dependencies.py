@@ -27,9 +27,88 @@ security = HTTPBearer()
 
 # Database configuration (TODO: Move to config)
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./greenlang.db")
-JWT_SECRET = os.getenv("JWT_SECRET", "your-secret-key-change-in-production")
+JWT_SECRET = os.getenv("JWT_SECRET", "")
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
+
+# Environment detection
+_ENVIRONMENT = os.getenv("GREENLANG_ENV", os.getenv("ENVIRONMENT", "development")).lower()
+_IS_PRODUCTION = _ENVIRONMENT in ("production", "prod", "prd")
+
+# Known insecure placeholder values that should never be used in production
+_INSECURE_JWT_SECRETS = frozenset({
+    "your-secret-key-change-in-production",
+    "changeme",
+    "secret",
+    "your-secret-key",
+    "jwt-secret",
+    "supersecret",
+    "development-secret",
+    "test-secret",
+    "change_me_to_random_secret_key_at_least_32_chars",
+    "change_me_to_different_random_secret",
+})
+
+
+def _validate_jwt_secret() -> str:
+    """
+    Validate that JWT_SECRET is properly configured.
+
+    This function checks that the JWT_SECRET environment variable is set
+    to a secure value and not left as a placeholder. This is critical
+    for production security.
+
+    Returns:
+        str: The validated JWT_SECRET value
+
+    Raises:
+        ValueError: In production, if JWT_SECRET is not configured or using a placeholder
+        RuntimeWarning: In development, if JWT_SECRET is not configured or using a placeholder
+    """
+    import warnings
+
+    is_insecure = JWT_SECRET.lower() in _INSECURE_JWT_SECRETS if JWT_SECRET else False
+    is_too_short = len(JWT_SECRET) < 16 if JWT_SECRET else True
+
+    if not JWT_SECRET:
+        error_msg = (
+            "CRITICAL: JWT_SECRET environment variable is not set. "
+            "Authentication will fail. Set JWT_SECRET to a secure random string "
+            "(at least 32 characters recommended). "
+            "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+        )
+        if _IS_PRODUCTION:
+            logger.critical(error_msg)
+            raise ValueError(error_msg)
+        else:
+            warnings.warn(error_msg, RuntimeWarning, stacklevel=2)
+            logger.warning("JWT_SECRET is not configured - authentication will not work")
+
+    elif is_insecure or is_too_short:
+        error_msg = (
+            f"CRITICAL: JWT_SECRET is using an insecure placeholder value or is too short "
+            f"(current length: {len(JWT_SECRET)}, minimum: 16 characters). "
+            "This is a severe security vulnerability. "
+            "Set the JWT_SECRET environment variable to a secure random string. "
+            "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(32))\""
+        )
+        if _IS_PRODUCTION:
+            logger.critical(error_msg)
+            raise ValueError(error_msg)
+        else:
+            warnings.warn(error_msg, RuntimeWarning, stacklevel=2)
+
+    # Log the validation status (without revealing the secret)
+    if JWT_SECRET and not is_insecure and not is_too_short:
+        logger.info(f"JWT_SECRET configured and validated (length: {len(JWT_SECRET)} chars)")
+    elif JWT_SECRET:
+        logger.warning(f"JWT_SECRET configured but INSECURE (length: {len(JWT_SECRET)} chars)")
+
+    return JWT_SECRET
+
+
+# Validate JWT_SECRET at import time to catch configuration issues early
+_validate_jwt_secret()
 
 # Database engine and session
 engine: Optional[AsyncEngine] = None

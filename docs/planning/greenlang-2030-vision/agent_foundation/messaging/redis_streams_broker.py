@@ -25,7 +25,6 @@ import logging
 from datetime import datetime
 import json
 import uuid
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 try:

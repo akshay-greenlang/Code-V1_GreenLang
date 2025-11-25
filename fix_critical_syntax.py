@@ -12,9 +12,8 @@ from typing import List, Tuple
 def fix_broken_import_pattern(file_path: Path) -> bool:
     """
     Fix the specific broken import pattern:
-    from ..something import (
     from greenlang.determinism import DeterministicClock
-
+from ..something import (
     Should be:
     from ..something import Something
     from greenlang.determinism import DeterministicClock

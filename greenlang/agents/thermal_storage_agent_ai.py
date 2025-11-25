@@ -193,6 +193,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["peak_thermal_load_kw", "average_thermal_load_kw", "storage_duration_hours", "operating_temperature_c", "return_temperature_c"],
             },
+        )
 
         # Tool 2: Select Storage Technology
         self.select_storage_technology_tool = ToolDef(
@@ -233,6 +234,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["operating_temperature_c", "storage_duration_hours", "storage_capacity_kwh", "application"],
             },
+        )
 
         # Tool 3: Optimize Charge/Discharge
         self.optimize_charge_discharge_tool = ToolDef(
@@ -271,6 +273,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["storage_capacity_kwh", "charge_source", "charge_power_kw", "discharge_power_kw"],
             },
+        )
 
         # Tool 4: Calculate Thermal Losses
         self.calculate_thermal_losses_tool = ToolDef(
@@ -312,6 +315,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["storage_volume_m3", "storage_temperature_c", "insulation_type"],
             },
+        )
 
         # Tool 5: Integrate with Solar
         self.integrate_with_solar_tool = ToolDef(
@@ -362,6 +366,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
                 },
                 "required": ["process_thermal_load_kw", "process_temperature_c", "latitude", "annual_irradiance_kwh_m2", "load_profile", "collector_type"],
             },
+        )
 
         # Tool 6: Calculate Economics
         self.calculate_economics_tool = ToolDef(
@@ -937,6 +942,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
             storage_boost = 0.35
 
         solar_fraction_with_storage = min(0.95, solar_fraction_no_storage + storage_boost)
+        )
         solar_fraction_improvement_percent = (solar_fraction_with_storage - solar_fraction_no_storage) / solar_fraction_no_storage * 100
 
         # Backup capacity
@@ -951,7 +957,9 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
         collectors_cost = collector_area_m2 * capex_per_m2
         storage_cost = storage_capacity_kwh * 22  # $22/kWh for hot water
         piping_controls_cost = (collectors_cost + storage_cost) * 0.25
+        )
         installation_cost = (collectors_cost + storage_cost + piping_controls_cost) * 0.15
+        )
 
         system_capex_usd = collectors_cost + storage_cost + piping_controls_cost + installation_cost
 
@@ -961,6 +969,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
         discount_rate = 0.06
         lifetime_years = 25
         crf = discount_rate * (1 + discount_rate)**lifetime_years / ((1 + discount_rate)**lifetime_years - 1)
+        )
         lcoh_usd_per_kwh = (system_capex_usd * crf) / (annual_solar_energy_delivered_mwh * 1000)
 
         # Design recommendations
@@ -1071,6 +1080,7 @@ class ThermalStorageAgent_AI(Agent[Dict[str, Any], Dict[str, Any]]):
         # LCOE_storage
         # CRF = r(1+r)^n / [(1+r)^n - 1]
         crf = discount_rate * (1 + discount_rate)**system_lifetime_years / ((1 + discount_rate)**system_lifetime_years - 1)
+        )
         lcoe_storage_usd_per_kwh = (capex_usd * crf + annual_opex_usd) / annual_energy_savings_kwh if annual_energy_savings_kwh > 0 else 0
 
         # Financial rating

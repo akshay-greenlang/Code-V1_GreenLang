@@ -30,8 +30,8 @@ from enum import Enum
 from collections import deque
 import random  # For simulation
 
-from .base_connector import (
 from greenlang.determinism import DeterministicClock
+from .base_connector import (
     BaseConnector,
     ConnectionConfig,
     ConnectionState

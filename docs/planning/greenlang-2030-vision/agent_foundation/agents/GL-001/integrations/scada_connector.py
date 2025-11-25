@@ -26,7 +26,6 @@ from collections import deque
 from enum import Enum
 import json
 import os
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 # Third-party imports (would be installed via pip)

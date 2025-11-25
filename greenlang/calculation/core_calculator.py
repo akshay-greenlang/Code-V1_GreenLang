@@ -22,7 +22,6 @@ from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Union
 from enum import Enum
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)

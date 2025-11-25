@@ -33,7 +33,6 @@ from sqlalchemy import text, Index, MetaData, Table
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.sql import Select
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)

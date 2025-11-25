@@ -510,7 +510,7 @@ class S3Backend(StorageBackend):
                 # Try cold tier first, then archive
                 for tier in [StorageTier.COLD, StorageTier.ARCHIVE]:
                     try:
-                        key = f"{tier.value}/*/memory_id}.json"
+                        key = f"{tier.value}/*/{memory_id}.json"
                         response = await s3.get_object(Bucket=self.bucket_name, Key=key)
                         body = await response['Body'].read()
                         return MemoryRecord.parse_raw(body)

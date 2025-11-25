@@ -4,7 +4,9 @@
 # ==============================================================================
 
 # Use backend as base
-FROM python:3.10-slim
+# NOTE: Python 3.11 is the standardized version for GreenLang core infrastructure.
+# See pyproject.toml for supported versions (3.10, 3.11, 3.12).
+FROM python:3.11-slim
 
 # Metadata
 LABEL maintainer="GL-VCCI Team <support@greenlang.ai>" \

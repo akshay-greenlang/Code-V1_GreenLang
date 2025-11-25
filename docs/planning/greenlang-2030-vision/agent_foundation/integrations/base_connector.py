@@ -26,9 +26,8 @@ import logging
 
 import httpx
 from pydantic import BaseModel, Field, HttpUrl, validator
-from tenacity import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
+from tenacity import (
     retry,
     stop_after_attempt,
     wait_exponential,

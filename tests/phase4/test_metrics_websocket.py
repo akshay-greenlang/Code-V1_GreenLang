@@ -13,8 +13,8 @@ from datetime import datetime
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 
 import msgpack
-from greenlang.api.websocket.metrics_server import (
 from greenlang.determinism import DeterministicClock
+from greenlang.api.websocket.metrics_server import (
     MetricsWebSocketServer,
     ClientConnection,
     MetricFilter,

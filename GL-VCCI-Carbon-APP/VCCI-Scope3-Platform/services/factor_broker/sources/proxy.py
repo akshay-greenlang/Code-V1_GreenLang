@@ -15,8 +15,8 @@ from datetime import datetime
 import statistics
 
 from .base import FactorSource
-from ..models import (
 from greenlang.determinism import DeterministicClock
+from ..models import (
     FactorRequest,
     FactorResponse,
     FactorMetadata,

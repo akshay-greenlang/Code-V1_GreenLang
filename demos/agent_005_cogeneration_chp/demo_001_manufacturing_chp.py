@@ -68,10 +68,10 @@ from datetime import datetime
 import json
 
 from greenlang.agents.cogeneration_chp_agent_ai import (
-from greenlang.determinism import DeterministicClock
     CogenerationCHPAgentAI,
     CogenerationCHPConfig
 )
+from greenlang.determinism import DeterministicClock
 
 
 def print_section(title: str):

@@ -36,7 +36,6 @@ from typing import Dict, Any, List
 
 from locust import HttpUser, task, between, events
 from locust.contrib.fasthttp import FastHttpUser
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 

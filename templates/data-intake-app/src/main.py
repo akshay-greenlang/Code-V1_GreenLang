@@ -26,8 +26,8 @@ from typing import Dict, Any, Optional
 from datetime import datetime
 
 from greenlang.agents.templates import IntakeAgent, DataFormat
-from greenlang.validation import (
 from greenlang.determinism import DeterministicClock
+from greenlang.validation import (
     ValidationFramework,
     SchemaValidator,
     RulesEngine,

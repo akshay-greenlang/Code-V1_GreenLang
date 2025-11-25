@@ -14,9 +14,8 @@ from datetime import datetime
 import httpx
 import uuid
 
-from greenlang.services.pcf_exchange.models import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.services.pcf_exchange.models import (
     PCFDataModel,
     PCFExchangeResponse,
 )

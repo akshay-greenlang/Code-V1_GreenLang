@@ -32,7 +32,6 @@ import pandas as pd
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.table import Table
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 # Add project root to path

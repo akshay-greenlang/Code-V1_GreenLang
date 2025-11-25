@@ -20,7 +20,6 @@ from datetime import datetime
 from typing import Dict, Any, Optional
 from contextvars import ContextVar
 import traceback
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 # Context variables for request tracking

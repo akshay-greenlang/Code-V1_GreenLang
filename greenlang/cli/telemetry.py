@@ -14,8 +14,8 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-from greenlang.telemetry import (
 from greenlang.determinism import DeterministicClock
+from greenlang.telemetry import (
     get_monitoring_service,
     get_metrics_collector,
     get_health_checker,

@@ -20,8 +20,8 @@ import asyncio
 from datetime import datetime
 from unittest.mock import Mock, AsyncMock
 
-from services.agents.calculator.categories.category_15 import (
 from greenlang.determinism import DeterministicClock
+from services.agents.calculator.categories.category_15 import (
     Category15Calculator,
     Category15Input,
     AssetClass,

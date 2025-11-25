@@ -26,7 +26,6 @@ import uuid
 
 from .broker_interface import MessageBrokerInterface
 from .message import Message
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

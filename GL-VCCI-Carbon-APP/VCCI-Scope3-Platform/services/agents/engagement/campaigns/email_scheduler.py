@@ -9,9 +9,8 @@ from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 import uuid
 
-from ..models import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from ..models import (
     Campaign,
     EmailMessage,
     EmailStatus,

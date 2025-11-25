@@ -41,7 +41,6 @@ from services.agents.calculator.models import Category1Input, CalculationResult
 from services.agents.hotspot.agent import HotspotAnalysisAgent
 from services.agents.engagement.agent import SupplierEngagementAgent
 from services.agents.reporting.agent import Scope3ReportingAgent
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = get_logger(__name__)

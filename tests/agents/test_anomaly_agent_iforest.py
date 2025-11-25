@@ -27,8 +27,8 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, AsyncMock
 import asyncio
 
-from greenlang.agents.anomaly_agent_iforest import (
 from greenlang.determinism import deterministic_random
+from greenlang.agents.anomaly_agent_iforest import (
     IsolationForestAnomalyAgent,
     AnomalyScore,
     AnomalyAlert,

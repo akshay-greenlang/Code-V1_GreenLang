@@ -6,8 +6,8 @@ Tests for structured logging
 import pytest
 import json
 from datetime import datetime
-from greenlang.observability import (
 from greenlang.determinism import DeterministicClock
+from greenlang.observability import (
     LogLevel,
     LogContext,
     LogEntry,

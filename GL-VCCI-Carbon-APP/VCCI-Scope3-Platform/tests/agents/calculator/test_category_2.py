@@ -21,8 +21,8 @@ from datetime import datetime
 from unittest.mock import AsyncMock, Mock, patch
 from typing import Dict, Any
 
-from services.agents.calculator.categories.category_2 import (
 from greenlang.determinism import DeterministicClock
+from services.agents.calculator.categories.category_2 import (
     Category2Calculator,
     ASSET_CATEGORIES,
     ASSET_EMISSION_FACTORS,

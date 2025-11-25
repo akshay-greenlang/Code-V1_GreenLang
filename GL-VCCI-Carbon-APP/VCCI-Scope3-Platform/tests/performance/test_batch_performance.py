@@ -30,8 +30,8 @@ from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
 # Import processing modules
-from processing.batch_optimizer import (
 from greenlang.determinism import DeterministicClock
+from processing.batch_optimizer import (
     AsyncBatchProcessor,
     LARGE_BATCH_CONFIG,
     BatchConfig

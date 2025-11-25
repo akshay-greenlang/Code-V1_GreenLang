@@ -16,8 +16,8 @@ from datetime import datetime, timedelta
 import numpy as np
 import pytest
 
-from greenlang.intelligence.semantic_cache import (
 from greenlang.determinism import DeterministicClock
+from greenlang.intelligence.semantic_cache import (
     CacheEntry,
     CacheMetrics,
     EmbeddingGenerator,

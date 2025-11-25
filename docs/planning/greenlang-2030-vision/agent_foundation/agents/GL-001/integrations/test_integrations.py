@@ -23,8 +23,9 @@ import json
 import random
 
 # Import modules to test
-from scada_connector import (
 from greenlang.determinism import DeterministicClock
+
+from scada_connector import (
     SCADAConnector, OPCUAClient, ModbusTCPClient, MQTTSubscriber,
     SCADAConnectionPool, SCADADataBuffer, CircuitBreaker,
     SCADAProtocol, SCADAConnectionConfig, SCADASensorConfig

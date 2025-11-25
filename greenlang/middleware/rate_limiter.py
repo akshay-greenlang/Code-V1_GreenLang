@@ -15,7 +15,6 @@ from collections import defaultdict, deque
 from enum import Enum
 import threading
 from functools import wraps
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 

@@ -16,8 +16,8 @@ Date: October 2025
 import re
 import pytest
 from datetime import datetime
-from greenlang.agents.citations import (
 from greenlang.determinism import DeterministicClock
+from greenlang.agents.citations import (
     EmissionFactorCitation,
     CalculationCitation,
     DataSourceCitation,

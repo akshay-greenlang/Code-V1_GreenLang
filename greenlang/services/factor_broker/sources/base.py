@@ -15,8 +15,8 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 import hashlib
 
-from ..models import (
 from greenlang.determinism import DeterministicClock
+from ..models import (
     FactorRequest,
     FactorResponse,
     FactorMetadata,

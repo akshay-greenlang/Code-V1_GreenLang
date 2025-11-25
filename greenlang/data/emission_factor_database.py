@@ -110,6 +110,118 @@ class EmissionFactorDatabase:
 
     # ==================== V2 API (ENHANCED) ====================
 
+    # Valid scope/boundary combinations per GHG Protocol
+    # Scope 1: Direct emissions from owned/controlled sources
+    # Scope 2: Indirect emissions from purchased energy
+    # Scope 3: All other indirect emissions in value chain (15 categories)
+    VALID_SCOPE_BOUNDARIES: Dict[str, List[str]] = {
+        "1": ["combustion", "process", "fugitive", "mobile"],  # Scope 1: Direct emissions
+        "2": ["location-based", "market-based", "combustion"],  # Scope 2: Purchased energy
+        "3": [
+            # Upstream categories (1-8)
+            "wtt", "wtw", "upstream", "downstream",
+            "cradle_to_gate", "cradle_to_grave",
+            "purchased_goods_services",  # Category 1
+            "capital_goods",              # Category 2
+            "fuel_energy_activities",     # Category 3
+            "upstream_transport",         # Category 4
+            "waste_operations",           # Category 5
+            "business_travel",            # Category 6
+            "employee_commuting",         # Category 7
+            "upstream_leased_assets",     # Category 8
+            # Downstream categories (9-15)
+            "downstream_transport",       # Category 9
+            "processing_sold_products",   # Category 10
+            "use_sold_products",          # Category 11
+            "eol_sold_products",          # Category 12
+            "downstream_leased_assets",   # Category 13
+            "franchises",                 # Category 14
+            "investments",                # Category 15
+        ],
+    }
+
+    # Scope 3 category descriptions for validation errors
+    SCOPE3_CATEGORIES: Dict[str, str] = {
+        "purchased_goods_services": "Category 1: Purchased Goods and Services",
+        "capital_goods": "Category 2: Capital Goods",
+        "fuel_energy_activities": "Category 3: Fuel and Energy Related Activities",
+        "upstream_transport": "Category 4: Upstream Transportation and Distribution",
+        "waste_operations": "Category 5: Waste Generated in Operations",
+        "business_travel": "Category 6: Business Travel",
+        "employee_commuting": "Category 7: Employee Commuting",
+        "upstream_leased_assets": "Category 8: Upstream Leased Assets",
+        "downstream_transport": "Category 9: Downstream Transportation and Distribution",
+        "processing_sold_products": "Category 10: Processing of Sold Products",
+        "use_sold_products": "Category 11: Use of Sold Products",
+        "eol_sold_products": "Category 12: End-of-Life Treatment of Sold Products",
+        "downstream_leased_assets": "Category 13: Downstream Leased Assets",
+        "franchises": "Category 14: Franchises",
+        "investments": "Category 15: Investments",
+        "wtt": "Well-to-Tank (upstream fuel production)",
+        "wtw": "Well-to-Wheel (full lifecycle)",
+        "upstream": "General upstream emissions",
+        "downstream": "General downstream emissions",
+        "cradle_to_gate": "Cradle-to-Gate lifecycle",
+        "cradle_to_grave": "Cradle-to-Grave lifecycle",
+    }
+
+    def _validate_scope_boundary(self, scope: str, boundary: str) -> None:
+        """
+        Validate that scope and boundary combination is valid per GHG Protocol.
+
+        GHG Protocol Scope Definitions:
+        - Scope 1: Direct GHG emissions from sources owned or controlled by the company
+          (e.g., on-site combustion, company vehicles, process emissions)
+        - Scope 2: Indirect GHG emissions from purchased electricity, steam, heating, cooling
+          (location-based or market-based accounting)
+        - Scope 3: All other indirect emissions in the value chain (15 categories)
+          (both upstream and downstream)
+
+        Args:
+            scope: GHG scope ("1", "2", or "3")
+            boundary: Emission boundary
+
+        Raises:
+            ValueError: If invalid scope/boundary combination with detailed error message
+        """
+        # Normalize boundary for comparison (case-insensitive, underscores for spaces/hyphens)
+        boundary_normalized = boundary.lower().strip().replace(" ", "_").replace("-", "_")
+
+        # Check if scope is valid
+        if scope not in self.VALID_SCOPE_BOUNDARIES:
+            raise ValueError(
+                f"Invalid scope '{scope}'. Must be one of: 1 (Direct), 2 (Energy), 3 (Value Chain)"
+            )
+
+        # Get valid boundaries for this scope
+        valid_boundaries = self.VALID_SCOPE_BOUNDARIES[scope]
+
+        # Check if boundary is valid for this scope
+        if boundary_normalized not in valid_boundaries:
+            # Provide helpful error message with scope description
+            scope_descriptions = {
+                "1": "Direct emissions (on-site combustion, process, fugitive, mobile sources)",
+                "2": "Indirect from purchased energy (location-based, market-based)",
+                "3": "Value chain (15 categories: purchased goods, transport, travel, etc.)",
+            }
+
+            # For Scope 3, provide category-specific help
+            if scope == "3":
+                categories_help = "\n".join(
+                    f"  - {k}: {v}" for k, v in self.SCOPE3_CATEGORIES.items()
+                )
+                raise ValueError(
+                    f"Invalid Scope 3 boundary: '{boundary}'.\n"
+                    f"Scope 3 covers value chain emissions with these valid boundaries:\n"
+                    f"{categories_help}"
+                )
+
+            raise ValueError(
+                f"Invalid scope/boundary combination: Scope {scope} + '{boundary}'.\n"
+                f"Scope {scope}: {scope_descriptions[scope]}\n"
+                f"Valid boundaries for Scope {scope}: {valid_boundaries}"
+            )
+
     def get_factor_record(
         self,
         fuel_type: str,
@@ -125,7 +237,7 @@ class EmissionFactorDatabase:
 
         Args:
             fuel_type: Fuel type (diesel, natural_gas, electricity, etc.)
-            unit: Unit (gallons, kWh, therms, etc.)
+            unit: Unit (gallons, kWh, therms, etc.) - case insensitive
             geography: ISO country code or region (US, EU, UK, etc.)
             scope: GHG scope ("1", "2", or "3")
             boundary: Emission boundary (combustion, WTT, WTW)
@@ -135,7 +247,16 @@ class EmissionFactorDatabase:
         Returns:
             EmissionFactorRecord with multi-gas vectors and provenance,
             or None if not found
+
+        Raises:
+            ValueError: If invalid scope/boundary combination
         """
+        # Validate scope/boundary combination
+        self._validate_scope_boundary(scope, boundary)
+
+        # Normalize unit to lowercase for consistent lookups (fixes kWh vs kwh mismatch)
+        unit = unit.lower()
+
         # Check cache first (if enabled and not historical query)
         if self.enable_cache and self.cache and not as_of_date:
             cached_factor = self.cache.get(
@@ -212,7 +333,7 @@ class EmissionFactorDatabase:
         List all factors matching criteria.
 
         Args:
-            fuel_type: Filter by fuel type (optional)
+            fuel_type: Filter by fuel type (optional) - case insensitive
             geography: Filter by geography (optional)
 
         Returns:
@@ -220,9 +341,12 @@ class EmissionFactorDatabase:
         """
         results = []
 
+        # Normalize fuel_type for case-insensitive comparison
+        fuel_type_lower = fuel_type.lower() if fuel_type else None
+
         for factor in self.factors.values():
-            # Apply filters
-            if fuel_type and factor.fuel_type != fuel_type:
+            # Apply filters with case-insensitive fuel_type comparison
+            if fuel_type_lower and factor.fuel_type.lower() != fuel_type_lower:
                 continue
             if geography and factor.geography != geography:
                 continue
@@ -284,8 +408,10 @@ class EmissionFactorDatabase:
     def get_available_units(self, fuel_type: str, region: str = "US") -> List[str]:
         """Get list of available units for fuel type (v1 compatible)."""
         units = set()
+        # Normalize fuel_type for case-insensitive comparison
+        fuel_type_lower = fuel_type.lower()
         for factor in self.factors.values():
-            if factor.fuel_type == fuel_type and factor.geography == region:
+            if factor.fuel_type.lower() == fuel_type_lower and factor.geography == region:
                 units.add(factor.unit)
         return sorted(list(units))
 
@@ -354,21 +480,17 @@ class EmissionFactorDatabase:
                 )
                 return None
 
-        # Decompose WTT CO2e into gas vectors (assume all CO2 for upstream)
-        # This is a simplification - upstream emissions are mostly CO2
-        wtt_vectors = GHGVectors(
-            CO2=wtt_co2e,  # WTT is primarily CO2
-            CH4=0.0,       # Minimal CH4 in upstream (unless natural gas with leakage)
-            N2O=0.0,       # Minimal N2O in upstream
+        # Decompose WTT CO2e into gas vectors based on fuel type
+        # Different fuels have different upstream emission profiles:
+        # - Natural gas: ~20% CH4 (methane leakage from extraction/transport)
+        # - Coal: ~10% CH4 (mining emissions)
+        # - Biofuels: ~5% N2O (agricultural emissions from feedstock)
+        # - Petroleum (diesel, gasoline): ~95% CO2, ~5% CH4 (refining/transport)
+        wtt_vectors = self._decompose_wtt_emissions(
+            fuel_type=fuel_type,
+            wtt_co2e=wtt_co2e,
+            gwp_set=gwp_set,
         )
-
-        # For natural gas, include methane leakage in WTT
-        if fuel_type == "natural_gas" and combustion_factor:
-            # Assume 20% of WTT is CH4 leakage (converted to CO2e)
-            ch4_leakage_co2e = wtt_co2e * 0.20
-            ch4_gwp = 28 if "100" in gwp_set else 84
-            wtt_vectors.CH4 = ch4_leakage_co2e / ch4_gwp
-            wtt_vectors.CO2 = wtt_co2e - ch4_leakage_co2e
 
         # Compute final vectors based on boundary
         if boundary == "WTT":
@@ -435,6 +557,118 @@ class EmissionFactorDatabase:
 
         return wtt_wtw_factor
 
+    def _decompose_wtt_emissions(
+        self,
+        fuel_type: str,
+        wtt_co2e: float,
+        gwp_set: str,
+    ) -> GHGVectors:
+        """
+        Decompose WTT (Well-to-Tank) CO2e into individual gas components.
+
+        Different fuel types have different upstream emission profiles:
+        - Natural gas: ~20% of WTT CO2e from CH4 (methane leakage in extraction/transport)
+        - Coal: ~10% of WTT CO2e from CH4 (mining emissions)
+        - Biofuels: ~5% of WTT CO2e from N2O (agricultural emissions from feedstock)
+        - Petroleum (diesel, gasoline, fuel_oil): ~95% CO2, ~5% CH4 (refining/transport)
+        - Electricity: ~100% CO2 (grid losses, no direct CH4/N2O in upstream)
+
+        The decomposition uses GWP values to back-calculate individual gas amounts
+        from the total CO2e value. This is the inverse of the CO2e calculation:
+            CO2e = CO2 + (CH4 * CH4_GWP) + (N2O * N2O_GWP)
+
+        Args:
+            fuel_type: Fuel type (natural_gas, coal, diesel, etc.)
+            wtt_co2e: Total WTT emissions in kg CO2e
+            gwp_set: GWP reference set (determines CH4 and N2O GWP values)
+
+        Returns:
+            GHGVectors with decomposed CO2, CH4, and N2O values in kg
+        """
+        # Determine GWP values based on gwp_set
+        # AR6 100-year vs 20-year GWP values
+        if "20" in gwp_set:
+            ch4_gwp = 84   # AR6 20-year GWP for CH4
+            n2o_gwp = 273  # AR6 GWP for N2O (same for 20yr and 100yr)
+        else:
+            ch4_gwp = 28   # AR6 100-year GWP for CH4
+            n2o_gwp = 273  # AR6 GWP for N2O
+
+        # Define WTT emission profiles by fuel category
+        # Format: (CO2_fraction, CH4_fraction, N2O_fraction) of total CO2e
+        # Note: These fractions represent the CO2e contribution from each gas,
+        # not the mass fraction. We back-calculate mass using GWP.
+
+        # WTT emission profiles based on literature and regulatory guidance
+        wtt_profiles = {
+            # Natural gas: Significant CH4 from methane leakage (2-3% leakage rate typical)
+            # Sources: EPA, IPCC, academic studies on methane emissions
+            "natural_gas": {"CO2_frac": 0.80, "CH4_frac": 0.20, "N2O_frac": 0.00},
+
+            # Coal: CH4 from mining operations (coal seam methane)
+            # Sources: EPA coal mine methane data, IPCC Guidelines
+            "coal": {"CO2_frac": 0.90, "CH4_frac": 0.10, "N2O_frac": 0.00},
+
+            # Petroleum products: Small CH4 from refining/transport, mostly CO2
+            # Sources: EPA refinery data, IPCC petroleum guidelines
+            "diesel": {"CO2_frac": 0.95, "CH4_frac": 0.05, "N2O_frac": 0.00},
+            "gasoline": {"CO2_frac": 0.95, "CH4_frac": 0.05, "N2O_frac": 0.00},
+            "fuel_oil": {"CO2_frac": 0.95, "CH4_frac": 0.05, "N2O_frac": 0.00},
+            "kerosene": {"CO2_frac": 0.95, "CH4_frac": 0.05, "N2O_frac": 0.00},
+            "jet_fuel": {"CO2_frac": 0.95, "CH4_frac": 0.05, "N2O_frac": 0.00},
+            "lpg": {"CO2_frac": 0.92, "CH4_frac": 0.08, "N2O_frac": 0.00},
+            "propane": {"CO2_frac": 0.92, "CH4_frac": 0.08, "N2O_frac": 0.00},
+
+            # Biofuels: N2O from agricultural feedstock production (fertilizer use)
+            # Sources: IPCC biofuel guidelines, lifecycle assessments
+            "biodiesel": {"CO2_frac": 0.90, "CH4_frac": 0.05, "N2O_frac": 0.05},
+            "bioethanol": {"CO2_frac": 0.88, "CH4_frac": 0.05, "N2O_frac": 0.07},
+            "ethanol": {"CO2_frac": 0.88, "CH4_frac": 0.05, "N2O_frac": 0.07},
+            "biogas": {"CO2_frac": 0.70, "CH4_frac": 0.25, "N2O_frac": 0.05},
+            "biomass": {"CO2_frac": 0.85, "CH4_frac": 0.08, "N2O_frac": 0.07},
+            "wood": {"CO2_frac": 0.88, "CH4_frac": 0.07, "N2O_frac": 0.05},
+            "wood_pellets": {"CO2_frac": 0.88, "CH4_frac": 0.07, "N2O_frac": 0.05},
+
+            # Electricity: Grid transmission/distribution losses are mostly CO2
+            # Sources: EPA eGRID, IEA data
+            "electricity": {"CO2_frac": 1.00, "CH4_frac": 0.00, "N2O_frac": 0.00},
+
+            # Default for unknown fuels: Conservative all-CO2 assumption
+            "default": {"CO2_frac": 1.00, "CH4_frac": 0.00, "N2O_frac": 0.00},
+        }
+
+        # Get profile for this fuel type, fallback to default
+        profile = wtt_profiles.get(fuel_type.lower(), wtt_profiles["default"])
+
+        # Extract fractions
+        co2_frac = profile["CO2_frac"]
+        ch4_frac = profile["CH4_frac"]
+        n2o_frac = profile["N2O_frac"]
+
+        # Calculate CO2e contribution from each gas
+        co2_co2e = wtt_co2e * co2_frac  # CO2 contribution in CO2e (same as mass)
+        ch4_co2e = wtt_co2e * ch4_frac  # CH4 contribution in CO2e
+        n2o_co2e = wtt_co2e * n2o_frac  # N2O contribution in CO2e
+
+        # Back-calculate mass of each gas from CO2e using GWP
+        # CO2e = mass * GWP, therefore mass = CO2e / GWP
+        # For CO2, GWP = 1, so CO2 mass = CO2 CO2e contribution
+        co2_kg = co2_co2e  # GWP of CO2 = 1
+        ch4_kg = ch4_co2e / ch4_gwp if ch4_gwp > 0 else 0.0
+        n2o_kg = n2o_co2e / n2o_gwp if n2o_gwp > 0 else 0.0
+
+        logger.debug(
+            f"WTT decomposition for {fuel_type}: "
+            f"CO2={co2_kg:.6f}kg, CH4={ch4_kg:.6f}kg, N2O={n2o_kg:.6f}kg "
+            f"(profile: CO2={co2_frac:.0%}, CH4={ch4_frac:.0%}, N2O={n2o_frac:.0%})"
+        )
+
+        return GHGVectors(
+            CO2=co2_kg,
+            CH4=ch4_kg,
+            N2O=n2o_kg,
+        )
+
     def _make_key(
         self,
         fuel_type: str,
@@ -444,8 +678,16 @@ class EmissionFactorDatabase:
         boundary: str,
         gwp_set: str,
     ) -> str:
-        """Generate unique lookup key."""
-        return f"{geography}:{fuel_type}:{unit}:{scope}:{boundary}:{gwp_set}"
+        """
+        Generate unique lookup key.
+
+        All components are normalized for consistent lookups:
+        - unit: lowercase (fixes kWh vs kwh mismatch)
+        - boundary: lowercase
+        - fuel_type: lowercase
+        """
+        # Normalize all components to ensure consistent key generation
+        return f"{geography}:{fuel_type.lower()}:{unit.lower()}:{scope}:{boundary.lower()}:{gwp_set}"
 
     def _find_best_match(
         self,

@@ -12,8 +12,8 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, MagicMock
 from typing import Dict, Any
 
-from greenlang.agents.decorators import (
 from greenlang.determinism import deterministic_random
+from greenlang.agents.decorators import (
     deterministic,
     cached,
     traced,

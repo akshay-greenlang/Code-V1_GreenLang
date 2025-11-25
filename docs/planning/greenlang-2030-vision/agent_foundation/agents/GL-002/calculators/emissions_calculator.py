@@ -15,7 +15,6 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 from .provenance import ProvenanceTracker, ProvenanceRecord
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 
 

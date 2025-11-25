@@ -27,8 +27,8 @@ import pandas as pd
 import pytest
 import yaml
 
-from agents.calculator_agent import (
 from greenlang.determinism import DeterministicClock
+from agents.calculator_agent import (
     CalculatedMetric,
     CalculationError,
     CalculationProvenance,
@@ -2233,4 +2233,3 @@ FORMULA COVERAGE: 39+ formulas tested
 GHG PROTOCOL: Complete Scope 1, 2, 3 coverage
 PERFORMANCE: <5ms per metric verified
 ZERO HALLUCINATION: Guaranteed and tested
-"""

@@ -448,4 +448,3 @@ Mixed Workload:
 - Resource utilization balanced
 - Cache hit rate > 50%
 - Database connection pool < 80%
-"""

@@ -27,7 +27,6 @@ from pymodbus.device import ModbusDeviceIdentification
 import paho.mqtt.client as mqtt
 from flask import Flask, jsonify, request
 from werkzeug.serving import make_server
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 

@@ -55,7 +55,6 @@ from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 from pydantic import BaseModel, Field, validator
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 # Configure logging

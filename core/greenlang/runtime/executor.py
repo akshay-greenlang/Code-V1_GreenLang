@@ -24,8 +24,7 @@ from ..sdk.base import Result
 from ..sdk.context import Context
 from ..packs.loader import PackLoader
 import yaml
-from greenlang.determinism import DeterministicClock
-from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.determinism import DeterministicClock, deterministic_uuid
 
 try:
     import numpy as np

@@ -16,7 +16,9 @@
 # ----------------------------------------------------------------------------
 # Stage 1: Builder - Install dependencies
 # ----------------------------------------------------------------------------
-FROM python:3.10-slim AS builder
+# NOTE: Python 3.11 is the standardized version for GreenLang core infrastructure.
+# See pyproject.toml for supported versions (3.10, 3.11, 3.12).
+FROM python:3.11-slim AS builder
 
 LABEL stage="builder"
 
@@ -48,7 +50,7 @@ RUN pip install --no-cache-dir --user \
 # ----------------------------------------------------------------------------
 # Stage 2: Runtime - Production image
 # ----------------------------------------------------------------------------
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 LABEL maintainer="GreenLang CSRD Team <csrd@greenlang.io>"
 LABEL description="CSRD/ESRS Digital Reporting Platform - Zero-hallucination EU sustainability reporting"

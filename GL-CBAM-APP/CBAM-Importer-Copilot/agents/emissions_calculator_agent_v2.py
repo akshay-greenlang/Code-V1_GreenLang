@@ -26,7 +26,6 @@ from pydantic import BaseModel
 
 # GreenLang SDK Infrastructure
 from greenlang.sdk.base import Agent, Metadata, Result
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 
 # Add parent directory to path to import emission_factors

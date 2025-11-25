@@ -28,7 +28,6 @@ from pydantic import BaseModel
 from fastapi import FastAPI, Depends, Query
 import pandas as pd
 import numpy as np
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

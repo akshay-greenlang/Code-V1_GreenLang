@@ -194,6 +194,7 @@ if __name__ == "__main__":
         """Generate pipeline template."""
 
         agent_imports = '\n'.join([f'from agents.{agent.lower()} import {agent}' for agent in agents])
+        agent_instances = ',\n            '.join([f'{agent}()' for agent in agents])
 
         template = f'''"""
 {name}
@@ -228,7 +229,7 @@ class {name}:
 
         # Initialize agents
         self.agents = [
-            {',\n            '.join([f'{agent}()' for agent in agents])}
+            {agent_instances}
         ]
 
         # Create pipeline

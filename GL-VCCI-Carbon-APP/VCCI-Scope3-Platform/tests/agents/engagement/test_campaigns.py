@@ -5,8 +5,8 @@ Tests for campaign management and email scheduling.
 import pytest
 from datetime import datetime, timedelta
 
-from services.agents.engagement.campaigns import (
 from greenlang.determinism import DeterministicClock
+from services.agents.engagement.campaigns import (
     CampaignManager,
     EmailScheduler,
     CampaignAnalytics

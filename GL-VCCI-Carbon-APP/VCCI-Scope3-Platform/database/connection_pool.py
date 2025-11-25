@@ -29,8 +29,8 @@ from datetime import datetime
 from contextlib import asynccontextmanager
 
 from sqlalchemy import create_engine, pool, event, text
-from sqlalchemy.ext.asyncio import (
 from greenlang.determinism import DeterministicClock
+from sqlalchemy.ext.asyncio import (
     create_async_engine,
     AsyncEngine,
     AsyncSession,

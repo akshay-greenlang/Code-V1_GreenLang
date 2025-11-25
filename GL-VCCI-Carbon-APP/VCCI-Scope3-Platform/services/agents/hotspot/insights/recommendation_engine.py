@@ -15,8 +15,8 @@ import logging
 from typing import List, Dict, Any
 import uuid
 
-from ..models import (
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from ..models import (
     Insight,
     InsightReport,
     HotspotReport,

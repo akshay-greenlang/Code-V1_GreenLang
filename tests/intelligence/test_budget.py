@@ -15,9 +15,8 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from greenlang.intelligence.budget import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.intelligence.budget import (
     Budget,
     BudgetExceededError,
     BudgetMetrics,

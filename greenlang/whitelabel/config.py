@@ -25,7 +25,6 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, relationship
 from pydantic import BaseModel, HttpUrl, validator
 from fastapi import FastAPI, HTTPException, Depends, status
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

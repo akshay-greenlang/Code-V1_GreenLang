@@ -16,8 +16,8 @@ import threading
 import time
 from datetime import datetime
 
-from greenlang.agents.tools.telemetry import (
 from greenlang.determinism import DeterministicClock
+from greenlang.agents.tools.telemetry import (
     TelemetryCollector,
     ToolMetrics,
     get_telemetry,

@@ -25,7 +25,6 @@ from datetime import datetime
 from enum import Enum
 import re
 import math
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 

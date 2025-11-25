@@ -14,8 +14,8 @@ Date: October 2025
 
 from typing import Dict, Any
 from greenlang.agents.base import BaseAgent, AgentResult, AgentConfig
-from templates.agent_monitoring import (
 from greenlang.determinism import deterministic_random
+from templates.agent_monitoring import (
     OperationalMonitoringMixin,
     HealthStatus,
     AlertSeverity

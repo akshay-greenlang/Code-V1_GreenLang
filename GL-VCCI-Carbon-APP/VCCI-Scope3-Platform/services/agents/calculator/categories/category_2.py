@@ -24,8 +24,8 @@ import json
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from ..models import (
 from greenlang.determinism import DeterministicClock
+from ..models import (
     Category2Input,
     CalculationResult,
     DataQualityInfo,

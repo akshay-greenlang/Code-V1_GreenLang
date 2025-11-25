@@ -1,11 +1,151 @@
 # -*- coding: utf-8 -*-
+"""
+GreenLang Orchestrator
+======================
+
+Orchestrates the execution of agent workflows with policy enforcement,
+retry logic, and comprehensive execution tracking.
+
+Author: GreenLang Framework Team
+"""
+
 from typing import Dict, Any, List, Optional
+from dataclasses import dataclass, field
+from datetime import datetime
+from enum import Enum
+import uuid
+
 from greenlang.agents.base import BaseAgent
 from greenlang.core.workflow import Workflow
 import logging
 import ast
 
 from greenlang.exceptions import ValidationError, ExecutionError, MissingData
+
+
+class ExecutionState(str, Enum):
+    """Enumeration of possible execution states for policy context."""
+
+    PENDING = "pending"
+    STARTED = "started"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    CANCELLED = "cancelled"
+
+
+@dataclass
+class PolicyExecutionContext:
+    """
+    Execution context for policy enforcement checks.
+
+    This class provides all necessary information for the policy enforcer
+    to validate that a workflow execution complies with defined policies
+    (e.g., data egress rules, regional compliance, etc.).
+
+    Attributes:
+        egress_targets: List of external targets data may be sent to
+        region: Geographic region for compliance checks (e.g., 'US', 'EU')
+        metadata: Additional metadata from the input data
+        execution_state: Current state of the execution
+        current_agent: ID of the agent currently being executed (if any)
+        run_id: Unique identifier for this execution run
+        started_at: Timestamp when execution started
+
+    Example:
+        >>> context = PolicyExecutionContext.from_input_data(
+        ...     input_data={"metadata": {"location": {"country": "EU"}}},
+        ...     run_id="workflow_123_0"
+        ... )
+        >>> context.execution_state
+        <ExecutionState.STARTED: 'started'>
+        >>> context.region
+        'EU'
+    """
+
+    # Policy-relevant fields
+    egress_targets: List[str] = field(default_factory=list)
+    region: str = "US"
+    metadata: Dict[str, Any] = field(default_factory=dict)
+
+    # Execution state tracking
+    execution_state: ExecutionState = ExecutionState.PENDING
+    current_agent: Optional[str] = None
+
+    # Run identification
+    run_id: str = field(default_factory=lambda: f"policy-run-{uuid.uuid4().hex[:12]}")
+    started_at: datetime = field(default_factory=datetime.now)
+
+    @classmethod
+    def from_input_data(
+        cls,
+        input_data: Dict[str, Any],
+        run_id: Optional[str] = None,
+        execution_state: ExecutionState = ExecutionState.STARTED
+    ) -> "PolicyExecutionContext":
+        """
+        Create a PolicyExecutionContext from workflow input data.
+
+        Args:
+            input_data: Input data dictionary from workflow execution
+            run_id: Optional run ID (generated if not provided)
+            execution_state: Initial execution state
+
+        Returns:
+            Configured PolicyExecutionContext instance
+        """
+        metadata = input_data.get("metadata", {})
+        location = metadata.get("location", {})
+        region = location.get("country", "US")
+
+        # Extract egress targets from metadata if present
+        egress_targets = metadata.get("egress_targets", [])
+
+        context = cls(
+            egress_targets=egress_targets,
+            region=region,
+            metadata=metadata,
+            execution_state=execution_state,
+            started_at=datetime.now()
+        )
+
+        if run_id:
+            context.run_id = run_id
+
+        return context
+
+    def set_current_agent(self, agent_id: Optional[str]) -> None:
+        """Update the current agent being executed."""
+        self.current_agent = agent_id
+        if agent_id:
+            self.execution_state = ExecutionState.RUNNING
+
+    def mark_completed(self) -> None:
+        """Mark the execution as completed."""
+        self.execution_state = ExecutionState.COMPLETED
+        self.current_agent = None
+
+    def mark_failed(self) -> None:
+        """Mark the execution as failed."""
+        self.execution_state = ExecutionState.FAILED
+        self.current_agent = None
+
+    def add_egress_target(self, target: str) -> None:
+        """Add an egress target for policy validation."""
+        if target not in self.egress_targets:
+            self.egress_targets.append(target)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert context to dictionary for logging/serialization."""
+        return {
+            "egress_targets": self.egress_targets,
+            "region": self.region,
+            "metadata": self.metadata,
+            "execution_state": self.execution_state.value,
+            "current_agent": self.current_agent,
+            "run_id": self.run_id,
+            "started_at": self.started_at.isoformat()
+        }
 
 # Import policy enforcement if available
 try:
@@ -78,20 +218,14 @@ class Orchestrator:
         # Policy enforcement check before execution
         if POLICY_AVAILABLE:
             try:
-                # Create execution context for policy check
-                class ExecutionContext:
-                    def __init__(self, input_data):
-                        self.egress_targets = []
-                        self.region = (
-                            input_data.get("metadata", {})
-                            .get("location", {})
-                            .get("country", "US")
-                        )
-                        self.metadata = input_data.get("metadata", {})
-
-                policy_context = ExecutionContext(input_data)
+                # Create execution context for policy check using proper class
+                policy_context = PolicyExecutionContext.from_input_data(
+                    input_data=input_data,
+                    run_id=execution_id,
+                    execution_state=ExecutionState.STARTED
+                )
                 check_run(workflow, policy_context)
-                self.logger.info("Runtime policy check passed")
+                self.logger.info(f"Runtime policy check passed for run_id={policy_context.run_id}")
             except RuntimeError as e:
                 error_msg = f"Runtime policy check failed: {e}"
                 self.logger.error(error_msg)

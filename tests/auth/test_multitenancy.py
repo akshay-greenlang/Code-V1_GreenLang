@@ -11,8 +11,8 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import jwt
 
-from greenlang.auth import (
 from greenlang.determinism import DeterministicClock
+from greenlang.auth import (
     TenantManager, Tenant, TenantQuota, TenantIsolation, TenantContext,
     RBACManager, Role, Permission, AccessControl,
     AuthManager, AuthToken, APIKey, ServiceAccount

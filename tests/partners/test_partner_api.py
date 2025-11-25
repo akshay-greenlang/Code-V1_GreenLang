@@ -13,8 +13,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import secrets
 
-from greenlang.partners.api import (
 from greenlang.determinism import DeterministicClock
+from greenlang.partners.api import (
     app,
     Base,
     PartnerModel,

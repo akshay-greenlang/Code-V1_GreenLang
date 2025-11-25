@@ -500,11 +500,190 @@ class HubClient:
         logger.debug(f"Cached pack {pack_ref} at {cache_path}")
 
     def _verify_signature(self, content: bytes, signature: Dict) -> bool:
-        """Verify pack signature"""
-        # TODO: Implement actual signature verification
-        # This would use cryptographic libraries to verify the signature
-        logger.warning("Signature verification not yet implemented")
-        return True
+        """
+        Verify pack signature using cryptographic verification.
+
+        Supports multiple signature algorithms:
+        - Ed25519: EdDSA signature scheme
+        - RSA-PSS: RSA with PSS padding (RSA-2048, RSA-4096)
+        - ECDSA: Elliptic Curve Digital Signature Algorithm (P-256, P-384)
+        - Sigstore: Keyless verification with certificate chain
+
+        Args:
+            content: The pack content bytes to verify
+            signature: Signature dictionary containing:
+                - spec.signature.algorithm: Algorithm used (ed25519, rsa-pss, ecdsa, sigstore-keyless)
+                - spec.signature.value: Base64-encoded signature bytes
+                - spec.publicKey: PEM-encoded public key (for non-Sigstore)
+                - spec.certChain: Base64-encoded certificate chain (for Sigstore)
+                - metadata.hash.value: Expected SHA-256 hash of content (optional)
+
+        Returns:
+            True if signature is valid
+
+        Raises:
+            ValueError: If signature verification fails or signature format is invalid
+        """
+        import base64
+        import hashlib
+
+        # Try to import verification modules
+        try:
+            from greenlang.security.signing import (
+                DetachedSigVerifier,
+                SigstoreBundleVerifier,
+                CRYPTO_AVAILABLE,
+                SIGSTORE_AVAILABLE,
+            )
+        except ImportError:
+            logger.error("Security signing module not available")
+            raise ValueError("Security module not available for signature verification")
+
+        # Validate signature structure
+        if not isinstance(signature, dict):
+            logger.error("Invalid signature format: not a dictionary")
+            raise ValueError("Invalid signature format: expected dictionary")
+
+        # Handle different signature formats (v1.0 and v2.0)
+        sig_spec = signature.get("spec", signature)
+        sig_info = sig_spec.get("signature", sig_spec)
+
+        # Extract algorithm
+        algorithm = sig_info.get("algorithm")
+        if not algorithm:
+            logger.error("No algorithm specified in signature")
+            raise ValueError("No algorithm specified in signature")
+
+        # Extract signature value
+        sig_value = sig_info.get("value")
+        if not sig_value:
+            logger.error("No signature value found")
+            raise ValueError("No signature value found in signature")
+
+        try:
+            sig_bytes = base64.b64decode(sig_value)
+        except Exception as e:
+            logger.error(f"Failed to decode signature: {e}")
+            raise ValueError(f"Invalid base64 signature value: {e}")
+
+        # Verify content hash if provided (additional integrity check)
+        metadata = signature.get("metadata", {})
+        hash_info = metadata.get("hash", {})
+        expected_hash = hash_info.get("value")
+
+        if expected_hash:
+            actual_hash = hashlib.sha256(content).hexdigest()
+            if actual_hash != expected_hash:
+                logger.error(
+                    f"Content hash mismatch: expected {expected_hash}, got {actual_hash}"
+                )
+                raise ValueError("Content hash verification failed")
+            logger.debug("Content hash verified successfully")
+
+        # Verify signature based on algorithm
+        try:
+            if algorithm == "sigstore-keyless":
+                # Sigstore keyless verification with certificate chain
+                if not SIGSTORE_AVAILABLE:
+                    logger.error("Sigstore library not available for keyless verification")
+                    raise ValueError(
+                        "Sigstore not available. Install with: pip install sigstore"
+                    )
+
+                cert_chain_b64 = sig_spec.get("certChain")
+                if not cert_chain_b64:
+                    raise ValueError("Certificate chain required for Sigstore verification")
+
+                cert_chain = base64.b64decode(cert_chain_b64)
+                transparency_entry = sig_spec.get("transparencyLog")
+
+                verifier = SigstoreBundleVerifier(staging=False)
+                verifier.verify(
+                    content,
+                    sig_bytes,
+                    cert_chain=cert_chain,
+                    transparency_entry=transparency_entry,
+                )
+                logger.info("Sigstore signature verified successfully")
+
+            elif algorithm in ("ed25519", "rsa-pss", "ecdsa", "ecdsa-sha256"):
+                # Detached signature verification with public key
+                if not CRYPTO_AVAILABLE:
+                    logger.error("Cryptography library not available")
+                    raise ValueError(
+                        "Cryptography not available. Install with: pip install cryptography"
+                    )
+
+                public_key_pem = sig_spec.get("publicKey")
+                if not public_key_pem:
+                    # Try to fetch public key from hub if key_id is provided
+                    key_id = sig_spec.get("keyId") or metadata.get("signer", {}).get(
+                        "key_fingerprint"
+                    )
+                    if key_id:
+                        public_key_pem = self._fetch_public_key_from_hub(key_id)
+                    else:
+                        raise ValueError(
+                            "Public key required for detached signature verification"
+                        )
+
+                verifier = DetachedSigVerifier()
+                verifier.verify(
+                    content, sig_bytes, public_key=public_key_pem, algorithm=algorithm
+                )
+                logger.info(f"{algorithm.upper()} signature verified successfully")
+
+            else:
+                logger.error(f"Unsupported signature algorithm: {algorithm}")
+                raise ValueError(f"Unsupported signature algorithm: {algorithm}")
+
+            return True
+
+        except ValueError:
+            # Re-raise ValueError as-is
+            raise
+        except Exception as e:
+            # Handle cryptography InvalidSignature and other errors
+            error_type = type(e).__name__
+            if error_type == "InvalidSignature":
+                logger.error("Signature verification failed: invalid signature")
+                raise ValueError("Signature verification failed: invalid signature")
+            else:
+                logger.error(f"Signature verification error: {e}")
+                raise ValueError(f"Signature verification failed: {e}")
+
+    def _fetch_public_key_from_hub(self, key_id: str) -> str:
+        """
+        Fetch public key from hub registry for verification.
+
+        Args:
+            key_id: Key identifier (fingerprint or key ID)
+
+        Returns:
+            PEM-encoded public key string
+
+        Raises:
+            ValueError: If key cannot be fetched
+        """
+        try:
+            logger.debug(f"Fetching public key {key_id} from hub")
+            response = self.session.get(
+                f"{self.registry_url}/api/v1/keys/{key_id}",
+                headers=self.default_headers,
+            )
+
+            key_data = response.json()
+            public_key = key_data.get("public_key")
+
+            if not public_key:
+                raise ValueError(f"No public key returned for key_id: {key_id}")
+
+            logger.debug(f"Successfully fetched public key {key_id}")
+            return public_key
+
+        except Exception as e:
+            logger.error(f"Failed to fetch public key {key_id}: {e}")
+            raise ValueError(f"Failed to fetch public key from hub: {e}")
 
     def close(self):
         """Close HTTP client"""

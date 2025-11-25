@@ -14,7 +14,6 @@ from typing import Dict, List, Optional, Tuple, Any, Set
 import hashlib
 from sklearn.ensemble import RandomForestClassifier
 import joblib
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 class RoutingStrategy(Enum):

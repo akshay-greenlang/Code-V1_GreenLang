@@ -16,7 +16,6 @@ from typing import Dict, List, Optional, Tuple, Any, Set
 import heapq
 import redis
 from functools import lru_cache
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 
 class Priority(Enum):

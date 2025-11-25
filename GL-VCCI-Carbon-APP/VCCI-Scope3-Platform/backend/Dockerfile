@@ -6,7 +6,9 @@
 # ==============================================================================
 # Stage 1: Dependencies Builder
 # ==============================================================================
-FROM python:3.10-slim as builder
+# NOTE: Python 3.11 is the standardized version for GreenLang core infrastructure.
+# See pyproject.toml for supported versions (3.10, 3.11, 3.12).
+FROM python:3.11-slim as builder
 
 # Set working directory
 WORKDIR /build
@@ -32,7 +34,7 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
 # ==============================================================================
 # Stage 2: Runtime Image
 # ==============================================================================
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Metadata
 LABEL maintainer="GL-VCCI Team <support@greenlang.ai>" \

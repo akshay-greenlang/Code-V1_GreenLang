@@ -16,8 +16,8 @@ from typing import Dict, List, Optional, AsyncIterator, Callable, Any
 from datetime import datetime
 import logging
 
-from .message import (
 from greenlang.determinism import DeterministicClock
+from .message import (
     Message,
     MessageBatch,
     MessageAck,

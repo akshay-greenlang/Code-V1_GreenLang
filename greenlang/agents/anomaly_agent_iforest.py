@@ -58,7 +58,6 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 import warnings
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 from greenlang.determinism import deterministic_random
 

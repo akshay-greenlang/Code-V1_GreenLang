@@ -16,7 +16,6 @@ import yaml
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 # Set seed for reproducibility

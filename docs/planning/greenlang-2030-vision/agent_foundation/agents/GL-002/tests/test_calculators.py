@@ -592,7 +592,6 @@ class TestCalculationProvenance:
         timestamp = DeterministicClock.now()
 
         assert timestamp is not None
-    return FuelToSteamCalculator()
 
 
 @pytest.fixture

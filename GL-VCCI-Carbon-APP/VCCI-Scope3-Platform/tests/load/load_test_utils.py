@@ -26,7 +26,6 @@ import psutil
 import requests
 from io import StringIO
 import csv as csv_module
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 

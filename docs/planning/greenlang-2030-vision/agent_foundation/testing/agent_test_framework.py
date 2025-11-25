@@ -29,7 +29,6 @@ import tempfile
 import uuid
 import concurrent.futures
 from faker import Faker
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 

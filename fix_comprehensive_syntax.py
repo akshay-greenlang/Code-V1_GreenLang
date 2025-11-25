@@ -13,8 +13,8 @@ def fix_broken_intelligence_imports(file_path: Path) -> bool:
     """
     Fix broken intelligence imports that are split incorrectly.
     The pattern is:
-    from greenlang.intelligence import (
     from greenlang.determinism import DeterministicClock
+from greenlang.intelligence import (
         ChatSession,
         ChatMessage,
         ...

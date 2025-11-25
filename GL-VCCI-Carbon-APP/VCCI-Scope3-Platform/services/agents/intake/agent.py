@@ -29,9 +29,8 @@ import time
 from greenlang.sdk.base import Agent, Metadata, Result
 from greenlang.cache import CacheManager, get_cache_manager
 from greenlang.db import get_engine, get_session, DatabaseConnectionPool
-from greenlang.telemetry import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.telemetry import (
     MetricsCollector,
     StructuredLogger,
     get_logger,

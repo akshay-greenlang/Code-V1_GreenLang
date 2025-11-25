@@ -19,9 +19,8 @@ from pathlib import Path
 # GreenLang SDK Integration
 from greenlang.sdk.base import Agent, Metadata, Result
 from greenlang.cache import CacheManager, get_cache_manager
-from greenlang.telemetry import (
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from greenlang.telemetry import (
     MetricsCollector,
     get_logger,
     track_execution,

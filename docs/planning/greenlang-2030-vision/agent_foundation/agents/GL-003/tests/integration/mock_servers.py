@@ -24,7 +24,6 @@ from dataclasses import dataclass, field
 from collections import defaultdict
 from aiohttp import web
 import math
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_random
 
 

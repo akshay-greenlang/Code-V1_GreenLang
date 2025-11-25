@@ -388,6 +388,13 @@ class TestEndToEndIntegration:
 
         results = await asyncio.gather(*tasks)
         assert len(results) == len(boiler_ids)
+
+
+@pytest.fixture
+def scada_connector(scada_dcs_credentials):
+    """Create SCADA connector instance."""
+    config = {
+        "host": "scada.test.local",
         "port": 502,
         "protocol": "modbus_tcp",
         "timeout": 30,

@@ -18,8 +18,8 @@ import logging
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from integrations import (
 from greenlang.determinism import DeterministicClock
+from integrations import (
     # Steam Meter
     SteamMeterConnector,
     SteamMeterConfig,

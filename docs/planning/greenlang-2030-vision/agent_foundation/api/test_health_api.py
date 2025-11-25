@@ -25,8 +25,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi.testclient import TestClient
 
 from .main import app
-from .health import (
 from greenlang.determinism import DeterministicClock
+from .health import (
     HealthCheckManager,
     HealthCheckResponse,
     ComponentHealth,

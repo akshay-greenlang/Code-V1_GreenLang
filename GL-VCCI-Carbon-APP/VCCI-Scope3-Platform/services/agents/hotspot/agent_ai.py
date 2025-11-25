@@ -22,8 +22,8 @@ from dataclasses import dataclass
 from datetime import datetime
 
 from .agent import HotspotAnalysisAgent
-from .models import (
 from greenlang.determinism import DeterministicClock
+from .models import (
     HotspotReport,
     ParetoAnalysis,
     SegmentationAnalysis,

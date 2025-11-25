@@ -27,8 +27,8 @@ from typing import Dict, Optional, Tuple, List
 from datetime import datetime
 
 from .models import DQIScore, PedigreeScore
-from .constants import (
 from greenlang.determinism import DeterministicClock
+from .constants import (
     DQI_QUALITY_LABELS,
     FACTOR_SOURCE_SCORES,
     PEDIGREE_TO_DQI_MAPPING,

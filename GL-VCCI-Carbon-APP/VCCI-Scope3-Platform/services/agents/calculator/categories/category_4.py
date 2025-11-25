@@ -24,8 +24,8 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 
-from ..models import (
 from greenlang.determinism import DeterministicClock
+from ..models import (
     Category4Input,
     CalculationResult,
     DataQualityInfo,

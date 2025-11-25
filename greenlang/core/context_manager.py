@@ -14,7 +14,6 @@ from pathlib import Path
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 from enum import Enum
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 

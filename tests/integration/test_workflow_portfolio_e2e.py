@@ -5,8 +5,8 @@ Portfolio workflow integration tests.
 import pytest
 import json
 from pathlib import Path
-from tests.integration.utils import (
 from greenlang.determinism import FinancialDecimal
+from tests.integration.utils import (
     load_fixture,
     assert_numerical_invariants,
     TestIOHelper

@@ -23,8 +23,8 @@ import asyncpg
 import redis.asyncio as redis
 import json
 
-from .experiment_models import (
 from greenlang.determinism import DeterministicClock
+from .experiment_models import (
     Experiment,
     ExperimentVariant,
     ExperimentResult,

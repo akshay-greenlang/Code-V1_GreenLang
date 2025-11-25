@@ -24,7 +24,6 @@ from collections import deque, defaultdict
 from enum import Enum
 import uuid
 import hashlib
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 logger = logging.getLogger(__name__)

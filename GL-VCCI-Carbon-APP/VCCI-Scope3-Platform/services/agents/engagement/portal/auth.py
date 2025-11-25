@@ -13,7 +13,6 @@ import uuid
 
 from ..models import SupplierPortalSession
 from ..exceptions import AuthenticationError
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 

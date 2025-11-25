@@ -61,6 +61,10 @@ jobs:
           pytest -q -ra --maxfail=1 --durations=20 --color=yes \
                  --cov=greenlang --cov-report=xml --junitxml=test-results/junit.xml
 
+      # Coverage threshold: 85% is the enforced minimum for CI gate.
+      # This threshold is synchronized with pyproject.toml [tool.coverage.report].fail_under
+      # and [tool.pytest.ini_options].addopts --cov-fail-under setting.
+      # 95% is aspirational for mature modules but too strict for CI enforcement.
       - name: Enforce coverage floor
         run: |
           python - <<'PY'

@@ -12,8 +12,8 @@ from pathlib import Path
 from datetime import datetime
 from typing import List
 
-from .templates import (
 from greenlang.determinism import DeterministicClock
+from .templates import (
     PACK_CARD_TEMPLATE,
     DATASET_CARD_TEMPLATE,
     MODEL_CARD_TEMPLATE,

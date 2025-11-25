@@ -31,8 +31,8 @@ from typing import Dict, Optional, Tuple, List
 from datetime import datetime
 
 from .models import PedigreeScore, UncertaintyResult
-from .constants import (
 from greenlang.determinism import DeterministicClock
+from .constants import (
     PedigreeIndicator,
     PEDIGREE_MATRIX,
     PEDIGREE_DESCRIPTIONS,

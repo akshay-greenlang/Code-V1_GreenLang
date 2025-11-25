@@ -27,8 +27,8 @@ from datetime import datetime, timedelta
 from typing import List
 import asyncpg
 
-from tenant_manager import (
 from greenlang.determinism import deterministic_uuid, DeterministicClock
+from tenant_manager import (
     TenantManager,
     Tenant,
     TenantMetadata,

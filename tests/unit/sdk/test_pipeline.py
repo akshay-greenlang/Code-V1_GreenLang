@@ -14,6 +14,7 @@ import pytest
 import yaml
 import json
 from pathlib import Path
+from unittest.mock import Mock, patch
 from greenlang.sdk.pipeline import Pipeline
 
 
@@ -266,9 +267,14 @@ class TestPipelineValidation:
             ],
         )
 
-        errors = pipeline.validate()
+        # Mock agent registry to pass agent validation
+        mock_agent_info = Mock()
+        mock_agent_info.version = "1.0.0"
 
-        assert errors == []
+        with patch("greenlang.sdk.pipeline.AGENT_REGISTRY_AVAILABLE", True):
+            with patch("greenlang.sdk.pipeline.get_agent_info", return_value=mock_agent_info):
+                errors = pipeline.validate()
+                assert errors == []
 
     def test_validate_missing_name(self):
         """Test validation fails when name is missing."""

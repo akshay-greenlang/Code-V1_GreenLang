@@ -13,8 +13,8 @@ from datetime import datetime
 import hashlib
 from typing import Dict, Any, List
 
-from greenlang.core.composability import (
 from greenlang.determinism import DeterministicClock
+from greenlang.core.composability import (
     BaseRunnable,
     AgentRunnable,
     RunnableSequence,

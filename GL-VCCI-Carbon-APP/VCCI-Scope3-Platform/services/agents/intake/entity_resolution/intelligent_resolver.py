@@ -17,8 +17,8 @@ import json
 from typing import Dict, Any, Optional, List
 from datetime import datetime, timedelta
 
-from ..models import (
 from greenlang.determinism import DeterministicClock
+from ..models import (
     IngestionRecord,
     ResolvedEntity,
     EntityMatchCandidate,

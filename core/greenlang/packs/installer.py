@@ -454,6 +454,10 @@ class PackInstaller:
 
         Returns:
             Updated InstalledPack metadata
+
+        Raises:
+            ValueError: If pack not found or version comparison fails
+            RuntimeError: If update or rollback fails
         """
         pack = self.registry.get(pack_name)
         if not pack:
@@ -468,10 +472,422 @@ class PackInstaller:
                 f"greenlang-{pack_name}", version, verify=True
             )
         else:
-            # For local packs, need to know original source
-            # This would require storing source info in registry
-            logger.warning("Cannot update local pack without source information")
-            raise NotImplementedError("Local pack updates not yet supported")
+            # Handle local pack updates
+            return self._update_local_pack(pack, version)
+
+    def _update_local_pack(
+        self, pack: InstalledPack, target_version: Optional[str] = None
+    ) -> InstalledPack:
+        """
+        Update a locally installed pack with backup and rollback support.
+
+        This method implements a safe update process:
+        1. Read current pack version from local installation
+        2. Compare with available/target version
+        3. Backup current pack
+        4. Install new version
+        5. Rollback on failure
+
+        Args:
+            pack: Currently installed pack metadata
+            target_version: Optional specific version to update to
+
+        Returns:
+            Updated InstalledPack metadata
+
+        Raises:
+            ValueError: If version comparison fails or no update available
+            RuntimeError: If update fails and rollback is required
+        """
+        import hashlib
+        from datetime import datetime
+
+        pack_dir = Path(pack.location)
+        if not pack_dir.exists():
+            raise ValueError(f"Pack directory not found: {pack_dir}")
+
+        # Step 1: Read current pack version from local installation
+        current_version = pack.version
+        current_manifest = PackManifest.from_yaml(pack_dir)
+        logger.info(f"Current local pack version: {current_version}")
+
+        # Step 2: Determine target version and compare
+        if target_version:
+            # User specified a target version
+            if not self._is_newer_version(target_version, current_version):
+                logger.info(
+                    f"Target version {target_version} is not newer than "
+                    f"current version {current_version}"
+                )
+                raise ValueError(
+                    f"Target version {target_version} is not newer than "
+                    f"installed version {current_version}"
+                )
+            new_version = target_version
+        else:
+            # Check manifest metadata for update source
+            source_info = self._get_pack_source_info(pack)
+            if source_info:
+                available_version = self._check_available_version(
+                    pack.name, source_info
+                )
+                if available_version and self._is_newer_version(
+                    available_version, current_version
+                ):
+                    new_version = available_version
+                    logger.info(f"Found newer version available: {new_version}")
+                else:
+                    logger.info(f"Pack {pack.name} is already at latest version")
+                    return pack
+            else:
+                # No source info - require explicit version
+                raise ValueError(
+                    f"Cannot determine update source for local pack {pack.name}. "
+                    "Please specify a target version or reinstall from a known source."
+                )
+
+        # Step 3: Create backup of current pack
+        backup_dir = self._create_pack_backup(pack_dir, pack.name, current_version)
+        logger.info(f"Created backup at: {backup_dir}")
+
+        # Step 4: Attempt to install new version
+        try:
+            # Try to update from original source if known
+            source_info = self._get_pack_source_info(pack)
+            if source_info:
+                updated_pack = self._install_from_source(
+                    source_info, new_version, verify=True
+                )
+            else:
+                # Perform in-place version update if pack files are available locally
+                updated_pack = self._perform_inplace_update(
+                    pack, pack_dir, new_version
+                )
+
+            logger.info(
+                f"Successfully updated {pack.name} from v{current_version} "
+                f"to v{updated_pack.version}"
+            )
+
+            # Clean up backup on success (optional: keep for safety)
+            self._cleanup_backup(backup_dir, keep_days=7)
+
+            return updated_pack
+
+        except Exception as e:
+            # Step 5: Rollback on failure
+            logger.error(f"Update failed: {e}. Initiating rollback...")
+            self._rollback_pack(pack_dir, backup_dir, pack.name)
+            logger.info(f"Rollback completed. Pack restored to v{current_version}")
+            raise RuntimeError(
+                f"Failed to update {pack.name} to v{new_version}: {e}. "
+                f"Pack has been rolled back to v{current_version}."
+            ) from e
+
+    def _is_newer_version(self, version_a: str, version_b: str) -> bool:
+        """
+        Compare two semantic versions to determine if version_a is newer than version_b.
+
+        Args:
+            version_a: First version string (e.g., "1.2.3")
+            version_b: Second version string (e.g., "1.2.0")
+
+        Returns:
+            True if version_a is strictly newer than version_b
+        """
+        def parse_version(v: str) -> tuple:
+            """Parse version string into comparable tuple."""
+            # Remove pre-release and build metadata for comparison
+            base_version = v.split("-")[0].split("+")[0]
+            parts = base_version.split(".")
+            # Pad with zeros to ensure comparable length
+            numeric_parts = []
+            for part in parts[:3]:  # major, minor, patch
+                try:
+                    numeric_parts.append(int(part))
+                except ValueError:
+                    numeric_parts.append(0)
+            # Pad to 3 parts
+            while len(numeric_parts) < 3:
+                numeric_parts.append(0)
+            return tuple(numeric_parts)
+
+        try:
+            parsed_a = parse_version(version_a)
+            parsed_b = parse_version(version_b)
+            return parsed_a > parsed_b
+        except Exception as e:
+            logger.warning(f"Version comparison failed: {e}")
+            return False
+
+    def _get_pack_source_info(self, pack: InstalledPack) -> Optional[Dict[str, Any]]:
+        """
+        Extract source information from pack metadata.
+
+        Args:
+            pack: Installed pack metadata
+
+        Returns:
+            Dictionary with source type and location, or None if unknown
+        """
+        manifest = pack.manifest
+        metadata = manifest.get("metadata", {})
+
+        # Check for repository URL in metadata
+        if metadata:
+            repository = metadata.get("repository")
+            if repository:
+                if "github.com" in repository:
+                    return {"type": "github", "url": repository}
+                elif "hub.greenlang.ai" in repository:
+                    return {"type": "hub", "name": pack.name}
+                else:
+                    return {"type": "url", "url": repository}
+
+        # Check for homepage
+        homepage = metadata.get("homepage") if metadata else None
+        if homepage and "github.com" in homepage:
+            return {"type": "github", "url": homepage}
+
+        return None
+
+    def _check_available_version(
+        self, pack_name: str, source_info: Dict[str, Any]
+    ) -> Optional[str]:
+        """
+        Check for available version from source.
+
+        Args:
+            pack_name: Name of the pack
+            source_info: Source information dictionary
+
+        Returns:
+            Latest available version string, or None if check fails
+        """
+        source_type = source_info.get("type")
+
+        try:
+            if source_type == "hub":
+                # Query Hub API for latest version
+                hub_url = "https://hub.greenlang.ai"
+                response = self.session.get(f"{hub_url}/api/packs/{pack_name}/latest")
+                if response.ok:
+                    return response.json().get("version")
+
+            elif source_type == "github":
+                # Query GitHub API for latest release
+                url = source_info.get("url", "")
+                # Parse owner/repo from GitHub URL
+                parts = url.replace("https://github.com/", "").split("/")
+                if len(parts) >= 2:
+                    owner, repo = parts[0], parts[1].replace(".git", "")
+                    api_url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
+                    response = self.session.get(api_url)
+                    if response.ok:
+                        tag = response.json().get("tag_name", "")
+                        # Remove 'v' prefix if present
+                        return tag.lstrip("v")
+
+        except Exception as e:
+            logger.warning(f"Failed to check available version: {e}")
+
+        return None
+
+    def _create_pack_backup(
+        self, pack_dir: Path, pack_name: str, version: str
+    ) -> Path:
+        """
+        Create a backup of the current pack installation.
+
+        Args:
+            pack_dir: Path to current pack directory
+            pack_name: Name of the pack
+            version: Current version being backed up
+
+        Returns:
+            Path to backup directory
+        """
+        from datetime import datetime
+
+        backup_base = Path.home() / ".greenlang" / "backups"
+        backup_base.mkdir(parents=True, exist_ok=True)
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_name = f"{pack_name}_v{version}_{timestamp}"
+        backup_dir = backup_base / backup_name
+
+        logger.info(f"Creating backup of {pack_name} v{version} to {backup_dir}")
+        shutil.copytree(pack_dir, backup_dir)
+
+        # Create backup metadata file
+        backup_metadata = {
+            "pack_name": pack_name,
+            "version": version,
+            "original_location": str(pack_dir),
+            "backup_timestamp": timestamp,
+            "backup_hash": self.registry._calculate_directory_hash(backup_dir),
+        }
+
+        import json
+        with open(backup_dir / ".backup_metadata.json", "w") as f:
+            json.dump(backup_metadata, f, indent=2)
+
+        return backup_dir
+
+    def _rollback_pack(
+        self, pack_dir: Path, backup_dir: Path, pack_name: str
+    ) -> None:
+        """
+        Rollback pack to backup version.
+
+        Args:
+            pack_dir: Current pack directory to restore
+            backup_dir: Backup directory to restore from
+            pack_name: Name of the pack
+        """
+        logger.warning(f"Rolling back {pack_name} from backup at {backup_dir}")
+
+        # Verify backup integrity before rollback
+        backup_metadata_path = backup_dir / ".backup_metadata.json"
+        if backup_metadata_path.exists():
+            import json
+            with open(backup_metadata_path) as f:
+                backup_metadata = json.load(f)
+
+            # Verify backup hash
+            current_backup_hash = self.registry._calculate_directory_hash(backup_dir)
+            expected_hash = backup_metadata.get("backup_hash")
+
+            if expected_hash and current_backup_hash != expected_hash:
+                logger.error("Backup integrity check failed - hash mismatch")
+                raise RuntimeError(
+                    "Backup integrity verification failed. Manual intervention required."
+                )
+
+        # Remove failed installation
+        if pack_dir.exists():
+            shutil.rmtree(pack_dir)
+
+        # Restore from backup (exclude metadata file)
+        shutil.copytree(
+            backup_dir,
+            pack_dir,
+            ignore=shutil.ignore_patterns(".backup_metadata.json"),
+        )
+
+        # Re-register the restored pack
+        self.registry.register(pack_dir, verify=True)
+
+        logger.info(f"Rollback completed for {pack_name}")
+
+    def _cleanup_backup(self, backup_dir: Path, keep_days: int = 7) -> None:
+        """
+        Clean up old backups, keeping recent ones.
+
+        Args:
+            backup_dir: Path to the backup just created
+            keep_days: Number of days to keep backups
+        """
+        from datetime import datetime, timedelta
+
+        backup_base = backup_dir.parent
+        cutoff_date = datetime.now() - timedelta(days=keep_days)
+
+        for backup in backup_base.iterdir():
+            if not backup.is_dir():
+                continue
+
+            # Check backup age from metadata
+            metadata_file = backup / ".backup_metadata.json"
+            if metadata_file.exists():
+                try:
+                    import json
+                    with open(metadata_file) as f:
+                        metadata = json.load(f)
+                    timestamp_str = metadata.get("backup_timestamp", "")
+                    if timestamp_str:
+                        backup_date = datetime.strptime(timestamp_str, "%Y%m%d_%H%M%S")
+                        if backup_date < cutoff_date:
+                            logger.info(f"Removing old backup: {backup}")
+                            shutil.rmtree(backup)
+                except Exception as e:
+                    logger.warning(f"Could not process backup {backup}: {e}")
+
+    def _install_from_source(
+        self, source_info: Dict[str, Any], version: str, verify: bool = True
+    ) -> InstalledPack:
+        """
+        Install pack from known source.
+
+        Args:
+            source_info: Source information dictionary
+            version: Version to install
+            verify: Whether to verify pack integrity
+
+        Returns:
+            Installed pack metadata
+        """
+        source_type = source_info.get("type")
+
+        if source_type == "hub":
+            pack_name = source_info.get("name")
+            return self._install_from_hub(f"hub:{pack_name}", version, verify)
+
+        elif source_type == "github":
+            url = source_info.get("url", "")
+            # Convert GitHub URL to github: spec
+            parts = url.replace("https://github.com/", "").split("/")
+            if len(parts) >= 2:
+                owner, repo = parts[0], parts[1].replace(".git", "")
+                return self._install_from_github(f"github:{owner}/{repo}", version, verify)
+
+        elif source_type == "url":
+            url = source_info.get("url", "")
+            return self._install_from_url(url, verify)
+
+        raise ValueError(f"Unknown source type: {source_type}")
+
+    def _perform_inplace_update(
+        self, pack: InstalledPack, pack_dir: Path, new_version: str
+    ) -> InstalledPack:
+        """
+        Perform in-place version update when no external source is available.
+
+        This is typically used when the pack files have been manually updated
+        in the pack directory and only the registry needs to be refreshed.
+
+        Args:
+            pack: Current installed pack
+            pack_dir: Pack directory path
+            new_version: New version to register
+
+        Returns:
+            Updated InstalledPack metadata
+        """
+        # Re-read manifest to get updated information
+        manifest = PackManifest.from_yaml(pack_dir)
+
+        # Verify the manifest version matches expected
+        if manifest.version != new_version:
+            raise ValueError(
+                f"Manifest version ({manifest.version}) does not match "
+                f"target version ({new_version}). Please update pack.yaml first."
+            )
+
+        # Validate pack structure
+        errors = manifest.validate_files(pack_dir)
+        if errors:
+            raise ValueError(f"Pack validation failed: {', '.join(errors)}")
+
+        # Re-register with updated information
+        updated_pack = self.registry.register(pack_dir, verify=True)
+
+        logger.info(
+            f"In-place update completed for {pack.name}: "
+            f"v{pack.version} -> v{updated_pack.version}"
+        )
+
+        return updated_pack
 
     def list_available(self, source: str = "pypi") -> List[Dict[str, Any]]:
         """

@@ -26,7 +26,6 @@ from typing import Dict, List, Any
 from uuid import uuid4
 import json
 import hashlib
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
@@ -609,4 +608,3 @@ Expected Results:
 - Comprehensive audit trails
 - Effective cache management
 - Accurate incremental synchronization
-"""

@@ -24,7 +24,6 @@ from collections import deque
 from enum import Enum
 import json
 import statistics
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import FinancialDecimal
 
 logger = logging.getLogger(__name__)

@@ -14,7 +14,6 @@ from io import StringIO
 
 from ..models import DataUpload, UploadStatus, ValidationResult
 from ..exceptions import FileFormatError, UploadValidationError
-from greenlang.determinism import DeterministicClock
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
 
