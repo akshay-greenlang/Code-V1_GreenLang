@@ -22,26 +22,338 @@ from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime, timezone
 from pathlib import Path
 import json
+from dataclasses import dataclass, field
 
-# Import from agent_foundation
+# Import from agent_foundation - use try/except for flexible imports
 import sys
-sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
-from agent_foundation.base_agent import BaseAgent, AgentState, AgentConfig
-from agent_foundation.agent_intelligence import (
-    AgentIntelligence,
-    ChatSession,
-    ModelProvider,
-    PromptTemplate
-)
-from agent_foundation.orchestration.message_bus import MessageBus, Message
-from agent_foundation.orchestration.saga import SagaOrchestrator, SagaStep
-from agent_foundation.memory.short_term_memory import ShortTermMemory
-from agent_foundation.memory.long_term_memory import LongTermMemory
+# Add parent directories to path for flexible import resolution
+_current_dir = Path(__file__).parent
+_agent_foundation_path = _current_dir.parent.parent.parent
+if str(_agent_foundation_path) not in sys.path:
+    sys.path.insert(0, str(_agent_foundation_path))
 
-# Import local modules
-from .config import ProcessHeatConfig, PlantConfiguration
-from .tools import ProcessHeatTools, ThermalEfficiencyResult, HeatDistributionStrategy
+try:
+    from agent_foundation.base_agent import BaseAgent, AgentState, AgentConfig
+except ImportError:
+    # Fallback: define minimal classes if agent_foundation not available
+    from enum import Enum
+
+    class AgentState(Enum):
+        """Agent execution states."""
+        INITIALIZING = "initializing"
+        READY = "ready"
+        EXECUTING = "executing"
+        RECOVERING = "recovering"
+        ERROR = "error"
+        TERMINATED = "terminated"
+
+    @dataclass
+    class AgentConfig:
+        """Minimal agent configuration."""
+        name: str
+        version: str
+        agent_id: str
+        timeout_seconds: int = 120
+        enable_metrics: bool = True
+        checkpoint_enabled: bool = True
+        checkpoint_interval_seconds: int = 300
+        max_retries: int = 3
+        state_directory: Optional[Path] = None
+
+    class BaseAgent:
+        """Minimal base agent class."""
+        def __init__(self, config: AgentConfig):
+            self.config = config
+            self.state = AgentState.INITIALIZING
+
+
+@dataclass
+class ProcessData:
+    """
+    Data structure for process heat operations.
+
+    This dataclass represents the comprehensive data structure for capturing
+    and tracking process heat operations across industrial facilities.
+    All fields support provenance tracking for audit compliance.
+
+    Attributes:
+        timestamp: ISO 8601 timestamp of data capture
+        plant_id: Unique identifier for the plant
+        sensor_readings: Dictionary of sensor tag to value mappings
+        energy_consumption_kwh: Total energy consumption in kilowatt-hours
+        temperature_readings: List of temperature values in Celsius
+        pressure_readings: List of pressure values in bar
+        flow_rates: List of flow rate values in m3/hr
+        efficiency_metrics: Dictionary of efficiency metric calculations
+        metadata: Optional additional metadata for tracking
+
+    Example:
+        >>> process_data = ProcessData(
+        ...     timestamp=datetime.now(timezone.utc),
+        ...     plant_id="PLANT-001",
+        ...     sensor_readings={"TEMP-001": 450.5, "PRESS-001": 35.2},
+        ...     energy_consumption_kwh=12500.0,
+        ...     temperature_readings=[450.5, 455.2, 448.8],
+        ...     pressure_readings=[35.2, 35.5, 35.0],
+        ...     flow_rates=[125.0, 128.5, 122.3],
+        ...     efficiency_metrics={"thermal": 0.85, "overall": 0.82}
+        ... )
+    """
+    timestamp: datetime
+    plant_id: str
+    sensor_readings: Dict[str, float]
+    energy_consumption_kwh: float
+    temperature_readings: List[float]
+    pressure_readings: List[float]
+    flow_rates: List[float]
+    efficiency_metrics: Dict[str, float]
+    metadata: Optional[Dict[str, Any]] = field(default_factory=dict)
+
+    def __post_init__(self):
+        """Validate and initialize ProcessData after creation."""
+        # Ensure timestamp is timezone-aware
+        if self.timestamp.tzinfo is None:
+            self.timestamp = self.timestamp.replace(tzinfo=timezone.utc)
+
+        # Initialize metadata if None
+        if self.metadata is None:
+            self.metadata = {}
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert ProcessData to dictionary for serialization.
+
+        Returns:
+            Dictionary representation of ProcessData
+        """
+        return {
+            "timestamp": self.timestamp.isoformat(),
+            "plant_id": self.plant_id,
+            "sensor_readings": self.sensor_readings,
+            "energy_consumption_kwh": self.energy_consumption_kwh,
+            "temperature_readings": self.temperature_readings,
+            "pressure_readings": self.pressure_readings,
+            "flow_rates": self.flow_rates,
+            "efficiency_metrics": self.efficiency_metrics,
+            "metadata": self.metadata
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "ProcessData":
+        """
+        Create ProcessData from dictionary.
+
+        Args:
+            data: Dictionary containing ProcessData fields
+
+        Returns:
+            ProcessData instance
+        """
+        timestamp = data.get("timestamp")
+        if isinstance(timestamp, str):
+            timestamp = datetime.fromisoformat(timestamp)
+        elif timestamp is None:
+            timestamp = datetime.now(timezone.utc)
+
+        return cls(
+            timestamp=timestamp,
+            plant_id=data.get("plant_id", ""),
+            sensor_readings=data.get("sensor_readings", {}),
+            energy_consumption_kwh=data.get("energy_consumption_kwh", 0.0),
+            temperature_readings=data.get("temperature_readings", []),
+            pressure_readings=data.get("pressure_readings", []),
+            flow_rates=data.get("flow_rates", []),
+            efficiency_metrics=data.get("efficiency_metrics", {}),
+            metadata=data.get("metadata", {})
+        )
+
+    def calculate_provenance_hash(self) -> str:
+        """
+        Calculate SHA-256 provenance hash for audit trail.
+
+        Returns:
+            SHA-256 hash string
+        """
+        provenance_str = json.dumps(self.to_dict(), sort_keys=True)
+        return hashlib.sha256(provenance_str.encode()).hexdigest()
+
+    def get_average_temperature(self) -> float:
+        """
+        Calculate average temperature from readings.
+
+        Returns:
+            Average temperature in Celsius
+        """
+        if not self.temperature_readings:
+            return 0.0
+        return sum(self.temperature_readings) / len(self.temperature_readings)
+
+    def get_average_pressure(self) -> float:
+        """
+        Calculate average pressure from readings.
+
+        Returns:
+            Average pressure in bar
+        """
+        if not self.pressure_readings:
+            return 0.0
+        return sum(self.pressure_readings) / len(self.pressure_readings)
+
+    def get_average_flow_rate(self) -> float:
+        """
+        Calculate average flow rate from readings.
+
+        Returns:
+            Average flow rate in m3/hr
+        """
+        if not self.flow_rates:
+            return 0.0
+        return sum(self.flow_rates) / len(self.flow_rates)
+
+
+# Import agent intelligence components with fallback
+try:
+    from agent_foundation.agent_intelligence import (
+        AgentIntelligence,
+        ChatSession,
+        ModelProvider,
+        PromptTemplate
+    )
+except ImportError:
+    # Fallback: define minimal classes
+    class ModelProvider:
+        ANTHROPIC = "anthropic"
+        OPENAI = "openai"
+
+    @dataclass
+    class ChatSession:
+        provider: str = "anthropic"
+        model_id: str = "claude-3-haiku"
+        temperature: float = 0.0
+        seed: int = 42
+        max_tokens: int = 500
+
+    @dataclass
+    class PromptTemplate:
+        template: str = ""
+        variables: List[str] = field(default_factory=list)
+
+        def format(self, **kwargs) -> str:
+            result = self.template
+            for var in self.variables:
+                result = result.replace(f"{{{var}}}", str(kwargs.get(var, "")))
+            return result
+
+    class AgentIntelligence:
+        pass
+
+
+# Import orchestration components with fallback
+try:
+    from agent_foundation.orchestration.message_bus import MessageBus, Message
+except ImportError:
+    @dataclass
+    class Message:
+        sender_id: str
+        recipient_id: str
+        message_type: str
+        payload: Any
+        priority: str = "normal"
+
+    class MessageBus:
+        def __init__(self):
+            self._handlers = {}
+
+        async def publish(self, topic: str, message: Message):
+            pass
+
+        async def close(self):
+            pass
+
+
+try:
+    from agent_foundation.orchestration.saga import SagaOrchestrator, SagaStep
+except ImportError:
+    class SagaStep:
+        pass
+
+    class SagaOrchestrator:
+        pass
+
+
+# Import memory components with fallback
+try:
+    from agent_foundation.memory.short_term_memory import ShortTermMemory
+except ImportError:
+    class ShortTermMemory:
+        def __init__(self, capacity: int = 1000):
+            self._capacity = capacity
+            self._memory: List[Dict[str, Any]] = []
+
+        def store(self, entry: Dict[str, Any]):
+            self._memory.append(entry)
+            if len(self._memory) > self._capacity:
+                self._memory = self._memory[-self._capacity:]
+
+        def retrieve(self, limit: int = 10) -> List[Dict[str, Any]]:
+            return self._memory[-limit:]
+
+        def size(self) -> int:
+            return len(self._memory)
+
+
+try:
+    from agent_foundation.memory.long_term_memory import LongTermMemory
+except ImportError:
+    class LongTermMemory:
+        def __init__(self, storage_path: Path):
+            self._storage_path = storage_path
+
+        async def store(self, key: str, value: Any, category: str = "default"):
+            pass
+
+        async def retrieve(self, key: str) -> Optional[Any]:
+            return None
+
+
+# Import local modules with fallback
+try:
+    from .config import ProcessHeatConfig, PlantConfiguration
+except ImportError:
+    # Define minimal versions for standalone testing
+    @dataclass
+    class ProcessHeatConfig:
+        """Minimal ProcessHeatConfig for fallback."""
+        agent_id: str = "GL-001"
+        agent_name: str = "ProcessHeatOrchestrator"
+        version: str = "1.0.0"
+        timeout_seconds: int = 120
+        max_retries: int = 3
+
+    @dataclass
+    class PlantConfiguration:
+        """Minimal PlantConfiguration for fallback."""
+        plant_id: str
+        plant_name: str
+
+try:
+    from .tools import ProcessHeatTools, ThermalEfficiencyResult, HeatDistributionStrategy
+except ImportError:
+    # Tools should be available in the same package
+    class ProcessHeatTools:
+        """Minimal ProcessHeatTools for fallback."""
+        pass
+
+    @dataclass
+    class ThermalEfficiencyResult:
+        """Minimal ThermalEfficiencyResult for fallback."""
+        overall_efficiency: float = 0.0
+
+    @dataclass
+    class HeatDistributionStrategy:
+        """Minimal HeatDistributionStrategy for fallback."""
+        distribution_matrix: Dict[str, float] = field(default_factory=dict)
 
 logger = logging.getLogger(__name__)
 

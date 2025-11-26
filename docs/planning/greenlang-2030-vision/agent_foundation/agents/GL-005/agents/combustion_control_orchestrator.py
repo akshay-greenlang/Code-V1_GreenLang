@@ -31,7 +31,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Deque
 from uuid import uuid4
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 
 from calculators.pid_controller import PIDController
 from calculators.feedforward_controller import FeedforwardController
@@ -48,7 +48,7 @@ from integrations.temperature_sensor_connector import TemperatureSensorConnector
 from integrations.flow_meter_connector import FlowMeterConnector
 from integrations.scada_integration import SCADAIntegration
 
-from config import settings
+from .config import settings
 from monitoring.metrics import metrics_collector
 from greenlang.determinism import deterministic_uuid, DeterministicClock
 
@@ -86,14 +86,16 @@ class CombustionState(BaseModel):
     thermal_efficiency: Optional[float] = Field(None, description="Thermal efficiency (%)")
     excess_air_percent: Optional[float] = Field(None, description="Excess air (%)")
 
-    @validator('o2_percent')
+    @field_validator('o2_percent')
+    @classmethod
     def validate_o2(cls, v: float) -> float:
         """Validate O2 level is within physical bounds"""
         if not 0 <= v <= 21:
             raise ValueError(f"O2 level {v}% is outside valid range [0, 21]%")
         return v
 
-    @validator('fuel_pressure', 'air_pressure')
+    @field_validator('fuel_pressure', 'air_pressure')
+    @classmethod
     def validate_pressure(cls, v: float) -> float:
         """Validate pressures are positive"""
         if v < 0:

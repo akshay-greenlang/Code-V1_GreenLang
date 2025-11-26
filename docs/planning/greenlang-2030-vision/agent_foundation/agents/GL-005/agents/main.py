@@ -9,19 +9,22 @@ Provides HTTP API for real-time combustion control operations.
 import asyncio
 import logging
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
-from fastapi import FastAPI, HTTPException, status, Query
+from fastapi import FastAPI, HTTPException, status, Query, Depends, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import JSONResponse
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 from starlette.responses import Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
+import jwt
 
-from combustion_control_orchestrator import CombustionControlOrchestrator
-from config import settings
+from .combustion_control_orchestrator import CombustionControlOrchestrator
+from .config import settings
 from monitoring.metrics import metrics_collector
 from greenlang.determinism import DeterministicClock
+from .security_validator import validate_startup_security
 
 # Configure logging
 logging.basicConfig(
@@ -33,12 +36,136 @@ logger = logging.getLogger(__name__)
 # Global agent instance
 agent: Optional[CombustionControlOrchestrator] = None
 
+# Security setup
+security = HTTPBearer()
+
+# Rate limiting tracker (simple in-memory for MVP)
+# In production, use Redis or similar distributed storage
+request_tracker: Dict[str, list] = {}
+
+
+def verify_token(credentials: HTTPAuthorizationCredentials = Security(security)) -> Dict[str, Any]:
+    """
+    Verify JWT token and return decoded payload
+
+    Security requirements per IEC 62443-4-2:
+    - Token-based authentication for all control endpoints
+    - Token expiration validation
+    - Algorithm verification (prevent algorithm confusion attacks)
+    """
+    try:
+        token = credentials.credentials
+
+        # Decode and verify token
+        payload = jwt.decode(
+            token,
+            settings.JWT_SECRET,
+            algorithms=[settings.JWT_ALGORITHM]
+        )
+
+        # Verify token hasn't expired
+        exp = payload.get('exp')
+        if not exp or datetime.fromtimestamp(exp) < datetime.utcnow():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token has expired",
+                headers={"WWW-Authenticate": "Bearer"}
+            )
+
+        return payload
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    except jwt.InvalidTokenError as e:
+        logger.warning(f"Invalid token: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    except Exception as e:
+        logger.error(f"Token verification failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication failed",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+
+def check_rate_limit(client_id: str, max_requests: int = None) -> None:
+    """
+    Simple rate limiting (in-memory implementation)
+    In production, use Redis with sliding window
+    """
+    if max_requests is None:
+        max_requests = settings.RATE_LIMIT_PER_MINUTE
+
+    now = datetime.utcnow()
+    minute_ago = now - timedelta(minutes=1)
+
+    # Clean old entries
+    if client_id in request_tracker:
+        request_tracker[client_id] = [
+            req_time for req_time in request_tracker[client_id]
+            if req_time > minute_ago
+        ]
+    else:
+        request_tracker[client_id] = []
+
+    # Check limit
+    if len(request_tracker[client_id]) >= max_requests:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded. Maximum {max_requests} requests per minute."
+        )
+
+    # Record request
+    request_tracker[client_id].append(now)
+
 
 # Request/Response Models
 class ControlRequest(BaseModel):
     """Request model for manual control trigger"""
-    heat_demand_kw: Optional[float] = Field(None, description="Target heat output (kW)")
+    heat_demand_kw: Optional[float] = Field(
+        None,
+        description="Target heat output (kW)",
+        ge=0,
+        le=50000
+    )
     override_interlocks: bool = Field(False, description="Override safety interlocks (use with caution)")
+
+    @field_validator('heat_demand_kw')
+    @classmethod
+    def validate_heat_demand(cls, v: Optional[float]) -> Optional[float]:
+        """
+        Validate heat demand is within safe operating limits
+        Per IEC 62443-4-2: Input validation for all control parameters
+        """
+        if v is None:
+            return v
+
+        # Range validation
+        if v < 0:
+            raise ValueError("heat_demand_kw must be non-negative")
+
+        if v > settings.HEAT_OUTPUT_MAX_KW:
+            raise ValueError(
+                f"heat_demand_kw exceeds maximum safe limit: "
+                f"{v} kW > {settings.HEAT_OUTPUT_MAX_KW} kW"
+            )
+
+        if v > 0 and v < settings.HEAT_OUTPUT_MIN_KW:
+            raise ValueError(
+                f"heat_demand_kw below minimum operating limit: "
+                f"{v} kW < {settings.HEAT_OUTPUT_MIN_KW} kW. "
+                f"Use 0 to shut down, or set to minimum {settings.HEAT_OUTPUT_MIN_KW} kW"
+            )
+
+        return v
 
 
 class ControlResponse(BaseModel):
@@ -67,6 +194,16 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.APP_NAME} v{settings.APP_VERSION}")
     logger.info(f"Environment: {settings.GREENLANG_ENV}")
     logger.info(f"Control loop interval: {settings.CONTROL_LOOP_INTERVAL_MS}ms")
+
+    # CRITICAL: Validate security configuration before proceeding
+    # This will abort startup if security requirements are not met
+    try:
+        logger.info("Running security validation checks...")
+        validate_startup_security(fail_fast=True)
+    except Exception as e:
+        logger.critical(f"Security validation failed: {e}")
+        logger.critical("STARTUP ABORTED - Fix security issues before deployment")
+        raise
 
     try:
         # Initialize agent
@@ -225,10 +362,16 @@ async def get_stability_metrics() -> Dict[str, Any]:
 
 
 @app.post("/control", response_model=ControlResponse)
-async def trigger_control_cycle(request: ControlRequest = None) -> ControlResponse:
+async def trigger_control_cycle(
+    request: ControlRequest = None,
+    token: Dict[str, Any] = Depends(verify_token)
+) -> ControlResponse:
     """
     Trigger immediate control cycle (manual mode)
     Useful for testing or manual interventions
+
+    SECURITY: Requires valid JWT token
+    Per IEC 62443-4-2: Authentication required for all control operations
     """
     if not agent:
         raise HTTPException(
@@ -236,9 +379,18 @@ async def trigger_control_cycle(request: ControlRequest = None) -> ControlRespon
             detail="Agent not initialized"
         )
 
+    # Rate limiting based on user/client ID from token
+    client_id = token.get('sub', 'unknown')
+    check_rate_limit(client_id, max_requests=60)  # More restrictive for control endpoints
+
     try:
         # Extract heat demand if provided
         heat_demand = request.heat_demand_kw if request else None
+
+        # Log authenticated control action
+        logger.info(
+            f"Control cycle triggered by {client_id}, heat_demand={heat_demand} kW"
+        )
 
         # Run control cycle
         result = await agent.run_control_cycle(heat_demand_kw=heat_demand)
@@ -266,21 +418,35 @@ async def trigger_control_cycle(request: ControlRequest = None) -> ControlRespon
 
 
 @app.post("/control/enable", response_model=ControlResponse)
-async def enable_control(request: EnableControlRequest) -> ControlResponse:
-    """Enable or disable automatic control"""
+async def enable_control(
+    request: EnableControlRequest,
+    token: Dict[str, Any] = Depends(verify_token)
+) -> ControlResponse:
+    """
+    Enable or disable automatic control
+
+    SECURITY: Requires valid JWT token
+    Critical operation - changes control mode
+    """
     if not agent:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Agent not initialized"
         )
 
+    # Rate limiting
+    client_id = token.get('sub', 'unknown')
+    check_rate_limit(client_id, max_requests=20)  # Very restrictive for mode changes
+
     try:
         if request.enabled:
             agent.enable_control()
             message = "Automatic control enabled"
+            logger.warning(f"Automatic control ENABLED by {client_id}")
         else:
             agent.disable_control()
             message = "Automatic control disabled (manual mode)"
+            logger.warning(f"Automatic control DISABLED by {client_id}")
 
         return ControlResponse(
             success=True,
