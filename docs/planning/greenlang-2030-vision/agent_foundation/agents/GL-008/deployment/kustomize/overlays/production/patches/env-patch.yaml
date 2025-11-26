@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-008-steam-trap-inspector
+spec:
+  template:
+    spec:
+      containers:
+        - name: gl-008-steam-trap-inspector
+          env:
+            - name: ENVIRONMENT
+              value: "production"
+            - name: LOG_LEVEL
+              value: "INFO"
+            - name: ALERTS_ENABLED
+              value: "true"
+            - name: METRICS_ENABLED
+              value: "true"

@@ -1,0 +1,147 @@
+# GL-006 HeatRecoveryMaximizer Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-006-heatreclaim-pdb
+  namespace: greenlang
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+    codename: HEATRECLAIM
+spec:
+  # Ensure at least 2 pods are always available
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: gl-006-heatreclaim
+
+---
+# Network Policy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-006-heatreclaim-network-policy
+  namespace: greenlang
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-006-heatreclaim
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow traffic from Prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow traffic from other greenlang services
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 8000
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow PostgreSQL
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow Redis
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow external SCADA/Historian (if needed)
+    # This should be restricted to specific IPs in production
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 4840  # OPC UA
+
+---
+# Ingress for external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-006-heatreclaim-ingress
+  namespace: greenlang
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  tls:
+    - hosts:
+        - gl-006.api.greenlang.io
+        - heatreclaim.api.greenlang.io
+      secretName: gl-006-heatreclaim-tls
+  rules:
+    - host: gl-006.api.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-006-heatreclaim
+                port:
+                  number: 80
+    - host: heatreclaim.api.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-006-heatreclaim
+                port:
+                  number: 80

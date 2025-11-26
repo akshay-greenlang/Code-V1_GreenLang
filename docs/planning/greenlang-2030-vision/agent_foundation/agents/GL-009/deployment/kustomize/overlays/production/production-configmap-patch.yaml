@@ -1,0 +1,53 @@
+# GL-009 THERMALIQ - Production ConfigMap Patch
+# Additional production-specific configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-009-config-production-patch
+  namespace: greenlang-production
+  labels:
+    app: gl-009-thermaliq
+    environment: production
+data:
+  # Production-only features
+  enable_advanced_analytics: "true"
+  enable_performance_profiling: "false"
+  enable_experimental_features: "false"
+
+  # Production API configuration
+  external_api_base_url: "https://api.greenlang.ai"
+  api_version: "v1"
+
+  # Database connection pooling (production-optimized)
+  database_statement_timeout: "30000"
+  database_idle_in_transaction_session_timeout: "60000"
+
+  # Production caching strategy
+  enable_multi_tier_caching: "true"
+  l1_cache_size_mb: "256"
+  l2_cache_size_mb: "1024"
+
+  # Rate limiting (production values)
+  global_rate_limit_requests_per_second: "1000"
+  per_user_rate_limit_requests_per_minute: "100"
+
+  # Monitoring and alerting
+  enable_detailed_metrics: "true"
+  metrics_collection_interval: "10"
+  alert_on_calculation_timeout: "true"
+  alert_on_error_rate_threshold: "0.01"
+
+  # Backup and disaster recovery
+  enable_automatic_backups: "true"
+  backup_retention_days: "30"
+
+  # Compliance and audit
+  enable_audit_logging: "true"
+  audit_log_retention_days: "365"
+  enable_data_encryption_at_rest: "true"
+
+  # Performance optimization
+  enable_query_result_caching: "true"
+  enable_connection_pooling: "true"
+  enable_batch_processing: "true"

@@ -18,9 +18,9 @@ Mathematical Formulas:
 - Radiation Loss: Q_rad = ε * σ * A * (T_surface^4 - T_ambient^4)
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from decimal import Decimal, ROUND_HALF_UP
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from enum import Enum
 import math
 import logging
@@ -207,7 +207,7 @@ class HeatOutputResult(BaseModel):
     # Heat losses
     total_heat_loss_kw: float
     total_heat_loss_percent: float
-    heat_losses: List[Dict[str, any]] = Field(
+    heat_losses: List[Dict[str, Any]] = Field(
         default_factory=list,
         description="Detailed breakdown of heat losses"
     )
@@ -537,7 +537,7 @@ class HeatOutputCalculator:
         actual_output_kw: float,
         target_output_kw: float,
         tolerance_percent: float = 5.0
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Validate actual heat output against target.
 

@@ -5,6 +5,7 @@ metadata:
   pack_id: "gl-008-trapcatcher"
   pack_name: "SteamTrapInspector"
   agent_id: "GL-008"
+  domain: "steam_systems"
   version: "1.0.0"
   description: "Automated steam trap failure detection and energy loss quantification using multi-modal analysis (acoustic, thermal, operational)"
   author: "GreenLang Foundation"

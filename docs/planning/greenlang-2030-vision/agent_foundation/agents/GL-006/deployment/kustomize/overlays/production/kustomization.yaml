@@ -1,0 +1,98 @@
+# GL-006 HeatRecoveryMaximizer Production Overlay
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-006-heatreclaim-production
+
+namespace: greenlang
+
+# Reference base configuration
+resources:
+  - ../../base
+
+# Production-specific labels
+commonLabels:
+  environment: production
+  tier: production
+
+# Production-specific annotations
+commonAnnotations:
+  greenlang.io/sla: "99.9"
+  greenlang.io/oncall: "platform-team"
+
+# Production-specific patches
+patches:
+  # 3 replicas minimum for production
+  - target:
+      kind: Deployment
+      name: gl-006-heatreclaim
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+
+  # Production resources
+  - target:
+      kind: Deployment
+      name: gl-006-heatreclaim
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "500m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "1000m"
+
+  # Production HPA
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: gl-006-heatreclaim-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 10
+
+  # Production PDB - ensure high availability
+  - target:
+      kind: PodDisruptionBudget
+      name: gl-006-heatreclaim-pdb
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 2
+
+  # Production ingress - stricter rate limiting
+  - target:
+      kind: Ingress
+      name: gl-006-heatreclaim-ingress
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/nginx.ingress.kubernetes.io~1rate-limit
+        value: "50"
+
+# Production ConfigMap overrides
+configMapGenerator:
+  - name: gl-006-heatreclaim-config
+    behavior: merge
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - ENABLE_CORS=true
+      - CORS_ORIGINS=https://greenlang.io,https://api.greenlang.io
+      - ENABLE_METRICS=true
+      - ENABLE_TRACING=true
+
+# Production image tag - pinned version
+images:
+  - name: gcr.io/greenlang/gl-006-heatreclaim
+    newTag: v1.0.0

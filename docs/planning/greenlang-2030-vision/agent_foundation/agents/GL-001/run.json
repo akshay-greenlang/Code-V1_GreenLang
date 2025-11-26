@@ -1,0 +1,155 @@
+{
+  "agent_id": "GL-001",
+  "codename": "THERMOSYNC",
+  "name": "ProcessHeatOrchestrator",
+  "version": "1.0.0",
+  "description": "Master orchestrator for all process heat operations across industrial facilities",
+  "operation_modes": [
+    "monitor",
+    "optimize",
+    "coordinate",
+    "report"
+  ],
+  "ai_config": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-20250514",
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 4096,
+    "top_p": 1.0,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0,
+    "allowed_operations": [
+      "classification",
+      "categorization",
+      "entity_resolution",
+      "narrative_generation",
+      "materiality_assessment"
+    ],
+    "prohibited_operations": [
+      "numeric_calculation",
+      "compliance_value_generation",
+      "regulatory_determination",
+      "emission_factor_estimation"
+    ]
+  },
+  "determinism": {
+    "enabled": true,
+    "provenance_tracking": true,
+    "sha256_hashing": true,
+    "audit_trail": true,
+    "reproducible_results": true,
+    "fixed_seed": 42
+  },
+  "execution": {
+    "timeout_seconds": 120,
+    "max_retries": 3,
+    "retry_delay_seconds": 5,
+    "max_parallel_agents": 10,
+    "batch_size": 1000,
+    "cache_ttl_seconds": 300
+  },
+  "memory": {
+    "short_term_capacity": 1000,
+    "long_term_enabled": true,
+    "storage_path": "./gl001_memory",
+    "persistence_interval": 100
+  },
+  "integrations": {
+    "scada": {
+      "enabled": true,
+      "protocol": "opc_ua",
+      "polling_interval_seconds": 5,
+      "data_quality_threshold": 0.9
+    },
+    "erp": {
+      "enabled": true,
+      "protocol": "rest_api",
+      "sync_interval_minutes": 60,
+      "batch_size": 1000
+    },
+    "message_bus": {
+      "enabled": true,
+      "type": "internal",
+      "topics": [
+        "agent.GL-002",
+        "agent.GL-003",
+        "agent.GL-004",
+        "agent.GL-005"
+      ]
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_collection_interval": 60,
+    "prometheus_enabled": true,
+    "prometheus_port": 9090,
+    "health_check_port": 8080,
+    "log_level": "INFO"
+  },
+  "compliance": {
+    "standards": [
+      "ISO 50001",
+      "ISO 14001",
+      "ASME",
+      "EPA"
+    ],
+    "audit_trail_retention_days": 365,
+    "reporting_enabled": true,
+    "emission_regulations": {
+      "max_emissions_kg_mwh": 200,
+      "co2_kg_mwh": 180,
+      "nox_kg_mwh": 0.5,
+      "sox_kg_mwh": 0.3,
+      "particulate_kg_mwh": 0.05
+    }
+  },
+  "optimization": {
+    "algorithm": "linear_programming",
+    "objective_function": "minimize_cost",
+    "max_temperature_variance_c": 5.0,
+    "min_efficiency_percent": 85.0,
+    "optimization_horizon_hours": 24,
+    "time_step_minutes": 15,
+    "convergence_tolerance": 0.001,
+    "max_iterations": 1000
+  },
+  "alerts": {
+    "email_recipients": [],
+    "slack_webhook": null,
+    "pagerduty_key": null,
+    "thresholds": {
+      "efficiency_warning": 85,
+      "efficiency_critical": 75,
+      "latency_warning_ms": 500,
+      "latency_critical_ms": 1000,
+      "error_rate_warning": 0.01,
+      "error_rate_critical": 0.05
+    }
+  },
+  "security": {
+    "authentication_required": true,
+    "encryption": "TLS_1_3",
+    "audit_logging": true,
+    "rbac_enabled": true,
+    "allowed_roles": [
+      "admin",
+      "operator",
+      "viewer"
+    ]
+  },
+  "metadata": {
+    "author": "GreenLang Team",
+    "created_date": "2024-01-15",
+    "last_modified": "2024-11-26",
+    "documentation_url": "https://greenlang.io/agents/GL-001",
+    "support_contact": "support@greenlang.io",
+    "tags": [
+      "process_heat",
+      "orchestration",
+      "industrial",
+      "optimization",
+      "compliance"
+    ]
+  }
+}

@@ -1,0 +1,140 @@
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: SteamSystemAnalyzer
+  version: "1.0.0"
+  labels:
+    type: Monitor
+    category: Steam Systems
+    id: GL-003
+    codename: STEAMWISE
+    priority: P1
+    complexity: Medium
+  annotations:
+    description: "Real-time analysis of steam generation and distribution efficiency"
+    created_by: "GreenLang Engineering Team"
+    created_date: "2024-01-15"
+    tam: "$10B"
+    target_date: "Q1 2026"
+    mission: "Monitor and optimize steam system efficiency with zero-hallucination calculations"
+spec:
+  inputs:
+    - name: steam_pressure
+      type: float
+      unit: bar
+      description: "Steam pressure measurement from pressure sensors"
+      required: true
+      validation:
+        min: 0
+        max: 300
+    - name: temperature
+      type: float
+      unit: celsius
+      description: "Steam temperature from temperature probes"
+      required: true
+      validation:
+        min: 0
+        max: 600
+    - name: flow_rates
+      type: float
+      unit: kg/hr
+      description: "Steam flow rate from flow meters"
+      required: true
+      validation:
+        min: 0
+        max: 1000000
+    - name: condensate_return
+      type: float
+      unit: percent
+      description: "Condensate return rate percentage"
+      required: false
+      validation:
+        min: 0
+        max: 100
+  outputs:
+    - name: system_efficiency_metrics
+      type: object
+      description: "Comprehensive steam system efficiency KPIs"
+      schema:
+        distribution_efficiency_percent:
+          type: float
+        heat_losses_mw:
+          type: float
+        pressure_drop_bar:
+          type: float
+        temperature_drop_c:
+          type: float
+    - name: leak_detection
+      type: object
+      description: "Steam leak detection results"
+      schema:
+        total_leaks_detected:
+          type: integer
+        total_leak_rate_kg_hr:
+          type: float
+        estimated_annual_cost_usd:
+          type: float
+        priority_repairs:
+          type: array
+    - name: optimization_opportunities
+      type: array
+      description: "List of optimization recommendations"
+  capabilities:
+    - name: steam_property_calculation
+      description: "Calculate steam thermodynamic properties using ASME Steam Tables"
+      deterministic: true
+    - name: distribution_efficiency_analysis
+      description: "Analyze steam distribution network efficiency"
+      deterministic: true
+    - name: leak_detection
+      description: "Detect steam leaks using mass balance and pressure analysis"
+      deterministic: true
+    - name: condensate_optimization
+      description: "Optimize condensate return system performance"
+      deterministic: true
+    - name: steam_trap_monitoring
+      description: "Monitor and assess steam trap performance"
+      deterministic: true
+    - name: heat_loss_calculation
+      description: "Calculate pipeline heat losses"
+      deterministic: true
+  requirements:
+    python: ">=3.10"
+    memory: "512MB"
+    cpu: "1 core"
+    dependencies:
+      - pydantic>=2.0
+      - numpy>=1.24
+      - asyncio
+  runtime:
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+    timeout_seconds: 30
+    max_retries: 3
+    checkpoint_enabled: true
+  compliance:
+    standards:
+      - "ISO 50001"
+      - "ASME Steam Tables"
+      - "ISO 12569"
+      - "ASHRAE Standards"
+    zero_hallucination: true
+    audit_trail: true
+    provenance_tracking: true
+  integrations:
+    - name: steam_meters
+      protocol: modbus
+      description: "Steam meter integration via Modbus protocol"
+    - name: pressure_sensors
+      protocol: modbus
+      description: "Pressure sensor integration via Modbus"
+    - name: temperature_probes
+      protocol: modbus
+      description: "Temperature probe integration via Modbus"
+    - name: scada_systems
+      protocol: opcua
+      description: "SCADA/DCS integration via OPC UA"
+    - name: historian
+      protocol: rest
+      description: "Historian database integration"

@@ -19,7 +19,7 @@ Mathematical Formulas:
 
 from typing import Dict, List, Optional, Tuple
 from decimal import Decimal, ROUND_HALF_UP
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from enum import Enum
 import math
 import logging
@@ -118,11 +118,12 @@ class StabilityInput(BaseModel):
         description="Air flow rate in kg/hr"
     )
 
-    @validator('temperature_readings', 'pressure_readings')
-    def validate_readings_length(cls, v, values, field):
+    @field_validator('temperature_readings', 'pressure_readings')
+    @classmethod
+    def validate_readings_length(cls, v: List[float], info: ValidationInfo):
         """Ensure temperature and pressure readings have same length"""
-        if 'temperature_readings' in values and field.name == 'pressure_readings':
-            if len(v) != len(values['temperature_readings']):
+        if info.data.get('temperature_readings') is not None and info.field_name == 'pressure_readings':
+            if len(v) != len(info.data['temperature_readings']):
                 raise ValueError("Temperature and pressure readings must have same length")
         return v
 

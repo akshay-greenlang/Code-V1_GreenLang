@@ -1,6 +1,7 @@
 {
+  "schema_version": "1.0.0",
   "agent_runtime_config": {
-    "agent_id": "GL-008-TRAPCATCHER",
+    "agent_id": "GL-008",
     "agent_name": "SteamTrapInspector",
     "version": "1.0.0",
     "execution_mode": "async",

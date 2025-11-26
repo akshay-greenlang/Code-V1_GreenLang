@@ -19,9 +19,9 @@ Safety Principles:
 - Predictable shutdown sequences
 """
 
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from decimal import Decimal, ROUND_HALF_UP
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from enum import Enum
 import math
 import logging
@@ -236,7 +236,7 @@ class SafetyValidatorOutput(BaseModel):
     )
 
     # Interlock status
-    interlocks: List[Dict[str, any]] = Field(
+    interlocks: List[Dict[str, Any]] = Field(
         default_factory=list,
         description="Status of all safety interlocks"
     )
@@ -246,7 +246,7 @@ class SafetyValidatorOutput(BaseModel):
     )
 
     # Alarms
-    active_alarms: List[Dict[str, any]] = Field(
+    active_alarms: List[Dict[str, Any]] = Field(
         default_factory=list,
         description="Active safety alarms"
     )

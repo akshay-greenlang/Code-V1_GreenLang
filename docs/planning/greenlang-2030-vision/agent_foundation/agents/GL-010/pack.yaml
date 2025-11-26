@@ -1,0 +1,1301 @@
+# ============================================================================
+# GL-010 EMISSIONWATCH - EmissionsComplianceAgent Pack Manifest
+# GreenLang Pack Specification v1.0
+# ============================================================================
+
+metadata:
+  pack_id: "gl-010-emissionwatch"
+  pack_name: "EmissionsComplianceAgent"
+  agent_id: "GL-010"
+  codename: "EMISSIONWATCH"
+  domain: "compliance"
+  role: "monitor"
+  version: "1.0.0"
+  description: "Real-time emissions compliance monitoring ensuring NOx/SOx/CO2/PM compliance with environmental regulations across all jurisdictions"
+  author: "GreenLang Environmental Compliance Team"
+  license: "Apache-2.0"
+  homepage: "https://greenlang.org/agents/gl-010"
+  repository: "https://github.com/greenlang/agents/gl-010"
+  documentation: "https://docs.greenlang.org/agents/gl-010"
+
+  tags:
+    - "emissions-compliance"
+    - "nox-monitoring"
+    - "sox-monitoring"
+    - "co2-monitoring"
+    - "particulate-matter"
+    - "cems-integration"
+    - "epa-compliance"
+    - "eu-ets"
+    - "environmental-reporting"
+    - "zero-hallucination"
+    - "deterministic"
+    - "regulatory-compliance"
+    - "air-quality"
+    - "continuous-monitoring"
+
+  category: "environmental-compliance"
+  market_size_usd: 11000000000  # $11B TAM
+  target_deployment: "2025-Q4"
+  priority: "P0"
+  complexity: "high"
+
+# ----------------------------------------------------------------------------
+# MISSION STATEMENT
+# ----------------------------------------------------------------------------
+
+mission:
+  primary_function: "Ensures NOx/SOx/CO2/PM emissions comply with environmental regulations with zero-hallucination calculations"
+  value_proposition: "Transform raw CEMS data into real-time compliance status, violation alerts, and submission-ready regulatory reports"
+  target_users:
+    - "Environmental compliance officers"
+    - "Plant managers"
+    - "Emissions engineers"
+    - "Regulatory affairs specialists"
+    - "Environmental consultants"
+    - "Government regulators"
+    - "Sustainability officers"
+
+# ----------------------------------------------------------------------------
+# INPUTS (15+ Inputs)
+# ----------------------------------------------------------------------------
+
+inputs:
+  stack_emissions:
+    description: "Real-time stack emissions measurements from CEMS analyzers"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        nox_ppm:
+          type: "number"
+          minimum: 0
+          maximum: 5000
+          description: "NOx concentration in parts per million"
+        nox_lb_mmbtu:
+          type: "number"
+          minimum: 0
+          description: "NOx emission rate in lb/MMBtu"
+        sox_ppm:
+          type: "number"
+          minimum: 0
+          maximum: 5000
+          description: "SOx concentration in parts per million"
+        sox_lb_mmbtu:
+          type: "number"
+          minimum: 0
+          description: "SOx emission rate in lb/MMBtu"
+        co2_percent:
+          type: "number"
+          minimum: 0
+          maximum: 25
+          description: "CO2 concentration in percent"
+        co2_tons_hr:
+          type: "number"
+          minimum: 0
+          description: "CO2 mass emission rate in tons/hour"
+        co_ppm:
+          type: "number"
+          minimum: 0
+          maximum: 10000
+          description: "CO concentration in parts per million"
+        pm_mg_m3:
+          type: "number"
+          minimum: 0
+          description: "Particulate matter concentration in mg/Nm3"
+        opacity_percent:
+          type: "number"
+          minimum: 0
+          maximum: 100
+          description: "Stack opacity percentage"
+        o2_percent:
+          type: "number"
+          minimum: 0
+          maximum: 21
+          description: "Oxygen concentration in percent"
+        stack_flow_scfm:
+          type: "number"
+          minimum: 0
+          description: "Stack gas flow rate in standard cubic feet per minute"
+        stack_temp_f:
+          type: "number"
+          description: "Stack gas temperature in Fahrenheit"
+        timestamp:
+          type: "string"
+          format: "date-time"
+
+  fuel_flow:
+    description: "Fuel consumption rates for emission factor calculations"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        fuel_type:
+          type: "string"
+          enum: ["natural_gas", "coal", "fuel_oil_2", "fuel_oil_6", "diesel", "biomass", "propane", "hydrogen", "waste_fuel"]
+        flow_rate_scfh:
+          type: "number"
+          minimum: 0
+          description: "Flow rate in standard cubic feet per hour (gas)"
+        flow_rate_gph:
+          type: "number"
+          minimum: 0
+          description: "Flow rate in gallons per hour (liquid)"
+        flow_rate_tph:
+          type: "number"
+          minimum: 0
+          description: "Flow rate in tons per hour (solid)"
+        heat_input_mmbtu_hr:
+          type: "number"
+          minimum: 0
+          description: "Heat input rate in MMBtu/hour"
+        heating_value:
+          type: "number"
+          description: "Higher heating value (HHV)"
+
+  fuel_composition:
+    description: "Fuel chemical composition for accurate emission calculations"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        carbon_percent:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        hydrogen_percent:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        sulfur_percent:
+          type: "number"
+          minimum: 0
+          maximum: 10
+        nitrogen_percent:
+          type: "number"
+          minimum: 0
+          maximum: 10
+        oxygen_percent:
+          type: "number"
+          minimum: 0
+          maximum: 50
+        ash_percent:
+          type: "number"
+          minimum: 0
+          maximum: 50
+        moisture_percent:
+          type: "number"
+          minimum: 0
+          maximum: 100
+
+  ambient_conditions:
+    description: "Atmospheric conditions for dispersion and correction calculations"
+    required: false
+    schema:
+      type: "object"
+      properties:
+        ambient_temp_f:
+          type: "number"
+          default: 68
+        ambient_pressure_inhg:
+          type: "number"
+          default: 29.92
+        relative_humidity_percent:
+          type: "number"
+          default: 50
+        wind_speed_mph:
+          type: "number"
+          default: 10
+        wind_direction_deg:
+          type: "number"
+          minimum: 0
+          maximum: 360
+        stability_class:
+          type: "string"
+          enum: ["A", "B", "C", "D", "E", "F"]
+          default: "D"
+
+  regulatory_limits:
+    description: "Applicable emission limits from permits and regulations"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        jurisdiction:
+          type: "string"
+          enum: ["US_EPA", "EU_IED", "EU_ETS", "CHINA_MEE", "UK_EA", "CANADA_ECCC", "STATE"]
+        nox_limit_ppm:
+          type: "number"
+        nox_limit_lb_mmbtu:
+          type: "number"
+        sox_limit_ppm:
+          type: "number"
+        sox_limit_lb_mmbtu:
+          type: "number"
+        co2_limit_tons_hr:
+          type: "number"
+        pm_limit_mg_m3:
+          type: "number"
+        opacity_limit_percent:
+          type: "number"
+        averaging_period_hours:
+          type: "number"
+          enum: [1, 3, 8, 24, 720]
+        compliance_margin_percent:
+          type: "number"
+          default: 95
+
+  cems_data:
+    description: "Raw CEMS analyzer data including calibration and QA status"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        analyzer_id:
+          type: "string"
+        measurement_timestamp:
+          type: "string"
+          format: "date-time"
+        calibration_status:
+          type: "string"
+          enum: ["valid", "expired", "drift_check_needed", "failed"]
+        data_quality_flag:
+          type: "string"
+          enum: ["valid", "substitute", "missing", "calibration", "maintenance"]
+        qa_status:
+          type: "string"
+          enum: ["pass", "conditional", "fail"]
+        rata_status:
+          type: "string"
+          enum: ["current", "due_soon", "overdue"]
+
+  operating_load:
+    description: "Unit operating parameters for load-based limits"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        unit_id:
+          type: "string"
+        gross_load_mw:
+          type: "number"
+        net_load_mw:
+          type: "number"
+        capacity_factor_percent:
+          type: "number"
+        operating_hours:
+          type: "number"
+        startup_shutdown_status:
+          type: "string"
+          enum: ["normal", "startup", "shutdown", "emergency"]
+        load_ramp_rate_mw_min:
+          type: "number"
+
+  combustion_parameters:
+    description: "Combustion process parameters affecting emissions"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        excess_air_percent:
+          type: "number"
+        flame_temperature_f:
+          type: "number"
+        residence_time_sec:
+          type: "number"
+        primary_air_ratio:
+          type: "number"
+        secondary_air_ratio:
+          type: "number"
+        burner_tilt_deg:
+          type: "number"
+        overfire_air_percent:
+          type: "number"
+        scr_inlet_temp_f:
+          type: "number"
+        scr_outlet_temp_f:
+          type: "number"
+        ammonia_slip_ppm:
+          type: "number"
+
+  emission_factors:
+    description: "Emission factors for different pollutants and sources"
+    required: false
+    schema:
+      type: "object"
+      properties:
+        source:
+          type: "string"
+          enum: ["EPA_AP42", "IPCC", "EEA", "CARB", "MEASURED", "PERMIT"]
+        nox_lb_mmbtu:
+          type: "number"
+        sox_lb_mmbtu:
+          type: "number"
+        co2_lb_mmbtu:
+          type: "number"
+        pm_lb_mmbtu:
+          type: "number"
+        co_lb_mmbtu:
+          type: "number"
+        voc_lb_mmbtu:
+          type: "number"
+
+  permit_limits:
+    description: "Facility-specific permit emission limits and conditions"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        permit_id:
+          type: "string"
+        permit_type:
+          type: "string"
+          enum: ["title_v", "psd", "nsr", "state_operating", "eu_ied"]
+        effective_date:
+          type: "string"
+          format: "date"
+        expiration_date:
+          type: "string"
+          format: "date"
+        nox_annual_tons:
+          type: "number"
+        sox_annual_tons:
+          type: "number"
+        co2_annual_tons:
+          type: "number"
+        pm_annual_tons:
+          type: "number"
+        short_term_limits:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              pollutant:
+                type: "string"
+              limit_value:
+                type: "number"
+              limit_units:
+                type: "string"
+              averaging_period:
+                type: "string"
+
+  weather_data:
+    description: "Meteorological data for dispersion modeling"
+    required: false
+    schema:
+      type: "object"
+      properties:
+        temperature_f:
+          type: "number"
+        pressure_mb:
+          type: "number"
+        wind_speed_ms:
+          type: "number"
+        wind_direction_deg:
+          type: "number"
+        mixing_height_m:
+          type: "number"
+        precipitation_in:
+          type: "number"
+        cloud_cover_percent:
+          type: "number"
+        solar_radiation_w_m2:
+          type: "number"
+
+  dispersion_params:
+    description: "Parameters for atmospheric dispersion calculations"
+    required: false
+    schema:
+      type: "object"
+      properties:
+        stack_height_m:
+          type: "number"
+        stack_diameter_m:
+          type: "number"
+        exit_velocity_ms:
+          type: "number"
+        exit_temperature_k:
+          type: "number"
+        receptor_distances_m:
+          type: "array"
+          items:
+            type: "number"
+        terrain_type:
+          type: "string"
+          enum: ["flat", "rolling", "complex"]
+        building_downwash:
+          type: "boolean"
+
+  control_equipment_status:
+    description: "Status of emission control equipment"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        scr_status:
+          type: "object"
+          properties:
+            operational:
+              type: "boolean"
+            catalyst_age_hours:
+              type: "number"
+            nox_removal_efficiency:
+              type: "number"
+        scrubber_status:
+          type: "object"
+          properties:
+            operational:
+              type: "boolean"
+            so2_removal_efficiency:
+              type: "number"
+            reagent_feed_rate:
+              type: "number"
+        esp_status:
+          type: "object"
+          properties:
+            operational:
+              type: "boolean"
+            collection_efficiency:
+              type: "number"
+            power_consumption_kw:
+              type: "number"
+        baghouse_status:
+          type: "object"
+          properties:
+            operational:
+              type: "boolean"
+            pressure_drop_inwc:
+              type: "number"
+            bag_leak_detected:
+              type: "boolean"
+
+  historical_emissions:
+    description: "Historical emission data for trend analysis"
+    required: false
+    schema:
+      type: "object"
+      properties:
+        period_start:
+          type: "string"
+          format: "date"
+        period_end:
+          type: "string"
+          format: "date"
+        hourly_data:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              timestamp:
+                type: "string"
+              nox_lb:
+                type: "number"
+              sox_lb:
+                type: "number"
+              co2_tons:
+                type: "number"
+              heat_input_mmbtu:
+                type: "number"
+
+  compliance_schedule:
+    description: "Regulatory reporting and compliance schedule"
+    required: false
+    schema:
+      type: "object"
+      properties:
+        quarterly_reports_due:
+          type: "array"
+          items:
+            type: "string"
+            format: "date"
+        annual_report_due:
+          type: "string"
+          format: "date"
+        cems_audit_due:
+          type: "string"
+          format: "date"
+        rata_due:
+          type: "string"
+          format: "date"
+        permit_renewal_due:
+          type: "string"
+          format: "date"
+
+# ----------------------------------------------------------------------------
+# OUTPUTS (8+ Outputs)
+# ----------------------------------------------------------------------------
+
+outputs:
+  compliance_status:
+    description: "Real-time compliance status for all monitored pollutants"
+    schema:
+      type: "object"
+      properties:
+        timestamp:
+          type: "string"
+          format: "date-time"
+        overall_status:
+          type: "string"
+          enum: ["COMPLIANT", "WARNING", "EXCEEDANCE", "VIOLATION"]
+        pollutants:
+          type: "object"
+          properties:
+            nox:
+              type: "object"
+              properties:
+                status:
+                  type: "string"
+                current_value:
+                  type: "number"
+                limit_value:
+                  type: "number"
+                percent_of_limit:
+                  type: "number"
+                averaging_period:
+                  type: "string"
+            sox:
+              type: "object"
+              properties:
+                status:
+                  type: "string"
+                current_value:
+                  type: "number"
+                limit_value:
+                  type: "number"
+                percent_of_limit:
+                  type: "number"
+            co2:
+              type: "object"
+              properties:
+                status:
+                  type: "string"
+                current_value:
+                  type: "number"
+                limit_value:
+                  type: "number"
+                percent_of_limit:
+                  type: "number"
+            pm:
+              type: "object"
+              properties:
+                status:
+                  type: "string"
+                current_value:
+                  type: "number"
+                limit_value:
+                  type: "number"
+                percent_of_limit:
+                  type: "number"
+        data_quality_score:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        provenance_hash:
+          type: "string"
+
+  regulatory_reports:
+    description: "Submission-ready regulatory reports for various jurisdictions"
+    schema:
+      type: "object"
+      properties:
+        report_type:
+          type: "string"
+          enum: ["QUARTERLY_EXCESS", "ANNUAL_EMISSIONS", "EU_ETS_REPORT", "EPA_ECMPS", "DEVIATION_REPORT"]
+        report_period:
+          type: "object"
+          properties:
+            start_date:
+              type: "string"
+            end_date:
+              type: "string"
+        facility_info:
+          type: "object"
+        emission_totals:
+          type: "object"
+          properties:
+            nox_total_tons:
+              type: "number"
+            sox_total_tons:
+              type: "number"
+            co2_total_tons:
+              type: "number"
+            pm_total_tons:
+              type: "number"
+        operating_data:
+          type: "object"
+        exceedance_summary:
+          type: "array"
+        certification_statement:
+          type: "string"
+        submission_format:
+          type: "string"
+          enum: ["XML", "JSON", "EDR", "CSV"]
+        provenance_hash:
+          type: "string"
+
+  violation_alerts:
+    description: "Real-time alerts for emission limit violations and exceedances"
+    schema:
+      type: "object"
+      properties:
+        alert_id:
+          type: "string"
+        alert_type:
+          type: "string"
+          enum: ["WARNING", "EXCEEDANCE", "VIOLATION", "EQUIPMENT_MALFUNCTION", "DATA_QUALITY"]
+        severity:
+          type: "string"
+          enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+        pollutant:
+          type: "string"
+        current_value:
+          type: "number"
+        limit_value:
+          type: "number"
+        exceedance_percent:
+          type: "number"
+        duration_minutes:
+          type: "number"
+        affected_unit:
+          type: "string"
+        recommended_actions:
+          type: "array"
+          items:
+            type: "string"
+        notification_recipients:
+          type: "array"
+        timestamp:
+          type: "string"
+
+  emission_trends:
+    description: "Historical emission trends and forecasts"
+    schema:
+      type: "object"
+      properties:
+        trend_period:
+          type: "string"
+        pollutant_trends:
+          type: "object"
+          properties:
+            nox:
+              type: "object"
+              properties:
+                trend_direction:
+                  type: "string"
+                  enum: ["increasing", "stable", "decreasing"]
+                average_value:
+                  type: "number"
+                max_value:
+                  type: "number"
+                min_value:
+                  type: "number"
+                std_deviation:
+                  type: "number"
+                percent_change:
+                  type: "number"
+            sox:
+              type: "object"
+            co2:
+              type: "object"
+            pm:
+              type: "object"
+        forecast:
+          type: "object"
+          properties:
+            predicted_values:
+              type: "array"
+            confidence_interval:
+              type: "number"
+            exceedance_probability:
+              type: "number"
+
+  permit_compliance:
+    description: "Compliance status against permit limits and conditions"
+    schema:
+      type: "object"
+      properties:
+        permit_id:
+          type: "string"
+        compliance_period:
+          type: "object"
+        annual_limits_status:
+          type: "object"
+          properties:
+            nox:
+              type: "object"
+              properties:
+                annual_limit_tons:
+                  type: "number"
+                ytd_emissions_tons:
+                  type: "number"
+                remaining_allowance:
+                  type: "number"
+                projected_annual:
+                  type: "number"
+                compliance_status:
+                  type: "string"
+            sox:
+              type: "object"
+            co2:
+              type: "object"
+            pm:
+              type: "object"
+        special_conditions_status:
+          type: "array"
+        upcoming_deadlines:
+          type: "array"
+
+  exceedance_predictions:
+    description: "Predictive alerts for potential future exceedances"
+    schema:
+      type: "object"
+      properties:
+        prediction_timestamp:
+          type: "string"
+        prediction_horizon_hours:
+          type: "number"
+        predictions:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              pollutant:
+                type: "string"
+              predicted_value:
+                type: "number"
+              limit_value:
+                type: "number"
+              exceedance_probability:
+                type: "number"
+              time_to_exceedance_hours:
+                type: "number"
+              contributing_factors:
+                type: "array"
+              recommended_actions:
+                type: "array"
+
+  corrective_actions:
+    description: "Recommended corrective actions for compliance issues"
+    schema:
+      type: "object"
+      properties:
+        issue_id:
+          type: "string"
+        pollutant:
+          type: "string"
+        issue_description:
+          type: "string"
+        recommended_actions:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              action_id:
+                type: "string"
+              action_description:
+                type: "string"
+              expected_reduction_percent:
+                type: "number"
+              implementation_time_hours:
+                type: "number"
+              cost_estimate_usd:
+                type: "number"
+              priority:
+                type: "string"
+                enum: ["immediate", "short_term", "long_term"]
+        root_cause_analysis:
+          type: "string"
+        prevention_measures:
+          type: "array"
+
+  audit_trail:
+    description: "Complete audit trail for regulatory compliance verification"
+    schema:
+      type: "object"
+      properties:
+        audit_id:
+          type: "string"
+        calculation_type:
+          type: "string"
+        input_data_hash:
+          type: "string"
+        output_data_hash:
+          type: "string"
+        calculation_provenance:
+          type: "object"
+          properties:
+            formulas_used:
+              type: "array"
+            data_sources:
+              type: "array"
+            emission_factors_source:
+              type: "string"
+            methodology_reference:
+              type: "string"
+        timestamp:
+          type: "string"
+        user_id:
+          type: "string"
+        system_version:
+          type: "string"
+        reproducibility_verified:
+          type: "boolean"
+
+# ----------------------------------------------------------------------------
+# TOOLS (12+ Deterministic Tools)
+# ----------------------------------------------------------------------------
+
+tools:
+  - name: "calculate_nox_emissions"
+    deterministic: true
+    description: "Calculate NOx emissions using EPA Method 19 and CEMS data"
+    methodology: "EPA 40 CFR Part 75, Appendix F"
+    formulas:
+      mass_rate: "NOx_lb_hr = NOx_ppm * Fd * (20.9 / (20.9 - O2%)) * Heat_Input * (1/10^6)"
+      emission_rate: "NOx_lb_MMBtu = NOx_lb_hr / Heat_Input"
+    inputs: ["stack_emissions", "fuel_flow", "operating_load"]
+    outputs: ["nox_lb_hr", "nox_lb_mmbtu", "nox_tons_day", "nox_tons_quarter"]
+
+  - name: "calculate_sox_emissions"
+    deterministic: true
+    description: "Calculate SOx emissions from fuel sulfur content and CEMS"
+    methodology: "EPA 40 CFR Part 75, Appendix D/F"
+    formulas:
+      from_sulfur: "SO2_lb_hr = Fuel_S% * 2 * Fuel_Flow * HHV / 10^6"
+      from_cems: "SO2_lb_hr = SO2_ppm * Fd * (20.9 / (20.9 - O2%)) * Heat_Input * (1/10^6)"
+    inputs: ["stack_emissions", "fuel_composition", "fuel_flow"]
+    outputs: ["sox_lb_hr", "sox_lb_mmbtu", "sox_tons_day", "sox_annual_tons"]
+
+  - name: "calculate_co2_emissions"
+    deterministic: true
+    description: "Calculate CO2 emissions using fuel carbon content or CEMS"
+    methodology: "EPA 40 CFR Part 75 Subpart G, IPCC Guidelines"
+    formulas:
+      from_carbon: "CO2_tons_hr = (Fuel_C% / 100) * Fuel_Flow * (44/12) / 2000"
+      from_heat: "CO2_tons_hr = Heat_Input * EF_CO2 / 2000"
+    inputs: ["fuel_composition", "fuel_flow", "emission_factors"]
+    outputs: ["co2_tons_hr", "co2_tons_day", "co2_annual_tons", "co2_intensity_lb_mwh"]
+
+  - name: "calculate_particulate_matter"
+    deterministic: true
+    description: "Calculate PM emissions from CEMS opacity and filterable PM"
+    methodology: "EPA Method 5, AP-42 emission factors"
+    formulas:
+      from_cems: "PM_lb_hr = PM_mg_m3 * Stack_Flow * (1/453592)"
+      from_ap42: "PM_lb_hr = Heat_Input * EF_PM"
+    inputs: ["stack_emissions", "fuel_flow", "emission_factors"]
+    outputs: ["pm_lb_hr", "pm_tons_year", "pm10_lb_hr", "pm25_lb_hr"]
+
+  - name: "check_compliance_status"
+    deterministic: true
+    description: "Check current emissions against applicable regulatory limits"
+    methodology: "Multi-jurisdiction limit comparison with averaging periods"
+    inputs: ["stack_emissions", "regulatory_limits", "permit_limits", "operating_load"]
+    outputs: ["compliance_status", "percent_of_limit", "margin_to_limit", "averaging_period_status"]
+
+  - name: "generate_regulatory_report"
+    deterministic: true
+    description: "Generate submission-ready reports for regulatory agencies"
+    formats: ["EPA_ECMPS_XML", "EU_ETS_JSON", "QUARTERLY_EXCESS_CSV", "ANNUAL_EMISSIONS_EDR"]
+    inputs: ["historical_emissions", "permit_limits", "compliance_schedule"]
+    outputs: ["formatted_report", "submission_file", "certification_data", "validation_results"]
+
+  - name: "detect_violations"
+    deterministic: true
+    description: "Detect emission limit violations and classify severity"
+    methodology: "Real-time limit comparison with duration tracking"
+    inputs: ["stack_emissions", "regulatory_limits", "historical_emissions"]
+    outputs: ["violation_alerts", "severity_classification", "duration_tracking", "escalation_triggers"]
+
+  - name: "predict_exceedances"
+    deterministic: true
+    description: "Predict potential future exceedances using trend analysis"
+    methodology: "Time-series forecasting with operational correlation"
+    inputs: ["historical_emissions", "operating_load", "weather_data", "combustion_parameters"]
+    outputs: ["exceedance_probability", "time_to_exceedance", "contributing_factors", "mitigation_options"]
+
+  - name: "calculate_emission_factors"
+    deterministic: true
+    description: "Calculate and validate emission factors from source tests"
+    methodology: "EPA AP-42, IPCC Tier 1/2/3 methodologies"
+    sources: ["EPA_AP42", "IPCC_2006", "EEA_EMEP", "CARB", "MEASURED"]
+    inputs: ["fuel_composition", "combustion_parameters", "control_equipment_status"]
+    outputs: ["nox_ef_lb_mmbtu", "sox_ef_lb_mmbtu", "co2_ef_lb_mmbtu", "pm_ef_lb_mmbtu"]
+
+  - name: "analyze_fuel_composition"
+    deterministic: true
+    description: "Analyze fuel composition impact on emissions"
+    methodology: "Stoichiometric combustion calculations"
+    formulas:
+      theoretical_air: "Air_lb/lb_fuel = 11.5*C + 34.3*(H-O/8) + 4.3*S"
+      co2_max: "CO2_max% = C / (C + 0.375*S) * 100"
+    inputs: ["fuel_composition", "combustion_parameters"]
+    outputs: ["theoretical_emissions", "optimal_excess_air", "combustion_efficiency_impact"]
+
+  - name: "calculate_dispersion"
+    deterministic: true
+    description: "Calculate atmospheric dispersion using Gaussian plume model"
+    methodology: "EPA AERMOD/SCREEN3 simplified algorithms"
+    formulas:
+      gaussian_plume: "C(x,y,z) = (Q / (2*pi*sigma_y*sigma_z*u)) * exp(-0.5*(y/sigma_y)^2) * [exp(-0.5*((z-H)/sigma_z)^2) + exp(-0.5*((z+H)/sigma_z)^2)]"
+    inputs: ["stack_emissions", "dispersion_params", "weather_data"]
+    outputs: ["ground_level_concentration", "max_impact_distance", "receptor_concentrations"]
+
+  - name: "generate_audit_trail"
+    deterministic: true
+    description: "Generate complete audit trail with calculation provenance"
+    methodology: "SHA-256 hashing, versioned calculations, reproducibility verification"
+    inputs: ["all_inputs", "all_calculations", "methodology_references"]
+    outputs: ["provenance_record", "sha256_hash", "reproducibility_certificate", "regulatory_chain_of_custody"]
+
+  - name: "validate_cems_data"
+    deterministic: true
+    description: "Validate CEMS data quality and identify substitute data needs"
+    methodology: "EPA 40 CFR Part 75 CEMS quality assurance"
+    inputs: ["cems_data", "calibration_records", "qa_audit_results"]
+    outputs: ["data_quality_score", "substitute_data_flags", "missing_data_handling", "rata_compliance"]
+
+# ----------------------------------------------------------------------------
+# PIPELINE
+# ----------------------------------------------------------------------------
+
+pipeline:
+  name: "emissions-compliance-pipeline"
+  description: "End-to-end emissions compliance monitoring workflow"
+  stages:
+    - stage: 1
+      name: "Data Acquisition"
+      description: "Acquire and validate CEMS and operational data"
+      estimated_time: "10%"
+      target_latency_ms: 500
+      agent: "data-acquisition-agent"
+      action: "collect_and_validate_data"
+
+    - stage: 2
+      name: "Data Validation"
+      description: "Validate data quality and apply substitute data procedures"
+      estimated_time: "15%"
+      target_latency_ms: 300
+      agent: "data-validation-agent"
+      action: "validate_cems_data"
+
+    - stage: 3
+      name: "Emission Calculation"
+      description: "Calculate mass emissions for all pollutants"
+      estimated_time: "25%"
+      target_latency_ms: 1000
+      agent: "calculation-agent"
+      action: "calculate_all_emissions"
+
+    - stage: 4
+      name: "Compliance Check"
+      description: "Compare emissions against all applicable limits"
+      estimated_time: "20%"
+      target_latency_ms: 500
+      agent: "compliance-check-agent"
+      action: "check_all_limits"
+
+    - stage: 5
+      name: "Reporting"
+      description: "Generate regulatory reports and dashboards"
+      estimated_time: "20%"
+      target_latency_ms: 2000
+      agent: "reporting-agent"
+      action: "generate_reports"
+
+    - stage: 6
+      name: "Alerting"
+      description: "Generate and distribute compliance alerts"
+      estimated_time: "10%"
+      target_latency_ms: 200
+      agent: "alerting-agent"
+      action: "process_alerts"
+
+  performance:
+    target_total_time_ms: 5000
+    target_throughput: "60 evaluations per minute"
+
+# ----------------------------------------------------------------------------
+# DEPENDENCIES
+# ----------------------------------------------------------------------------
+
+dependencies:
+  python:
+    - "numpy>=1.24.0,<2.0.0"
+    - "scipy>=1.10.0,<2.0.0"
+    - "pandas>=2.0.0,<3.0.0"
+    - "pydantic>=2.0.0,<3.0.0"
+    - "fastapi>=0.104.0,<1.0.0"
+    - "uvicorn>=0.24.0,<1.0.0"
+    - "prometheus-client>=0.18.0,<1.0.0"
+    - "httpx>=0.25.0,<1.0.0"
+    - "asyncio>=3.4.0"
+    - "python-json-logger>=2.0.7,<3.0.0"
+    - "aiofiles>=23.0.0,<24.0.0"
+    - "pyyaml>=6.0.0,<7.0.0"
+    - "xmltodict>=0.13.0,<1.0.0"
+    - "lxml>=4.9.0,<5.0.0"
+    - "pymodbus>=3.5.0,<4.0.0"
+    - "asyncua>=1.0.0,<2.0.0"
+    - "cryptography>=41.0.0,<42.0.0"
+    - "python-jose>=3.3.0,<4.0.0"
+
+  external_services:
+    - service: "cems_analyzers"
+      protocol: "Modbus TCP"
+      required: true
+      purpose: "Real-time emissions data acquisition"
+    - service: "historian"
+      protocol: "OPC UA"
+      required: true
+      purpose: "Historical data storage and retrieval"
+    - service: "regulatory_portal"
+      protocol: "REST/SOAP"
+      required: false
+      purpose: "Automated report submission"
+
+  data_sources:
+    - name: "epa_emission_factors"
+      type: "internal"
+      description: "EPA AP-42 emission factors database"
+    - name: "ipcc_emission_factors"
+      type: "internal"
+      description: "IPCC 2006 GHG emission factors"
+    - name: "regulatory_limits_db"
+      type: "internal"
+      description: "Multi-jurisdiction emission limits database"
+    - name: "fuel_properties_db"
+      type: "internal"
+      description: "Fuel heating values and compositions"
+
+# ----------------------------------------------------------------------------
+# RUNTIME CONFIGURATION
+# ----------------------------------------------------------------------------
+
+runtime:
+  python_version: ">=3.11,<4.0"
+  entrypoint: "emissions_compliance_agent.py"
+  main_class: "EmissionsComplianceAgent"
+  async_execution: true
+  requires_gpu: false
+  min_memory_mb: 1024
+  max_memory_mb: 4096
+  min_cpu_cores: 2
+  max_cpu_cores: 8
+
+  deterministic: true
+  temperature: 0.0
+  seed: 42
+
+  monitoring_interval_seconds: 60
+  alert_check_interval_seconds: 15
+  report_generation_interval_hours: 24
+
+# ----------------------------------------------------------------------------
+# REGULATORY STANDARDS (10+ Standards)
+# ----------------------------------------------------------------------------
+
+standards_compliance:
+  - name: "EPA Clean Air Act"
+    description: "US Clean Air Act emission standards"
+    version: "42 U.S.C. 7401"
+    applicability: "All US stationary sources"
+    requirements:
+      - "NAAQS compliance"
+      - "NSPS standards"
+      - "NESHAP standards"
+      - "Title V permitting"
+
+  - name: "40 CFR Part 60"
+    description: "Standards of Performance for New Stationary Sources (NSPS)"
+    version: "Current"
+    applicability: "New and modified sources"
+    requirements:
+      - "Subpart-specific emission limits"
+      - "Monitoring requirements"
+      - "Recordkeeping"
+      - "Reporting"
+
+  - name: "40 CFR Part 75"
+    description: "Continuous Emissions Monitoring"
+    version: "Current"
+    applicability: "Acid Rain Program, CAIR, CSAPR affected units"
+    requirements:
+      - "CEMS certification"
+      - "Quality assurance"
+      - "Missing data substitution"
+      - "Electronic reporting (ECMPS)"
+
+  - name: "40 CFR Part 98"
+    description: "Mandatory Greenhouse Gas Reporting"
+    version: "Current"
+    applicability: "Facilities emitting >=25,000 MT CO2e/year"
+    requirements:
+      - "Annual GHG reporting"
+      - "Verification"
+      - "Third-party verification (selected)"
+
+  - name: "EU Industrial Emissions Directive (IED)"
+    description: "EU Directive 2010/75/EU"
+    version: "2010/75/EU"
+    applicability: "Large combustion plants in EU"
+    requirements:
+      - "BAT-AEL compliance"
+      - "Emission limit values"
+      - "Monitoring and reporting"
+      - "Environmental inspections"
+
+  - name: "EU ETS"
+    description: "EU Emissions Trading System"
+    version: "Phase 4 (2021-2030)"
+    applicability: "EU installations >20 MW"
+    requirements:
+      - "Annual emissions reporting"
+      - "Verification"
+      - "Allowance surrender"
+      - "Monitoring plan"
+
+  - name: "ISO 14064"
+    description: "Greenhouse Gas Accounting and Verification"
+    version: "ISO 14064-1:2018"
+    applicability: "GHG inventories"
+    requirements:
+      - "GHG quantification"
+      - "Uncertainty assessment"
+      - "QA/QC procedures"
+      - "Third-party verification"
+
+  - name: "ISO 14001"
+    description: "Environmental Management Systems"
+    version: "ISO 14001:2015"
+    applicability: "Environmental management"
+    requirements:
+      - "Environmental policy"
+      - "Legal compliance"
+      - "Continuous improvement"
+      - "Audit and review"
+
+  - name: "China MEE Standards"
+    description: "China Ministry of Ecology and Environment emission standards"
+    version: "GB 13223-2011"
+    applicability: "Thermal power plants in China"
+    requirements:
+      - "Ultra-low emission standards"
+      - "CEMS requirements"
+      - "Real-time reporting"
+
+  - name: "ASME PTC 19.10"
+    description: "Flue and Exhaust Gas Analyses"
+    version: "2019"
+    applicability: "Emission measurement"
+    requirements:
+      - "Sampling methods"
+      - "Analysis procedures"
+      - "Uncertainty quantification"
+
+# ----------------------------------------------------------------------------
+# GUARANTEES
+# ----------------------------------------------------------------------------
+
+guarantees:
+  zero_hallucination: true
+  deterministic: true
+  reproducible: true
+  audit_trail: "complete"
+  regulatory_compliant: true
+
+  performance:
+    - "<5 seconds for compliance status update"
+    - "<1 second for violation detection"
+    - "<60 seconds for full report generation"
+    - "99.9% system availability"
+    - "100% data capture rate"
+
+  accuracy_targets:
+    emission_calculation: "99.5%"
+    compliance_determination: "100%"
+    regulatory_report: "100%"
+    data_validation: "99.9%"
+
+# ----------------------------------------------------------------------------
+# SECURITY
+# ----------------------------------------------------------------------------
+
+security:
+  zero_secrets: true
+  provenance_tracking: true
+  audit_logging: true
+  encryption_at_rest: true
+  encryption_in_transit: true
+  rbac_enabled: true
+  data_classification: "regulatory"
+
+  compliance_frameworks:
+    - "SOC 2 Type II"
+    - "ISO 27001"
+    - "NIST Cybersecurity Framework"
+
+# ----------------------------------------------------------------------------
+# DEPLOYMENT
+# ----------------------------------------------------------------------------
+
+deployment:
+  container_image: "greenlang/gl-010-emissionwatch:1.0.0"
+  platform: "kubernetes"
+  min_replicas: 3
+  max_replicas: 20
+  autoscaling_metric: "cpu_utilization"
+  autoscaling_target: 70
+  health_check_endpoint: "/health"
+  metrics_endpoint: "/metrics"
+  log_level: "INFO"
+  namespace: "greenlang-agents"
+
+  environments:
+    development:
+      replicas: 1
+      auto_scaling: false
+    staging:
+      replicas: 2
+      auto_scaling: true
+      min_replicas: 2
+      max_replicas: 5
+    production:
+      replicas: 3
+      auto_scaling: true
+      min_replicas: 3
+      max_replicas: 20
+      multi_region: true
+      high_availability: true
+
+# ----------------------------------------------------------------------------
+# BUSINESS METRICS
+# ----------------------------------------------------------------------------
+
+business_metrics:
+  market_segment: "environmental-compliance"
+  total_addressable_market_usd: 11000000000
+  target_customers:
+    - "power_generation"
+    - "manufacturing"
+    - "chemical"
+    - "petrochemical"
+    - "cement"
+    - "steel"
+    - "refining"
+    - "pulp_paper"
+
+  typical_penalty_avoidance_usd: 100000
+  typical_efficiency_improvement_percent: 5
+  typical_payback_months: 6
+  addressable_emissions_mt_co2e: 15000000000
+
+# ----------------------------------------------------------------------------
+# LICENSE
+# ----------------------------------------------------------------------------
+
+license:
+  type: "Apache-2.0"
+  commercial_use: true
+  attribution_required: true
+  patent_grant: true

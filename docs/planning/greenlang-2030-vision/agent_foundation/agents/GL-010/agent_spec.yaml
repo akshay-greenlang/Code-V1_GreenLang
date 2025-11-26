@@ -1,0 +1,750 @@
+# ============================================================================
+# GL-010 EMISSIONWATCH - EmissionsComplianceAgent Technical Specification
+# Technical Specification Document v1.0
+# ============================================================================
+
+document_info:
+  title: "GL-010 EMISSIONWATCH Technical Specification"
+  version: "1.0.0"
+  date: "2025-11-26"
+  author: "GreenLang Environmental Compliance Team"
+  status: "Draft"
+  classification: "Internal"
+
+# ============================================================================
+# EXECUTIVE SUMMARY
+# ============================================================================
+
+executive_summary:
+  agent_id: "GL-010"
+  codename: "EMISSIONWATCH"
+  name: "EmissionsComplianceAgent"
+  category: "Compliance"
+  type: "Monitor"
+  priority: "P0 (HIGHEST)"
+  market: "$11B TAM"
+  timeline: "Q4 2025"
+
+  mission: |
+    Zero-hallucination real-time emissions compliance monitoring ensuring
+    NOx/SOx/CO2/PM compliance with environmental regulations across all
+    jurisdictions. Transforms raw CEMS data into actionable compliance
+    insights, preventing violations before they occur.
+
+  key_capabilities:
+    - "Real-time monitoring of 5+ pollutants (NOx, SOx, CO2, CO, PM)"
+    - "Multi-jurisdiction compliance (US EPA, EU IED, EU ETS, China MEE)"
+    - "Proactive violation detection and alerting"
+    - "Submission-ready regulatory report generation"
+    - "Complete audit trail for regulatory inspections"
+    - "Predictive exceedance analysis"
+
+# ============================================================================
+# CALCULATION METHODOLOGIES
+# ============================================================================
+
+calculation_methodologies:
+
+  # --------------------------------------------------------------------------
+  # NOx EMISSION CALCULATIONS
+  # --------------------------------------------------------------------------
+  nox_calculations:
+    methodology_name: "EPA Method 19 / 40 CFR Part 75 Appendix F"
+    description: "Calculate NOx mass emissions from CEMS concentration data"
+
+    formulas:
+      emission_rate_lb_mmbtu:
+        formula: "E_NOx = C_NOx * F_d * (20.9 / (20.9 - %O2)) * K"
+        variables:
+          E_NOx: "NOx emission rate (lb/MMBtu)"
+          C_NOx: "NOx concentration (ppm)"
+          F_d: "Dry basis F-factor for fuel (dscf/MMBtu)"
+          O2: "Oxygen concentration (percent)"
+          K: "Conversion factor (1.194E-7 lb/dscf/ppm)"
+
+      mass_emission_rate:
+        formula: "M_NOx = E_NOx * H"
+        variables:
+          M_NOx: "NOx mass emission rate (lb/hr)"
+          E_NOx: "NOx emission rate (lb/MMBtu)"
+          H: "Heat input rate (MMBtu/hr)"
+
+      daily_total:
+        formula: "T_NOx = sum(M_NOx_i * t_i) / 2000"
+        variables:
+          T_NOx: "Daily NOx total (tons)"
+          M_NOx_i: "Hourly mass emission rate (lb/hr)"
+          t_i: "Operating time in hour i (hours)"
+
+    f_factors:
+      natural_gas: 8710
+      coal_bituminous: 9780
+      coal_subbituminous: 9820
+      fuel_oil_2: 9190
+      fuel_oil_6: 9220
+      wood_biomass: 9240
+
+    o2_correction:
+      description: "Correct to reference O2 for regulatory comparison"
+      formula: "C_corrected = C_measured * (20.9 - O2_ref) / (20.9 - O2_measured)"
+      reference_o2:
+        utility_boilers: 3.0
+        industrial_boilers: 3.0
+        gas_turbines: 15.0
+        reciprocating_engines: 15.0
+
+    accuracy_target: "99.5%"
+    validation: "Cross-validated against EPA ECMPS submissions"
+
+  # --------------------------------------------------------------------------
+  # SOx EMISSION CALCULATIONS
+  # --------------------------------------------------------------------------
+  sox_calculations:
+    methodology_name: "EPA 40 CFR Part 75 Appendix D/F"
+    description: "Calculate SOx mass emissions from fuel sulfur or CEMS"
+
+    formulas:
+      from_fuel_sulfur:
+        formula: "E_SO2 = %S * K_s * 10^6 / HHV"
+        variables:
+          E_SO2: "SO2 emission rate (lb/MMBtu)"
+          S: "Fuel sulfur content (weight percent)"
+          K_s: "Conversion factor (2.0 lb SO2/lb S)"
+          HHV: "Higher heating value (Btu/lb)"
+
+      from_cems:
+        formula: "E_SO2 = C_SO2 * F_d * (20.9 / (20.9 - %O2)) * K"
+        variables:
+          E_SO2: "SO2 emission rate (lb/MMBtu)"
+          C_SO2: "SO2 concentration (ppm)"
+          F_d: "Dry basis F-factor for fuel (dscf/MMBtu)"
+          K: "Conversion factor (2.859E-7 lb/dscf/ppm)"
+
+      mass_emission_rate:
+        formula: "M_SO2 = E_SO2 * H"
+        variables:
+          M_SO2: "SO2 mass emission rate (lb/hr)"
+          E_SO2: "SO2 emission rate (lb/MMBtu)"
+          H: "Heat input rate (MMBtu/hr)"
+
+      control_efficiency:
+        formula: "E_controlled = E_uncontrolled * (1 - eta_control)"
+        variables:
+          eta_control: "Control device efficiency (0-1)"
+
+    accuracy_target: "99.5%"
+    validation: "Cross-validated against fuel sulfur analysis"
+
+  # --------------------------------------------------------------------------
+  # CO2 EMISSION CALCULATIONS
+  # --------------------------------------------------------------------------
+  co2_calculations:
+    methodology_name: "EPA 40 CFR Part 75 Subpart G / IPCC Guidelines"
+    description: "Calculate CO2 mass emissions from fuel carbon content"
+
+    formulas:
+      from_fuel_carbon:
+        formula: "M_CO2 = F * C * (44/12) / 2000"
+        variables:
+          M_CO2: "CO2 mass emission rate (tons/hr)"
+          F: "Fuel consumption rate (lb/hr)"
+          C: "Carbon content (fraction)"
+          "44/12": "Molecular weight ratio CO2/C"
+
+      from_heat_input:
+        formula: "M_CO2 = H * EF_CO2 / 2000"
+        variables:
+          M_CO2: "CO2 mass emission rate (tons/hr)"
+          H: "Heat input rate (MMBtu/hr)"
+          EF_CO2: "CO2 emission factor (lb/MMBtu)"
+
+      from_cems:
+        formula: "M_CO2 = C_CO2 * V_stack * rho_CO2 * 60 / 2000"
+        variables:
+          M_CO2: "CO2 mass emission rate (tons/hr)"
+          C_CO2: "CO2 concentration (percent/100)"
+          V_stack: "Stack flow rate (scfm)"
+          rho_CO2: "CO2 density at STP (lb/scf)"
+
+    emission_factors_lb_mmbtu:
+      natural_gas: 117.0
+      coal_bituminous: 205.0
+      coal_subbituminous: 212.0
+      coal_lignite: 215.0
+      fuel_oil_2: 161.0
+      fuel_oil_6: 173.0
+      propane: 139.0
+      biomass: 0.0  # Carbon neutral
+
+    ghg_reporting:
+      global_warming_potential:
+        co2: 1
+        ch4: 28
+        n2o: 265
+      formula: "CO2e = CO2 + CH4*GWP_CH4 + N2O*GWP_N2O"
+
+    accuracy_target: "99.5%"
+    validation: "Cross-validated against fuel receipts"
+
+  # --------------------------------------------------------------------------
+  # PARTICULATE MATTER CALCULATIONS
+  # --------------------------------------------------------------------------
+  pm_calculations:
+    methodology_name: "EPA Method 5 / AP-42"
+    description: "Calculate PM mass emissions from CEMS or emission factors"
+
+    formulas:
+      from_cems:
+        formula: "M_PM = C_PM * V_stack * (1/453592)"
+        variables:
+          M_PM: "PM mass emission rate (lb/hr)"
+          C_PM: "PM concentration (mg/Nm3)"
+          V_stack: "Stack flow rate at STP (Nm3/hr)"
+
+      from_opacity:
+        formula: "C_PM = a * (opacity)^b"
+        description: "Empirical correlation from source test"
+        variables:
+          C_PM: "PM concentration (mg/Nm3)"
+          opacity: "Opacity reading (percent)"
+          a: "Correlation coefficient (source-specific)"
+          b: "Correlation exponent (source-specific)"
+
+      from_emission_factor:
+        formula: "M_PM = H * EF_PM"
+        variables:
+          M_PM: "PM mass emission rate (lb/hr)"
+          H: "Heat input rate (MMBtu/hr)"
+          EF_PM: "PM emission factor (lb/MMBtu)"
+
+    pm_fractions:
+      pm_total: 1.0
+      pm_10: 0.95
+      pm_2_5: 0.30
+
+    accuracy_target: "99%"
+
+  # --------------------------------------------------------------------------
+  # DISPERSION CALCULATIONS
+  # --------------------------------------------------------------------------
+  dispersion_calculations:
+    methodology_name: "Gaussian Plume Model (AERMOD Simplified)"
+    description: "Calculate ground-level pollutant concentrations"
+
+    formulas:
+      gaussian_plume:
+        formula: |
+          C(x,y,z) = (Q / (2*pi*sigma_y*sigma_z*u)) *
+                     exp(-0.5*(y/sigma_y)^2) *
+                     [exp(-0.5*((z-H_eff)/sigma_z)^2) +
+                      exp(-0.5*((z+H_eff)/sigma_z)^2)]
+        variables:
+          C: "Ground-level concentration (ug/m3)"
+          Q: "Emission rate (g/s)"
+          sigma_y: "Horizontal dispersion coefficient (m)"
+          sigma_z: "Vertical dispersion coefficient (m)"
+          u: "Wind speed (m/s)"
+          H_eff: "Effective stack height (m)"
+          x: "Downwind distance (m)"
+          y: "Crosswind distance (m)"
+          z: "Receptor height (m)"
+
+      effective_stack_height:
+        formula: "H_eff = H_stack + delta_H_momentum + delta_H_buoyancy"
+        variables:
+          H_stack: "Physical stack height (m)"
+          delta_H_momentum: "Momentum rise (m)"
+          delta_H_buoyancy: "Buoyancy rise (m)"
+
+      briggs_buoyancy_rise:
+        formula: "delta_H = 1.6 * F^(1/3) * x^(2/3) / u"
+        conditions: "Neutral/unstable conditions, x < 3.5*x_star"
+
+    stability_classes:
+      A: "Very unstable (strong solar, light wind)"
+      B: "Moderately unstable"
+      C: "Slightly unstable"
+      D: "Neutral (overcast, moderate wind)"
+      E: "Slightly stable"
+      F: "Moderately stable (night, clear, light wind)"
+
+    dispersion_coefficients:
+      pasquill_gifford: true
+      briggs_urban: false
+      briggs_rural: true
+
+# ============================================================================
+# UNCERTAINTY QUANTIFICATION
+# ============================================================================
+
+uncertainty_quantification:
+  methodology: "ISO 14064-1 / GUM (Guide to Uncertainty in Measurement)"
+
+  sources_of_uncertainty:
+    instrument_uncertainty:
+      description: "Uncertainty from CEMS analyzers"
+      typical_values:
+        nox_analyzer: "2%"
+        so2_analyzer: "2%"
+        co2_analyzer: "2%"
+        o2_analyzer: "1%"
+        flow_monitor: "2%"
+
+    emission_factor_uncertainty:
+      description: "Uncertainty in default emission factors"
+      typical_values:
+        ap42_factors: "10-30%"
+        ipcc_tier1: "50%"
+        ipcc_tier2: "10-30%"
+        measured_factors: "5-10%"
+
+    sampling_uncertainty:
+      description: "Uncertainty from temporal sampling"
+      typical_values:
+        hourly_averaging: "5%"
+        daily_averaging: "2%"
+
+    calculation_uncertainty:
+      description: "Uncertainty from calculation methodology"
+      typical_values:
+        mass_balance: "5%"
+        stoichiometric: "3%"
+
+  combined_uncertainty:
+    formula: "U_c = sqrt(sum(u_i^2))"
+    description: "Root-sum-square combination of independent uncertainties"
+    expanded_uncertainty:
+      coverage_factor: 2
+      confidence_level: "95%"
+
+  reporting_requirements:
+    - "Report uncertainty for all calculated emissions"
+    - "Identify dominant uncertainty sources"
+    - "Document methodology used"
+    - "Maintain records for verification"
+
+# ============================================================================
+# DATA QUALITY REQUIREMENTS
+# ============================================================================
+
+data_quality_requirements:
+  cems_data_availability:
+    target: "95%"
+    minimum: "90%"
+    calculation: "Valid data hours / Total operating hours * 100"
+
+  quality_assurance_procedures:
+    daily_calibration:
+      description: "Daily zero and span checks"
+      frequency: "Every 24 hours"
+      acceptance_criteria:
+        calibration_drift: "< 2.5% of span"
+        zero_drift: "< 2.5% of span"
+
+    cylinder_gas_audit:
+      description: "Quarterly accuracy audit using certified gases"
+      frequency: "Every quarter"
+      acceptance_criteria:
+        accuracy: "< 5% of certified gas value"
+
+    rata:
+      description: "Relative Accuracy Test Audit"
+      frequency: "Annual"
+      acceptance_criteria:
+        relative_accuracy: "< 10% or < 20 ppm (NOx)"
+        bias: "Must pass bias test"
+
+    linearity_check:
+      description: "Three-point linearity verification"
+      frequency: "Semi-annual"
+      acceptance_criteria:
+        linearity_error: "< 5%"
+
+  substitute_data_procedures:
+    methodology: "40 CFR Part 75 Appendix D"
+
+    methods:
+      standard_missing_data:
+        description: "For short gaps (< 24 hours)"
+        procedure: "Use 90th percentile of prior quality-assured data"
+
+      extended_missing_data:
+        description: "For longer gaps (> 24 hours)"
+        procedure: "Use maximum potential concentration"
+
+      calibration_periods:
+        description: "During calibration"
+        procedure: "Use average of pre and post calibration values"
+
+  data_validation_checks:
+    range_check:
+      description: "Verify values within physical limits"
+      nox_range: [0, 5000]  # ppm
+      so2_range: [0, 5000]  # ppm
+      co2_range: [0, 25]    # percent
+      o2_range: [0, 21]     # percent
+
+    rate_of_change:
+      description: "Flag rapid changes indicating malfunction"
+      max_change_per_minute: "10%"
+
+    correlation_check:
+      description: "Verify relationships between parameters"
+      o2_co2_correlation: "Negative correlation expected"
+      nox_load_correlation: "Positive correlation expected"
+
+    stuck_value_detection:
+      description: "Detect sensor freeze"
+      max_identical_readings: 60  # minutes
+
+# ============================================================================
+# PERFORMANCE REQUIREMENTS
+# ============================================================================
+
+performance_requirements:
+  latency:
+    compliance_check: "<500 ms"
+    violation_detection: "<200 ms"
+    report_generation: "<60 seconds"
+    prediction_calculation: "<3 seconds"
+    audit_trail_generation: "<10 seconds"
+
+  throughput:
+    data_points_per_second: 1000
+    concurrent_units_monitored: 100
+    reports_per_hour: 60
+
+  availability:
+    target: "99.9%"
+    planned_downtime: "< 4 hours/month"
+    recovery_time_objective: "< 15 minutes"
+    recovery_point_objective: "< 5 minutes"
+
+  accuracy:
+    emission_calculation: "99.5%"
+    compliance_determination: "100%"
+    regulatory_report_accuracy: "100%"
+    data_validation: "99.9%"
+
+  scalability:
+    horizontal_scaling: true
+    max_replicas: 20
+    auto_scaling_metric: "CPU utilization"
+    auto_scaling_target: "70%"
+
+# ============================================================================
+# INTEGRATION SPECIFICATIONS
+# ============================================================================
+
+integration_specifications:
+  cems_integration:
+    protocols:
+      modbus_tcp:
+        description: "Industry standard for CEMS communication"
+        port: 502
+        function_codes: [3, 4]  # Read holding/input registers
+        data_types: ["INT16", "UINT16", "FLOAT32", "FLOAT64"]
+        byte_order: "Big-endian"
+        polling_interval_ms: 1000
+
+      opc_ua:
+        description: "Modern industrial communication standard"
+        security_modes: ["None", "Sign", "SignAndEncrypt"]
+        security_policies: ["Basic128Rsa15", "Basic256", "Basic256Sha256"]
+        subscription_interval_ms: 1000
+        session_timeout_ms: 60000
+
+    data_points:
+      required:
+        - "NOx concentration (ppm)"
+        - "SO2 concentration (ppm)"
+        - "CO2 concentration (%)"
+        - "O2 concentration (%)"
+        - "Stack flow rate (scfm)"
+        - "Stack temperature (F)"
+        - "Data quality flags"
+      optional:
+        - "CO concentration (ppm)"
+        - "Opacity (%)"
+        - "PM concentration (mg/m3)"
+        - "Moisture (%)"
+
+  historian_integration:
+    supported_systems:
+      - name: "OSIsoft PI"
+        protocol: "PI Web API"
+        version: "2021+"
+      - name: "Honeywell PHD"
+        protocol: "ODBC/OPC"
+      - name: "AspenTech InfoPlus.21"
+        protocol: "ODBC"
+      - name: "GE Proficy Historian"
+        protocol: "OPC UA"
+
+    data_retrieval:
+      batch_size: 10000
+      max_concurrent_queries: 10
+      timeout_seconds: 30
+
+  regulatory_portal_integration:
+    epa_ecmps:
+      description: "EPA Emissions Collection and Monitoring Plan System"
+      protocol: "SOAP/REST"
+      formats: ["XML"]
+      submission_types:
+        - "Emissions"
+        - "QA"
+        - "Monitoring Plan"
+      authentication: "EPA CDX"
+
+    eu_ets_registry:
+      description: "EU Emissions Trading System Registry"
+      protocol: "REST"
+      formats: ["XML"]
+      authentication: "OAuth 2.0"
+
+    state_systems:
+      description: "State environmental agency systems"
+      configurable: true
+
+# ============================================================================
+# SECURITY REQUIREMENTS
+# ============================================================================
+
+security_requirements:
+  authentication:
+    type: "OAuth 2.0 / OIDC"
+    mfa_required: true
+    session_timeout_minutes: 30
+    password_policy:
+      min_length: 12
+      require_uppercase: true
+      require_lowercase: true
+      require_numbers: true
+      require_special: true
+      max_age_days: 90
+
+  authorization:
+    model: "RBAC (Role-Based Access Control)"
+    roles:
+      admin:
+        permissions: ["all"]
+        description: "Full system access"
+      compliance_officer:
+        permissions: ["read_all", "write_reports", "configure_alerts", "approve_submissions"]
+        description: "Compliance management"
+      operator:
+        permissions: ["read_current_status", "acknowledge_alerts"]
+        description: "Day-to-day operations"
+      auditor:
+        permissions: ["read_all", "export_audit_trail"]
+        description: "Audit and verification"
+      viewer:
+        permissions: ["read_current_status"]
+        description: "View-only access"
+
+  encryption:
+    at_rest: "AES-256-GCM"
+    in_transit: "TLS 1.3"
+    key_management: "AWS KMS / HashiCorp Vault"
+
+  audit_logging:
+    enabled: true
+    retention_days: 2555  # 7 years
+    log_events:
+      - "User authentication"
+      - "Data access"
+      - "Configuration changes"
+      - "Report generation"
+      - "Alert acknowledgment"
+      - "Submission to regulators"
+    tamper_protection: "SHA-256 hash chain"
+
+  network_security:
+    firewall_rules: "Whitelist only"
+    vpn_required: "For remote access"
+    ddos_protection: true
+    waf_enabled: true
+
+  compliance_frameworks:
+    - "SOC 2 Type II"
+    - "ISO 27001"
+    - "NIST Cybersecurity Framework"
+    - "21 CFR Part 11 (electronic records)"
+
+# ============================================================================
+# DEPLOYMENT ARCHITECTURE
+# ============================================================================
+
+deployment_architecture:
+  platform: "Kubernetes"
+
+  components:
+    emissions_compliance_agent:
+      replicas: 3
+      resources:
+        cpu_request: "500m"
+        cpu_limit: "4000m"
+        memory_request: "1Gi"
+        memory_limit: "4Gi"
+      ports:
+        http: 8080
+        metrics: 9090
+      health_checks:
+        liveness:
+          path: "/health"
+          interval: 30
+        readiness:
+          path: "/ready"
+          interval: 10
+
+    data_collector:
+      replicas: 2
+      resources:
+        cpu_request: "250m"
+        cpu_limit: "1000m"
+        memory_request: "512Mi"
+        memory_limit: "2Gi"
+      description: "CEMS data acquisition"
+
+    alert_processor:
+      replicas: 2
+      resources:
+        cpu_request: "250m"
+        cpu_limit: "1000m"
+        memory_request: "512Mi"
+        memory_limit: "1Gi"
+      description: "Violation alert processing"
+
+    report_generator:
+      replicas: 2
+      resources:
+        cpu_request: "500m"
+        cpu_limit: "2000m"
+        memory_request: "1Gi"
+        memory_limit: "4Gi"
+      description: "Regulatory report generation"
+
+  databases:
+    primary:
+      type: "PostgreSQL"
+      version: "15"
+      storage: "1TB"
+      replicas: 3
+      backup_frequency: "hourly"
+
+    time_series:
+      type: "TimescaleDB"
+      retention: "7 years"
+      compression: true
+
+    cache:
+      type: "Redis"
+      mode: "Cluster"
+      replicas: 6
+
+  message_queue:
+    type: "Apache Kafka"
+    partitions: 12
+    replication_factor: 3
+    retention_hours: 168
+
+  monitoring:
+    metrics: "Prometheus"
+    logging: "ELK Stack"
+    tracing: "Jaeger"
+    dashboards: "Grafana"
+
+# ============================================================================
+# TESTING REQUIREMENTS
+# ============================================================================
+
+testing_requirements:
+  unit_tests:
+    coverage_target: "90%"
+    focus_areas:
+      - "Emission calculations"
+      - "Compliance determination"
+      - "Data validation"
+      - "Substitute data procedures"
+
+  integration_tests:
+    coverage_target: "85%"
+    focus_areas:
+      - "CEMS data acquisition"
+      - "Historian integration"
+      - "Regulatory portal submission"
+      - "Alert notification delivery"
+
+  validation_tests:
+    description: "Validate calculations against known values"
+    test_cases:
+      - "EPA ECMPS reference calculations"
+      - "EU ETS verification examples"
+      - "Published emission factor validations"
+    acceptance_criteria: "100% match with reference values"
+
+  performance_tests:
+    load_test:
+      target: "1000 concurrent data points"
+      duration: "1 hour"
+      success_criteria: "< 500ms p99 latency"
+
+    stress_test:
+      target: "10x normal load"
+      duration: "30 minutes"
+      success_criteria: "Graceful degradation"
+
+    endurance_test:
+      target: "Normal load"
+      duration: "72 hours"
+      success_criteria: "No memory leaks, stable performance"
+
+  compliance_tests:
+    regulatory_validation:
+      - "EPA 40 CFR Part 75 compliance"
+      - "EU IED reporting requirements"
+      - "GHG Protocol alignment"
+
+    audit_trail_verification:
+      - "Complete calculation provenance"
+      - "SHA-256 hash chain integrity"
+      - "7-year data retention"
+
+# ============================================================================
+# APPENDICES
+# ============================================================================
+
+appendices:
+  glossary:
+    CEMS: "Continuous Emissions Monitoring System"
+    EPA: "Environmental Protection Agency"
+    NOx: "Nitrogen Oxides (NO + NO2)"
+    SOx: "Sulfur Oxides (SO2 + SO3)"
+    PM: "Particulate Matter"
+    ECMPS: "Emissions Collection and Monitoring Plan System"
+    RATA: "Relative Accuracy Test Audit"
+    CGA: "Cylinder Gas Audit"
+    ETS: "Emissions Trading System"
+    IED: "Industrial Emissions Directive"
+    BAT: "Best Available Techniques"
+    AEL: "Associated Emission Level"
+
+  references:
+    - "40 CFR Part 60 - NSPS"
+    - "40 CFR Part 75 - Acid Rain Program"
+    - "40 CFR Part 98 - GHG Reporting"
+    - "EPA Method 19 - SO2 and NOx Emission Rates"
+    - "EU Directive 2010/75/EU - Industrial Emissions Directive"
+    - "IPCC 2006 Guidelines for National Greenhouse Gas Inventories"
+    - "ISO 14064-1:2018 - GHG Quantification and Reporting"
+    - "ASME PTC 19.10 - Flue and Exhaust Gas Analyses"
+
+  version_history:
+    - version: "1.0.0"
+      date: "2025-11-26"
+      changes:
+        - "Initial release"
+        - "Complete calculation methodologies"
+        - "Multi-jurisdiction support"
+        - "CEMS integration specifications"

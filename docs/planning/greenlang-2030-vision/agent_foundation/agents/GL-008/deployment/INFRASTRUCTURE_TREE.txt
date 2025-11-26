@@ -1,0 +1,277 @@
+GL-008 SteamTrapInspector - Kubernetes Deployment Infrastructure
+================================================================
+
+Location: C:\Users\aksha\Code-V1_GreenLang\docs\planning\greenlang-2030-vision\agent_foundation\agents\GL-008\deployment\
+
+Directory Structure:
+--------------------
+
+deployment/
+│
+├── README.md                           # Comprehensive deployment guide (397 lines)
+├── DEPLOYMENT_SUMMARY.md               # Executive summary and specifications (485 lines)
+├── INFRASTRUCTURE_TREE.txt             # This file - directory structure reference
+│
+├── Core Kubernetes Manifests (11 files, 1,052 lines)
+│   ├── deployment.yaml                 # Main deployment (341 lines)
+│   ├── service.yaml                    # Services for app and metrics (85 lines)
+│   ├── configmap.yaml                  # Configuration data (155 lines)
+│   ├── secret.yaml                     # External Secrets template (85 lines)
+│   ├── hpa.yaml                        # Horizontal Pod Autoscaler (65 lines)
+│   ├── pdb.yaml                        # Pod Disruption Budget (22 lines)
+│   ├── servicemonitor.yaml             # Prometheus monitoring (48 lines)
+│   ├── networkpolicy.yaml              # Network policies (105 lines)
+│   ├── ingress.yaml                    # NGINX ingress (41 lines)
+│   ├── serviceaccount.yaml             # RBAC configuration (63 lines)
+│   └── pvc.yaml                        # Persistent volume claims (42 lines)
+│
+└── kustomize/                          # Kustomize overlays for multi-env deployment
+    │
+    ├── base/
+    │   └── kustomization.yaml          # Base configuration (all environments)
+    │
+    ├── overlays/
+    │   │
+    │   ├── dev/                        # Development environment
+    │   │   ├── kustomization.yaml      # Dev environment config
+    │   │   └── patches/
+    │   │       ├── replica-patch.yaml  # 1 replica
+    │   │       ├── resource-patch.yaml # CPU 500m-2000m, Mem 256Mi-1Gi
+    │   │       ├── env-patch.yaml      # DEBUG logging
+    │   │       ├── hpa-patch.yaml      # HPA 1-3 replicas
+    │   │       └── ingress-patch.yaml  # gl-008-dev.greenlang.io
+    │   │
+    │   ├── staging/                    # Staging environment
+    │   │   ├── kustomization.yaml      # Staging environment config
+    │   │   └── patches/
+    │   │       ├── replica-patch.yaml  # 2 replicas
+    │   │       ├── resource-patch.yaml # CPU 1000m-3000m, Mem 512Mi-1Gi
+    │   │       ├── env-patch.yaml      # INFO logging
+    │   │       ├── hpa-patch.yaml      # HPA 2-6 replicas
+    │   │       └── ingress-patch.yaml  # gl-008-staging.greenlang.io
+    │   │
+    │   └── production/                 # Production environment
+    │       ├── kustomization.yaml      # Production environment config
+    │       └── patches/
+    │           ├── replica-patch.yaml  # 3 replicas
+    │           ├── resource-patch.yaml # CPU 1000m-4000m, Mem 512Mi-2Gi
+    │           ├── env-patch.yaml      # INFO logging, alerts
+    │           ├── hpa-patch.yaml      # HPA 3-10 replicas
+    │           ├── ingress-patch.yaml  # gl-008.greenlang.io, CORS
+    │           └── security-patch.yaml # Enhanced security context
+
+
+File Count Summary:
+-------------------
+Total Files:           33 (YAML + MD)
+Total Directories:     10
+Core Manifests:        11 files
+Kustomize Files:       20 files
+Documentation:         2 files
+Total Lines (YAML):    1,052 lines
+Total Lines (Docs):    882 lines
+Total Lines (All):     1,934 lines
+
+
+Deployment Specifications:
+---------------------------
+
+Environment         Replicas   CPU Request   CPU Limit   Mem Request   Mem Limit   HPA Min-Max
+-----------         --------   -----------   ---------   -----------   ---------   -----------
+Development         1          500m          2000m       256Mi         1Gi         1-3
+Staging             2          1000m         3000m       512Mi         1Gi         2-6
+Production          3          1000m         4000m       512Mi         2Gi         3-10
+
+
+Key Infrastructure Components:
+-------------------------------
+
+1. DEPLOYMENT (deployment.yaml)
+   - Image: gcr.io/greenlang/gl-008-steam-trap-inspector:1.0.0
+   - Replicas: 3 (base), auto-scales 3-10
+   - Ports: 9090 (app), 9091 (metrics)
+   - Security: Non-root (UID 1000), read-only filesystem
+   - Init Containers: database-ready, redis-ready, ml-models-loader
+   - Volumes: logs (1Gi), data (5Gi), cache (1Gi), ML models (10Gi)
+   - Health Checks: liveness, readiness, startup (180s max)
+
+2. SERVICE (service.yaml)
+   - Main Service: ClusterIP on port 9090
+   - Metrics Service: ClusterIP on port 9091
+   - Headless Service: Direct pod access
+
+3. CONFIGMAP (configmap.yaml)
+   - Application configuration
+   - Acoustic thresholds: 50-20000 Hz, 65/75/85 dB (normal/warning/critical)
+   - Thermal thresholds: 120/150/180°C (normal/warning/critical)
+   - Energy costs: $8.50/1000lb steam, $0.12/kWh
+   - ML models: ONNX format, 0.85 confidence threshold
+
+4. SECRET (secret.yaml)
+   - External Secrets Operator integration
+   - AWS Secrets Manager backend
+   - Secrets: database, Redis, AI APIs, AWS, alerting
+
+5. HPA (hpa.yaml)
+   - Min: 3 replicas, Max: 10 replicas
+   - CPU target: 70%, Memory target: 80%
+   - Scale-up: 2 pods/30s, Scale-down: 1 pod/60s (5-min cooldown)
+
+6. PDB (pdb.yaml)
+   - Minimum Available: 2 pods
+   - Ensures HA during voluntary disruptions
+
+7. SERVICEMONITOR (servicemonitor.yaml)
+   - Prometheus integration
+   - Scrape interval: 15 seconds
+   - Endpoint: :9091/metrics
+
+8. NETWORKPOLICY (networkpolicy.yaml)
+   - Ingress: NGINX, Prometheus, same-namespace
+   - Egress: DNS, PostgreSQL, Redis, HTTPS APIs
+
+9. INGRESS (ingress.yaml)
+   - NGINX ingress controller
+   - TLS: Let's Encrypt (cert-manager)
+   - Domains: gl-008[-dev|-staging].greenlang.io
+   - Rate limit: 100 req/s (200 in production)
+
+10. SERVICEACCOUNT (serviceaccount.yaml)
+    - RBAC with least-privilege
+    - Read access: ConfigMaps, Secrets, Services, Pods
+
+11. PVC (pvc.yaml)
+    - ML Models: 10Gi (ReadOnlyMany)
+    - Application Data: 20Gi (ReadWriteOnce)
+
+
+Deployment Commands:
+--------------------
+
+# Development
+kubectl apply -k kustomize/overlays/dev/
+kubectl get pods -n greenlang-dev -l agent=GL-008
+
+# Staging
+kubectl apply -k kustomize/overlays/staging/
+kubectl rollout status deployment/staging-gl-008-steam-trap-inspector -n greenlang-staging
+
+# Production
+kubectl apply -k kustomize/overlays/production/
+kubectl rollout status deployment/prod-gl-008-steam-trap-inspector -n greenlang
+kubectl get hpa,pdb -n greenlang
+
+
+Verification Commands:
+----------------------
+
+# Check all resources
+kubectl get all,configmap,secret,pvc,ingress -n greenlang -l agent=GL-008
+
+# View deployment
+kubectl describe deployment gl-008-steam-trap-inspector -n greenlang
+
+# Check HPA status
+kubectl get hpa gl-008-steam-trap-inspector-hpa -n greenlang -o yaml
+
+# View metrics
+kubectl port-forward -n greenlang svc/gl-008-metrics 9091:9091
+curl http://localhost:9091/metrics
+
+# Test health endpoint
+kubectl port-forward -n greenlang svc/gl-008-steam-trap-inspector 9090:9090
+curl http://localhost:9090/api/v1/health
+
+
+High Availability Features:
+----------------------------
+
+✓ Pod Anti-Affinity (spread across nodes)
+✓ Topology Spread Constraints (even distribution)
+✓ Pod Disruption Budget (min 2 available)
+✓ Zero-downtime Rolling Updates (maxSurge: 1, maxUnavailable: 0)
+✓ Horizontal Pod Autoscaler (3-10 replicas)
+✓ Health Probes (liveness, readiness, startup)
+✓ Init Containers (dependency checks)
+✓ Graceful Shutdown (60s termination grace period)
+
+
+Security Features:
+------------------
+
+✓ Non-root User (UID 1000)
+✓ Read-only Root Filesystem
+✓ Drop All Capabilities
+✓ seccomp Profile (RuntimeDefault)
+✓ Network Policies (ingress/egress)
+✓ RBAC with Least-Privilege
+✓ External Secrets Operator
+✓ TLS Termination (NGINX ingress)
+
+
+Monitoring Features:
+--------------------
+
+✓ Prometheus ServiceMonitor
+✓ Custom Metrics Endpoint (:9091/metrics)
+✓ Grafana Dashboard Integration
+✓ Alerting Rules (critical/warning)
+✓ Structured JSON Logging
+✓ Health Check Endpoints
+
+
+Storage Volumes:
+----------------
+
+Volume              Type         Size    Mode
+------              ----         ----    ----
+ml-models           PVC          10Gi    ReadOnlyMany
+application-data    PVC          20Gi    ReadWriteOnce
+logs                emptyDir     1Gi     -
+data                emptyDir     5Gi     -
+cache               emptyDir     1Gi     -
+acoustic-data       emptyDir     2Gi     -
+thermal-data        emptyDir     2Gi     -
+tmp                 emptyDir     512Mi   -
+
+
+Network Endpoints:
+------------------
+
+Service Type        Port    Protocol   Purpose
+------------        ----    --------   -------
+Application         9090    HTTP       Main API
+Metrics             9091    HTTP       Prometheus metrics
+Ingress             443     HTTPS      External access (TLS)
+Headless            9090    HTTP       Direct pod access
+
+
+Dependencies:
+-------------
+
+Required:
+- Kubernetes 1.24+
+- kubectl
+- kustomize
+- External Secrets Operator
+- NGINX Ingress Controller
+- Prometheus Operator
+- cert-manager
+- PostgreSQL (database)
+- Redis (cache)
+- AWS S3 (data storage)
+
+
+Reference Documentation:
+-------------------------
+
+1. README.md - Comprehensive deployment guide
+2. DEPLOYMENT_SUMMARY.md - Executive summary and specifications
+3. GL-005 deployment patterns - Reference implementation
+4. Runbooks: ../runbooks/
+5. Monitoring: ../monitoring/
+
+
+Created: 2025-11-26
+By: GL-DevOpsEngineer
+Status: PRODUCTION READY

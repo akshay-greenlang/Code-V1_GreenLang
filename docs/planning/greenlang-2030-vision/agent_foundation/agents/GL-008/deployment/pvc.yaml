@@ -1,0 +1,42 @@
+# GL-008 SteamTrapInspector - Persistent Volume Claims
+# Storage for ML models and data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gl-008-ml-models-pvc
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+    storage-type: ml-models
+  annotations:
+    description: "PVC for ML models storage"
+spec:
+  accessModes:
+    - ReadOnlyMany
+  storageClassName: standard-rwo
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gl-008-data-pvc
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+    storage-type: application-data
+  annotations:
+    description: "PVC for application data storage"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: standard-rwo
+  resources:
+    requests:
+      storage: 20Gi

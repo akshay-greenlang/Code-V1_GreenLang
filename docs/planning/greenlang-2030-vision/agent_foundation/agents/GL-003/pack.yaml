@@ -1,0 +1,35 @@
+pack_schema_version: "1.0"
+agent_id: GL-003
+codename: STEAMWISE
+name: SteamSystemAnalyzer
+version: "1.0.0"
+domain: "Steam Systems"
+role: Monitor
+complexity: Medium
+priority: P1
+tam: "$10B"
+target_date: "Q1 2026"
+mission: "Real-time analysis of steam generation and distribution efficiency"
+inputs:
+  - steam_pressure
+  - temperature
+  - flow_rates
+  - condensate_return
+outputs:
+  - system_efficiency_metrics
+  - leak_detection
+  - optimization_opportunities
+integrations:
+  - steam_meters
+  - pressure_sensors
+  - temperature_probes
+dependencies:
+  python: ">=3.10"
+runtime:
+  deterministic: true
+  temperature: 0.0
+  seed: 42
+compliance:
+  standards:
+    - "ISO 50001"
+    - "ASME Steam Tables"

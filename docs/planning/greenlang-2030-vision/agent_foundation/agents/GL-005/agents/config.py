@@ -6,9 +6,9 @@ Configuration settings for combustion control agent using Pydantic BaseSettings.
 Supports environment variables and .env file loading.
 """
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
-from pydantic import Field, validator
+from pydantic import Field, field_validator, ValidationInfo
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -35,8 +35,8 @@ class Settings(BaseSettings):
     # Database Configuration
     # ============================================================================
     DATABASE_URL: str = Field(
-        "postgresql+asyncpg://user:password@localhost:5432/greenlang",
-        description="PostgreSQL connection string"
+        ...,
+        description="PostgreSQL connection string - REQUIRED, no default for security"
     )
     DB_POOL_SIZE: int = Field(10, description="Database connection pool size")
     DB_MAX_OVERFLOW: int = Field(20, description="Max overflow connections")
@@ -53,7 +53,10 @@ class Settings(BaseSettings):
     # ============================================================================
     # Security Configuration
     # ============================================================================
-    JWT_SECRET: str = Field("change-this-secret-key", description="JWT secret key")
+    JWT_SECRET: str = Field(
+        ...,
+        description="JWT secret key - REQUIRED, minimum 32 characters, no default for security"
+    )
     JWT_ALGORITHM: str = Field("HS256", description="JWT algorithm")
     JWT_EXPIRATION_HOURS: int = Field(24, description="JWT expiration hours")
     API_KEY: Optional[str] = Field(None, description="API key for authentication")
@@ -349,7 +352,8 @@ class Settings(BaseSettings):
     NODE_NAME: Optional[str] = Field(None, description="Kubernetes node name")
     DEPLOYMENT_TIMESTAMP: Optional[str] = Field(None, description="Deployment timestamp")
 
-    @validator('FUEL_COMPOSITION')
+    @field_validator('FUEL_COMPOSITION')
+    @classmethod
     def validate_fuel_composition(cls, v: Dict[str, float]) -> Dict[str, float]:
         """Validate fuel composition sums to ~100%"""
         total = sum(v.values())
@@ -357,7 +361,8 @@ class Settings(BaseSettings):
             raise ValueError(f"Fuel composition must sum to ~100%, got {total:.1f}%")
         return v
 
-    @validator('GREENLANG_ENV')
+    @field_validator('GREENLANG_ENV')
+    @classmethod
     def validate_environment(cls, v: str) -> str:
         """Validate environment setting"""
         valid_envs = ['development', 'staging', 'production']
@@ -365,7 +370,8 @@ class Settings(BaseSettings):
             raise ValueError(f"Environment must be one of {valid_envs}")
         return v
 
-    @validator('CONTROL_LOOP_INTERVAL_MS')
+    @field_validator('CONTROL_LOOP_INTERVAL_MS')
+    @classmethod
     def validate_control_loop_interval(cls, v: int) -> int:
         """Validate control loop interval is reasonable"""
         if v < 10:
@@ -374,7 +380,8 @@ class Settings(BaseSettings):
             raise ValueError("Control loop interval must be <= 10000ms")
         return v
 
-    @validator('FUEL_TYPE')
+    @field_validator('FUEL_TYPE')
+    @classmethod
     def validate_fuel_type(cls, v: str) -> str:
         """Validate fuel type"""
         valid_types = ['natural_gas', 'fuel_oil', 'coal', 'biomass', 'propane', 'lng']
@@ -382,25 +389,99 @@ class Settings(BaseSettings):
             raise ValueError(f"Fuel type must be one of {valid_types}")
         return v
 
-    @validator('MIN_FUEL_FLOW', 'MIN_AIR_FLOW')
+    @field_validator('MIN_FUEL_FLOW', 'MIN_AIR_FLOW')
+    @classmethod
     def validate_min_flows(cls, v: float) -> float:
         """Validate minimum flows are positive"""
         if v <= 0:
             raise ValueError("Minimum flow must be positive")
         return v
 
-    @validator('MAX_FUEL_FLOW')
-    def validate_max_fuel_flow(cls, v: float, values: Dict[str, Any]) -> float:
+    @field_validator('MAX_FUEL_FLOW')
+    @classmethod
+    def validate_max_fuel_flow(cls, v: float, info: ValidationInfo) -> float:
         """Validate max fuel flow > min fuel flow"""
-        if 'MIN_FUEL_FLOW' in values and v <= values['MIN_FUEL_FLOW']:
+        if info.data.get('MIN_FUEL_FLOW') is not None and v <= info.data['MIN_FUEL_FLOW']:
             raise ValueError("MAX_FUEL_FLOW must be greater than MIN_FUEL_FLOW")
         return v
 
-    @validator('MAX_AIR_FLOW')
-    def validate_max_air_flow(cls, v: float, values: Dict[str, Any]) -> float:
+    @field_validator('MAX_AIR_FLOW')
+    @classmethod
+    def validate_max_air_flow(cls, v: float, info: ValidationInfo) -> float:
         """Validate max air flow > min air flow"""
-        if 'MIN_AIR_FLOW' in values and v <= values['MIN_AIR_FLOW']:
+        if info.data.get('MIN_AIR_FLOW') is not None and v <= info.data['MIN_AIR_FLOW']:
             raise ValueError("MAX_AIR_FLOW must be greater than MIN_AIR_FLOW")
+        return v
+
+    @field_validator('JWT_SECRET')
+    @classmethod
+    def validate_jwt_secret(cls, v: str) -> str:
+        """
+        Validate JWT secret meets security requirements
+        - Minimum length: 32 characters
+        - No default/placeholder values
+        - Reject common weak secrets
+        """
+        if len(v) < 32:
+            raise ValueError(
+                "JWT_SECRET must be at least 32 characters long for security. "
+                "Use a cryptographically secure random string."
+            )
+
+        # Reject known weak/default secrets
+        weak_secrets = [
+            "change-this-secret-key",
+            "changeme",
+            "secret",
+            "password",
+            "your-secret-key-here",
+            "my-secret-key",
+            "test-secret",
+            "dev-secret",
+        ]
+        if v.lower() in weak_secrets or any(weak in v.lower() for weak in ["changethis", "placeholder", "example", "your-", "my-"]):
+            raise ValueError(
+                "JWT_SECRET contains a weak or placeholder value. "
+                "Generate a cryptographically secure random string. "
+                "Example: python -c 'import secrets; print(secrets.token_urlsafe(48))'"
+            )
+
+        return v
+
+    @field_validator('DATABASE_URL')
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
+        """
+        Validate DATABASE_URL is properly configured
+        - No default credentials
+        - No weak passwords
+        """
+        # Check for default/placeholder credentials
+        weak_patterns = [
+            "user:password",
+            "user:pass",
+            "admin:admin",
+            "postgres:postgres",
+            "root:root",
+            "test:test",
+            "changeme",
+        ]
+
+        v_lower = v.lower()
+        for pattern in weak_patterns:
+            if pattern in v_lower:
+                raise ValueError(
+                    f"DATABASE_URL contains weak or default credentials pattern: '{pattern}'. "
+                    "Use strong credentials from environment variables or secret management. "
+                    "Set DATABASE_URL via environment variable or .env file."
+                )
+
+        # Basic format validation
+        if not v.startswith(("postgresql://", "postgresql+asyncpg://")):
+            raise ValueError(
+                "DATABASE_URL must start with 'postgresql://' or 'postgresql+asyncpg://'"
+            )
+
         return v
 
     def is_production(self) -> bool:
@@ -424,8 +505,6 @@ class Settings(BaseSettings):
         return (self.MIN_AIR_FLOW, self.MAX_AIR_FLOW)
 
 
-# Add Tuple to imports for the type hint
-from typing import Tuple
 
 # Global settings instance
 settings = Settings()

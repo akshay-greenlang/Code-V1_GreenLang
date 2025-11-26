@@ -1,0 +1,496 @@
+# ============================================================================
+# GL-009 THERMALIQ - Complete Agent Specification
+# Agent Specification Document v1.0
+# ============================================================================
+
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+
+# ============================================================================
+# METADATA
+# ============================================================================
+
+metadata:
+  name: "ThermalEfficiencyCalculator"
+  version: "1.0.0"
+
+  labels:
+    type: "calculator"
+    category: "Analytics"
+    id: "GL-009"
+    codename: "THERMALIQ"
+    domain: "thermal_efficiency"
+    complexity: "medium"
+    priority: "P1"
+
+  annotations:
+    description: "Calculates overall thermal efficiency of heat processes with zero-hallucination using First and Second Law thermodynamic analysis"
+    created_by: "GreenLang Foundation"
+    created_date: "2025-01-15"
+    last_updated: "2025-01-15"
+
+# ============================================================================
+# AGENT IDENTITY
+# ============================================================================
+
+identity:
+  agent_id: "GL-009"
+  codename: "THERMALIQ"
+  full_name: "Thermal Efficiency Calculator"
+  class: "ThermalEfficiencyCalculator"
+  domain: "Analytics"
+  role: "Calculator"
+
+# ============================================================================
+# MISSION
+# ============================================================================
+
+mission:
+  statement: "Calculates overall thermal efficiency of heat processes with zero-hallucination"
+
+  objectives:
+    - "Calculate First Law (energy) efficiency accurately"
+    - "Calculate Second Law (exergy) efficiency for quality analysis"
+    - "Generate comprehensive loss breakdowns"
+    - "Create visual Sankey diagrams for energy flows"
+    - "Identify improvement opportunities with ROI"
+    - "Compare against industry benchmarks"
+
+  value_proposition:
+    - "Zero-hallucination deterministic calculations"
+    - "Both First Law and Second Law analysis"
+    - "Automatic Sankey diagram generation"
+    - "Industry benchmark comparisons"
+    - "Actionable improvement recommendations"
+    - "Multi-standard compliance"
+
+# ============================================================================
+# MARKET ANALYSIS
+# ============================================================================
+
+market:
+  total_addressable_market_usd: 7000000000
+  serviceable_addressable_market_usd: 3500000000
+  serviceable_obtainable_market_usd: 350000000
+  target_revenue_year_1_usd: 175000000
+  target_date: "2026-Q1"
+
+  target_industries:
+    - name: "Manufacturing"
+      market_share_target_percent: 8
+    - name: "Chemical Processing"
+      market_share_target_percent: 6
+    - name: "Petrochemical"
+      market_share_target_percent: 5
+    - name: "Power Generation"
+      market_share_target_percent: 4
+    - name: "Food & Beverage"
+      market_share_target_percent: 7
+    - name: "Pulp & Paper"
+      market_share_target_percent: 6
+    - name: "Steel & Metals"
+      market_share_target_percent: 5
+    - name: "Cement"
+      market_share_target_percent: 4
+
+  environmental_impact:
+    addressable_emissions_gt_co2e_year: 2.5
+    target_reduction_gt_co2e_year: 0.25
+    energy_savings_potential_percent: 15
+
+# ============================================================================
+# INPUTS SPECIFICATION
+# ============================================================================
+
+spec:
+  inputs:
+    - name: "energy_input_measurements"
+      description: "All energy inputs to the thermal process"
+      required: true
+      type: "object"
+      schema_ref: "#/schemas/energy_inputs"
+
+    - name: "useful_heat_output"
+      description: "Heat transferred to process or product"
+      required: true
+      type: "object"
+      schema_ref: "#/schemas/useful_outputs"
+
+    - name: "heat_losses"
+      description: "All heat loss mechanisms"
+      required: true
+      type: "object"
+      schema_ref: "#/schemas/heat_losses"
+
+    - name: "ambient_conditions"
+      description: "Environmental reference conditions"
+      required: false
+      type: "object"
+      schema_ref: "#/schemas/ambient_conditions"
+
+    - name: "process_parameters"
+      description: "Process-specific configuration"
+      required: false
+      type: "object"
+      schema_ref: "#/schemas/process_parameters"
+
+# ============================================================================
+# OUTPUTS SPECIFICATION
+# ============================================================================
+
+  outputs:
+    - name: "thermal_efficiency_percentage"
+      description: "Calculated thermal efficiency metrics"
+      type: "object"
+      includes:
+        - first_law_efficiency_percent
+        - second_law_efficiency_percent
+        - combustion_efficiency_percent
+        - gross_efficiency_percent
+        - net_efficiency_percent
+        - efficiency_gap_percent
+        - efficiency_trend
+
+    - name: "sankey_diagram_data"
+      description: "Data structure for Sankey energy flow visualization"
+      type: "object"
+      includes:
+        - nodes
+        - links
+        - total_input_mw
+        - total_output_mw
+        - total_losses_mw
+        - visualization_config
+
+    - name: "improvement_opportunities"
+      description: "Prioritized efficiency improvement recommendations"
+      type: "array"
+      includes:
+        - opportunity_id
+        - category
+        - description
+        - potential_savings_mw
+        - potential_savings_percent
+        - estimated_cost_usd
+        - payback_months
+        - priority
+        - implementation_complexity
+
+    - name: "loss_breakdown"
+      description: "Detailed breakdown of all heat losses"
+      type: "object"
+      includes:
+        - total_losses_mw
+        - total_losses_percent
+        - breakdown
+        - exergy_destruction_mw
+        - exergy_destruction_percent
+
+    - name: "benchmark_comparison"
+      description: "Comparison against industry benchmarks"
+      type: "object"
+      includes:
+        - current_efficiency_percent
+        - industry_average_percent
+        - best_in_class_percent
+        - theoretical_maximum_percent
+        - percentile_rank
+        - efficiency_gap_from_average_percent
+
+# ============================================================================
+# CAPABILITIES
+# ============================================================================
+
+  capabilities:
+    - id: "first_law_efficiency_calculation"
+      name: "First Law Efficiency"
+      description: "Calculate energy efficiency using conservation of energy"
+      deterministic: true
+      physics_basis: "First Law of Thermodynamics"
+
+    - id: "second_law_efficiency_calculation"
+      name: "Second Law (Exergy) Efficiency"
+      description: "Calculate exergy efficiency accounting for energy quality"
+      deterministic: true
+      physics_basis: "Second Law of Thermodynamics"
+
+    - id: "combustion_efficiency_analysis"
+      name: "Combustion Efficiency"
+      description: "Calculate fuel combustion efficiency from flue gas analysis"
+      deterministic: true
+      physics_basis: "Siegert formula"
+
+    - id: "heat_balance_calculation"
+      name: "Complete Heat Balance"
+      description: "Perform comprehensive heat balance with closure verification"
+      deterministic: true
+      physics_basis: "Conservation of Energy"
+
+    - id: "loss_calculation"
+      name: "Individual Loss Calculations"
+      description: "Calculate each loss component using physics formulas"
+      deterministic: true
+      includes:
+        - radiation_loss
+        - convection_loss
+        - flue_gas_loss
+        - blowdown_loss
+
+    - id: "sankey_generation"
+      name: "Sankey Diagram Generation"
+      description: "Generate interactive Sankey energy flow diagrams"
+      deterministic: true
+      output_format: "plotly_json"
+
+    - id: "improvement_identification"
+      name: "Improvement Opportunity Identification"
+      description: "Identify and prioritize efficiency improvements with ROI"
+      deterministic: true
+
+    - id: "benchmark_comparison"
+      name: "Industry Benchmark Comparison"
+      description: "Compare efficiency against industry databases"
+      deterministic: true
+
+# ============================================================================
+# TOOLS
+# ============================================================================
+
+tools:
+  - id: "calculate_first_law_efficiency"
+    name: "First Law Efficiency Calculator"
+    deterministic: true
+    formula: "eta_1 = Q_useful / Q_input * 100%"
+
+  - id: "calculate_second_law_efficiency"
+    name: "Second Law (Exergy) Efficiency Calculator"
+    deterministic: true
+    formula: "eta_2 = Ex_useful / Ex_input * 100%"
+
+  - id: "calculate_combustion_efficiency"
+    name: "Combustion Efficiency Calculator"
+    deterministic: true
+    formula: "eta_comb = 100 - L_dry - L_moisture - L_unburned"
+
+  - id: "calculate_radiation_loss"
+    name: "Radiation Loss Calculator"
+    deterministic: true
+    formula: "Q_rad = epsilon * sigma * A * (T_s^4 - T_amb^4)"
+
+  - id: "calculate_convection_loss"
+    name: "Convection Loss Calculator"
+    deterministic: true
+    formula: "Q_conv = h * A * (T_s - T_amb)"
+
+  - id: "calculate_flue_gas_loss"
+    name: "Flue Gas Loss Calculator"
+    deterministic: true
+    formula: "Q_flue = m_dot * Cp * (T_exit - T_ref)"
+
+  - id: "calculate_heat_balance"
+    name: "Heat Balance Calculator"
+    deterministic: true
+    formula: "Q_input = Q_useful + sum(Q_losses)"
+
+  - id: "generate_sankey_diagram"
+    name: "Sankey Diagram Generator"
+    deterministic: true
+    output: "plotly_figure"
+
+  - id: "identify_improvement_opportunities"
+    name: "Improvement Opportunity Identifier"
+    deterministic: true
+    methodology: "gap_analysis"
+
+  - id: "benchmark_efficiency"
+    name: "Efficiency Benchmarker"
+    deterministic: true
+    data_source: "industry_database"
+
+  - id: "calculate_exergy_flows"
+    name: "Exergy Flow Calculator"
+    deterministic: true
+    formula: "Ex = m_dot * [(h-h0) - T0*(s-s0)]"
+
+  - id: "trend_analysis"
+    name: "Efficiency Trend Analyzer"
+    deterministic: true
+    methodology: "time_series_analysis"
+
+# ============================================================================
+# INTEGRATIONS
+# ============================================================================
+
+integrations:
+  - name: "energy_meters"
+    protocol: "Modbus TCP/RTU"
+    required: true
+    description: "Real-time energy metering data"
+
+  - name: "process_historians"
+    protocol: "OPC UA / OPC DA"
+    required: true
+    description: "Historical process data"
+
+  - name: "scada_systems"
+    protocol: "OPC UA"
+    required: false
+    description: "Real-time control system data"
+
+  - name: "erp_integration"
+    protocol: "REST API"
+    required: false
+    description: "Enterprise resource planning integration"
+
+# ============================================================================
+# RUNTIME REQUIREMENTS
+# ============================================================================
+
+requirements:
+  compute:
+    min_cpu_cores: 1
+    max_cpu_cores: 4
+    min_memory_gb: 0.5
+    max_memory_gb: 2.0
+    gpu_required: false
+
+  performance:
+    max_execution_time_ms: 5000
+    target_execution_time_ms: 2000
+    max_cost_per_query_usd: 0.10
+    target_cost_per_query_usd: 0.02
+
+  quality:
+    test_coverage_percent: 90
+    calculation_accuracy_percent: 99
+    heat_balance_closure_tolerance_percent: 2
+
+# ============================================================================
+# AI CONFIGURATION
+# ============================================================================
+
+ai_config:
+  deterministic: true
+  temperature: 0.0
+  seed: 42
+  llm_provider: "anthropic"
+  llm_model: "claude-sonnet-4-20250514"
+  llm_purpose: "classification_and_recommendations"
+
+  constraints:
+    - "Never used for numerical calculations"
+    - "Always deterministic (temp=0.0)"
+    - "Fallback to rule-based if unavailable"
+
+# ============================================================================
+# COMPLIANCE
+# ============================================================================
+
+compliance:
+  standards:
+    - "ISO 50001:2018 - Energy Management"
+    - "ASME PTC 4.1 - Steam Generating Units"
+    - "ASME PTC 4 - Fired Steam Generators"
+    - "EPA 40 CFR Part 60 - Emissions"
+    - "IEC 61508 - Functional Safety"
+
+  certifications:
+    - "Zero-hallucination calculations"
+    - "Deterministic execution (seed=42, temp=0.0)"
+    - "ASME PTC 4.1 compliance verified"
+    - "ISO 50001 certification ready"
+
+  security:
+    zero_secrets: true
+    provenance_tracking: true
+    audit_logging: true
+    encryption_at_rest: true
+    encryption_in_transit: true
+
+# ============================================================================
+# DEPLOYMENT
+# ============================================================================
+
+deployment:
+  container_image: "greenlang/gl-009-thermaliq:1.0.0"
+  platform: "kubernetes"
+  namespace: "greenlang-agents"
+  min_replicas: 2
+  max_replicas: 20
+  autoscaling_metric: "cpu_utilization"
+  autoscaling_target: 70
+
+  health_checks:
+    liveness_path: "/health"
+    readiness_path: "/ready"
+    metrics_path: "/metrics"
+
+# ============================================================================
+# SCHEMAS (Referenced)
+# ============================================================================
+
+schemas:
+  energy_inputs:
+    type: "object"
+    properties:
+      fuel_inputs:
+        type: "array"
+        items:
+          type: "object"
+          properties:
+            fuel_type:
+              type: "string"
+            mass_flow_kg_hr:
+              type: "number"
+            heating_value_mj_kg:
+              type: "number"
+      electrical_inputs:
+        type: "array"
+
+  useful_outputs:
+    type: "object"
+    properties:
+      process_heat_mw:
+        type: "number"
+      steam_output:
+        type: "array"
+      hot_water_output:
+        type: "array"
+      product_heating:
+        type: "object"
+
+  heat_losses:
+    type: "object"
+    properties:
+      flue_gas_losses:
+        type: "object"
+      radiation_losses:
+        type: "object"
+      convection_losses:
+        type: "object"
+      blowdown_losses:
+        type: "object"
+
+  ambient_conditions:
+    type: "object"
+    properties:
+      ambient_temperature_c:
+        type: "number"
+        default: 25.0
+      ambient_pressure_bar:
+        type: "number"
+        default: 1.01325
+      reference_temperature_c:
+        type: "number"
+        default: 25.0
+
+  process_parameters:
+    type: "object"
+    properties:
+      process_type:
+        type: "string"
+        enum: ["boiler", "furnace", "dryer", "kiln", "heat_exchanger", "reactor"]
+      design_efficiency_percent:
+        type: "number"
+      rated_capacity_mw:
+        type: "number"

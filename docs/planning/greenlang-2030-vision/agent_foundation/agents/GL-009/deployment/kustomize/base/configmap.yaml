@@ -1,0 +1,138 @@
+# GL-009 THERMALIQ ThermalEfficiencyCalculator - Configuration
+# Application configuration, logging, and feature flags
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-009-config
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+  annotations:
+    description: "Application configuration for GL-009 THERMALIQ"
+
+data:
+  # Environment
+  environment: "production"
+
+  # Logging Configuration
+  log_level: "INFO"
+  logging_format: "json"
+  log_output: "stdout"
+  enable_access_log: "true"
+  enable_error_log: "true"
+
+  # Database Configuration
+  database_pool_size: "20"
+  database_max_overflow: "10"
+  database_pool_timeout: "30"
+  database_pool_recycle: "3600"
+  database_echo: "false"
+
+  # Cache Configuration
+  cache_ttl_seconds: "3600"
+  cache_max_size_mb: "1024"
+  cache_eviction_policy: "lru"
+
+  # API Rate Limiting
+  rate_limit_enabled: "true"
+  rate_limit_requests_per_minute: "100"
+  rate_limit_burst: "20"
+
+  # CORS Configuration
+  cors_enabled: "true"
+  cors_allow_origins: "*"
+  cors_allow_methods: "GET,POST,PUT,DELETE,OPTIONS"
+  cors_allow_headers: "Content-Type,Authorization,X-API-Key"
+
+  # Thermal Efficiency Calculation Settings
+  calculation_timeout_seconds: "300"
+  max_concurrent_calculations: "50"
+  calculation_queue_size: "200"
+  enable_calculation_caching: "true"
+
+  # Heat Recovery Analysis
+  enable_heat_recovery_analysis: "true"
+  min_heat_recovery_potential_kw: "10"
+  heat_recovery_efficiency: "0.85"
+
+  # Pinch Analysis
+  enable_pinch_analysis: "true"
+  pinch_delta_t_min: "10"
+  pinch_analysis_intervals: "100"
+
+  # Exergy Analysis
+  enable_exergy_analysis: "true"
+  exergy_reference_temperature_c: "25"
+  exergy_reference_pressure_bar: "1.013"
+
+  # Scientific Computing Configuration
+  scipy_optimization_method: "SLSQP"
+  numpy_precision: "float64"
+  numerical_tolerance: "1e-6"
+  max_iterations: "1000"
+
+  # Industrial Protocol Configuration
+  modbus_enabled: "true"
+  modbus_port: "502"
+  modbus_timeout: "5"
+
+  opcua_enabled: "true"
+  opcua_port: "4840"
+  opcua_security_mode: "SignAndEncrypt"
+
+  mqtt_enabled: "true"
+  mqtt_port: "1883"
+  mqtt_qos: "1"
+  mqtt_retain: "false"
+
+  bacnet_enabled: "false"
+
+  # Monitoring & Observability
+  metrics_enabled: "true"
+  opentelemetry_enabled: "true"
+  jaeger_endpoint: "http://jaeger-collector.monitoring.svc.cluster.local:14268/api/traces"
+  sentry_enabled: "true"
+  sentry_traces_sample_rate: "0.1"
+
+  # Report Generation
+  enable_pdf_reports: "true"
+  report_include_charts: "true"
+  report_include_raw_data: "false"
+  max_report_size_mb: "50"
+
+  # Data Retention
+  calculation_history_retention_days: "90"
+  metrics_retention_days: "30"
+  logs_retention_days: "7"
+
+  # Performance Tuning
+  worker_processes: "4"
+  worker_connections: "1000"
+  keepalive_timeout: "75"
+  max_request_size_mb: "100"
+
+  # Feature Flags
+  feature_advanced_thermodynamics: "true"
+  feature_multi_fluid_analysis: "true"
+  feature_real_time_monitoring: "true"
+  feature_predictive_maintenance: "false"
+  feature_ml_optimization: "false"
+
+  # Integration Settings
+  enable_external_data_sources: "true"
+  external_api_timeout: "30"
+  enable_webhook_notifications: "true"
+
+  # Security Settings
+  enable_request_validation: "true"
+  enable_response_validation: "true"
+  enable_sql_injection_protection: "true"
+  enable_xss_protection: "true"
+
+  # Health Check Configuration
+  health_check_interval: "30"
+  health_check_timeout: "10"
+  health_check_unhealthy_threshold: "3"
+  health_check_healthy_threshold: "2"

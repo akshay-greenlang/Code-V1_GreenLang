@@ -1,0 +1,241 @@
+# GL-006 HeatRecoveryMaximizer Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-006-heatreclaim
+  namespace: greenlang
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+    codename: HEATRECLAIM
+    version: v1.0.0
+    tier: production
+    domain: heat-recovery
+  annotations:
+    kubernetes.io/description: "GL-006 HeatRecoveryMaximizer - Waste heat recovery optimization agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gl-006-heatreclaim
+  template:
+    metadata:
+      labels:
+        app: gl-006-heatreclaim
+        agent-id: GL-006
+        codename: HEATRECLAIM
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        checksum/config: "{{ .Values.configChecksum }}"
+    spec:
+      serviceAccountName: gl-006-heatreclaim-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Pod anti-affinity for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-006-heatreclaim
+                topologyKey: kubernetes.io/hostname
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-006-heatreclaim
+                topologyKey: topology.kubernetes.io/zone
+
+      # Topology spread for zone distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-006-heatreclaim
+
+      containers:
+        - name: gl-006-heatreclaim
+          image: gcr.io/greenlang/gl-006-heatreclaim:v1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-006-heatreclaim-config
+                  key: ENVIRONMENT
+
+            - name: GL006_ENVIRONMENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-006-heatreclaim-config
+                  key: ENVIRONMENT
+
+            - name: GL006_LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-006-heatreclaim-config
+                  key: LOG_LEVEL
+
+            - name: GL006_API_PORT
+              value: "8000"
+
+            - name: GL006_METRICS_PORT
+              value: "9090"
+
+            - name: GL006_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-006-heatreclaim-secrets
+                  key: database-url
+
+            - name: GL006_REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-006-heatreclaim-secrets
+                  key: redis-url
+
+            - name: GL006_SCADA_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: gl-006-heatreclaim-secrets
+                  key: scada-endpoint
+                  optional: true
+
+            - name: GL006_HISTORIAN_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: gl-006-heatreclaim-secrets
+                  key: historian-endpoint
+                  optional: true
+
+            # Pod metadata for logging
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          # Liveness probe - is the container running?
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - is the container ready to accept traffic?
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Startup probe - for slow starting containers
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8000
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: logs-volume
+              mountPath: /var/log/greenlang
+            - name: data-volume
+              mountPath: /var/data/greenlang
+            - name: reports-volume
+              mountPath: /var/reports/heat_recovery
+
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gl-006-heatreclaim-config
+        - name: tmp-volume
+          emptyDir: {}
+        - name: logs-volume
+          emptyDir: {}
+        - name: data-volume
+          emptyDir: {}
+        - name: reports-volume
+          emptyDir: {}
+
+      # Graceful termination
+      terminationGracePeriodSeconds: 30
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+
+      # Restart policy
+      restartPolicy: Always

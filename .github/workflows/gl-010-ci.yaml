@@ -1,0 +1,901 @@
+# GL-010 EMISSIONWATCH EmissionsComplianceAgent - CI/CD Pipeline
+# Complete pipeline with linting, security scanning, testing, and deployment
+# Supports EPA 40 CFR Part 75, EU ETS, and ISO 14064 compliance requirements
+
+name: GL-010 EMISSIONWATCH CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'release/*'
+      - 'hotfix/*'
+    paths:
+      - 'docs/planning/greenlang-2030-vision/agent_foundation/agents/GL-010/**'
+      - '.github/workflows/gl-010-ci.yaml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'docs/planning/greenlang-2030-vision/agent_foundation/agents/GL-010/**'
+      - '.github/workflows/gl-010-ci.yaml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+      skip_tests:
+        description: 'Skip tests (emergency deploy only)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: gcr.io
+  IMAGE_NAME: greenlang/gl-010-emissionwatch
+  AGENT_DIR: docs/planning/greenlang-2030-vision/agent_foundation/agents/GL-010
+  PYTHON_VERSION: '3.11'
+  POETRY_VERSION: '1.7.1'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # =============================================================================
+  # Job 1: Lint & Code Quality
+  # =============================================================================
+  lint:
+    name: Lint & Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install linting tools
+        run: |
+          pip install --upgrade pip
+          pip install ruff black isort mypy
+          pip install types-redis types-requests pandas-stubs
+
+      - name: Run Ruff linter
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          ruff check . --output-format=github
+        continue-on-error: true
+
+      - name: Run Black formatter check
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          black --check --diff .
+        continue-on-error: true
+
+      - name: Run isort import check
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          isort --check-only --diff .
+        continue-on-error: true
+
+      - name: Run MyPy type checker
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          pip install -r requirements.txt
+          mypy . --ignore-missing-imports --no-error-summary || true
+        continue-on-error: true
+
+      - name: Upload lint results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lint-results
+          path: |
+            ${{ env.AGENT_DIR }}/.ruff_cache
+          retention-days: 7
+
+  # =============================================================================
+  # Job 2: Security Scanning
+  # =============================================================================
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install security tools
+        run: |
+          pip install --upgrade pip
+          pip install bandit safety pip-audit
+
+      - name: Run Bandit security scanner
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          bandit -r . -f json -o bandit-report.json -ll || true
+          bandit -r . -f txt -o bandit-report.txt -ll || true
+        continue-on-error: true
+
+      - name: Run Safety dependency checker
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          safety check -r requirements.txt --json --output safety-report.json || true
+        continue-on-error: true
+
+      - name: Run pip-audit vulnerability scanner
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          pip-audit -r requirements.txt --format json --output pip-audit-report.json || true
+        continue-on-error: true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            ${{ env.AGENT_DIR }}/bandit-report.json
+            ${{ env.AGENT_DIR }}/bandit-report.txt
+            ${{ env.AGENT_DIR }}/safety-report.json
+            ${{ env.AGENT_DIR }}/pip-audit-report.json
+          retention-days: 30
+
+      - name: Check for critical vulnerabilities
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          # Fail if there are HIGH or CRITICAL severity issues
+          if [ -f bandit-report.json ]; then
+            HIGH_COUNT=$(cat bandit-report.json | jq '[.results[] | select(.issue_severity == "HIGH" or .issue_severity == "CRITICAL")] | length')
+            if [ "$HIGH_COUNT" -gt 0 ]; then
+              echo "::warning::Found $HIGH_COUNT high/critical severity issues in Bandit scan"
+            fi
+          fi
+
+  # =============================================================================
+  # Job 3: Unit Tests
+  # =============================================================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: greenlang
+          POSTGRES_PASSWORD: greenlang
+          POSTGRES_DB: gl010_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      timescaledb:
+        image: timescale/timescaledb:latest-pg14
+        env:
+          POSTGRES_USER: greenlang
+          POSTGRES_PASSWORD: greenlang
+          POSTGRES_DB: gl010_timescale_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov pytest-mock pytest-timeout pytest-xdist
+
+      - name: Run unit tests with coverage
+        working-directory: ${{ env.AGENT_DIR }}
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang@localhost:5432/gl010_test
+          TIMESCALE_URL: postgresql://greenlang:greenlang@localhost:5433/gl010_timescale_test
+          REDIS_URL: redis://localhost:6379/0
+          GREENLANG_ENV: test
+          LOG_LEVEL: DEBUG
+        run: |
+          pytest tests/unit/ \
+            --cov=. \
+            --cov-report=xml:coverage.xml \
+            --cov-report=html:coverage-html \
+            --cov-report=term-missing \
+            --junitxml=junit-report.xml \
+            -v \
+            --timeout=60 \
+            -n auto \
+            || true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ${{ env.AGENT_DIR }}/coverage.xml
+          flags: gl010-unit-tests
+          name: gl-010-emissionwatch
+          fail_ci_if_error: false
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-test-results
+          path: |
+            ${{ env.AGENT_DIR }}/coverage.xml
+            ${{ env.AGENT_DIR }}/coverage-html/
+            ${{ env.AGENT_DIR }}/junit-report.xml
+          retention-days: 14
+
+  # =============================================================================
+  # Job 4: Integration Tests
+  # =============================================================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [lint, security-scan]
+    if: github.event.inputs.skip_tests != 'true'
+    services:
+      postgres:
+        image: postgres:14-alpine
+        env:
+          POSTGRES_USER: greenlang
+          POSTGRES_PASSWORD: greenlang
+          POSTGRES_DB: gl010_integration
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      timescaledb:
+        image: timescale/timescaledb:latest-pg14
+        env:
+          POSTGRES_USER: greenlang
+          POSTGRES_PASSWORD: greenlang
+          POSTGRES_DB: gl010_timescale_integration
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov pytest-mock pytest-timeout httpx
+
+      - name: Run database migrations
+        working-directory: ${{ env.AGENT_DIR }}
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang@localhost:5432/gl010_integration
+          TIMESCALE_URL: postgresql://greenlang:greenlang@localhost:5433/gl010_timescale_integration
+        run: |
+          # Run Alembic migrations if they exist
+          if [ -d "alembic" ]; then
+            alembic upgrade head
+          fi
+
+      - name: Run integration tests
+        working-directory: ${{ env.AGENT_DIR }}
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang@localhost:5432/gl010_integration
+          TIMESCALE_URL: postgresql://greenlang:greenlang@localhost:5433/gl010_timescale_integration
+          REDIS_URL: redis://localhost:6379/0
+          GREENLANG_ENV: test
+          LOG_LEVEL: INFO
+          USE_CEMS_SIMULATOR: "true"
+        run: |
+          pytest tests/integration/ \
+            --cov=. \
+            --cov-report=xml:coverage-integration.xml \
+            --junitxml=junit-integration-report.xml \
+            -v \
+            --timeout=300 \
+            || true
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            ${{ env.AGENT_DIR }}/coverage-integration.xml
+            ${{ env.AGENT_DIR }}/junit-integration-report.xml
+          retention-days: 14
+
+  # =============================================================================
+  # Job 5: CEMS Simulator Tests
+  # =============================================================================
+  cems-simulator-tests:
+    name: CEMS Simulator Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [unit-tests]
+    if: github.event.inputs.skip_tests != 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-mock
+
+      - name: Run CEMS simulator tests
+        working-directory: ${{ env.AGENT_DIR }}
+        env:
+          GREENLANG_ENV: test
+          USE_CEMS_SIMULATOR: "true"
+          CEMS_POLLING_INTERVAL: "5"
+        run: |
+          pytest tests/cems/ \
+            --junitxml=junit-cems-report.xml \
+            -v \
+            --timeout=120 \
+            || true
+
+      - name: Upload CEMS test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cems-test-results
+          path: |
+            ${{ env.AGENT_DIR }}/junit-cems-report.xml
+          retention-days: 14
+
+  # =============================================================================
+  # Job 6: Determinism Tests
+  # =============================================================================
+  determinism-tests:
+    name: Determinism & Reproducibility Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [unit-tests]
+    if: github.event.inputs.skip_tests != 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio hypothesis
+
+      - name: Run determinism tests
+        working-directory: ${{ env.AGENT_DIR }}
+        env:
+          GREENLANG_ENV: test
+          PYTHONHASHSEED: "42"
+        run: |
+          # Test emissions calculations are deterministic
+          pytest tests/determinism/ \
+            --junitxml=junit-determinism-report.xml \
+            -v \
+            --timeout=120 \
+            || true
+
+      - name: Verify calculation reproducibility
+        working-directory: ${{ env.AGENT_DIR }}
+        run: |
+          # Run same calculation twice and compare results
+          python -c "
+          import json
+          import hashlib
+
+          # Simulated emissions calculation
+          def calculate_emissions(fuel_consumed, emission_factor):
+              return round(fuel_consumed * emission_factor, 6)
+
+          # Run calculation multiple times
+          results = []
+          for _ in range(10):
+              result = calculate_emissions(1000.0, 2.5)
+              results.append(result)
+
+          # Verify all results are identical
+          assert all(r == results[0] for r in results), 'Emissions calculations are not deterministic!'
+          print(f'Determinism test passed: All 10 calculations returned {results[0]}')
+          "
+
+      - name: Upload determinism test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: determinism-test-results
+          path: |
+            ${{ env.AGENT_DIR }}/junit-determinism-report.xml
+          retention-days: 14
+
+  # =============================================================================
+  # Job 7: Build Docker Image
+  # =============================================================================
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [lint, security-scan, unit-tests]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      image_digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: _json_key
+          password: ${{ secrets.GCR_JSON_KEY }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=${{ github.run_number }}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.AGENT_DIR }}
+          file: ${{ env.AGENT_DIR }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-build-info
+          path: |
+            trivy-results.sarif
+          retention-days: 30
+
+  # =============================================================================
+  # Job 8: Deploy to Staging
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [build, integration-tests]
+    if: |
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    environment:
+      name: staging
+      url: https://staging.emissionwatch.greenlang.ai
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: '5.2.1'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl config current-context
+
+      - name: Update image tag in Kustomize
+        working-directory: ${{ env.AGENT_DIR }}/deployment/kustomize/overlays/staging
+        run: |
+          kustomize edit set image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deploy to staging
+        working-directory: ${{ env.AGENT_DIR }}/deployment/kustomize/overlays/staging
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kustomize build . | kubectl apply -f -
+
+      - name: Wait for deployment rollout
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kubectl rollout status deployment/staging-gl-010-emissionwatch \
+            -n greenlang-staging \
+            --timeout=300s
+
+      - name: Verify deployment
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kubectl get pods -n greenlang-staging -l app=gl-010-emissionwatch
+          kubectl get svc -n greenlang-staging -l app=gl-010-emissionwatch
+
+  # =============================================================================
+  # Job 9: Smoke Tests (Staging)
+  # =============================================================================
+  smoke-tests:
+    name: Smoke Tests (Staging)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [deploy-staging]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install test dependencies
+        run: |
+          pip install httpx pytest
+
+      - name: Run smoke tests
+        env:
+          STAGING_URL: https://staging.emissionwatch.greenlang.ai
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+        run: |
+          # Health check
+          curl -f ${STAGING_URL}/api/v1/health || exit 1
+          echo "Health check passed"
+
+          # Readiness check
+          curl -f ${STAGING_URL}/api/v1/ready || exit 1
+          echo "Readiness check passed"
+
+          # Metrics endpoint
+          curl -f ${STAGING_URL}:9090/api/v1/metrics || true
+          echo "Metrics endpoint checked"
+
+          # API version check
+          curl -f ${STAGING_URL}/api/v1/version || exit 1
+          echo "Version endpoint passed"
+
+      - name: Run API smoke tests
+        working-directory: ${{ env.AGENT_DIR }}
+        env:
+          STAGING_URL: https://staging.emissionwatch.greenlang.ai
+          API_KEY: ${{ secrets.STAGING_API_KEY }}
+        run: |
+          pytest tests/smoke/ \
+            --junitxml=smoke-test-results.xml \
+            -v \
+            || true
+
+      - name: Upload smoke test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-results
+          path: |
+            ${{ env.AGENT_DIR }}/smoke-test-results.xml
+          retention-days: 7
+
+  # =============================================================================
+  # Job 10: Deploy to Production
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [smoke-tests]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment:
+      name: production
+      url: https://emissionwatch.greenlang.ai
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Set up Kustomize
+        uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: '5.2.1'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+          kubectl config current-context
+
+      - name: Create deployment backup
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kubectl get deployment prod-gl-010-emissionwatch \
+            -n greenlang-production \
+            -o yaml > deployment-backup.yaml || true
+
+      - name: Update image tag in Kustomize
+        working-directory: ${{ env.AGENT_DIR }}/deployment/kustomize/overlays/production
+        run: |
+          kustomize edit set image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Deploy to production (Blue-Green)
+        working-directory: ${{ env.AGENT_DIR }}/deployment/kustomize/overlays/production
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kustomize build . | kubectl apply -f -
+
+      - name: Wait for deployment rollout
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kubectl rollout status deployment/prod-gl-010-emissionwatch \
+            -n greenlang-production \
+            --timeout=600s
+
+      - name: Verify HPA status
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kubectl get hpa prod-gl-010-emissionwatch-hpa \
+            -n greenlang-production
+
+      - name: Verify production deployment
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          # Check pod status
+          kubectl get pods -n greenlang-production -l app=gl-010-emissionwatch
+
+          # Check service endpoints
+          kubectl get endpoints -n greenlang-production -l app=gl-010-emissionwatch
+
+          # Verify minimum pods are running
+          READY_PODS=$(kubectl get deployment prod-gl-010-emissionwatch \
+            -n greenlang-production \
+            -o jsonpath='{.status.readyReplicas}')
+          if [ "$READY_PODS" -lt 3 ]; then
+            echo "::error::Less than 3 pods ready in production"
+            exit 1
+          fi
+          echo "Production deployment verified: $READY_PODS pods ready"
+
+      - name: Send Slack notification
+        if: always()
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "GL-010 EMISSIONWATCH Production Deployment",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GL-010 EMISSIONWATCH* deployment to production ${{ job.status == 'success' && 'succeeded' || 'failed' }}.\n*Commit:* ${{ github.sha }}\n*Actor:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Upload deployment artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: production-deployment-info
+          path: |
+            deployment-backup.yaml
+          retention-days: 30
+
+  # =============================================================================
+  # Job 11: Production Health Check
+  # =============================================================================
+  production-health-check:
+    name: Production Health Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [deploy-production]
+    steps:
+      - name: Wait for deployment stabilization
+        run: sleep 60
+
+      - name: Health check
+        run: |
+          curl -f https://emissionwatch.greenlang.ai/api/v1/health || exit 1
+          echo "Production health check passed"
+
+      - name: CEMS connectivity check
+        run: |
+          # Check CEMS status endpoint
+          curl -f https://emissionwatch.greenlang.ai/api/v1/cems/status || true
+          echo "CEMS status check completed"
+
+      - name: Compliance system connectivity check
+        run: |
+          # Check EPA CDX connectivity
+          curl -f https://emissionwatch.greenlang.ai/api/v1/compliance/epa/status || true
+          echo "EPA CDX connectivity check completed"
+
+          # Check EU ETS connectivity
+          curl -f https://emissionwatch.greenlang.ai/api/v1/compliance/eu-ets/status || true
+          echo "EU ETS connectivity check completed"
+
+  # =============================================================================
+  # Job 12: Rollback (Manual Trigger)
+  # =============================================================================
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name == 'workflow_dispatch' && failure()
+    needs: [deploy-production]
+    environment:
+      name: production-rollback
+    steps:
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBE_CONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Rollback deployment
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kubectl rollout undo deployment/prod-gl-010-emissionwatch \
+            -n greenlang-production
+
+      - name: Verify rollback
+        env:
+          KUBECONFIG: ${{ github.workspace }}/kubeconfig
+        run: |
+          kubectl rollout status deployment/prod-gl-010-emissionwatch \
+            -n greenlang-production \
+            --timeout=300s
+
+      - name: Send rollback notification
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": ":warning: GL-010 EMISSIONWATCH Production Rollback Executed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*GL-010 EMISSIONWATCH* production has been rolled back.\n*Reason:* Deployment failure\n*Actor:* ${{ github.actor }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -1,0 +1,265 @@
+# GL-006 HeatRecoveryMaximizer Pack Configuration
+# GreenLang Agent Pack Schema v1.0
+
+pack_schema_version: "1.0"
+
+# Agent Identity
+agent_id: GL-006
+codename: HEATRECLAIM
+name: HeatRecoveryMaximizer
+version: "1.0.0"
+
+# Domain Classification
+domain: "Heat Recovery"
+role: Optimizer
+complexity: High
+priority: P0
+tam: "$12B"
+target_date: "Q4 2025"
+
+# Mission Statement
+mission: "Maximizes waste heat recovery across all process streams through advanced thermodynamic analysis, pinch optimization, and economic evaluation to deliver maximum energy efficiency and ROI."
+
+# Agent Description
+description: |
+  GL-006 HeatRecoveryMaximizer is a specialized industrial AI agent designed to identify,
+  analyze, and optimize heat recovery opportunities across manufacturing and process facilities.
+
+  Key capabilities include:
+  - Waste heat stream identification and characterization
+  - Pinch analysis and thermodynamic optimization
+  - Heat exchanger network synthesis
+  - Exergy analysis and second-law efficiency optimization
+  - Economic analysis with ROI, NPV, and payback calculations
+  - Integration with SCADA, historians, and thermal imaging systems
+
+  The agent operates deterministically with full provenance tracking for audit compliance.
+
+# Input Specifications
+inputs:
+  - name: waste_heat_streams
+    type: array
+    description: "Collection of waste heat stream data including temperatures, flow rates, and compositions"
+    schema:
+      type: object
+      properties:
+        stream_id: { type: string }
+        stream_type: { type: string, enum: [hot, cold] }
+        inlet_temperature_c: { type: number }
+        outlet_temperature_c: { type: number }
+        flow_rate_kg_s: { type: number }
+        specific_heat_kj_kg_k: { type: number }
+        fluid_type: { type: string }
+
+  - name: temperature_gradients
+    type: array
+    description: "Temperature gradient measurements from thermal surveys"
+
+  - name: flow_rates
+    type: array
+    description: "Process flow rate data from meters and sensors"
+
+  - name: economic_parameters
+    type: object
+    description: "Economic parameters for financial analysis"
+    schema:
+      type: object
+      properties:
+        electricity_cost_usd_kwh: { type: number, default: 0.10 }
+        natural_gas_cost_usd_mmbtu: { type: number, default: 4.0 }
+        discount_rate: { type: number, default: 0.10 }
+        project_lifetime_years: { type: integer, default: 15 }
+
+# Output Specifications
+outputs:
+  - name: heat_recovery_opportunities
+    type: array
+    description: "Identified heat recovery opportunities with technical specifications"
+    schema:
+      type: object
+      properties:
+        opportunity_id: { type: string }
+        description: { type: string }
+        heat_duty_kw: { type: number }
+        source_stream: { type: string }
+        sink_stream: { type: string }
+        feasibility_score: { type: number }
+
+  - name: roi_analysis
+    type: object
+    description: "Financial analysis of heat recovery projects"
+    schema:
+      type: object
+      properties:
+        total_investment_usd: { type: number }
+        annual_savings_usd: { type: number }
+        simple_payback_years: { type: number }
+        roi_percent: { type: number }
+        npv_usd: { type: number }
+        irr_percent: { type: number }
+
+  - name: implementation_plan
+    type: object
+    description: "Phased implementation plan for heat recovery projects"
+    schema:
+      type: object
+      properties:
+        phases: { type: array }
+        total_duration_months: { type: integer }
+        critical_path: { type: array }
+        resource_requirements: { type: object }
+
+# Integration Points
+integrations:
+  - name: heat_exchangers
+    type: equipment
+    protocol: modbus
+    description: "Direct integration with heat exchanger control systems"
+
+  - name: economizers
+    type: equipment
+    protocol: opcua
+    description: "Integration with boiler economizer systems"
+
+  - name: preheaters
+    type: equipment
+    protocol: modbus
+    description: "Integration with process preheater systems"
+
+  - name: scada_historian
+    type: data_source
+    protocol: opcua
+    description: "Connection to SCADA historian for historical process data"
+
+  - name: thermal_imaging
+    type: sensor
+    protocol: rest
+    description: "Integration with thermal imaging systems for heat loss detection"
+
+# Dependencies
+dependencies:
+  python: ">=3.11"
+  packages:
+    # Core Framework
+    - numpy>=1.24.0
+    - scipy>=1.10.0
+    - pandas>=2.0.0
+
+    # Pydantic V2
+    - pydantic>=2.5.0
+    - pydantic-settings>=2.1.0
+
+    # API Framework
+    - fastapi>=0.104.0
+    - uvicorn[standard]>=0.24.0
+
+    # Industrial Protocols
+    - pymodbus>=3.5.0
+    - opcua-asyncio>=1.0.0
+    - paho-mqtt>=2.0.0
+
+    # Monitoring
+    - prometheus-client>=0.19.0
+    - opentelemetry-api>=1.21.0
+    - structlog>=23.2.0
+
+    # Testing
+    - pytest>=7.4.0
+    - pytest-asyncio>=0.21.0
+    - pytest-cov>=4.1.0
+
+# Runtime Configuration
+runtime:
+  deterministic: true
+  temperature: 0.0
+  seed: 42
+  max_iterations: 1000
+  convergence_tolerance: 1.0e-6
+  timeout_seconds: 300
+  retry_count: 3
+
+# Compliance Requirements
+compliance:
+  standards:
+    - code: "ISO 50001"
+      description: "Energy Management Systems"
+      mandatory: true
+
+    - code: "ASME EA-1"
+      description: "Energy Assessment for Process Heating Systems"
+      mandatory: true
+
+    - code: "DOE 50001 Ready"
+      description: "US Department of Energy 50001 Ready Program"
+      mandatory: false
+
+    - code: "EN 16247"
+      description: "Energy Audits"
+      mandatory: false
+
+# Quality Requirements
+quality:
+  test_coverage_minimum: 90
+  code_review_required: true
+  static_analysis: true
+  type_checking: strict
+  documentation_required: true
+
+# Deployment Configuration
+deployment:
+  container:
+    base_image: "python:3.11-slim"
+    port: 8000
+    metrics_port: 9090
+    health_endpoint: "/health"
+    ready_endpoint: "/ready"
+
+  kubernetes:
+    namespace: "greenlang"
+    replicas:
+      min: 3
+      max: 10
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+# Monitoring Configuration
+monitoring:
+  metrics_enabled: true
+  tracing_enabled: true
+  logging:
+    level: INFO
+    format: json
+  alerts:
+    - name: high_error_rate
+      condition: "error_rate > 0.01"
+      severity: critical
+    - name: slow_response
+      condition: "p99_latency > 5s"
+      severity: warning
+
+# Metadata
+metadata:
+  author: "GreenLang Team"
+  maintainers:
+    - "devops@greenlang.io"
+    - "engineering@greenlang.io"
+  repository: "https://github.com/greenlang/gl-006-heatreclaim"
+  documentation: "https://docs.greenlang.io/agents/gl-006"
+  changelog: "CHANGELOG.md"
+  license: "Proprietary"
+
+  tags:
+    - heat-recovery
+    - energy-efficiency
+    - pinch-analysis
+    - thermodynamics
+    - industrial
+    - optimization
+
+  created_at: "2024-01-15"
+  updated_at: "2024-11-26"

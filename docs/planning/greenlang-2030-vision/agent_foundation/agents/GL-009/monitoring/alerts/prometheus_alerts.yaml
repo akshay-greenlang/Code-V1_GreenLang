@@ -1,0 +1,459 @@
+# GL-009 THERMALIQ ThermalEfficiencyCalculator Prometheus Alerts
+# 45+ alert rules covering agent health, calculation quality, integration health, and business outcomes
+
+groups:
+  # =========================================================================
+  # CRITICAL ALERTS - Immediate Action Required
+  # =========================================================================
+  - name: gl009_critical_alerts
+    interval: 30s
+    rules:
+      - alert: GL009AgentDown
+        expr: gl009_agent_health_status{environment="production"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          agent: gl009
+          category: availability
+        annotations:
+          summary: "GL-009 agent is down"
+          description: "GL-009 agent {{ $labels.agent_id }} in {{ $labels.environment }} has been unhealthy for 1 minute. Zero thermal efficiency calculations are being processed."
+          runbook: "https://greenlang.io/runbooks/gl009/agent-down"
+          impact: "All thermal efficiency calculations stopped. Energy optimization recommendations unavailable."
+          action: "1. Check agent logs for crash/error. 2. Verify pod/container health. 3. Restart agent if needed. 4. Escalate to on-call if restart fails."
+
+      - alert: GL009CalculationFailureSpike
+        expr: rate(gl009_calculation_errors_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          agent: gl009
+          category: data_quality
+        annotations:
+          summary: "High calculation error rate detected"
+          description: "GL-009 agent {{ $labels.agent_id }} is experiencing {{ $value | humanize }} calculation errors per second ({{ $labels.error_type }})."
+          runbook: "https://greenlang.io/runbooks/gl009/calculation-failures"
+          impact: "Thermal efficiency calculations failing. Energy savings recommendations unreliable."
+          action: "1. Check input data quality from connectors. 2. Verify thermodynamic formula validity. 3. Review calculation logs for specific failures."
+
+      - alert: GL009HeatBalanceErrorHigh
+        expr: gl009_heat_balance_error_percent > 5
+        for: 5m
+        labels:
+          severity: critical
+          agent: gl009
+          category: data_quality
+        annotations:
+          summary: "Heat balance closure error exceeds 5%"
+          description: "GL-009 equipment {{ $labels.equipment_id }} has heat balance error of {{ $value }}% (threshold: 5%). Calculation results unreliable."
+          runbook: "https://greenlang.io/runbooks/gl009/heat-balance-error"
+          impact: "Energy loss calculations inaccurate. Cannot trust efficiency values for this equipment."
+          action: "1. Verify all input measurements (flow rates, temperatures, pressures). 2. Check for missing loss terms. 3. Validate sensor calibration. 4. Flag equipment for manual review."
+
+      - alert: GL009ConnectorDownCritical
+        expr: gl009_connector_health{connector_type=~"energy_meter|historian"} == 0
+        for: 3m
+        labels:
+          severity: critical
+          agent: gl009
+          category: integration
+        annotations:
+          summary: "Critical connector {{ $labels.connector_type }} is down"
+          description: "GL-009 connector {{ $labels.connector_type }} at {{ $labels.endpoint }} has been unhealthy for 3 minutes."
+          runbook: "https://greenlang.io/runbooks/gl009/connector-down"
+          impact: "Cannot retrieve energy meter data or historical measurements. Calculations blocked."
+          action: "1. Test connector endpoint connectivity. 2. Verify credentials/API keys. 3. Check firewall rules. 4. Enable fallback data source if available."
+
+      - alert: GL009DatabaseConnectionLost
+        expr: rate(gl009_connector_errors_total{connector_type="database"}[5m]) > 0.5
+        for: 2m
+        labels:
+          severity: critical
+          agent: gl009
+          category: integration
+        annotations:
+          summary: "Database connection errors"
+          description: "GL-009 is experiencing {{ $value | humanize }} database errors per second."
+          runbook: "https://greenlang.io/runbooks/gl009/database-errors"
+          impact: "Cannot read benchmark data or store calculation results. Agent may degrade."
+          action: "1. Check database server health. 2. Verify connection pool settings. 3. Review slow query logs. 4. Scale up database if needed."
+
+  # =========================================================================
+  # WARNING ALERTS - Degraded Performance
+  # =========================================================================
+  - name: gl009_warning_alerts
+    interval: 1m
+    rules:
+      - alert: GL009HighLatency
+        expr: histogram_quantile(0.99, rate(gl009_calculation_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          agent: gl009
+          category: performance
+        annotations:
+          summary: "P99 calculation latency exceeds 500ms"
+          description: "GL-009 P99 calculation latency is {{ $value | humanize }}s (SLO: <500ms)."
+          runbook: "https://greenlang.io/runbooks/gl009/high-latency"
+          impact: "Slower thermal efficiency calculations. May delay real-time optimization recommendations."
+          action: "1. Check CPU/memory usage. 2. Review calculation complexity. 3. Enable caching if disabled. 4. Consider scaling horizontally."
+
+      - alert: GL009LowCacheHitRate
+        expr: gl009_cache_hit_rate < 0.85
+        for: 10m
+        labels:
+          severity: warning
+          agent: gl009
+          category: performance
+        annotations:
+          summary: "Cache hit rate below 85%"
+          description: "GL-009 cache hit rate is {{ $value | humanizePercentage }} (target: >85%)."
+          runbook: "https://greenlang.io/runbooks/gl009/low-cache-hit-rate"
+          impact: "More calculations from scratch. Higher latency and resource usage."
+          action: "1. Increase cache size if memory available. 2. Review cache eviction policy. 3. Check if input data is highly variable."
+
+      - alert: GL009HighQueueDepth
+        expr: gl009_queue_depth > 100
+        for: 5m
+        labels:
+          severity: warning
+          agent: gl009
+          category: performance
+        annotations:
+          summary: "Calculation queue depth high"
+          description: "GL-009 has {{ $value }} calculations queued (threshold: 100)."
+          runbook: "https://greenlang.io/runbooks/gl009/high-queue-depth"
+          impact: "Calculation backlog growing. Delayed efficiency reports."
+          action: "1. Check if calculation throughput decreased. 2. Scale agent horizontally. 3. Review if burst traffic or sustained increase."
+
+      - alert: GL009HighCPUUsage
+        expr: gl009_agent_cpu_usage_percent > 80
+        for: 10m
+        labels:
+          severity: warning
+          agent: gl009
+          category: resource
+        annotations:
+          summary: "High CPU usage"
+          description: "GL-009 CPU usage is {{ $value }}% (threshold: 80%)."
+          runbook: "https://greenlang.io/runbooks/gl009/high-cpu"
+          impact: "Agent may throttle. Calculation latency may increase."
+          action: "1. Check for CPU-intensive calculations. 2. Optimize thermodynamic formulas. 3. Scale vertically or horizontally."
+
+      - alert: GL009HighMemoryUsage
+        expr: gl009_agent_memory_usage_bytes{memory_type="rss"} > 4294967296
+        for: 10m
+        labels:
+          severity: warning
+          agent: gl009
+          category: resource
+        annotations:
+          summary: "High memory usage"
+          description: "GL-009 memory usage is {{ $value | humanize1024 }} (threshold: 4GB)."
+          runbook: "https://greenlang.io/runbooks/gl009/high-memory"
+          impact: "Risk of OOM kill. Agent may crash."
+          action: "1. Check for memory leaks. 2. Reduce cache size. 3. Review data structure efficiency. 4. Scale vertically."
+
+      - alert: GL009EfficiencyDropDetected
+        expr: |
+          (gl009_first_law_efficiency_percent -
+           gl009_first_law_efficiency_percent offset 1h) < -5
+        for: 15m
+        labels:
+          severity: warning
+          agent: gl009
+          category: data_quality
+        annotations:
+          summary: "Equipment efficiency dropped >5%"
+          description: "{{ $labels.equipment_id }} efficiency dropped {{ $value }}% in last hour."
+          runbook: "https://greenlang.io/runbooks/gl009/efficiency-drop"
+          impact: "Equipment performance degrading. Energy waste increasing."
+          action: "1. Alert operations team. 2. Check for equipment faults. 3. Review recent process changes. 4. Generate efficiency investigation report."
+
+      - alert: GL009BelowBenchmark
+        expr: gl009_benchmark_gap_percent < -10
+        for: 30m
+        labels:
+          severity: warning
+          agent: gl009
+          category: business
+        annotations:
+          summary: "Equipment efficiency 10%+ below benchmark"
+          description: "{{ $labels.equipment_id }} is {{ $value }}% below {{ $labels.benchmark_type }} benchmark."
+          runbook: "https://greenlang.io/runbooks/gl009/below-benchmark"
+          impact: "Significant energy waste. Missing savings opportunity."
+          action: "1. Generate improvement recommendations. 2. Calculate savings potential. 3. Notify energy manager. 4. Schedule efficiency audit."
+
+      - alert: GL009ConnectorHighLatency
+        expr: histogram_quantile(0.99, rate(gl009_connector_latency_seconds_bucket[5m])) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          agent: gl009
+          category: integration
+        annotations:
+          summary: "Connector {{ $labels.connector_type }} latency high"
+          description: "{{ $labels.connector_type }} P99 latency is {{ $value }}s (threshold: 1s)."
+          runbook: "https://greenlang.io/runbooks/gl009/connector-latency"
+          impact: "Slow data retrieval. Overall calculation latency increases."
+          action: "1. Check network latency to endpoint. 2. Verify endpoint performance. 3. Enable connector caching. 4. Contact vendor if third-party."
+
+      - alert: GL009ModbusReadErrors
+        expr: rate(gl009_modbus_read_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          agent: gl009
+          category: integration
+        annotations:
+          summary: "Modbus read errors detected"
+          description: "Device {{ $labels.device_id }} has {{ $value | humanize }} Modbus errors/sec (error code: {{ $labels.error_code }})."
+          runbook: "https://greenlang.io/runbooks/gl009/modbus-errors"
+          impact: "Missing sensor data. Incomplete thermal calculations."
+          action: "1. Check Modbus device connectivity. 2. Verify register addresses. 3. Test communication cable. 4. Review error code meaning."
+
+      - alert: GL009DataQualityLow
+        expr: gl009_data_quality_score < 0.95
+        for: 10m
+        labels:
+          severity: warning
+          agent: gl009
+          category: data_quality
+        annotations:
+          summary: "Input data quality below 95%"
+          description: "Data quality score for {{ $labels.data_source }} is {{ $value | humanizePercentage }}."
+          runbook: "https://greenlang.io/runbooks/gl009/data-quality"
+          impact: "Unreliable efficiency calculations. Results may be flagged."
+          action: "1. Check sensor calibration dates. 2. Verify data completeness. 3. Review outlier detection. 4. Flag affected calculations."
+
+  # =========================================================================
+  # INFO ALERTS - Informational / Positive Events
+  # =========================================================================
+  - name: gl009_info_alerts
+    interval: 5m
+    rules:
+      - alert: GL009NewEfficiencyRecord
+        expr: |
+          gl009_first_law_efficiency_percent >
+          max_over_time(gl009_first_law_efficiency_percent[7d])
+        for: 15m
+        labels:
+          severity: info
+          agent: gl009
+          category: business
+        annotations:
+          summary: "New efficiency record achieved"
+          description: "{{ $labels.equipment_id }} achieved {{ $value }}% efficiency (7-day high)."
+          runbook: "https://greenlang.io/runbooks/gl009/efficiency-record"
+          impact: "Positive - Equipment operating at peak efficiency."
+          action: "1. Document operating conditions. 2. Share with operations team. 3. Update best practices."
+
+      - alert: GL009ImprovementOpportunityFound
+        expr: increase(gl009_efficiency_improvements_identified{priority="high"}[1h]) > 0
+        for: 5m
+        labels:
+          severity: info
+          agent: gl009
+          category: business
+        annotations:
+          summary: "High-priority improvement opportunity identified"
+          description: "{{ $value }} high-priority improvements found in last hour ({{ $labels.improvement_category }})."
+          runbook: "https://greenlang.io/runbooks/gl009/improvement-found"
+          impact: "Potential energy/cost savings identified."
+          action: "1. Review improvement details. 2. Calculate ROI. 3. Add to energy project pipeline. 4. Notify energy manager."
+
+      - alert: GL009LargeEnergySavingsPotential
+        expr: gl009_energy_savings_potential_kwh > 100000
+        for: 10m
+        labels:
+          severity: info
+          agent: gl009
+          category: business
+        annotations:
+          summary: "Large energy savings potential detected"
+          description: "{{ $labels.equipment_id }} has {{ $value | humanize }} kWh/year savings potential ({{ $labels.improvement_category }})."
+          runbook: "https://greenlang.io/runbooks/gl009/large-savings"
+          impact: "Significant opportunity - likely >$10k/year savings."
+          action: "1. Generate detailed business case. 2. Calculate payback period. 3. Schedule engineering review. 4. Prioritize for CapEx planning."
+
+      - alert: GL009HighROIOpportunity
+        expr: gl009_roi_percent > 50
+        for: 15m
+        labels:
+          severity: info
+          agent: gl009
+          category: business
+        annotations:
+          summary: "High ROI improvement identified"
+          description: "{{ $labels.equipment_id }} improvement has {{ $value }}% ROI ({{ $labels.improvement_category }})."
+          runbook: "https://greenlang.io/runbooks/gl009/high-roi"
+          impact: "Quick payback opportunity. Strong business case."
+          action: "1. Validate ROI assumptions. 2. Get vendor quotes. 3. Fast-track approval. 4. Add to quick-win projects."
+
+      - alert: GL009AgentRestarted
+        expr: increase(gl009_agent_restart_count[10m]) > 0
+        for: 1m
+        labels:
+          severity: info
+          agent: gl009
+          category: availability
+        annotations:
+          summary: "Agent restarted"
+          description: "GL-009 agent {{ $labels.agent_id }} restarted (reason: {{ $labels.restart_reason }})."
+          runbook: "https://greenlang.io/runbooks/gl009/agent-restart"
+          impact: "Brief service interruption. Calculations resuming."
+          action: "1. Verify agent health post-restart. 2. Check restart reason. 3. Review logs if unplanned restart."
+
+  # =========================================================================
+  # SLO VIOLATION ALERTS
+  # =========================================================================
+  - name: gl009_slo_violations
+    interval: 2m
+    rules:
+      - alert: GL009AvailabilitySLOViolation
+        expr: |
+          (
+            sum(rate(gl009_calculations_total{status="success"}[1h])) /
+            sum(rate(gl009_calculations_total[1h]))
+          ) < 0.999
+        for: 5m
+        labels:
+          severity: warning
+          agent: gl009
+          category: slo
+        annotations:
+          summary: "Availability SLO violated (<99.9%)"
+          description: "GL-009 availability is {{ $value | humanizePercentage }} in last hour (SLO: 99.9%)."
+          runbook: "https://greenlang.io/runbooks/gl009/availability-slo"
+          impact: "Missing monthly SLO target. Reliability degraded."
+          action: "1. Identify root cause of failures. 2. Review error patterns. 3. Implement fixes. 4. Update error budget tracking."
+
+      - alert: GL009LatencySLOViolation
+        expr: histogram_quantile(0.99, rate(gl009_calculation_duration_seconds_bucket[1h])) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+          agent: gl009
+          category: slo
+        annotations:
+          summary: "Latency SLO violated (P99 >500ms)"
+          description: "GL-009 P99 latency is {{ $value }}s in last hour (SLO: <500ms)."
+          runbook: "https://greenlang.io/runbooks/gl009/latency-slo"
+          impact: "User experience degraded. Real-time analytics slower."
+          action: "1. Identify slow calculations. 2. Optimize hot paths. 3. Review resource limits. 4. Consider scaling."
+
+      - alert: GL009ErrorRateSLOViolation
+        expr: |
+          (
+            sum(rate(gl009_calculation_errors_total[1h])) /
+            sum(rate(gl009_calculations_total[1h]))
+          ) > 0.001
+        for: 10m
+        labels:
+          severity: warning
+          agent: gl009
+          category: slo
+        annotations:
+          summary: "Error rate SLO violated (>0.1%)"
+          description: "GL-009 error rate is {{ $value | humanizePercentage }} in last hour (SLO: <0.1%)."
+          runbook: "https://greenlang.io/runbooks/gl009/error-rate-slo"
+          impact: "Calculation reliability below target. Data quality concerns."
+          action: "1. Analyze error types. 2. Fix top error causes. 3. Improve input validation. 4. Update error handling."
+
+      - alert: GL009DataQualitySLOViolation
+        expr: avg(gl009_data_quality_score) < 0.99
+        for: 15m
+        labels:
+          severity: warning
+          agent: gl009
+          category: slo
+        annotations:
+          summary: "Data quality SLO violated (<99%)"
+          description: "Average data quality score is {{ $value | humanizePercentage }} (SLO: >99%)."
+          runbook: "https://greenlang.io/runbooks/gl009/data-quality-slo"
+          impact: "Input data quality degraded. Calculation accuracy at risk."
+          action: "1. Identify problematic data sources. 2. Check sensor health. 3. Validate connectors. 4. Flag low-quality data."
+
+  # =========================================================================
+  # ANOMALY DETECTION ALERTS
+  # =========================================================================
+  - name: gl009_anomaly_detection
+    interval: 5m
+    rules:
+      - alert: GL009AbnormalLossPattern
+        expr: |
+          abs(
+            gl009_flue_gas_loss_kw -
+            avg_over_time(gl009_flue_gas_loss_kw[4h])
+          ) > (2 * stddev_over_time(gl009_flue_gas_loss_kw[4h]))
+        for: 15m
+        labels:
+          severity: warning
+          agent: gl009
+          category: anomaly
+        annotations:
+          summary: "Abnormal flue gas loss detected"
+          description: "{{ $labels.equipment_id }} flue gas loss is {{ $value }} kW (>2 sigma from 4hr mean)."
+          runbook: "https://greenlang.io/runbooks/gl009/abnormal-loss"
+          impact: "Unusual heat loss pattern. Possible equipment issue."
+          action: "1. Inspect combustion system. 2. Check flue gas temperature. 3. Verify oxygen levels. 4. Review process changes."
+
+      - alert: GL009UnexpectedEfficiencyVariability
+        expr: |
+          stddev_over_time(gl009_first_law_efficiency_percent[1h]) > 5
+        for: 30m
+        labels:
+          severity: warning
+          agent: gl009
+          category: anomaly
+        annotations:
+          summary: "High efficiency variability"
+          description: "{{ $labels.equipment_id }} efficiency std dev is {{ $value }}% in last hour."
+          runbook: "https://greenlang.io/runbooks/gl009/efficiency-variability"
+          impact: "Unstable operation. Inconsistent performance."
+          action: "1. Check process stability. 2. Review control loops. 3. Investigate load variations. 4. Verify sensor stability."
+
+      - alert: GL009SuddenQueueDepthIncrease
+        expr: |
+          (
+            gl009_queue_depth -
+            gl009_queue_depth offset 5m
+          ) > 50
+        for: 3m
+        labels:
+          severity: warning
+          agent: gl009
+          category: anomaly
+        annotations:
+          summary: "Queue depth increased rapidly"
+          description: "Queue depth increased by {{ $value }} in 5 minutes."
+          runbook: "https://greenlang.io/runbooks/gl009/queue-spike"
+          impact: "Sudden traffic spike or processing slowdown."
+          action: "1. Check for traffic burst. 2. Verify processing capacity. 3. Review recent deployments. 4. Scale if sustained."
+
+      - alert: GL009UnusualCalculationDuration
+        expr: |
+          gl009_calculation_duration_seconds >
+          (avg_over_time(gl009_calculation_duration_seconds[1h]) * 3)
+        for: 5m
+        labels:
+          severity: warning
+          agent: gl009
+          category: anomaly
+        annotations:
+          summary: "Calculation taking 3x longer than average"
+          description: "Calculation for {{ $labels.equipment_type }} took {{ $value }}s (3x hourly avg)."
+          runbook: "https://greenlang.io/runbooks/gl009/slow-calculation"
+          impact: "Specific calculation type unusually slow."
+          action: "1. Check input data complexity. 2. Review formula efficiency. 3. Look for resource contention. 4. Profile calculation code."
+
+# =========================================================================
+# Alert Routing and Notification Settings
+# =========================================================================
+# NOTE: Configure in Alertmanager config.yml
+#
+# Route critical alerts to PagerDuty
+# Route warnings to Slack #gl009-alerts
+# Route info to Slack #gl009-notifications
+# Route SLO violations to on-call + Slack
+# =========================================================================

@@ -1,0 +1,320 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Test cases with known results for GL-010 EMISSIONWATCH",
+    "standards": ["EPA Method 19", "40 CFR Part 60", "40 CFR Part 75"]
+  },
+  "nox_test_cases": [
+    {
+      "id": "NOX-001",
+      "description": "Natural gas, 50 ppm at 3% O2",
+      "input": {
+        "cems_data": {"nox_ppm": 50.0, "o2_percent": 3.0, "flow_rate_dscfm": 50000},
+        "fuel_data": {"fuel_type": "natural_gas", "heat_input_mmbtu_hr": 100.0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 0.052,
+        "correction_factor": 1.0,
+        "tolerance": 0.005
+      },
+      "reference": "EPA Method 19, 40 CFR Part 60 Appendix A"
+    },
+    {
+      "id": "NOX-002",
+      "description": "Natural gas, 25 ppm at 6% O2",
+      "input": {
+        "cems_data": {"nox_ppm": 25.0, "o2_percent": 6.0, "flow_rate_dscfm": 50000},
+        "fuel_data": {"fuel_type": "natural_gas", "heat_input_mmbtu_hr": 100.0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 0.031,
+        "correction_factor": 1.201,
+        "tolerance": 0.005
+      },
+      "reference": "EPA Method 19"
+    },
+    {
+      "id": "NOX-003",
+      "description": "Coal, 200 ppm at 6% O2",
+      "input": {
+        "cems_data": {"nox_ppm": 200.0, "o2_percent": 6.0, "flow_rate_dscfm": 80000},
+        "fuel_data": {"fuel_type": "coal_bituminous", "heat_input_mmbtu_hr": 200.0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 0.27,
+        "correction_factor": 1.201,
+        "tolerance": 0.03
+      },
+      "reference": "EPA Method 19"
+    },
+    {
+      "id": "NOX-004",
+      "description": "Gas turbine at 15% O2",
+      "input": {
+        "cems_data": {"nox_ppm": 25.0, "o2_percent": 15.0, "flow_rate_dscfm": 100000},
+        "fuel_data": {"fuel_type": "natural_gas", "heat_input_mmbtu_hr": 150.0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 0.08,
+        "correction_factor": 3.034,
+        "tolerance": 0.01
+      },
+      "reference": "40 CFR Part 60 Subpart GG"
+    },
+    {
+      "id": "NOX-005",
+      "description": "Zero emissions baseline",
+      "input": {
+        "cems_data": {"nox_ppm": 0.0, "o2_percent": 3.0, "flow_rate_dscfm": 50000},
+        "fuel_data": {"fuel_type": "natural_gas", "heat_input_mmbtu_hr": 100.0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 0.0,
+        "emission_rate_lb_hr": 0.0,
+        "tolerance": 0.001
+      }
+    }
+  ],
+  "sox_test_cases": [
+    {
+      "id": "SOX-001",
+      "description": "Fuel oil 0.5% sulfur",
+      "input": {
+        "fuel_data": {
+          "fuel_type": "fuel_oil_no2",
+          "heat_input_mmbtu_hr": 100.0,
+          "heating_value_btu_lb": 19500,
+          "sulfur_percent": 0.5
+        }
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu_min": 0.4,
+        "emission_rate_lb_mmbtu_max": 0.6,
+        "so2_so3_ratio_min": 95.0,
+        "so2_so3_ratio_max": 99.0
+      },
+      "reference": "Stoichiometric S to SO2"
+    },
+    {
+      "id": "SOX-002",
+      "description": "Coal 2% sulfur",
+      "input": {
+        "fuel_data": {
+          "fuel_type": "coal_bituminous",
+          "heat_input_mmbtu_hr": 200.0,
+          "heating_value_btu_lb": 12000,
+          "sulfur_percent": 2.0
+        }
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu_min": 1.5,
+        "emission_rate_lb_mmbtu_max": 2.5
+      },
+      "reference": "AP-42 Chapter 1.1"
+    },
+    {
+      "id": "SOX-003",
+      "description": "Natural gas (negligible sulfur)",
+      "input": {
+        "fuel_data": {
+          "fuel_type": "natural_gas",
+          "heat_input_mmbtu_hr": 100.0,
+          "heating_value_btu_lb": 23000,
+          "sulfur_percent": 0.0006
+        }
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu_max": 0.01
+      },
+      "reference": "AP-42 Chapter 1.4"
+    },
+    {
+      "id": "SOX-004",
+      "description": "Coal with 95% FGD",
+      "input": {
+        "fuel_data": {
+          "fuel_type": "coal_bituminous",
+          "heat_input_mmbtu_hr": 200.0,
+          "heating_value_btu_lb": 12000,
+          "sulfur_percent": 2.0
+        },
+        "process_parameters": {"fgd_efficiency_percent": 95.0}
+      },
+      "expected": {
+        "removal_efficiency_percent": 95.0,
+        "emission_reduction_percent_min": 94.0
+      },
+      "reference": "40 CFR Part 60 Subpart Da"
+    }
+  ],
+  "co2_test_cases": [
+    {
+      "id": "CO2-001",
+      "description": "Natural gas AP-42 factor",
+      "input": {
+        "fuel_data": {"fuel_type": "natural_gas", "heat_input_mmbtu_hr": 100.0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 117.0,
+        "tolerance": 2.0
+      },
+      "reference": "AP-42 Table 1.4-2"
+    },
+    {
+      "id": "CO2-002",
+      "description": "Fuel oil No. 2 AP-42 factor",
+      "input": {
+        "fuel_data": {"fuel_type": "fuel_oil_no2", "heat_input_mmbtu_hr": 100.0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 161.0,
+        "tolerance": 5.0
+      },
+      "reference": "AP-42 Table 1.3-1"
+    },
+    {
+      "id": "CO2-003",
+      "description": "Bituminous coal AP-42 factor",
+      "input": {
+        "fuel_data": {"fuel_type": "coal_bituminous", "heat_input_mmbtu_hr": 100.0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 205.0,
+        "tolerance": 10.0
+      },
+      "reference": "AP-42 Table 1.1-3"
+    },
+    {
+      "id": "CO2-004",
+      "description": "Biomass biogenic CO2",
+      "input": {
+        "fuel_data": {"fuel_type": "biomass_wood", "heat_input_mmbtu_hr": 50.0}
+      },
+      "expected": {
+        "biogenic_percent": 100.0,
+        "emission_rate_lb_mmbtu_min": 180.0,
+        "emission_rate_lb_mmbtu_max": 210.0
+      },
+      "reference": "GHG Protocol, Scope 1"
+    }
+  ],
+  "pm_test_cases": [
+    {
+      "id": "PM-001",
+      "description": "Natural gas uncontrolled",
+      "input": {
+        "cems_data": {"flow_rate_dscfm": 50000, "opacity_percent": 0},
+        "fuel_data": {"fuel_type": "natural_gas", "heat_input_mmbtu_hr": 100.0},
+        "process_parameters": {"baghouse_efficiency_percent": 0}
+      },
+      "expected": {
+        "emission_rate_lb_mmbtu": 0.0076,
+        "tolerance": 0.002
+      },
+      "reference": "AP-42 Table 1.4-2"
+    },
+    {
+      "id": "PM-002",
+      "description": "Coal with baghouse",
+      "input": {
+        "cems_data": {"flow_rate_dscfm": 80000, "opacity_percent": 5},
+        "fuel_data": {"fuel_type": "coal_bituminous", "heat_input_mmbtu_hr": 200.0},
+        "process_parameters": {"baghouse_efficiency_percent": 99.5}
+      },
+      "expected": {
+        "pm10_fraction_min": 0.90,
+        "pm25_fraction_min": 0.80
+      },
+      "reference": "EPA Method 5, AP-42"
+    }
+  ],
+  "compliance_test_cases": [
+    {
+      "id": "COMP-001",
+      "description": "EPA NSPS compliant scenario",
+      "input": {
+        "emissions_result": {
+          "nox": {"emission_rate_lb_mmbtu": 0.08},
+          "sox": {"emission_rate_lb_mmbtu": 0.10},
+          "pm": {"emission_rate_lb_mmbtu": 0.02}
+        },
+        "jurisdiction": "EPA"
+      },
+      "expected": {
+        "overall_status": "compliant",
+        "nox_status": "compliant",
+        "sox_status": "compliant",
+        "pm_status": "compliant"
+      },
+      "reference": "40 CFR Part 60 Subpart Da"
+    },
+    {
+      "id": "COMP-002",
+      "description": "EPA NSPS NOx violation",
+      "input": {
+        "emissions_result": {
+          "nox": {"emission_rate_lb_mmbtu": 0.15},
+          "sox": {"emission_rate_lb_mmbtu": 0.10},
+          "pm": {"emission_rate_lb_mmbtu": 0.02}
+        },
+        "jurisdiction": "EPA"
+      },
+      "expected": {
+        "overall_status": "non_compliant",
+        "nox_status": "non_compliant",
+        "nox_exceedance_percent": 50.0
+      },
+      "reference": "40 CFR Part 60.44"
+    },
+    {
+      "id": "COMP-003",
+      "description": "At limit - boundary case",
+      "input": {
+        "emissions_result": {
+          "nox": {"emission_rate_lb_mmbtu": 0.10},
+          "sox": {"emission_rate_lb_mmbtu": 0.15},
+          "pm": {"emission_rate_lb_mmbtu": 0.03}
+        },
+        "jurisdiction": "EPA"
+      },
+      "expected": {
+        "overall_status": "compliant",
+        "margin_nox_percent": 0.0
+      }
+    }
+  ],
+  "edge_cases": [
+    {
+      "id": "EDGE-001",
+      "description": "Very high O2 (dilution)",
+      "input": {
+        "cems_data": {"nox_ppm": 10.0, "o2_percent": 20.0}
+      },
+      "expected": {
+        "correction_factor_min": 10.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "EDGE-002",
+      "description": "Zero heat input",
+      "input": {
+        "fuel_data": {"fuel_type": "natural_gas", "heat_input_mmbtu_hr": 0.0}
+      },
+      "expected": {
+        "emission_rate_lb_hr": 0.0,
+        "valid": true
+      }
+    },
+    {
+      "id": "EDGE-003",
+      "description": "Maximum analyzer range",
+      "input": {
+        "cems_data": {"nox_ppm": 500.0, "o2_percent": 3.0}
+      },
+      "expected": {
+        "valid": true
+      }
+    }
+  ]
+}

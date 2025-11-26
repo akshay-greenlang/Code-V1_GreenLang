@@ -39,9 +39,9 @@ from calculators.burner_performance_calculator import BurnerPerformanceCalculato
 from integrations.burner_controller_connector import BurnerControllerConnector
 from integrations.o2_analyzer_connector import O2AnalyzerConnector
 from integrations.emissions_monitor_connector import EmissionsMonitorConnector
-from integrations.flame_scanner_connector import FlameScannerConnector
-from integrations.temperature_sensor_connector import TemperatureSensorConnector
-from integrations.scada_integration import SCADAIntegration
+from connectors.flame_scanner_connector import FlameScannerConnector
+from connectors.temperature_sensor_array_connector import TemperatureSensorArrayConnector as TemperatureSensorConnector
+from connectors.scada_connector import SCADAConnector as SCADAIntegration
 
 from config import settings
 from monitoring.metrics import metrics_collector
@@ -82,7 +82,7 @@ class BurnerState(BaseModel):
 
 class OptimizationResult(BaseModel):
     """Result of burner optimization"""
-    optimization_id: str = Field(default_factory=lambda: str(deterministic_uuid(__name__, str(DeterministicClock.now()))))
+    optimization_id: str = Field(default_factory=lambda: str(deterministic_uuid(f"{__name__}_{DeterministicClock.now()}")))
     timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     # Current state

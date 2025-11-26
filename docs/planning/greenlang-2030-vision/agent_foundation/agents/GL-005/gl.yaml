@@ -3,9 +3,9 @@ metadata:
   agent_id: GL-005
   agent_name: CombustionControlAgent
   version: 1.0.0
-  category: combustion
+  category: Combustion
   type: automator
-  complexity: medium
+  complexity: high
   priority: P1
   business_priority: high
   market_value: $8B

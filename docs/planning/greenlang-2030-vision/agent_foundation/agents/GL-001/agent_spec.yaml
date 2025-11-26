@@ -1,18 +1,308 @@
+# GreenLang AgentSpec v2.0
+# GL-001 THERMOSYNC ProcessHeatOrchestrator
+# Complete agent specification for certification
+
 apiVersion: greenlang.io/v2
 kind: AgentSpec
+
 metadata:
-  name: ''
+  name: ProcessHeatOrchestrator
   version: 1.0.0
   labels:
-    type: ''
+    type: orchestrator
     category: Orchestration
     id: GL-001
+    codename: THERMOSYNC
+    priority: P0
+    complexity: high
+    domain: process_heat
+    tam: "$20B"
   annotations:
-    description: ''
-    created_by: ''
-    created_date: ''
+    description: "Master orchestrator for all process heat operations across industrial facilities"
+    created_by: "GreenLang Team"
+    created_date: "2024-01-15"
+    last_modified: "2024-11-26"
+    target_date: "Q4 2025"
+    documentation_url: "https://greenlang.io/agents/GL-001"
+    support_contact: "support@greenlang.io"
+
 spec:
-  inputs: []
-  outputs: []
-  capabilities: []
-  requirements: {}
+  # Input specifications
+  inputs:
+    - name: plant_data
+      type: object
+      required: true
+      description: "Plant operating data including temperatures, pressures, and fuel inputs"
+      schema:
+        type: object
+        properties:
+          inlet_temp_c:
+            type: number
+            description: "Inlet temperature in Celsius"
+          outlet_temp_c:
+            type: number
+            description: "Outlet temperature in Celsius"
+          ambient_temp_c:
+            type: number
+            description: "Ambient temperature in Celsius"
+          fuel_input_mw:
+            type: number
+            description: "Fuel energy input in MW"
+          useful_heat_mw:
+            type: number
+            description: "Useful heat output in MW"
+          heat_recovery_mw:
+            type: number
+            description: "Heat recovered in MW"
+    - name: sensor_feeds
+      type: object
+      required: true
+      description: "Real-time sensor data from SCADA systems"
+      schema:
+        type: object
+        properties:
+          heat_demands:
+            type: object
+            description: "Heat demands per unit in MW"
+          heat_sources:
+            type: object
+            description: "Available heat sources in MW"
+          temperatures:
+            type: object
+            description: "Current temperature readings"
+          tags:
+            type: object
+            description: "SCADA tag values"
+    - name: energy_consumption
+      type: object
+      required: true
+      description: "Energy consumption and generation data"
+      schema:
+        type: object
+        properties:
+          fuel_input_mw:
+            type: number
+          electricity_input_mw:
+            type: number
+          steam_import_mw:
+            type: number
+          process_heat_output_mw:
+            type: number
+          electricity_output_mw:
+            type: number
+          steam_export_mw:
+            type: number
+    - name: emissions_data
+      type: object
+      required: false
+      description: "Emissions measurements for compliance checking"
+    - name: constraints
+      type: object
+      required: false
+      description: "Operational constraints and optimization parameters"
+
+  # Output specifications
+  outputs:
+    - name: thermal_efficiency
+      type: object
+      description: "Thermal efficiency calculations with provenance"
+      schema:
+        type: object
+        properties:
+          overall_efficiency:
+            type: number
+          carnot_efficiency:
+            type: number
+          heat_recovery_efficiency:
+            type: number
+          losses:
+            type: object
+          provenance_hash:
+            type: string
+    - name: heat_distribution
+      type: object
+      description: "Optimized heat distribution strategy"
+      schema:
+        type: object
+        properties:
+          distribution_matrix:
+            type: object
+          total_heat_demand_mw:
+            type: number
+          total_heat_supply_mw:
+            type: number
+          optimization_score:
+            type: number
+          constraints_satisfied:
+            type: boolean
+          provenance_hash:
+            type: string
+    - name: energy_balance
+      type: object
+      description: "Energy balance validation result"
+    - name: emissions_compliance
+      type: object
+      description: "Emissions compliance status and violations"
+    - name: kpi_dashboard
+      type: object
+      description: "Comprehensive KPI dashboard"
+    - name: coordination_result
+      type: object
+      description: "Agent coordination result"
+
+  # Agent capabilities
+  capabilities:
+    - name: thermal_efficiency_calculation
+      description: "Calculate thermal efficiency using deterministic formulas"
+      deterministic: true
+      zero_hallucination: true
+    - name: heat_distribution_optimization
+      description: "Optimize heat distribution across process units using linear programming"
+      deterministic: true
+      zero_hallucination: true
+    - name: energy_balance_validation
+      description: "Validate energy balance across the system with tolerance checking"
+      deterministic: true
+      zero_hallucination: true
+    - name: emissions_compliance_check
+      description: "Check emissions compliance against regulatory limits"
+      deterministic: true
+      zero_hallucination: true
+    - name: kpi_dashboard_generation
+      description: "Generate comprehensive KPI dashboard with operational, energy, environmental, and financial metrics"
+      deterministic: true
+      zero_hallucination: true
+    - name: agent_coordination
+      description: "Coordinate multiple process heat agents via message bus"
+      deterministic: true
+    - name: scada_integration
+      description: "Integrate SCADA data feeds with quality validation"
+      deterministic: true
+    - name: erp_integration
+      description: "Integrate ERP data feeds for cost and material data"
+      deterministic: true
+
+  # Tool specifications
+  tools:
+    - name: calculate_thermal_efficiency
+      function: ProcessHeatTools.calculate_thermal_efficiency
+      deterministic: true
+      description: "Calculate thermal efficiency for process heat system"
+    - name: optimize_heat_distribution
+      function: ProcessHeatTools.optimize_heat_distribution
+      deterministic: true
+      description: "Optimize heat distribution across process units"
+    - name: validate_energy_balance
+      function: ProcessHeatTools.validate_energy_balance
+      deterministic: true
+      description: "Validate energy balance across the system"
+    - name: check_emissions_compliance
+      function: ProcessHeatTools.check_emissions_compliance
+      deterministic: true
+      description: "Check emissions compliance against regulations"
+    - name: generate_kpi_dashboard
+      function: ProcessHeatTools.generate_kpi_dashboard
+      deterministic: true
+      description: "Generate KPI dashboard for process heat operations"
+    - name: coordinate_process_heat_agents
+      function: ProcessHeatTools.coordinate_process_heat_agents
+      deterministic: true
+      description: "Coordinate multiple process heat agents"
+    - name: integrate_scada_data
+      function: ProcessHeatTools.integrate_scada_data
+      deterministic: true
+      description: "Integrate and process SCADA data feed"
+    - name: integrate_erp_data
+      function: ProcessHeatTools.integrate_erp_data
+      deterministic: true
+      description: "Integrate and process ERP data feed"
+
+  # Requirements
+  requirements:
+    python_version: ">=3.10"
+    memory_mb: 2048
+    cpu_cores: 2
+    gpu_required: false
+    packages:
+      numpy: ">=1.24.0"
+      scipy: ">=1.10.0"
+      pydantic: ">=2.0.0"
+      fastapi: ">=0.100.0"
+      prometheus-client: ">=0.17.0"
+      httpx: ">=0.24.0"
+
+# AI configuration
+ai_config:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.0
+  seed: 42
+  deterministic: true
+  max_tokens: 4096
+  allowed_operations:
+    - classification
+    - categorization
+    - entity_resolution
+    - narrative_generation
+  prohibited_operations:
+    - numeric_calculation
+    - compliance_value_generation
+
+# Runtime configuration
+runtime:
+  timeout_seconds: 120
+  max_retries: 3
+  cache_ttl_seconds: 300
+  max_parallel_agents: 10
+  checkpoint_enabled: true
+  checkpoint_interval_seconds: 300
+
+# Compliance configuration
+compliance:
+  standards:
+    - ISO_50001
+    - ISO_14001
+    - ASME
+    - EPA
+  audit_trail:
+    enabled: true
+    retention_days: 365
+  provenance_tracking:
+    enabled: true
+    hash_algorithm: SHA-256
+  zero_hallucination:
+    enabled: true
+    llm_prohibited_for: numeric_calculations
+
+# Monitoring configuration
+monitoring:
+  prometheus_enabled: true
+  metrics_collection_interval: 60
+  health_check_enabled: true
+  grafana_dashboards:
+    - process_heat_overview
+    - thermal_efficiency
+    - emissions_compliance
+
+# Security configuration
+security:
+  authentication_required: true
+  encryption: TLS_1_3
+  audit_logging: true
+  rbac_enabled: true
+
+# Deployment configuration
+deployment:
+  replicas: 3
+  strategy: RollingUpdate
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "2000m"
+  autoscaling:
+    enabled: true
+    min_replicas: 2
+    max_replicas: 10

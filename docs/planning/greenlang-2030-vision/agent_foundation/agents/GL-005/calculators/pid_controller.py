@@ -19,7 +19,7 @@ Mathematical Formulas:
 
 from typing import Dict, List, Optional, Tuple
 from decimal import Decimal, ROUND_HALF_UP
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from enum import Enum
 import math
 import logging
@@ -148,10 +148,11 @@ class PIDInput(BaseModel):
         description="Manual output value when in manual mode"
     )
 
-    @validator('output_max')
-    def validate_output_limits(cls, v, values):
+    @field_validator('output_max')
+    @classmethod
+    def validate_output_limits(cls, v: float, info: ValidationInfo):
         """Ensure max > min"""
-        if 'output_min' in values and v <= values['output_min']:
+        if info.data.get('output_min') is not None and v <= info.data['output_min']:
             raise ValueError("output_max must be greater than output_min")
         return v
 

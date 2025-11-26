@@ -20,7 +20,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 from enum import Enum
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 
 
 # ============================================================================
@@ -84,7 +84,8 @@ class ReadCombustionDataInput(BaseModel):
         description="Read timeout in milliseconds"
     )
 
-    @validator('data_sources')
+    @field_validator('data_sources')
+    @classmethod
     def validate_sources(cls, v: List[str]) -> List[str]:
         valid_sources = ['dcs', 'plc', 'cems', 'sensors']
         for source in v:
@@ -324,11 +325,12 @@ class OptimizeFuelAirRatioInput(BaseModel):
     min_excess_air_percent: float = Field(5.0)
     max_excess_air_percent: float = Field(25.0)
 
-    @validator('efficiency_weight', 'emissions_weight', 'stability_weight')
-    def check_weights_sum(cls, v, values):
+    @field_validator('efficiency_weight', 'emissions_weight', 'stability_weight')
+    @classmethod
+    def check_weights_sum(cls, v: float, info: ValidationInfo):
         """Ensure weights sum to approximately 1.0"""
-        if 'efficiency_weight' in values and 'emissions_weight' in values:
-            total = values['efficiency_weight'] + values['emissions_weight'] + v
+        if info.data.get('efficiency_weight') is not None and info.data.get('emissions_weight') is not None:
+            total = info.data['efficiency_weight'] + info.data['emissions_weight'] + v
             if abs(total - 1.0) > 0.01:
                 raise ValueError(f"Weights must sum to 1.0, got {total}")
         return v
@@ -594,7 +596,8 @@ class GenerateControlReportInput(BaseModel):
     min_efficiency_threshold: Optional[float] = Field(None, description="Filter low efficiency periods")
     max_emissions_threshold: Optional[float] = Field(None, description="Filter high emissions periods")
 
-    @validator('report_type')
+    @field_validator('report_type')
+    @classmethod
     def validate_report_type(cls, v: str) -> str:
         valid_types = ['performance', 'compliance', 'safety', 'audit']
         if v not in valid_types:

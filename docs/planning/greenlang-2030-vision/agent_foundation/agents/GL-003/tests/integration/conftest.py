@@ -25,7 +25,7 @@ from typing import Dict, Any, List, Optional
 from decimal import Decimal
 
 from greenlang.determinism import deterministic_random
-from mock_servers import (
+from .mock_servers import (
     MockOPCUAServer,
     MockModbusServer,
     MockSteamMeterServer,

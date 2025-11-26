@@ -1,0 +1,105 @@
+# GL-008 SteamTrapInspector - Network Policy
+# Controls ingress and egress traffic to the application pods
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-008-steam-trap-inspector
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+  annotations:
+    description: "Network policy for GL-008 SteamTrapInspector"
+spec:
+  # Apply to pods matching these labels
+  podSelector:
+    matchLabels:
+      app: gl-008-steam-trap-inspector
+      agent: "GL-008"
+
+  # Policy types
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # Ingress rules (incoming traffic)
+  ingress:
+    # Allow traffic from NGINX ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow traffic from monitoring namespace (Prometheus)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9091
+
+    # Allow traffic from same namespace (inter-pod communication)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gl-008-steam-trap-inspector
+      ports:
+        - protocol: TCP
+          port: 9090
+        - protocol: TCP
+          port: 9091
+
+  # Egress rules (outgoing traffic)
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow database access
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow Redis access
+    - to:
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow HTTPS egress for external APIs (Anthropic, AWS)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow HTTP egress for internal services
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80

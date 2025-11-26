@@ -140,6 +140,12 @@ docker-compose.override.yml
 kubeconfig*
 *.kube
 
+# CRITICAL: Never commit secrets to version control
+# Use External Secrets Operator or similar secret management
+deployment/secret.yaml.local
+deployment/*secret*.yaml.backup
+deployment/*.secret.yaml
+
 # ============================================================================
 # Monitoring & Observability
 # ============================================================================

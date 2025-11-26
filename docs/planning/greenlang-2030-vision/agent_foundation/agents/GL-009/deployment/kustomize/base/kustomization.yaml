@@ -1,0 +1,71 @@
+# GL-009 THERMALIQ ThermalEfficiencyCalculator - Kustomize Base
+# Base configuration for all environments
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Metadata
+namespace: greenlang
+
+# Common labels applied to all resources
+commonLabels:
+  app: gl-009-thermaliq
+  agent: "GL-009"
+  managed-by: kustomize
+  part-of: greenlang-platform
+
+# Common annotations applied to all resources
+commonAnnotations:
+  documentation: "https://docs.greenlang.ai/agents/GL-009"
+  contact: "devops@greenlang.ai"
+
+# Resources to include
+resources:
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+  - secret.yaml
+  - hpa.yaml
+  - pdb.yaml
+
+# Images (can be overridden by overlays)
+images:
+  - name: gcr.io/greenlang/gl-009-thermaliq
+    newTag: "1.0.0"
+
+# ConfigMap generator (if using generated configmaps)
+# Uncomment if you want to generate configmaps from files
+# configMapGenerator:
+#   - name: gl-009-config
+#     files:
+#       - config/application.yaml
+#       - config/logging.yaml
+
+# Secret generator (for local development only)
+# DO NOT use in production - use External Secrets Operator
+# secretGenerator:
+#   - name: gl-009-secrets
+#     literals:
+#       - database_url=postgresql://user:pass@localhost:5432/db
+
+# Replicas (can be overridden by overlays)
+replicas:
+  - name: gl-009-thermaliq
+    count: 3
+
+# Patches (common patches applied to all environments)
+patches:
+  # Add resource requests/limits if not specified
+  - target:
+      kind: Deployment
+      name: gl-009-thermaliq
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"

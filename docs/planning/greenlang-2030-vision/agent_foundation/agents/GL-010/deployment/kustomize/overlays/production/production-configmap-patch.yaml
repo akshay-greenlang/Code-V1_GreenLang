@@ -1,0 +1,69 @@
+# GL-010 EMISSIONWATCH - Production Environment ConfigMap Patch
+# Production-specific configuration with regulatory compliance settings
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-010-production-config
+  namespace: greenlang-production
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    environment: production
+    compliance: regulatory
+  annotations:
+    description: "Production environment configuration for GL-010 EMISSIONWATCH"
+
+data:
+  # Production EPA CDX configuration
+  epa_ecmps_submission_url: "https://ecmps.epa.gov/api"
+  epa_cdx_environment: "production"
+  epa_quarterly_report_auto_generate: "true"
+  epa_quarterly_report_require_approval: "true"
+
+  # Production EU ETS configuration
+  eu_ets_registry_url: "https://ec.europa.eu/ets-registry/api"
+  eu_ets_environment: "production"
+  eu_ets_annual_report_auto_generate: "true"
+  eu_ets_verification_required: "true"
+
+  # Production logging (minimal for performance)
+  enable_request_logging: "false"
+  enable_response_logging: "false"
+  log_sql_queries: "false"
+  enable_audit_log: "true"
+
+  # Production CEMS configuration
+  cems_simulator_enabled: "false"
+  cems_test_mode: "false"
+  cems_connection_redundancy: "true"
+  cems_failover_enabled: "true"
+
+  # Production compliance report settings
+  compliance_report_draft_mode: "false"
+  compliance_report_digital_signature: "true"
+  compliance_report_require_approval: "true"
+  compliance_report_audit_trail: "true"
+
+  # Production alert configuration
+  alert_email_recipients: "compliance@greenlang.ai,operations@greenlang.ai,legal@greenlang.ai"
+  alert_slack_channel: "#gl-010-production-alerts"
+  alert_pagerduty_enabled: "true"
+  alert_escalation_enabled: "true"
+
+  # Production data retention (regulatory requirements)
+  raw_emissions_data_retention_days: "2555"
+  aggregated_emissions_data_retention_days: "3650"
+  compliance_reports_retention_days: "3650"
+  audit_logs_retention_days: "2555"
+
+  # Production security settings
+  require_mfa_for_submissions: "true"
+  require_approval_for_reports: "true"
+  enable_compliance_audit_trail: "true"
+
+  # Production performance settings
+  enable_load_test_endpoints: "false"
+  synthetic_data_generation: "false"
+  enable_cache_warming: "true"
+  enable_connection_pooling: "true"

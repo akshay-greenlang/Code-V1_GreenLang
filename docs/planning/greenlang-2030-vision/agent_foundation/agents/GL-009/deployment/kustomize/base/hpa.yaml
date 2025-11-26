@@ -1,0 +1,91 @@
+# GL-009 THERMALIQ ThermalEfficiencyCalculator - Horizontal Pod Autoscaler
+# Autoscaling based on CPU, memory, and custom metrics
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-009-thermaliq-hpa
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+  annotations:
+    description: "Horizontal pod autoscaler for GL-009 based on resource and custom metrics"
+
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-009-thermaliq
+
+  minReplicas: 3
+  maxReplicas: 10
+
+  # Scaling behavior configuration
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 5 minutes stabilization before scale down
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60  # Scale down max 50% of pods per minute
+        - type: Pods
+          value: 2
+          periodSeconds: 60  # Or max 2 pods per minute
+      selectPolicy: Min  # Use the policy that scales down the least
+
+    scaleUp:
+      stabilizationWindowSeconds: 60  # 1 minute stabilization before scale up
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30  # Scale up max 100% of pods per 30 seconds
+        - type: Pods
+          value: 4
+          periodSeconds: 30  # Or max 4 pods per 30 seconds
+      selectPolicy: Max  # Use the policy that scales up the most
+
+  # Metrics for autoscaling
+  metrics:
+    # CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70  # Scale when CPU > 70%
+
+    # Memory utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80  # Scale when memory > 80%
+
+    # Custom metric: Calculation queue depth
+    - type: Pods
+      pods:
+        metric:
+          name: calculation_queue_depth
+        target:
+          type: AverageValue
+          averageValue: "10"  # Scale when avg queue depth > 10 per pod
+
+    # Custom metric: Active calculations
+    - type: Pods
+      pods:
+        metric:
+          name: active_calculations
+        target:
+          type: AverageValue
+          averageValue: "30"  # Scale when avg active calculations > 30 per pod
+
+    # Custom metric: Request latency (p95)
+    - type: Pods
+      pods:
+        metric:
+          name: http_request_duration_p95_seconds
+        target:
+          type: AverageValue
+          averageValue: "2"  # Scale when p95 latency > 2 seconds

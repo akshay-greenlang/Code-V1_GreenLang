@@ -1,0 +1,48 @@
+# GL-008 SteamTrapInspector - Prometheus ServiceMonitor
+# Configures Prometheus to scrape metrics from the application
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-008-steam-trap-inspector
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+    prometheus: kube-prometheus
+  annotations:
+    description: "ServiceMonitor for GL-008 SteamTrapInspector metrics"
+spec:
+  # Selector to match services
+  selector:
+    matchLabels:
+      app: gl-008-steam-trap-inspector
+      service-type: metrics
+
+  # Namespace selector
+  namespaceSelector:
+    matchNames:
+      - greenlang
+
+  # Endpoint configuration
+  endpoints:
+    - port: metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      path: /metrics
+      scheme: http
+
+      # Relabeling configuration
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_pod_label_agent]
+          targetLabel: agent
+        - sourceLabels: [__meta_kubernetes_pod_label_version]
+          targetLabel: version

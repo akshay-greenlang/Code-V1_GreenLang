@@ -1,0 +1,216 @@
+{
+  "description": "Test cases with known results for thermal efficiency calculations",
+  "version": "1.0.0",
+  "test_cases": {
+    "natural_gas_boiler_standard": {
+      "description": "Standard natural gas fire-tube boiler",
+      "fuel_type": "natural_gas",
+      "boiler_type": "fire_tube",
+      "inputs": {
+        "fuel_energy_input_kw": 10000.0,
+        "fuel_hhv_kj_kg": 50000.0,
+        "fuel_flow_kg_s": 0.2,
+        "steam_flow_kg_s": 12.0,
+        "steam_temperature_k": 453.15,
+        "steam_pressure_kpa": 1000.0,
+        "feedwater_temperature_k": 298.15
+      },
+      "expected_outputs": {
+        "first_law_efficiency_percent": 85.0,
+        "second_law_efficiency_percent": 45.0,
+        "steam_output_kw": 8500.0,
+        "flue_gas_loss_percent": 10.0,
+        "radiation_loss_percent": 3.0,
+        "convection_loss_percent": 2.0
+      },
+      "tolerances": {
+        "efficiency_rel_tol": 0.02,
+        "energy_balance_tol_percent": 1.0
+      }
+    },
+    "coal_boiler_high_loss": {
+      "description": "Coal-fired boiler with high losses",
+      "fuel_type": "coal",
+      "boiler_type": "water_tube",
+      "inputs": {
+        "fuel_energy_input_kw": 50000.0,
+        "fuel_hhv_kj_kg": 25000.0,
+        "fuel_flow_kg_s": 2.0,
+        "steam_flow_kg_s": 50.0,
+        "steam_temperature_k": 543.15,
+        "steam_pressure_kpa": 5000.0,
+        "flue_gas_temperature_k": 473.15,
+        "carbon_in_ash_percent": 8.0
+      },
+      "expected_outputs": {
+        "first_law_efficiency_percent": 78.0,
+        "flue_gas_loss_percent": 12.0,
+        "unburned_fuel_loss_percent": 5.0,
+        "radiation_loss_percent": 3.5,
+        "other_losses_percent": 1.5
+      },
+      "tolerances": {
+        "efficiency_rel_tol": 0.03,
+        "energy_balance_tol_percent": 2.0
+      }
+    },
+    "condensing_boiler_high_efficiency": {
+      "description": "High-efficiency condensing boiler",
+      "fuel_type": "natural_gas",
+      "boiler_type": "condensing",
+      "inputs": {
+        "fuel_energy_input_kw": 5000.0,
+        "fuel_hhv_kj_kg": 50000.0,
+        "fuel_lhv_kj_kg": 45000.0,
+        "condensing_mode": true,
+        "return_water_temperature_k": 313.15,
+        "supply_water_temperature_k": 353.15
+      },
+      "expected_outputs": {
+        "first_law_efficiency_percent": 95.0,
+        "hhv_basis": true,
+        "latent_heat_recovery_kw": 500.0,
+        "flue_gas_loss_percent": 3.0,
+        "radiation_loss_percent": 1.5
+      },
+      "tolerances": {
+        "efficiency_rel_tol": 0.01,
+        "energy_balance_tol_percent": 0.5
+      }
+    },
+    "biomass_boiler_moderate_efficiency": {
+      "description": "Biomass boiler with moderate efficiency",
+      "fuel_type": "biomass",
+      "boiler_type": "grate_fired",
+      "inputs": {
+        "fuel_energy_input_kw": 15000.0,
+        "fuel_hhv_kj_kg": 18000.0,
+        "fuel_moisture_percent": 30.0,
+        "ash_content_percent": 5.0
+      },
+      "expected_outputs": {
+        "first_law_efficiency_percent": 72.0,
+        "moisture_loss_percent": 15.0,
+        "flue_gas_loss_percent": 8.0,
+        "unburned_fuel_loss_percent": 3.0,
+        "ash_handling_loss_percent": 2.0
+      }
+    },
+    "heat_recovery_steam_generator": {
+      "description": "HRSG with waste heat recovery",
+      "system_type": "hrsg",
+      "inputs": {
+        "exhaust_gas_flow_kg_s": 50.0,
+        "exhaust_gas_temperature_in_k": 823.15,
+        "exhaust_gas_temperature_out_k": 423.15,
+        "steam_generation_kg_s": 15.0,
+        "pinch_point_k": 10.0
+      },
+      "expected_outputs": {
+        "heat_recovery_efficiency_percent": 88.0,
+        "steam_output_kw": 30000.0,
+        "second_law_efficiency_percent": 42.0
+      }
+    },
+    "process_heater_direct_fired": {
+      "description": "Direct-fired process heater",
+      "equipment_type": "process_heater",
+      "inputs": {
+        "fuel_input_kw": 20000.0,
+        "process_heat_duty_kw": 17000.0,
+        "surface_area_m2": 200.0,
+        "surface_temperature_k": 423.15,
+        "ambient_temperature_k": 298.15
+      },
+      "expected_outputs": {
+        "thermal_efficiency_percent": 85.0,
+        "radiation_loss_kw": 1500.0,
+        "convection_loss_kw": 800.0,
+        "flue_gas_loss_kw": 700.0
+      }
+    },
+    "steam_turbine_cogeneration": {
+      "description": "Cogeneration with steam turbine",
+      "system_type": "cogeneration",
+      "inputs": {
+        "fuel_input_kw": 100000.0,
+        "electricity_output_kw": 35000.0,
+        "process_steam_output_kw": 45000.0,
+        "condenser_rejection_kw": 15000.0
+      },
+      "expected_outputs": {
+        "overall_efficiency_percent": 80.0,
+        "electrical_efficiency_percent": 35.0,
+        "thermal_efficiency_percent": 45.0,
+        "second_law_efficiency_percent": 48.0
+      }
+    },
+    "industrial_furnace_high_temp": {
+      "description": "Industrial furnace at high temperature",
+      "equipment_type": "furnace",
+      "inputs": {
+        "fuel_input_kw": 30000.0,
+        "furnace_temperature_k": 1473.15,
+        "material_heating_kw": 22000.0,
+        "wall_surface_area_m2": 150.0,
+        "wall_temperature_k": 873.15
+      },
+      "expected_outputs": {
+        "thermal_efficiency_percent": 73.0,
+        "radiation_loss_kw": 4500.0,
+        "wall_loss_kw": 2000.0,
+        "flue_gas_loss_kw": 1500.0
+      }
+    },
+    "low_temperature_heat_pump": {
+      "description": "Heat pump for low-temperature heating",
+      "equipment_type": "heat_pump",
+      "inputs": {
+        "electricity_input_kw": 1000.0,
+        "heat_source_temperature_k": 283.15,
+        "heat_sink_temperature_k": 323.15,
+        "carnot_cop": 12.9
+      },
+      "expected_outputs": {
+        "cop_actual": 4.5,
+        "heat_output_kw": 4500.0,
+        "second_law_efficiency_percent": 35.0
+      }
+    },
+    "waste_heat_recovery_unit": {
+      "description": "Waste heat recovery from flue gas",
+      "system_type": "heat_recovery",
+      "inputs": {
+        "flue_gas_flow_kg_s": 10.0,
+        "flue_gas_temp_in_k": 623.15,
+        "flue_gas_temp_out_k": 423.15,
+        "heat_recovery_fluid_flow_kg_s": 5.0
+      },
+      "expected_outputs": {
+        "heat_recovered_kw": 2000.0,
+        "effectiveness_percent": 65.0,
+        "exergy_efficiency_percent": 28.0
+      }
+    }
+  },
+  "validation_criteria": {
+    "first_law_efficiency": {
+      "min_reasonable": 20.0,
+      "max_reasonable": 99.0,
+      "typical_range": [70.0, 90.0]
+    },
+    "second_law_efficiency": {
+      "min_reasonable": 10.0,
+      "max_reasonable": 70.0,
+      "typical_range": [30.0, 50.0]
+    },
+    "energy_balance_tolerance_percent": 2.0,
+    "provenance_hash_length": 64
+  },
+  "reference_standards": [
+    "ASME PTC 4.1: Steam Generating Units",
+    "ASME PTC 46: Overall Plant Performance",
+    "ISO 50001: Energy Management Systems",
+    "ASHRAE Fundamentals: Heat Transfer"
+  ]
+}

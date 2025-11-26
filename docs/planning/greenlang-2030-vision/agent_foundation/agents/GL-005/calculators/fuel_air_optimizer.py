@@ -20,7 +20,7 @@ Mathematical Formulas:
 
 from typing import Dict, List, Optional, Tuple
 from decimal import Decimal, ROUND_HALF_UP
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 from enum import Enum
 import math
 import logging
@@ -166,7 +166,8 @@ class OptimizerInput(BaseModel):
         description="Maximum fuel flow (burner capacity)"
     )
 
-    @validator('fuel_composition')
+    @field_validator('fuel_composition')
+    @classmethod
     def validate_composition(cls, v):
         """Validate fuel composition sums to ~100%"""
         total = sum(v.values())

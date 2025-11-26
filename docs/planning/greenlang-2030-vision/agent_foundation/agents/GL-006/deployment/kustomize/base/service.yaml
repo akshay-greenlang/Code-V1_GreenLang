@@ -1,0 +1,73 @@
+# GL-006 HeatRecoveryMaximizer Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-006-heatreclaim
+  namespace: greenlang
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+    codename: HEATRECLAIM
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-006-heatreclaim
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None
+
+---
+# Headless service for pod discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-006-heatreclaim-headless
+  namespace: greenlang
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    app: gl-006-heatreclaim
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+
+---
+# Metrics service for Prometheus scraping
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-006-heatreclaim-metrics
+  namespace: greenlang
+  labels:
+    app: gl-006-heatreclaim
+    agent-id: GL-006
+    monitoring: prometheus
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-006-heatreclaim
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP

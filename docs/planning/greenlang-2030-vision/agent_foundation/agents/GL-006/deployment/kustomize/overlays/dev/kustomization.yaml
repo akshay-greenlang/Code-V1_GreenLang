@@ -1,0 +1,82 @@
+# GL-006 HeatRecoveryMaximizer Development Overlay
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: gl-006-heatreclaim-dev
+
+namespace: greenlang-dev
+
+# Reference base configuration
+resources:
+  - ../../base
+
+# Development-specific labels
+commonLabels:
+  environment: development
+  tier: dev
+
+# Development-specific patches
+patches:
+  # Reduce replicas for dev
+  - target:
+      kind: Deployment
+      name: gl-006-heatreclaim
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  # Reduce resources for dev
+  - target:
+      kind: Deployment
+      name: gl-006-heatreclaim
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "128Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "100m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "256Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "250m"
+
+  # Disable HPA for dev
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: gl-006-heatreclaim-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+
+  # Reduce PDB for dev
+  - target:
+      kind: PodDisruptionBudget
+      name: gl-006-heatreclaim-pdb
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 0
+
+# Development ConfigMap overrides
+configMapGenerator:
+  - name: gl-006-heatreclaim-config
+    behavior: merge
+    literals:
+      - ENVIRONMENT=development
+      - LOG_LEVEL=DEBUG
+      - ENABLE_CORS=true
+      - CORS_ORIGINS=*
+
+# Development image tag
+images:
+  - name: gcr.io/greenlang/gl-006-heatreclaim
+    newTag: dev-latest

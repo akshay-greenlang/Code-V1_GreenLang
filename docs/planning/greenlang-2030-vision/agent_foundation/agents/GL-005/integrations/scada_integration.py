@@ -57,6 +57,7 @@ try:
     MQTT_AVAILABLE = True
 except ImportError:
     MQTT_AVAILABLE = False
+    mqtt = None
 
 # Prometheus metrics
 try:

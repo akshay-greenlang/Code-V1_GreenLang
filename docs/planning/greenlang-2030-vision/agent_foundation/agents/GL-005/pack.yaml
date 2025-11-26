@@ -538,10 +538,12 @@ compliance:
     backup_frequency: Hourly incremental, daily full
     disaster_recovery: RPO 15 minutes, RTO 1 hour
 metadata:
+  agent_id: GL-005
+  domain: combustion
   created: 2025-01-18
   updated: 2025-01-18
-  greenlang_version: '>=1.0.0'
-  pack_schema_version: 1.0
+  greenlang_version: '1.0.0'
+  pack_schema_version: '1.0'
   repository:
     url: https://github.com/akshay-greenlang/Code-V1_GreenLang
     path: GreenLang_2030/agent_foundation/agents/GL-005

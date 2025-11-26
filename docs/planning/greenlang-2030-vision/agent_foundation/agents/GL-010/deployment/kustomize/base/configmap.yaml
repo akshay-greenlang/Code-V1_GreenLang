@@ -1,0 +1,251 @@
+# GL-010 EMISSIONWATCH EmissionsComplianceAgent - Configuration
+# Application configuration, emissions limits, CEMS settings, and compliance schedules
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-010-config
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  annotations:
+    description: "Application configuration for GL-010 EMISSIONWATCH"
+
+data:
+  # Environment
+  environment: "production"
+
+  # Logging Configuration
+  log_level: "INFO"
+  logging_format: "json"
+  log_output: "stdout"
+  enable_access_log: "true"
+  enable_error_log: "true"
+  enable_audit_log: "true"  # Required for compliance
+
+  # Database Configuration
+  database_pool_size: "20"
+  database_max_overflow: "10"
+  database_pool_timeout: "30"
+  database_pool_recycle: "3600"
+  database_echo: "false"
+
+  # TimescaleDB Configuration (for time-series emissions data)
+  timescale_chunk_interval: "1 day"
+  timescale_retention_policy: "365 days"
+  timescale_compression_policy: "7 days"
+
+  # Cache Configuration
+  cache_ttl_seconds: "300"  # Shorter TTL for real-time emissions data
+  cache_max_size_mb: "1024"
+  cache_eviction_policy: "lru"
+
+  # API Rate Limiting
+  rate_limit_enabled: "true"
+  rate_limit_requests_per_minute: "200"
+  rate_limit_burst: "50"
+
+  # CORS Configuration
+  cors_enabled: "true"
+  cors_allow_origins: "*"
+  cors_allow_methods: "GET,POST,PUT,DELETE,OPTIONS"
+  cors_allow_headers: "Content-Type,Authorization,X-API-Key"
+
+  # =============================================================================
+  # CEMS (Continuous Emissions Monitoring System) Configuration
+  # =============================================================================
+  cems_polling_interval: "60"  # seconds
+  cems_connection_timeout: "30"  # seconds
+  cems_retry_count: "3"
+  cems_retry_delay: "5"  # seconds
+  cems_data_buffer_size: "10000"  # readings
+  cems_data_flush_interval: "300"  # seconds
+
+  # CEMS Data Quality Checks
+  cems_data_quality_enabled: "true"
+  cems_range_check_enabled: "true"
+  cems_spike_detection_enabled: "true"
+  cems_gap_detection_enabled: "true"
+  cems_max_data_gap_minutes: "15"
+
+  # =============================================================================
+  # Emissions Limits by Jurisdiction (Default Values - Override per facility)
+  # =============================================================================
+  # EPA Limits (US) - 40 CFR Part 75
+  epa_nox_limit_ppm: "200"
+  epa_so2_limit_ppm: "400"
+  epa_co_limit_ppm: "100"
+  epa_pm_limit_mg_m3: "50"
+  epa_co2_reporting_threshold_tons: "25000"
+
+  # EU ETS Limits
+  eu_ets_nox_limit_mg_nm3: "150"
+  eu_ets_so2_limit_mg_nm3: "200"
+  eu_ets_dust_limit_mg_nm3: "20"
+  eu_ets_co2_reporting_threshold_tons: "10000"
+
+  # California CARB Limits
+  carb_nox_limit_ppm: "50"
+  carb_so2_limit_ppm: "100"
+  carb_co_limit_ppm: "200"
+  carb_pm_limit_mg_m3: "30"
+
+  # =============================================================================
+  # Alert Thresholds
+  # =============================================================================
+  emissions_alert_threshold_percent: "80"  # Alert at 80% of limit
+  emissions_warning_threshold_percent: "90"  # Warning at 90% of limit
+  emissions_critical_threshold_percent: "95"  # Critical at 95% of limit
+  emissions_exceedance_notification: "true"
+
+  # Alert Recipients (comma-separated)
+  alert_email_recipients: "compliance@greenlang.ai,operations@greenlang.ai"
+  alert_slack_channel: "#emissions-alerts"
+  alert_pagerduty_enabled: "true"
+
+  # =============================================================================
+  # Compliance Reporting Configuration
+  # =============================================================================
+  # EPA ECMPS/CDX Reporting
+  epa_ecmps_enabled: "true"
+  epa_ecmps_submission_url: "https://ecmps.epa.gov/api"
+  epa_quarterly_report_auto_generate: "true"
+  epa_quarterly_report_due_day: "30"  # Day of month after quarter end
+
+  # EU ETS Reporting
+  eu_ets_enabled: "true"
+  eu_ets_registry_url: "https://ec.europa.eu/ets-registry/api"
+  eu_ets_annual_report_auto_generate: "true"
+  eu_ets_verification_required: "true"
+
+  # Report Generation Schedule (cron format)
+  compliance_report_schedule: "0 6 * * *"  # Daily at 6 AM
+  quarterly_report_schedule: "0 0 1 1,4,7,10 *"  # First day of each quarter
+  annual_report_schedule: "0 0 15 1 *"  # January 15th each year
+
+  auto_submit_reports: "false"  # Require manual approval before submission
+
+  # Report Format Options
+  report_format_xml: "true"
+  report_format_pdf: "true"
+  report_format_excel: "true"
+  report_include_charts: "true"
+  report_include_raw_data: "false"
+  max_report_size_mb: "100"
+
+  # =============================================================================
+  # Industrial Protocol Configuration
+  # =============================================================================
+  # Modbus Configuration
+  modbus_enabled: "true"
+  modbus_port: "502"
+  modbus_timeout: "5"
+  modbus_retries: "3"
+  modbus_byte_order: "big"
+
+  # OPC UA Configuration
+  opcua_enabled: "true"
+  opcua_port: "4840"
+  opcua_security_mode: "SignAndEncrypt"
+  opcua_security_policy: "Basic256Sha256"
+  opcua_session_timeout: "3600000"
+
+  # MQTT Configuration
+  mqtt_enabled: "true"
+  mqtt_port: "1883"
+  mqtt_qos: "1"
+  mqtt_retain: "true"
+  mqtt_topic_prefix: "greenlang/emissions"
+
+  # DNP3 Configuration (for SCADA integration)
+  dnp3_enabled: "false"
+  dnp3_port: "20000"
+
+  # BACnet Configuration
+  bacnet_enabled: "false"
+
+  # =============================================================================
+  # Monitoring & Observability
+  # =============================================================================
+  metrics_enabled: "true"
+  opentelemetry_enabled: "true"
+  jaeger_endpoint: "http://jaeger-collector.monitoring.svc.cluster.local:14268/api/traces"
+  sentry_enabled: "true"
+  sentry_traces_sample_rate: "0.1"
+
+  # =============================================================================
+  # Data Retention Policies
+  # =============================================================================
+  # Emissions data retention (regulatory requirements)
+  raw_emissions_data_retention_days: "2555"  # 7 years (EPA requirement)
+  aggregated_emissions_data_retention_days: "3650"  # 10 years
+  compliance_reports_retention_days: "3650"  # 10 years
+  audit_logs_retention_days: "2555"  # 7 years
+
+  # Operational data retention
+  metrics_retention_days: "90"
+  logs_retention_days: "30"
+
+  # =============================================================================
+  # Performance Tuning
+  # =============================================================================
+  worker_processes: "4"
+  worker_connections: "1000"
+  keepalive_timeout: "75"
+  max_request_size_mb: "100"
+
+  # Emissions calculation settings
+  calculation_timeout_seconds: "300"
+  max_concurrent_calculations: "50"
+  batch_processing_size: "1000"
+
+  # =============================================================================
+  # Feature Flags
+  # =============================================================================
+  feature_real_time_monitoring: "true"
+  feature_predictive_emissions: "true"
+  feature_anomaly_detection: "true"
+  feature_auto_calibration_alerts: "true"
+  feature_multi_facility_dashboard: "true"
+  feature_regulatory_update_notifications: "true"
+  feature_carbon_trading_integration: "false"
+
+  # =============================================================================
+  # Integration Settings
+  # =============================================================================
+  enable_external_data_sources: "true"
+  external_api_timeout: "30"
+  enable_webhook_notifications: "true"
+  webhook_retry_count: "3"
+
+  # Weather API integration (for emissions corrections)
+  weather_api_enabled: "true"
+  weather_data_update_interval: "3600"
+
+  # =============================================================================
+  # Security Settings
+  # =============================================================================
+  enable_request_validation: "true"
+  enable_response_validation: "true"
+  enable_sql_injection_protection: "true"
+  enable_xss_protection: "true"
+  enable_audit_trail: "true"
+  audit_trail_include_payload: "false"
+
+  # Digital signature for compliance reports
+  report_digital_signature_enabled: "true"
+  report_signature_algorithm: "RSA-SHA256"
+
+  # =============================================================================
+  # Health Check Configuration
+  # =============================================================================
+  health_check_interval: "30"
+  health_check_timeout: "10"
+  health_check_unhealthy_threshold: "3"
+  health_check_healthy_threshold: "2"
+
+  # CEMS health checks
+  cems_health_check_enabled: "true"
+  cems_health_check_interval: "60"
+  cems_connection_alert_threshold: "3"  # Alert after 3 failed connections

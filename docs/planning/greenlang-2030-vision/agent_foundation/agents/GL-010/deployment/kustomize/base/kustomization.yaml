@@ -1,0 +1,76 @@
+# GL-010 EMISSIONWATCH EmissionsComplianceAgent - Kustomize Base
+# Base configuration for all environments
+# Supports EPA 40 CFR Part 75, EU ETS, and ISO 14064 compliance
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Metadata
+namespace: greenlang
+
+# Common labels applied to all resources
+commonLabels:
+  app: gl-010-emissionwatch
+  agent: "GL-010"
+  managed-by: kustomize
+  part-of: greenlang-platform
+  compliance: emissions-monitoring
+
+# Common annotations applied to all resources
+commonAnnotations:
+  documentation: "https://docs.greenlang.ai/agents/GL-010"
+  contact: "devops@greenlang.ai"
+  compliance-standards: "EPA-40-CFR-75,EU-ETS,ISO-14064"
+
+# Resources to include
+resources:
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+  - secret.yaml
+  - hpa.yaml
+  - pdb.yaml
+  - serviceaccount.yaml
+
+# Images (can be overridden by overlays)
+images:
+  - name: gcr.io/greenlang/gl-010-emissionwatch
+    newTag: "1.0.0"
+
+# ConfigMap generator (if using generated configmaps)
+# Uncomment if you want to generate configmaps from files
+# configMapGenerator:
+#   - name: gl-010-config
+#     files:
+#       - config/application.yaml
+#       - config/emissions-limits.yaml
+#       - config/cems-config.yaml
+
+# Secret generator (for local development only)
+# DO NOT use in production - use External Secrets Operator
+# secretGenerator:
+#   - name: gl-010-secrets
+#     literals:
+#       - database_url=postgresql://user:pass@localhost:5432/db
+
+# Replicas (can be overridden by overlays)
+replicas:
+  - name: gl-010-emissionwatch
+    count: 3
+
+# Patches (common patches applied to all environments)
+patches:
+  # Add resource requests/limits if not specified
+  - target:
+      kind: Deployment
+      name: gl-010-emissionwatch
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"

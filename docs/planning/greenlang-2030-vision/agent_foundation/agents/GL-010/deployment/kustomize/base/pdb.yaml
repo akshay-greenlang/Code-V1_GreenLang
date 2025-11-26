@@ -1,0 +1,314 @@
+# GL-010 EMISSIONWATCH EmissionsComplianceAgent - Pod Disruption Budget & Network Policies
+# Ensures high availability during cluster maintenance and network security
+# Critical for continuous emissions monitoring compliance
+
+---
+# Pod Disruption Budget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-010-emissionwatch-pdb
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  annotations:
+    description: "Ensures minimum availability during voluntary disruptions - critical for emissions monitoring continuity"
+
+spec:
+  minAvailable: 2  # Always keep at least 2 pods running for continuous emissions monitoring
+  selector:
+    matchLabels:
+      app: gl-010-emissionwatch
+      agent: "GL-010"
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Network Policy - Ingress Rules
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-010-emissionwatch-ingress
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  annotations:
+    description: "Ingress network policy for GL-010 EMISSIONWATCH"
+
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-010-emissionwatch
+      agent: "GL-010"
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8082  # WebSocket
+
+    # Allow traffic from monitoring namespace (Prometheus)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090  # Metrics
+
+    # Allow traffic from same namespace (inter-pod communication)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gl-010-emissionwatch
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8081  # Admin
+
+    # Allow traffic from API gateway
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: api-gateway
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow traffic from CEMS network (industrial zone)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: industrial-zone
+      ports:
+        - protocol: TCP
+          port: 4840  # OPC UA
+        - protocol: TCP
+          port: 502   # Modbus
+
+---
+# Network Policy - Egress Rules
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-010-emissionwatch-egress
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  annotations:
+    description: "Egress network policy for GL-010 EMISSIONWATCH"
+
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-010-emissionwatch
+      agent: "GL-010"
+
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow DNS queries
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+    # Allow traffic to PostgreSQL database
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: databases
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow traffic to TimescaleDB
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: databases
+        - podSelector:
+            matchLabels:
+              app: timescaledb
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow traffic to Redis cache
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: databases
+        - podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow traffic to Jaeger for tracing
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+        - podSelector:
+            matchLabels:
+              app: jaeger
+      ports:
+        - protocol: TCP
+          port: 14268
+
+    # Allow HTTPS to external APIs (EPA CDX, EU ETS registry)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow HTTP to external APIs
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 80
+
+    # Allow MQTT for industrial IoT
+    - ports:
+        - protocol: TCP
+          port: 1883
+        - protocol: TCP
+          port: 8883  # MQTT over TLS
+
+    # Allow Modbus TCP
+    - ports:
+        - protocol: TCP
+          port: 502
+
+    # Allow OPC UA
+    - ports:
+        - protocol: TCP
+          port: 4840
+
+    # Allow DNP3 for SCADA
+    - ports:
+        - protocol: TCP
+          port: 20000
+
+    # Allow SFTP for regulatory file submissions
+    - ports:
+        - protocol: TCP
+          port: 22
+
+---
+# Ingress for external access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-010-emissionwatch-ingress
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  annotations:
+    # Ingress controller
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # TLS/SSL
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+
+    # CORS
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+
+    # Timeouts for compliance report generation
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+
+    # WebSocket support for real-time emissions monitoring
+    nginx.ingress.kubernetes.io/websocket-services: "gl-010-emissionwatch"
+
+    # Request size (for large compliance reports)
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'";
+
+spec:
+  tls:
+    - hosts:
+        - emissionwatch.greenlang.ai
+        - api.emissionwatch.greenlang.ai
+      secretName: gl-010-emissionwatch-tls
+
+  rules:
+    - host: emissionwatch.greenlang.ai
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-010-emissionwatch
+                port:
+                  number: 80
+
+    - host: api.emissionwatch.greenlang.ai
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-010-emissionwatch
+                port:
+                  number: 80
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-010-emissionwatch
+                port:
+                  number: 8082

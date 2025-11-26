@@ -1,0 +1,463 @@
+# GL-008 SteamTrapInspector Prometheus Alert Rules
+# 40+ alert rules covering critical failures, performance degradation, and system health
+
+groups:
+  - name: gl008_critical_failures
+    interval: 30s
+    rules:
+      # Critical trap failures requiring immediate response
+      - alert: GL008CriticalTrapFailure
+        expr: gl008_trap_status{status="critical"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: trap
+          team: maintenance
+        annotations:
+          summary: "Critical steam trap failure detected"
+          description: "Trap {{ $labels.trap_id }} at {{ $labels.facility }} is in critical state. Immediate maintenance required."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/critical-trap-failure"
+
+      # Multiple critical failures across facility
+      - alert: GL008MultipleCriticalFailures
+        expr: sum by (facility) (gl008_fleet_critical_count) >= 3
+        for: 5m
+        labels:
+          severity: critical
+          component: fleet
+          team: maintenance
+        annotations:
+          summary: "Multiple critical trap failures detected"
+          description: "{{ $value }} critical trap failures at {{ $labels.facility }}. Fleet-wide issue suspected."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/multiple-critical-failures"
+
+      # High energy loss detected
+      - alert: GL008HighEnergyLoss
+        expr: gl008_energy_loss_kw > 100
+        for: 5m
+        labels:
+          severity: critical
+          component: energy
+          team: energy-management
+        annotations:
+          summary: "High energy loss from failed trap"
+          description: "Trap {{ $labels.trap_id }} is losing {{ $value | humanize }}kW. Annual cost impact exceeds $50,000."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/high-energy-loss"
+
+      # Safety risk - blow-through failure
+      - alert: GL008BlowThroughFailure
+        expr: gl008_failures_detected_total{failure_mode="blow_through", severity="critical"} > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: safety
+          team: safety
+        annotations:
+          summary: "Blow-through failure - SAFETY RISK"
+          description: "Blow-through failure at {{ $labels.facility }}, trap {{ $labels.trap_id }}. Potential safety hazard."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/blow-through-safety"
+
+      # System down
+      - alert: GL008SystemDown
+        expr: gl008_system_health{component="inspection_engine"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+          team: platform
+        annotations:
+          summary: "GL-008 inspection system is DOWN"
+          description: "Inspection engine is not operational. All inspections halted."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/system-down"
+
+  - name: gl008_high_severity
+    interval: 1m
+    rules:
+      # Failed trap count exceeds threshold
+      - alert: GL008HighFailureRate
+        expr: sum by (facility) (gl008_fleet_failed_count) / sum by (facility) (gl008_fleet_total_traps) > 0.10
+        for: 10m
+        labels:
+          severity: high
+          component: fleet
+          team: maintenance
+        annotations:
+          summary: "High trap failure rate detected"
+          description: "{{ $value | humanizePercentage }} of traps failed at {{ $labels.facility }}. Threshold: 10%."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/high-failure-rate"
+
+      # Detection accuracy below SLO
+      - alert: GL008LowDetectionAccuracy
+        expr: avg(gl008_detection_accuracy_rate{time_window="1h"}) < 0.95
+        for: 15m
+        labels:
+          severity: high
+          component: detection
+          team: ml-ops
+        annotations:
+          summary: "Detection accuracy below SLO"
+          description: "Detection accuracy is {{ $value | humanizePercentage }}. SLO: 95%. Model retraining may be required."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/low-detection-accuracy"
+
+      # High false positive rate
+      - alert: GL008HighFalsePositiveRate
+        expr: |
+          sum(increase(gl008_false_positives_total[1h])) /
+          (sum(increase(gl008_true_positives_total[1h])) + sum(increase(gl008_false_positives_total[1h]))) > 0.05
+        for: 30m
+        labels:
+          severity: high
+          component: detection
+          team: ml-ops
+        annotations:
+          summary: "High false positive rate"
+          description: "False positive rate is {{ $value | humanizePercentage }}. SLO: <5%. Check detection thresholds."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/high-false-positives"
+
+      # Inspection latency exceeds SLO
+      - alert: GL008HighInspectionLatency
+        expr: histogram_quantile(0.95, sum(rate(gl008_inspection_latency_seconds_bucket[5m])) by (le)) > 3
+        for: 10m
+        labels:
+          severity: high
+          component: performance
+          team: platform
+        annotations:
+          summary: "Inspection latency exceeds SLO"
+          description: "P95 inspection latency is {{ $value | humanizeDuration }}. SLO: <3s. System may be overloaded."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/high-latency"
+
+      # Fleet health score degraded
+      - alert: GL008FleetHealthDegraded
+        expr: avg(gl008_fleet_health_score) < 75
+        for: 30m
+        labels:
+          severity: high
+          component: fleet
+          team: maintenance
+        annotations:
+          summary: "Fleet health score degraded"
+          description: "Fleet health at {{ $labels.facility }} is {{ $value }}%. Threshold: 75%. Maintenance backlog growing."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/fleet-health-degraded"
+
+      # High CO2 emissions
+      - alert: GL008HighCO2Emissions
+        expr: sum(gl008_co2_emissions_kg_per_hour) > 500
+        for: 1h
+        labels:
+          severity: high
+          component: sustainability
+          team: esg
+        annotations:
+          summary: "High CO2 emissions from trap failures"
+          description: "CO2 emissions at {{ $value }} kg/hr. Significant environmental impact."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/high-co2-emissions"
+
+      # Multiple failures of same type
+      - alert: GL008SystemicFailurePattern
+        expr: sum by (facility, failure_mode) (increase(gl008_failures_detected_total[24h])) > 5
+        for: 30m
+        labels:
+          severity: high
+          component: analysis
+          team: engineering
+        annotations:
+          summary: "Systemic failure pattern detected"
+          description: "{{ $value }} {{ $labels.failure_mode }} failures at {{ $labels.facility }} in 24h. Root cause analysis needed."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/systemic-failure-pattern"
+
+  - name: gl008_medium_severity
+    interval: 2m
+    rules:
+      # Degraded trap count increasing
+      - alert: GL008DegradedTrapCount
+        expr: sum by (facility) (gl008_fleet_degraded_count) > 10
+        for: 1h
+        labels:
+          severity: medium
+          component: fleet
+          team: maintenance
+        annotations:
+          summary: "High number of degraded traps"
+          description: "{{ $value }} degraded traps at {{ $labels.facility }}. Schedule preventive maintenance."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/degraded-traps"
+
+      # Sensor calibration needed
+      - alert: GL008SensorCalibrationNeeded
+        expr: gl008_detection_confidence < 0.8
+        for: 4h
+        labels:
+          severity: medium
+          component: sensors
+          team: instrumentation
+        annotations:
+          summary: "Sensor calibration required"
+          description: "Detection confidence for {{ $labels.trap_id }} is {{ $value | humanizePercentage }}. Calibration recommended."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/sensor-calibration"
+
+      # Inspection coverage below target
+      - alert: GL008LowFleetCoverage
+        expr: avg(gl008_fleet_coverage_percent{time_window="24h"}) < 99
+        for: 2h
+        labels:
+          severity: medium
+          component: operations
+          team: operations
+        annotations:
+          summary: "Fleet inspection coverage below target"
+          description: "Coverage at {{ $labels.facility }} is {{ $value }}%. Target: 99%."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/low-coverage"
+
+      # Increasing error rate
+      - alert: GL008InspectionErrorRate
+        expr: sum(rate(gl008_inspection_errors_total[5m])) * 3600 > 10
+        for: 15m
+        labels:
+          severity: medium
+          component: system
+          team: platform
+        annotations:
+          summary: "Elevated inspection error rate"
+          description: "{{ $value }} inspection errors per hour. Investigate system issues."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/inspection-errors"
+
+      # Database connection issues
+      - alert: GL008DatabaseConnectionIssues
+        expr: gl008_db_connections{pool="default"} > 80
+        for: 5m
+        labels:
+          severity: medium
+          component: database
+          team: platform
+        annotations:
+          summary: "Database connection pool near capacity"
+          description: "{{ $value }} active connections. Pool capacity: 100. May need scaling."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/db-connections"
+
+      # API latency elevated
+      - alert: GL008APILatencyElevated
+        expr: histogram_quantile(0.95, sum(rate(gl008_api_latency_seconds_bucket[5m])) by (le, endpoint)) > 1
+        for: 10m
+        labels:
+          severity: medium
+          component: api
+          team: platform
+        annotations:
+          summary: "API latency elevated"
+          description: "P95 latency for {{ $labels.endpoint }} is {{ $value | humanizeDuration }}. Investigate bottlenecks."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/api-latency"
+
+      # Cost impact exceeding threshold
+      - alert: GL008HighCostImpact
+        expr: sum by (facility) (gl008_total_cost_impact_usd_per_year) > 100000
+        for: 1h
+        labels:
+          severity: medium
+          component: financial
+          team: finance
+        annotations:
+          summary: "High annual cost impact from failures"
+          description: "${{ $value | humanize }} annual impact at {{ $labels.facility }}. Prioritize repairs."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/high-cost-impact"
+
+      # Alert backlog building
+      - alert: GL008AlertBacklog
+        expr: sum by (facility, severity) (gl008_active_alerts) > 20
+        for: 2h
+        labels:
+          severity: medium
+          component: alerts
+          team: operations
+        annotations:
+          summary: "Alert backlog building"
+          description: "{{ $value }} active {{ $labels.severity }} alerts at {{ $labels.facility }}. Response capacity issue."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/alert-backlog"
+
+  - name: gl008_low_severity
+    interval: 5m
+    rules:
+      # Maintenance due
+      - alert: GL008MaintenanceDue
+        expr: gl008_days_since_inspection > 30
+        for: 24h
+        labels:
+          severity: low
+          component: maintenance
+          team: maintenance
+        annotations:
+          summary: "Routine maintenance due"
+          description: "Trap {{ $labels.trap_id }} at {{ $labels.facility }} hasn't been inspected in {{ $value }} days."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/maintenance-due"
+
+      # Trending towards failure
+      - alert: GL008TrendingTowardsFailure
+        expr: |
+          (gl008_trap_health_score < 70) and
+          (deriv(gl008_trap_health_score[1h]) < -5)
+        for: 2h
+        labels:
+          severity: low
+          component: predictive
+          team: maintenance
+        annotations:
+          summary: "Trap trending towards failure"
+          description: "Trap {{ $labels.trap_id }} health declining. Current: {{ $value }}%. Schedule inspection."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/trending-failure"
+
+      # High operating hours
+      - alert: GL008HighOperatingHours
+        expr: gl008_trap_operating_hours > 40000
+        for: 24h
+        labels:
+          severity: low
+          component: maintenance
+          team: maintenance
+        annotations:
+          summary: "High trap operating hours"
+          description: "Trap {{ $labels.trap_id }} has {{ $value }} operating hours. Consider replacement."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/high-operating-hours"
+
+      # Cache miss rate elevated
+      - alert: GL008HighCacheMissRate
+        expr: |
+          sum(rate(gl008_cache_operations_total{operation="get", result="miss"}[5m])) /
+          sum(rate(gl008_cache_operations_total{operation="get"}[5m])) > 0.3
+        for: 30m
+        labels:
+          severity: low
+          component: performance
+          team: platform
+        annotations:
+          summary: "High cache miss rate"
+          description: "Cache miss rate is {{ $value | humanizePercentage }}. Performance may be impacted."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/cache-miss-rate"
+
+      # Precision declining
+      - alert: GL008PrecisionDeclining
+        expr: |
+          (avg(gl008_detection_precision) < 0.95) and
+          (deriv(gl008_detection_precision[1h]) < -0.01)
+        for: 1h
+        labels:
+          severity: low
+          component: detection
+          team: ml-ops
+        annotations:
+          summary: "Detection precision declining"
+          description: "Precision is {{ $value | humanizePercentage }} and declining. Monitor for model drift."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/precision-declining"
+
+      # Low ROI warning
+      - alert: GL008LowInspectionROI
+        expr: avg(gl008_inspection_roi{time_window="annual"}) < 2
+        for: 24h
+        labels:
+          severity: low
+          component: financial
+          team: operations
+        annotations:
+          summary: "Low inspection program ROI"
+          description: "ROI is {{ $value }}x. Target: >5x. Review inspection frequency and costs."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/low-roi"
+
+      # Slow alert response
+      - alert: GL008SlowAlertResponse
+        expr: histogram_quantile(0.95, sum(rate(gl008_alert_response_seconds_bucket{severity="critical"}[1h])) by (le)) > 900
+        for: 4h
+        labels:
+          severity: low
+          component: operations
+          team: operations
+        annotations:
+          summary: "Slow response to critical alerts"
+          description: "P95 response time is {{ $value | humanizeDuration }}. Target: <15 minutes for critical alerts."
+          runbook_url: "https://docs.greenlang.com/gl-008/runbooks/slow-alert-response"
+
+  - name: gl008_slo_violations
+    interval: 1m
+    rules:
+      # SLO: Detection accuracy >95%
+      - alert: GL008SLODetectionAccuracy
+        expr: avg(gl008_detection_accuracy_rate{time_window="24h"}) < 0.95
+        for: 1h
+        labels:
+          severity: high
+          component: slo
+          team: ml-ops
+          slo: detection_accuracy
+        annotations:
+          summary: "SLO VIOLATION: Detection accuracy"
+          description: "24h detection accuracy is {{ $value | humanizePercentage }}. SLO: >95%."
+          runbook_url: "https://docs.greenlang.com/gl-008/slos/detection-accuracy"
+
+      # SLO: Inspection latency P95 <3s
+      - alert: GL008SLOInspectionLatency
+        expr: histogram_quantile(0.95, sum(rate(gl008_inspection_latency_seconds_bucket[1h])) by (le)) > 3
+        for: 30m
+        labels:
+          severity: high
+          component: slo
+          team: platform
+          slo: inspection_latency
+        annotations:
+          summary: "SLO VIOLATION: Inspection latency"
+          description: "P95 latency is {{ $value | humanizeDuration }}. SLO: <3s."
+          runbook_url: "https://docs.greenlang.com/gl-008/slos/inspection-latency"
+
+      # SLO: System availability 99.9%
+      - alert: GL008SLOAvailability
+        expr: avg_over_time(gl008_system_health[1h]) < 0.999
+        for: 5m
+        labels:
+          severity: critical
+          component: slo
+          team: platform
+          slo: availability
+        annotations:
+          summary: "SLO VIOLATION: System availability"
+          description: "1h availability is {{ $value | humanizePercentage }}. SLO: >99.9%."
+          runbook_url: "https://docs.greenlang.com/gl-008/slos/availability"
+
+      # SLO: False positive rate <5%
+      - alert: GL008SLOFalsePositiveRate
+        expr: |
+          sum(increase(gl008_false_positives_total[24h])) /
+          (sum(increase(gl008_true_positives_total[24h])) + sum(increase(gl008_false_positives_total[24h]))) > 0.05
+        for: 2h
+        labels:
+          severity: high
+          component: slo
+          team: ml-ops
+          slo: false_positive_rate
+        annotations:
+          summary: "SLO VIOLATION: False positive rate"
+          description: "24h false positive rate is {{ $value | humanizePercentage }}. SLO: <5%."
+          runbook_url: "https://docs.greenlang.com/gl-008/slos/false-positive-rate"
+
+      # SLO: Fleet coverage >99%
+      - alert: GL008SLOFleetCoverage
+        expr: avg(gl008_fleet_coverage_percent{time_window="24h"}) < 99
+        for: 4h
+        labels:
+          severity: medium
+          component: slo
+          team: operations
+          slo: fleet_coverage
+        annotations:
+          summary: "SLO VIOLATION: Fleet coverage"
+          description: "24h fleet coverage is {{ $value }}%. SLO: >99%."
+          runbook_url: "https://docs.greenlang.com/gl-008/slos/fleet-coverage"
+
+      # SLO: Energy calculation accuracy ±5%
+      - alert: GL008SLOEnergyCalculationAccuracy
+        expr: abs(gl008_energy_loss_kw - gl008_energy_loss_kw_verified) / gl008_energy_loss_kw_verified > 0.05
+        for: 1h
+        labels:
+          severity: high
+          component: slo
+          team: engineering
+          slo: energy_accuracy
+        annotations:
+          summary: "SLO VIOLATION: Energy calculation accuracy"
+          description: "Energy calculation error is {{ $value | humanizePercentage }}. SLO: ±5%."
+          runbook_url: "https://docs.greenlang.com/gl-008/slos/energy-accuracy"

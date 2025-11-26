@@ -1,0 +1,109 @@
+{
+  "agent_id": "GL-003",
+  "codename": "STEAMWISE",
+  "name": "SteamSystemAnalyzer",
+  "version": "1.0.0",
+  "runtime": {
+    "deterministic": true,
+    "temperature": 0.0,
+    "seed": 42,
+    "timeout_seconds": 30,
+    "max_retries": 3,
+    "checkpoint_enabled": true,
+    "checkpoint_interval_seconds": 300
+  },
+  "environment": {
+    "python_version": ">=3.10",
+    "memory_mb": 512,
+    "cpu_cores": 1,
+    "log_level": "INFO"
+  },
+  "features": {
+    "enable_monitoring": true,
+    "enable_learning": true,
+    "enable_predictive": true,
+    "enable_safety_limits": true,
+    "emergency_shutdown_enabled": true
+  },
+  "integrations": {
+    "scada": {
+      "enabled": true,
+      "protocol": "opcua",
+      "host": "localhost",
+      "port": 4840,
+      "timeout_seconds": 10
+    },
+    "modbus": {
+      "enabled": true,
+      "host": "localhost",
+      "port": 502,
+      "timeout_seconds": 5
+    },
+    "mqtt": {
+      "enabled": true,
+      "host": "localhost",
+      "port": 1883,
+      "topics": [
+        "steam/pressure",
+        "steam/temperature",
+        "steam/flow",
+        "steam/leaks",
+        "steam/traps"
+      ]
+    },
+    "historian": {
+      "enabled": true,
+      "type": "postgresql",
+      "host": "localhost",
+      "port": 5432,
+      "database": "gl003_steam"
+    },
+    "cache": {
+      "enabled": true,
+      "type": "redis",
+      "host": "localhost",
+      "port": 6379,
+      "ttl_seconds": 60
+    }
+  },
+  "analysis": {
+    "realtime_interval_seconds": 10,
+    "efficiency_interval_minutes": 15,
+    "leak_detection_interval_minutes": 60,
+    "thresholds": {
+      "efficiency_min_percent": 85.0,
+      "leak_detection_kg_hr": 10.0,
+      "pressure_drop_max_bar": 2.0,
+      "temperature_drop_max_c": 10.0
+    },
+    "targets": {
+      "distribution_efficiency_percent": 95.0,
+      "condensate_return_percent": 90.0,
+      "steam_trap_efficiency_percent": 98.0
+    }
+  },
+  "alerts": {
+    "enabled": true,
+    "channels": ["email", "sms", "webhook"],
+    "levels": {
+      "info": true,
+      "warning": true,
+      "error": true,
+      "critical": true
+    },
+    "rate_limit_seconds": 300
+  },
+  "reporting": {
+    "enabled": true,
+    "interval_minutes": 60,
+    "formats": ["json", "csv"],
+    "retention_days": 365
+  },
+  "compliance": {
+    "standards": ["ISO 50001", "ASME Steam Tables"],
+    "zero_hallucination": true,
+    "audit_trail": true,
+    "provenance_tracking": true,
+    "hash_algorithm": "sha256"
+  }
+}

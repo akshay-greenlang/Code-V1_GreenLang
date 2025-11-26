@@ -1,0 +1,415 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "description": "Regulatory emission limits for GL-010 EMISSIONWATCH compliance testing",
+    "last_updated": "2024-01-15",
+    "sources": ["40 CFR Part 60", "EU IED 2010/75/EU", "China GB 13223-2011"]
+  },
+  "epa_nsps": {
+    "description": "EPA New Source Performance Standards",
+    "reference": "40 CFR Part 60",
+    "subparts": {
+      "subpart_da": {
+        "description": "Electric Utility Steam Generating Units (>250 MMBtu/hr)",
+        "applicability": "Units >250 MMBtu/hr heat input",
+        "nox": {
+          "limit_lb_mmbtu": 0.10,
+          "averaging_period_hours": 30,
+          "compliance_method": "30-day rolling average"
+        },
+        "sox": {
+          "limit_lb_mmbtu": 0.15,
+          "percent_reduction": 90.0,
+          "compliance_method": "lb/MMBtu OR percent reduction"
+        },
+        "pm": {
+          "limit_lb_mmbtu": 0.03,
+          "opacity_percent": 20.0,
+          "compliance_method": "lb/MMBtu AND opacity"
+        }
+      },
+      "subpart_db": {
+        "description": "Industrial-Commercial-Institutional Steam Generating Units (>100 MMBtu/hr)",
+        "applicability": "Units >100 MMBtu/hr heat input",
+        "nox": {
+          "natural_gas_limit_lb_mmbtu": 0.20,
+          "fuel_oil_limit_lb_mmbtu": 0.30,
+          "coal_limit_lb_mmbtu": 0.50,
+          "averaging_period_hours": 30
+        },
+        "sox": {
+          "limit_lb_mmbtu": 0.20,
+          "percent_reduction": 90.0
+        },
+        "pm": {
+          "limit_lb_mmbtu": 0.05,
+          "opacity_percent": 20.0
+        }
+      },
+      "subpart_dc": {
+        "description": "Small Industrial-Commercial-Institutional Steam Generating Units (10-100 MMBtu/hr)",
+        "applicability": "Units 10-100 MMBtu/hr heat input",
+        "sox": {
+          "natural_gas_exempt": true,
+          "fuel_oil_limit_lb_mmbtu": 0.50,
+          "coal_limit_lb_mmbtu": 1.20
+        }
+      },
+      "subpart_gg": {
+        "description": "Stationary Gas Turbines",
+        "applicability": "Gas turbines >10 MW",
+        "nox": {
+          "limit_ppmvd_15_o2": 25.0,
+          "limit_lb_mmbtu": 0.15,
+          "averaging_period_hours": 4
+        },
+        "sox": {
+          "limit_percent_sulfur_fuel": 0.80
+        }
+      },
+      "subpart_kkkk": {
+        "description": "Stationary Combustion Turbines (Post-2006)",
+        "applicability": "Turbines constructed after Feb 2006",
+        "nox": {
+          "limit_ppmvd_15_o2_new": 15.0,
+          "limit_ppmvd_15_o2_modified": 42.0,
+          "averaging_period_hours": 4
+        }
+      }
+    }
+  },
+  "epa_mact": {
+    "description": "Maximum Achievable Control Technology Standards",
+    "reference": "40 CFR Part 63",
+    "subparts": {
+      "subpart_ddddd": {
+        "description": "Industrial/Commercial/Institutional Boilers and Process Heaters (Major Sources)",
+        "hcl_lb_mmbtu": {
+          "coal_solid": 0.022,
+          "coal_liquid": 0.0011,
+          "biomass_solid": 0.022,
+          "biomass_liquid": 0.0017,
+          "oil_liquid": 0.0011
+        },
+        "mercury_lb_trillion_btu": {
+          "coal": 5.7,
+          "biomass": 5.7
+        },
+        "pm_filterable_lb_mmbtu": {
+          "coal_solid": 0.040,
+          "biomass_solid": 0.030,
+          "oil_liquid": 0.0070
+        },
+        "co_ppmvd_3_o2": {
+          "coal": 130,
+          "biomass": 460,
+          "oil": 130
+        }
+      },
+      "subpart_uuuuu": {
+        "description": "Coal and Oil Fired EGUs",
+        "mercury_lb_gwh": {
+          "coal_existing": 1.2,
+          "coal_new": 0.0030,
+          "oil_existing": 2.0
+        },
+        "pm_filterable_lb_mwh": {
+          "coal_existing": 0.030,
+          "coal_new": 0.0070,
+          "oil_existing": 0.030
+        },
+        "hcl_lb_mwh": {
+          "coal_existing": 0.002,
+          "coal_new": 0.001
+        }
+      }
+    }
+  },
+  "eu_ied": {
+    "description": "EU Industrial Emissions Directive 2010/75/EU",
+    "reference": "Directive 2010/75/EU, BAT Conclusions",
+    "large_combustion_plants": {
+      "description": "LCP BAT Conclusions (>50 MWth)",
+      "nox_mg_nm3_6_o2": {
+        "coal_new": {"min": 65, "max": 150},
+        "coal_existing": {"min": 65, "max": 200},
+        "natural_gas_new": {"min": 10, "max": 50},
+        "natural_gas_existing": {"min": 30, "max": 85},
+        "biomass_new": {"min": 50, "max": 150},
+        "biomass_existing": {"min": 100, "max": 250}
+      },
+      "sox_mg_nm3_6_o2": {
+        "coal_new": {"min": 10, "max": 130},
+        "coal_existing": {"min": 10, "max": 180},
+        "fuel_oil_new": {"min": 25, "max": 200},
+        "fuel_oil_existing": {"min": 50, "max": 300},
+        "natural_gas": "n/a"
+      },
+      "dust_mg_nm3_6_o2": {
+        "coal_new": {"min": 2, "max": 10},
+        "coal_existing": {"min": 2, "max": 18},
+        "natural_gas": {"min": 1, "max": 5},
+        "biomass_new": {"min": 2, "max": 10},
+        "biomass_existing": {"min": 2, "max": 20}
+      },
+      "mercury_ug_nm3": {
+        "coal": {"min": 1, "max": 4}
+      }
+    },
+    "medium_combustion_plants": {
+      "description": "MCP Directive 2015/2193/EU (1-50 MWth)",
+      "nox_mg_nm3": {
+        "natural_gas_new": 100,
+        "natural_gas_existing": 200,
+        "other_gaseous_new": 200,
+        "other_gaseous_existing": 250,
+        "solid_biomass_new": 300,
+        "solid_biomass_existing": 500,
+        "coal_new": 300,
+        "coal_existing": 500
+      },
+      "sox_mg_nm3": {
+        "natural_gas": 35,
+        "biogas": 170,
+        "solid_fuel_new": 200,
+        "solid_fuel_existing": 400,
+        "liquid_new": 350,
+        "liquid_existing": 350
+      },
+      "dust_mg_nm3": {
+        "natural_gas": 0,
+        "solid_biomass_new": 20,
+        "solid_biomass_existing": 30,
+        "coal_new": 20,
+        "coal_existing": 30,
+        "liquid_new": 20,
+        "liquid_existing": 30
+      }
+    }
+  },
+  "china_mee": {
+    "description": "China Ministry of Ecology and Environment Standards",
+    "reference": "GB 13223-2011",
+    "thermal_power_plants": {
+      "description": "Emission Standard of Air Pollutants for Thermal Power Plants",
+      "nox_mg_nm3_6_o2": {
+        "coal_new": 100,
+        "coal_existing": 200,
+        "oil_new": 100,
+        "oil_existing": 200,
+        "gas_turbine_new": 50,
+        "gas_turbine_existing": 120,
+        "ultra_low_emission": 50
+      },
+      "sox_mg_nm3_6_o2": {
+        "coal_new": 100,
+        "coal_existing": 400,
+        "oil_new": 100,
+        "oil_existing": 200,
+        "ultra_low_emission": 35
+      },
+      "dust_mg_nm3_6_o2": {
+        "coal_new": 30,
+        "coal_existing": 50,
+        "oil_new": 30,
+        "oil_existing": 50,
+        "ultra_low_emission": 10
+      },
+      "mercury_ug_nm3": {
+        "coal": 30
+      }
+    },
+    "key_regions": {
+      "description": "Stricter limits for key air pollution control regions",
+      "applicability": ["Beijing-Tianjin-Hebei", "Yangtze River Delta", "Pearl River Delta"],
+      "nox_mg_nm3": 50,
+      "sox_mg_nm3": 35,
+      "dust_mg_nm3": 10
+    }
+  },
+  "state_limits": {
+    "california_scaqmd": {
+      "description": "South Coast Air Quality Management District",
+      "reference": "SCAQMD Rule 1146",
+      "natural_gas_boilers": {
+        "nox_ppmvd_3_o2": {
+          "gt_5_mmbtu_hr": 9,
+          "1_to_5_mmbtu_hr": 12,
+          "lt_1_mmbtu_hr": 20
+        },
+        "co_ppmvd_3_o2": 400
+      }
+    },
+    "texas_tceq": {
+      "description": "Texas Commission on Environmental Quality",
+      "reference": "30 TAC Chapter 117",
+      "houston_galveston_area": {
+        "nox_lb_mmbtu": {
+          "natural_gas_turbine": 0.032,
+          "boiler_gt_100_mmbtu": 0.036,
+          "boiler_40_to_100_mmbtu": 0.060
+        }
+      }
+    },
+    "new_york_dec": {
+      "description": "New York Department of Environmental Conservation",
+      "reference": "6 NYCRR Part 227",
+      "nox_lb_mmbtu": {
+        "natural_gas_boiler": 0.05,
+        "fuel_oil_boiler": 0.08,
+        "coal_boiler": 0.15
+      }
+    }
+  },
+  "permit_limits_template": {
+    "description": "Template for facility-specific permit limits",
+    "facility_id": "FACILITY-001",
+    "permit_number": "PSD-2024-001",
+    "effective_date": "2024-01-01",
+    "expiration_date": "2029-12-31",
+    "emission_units": [
+      {
+        "unit_id": "EU-001",
+        "description": "Natural Gas Boiler #1",
+        "fuel_type": "natural_gas",
+        "heat_input_mmbtu_hr": 150,
+        "limits": {
+          "nox": {
+            "limit_lb_mmbtu": 0.08,
+            "limit_tons_year": 50.0,
+            "averaging_period": "30-day rolling",
+            "monitoring_method": "CEMS"
+          },
+          "sox": {
+            "limit_lb_mmbtu": 0.006,
+            "limit_tons_year": 3.8,
+            "averaging_period": "calendar month",
+            "monitoring_method": "fuel sulfur analysis"
+          },
+          "co": {
+            "limit_ppmvd_3_o2": 50,
+            "limit_tons_year": 100.0,
+            "averaging_period": "1-hour block",
+            "monitoring_method": "periodic testing"
+          },
+          "pm": {
+            "limit_lb_mmbtu": 0.01,
+            "limit_tons_year": 6.0,
+            "averaging_period": "24-hour",
+            "monitoring_method": "periodic testing"
+          },
+          "co2": {
+            "reporting_only": true,
+            "monitoring_method": "calculation"
+          }
+        }
+      }
+    ]
+  },
+  "compliance_thresholds": {
+    "description": "Compliance determination thresholds",
+    "measurement_uncertainty": {
+      "nox_cems_percent": 2.5,
+      "sox_cems_percent": 2.5,
+      "flow_cems_percent": 5.0,
+      "co2_cems_percent": 2.5
+    },
+    "exceedance_severity": {
+      "low": {
+        "percent_over_limit": 10,
+        "description": "Minor exceedance, document and monitor"
+      },
+      "medium": {
+        "percent_over_limit": 25,
+        "description": "Significant exceedance, corrective action required"
+      },
+      "high": {
+        "percent_over_limit": 50,
+        "description": "Major exceedance, immediate response required"
+      },
+      "critical": {
+        "percent_over_limit": 100,
+        "description": "Severe exceedance, facility shutdown may be required"
+      }
+    },
+    "data_availability_requirements": {
+      "epa_part_75": {
+        "minimum_percent": 90,
+        "substitute_data_allowed": true,
+        "qa_qc_frequency_days": 90
+      },
+      "eu_ied": {
+        "minimum_percent": 95,
+        "substitute_data_allowed": true,
+        "uncertainty_requirements": "EN 14181"
+      }
+    }
+  },
+  "unit_conversions": {
+    "description": "Conversion factors for regulatory units",
+    "nox": {
+      "ppmvd_to_mg_nm3": 2.05,
+      "lb_mmbtu_to_ng_j": 430,
+      "mg_nm3_to_lb_mmbtu_natural_gas": 0.00082,
+      "mg_nm3_to_lb_mmbtu_coal": 0.00095
+    },
+    "sox": {
+      "ppmvd_to_mg_nm3": 2.86,
+      "lb_mmbtu_to_ng_j": 430
+    },
+    "pm": {
+      "mg_nm3_to_lb_mmbtu_natural_gas": 0.00076,
+      "mg_nm3_to_lb_mmbtu_coal": 0.00088
+    },
+    "reference_conditions": {
+      "ntp": {"temperature_k": 293.15, "pressure_kpa": 101.325},
+      "stp": {"temperature_k": 273.15, "pressure_kpa": 101.325},
+      "epa_standard": {"temperature_f": 68, "pressure_inhg": 29.92}
+    }
+  },
+  "test_scenarios": {
+    "compliant_natural_gas": {
+      "description": "Fully compliant natural gas facility",
+      "emissions": {
+        "nox_lb_mmbtu": 0.05,
+        "sox_lb_mmbtu": 0.005,
+        "pm_lb_mmbtu": 0.008,
+        "co2_lb_mmbtu": 117
+      },
+      "expected_status": "compliant"
+    },
+    "non_compliant_nox": {
+      "description": "NOx violation scenario",
+      "emissions": {
+        "nox_lb_mmbtu": 0.15,
+        "sox_lb_mmbtu": 0.008,
+        "pm_lb_mmbtu": 0.01,
+        "co2_lb_mmbtu": 117
+      },
+      "expected_status": "non_compliant",
+      "violation_pollutant": "nox",
+      "exceedance_percent": 50
+    },
+    "at_limit_boundary": {
+      "description": "At exact permit limits",
+      "emissions": {
+        "nox_lb_mmbtu": 0.10,
+        "sox_lb_mmbtu": 0.15,
+        "pm_lb_mmbtu": 0.03,
+        "co2_lb_mmbtu": 205
+      },
+      "expected_status": "compliant"
+    },
+    "multiple_violations": {
+      "description": "Multiple pollutants exceeding limits",
+      "emissions": {
+        "nox_lb_mmbtu": 0.12,
+        "sox_lb_mmbtu": 0.20,
+        "pm_lb_mmbtu": 0.04,
+        "co2_lb_mmbtu": 205
+      },
+      "expected_status": "non_compliant",
+      "violations": ["nox", "sox", "pm"]
+    }
+  }
+}

@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-008-steam-trap-inspector
+spec:
+  template:
+    spec:
+      containers:
+        - name: gl-008-steam-trap-inspector
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "1000m"
+            limits:
+              memory: "1Gi"
+              cpu: "3000m"

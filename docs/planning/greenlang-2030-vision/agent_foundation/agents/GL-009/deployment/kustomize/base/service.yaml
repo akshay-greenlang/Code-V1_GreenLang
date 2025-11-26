@@ -1,0 +1,110 @@
+# GL-009 THERMALIQ ThermalEfficiencyCalculator - Kubernetes Services
+# Multiple services for different types of traffic
+
+---
+# Main ClusterIP Service for API traffic
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-009-thermaliq
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+    service-type: "main"
+  annotations:
+    description: "Main API service for thermal efficiency calculations"
+spec:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours for long-running calculations
+  selector:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8000
+      protocol: TCP
+    - name: websocket
+      port: 8003
+      targetPort: 8003
+      protocol: TCP
+
+---
+# Metrics Service for Prometheus scraping
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-009-thermaliq-metrics
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+    service-type: "metrics"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8001"
+    prometheus.io/path: "/api/v1/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+  ports:
+    - name: metrics
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+
+---
+# Admin Service for internal management
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-009-thermaliq-admin
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+    service-type: "admin"
+  annotations:
+    description: "Admin API for internal management and diagnostics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+  ports:
+    - name: admin
+      port: 8002
+      targetPort: 8002
+      protocol: TCP
+
+---
+# Headless Service for StatefulSet-style discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-009-thermaliq-headless
+  namespace: greenlang
+  labels:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+    service-type: "headless"
+  annotations:
+    description: "Headless service for direct pod-to-pod communication"
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  publishNotReadyAddresses: true
+  selector:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP

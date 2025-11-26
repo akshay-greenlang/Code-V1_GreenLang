@@ -1,0 +1,6 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-008-steam-trap-inspector
+spec:
+  replicas: 2

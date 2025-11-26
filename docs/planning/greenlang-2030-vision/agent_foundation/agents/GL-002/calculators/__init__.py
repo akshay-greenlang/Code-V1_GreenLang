@@ -37,42 +37,34 @@ from .fuel_optimization import (
     FuelOptimizationCalculator,
     FuelData,
     BoilerOperatingData,
-    OptimizationConstraints,
-    OptimizationResults
+    OptimizationConstraints
 )
 
 from .emissions_calculator import (
     EmissionsCalculator,
     BoilerEmissionData,
     EmissionFactors,
-    RegulatoryLimits,
-    EmissionResults,
-    ComplianceStatus
+    RegulatoryLimits
 )
 
 from .steam_generation import (
     SteamGenerationCalculator,
-    SteamQualityData,
-    SteamProperties,
-    SteamGenerationResults
+    SteamGenerationData
 )
 
 from .heat_transfer import (
     HeatTransferCalculator,
-    HeatTransferData,
-    HeatTransferResults
+    HeatTransferData
 )
 
 from .blowdown_optimizer import (
     BlowdownOptimizer,
-    BlowdownData,
-    BlowdownResults
+    BlowdownData
 )
 
 from .economizer_performance import (
     EconomizerPerformanceCalculator,
-    EconomizerData,
-    EconomizerResults
+    EconomizerData
 )
 
 __all__ = [
@@ -93,36 +85,28 @@ __all__ = [
     'FuelData',
     'BoilerOperatingData',
     'OptimizationConstraints',
-    'OptimizationResults',
 
     # Emissions
     'EmissionsCalculator',
     'BoilerEmissionData',
     'EmissionFactors',
     'RegulatoryLimits',
-    'EmissionResults',
-    'ComplianceStatus',
 
     # Steam Generation
     'SteamGenerationCalculator',
-    'SteamQualityData',
-    'SteamProperties',
-    'SteamGenerationResults',
+    'SteamGenerationData',
 
     # Heat Transfer
     'HeatTransferCalculator',
     'HeatTransferData',
-    'HeatTransferResults',
 
     # Blowdown Optimization
     'BlowdownOptimizer',
     'BlowdownData',
-    'BlowdownResults',
 
     # Economizer Performance
     'EconomizerPerformanceCalculator',
     'EconomizerData',
-    'EconomizerResults',
 ]
 
 __version__ = '1.0.0'

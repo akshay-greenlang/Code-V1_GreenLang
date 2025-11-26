@@ -18,6 +18,7 @@ Target: 40+ tests covering:
 """
 
 import pytest
+import logging
 from typing import Dict, Any
 from unittest.mock import Mock, patch
 from decimal import Decimal

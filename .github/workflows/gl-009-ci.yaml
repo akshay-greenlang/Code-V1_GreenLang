@@ -1,0 +1,493 @@
+# GL-009 THERMALIQ ThermalEfficiencyCalculator - CI/CD Pipeline
+# Complete pipeline: lint, test, security scan, build, deploy
+# Triggers: push to main/staging, pull requests
+
+name: GL-009 THERMALIQ CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - develop
+    paths:
+      - 'docs/planning/greenlang-2030-vision/agent_foundation/agents/GL-009/**'
+      - '.github/workflows/gl-009-ci.yaml'
+  pull_request:
+    branches:
+      - main
+      - staging
+    paths:
+      - 'docs/planning/greenlang-2030-vision/agent_foundation/agents/GL-009/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+env:
+  PYTHON_VERSION: '3.11'
+  REGISTRY: gcr.io
+  IMAGE_NAME: greenlang/gl-009-thermaliq
+  AGENT_PATH: docs/planning/greenlang-2030-vision/agent_foundation/agents/GL-009
+
+jobs:
+  # =============================================================================
+  # Job 1: Code Quality & Linting
+  # =============================================================================
+  lint:
+    name: Lint & Code Quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install linting dependencies
+        run: |
+          pip install --upgrade pip
+          pip install ruff black isort mypy
+
+      - name: Run Ruff linter
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          ruff check . --output-format=github
+        continue-on-error: true
+
+      - name: Check code formatting with Black
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          black --check --diff .
+
+      - name: Check import sorting with isort
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          isort --check-only --diff .
+
+      - name: Run mypy type checker
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          mypy . --ignore-missing-imports
+        continue-on-error: true
+
+  # =============================================================================
+  # Job 2: Security Scanning
+  # =============================================================================
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Bandit security scanner
+        run: |
+          pip install bandit
+          cd ${{ env.AGENT_PATH }}
+          bandit -r . -f json -o bandit-report.json || true
+          bandit -r . -f screen
+
+      - name: Run Safety dependency checker
+        run: |
+          pip install safety
+          cd ${{ env.AGENT_PATH }}
+          safety check --json --output safety-report.json || true
+          safety check
+
+      - name: Run pip-audit
+        run: |
+          pip install pip-audit
+          cd ${{ env.AGENT_PATH }}
+          pip-audit --format json --output pip-audit-report.json || true
+          pip-audit
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            ${{ env.AGENT_PATH }}/bandit-report.json
+            ${{ env.AGENT_PATH }}/safety-report.json
+            ${{ env.AGENT_PATH }}/pip-audit-report.json
+          retention-days: 30
+
+  # =============================================================================
+  # Job 3: Unit Tests
+  # =============================================================================
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: gl009_test
+          POSTGRES_USER: greenlang
+          POSTGRES_PASSWORD: greenlang
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libopenblas-dev liblapack-dev gfortran
+
+      - name: Install Python dependencies
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov pytest-mock pytest-timeout
+
+      - name: Run unit tests with coverage
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang@localhost:5432/gl009_test
+          REDIS_URL: redis://localhost:6379/0
+          GREENLANG_ENV: test
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          pytest tests/unit \
+            --cov=. \
+            --cov-report=xml \
+            --cov-report=term \
+            --cov-report=html \
+            --junitxml=pytest-report.xml \
+            --timeout=300 \
+            -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ env.AGENT_PATH }}/coverage.xml
+          flags: unittests
+          name: gl-009-coverage
+
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            ${{ env.AGENT_PATH }}/pytest-report.xml
+            ${{ env.AGENT_PATH }}/htmlcov
+          retention-days: 30
+
+  # =============================================================================
+  # Job 4: Integration Tests
+  # =============================================================================
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint, test]
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_DB: gl009_integration
+          POSTGRES_USER: greenlang
+          POSTGRES_PASSWORD: greenlang
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://greenlang:greenlang@localhost:5432/gl009_integration
+          REDIS_URL: redis://localhost:6379/0
+          GREENLANG_ENV: integration
+        run: |
+          cd ${{ env.AGENT_PATH }}
+          pytest tests/integration \
+            --junitxml=integration-report.xml \
+            --timeout=600 \
+            -v
+
+  # =============================================================================
+  # Job 5: Build Docker Image
+  # =============================================================================
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [lint, security, test]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: _json_key
+          password: ${{ secrets.GCR_JSON_KEY }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix={{branch}}-
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ env.AGENT_PATH }}
+          file: ${{ env.AGENT_PATH }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+            VERSION=${{ steps.meta.outputs.version }}
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  # =============================================================================
+  # Job 6: Deploy to Staging
+  # =============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [build, integration-test]
+    if: github.ref == 'refs/heads/staging' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    environment:
+      name: staging
+      url: https://staging.thermaliq.greenlang.ai
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_STAGING }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy to staging with Kustomize
+        run: |
+          cd ${{ env.AGENT_PATH }}/deployment/kustomize/overlays/staging
+          kubectl apply -k .
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/staging-gl-009-thermaliq -n greenlang-staging --timeout=300s
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n greenlang-staging -l app=gl-009-thermaliq
+          kubectl get svc -n greenlang-staging -l app=gl-009-thermaliq
+
+  # =============================================================================
+  # Job 7: Smoke Tests (Staging)
+  # =============================================================================
+  smoke-test:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [deploy-staging]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Wait for service to be ready
+        run: |
+          sleep 30
+
+      - name: Run smoke tests
+        run: |
+          # Health check
+          curl -f https://staging.thermaliq.greenlang.ai/api/v1/health || exit 1
+
+          # Readiness check
+          curl -f https://staging.thermaliq.greenlang.ai/api/v1/ready || exit 1
+
+          # Metrics endpoint
+          curl -f https://staging.thermaliq.greenlang.ai/api/v1/metrics || exit 1
+
+      - name: Test calculation endpoint
+        run: |
+          # Sample thermal efficiency calculation
+          curl -X POST https://staging.thermaliq.greenlang.ai/api/v1/calculations \
+            -H "Content-Type: application/json" \
+            -H "X-API-Key: ${{ secrets.STAGING_API_KEY }}" \
+            -d '{
+              "type": "heat_exchanger",
+              "inlet_temp": 150,
+              "outlet_temp": 50,
+              "flow_rate": 1000
+            }' || exit 1
+
+  # =============================================================================
+  # Job 8: Deploy to Production
+  # =============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [build, smoke-test]
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    environment:
+      name: production
+      url: https://thermaliq.greenlang.ai
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.KUBECONFIG_PRODUCTION }}" | base64 -d > kubeconfig
+          export KUBECONFIG=kubeconfig
+
+      - name: Deploy to production with Kustomize
+        run: |
+          cd ${{ env.AGENT_PATH }}/deployment/kustomize/overlays/production
+          kubectl apply -k .
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/prod-gl-009-thermaliq -n greenlang-production --timeout=600s
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n greenlang-production -l app=gl-009-thermaliq
+          kubectl get svc -n greenlang-production -l app=gl-009-thermaliq
+          kubectl get hpa -n greenlang-production -l app=gl-009-thermaliq
+
+      - name: Send deployment notification
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: 'GL-009 THERMALIQ deployed to production'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}

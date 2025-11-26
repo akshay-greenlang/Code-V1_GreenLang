@@ -1,0 +1,444 @@
+# GL-006 HeatRecoveryMaximizer Agent Specification
+# GreenLang AgentSpec v2.0
+
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: gl-006-heatreclaim
+  namespace: greenlang
+  labels:
+    agent-id: GL-006
+    codename: HEATRECLAIM
+    domain: heat-recovery
+    tier: production
+    priority: P0
+  annotations:
+    greenlang.io/version: "1.0.0"
+    greenlang.io/schema-version: "2.0"
+    greenlang.io/deterministic: "true"
+
+spec:
+  # Agent Identity
+  identity:
+    id: GL-006
+    codename: HEATRECLAIM
+    name: HeatRecoveryMaximizer
+    version: "1.0.0"
+    description: |
+      Maximizes waste heat recovery across all process streams through advanced
+      thermodynamic analysis, pinch optimization, and economic evaluation.
+
+  # Agent Capabilities
+  capabilities:
+    primary:
+      - waste_heat_analysis
+      - pinch_optimization
+      - heat_exchanger_network_synthesis
+      - exergy_analysis
+      - economic_evaluation
+
+    secondary:
+      - thermal_imaging_integration
+      - scada_data_collection
+      - compliance_reporting
+      - implementation_planning
+
+  # Pipeline Definition
+  pipeline:
+    name: heat_recovery_pipeline
+    version: "1.0"
+    description: "Main heat recovery analysis and optimization pipeline"
+
+    # Pipeline Stages
+    stages:
+      - name: data_ingestion
+        order: 1
+        description: "Collect and validate input data from various sources"
+        timeout: 60s
+        retries: 3
+        steps:
+          - name: collect_stream_data
+            tool: process_stream_monitor
+            inputs:
+              - source: scada_historian
+                type: temperature
+              - source: flow_meters
+                type: flow_rate
+            outputs:
+              - hot_streams
+              - cold_streams
+
+          - name: collect_thermal_data
+            tool: thermal_imaging_connector
+            inputs:
+              - source: ir_cameras
+                type: thermal_image
+            outputs:
+              - heat_loss_map
+              - temperature_gradients
+
+          - name: validate_data
+            tool: data_validator
+            inputs:
+              - hot_streams
+              - cold_streams
+              - heat_loss_map
+            outputs:
+              - validated_streams
+              - data_quality_report
+
+      - name: stream_analysis
+        order: 2
+        description: "Analyze heat streams and identify recovery potential"
+        timeout: 120s
+        retries: 2
+        depends_on:
+          - data_ingestion
+        steps:
+          - name: characterize_streams
+            tool: stream_characterizer
+            inputs:
+              - validated_streams
+            outputs:
+              - stream_profiles
+              - heat_duties
+
+          - name: identify_opportunities
+            tool: opportunity_identifier
+            inputs:
+              - stream_profiles
+              - heat_duties
+            outputs:
+              - recovery_opportunities
+              - feasibility_scores
+
+      - name: pinch_analysis
+        order: 3
+        description: "Perform pinch analysis and determine energy targets"
+        timeout: 180s
+        retries: 2
+        depends_on:
+          - stream_analysis
+        steps:
+          - name: calculate_pinch
+            tool: pinch_analysis_calculator
+            inputs:
+              - stream_profiles
+              - min_temperature_approach: 10.0
+            outputs:
+              - pinch_temperature
+              - hot_utility_target
+              - cold_utility_target
+              - composite_curves
+
+          - name: generate_grand_composite
+            tool: grand_composite_generator
+            inputs:
+              - composite_curves
+              - pinch_temperature
+            outputs:
+              - grand_composite_curve
+              - pocket_analysis
+
+      - name: network_synthesis
+        order: 4
+        description: "Synthesize optimal heat exchanger network"
+        timeout: 300s
+        retries: 2
+        depends_on:
+          - pinch_analysis
+        steps:
+          - name: synthesize_network
+            tool: heat_exchanger_network_optimizer
+            inputs:
+              - stream_profiles
+              - pinch_temperature
+              - hot_utility_target
+              - cold_utility_target
+            outputs:
+              - network_topology
+              - exchanger_specifications
+              - utility_requirements
+
+          - name: design_exchangers
+            tool: heat_exchanger_design_calculator
+            inputs:
+              - exchanger_specifications
+              - stream_profiles
+            outputs:
+              - exchanger_designs
+              - equipment_sizing
+
+      - name: exergy_analysis
+        order: 5
+        description: "Perform exergy analysis for second-law optimization"
+        timeout: 120s
+        retries: 2
+        depends_on:
+          - network_synthesis
+        steps:
+          - name: calculate_exergy
+            tool: exergy_calculator
+            inputs:
+              - stream_profiles
+              - network_topology
+              - ambient_temperature: 25.0
+            outputs:
+              - exergy_flows
+              - exergy_destruction
+              - second_law_efficiency
+
+      - name: economic_analysis
+        order: 6
+        description: "Perform economic analysis and ROI calculations"
+        timeout: 120s
+        retries: 2
+        depends_on:
+          - network_synthesis
+          - exergy_analysis
+        steps:
+          - name: calculate_capital_cost
+            tool: capital_cost_estimator
+            inputs:
+              - exchanger_designs
+              - equipment_sizing
+            outputs:
+              - capital_costs
+              - installation_costs
+
+          - name: calculate_operating_savings
+            tool: operating_savings_calculator
+            inputs:
+              - utility_requirements
+              - current_utility_usage
+              - energy_prices
+            outputs:
+              - annual_savings
+              - utility_reduction
+
+          - name: calculate_roi
+            tool: roi_calculator
+            inputs:
+              - capital_costs
+              - installation_costs
+              - annual_savings
+              - discount_rate
+              - project_lifetime
+            outputs:
+              - roi
+              - npv
+              - payback_period
+              - irr
+
+      - name: output_generation
+        order: 7
+        description: "Generate final outputs and reports"
+        timeout: 60s
+        retries: 2
+        depends_on:
+          - economic_analysis
+        steps:
+          - name: rank_opportunities
+            tool: opportunity_prioritizer
+            inputs:
+              - recovery_opportunities
+              - roi
+              - feasibility_scores
+            outputs:
+              - ranked_opportunities
+              - implementation_priority
+
+          - name: generate_report
+            tool: report_generator
+            inputs:
+              - ranked_opportunities
+              - network_topology
+              - economic_analysis
+            outputs:
+              - executive_summary
+              - technical_report
+              - implementation_plan
+
+  # Tool Definitions
+  tools:
+    - name: process_stream_monitor
+      module: integrations.process_stream_monitor
+      class: ProcessStreamMonitor
+      description: "Monitors and collects process stream data"
+
+    - name: thermal_imaging_connector
+      module: connectors.thermal_imaging_connector
+      class: ThermalImagingConnector
+      description: "Integrates with thermal imaging systems"
+
+    - name: pinch_analysis_calculator
+      module: calculators.pinch_analysis_calculator
+      class: PinchAnalysisCalculator
+      description: "Performs pinch analysis calculations"
+
+    - name: heat_exchanger_network_optimizer
+      module: calculators.heat_exchanger_network_optimizer
+      class: HeatExchangerNetworkOptimizer
+      description: "Optimizes heat exchanger network topology"
+
+    - name: heat_exchanger_design_calculator
+      module: calculators.heat_exchanger_design_calculator
+      class: HeatExchangerDesignCalculator
+      description: "Designs heat exchanger equipment"
+
+    - name: exergy_calculator
+      module: calculators.exergy_calculator
+      class: ExergyCalculator
+      description: "Performs exergy and second-law analysis"
+
+    - name: roi_calculator
+      module: calculators.roi_calculator
+      class: ROICalculator
+      description: "Calculates financial metrics and ROI"
+
+    - name: opportunity_prioritizer
+      module: calculators.opportunity_prioritizer
+      class: OpportunityPrioritizer
+      description: "Ranks and prioritizes recovery opportunities"
+
+    - name: economizer_optimizer
+      module: calculators.economizer_optimizer
+      class: EconomizerOptimizer
+      description: "Optimizes economizer performance"
+
+    - name: thermodynamic_validator
+      module: calculators.thermodynamic_validator
+      class: ThermodynamicValidator
+      description: "Validates thermodynamic calculations"
+
+  # Runtime Configuration
+  runtime:
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+
+    execution:
+      max_iterations: 1000
+      convergence_tolerance: 1.0e-6
+      timeout_seconds: 300
+      retry_count: 3
+      parallel_stages: false
+
+    memory:
+      max_heap_mb: 512
+      gc_threshold: 0.7
+
+    logging:
+      level: INFO
+      format: json
+      include_timestamps: true
+      include_trace_id: true
+
+  # Validation Rules
+  validation:
+    input:
+      - rule: temperature_above_absolute_zero
+        field: "*.temperature_c"
+        condition: "> -273.15"
+        severity: error
+
+      - rule: positive_flow_rate
+        field: "*.flow_rate_kg_s"
+        condition: ">= 0"
+        severity: error
+
+      - rule: valid_specific_heat
+        field: "*.specific_heat_kj_kg_k"
+        condition: "> 0"
+        severity: error
+
+    output:
+      - rule: valid_roi
+        field: "roi_analysis.roi_percent"
+        condition: ">= -100"
+        severity: warning
+
+      - rule: valid_payback
+        field: "roi_analysis.simple_payback_years"
+        condition: "> 0"
+        severity: warning
+
+    thermodynamic:
+      - rule: energy_balance
+        tolerance: 0.01
+        severity: error
+
+      - rule: entropy_generation
+        condition: ">= 0"
+        severity: error
+
+      - rule: temperature_approach
+        min_value: 10.0
+        severity: warning
+
+  # Provenance Tracking
+  provenance:
+    enabled: true
+    storage: database
+    retention_days: 365
+
+    track:
+      - inputs
+      - outputs
+      - intermediate_results
+      - tool_executions
+      - validation_results
+
+    lineage:
+      include_checksums: true
+      include_timestamps: true
+      include_versions: true
+
+  # Compliance
+  compliance:
+    standards:
+      - ISO 50001
+      - ASME EA-1
+
+    audit:
+      enabled: true
+      log_all_decisions: true
+      retain_calculation_details: true
+
+  # Health Checks
+  health:
+    liveness:
+      path: /health
+      interval: 30s
+      timeout: 10s
+      failure_threshold: 3
+
+    readiness:
+      path: /ready
+      interval: 10s
+      timeout: 5s
+      success_threshold: 1
+
+  # Metrics
+  metrics:
+    enabled: true
+    port: 9090
+    path: /metrics
+
+    custom:
+      - name: streams_analyzed_total
+        type: counter
+        description: "Total number of streams analyzed"
+
+      - name: pinch_temperature_celsius
+        type: gauge
+        description: "Current pinch temperature"
+
+      - name: heat_recovery_potential_kw
+        type: gauge
+        description: "Total identified heat recovery potential"
+
+      - name: calculation_duration_seconds
+        type: histogram
+        description: "Duration of calculations"
+        buckets: [0.1, 0.5, 1, 5, 10, 30, 60]

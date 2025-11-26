@@ -1,0 +1,650 @@
+{
+  "agent_id": "GL-010",
+  "codename": "EMISSIONWATCH",
+  "name": "EmissionsComplianceAgent",
+  "version": "1.0.0",
+  "description": "Real-time emissions compliance monitoring ensuring NOx/SOx/CO2/PM compliance with environmental regulations",
+
+  "operation_modes": [
+    "MONITOR",
+    "REPORT",
+    "ALERT",
+    "ANALYZE",
+    "PREDICT",
+    "AUDIT",
+    "BENCHMARK",
+    "VALIDATE"
+  ],
+
+  "ai_config": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-20250514",
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 4096,
+    "top_p": 1.0,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0,
+    "allowed_operations": [
+      "classification",
+      "categorization",
+      "alert_prioritization",
+      "narrative_generation",
+      "root_cause_classification"
+    ],
+    "prohibited_operations": [
+      "numeric_calculation",
+      "emission_value_generation",
+      "compliance_determination",
+      "regulatory_limit_setting",
+      "emission_factor_estimation"
+    ]
+  },
+
+  "determinism": {
+    "enabled": true,
+    "provenance_tracking": true,
+    "sha256_hashing": true,
+    "audit_trail": true,
+    "reproducible_results": true,
+    "fixed_seed": 42
+  },
+
+  "execution": {
+    "timeout_seconds": 300,
+    "max_retries": 3,
+    "retry_delay_seconds": 5,
+    "batch_size": 1000,
+    "cache_ttl_seconds": 60,
+    "parallel_processing": true,
+    "max_concurrent_tasks": 10
+  },
+
+  "memory": {
+    "short_term_capacity": 10000,
+    "long_term_enabled": true,
+    "storage_path": "./gl010_memory",
+    "persistence_interval": 60,
+    "historical_data_retention_days": 2555
+  },
+
+  "emissions_config": {
+    "pollutants": {
+      "nox": {
+        "enabled": true,
+        "units": ["ppm", "lb_mmbtu", "lb_hr", "tons_day", "tons_year"],
+        "correction_reference_o2_percent": 15.0,
+        "calculation_methods": ["cems", "fuel_factor", "ap42"]
+      },
+      "sox": {
+        "enabled": true,
+        "units": ["ppm", "lb_mmbtu", "lb_hr", "tons_day", "tons_year"],
+        "correction_reference_o2_percent": 15.0,
+        "calculation_methods": ["cems", "fuel_sulfur", "ap42"]
+      },
+      "co2": {
+        "enabled": true,
+        "units": ["percent", "tons_hr", "tons_day", "tons_year", "mt_year"],
+        "calculation_methods": ["cems", "fuel_carbon", "heat_input"]
+      },
+      "co": {
+        "enabled": true,
+        "units": ["ppm", "lb_hr"],
+        "calculation_methods": ["cems"]
+      },
+      "pm": {
+        "enabled": true,
+        "units": ["mg_m3", "lb_mmbtu", "lb_hr", "tons_year"],
+        "includes_pm10": true,
+        "includes_pm25": true
+      },
+      "opacity": {
+        "enabled": true,
+        "units": ["percent"],
+        "six_minute_average": true
+      }
+    },
+
+    "emission_factors": {
+      "sources": {
+        "epa_ap42": {
+          "enabled": true,
+          "version": "5th Edition",
+          "priority": 3
+        },
+        "ipcc": {
+          "enabled": true,
+          "version": "2006 Guidelines",
+          "priority": 4
+        },
+        "permit_specific": {
+          "enabled": true,
+          "priority": 1
+        },
+        "measured": {
+          "enabled": true,
+          "priority": 2
+        }
+      },
+      "default_factors": {
+        "natural_gas": {
+          "nox_lb_mmbtu": 0.1,
+          "sox_lb_mmbtu": 0.0006,
+          "co2_lb_mmbtu": 117.0,
+          "pm_lb_mmbtu": 0.0076
+        },
+        "coal_bituminous": {
+          "nox_lb_mmbtu": 0.5,
+          "sox_lb_mmbtu": 1.2,
+          "co2_lb_mmbtu": 205.0,
+          "pm_lb_mmbtu": 0.5
+        },
+        "fuel_oil_6": {
+          "nox_lb_mmbtu": 0.37,
+          "sox_lb_mmbtu": 1.0,
+          "co2_lb_mmbtu": 173.0,
+          "pm_lb_mmbtu": 0.03
+        },
+        "diesel": {
+          "nox_lb_mmbtu": 0.14,
+          "sox_lb_mmbtu": 0.22,
+          "co2_lb_mmbtu": 161.0,
+          "pm_lb_mmbtu": 0.006
+        },
+        "biomass": {
+          "nox_lb_mmbtu": 0.22,
+          "sox_lb_mmbtu": 0.025,
+          "co2_lb_mmbtu": 0.0,
+          "pm_lb_mmbtu": 0.3
+        }
+      }
+    }
+  },
+
+  "regulatory_limits": {
+    "us_epa": {
+      "nsps_subpart_da": {
+        "description": "Standards of Performance for Electric Utility Steam Generating Units",
+        "nox_lb_mmbtu": 0.15,
+        "sox_lb_mmbtu": 0.15,
+        "pm_lb_mmbtu": 0.03,
+        "opacity_percent": 20
+      },
+      "nsps_subpart_db": {
+        "description": "Industrial-Commercial-Institutional Steam Generating Units >100 MMBtu/hr",
+        "nox_lb_mmbtu": 0.20,
+        "sox_lb_mmbtu": 0.50,
+        "pm_lb_mmbtu": 0.05,
+        "opacity_percent": 20
+      },
+      "mact_subpart_ddddd": {
+        "description": "Major Source Boilers",
+        "pm_lb_mmbtu": 0.03,
+        "hcl_lb_mmbtu": 0.022,
+        "co_ppm": 400
+      }
+    },
+    "eu_ied": {
+      "large_combustion_plants_100_300mw": {
+        "nox_mg_nm3": 150,
+        "sox_mg_nm3": 200,
+        "pm_mg_nm3": 20,
+        "reference_o2_percent": 6
+      },
+      "large_combustion_plants_above_300mw": {
+        "nox_mg_nm3": 100,
+        "sox_mg_nm3": 150,
+        "pm_mg_nm3": 10,
+        "reference_o2_percent": 6
+      }
+    },
+    "eu_ets": {
+      "reporting_threshold_mt_co2": 25000,
+      "verification_required": true,
+      "allowance_surrender_required": true
+    },
+    "china_mee": {
+      "ultra_low_emission": {
+        "nox_mg_nm3": 50,
+        "sox_mg_nm3": 35,
+        "pm_mg_nm3": 10,
+        "reference_o2_percent": 6
+      },
+      "standard_emission": {
+        "nox_mg_nm3": 100,
+        "sox_mg_nm3": 100,
+        "pm_mg_nm3": 30,
+        "reference_o2_percent": 6
+      }
+    }
+  },
+
+  "alert_thresholds": {
+    "warning": {
+      "percent_of_limit": 80,
+      "description": "Warning when emissions reach 80% of limit",
+      "notification_channels": ["email", "dashboard"],
+      "escalation_delay_minutes": 30
+    },
+    "critical": {
+      "percent_of_limit": 95,
+      "description": "Critical alert when emissions reach 95% of limit",
+      "notification_channels": ["email", "sms", "slack"],
+      "escalation_delay_minutes": 5
+    },
+    "violation": {
+      "percent_of_limit": 100,
+      "description": "Violation when emissions exceed limit",
+      "notification_channels": ["email", "sms", "slack", "pagerduty"],
+      "immediate_escalation": true,
+      "auto_report_generation": true
+    },
+    "equipment_malfunction": {
+      "description": "Control equipment not operating correctly",
+      "notification_channels": ["email", "sms", "pagerduty"],
+      "immediate_escalation": true
+    },
+    "data_quality": {
+      "quality_score_warning": 90,
+      "quality_score_critical": 75,
+      "notification_channels": ["email", "dashboard"]
+    }
+  },
+
+  "cems_integration": {
+    "protocols": {
+      "modbus_tcp": {
+        "enabled": true,
+        "default_port": 502,
+        "polling_interval_ms": 1000,
+        "timeout_ms": 5000,
+        "retry_count": 3
+      },
+      "opc_ua": {
+        "enabled": true,
+        "security_mode": "SignAndEncrypt",
+        "security_policy": "Basic256Sha256",
+        "subscription_interval_ms": 1000
+      },
+      "data_das": {
+        "enabled": true,
+        "description": "Direct CEMS DAS integration"
+      }
+    },
+    "data_quality": {
+      "valid_data_availability_target": 95,
+      "substitute_data_methods": {
+        "missing_data": "40_cfr_part_75_appendix_d",
+        "invalid_data": "40_cfr_part_75_appendix_d",
+        "calibration_period": "use_pre_calibration_average"
+      },
+      "rata_requirements": {
+        "frequency": "annual",
+        "relative_accuracy_target_percent": 10
+      },
+      "cylinder_gas_audit": {
+        "frequency": "quarterly",
+        "accuracy_target_percent": 5
+      }
+    },
+    "analyzers": {
+      "nox_analyzer": {
+        "technology": "chemiluminescence",
+        "range_ppm": [0, 1000],
+        "span_calibration_frequency_hours": 24,
+        "zero_calibration_frequency_hours": 24
+      },
+      "so2_analyzer": {
+        "technology": "uv_fluorescence",
+        "range_ppm": [0, 1000],
+        "span_calibration_frequency_hours": 24
+      },
+      "co2_analyzer": {
+        "technology": "ndir",
+        "range_percent": [0, 20],
+        "span_calibration_frequency_hours": 24
+      },
+      "o2_analyzer": {
+        "technology": "zirconia",
+        "range_percent": [0, 25],
+        "span_calibration_frequency_hours": 24
+      },
+      "flow_monitor": {
+        "technology": "ultrasonic",
+        "accuracy_percent": 2
+      },
+      "opacity_monitor": {
+        "technology": "transmissometer",
+        "range_percent": [0, 100]
+      }
+    }
+  },
+
+  "reporting_schedules": {
+    "hourly": {
+      "enabled": true,
+      "outputs": ["compliance_status", "emission_totals"],
+      "retention_days": 365
+    },
+    "daily": {
+      "enabled": true,
+      "generation_time": "00:30",
+      "outputs": ["daily_summary", "exceedance_report"],
+      "retention_days": 2555
+    },
+    "quarterly": {
+      "enabled": true,
+      "reports": [
+        {
+          "name": "quarterly_excess_emissions",
+          "format": "xml",
+          "submission_portal": "epa_ecmps",
+          "due_date_offset_days": 30
+        },
+        {
+          "name": "eu_ets_quarterly",
+          "format": "json",
+          "submission_portal": "eu_ets_registry"
+        }
+      ],
+      "retention_days": 2555
+    },
+    "annual": {
+      "enabled": true,
+      "reports": [
+        {
+          "name": "annual_emissions_report",
+          "format": "xml",
+          "submission_portal": "epa_ecmps",
+          "due_date": "March 31"
+        },
+        {
+          "name": "annual_compliance_certification",
+          "format": "pdf",
+          "certification_required": true
+        },
+        {
+          "name": "ghg_reporting",
+          "format": "xml",
+          "submission_portal": "epa_e_ggrt",
+          "due_date": "March 31"
+        },
+        {
+          "name": "eu_ets_annual",
+          "format": "xml",
+          "submission_portal": "eu_ets_registry",
+          "verification_required": true
+        }
+      ],
+      "retention_days": 2555
+    }
+  },
+
+  "integrations": {
+    "cems": {
+      "enabled": true,
+      "protocols": ["modbus_tcp", "opc_ua"],
+      "polling_interval_seconds": 1
+    },
+    "dcs": {
+      "enabled": true,
+      "protocol": "opc_ua",
+      "data_points": ["load", "fuel_flow", "temperatures", "pressures"]
+    },
+    "historian": {
+      "enabled": true,
+      "systems": ["osisoft_pi", "honeywell_phd", "aspentech"],
+      "sync_interval_minutes": 5
+    },
+    "erp": {
+      "enabled": false,
+      "protocol": "rest_api",
+      "data_points": ["fuel_receipts", "production_data"]
+    },
+    "environmental_reporting_systems": {
+      "epa_ecmps": {
+        "enabled": true,
+        "api_version": "3.0",
+        "submission_format": "xml"
+      },
+      "eu_ets_registry": {
+        "enabled": true,
+        "submission_format": "xml"
+      },
+      "state_systems": {
+        "enabled": true,
+        "configurable_per_state": true
+      }
+    },
+    "notification_systems": {
+      "email": {
+        "enabled": true,
+        "smtp_server": "configured_externally"
+      },
+      "sms": {
+        "enabled": true,
+        "provider": "twilio"
+      },
+      "slack": {
+        "enabled": true,
+        "webhook_url": "configured_externally"
+      },
+      "pagerduty": {
+        "enabled": true,
+        "integration_key": "configured_externally"
+      }
+    }
+  },
+
+  "monitoring": {
+    "enabled": true,
+    "metrics_collection_interval": 15,
+    "prometheus_enabled": true,
+    "prometheus_port": 9090,
+    "health_check_port": 8080,
+    "log_level": "INFO",
+    "metrics": [
+      "emissions_compliance_status",
+      "pollutant_values",
+      "alert_counts",
+      "data_quality_score",
+      "calculation_latency",
+      "cems_availability",
+      "report_generation_time"
+    ]
+  },
+
+  "compliance": {
+    "standards": [
+      "EPA Clean Air Act",
+      "40 CFR Part 60",
+      "40 CFR Part 75",
+      "40 CFR Part 98",
+      "EU IED 2010/75/EU",
+      "EU ETS",
+      "ISO 14064",
+      "ISO 14001",
+      "China MEE GB 13223",
+      "ASME PTC 19.10"
+    ],
+    "audit_trail_retention_days": 2555,
+    "reporting_enabled": true,
+    "third_party_verification_support": true
+  },
+
+  "alerts": {
+    "email_recipients": [],
+    "slack_webhook": null,
+    "pagerduty_key": null,
+    "sms_recipients": [],
+    "escalation_matrix": {
+      "warning": {
+        "initial_recipients": ["operator"],
+        "escalation_after_minutes": 30,
+        "escalation_recipients": ["supervisor"]
+      },
+      "critical": {
+        "initial_recipients": ["operator", "supervisor"],
+        "escalation_after_minutes": 15,
+        "escalation_recipients": ["compliance_officer", "plant_manager"]
+      },
+      "violation": {
+        "initial_recipients": ["operator", "supervisor", "compliance_officer", "plant_manager"],
+        "escalation_after_minutes": 5,
+        "escalation_recipients": ["environmental_director", "legal"]
+      }
+    }
+  },
+
+  "security": {
+    "authentication_required": true,
+    "encryption": "TLS_1_3",
+    "audit_logging": true,
+    "rbac_enabled": true,
+    "allowed_roles": [
+      "admin",
+      "compliance_officer",
+      "operator",
+      "auditor",
+      "viewer"
+    ],
+    "data_classification": "regulatory"
+  },
+
+  "mode_configs": {
+    "MONITOR": {
+      "description": "Real-time continuous emissions monitoring",
+      "check_interval_seconds": 15,
+      "outputs": ["compliance_status", "violation_alerts"],
+      "example_input": {
+        "stack_emissions": {
+          "nox_ppm": 45.2,
+          "sox_ppm": 28.5,
+          "co2_percent": 8.5,
+          "o2_percent": 5.2,
+          "stack_flow_scfm": 125000,
+          "stack_temp_f": 325,
+          "timestamp": "2025-11-26T10:30:00Z"
+        },
+        "regulatory_limits": {
+          "jurisdiction": "US_EPA",
+          "nox_limit_ppm": 100,
+          "sox_limit_ppm": 75,
+          "averaging_period_hours": 1
+        }
+      }
+    },
+    "REPORT": {
+      "description": "Generate regulatory reports for submission",
+      "supported_formats": ["XML", "JSON", "PDF", "CSV", "EDR"],
+      "supported_reports": [
+        "quarterly_excess_emissions",
+        "annual_emissions",
+        "ghg_reporting",
+        "deviation_report",
+        "eu_ets_report"
+      ],
+      "example_input": {
+        "report_type": "quarterly_excess_emissions",
+        "reporting_period": {
+          "start_date": "2025-07-01",
+          "end_date": "2025-09-30"
+        },
+        "facility_id": "ORISPL-12345",
+        "unit_id": "1"
+      }
+    },
+    "ALERT": {
+      "description": "Process and distribute violation alerts",
+      "alert_types": ["WARNING", "EXCEEDANCE", "VIOLATION", "EQUIPMENT_MALFUNCTION"],
+      "notification_channels": ["email", "sms", "slack", "pagerduty"],
+      "example_input": {
+        "alert_trigger": {
+          "pollutant": "nox",
+          "current_value": 98.5,
+          "limit_value": 100,
+          "percent_of_limit": 98.5
+        }
+      }
+    },
+    "ANALYZE": {
+      "description": "Deep analysis of emission trends and patterns",
+      "analysis_types": ["trend", "correlation", "root_cause", "seasonal"],
+      "time_ranges": ["hourly", "daily", "weekly", "monthly", "quarterly", "annual"],
+      "example_input": {
+        "analysis_type": "trend",
+        "pollutant": "nox",
+        "time_range": "monthly",
+        "lookback_periods": 12
+      }
+    },
+    "PREDICT": {
+      "description": "Predict potential future exceedances",
+      "prediction_horizon_hours": [1, 4, 8, 24],
+      "confidence_levels": [0.80, 0.90, 0.95],
+      "example_input": {
+        "prediction_horizon_hours": 24,
+        "confidence_level": 0.90,
+        "include_recommended_actions": true
+      }
+    },
+    "AUDIT": {
+      "description": "Generate audit trail and compliance documentation",
+      "audit_types": ["calculation_provenance", "data_quality", "regulatory_submission"],
+      "example_input": {
+        "audit_type": "calculation_provenance",
+        "calculation_id": "calc-2025-q3-001",
+        "include_all_inputs": true,
+        "include_methodology": true
+      }
+    },
+    "BENCHMARK": {
+      "description": "Compare emissions against industry benchmarks",
+      "benchmark_sources": ["epa_egrid", "industry_average", "best_available_technology"],
+      "example_input": {
+        "facility_type": "natural_gas_combined_cycle",
+        "capacity_mw": 500,
+        "pollutants": ["nox", "co2"],
+        "comparison_year": 2024
+      }
+    },
+    "VALIDATE": {
+      "description": "Validate CEMS data quality and substitute data",
+      "validation_checks": [
+        "range_check",
+        "rate_of_change",
+        "calibration_status",
+        "missing_data",
+        "correlation_check"
+      ],
+      "example_input": {
+        "data_source": "cems_analyzer_01",
+        "validation_period": {
+          "start_time": "2025-11-26T00:00:00Z",
+          "end_time": "2025-11-26T23:59:59Z"
+        },
+        "apply_substitute_data": true
+      }
+    }
+  },
+
+  "metadata": {
+    "author": "GreenLang Environmental Compliance Team",
+    "created_date": "2025-01-15",
+    "last_modified": "2025-11-26",
+    "documentation_url": "https://greenlang.io/agents/GL-010",
+    "support_contact": "support@greenlang.io",
+    "tags": [
+      "emissions_compliance",
+      "cems",
+      "environmental",
+      "regulatory",
+      "nox",
+      "sox",
+      "co2",
+      "pm",
+      "epa",
+      "eu_ets"
+    ]
+  }
+}

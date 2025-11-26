@@ -1,0 +1,218 @@
+{
+  "$schema": "https://greenlang.io/schemas/run-config-v1.json",
+  "version": "1.0.0",
+  "agent_id": "GL-006",
+  "codename": "HEATRECLAIM",
+  "name": "HeatRecoveryMaximizer",
+
+  "runtime": {
+    "deterministic": true,
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 4096,
+    "top_p": 1.0,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0
+  },
+
+  "execution": {
+    "mode": "production",
+    "timeout_seconds": 300,
+    "max_retries": 3,
+    "retry_delay_seconds": 5,
+    "parallel_processing": true,
+    "max_workers": 4,
+    "batch_size": 100
+  },
+
+  "optimization": {
+    "max_iterations": 1000,
+    "convergence_tolerance": 1e-6,
+    "optimization_algorithm": "differential_evolution",
+    "population_size": 50,
+    "mutation_factor": 0.8,
+    "crossover_probability": 0.7
+  },
+
+  "thermodynamic": {
+    "min_temperature_approach_c": 10.0,
+    "min_recoverable_temperature_c": 60.0,
+    "min_recoverable_duty_kw": 10.0,
+    "ambient_temperature_c": 25.0,
+    "ambient_pressure_bar": 1.013,
+    "equation_of_state": "ideal",
+    "property_calculation_method": "simplified"
+  },
+
+  "economic": {
+    "electricity_cost_usd_kwh": 0.10,
+    "natural_gas_cost_usd_mmbtu": 4.0,
+    "steam_cost_usd_ton": 30.0,
+    "cooling_water_cost_usd_m3": 0.5,
+    "carbon_price_usd_ton": 50.0,
+    "discount_rate": 0.10,
+    "inflation_rate": 0.03,
+    "energy_price_escalation_rate": 0.05,
+    "project_lifetime_years": 15,
+    "target_payback_years": 3.0
+  },
+
+  "operational": {
+    "annual_operating_hours": 8000,
+    "availability_factor": 0.95,
+    "capacity_factor": 0.85,
+    "min_stream_flow_rate_kg_s": 0.1,
+    "max_stream_temperature_c": 1000.0
+  },
+
+  "validation": {
+    "enabled": true,
+    "strict_mode": false,
+    "max_errors": 100,
+    "validate_thermodynamic": true,
+    "validate_economic": true,
+    "validate_energy_balance": true,
+    "energy_balance_tolerance": 0.01,
+    "mass_balance_tolerance": 0.001
+  },
+
+  "provenance": {
+    "enabled": true,
+    "track_inputs": true,
+    "track_outputs": true,
+    "track_intermediate": true,
+    "include_checksums": true,
+    "retention_days": 365,
+    "storage_backend": "database"
+  },
+
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "include_timestamps": true,
+    "include_trace_id": true,
+    "include_request_id": true,
+    "mask_sensitive_data": true,
+    "log_file": "/var/log/greenlang/gl-006.log",
+    "max_file_size_mb": 100,
+    "backup_count": 5
+  },
+
+  "monitoring": {
+    "metrics_enabled": true,
+    "metrics_port": 9090,
+    "metrics_path": "/metrics",
+    "tracing_enabled": true,
+    "tracing_sample_rate": 0.1,
+    "health_check_interval_seconds": 30
+  },
+
+  "caching": {
+    "enabled": true,
+    "backend": "redis",
+    "ttl_seconds": 3600,
+    "max_entries": 10000,
+    "eviction_policy": "lru"
+  },
+
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8000,
+    "prefix": "/api/v1/heat-recovery",
+    "cors_enabled": true,
+    "cors_origins": ["*"],
+    "rate_limit_enabled": true,
+    "rate_limit_requests": 100,
+    "rate_limit_window_seconds": 60
+  },
+
+  "security": {
+    "authentication_required": true,
+    "authentication_method": "jwt",
+    "authorization_enabled": true,
+    "audit_logging": true,
+    "encrypt_at_rest": true,
+    "encrypt_in_transit": true
+  },
+
+  "integrations": {
+    "scada": {
+      "enabled": true,
+      "protocol": "opcua",
+      "endpoint": "${SCADA_ENDPOINT}",
+      "polling_interval_seconds": 60,
+      "timeout_seconds": 30,
+      "retry_count": 3
+    },
+    "historian": {
+      "enabled": true,
+      "protocol": "opcua",
+      "endpoint": "${HISTORIAN_ENDPOINT}",
+      "query_timeout_seconds": 120
+    },
+    "thermal_imaging": {
+      "enabled": true,
+      "protocol": "rest",
+      "endpoint": "${THERMAL_IMAGING_ENDPOINT}",
+      "polling_interval_seconds": 300
+    },
+    "erp": {
+      "enabled": false,
+      "protocol": "rest",
+      "endpoint": "${ERP_ENDPOINT}"
+    }
+  },
+
+  "feature_flags": {
+    "enable_pinch_analysis": true,
+    "enable_exergy_analysis": true,
+    "enable_network_synthesis": true,
+    "enable_machine_learning": false,
+    "enable_real_time_optimization": false,
+    "enable_advanced_reporting": true,
+    "enable_compliance_checks": true
+  },
+
+  "limits": {
+    "max_streams": 100,
+    "max_exchangers": 50,
+    "max_calculation_time_seconds": 300,
+    "max_memory_mb": 512,
+    "max_concurrent_requests": 10
+  },
+
+  "defaults": {
+    "heat_exchanger_type": "shell_and_tube",
+    "material": "carbon_steel",
+    "fouling_resistance_m2_k_w": 0.0002,
+    "overall_htc_w_m2_k": 500.0,
+    "pressure_drop_bar": 0.3
+  },
+
+  "reports": {
+    "output_formats": ["json", "pdf", "excel"],
+    "include_charts": true,
+    "include_diagrams": true,
+    "include_recommendations": true,
+    "retention_days": 90
+  },
+
+  "environment_overrides": {
+    "development": {
+      "logging.level": "DEBUG",
+      "validation.strict_mode": false,
+      "security.authentication_required": false,
+      "monitoring.tracing_sample_rate": 1.0
+    },
+    "staging": {
+      "logging.level": "DEBUG",
+      "monitoring.tracing_sample_rate": 0.5
+    },
+    "production": {
+      "logging.level": "INFO",
+      "validation.strict_mode": true,
+      "security.authentication_required": true,
+      "monitoring.tracing_sample_rate": 0.1
+    }
+  }
+}

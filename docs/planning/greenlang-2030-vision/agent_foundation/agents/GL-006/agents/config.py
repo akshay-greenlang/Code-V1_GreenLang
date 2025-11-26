@@ -13,7 +13,8 @@ Example:
 """
 
 from typing import Dict, List, Optional, Any
-from pydantic import BaseSettings, Field, validator, root_validator
+from pydantic import Field, field_validator, model_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from enum import Enum
 import os
 import json
@@ -489,60 +490,64 @@ class HeatRecoveryConfig(BaseSettings):
         description="Steam generation emission factor (kg CO2/ton)"
     )
 
-    class Config:
-        env_prefix = "GL006_"
-        env_file = ".env"
-        case_sensitive = True
-        use_enum_values = True
+    model_config = SettingsConfigDict(
+        env_prefix="GL006_",
+        env_file=".env",
+        case_sensitive=True,
+        use_enum_values=True,
+        extra="ignore",
+    )
 
-    @validator("LOG_LEVEL")
-    def validate_log_level(cls, v):
+    @field_validator("LOG_LEVEL")
+    @classmethod
+    def validate_log_level(cls, v: str) -> str:
         """Validate log level is valid."""
         valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         if v.upper() not in valid_levels:
             raise ValueError(f"Log level must be one of {valid_levels}")
         return v.upper()
 
-    @validator("API_PREFIX")
-    def validate_api_prefix(cls, v):
+    @field_validator("API_PREFIX")
+    @classmethod
+    def validate_api_prefix(cls, v: str) -> str:
         """Ensure API prefix starts with /."""
         if not v.startswith("/"):
             return f"/{v}"
         return v
 
-    @validator("DATABASE_URL")
-    def validate_database_url(cls, v):
+    @field_validator("DATABASE_URL")
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
         """Validate database URL format."""
         if not v.startswith(("postgresql://", "sqlite://", "mysql://")):
             raise ValueError("Invalid database URL format")
         return v
 
-    @root_validator
-    def validate_economic_parameters(cls, values):
+    @model_validator(mode="after")
+    def validate_economic_parameters(self) -> "HeatRecoveryConfig":
         """Validate economic parameters are consistent."""
-        if values.get("TARGET_PAYBACK_YEARS") > values.get("PROJECT_LIFETIME_YEARS"):
+        if self.TARGET_PAYBACK_YEARS > self.PROJECT_LIFETIME_YEARS:
             raise ValueError("Target payback cannot exceed project lifetime")
 
-        if values.get("DISCOUNT_RATE") < values.get("INFLATION_RATE"):
+        if self.DISCOUNT_RATE < self.INFLATION_RATE:
             raise ValueError("Warning: Discount rate is less than inflation rate")
 
-        return values
+        return self
 
-    @root_validator
-    def validate_operational_parameters(cls, values):
+    @model_validator(mode="after")
+    def validate_operational_parameters(self) -> "HeatRecoveryConfig":
         """Validate operational parameters."""
-        if values.get("CAPACITY_FACTOR") > values.get("AVAILABILITY_FACTOR"):
+        if self.CAPACITY_FACTOR > self.AVAILABILITY_FACTOR:
             raise ValueError("Capacity factor cannot exceed availability factor")
 
-        annual_hours = values.get("ANNUAL_OPERATING_HOURS")
-        if annual_hours > 8760:
+        if self.ANNUAL_OPERATING_HOURS > 8760:
             raise ValueError("Annual operating hours cannot exceed 8760")
 
-        return values
+        return self
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert configuration to dictionary."""
-        return self.dict(exclude_none=True)
+        return self.model_dump(exclude_none=True)
 
     def save_to_file(self, filepath: str):
         """Save configuration to JSON file."""

@@ -50,6 +50,8 @@ try:
     MQTT_AVAILABLE = True
 except ImportError:
     MQTT_AVAILABLE = False
+    MQTTMessage = None
+    mqtt = None
 
 try:
     from pymodbus.client import AsyncModbusTcpClient
@@ -396,7 +398,7 @@ class CombustionAnalyzerConnector:
             logger.error(f"MQTT connection failed with code {rc}")
             self.mqtt_connected = False
 
-    def _on_mqtt_message(self, client, userdata, message: MQTTMessage):
+    def _on_mqtt_message(self, client, userdata, message):
         """MQTT message received callback."""
         try:
             # Parse topic to determine gas type

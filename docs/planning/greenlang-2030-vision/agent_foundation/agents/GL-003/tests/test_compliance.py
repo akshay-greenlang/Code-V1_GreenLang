@@ -12,6 +12,7 @@ Target: 25+ tests ensuring standards compliance.
 """
 
 import pytest
+import logging
 from decimal import Decimal
 from typing import Dict, Any
 

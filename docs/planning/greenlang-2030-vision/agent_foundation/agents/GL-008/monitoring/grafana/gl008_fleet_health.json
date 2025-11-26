@@ -1,0 +1,577 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "gl008-fleet-health",
+    "title": "GL-008 Fleet Health Monitoring",
+    "tags": ["gl-008", "steam-traps", "fleet-health", "maintenance"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "1m",
+    "time": {
+      "from": "now-24h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["30s", "1m", "5m", "15m", "30m", "1h"]
+    },
+    "templating": {
+      "list": [
+        {
+          "name": "facility",
+          "type": "query",
+          "query": "label_values(gl008_fleet_total_traps, facility)",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "includeAll": true,
+          "multi": true
+        },
+        {
+          "name": "trap_type",
+          "type": "query",
+          "query": "label_values(gl008_trap_health_score{facility=~\"$facility\"}, trap_type)",
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "includeAll": true,
+          "multi": true
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Repairs",
+          "datasource": "Prometheus",
+          "enable": true,
+          "iconColor": "green",
+          "tags": ["repair", "maintenance"]
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Fleet Health Score",
+        "type": "gauge",
+        "gridPos": {"x": 0, "y": 0, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "avg(gl008_fleet_health_score{facility=~\"$facility\"})",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 60, "color": "orange"},
+                {"value": 75, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 2,
+        "title": "Fleet Status Distribution",
+        "type": "piechart",
+        "gridPos": {"x": 8, "y": 0, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(gl008_fleet_healthy_count{facility=~\"$facility\"})",
+            "legendFormat": "Healthy",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(gl008_fleet_degraded_count{facility=~\"$facility\"})",
+            "legendFormat": "Degraded",
+            "refId": "B"
+          },
+          {
+            "expr": "sum(gl008_fleet_failed_count{facility=~\"$facility\"})",
+            "legendFormat": "Failed",
+            "refId": "C"
+          },
+          {
+            "expr": "sum(gl008_fleet_critical_count{facility=~\"$facility\"})",
+            "legendFormat": "Critical",
+            "refId": "D"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Fleet Coverage (%)",
+        "type": "gauge",
+        "gridPos": {"x": 16, "y": 0, "w": 8, "h": 8},
+        "targets": [
+          {
+            "expr": "avg(gl008_fleet_coverage_percent{facility=~\"$facility\", time_window=\"24h\"})",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 95, "color": "yellow"},
+                {"value": 99, "color": "green"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 4,
+        "title": "Fleet Status Counts",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 8, "w": 24, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(gl008_fleet_total_traps{facility=~\"$facility\"})",
+            "legendFormat": "Total Traps",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(gl008_fleet_healthy_count{facility=~\"$facility\"})",
+            "legendFormat": "Healthy",
+            "refId": "B"
+          },
+          {
+            "expr": "sum(gl008_fleet_degraded_count{facility=~\"$facility\"})",
+            "legendFormat": "Degraded",
+            "refId": "C"
+          },
+          {
+            "expr": "sum(gl008_fleet_failed_count{facility=~\"$facility\"})",
+            "legendFormat": "Failed",
+            "refId": "D"
+          },
+          {
+            "expr": "sum(gl008_fleet_critical_count{facility=~\"$facility\"})",
+            "legendFormat": "Critical",
+            "refId": "E"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Healthy"},
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {"mode": "fixed", "fixedColor": "green"}
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Degraded"},
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {"mode": "fixed", "fixedColor": "yellow"}
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Failed"},
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {"mode": "fixed", "fixedColor": "orange"}
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Critical"},
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {"mode": "fixed", "fixedColor": "red"}
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "colorMode": "background",
+          "textMode": "value_and_name",
+          "orientation": "horizontal"
+        }
+      },
+      {
+        "id": 5,
+        "title": "Failure Trend (7d)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 14, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(gl008_fleet_failed_count{facility=~\"$facility\"})",
+            "legendFormat": "Failed Traps",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(gl008_fleet_critical_count{facility=~\"$facility\"})",
+            "legendFormat": "Critical Traps",
+            "refId": "B"
+          },
+          {
+            "expr": "sum(gl008_fleet_degraded_count{facility=~\"$facility\"})",
+            "legendFormat": "Degraded Traps",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Count",
+            "format": "short"
+          },
+          {
+            "format": "short",
+            "show": false
+          }
+        ],
+        "seriesOverrides": [
+          {"alias": "Critical Traps", "color": "red"},
+          {"alias": "Failed Traps", "color": "orange"},
+          {"alias": "Degraded Traps", "color": "yellow"}
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Fleet Health Score Trend (7d)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 14, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "avg(gl008_fleet_health_score{facility=~\"$facility\"})",
+            "legendFormat": "Average Fleet Health",
+            "refId": "A"
+          },
+          {
+            "expr": "avg by (facility) (gl008_fleet_health_score{facility=~\"$facility\"})",
+            "legendFormat": "{{facility}}",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Health Score",
+            "format": "percent",
+            "min": 0,
+            "max": 100
+          },
+          {
+            "format": "short",
+            "show": false
+          }
+        ],
+        "thresholds": [
+          {
+            "value": 85,
+            "colorMode": "custom",
+            "op": "lt",
+            "fill": false,
+            "line": true,
+            "lineColor": "rgba(255, 255, 0, 0.6)"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Health Score Distribution (Histogram)",
+        "type": "graph",
+        "gridPos": {"x": 0, "y": 22, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "count by (le) (histogram_quantile(0.1, gl008_trap_health_score{facility=~\"$facility\", trap_type=~\"$trap_type\"}))",
+            "legendFormat": "Traps",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Number of Traps",
+            "format": "short"
+          },
+          {
+            "format": "short",
+            "show": false
+          }
+        ],
+        "bars": true,
+        "lines": false
+      },
+      {
+        "id": 8,
+        "title": "Failure Detection Rate (24h)",
+        "type": "graph",
+        "gridPos": {"x": 12, "y": 22, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(gl008_failures_detected_total{facility=~\"$facility\"}[5m])) * 3600",
+            "legendFormat": "Failures/Hour",
+            "refId": "A"
+          },
+          {
+            "expr": "sum by (severity) (rate(gl008_failures_detected_total{facility=~\"$facility\"}[5m])) * 3600",
+            "legendFormat": "{{severity}}",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Failures per Hour",
+            "format": "short"
+          },
+          {
+            "format": "short",
+            "show": false
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "title": "Maintenance Backlog",
+        "type": "bargauge",
+        "gridPos": {"x": 0, "y": 30, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "sum by (facility) (gl008_fleet_critical_count{facility=~\"$facility\"})",
+            "legendFormat": "Critical - {{facility}}",
+            "refId": "A"
+          },
+          {
+            "expr": "sum by (facility) (gl008_fleet_failed_count{facility=~\"$facility\"})",
+            "legendFormat": "Failed - {{facility}}",
+            "refId": "B"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 5, "color": "yellow"},
+                {"value": 10, "color": "orange"},
+                {"value": 20, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        }
+      },
+      {
+        "id": 10,
+        "title": "Days Since Inspection (Overdue Traps)",
+        "type": "table",
+        "gridPos": {"x": 12, "y": 30, "w": 12, "h": 8},
+        "targets": [
+          {
+            "expr": "topk(20, gl008_days_since_inspection{facility=~\"$facility\"} > 30)",
+            "format": "table",
+            "instant": true,
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Value"},
+              "properties": [
+                {"id": "unit", "value": "days"},
+                {"id": "decimals", "value": 0},
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background"
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {"value": 0, "color": "green"},
+                      {"value": 30, "color": "yellow"},
+                      {"value": 60, "color": "orange"},
+                      {"value": 90, "color": "red"}
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true
+              },
+              "renameByName": {
+                "trap_id": "Trap ID",
+                "trap_type": "Type",
+                "facility": "Facility",
+                "Value": "Days Since Inspection"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Active Alerts by Severity",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 38, "w": 24, "h": 6},
+        "targets": [
+          {
+            "expr": "sum(gl008_active_alerts{facility=~\"$facility\", severity=\"critical\"})",
+            "legendFormat": "Critical Alerts",
+            "refId": "A"
+          },
+          {
+            "expr": "sum(gl008_active_alerts{facility=~\"$facility\", severity=\"high\"})",
+            "legendFormat": "High Alerts",
+            "refId": "B"
+          },
+          {
+            "expr": "sum(gl008_active_alerts{facility=~\"$facility\", severity=\"medium\"})",
+            "legendFormat": "Medium Alerts",
+            "refId": "C"
+          },
+          {
+            "expr": "sum(gl008_active_alerts{facility=~\"$facility\", severity=\"low\"})",
+            "legendFormat": "Low Alerts",
+            "refId": "D"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Critical Alerts"},
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {"mode": "fixed", "fixedColor": "red"}
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "High Alerts"},
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {"mode": "fixed", "fixedColor": "orange"}
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Medium Alerts"},
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {"mode": "fixed", "fixedColor": "yellow"}
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Low Alerts"},
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {"mode": "fixed", "fixedColor": "blue"}
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "colorMode": "background",
+          "textMode": "value_and_name",
+          "orientation": "horizontal"
+        }
+      },
+      {
+        "id": 12,
+        "title": "Fleet Operating Hours Distribution",
+        "type": "heatmap",
+        "gridPos": {"x": 0, "y": 44, "w": 24, "h": 8},
+        "targets": [
+          {
+            "expr": "gl008_trap_operating_hours{facility=~\"$facility\", trap_type=~\"$trap_type\"}",
+            "format": "time_series",
+            "refId": "A"
+          }
+        ],
+        "dataFormat": "timeseries",
+        "yAxis": {
+          "format": "hours",
+          "decimals": 0
+        },
+        "color": {
+          "mode": "spectrum",
+          "cardColor": "#b4ff00",
+          "colorScale": "sqrt",
+          "exponent": 0.5,
+          "colorScheme": "interpolateBlues"
+        }
+      }
+    ]
+  }
+}

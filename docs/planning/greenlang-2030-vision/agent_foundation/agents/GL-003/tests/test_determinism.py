@@ -15,6 +15,7 @@ Target: 20+ tests ensuring perfect reproducibility for audit compliance.
 import pytest
 import hashlib
 import json
+import logging
 from decimal import Decimal
 from typing import Dict, Any
 from unittest.mock import Mock, patch

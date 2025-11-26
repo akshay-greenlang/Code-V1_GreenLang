@@ -5,8 +5,14 @@ Configuration module for GL-008 SteamTrapInspector.
 This module defines configuration classes and settings for the TRAPCATCHER agent,
 including operational parameters, monitoring thresholds, ML model configurations,
 and integration settings.
+
+SECURITY:
+- Zero hardcoded credentials policy
+- All secrets loaded from environment variables
+- Validation enforced at startup via security_validator.py
 """
 
+import os
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Any
 from pathlib import Path
@@ -182,7 +188,12 @@ class TrapInspectorConfig:
     enable_error_recovery: bool = True
 
     def __post_init__(self):
-        """Validate configuration after initialization."""
+        """
+        Validate configuration after initialization.
+
+        SECURITY: This method validates critical security settings.
+        Full security validation performed by agents.security_validator.validate_startup_security()
+        """
         # Set default paths if not provided
         if self.data_directory is None:
             self.data_directory = Path("./gl008_data")
@@ -202,6 +213,89 @@ class TrapInspectorConfig:
         assert self.monitoring_interval_seconds > 0, "Monitoring interval must be positive"
         assert self.cache_ttl_seconds > 0, "Cache TTL must be positive"
         assert 1 <= self.max_concurrent_inspections <= 100, "Max concurrent inspections must be 1-100"
+
+        # SECURITY: Validate zero-secrets policy
+        self._validate_security_policy()
+
+    def _validate_security_policy(self) -> None:
+        """
+        Validate security policy settings.
+
+        SECURITY REQUIREMENTS per IEC 62443-4-2:
+        - Zero secrets in configuration
+        - Audit logging enabled
+        - Provenance tracking enabled
+        """
+        # Ensure zero_secrets policy is enabled
+        if not self.zero_secrets:
+            raise ValueError(
+                "SECURITY VIOLATION: zero_secrets must be True. "
+                "No credentials allowed in configuration."
+            )
+
+        # Check CMMS/BMS endpoints don't contain credentials
+        for endpoint_name, endpoint_value in [
+            ("cmms_api_endpoint", self.cmms_api_endpoint),
+            ("bms_api_endpoint", self.bms_api_endpoint),
+        ]:
+            if endpoint_value:
+                self._validate_no_credentials_in_url(endpoint_name, endpoint_value)
+
+    @staticmethod
+    def _validate_no_credentials_in_url(name: str, url: str) -> None:
+        """
+        Validate URL does not contain embedded credentials.
+
+        Args:
+            name: Name of the configuration field
+            url: URL to validate
+
+        Raises:
+            ValueError: If URL contains embedded credentials
+        """
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        if parsed.username or parsed.password:
+            raise ValueError(
+                f"SECURITY VIOLATION: {name} contains embedded credentials. "
+                f"Use environment variables or secret management instead."
+            )
+
+    @staticmethod
+    def get_api_key(provider: str = "anthropic") -> Optional[str]:
+        """
+        Get API key from environment variable.
+
+        SECURITY: API keys must be stored in environment variables, never in code.
+
+        Args:
+            provider: API provider name (anthropic, openai, etc.)
+
+        Returns:
+            API key from environment, or None if not set
+        """
+        env_var_map = {
+            "anthropic": "ANTHROPIC_API_KEY",
+            "openai": "OPENAI_API_KEY",
+        }
+
+        env_var = env_var_map.get(provider.lower())
+        if not env_var:
+            raise ValueError(f"Unknown API provider: {provider}")
+
+        return os.environ.get(env_var)
+
+    @staticmethod
+    def is_production() -> bool:
+        """
+        Check if running in production environment.
+
+        Returns:
+            True if GREENLANG_ENV is 'production' or 'prod'
+        """
+        env = os.environ.get("GREENLANG_ENV", "development").lower()
+        return env in ["production", "prod"]
 
 
 @dataclass

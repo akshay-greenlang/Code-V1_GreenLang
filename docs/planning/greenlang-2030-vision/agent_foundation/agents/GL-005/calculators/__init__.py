@@ -13,6 +13,10 @@ Modules:
     - pid_controller: PID control with anti-windup and auto-tuning
     - safety_validator: Safety interlock validation and limit checking
     - emissions_calculator: Emission calculations with regulatory compliance
+    - feedforward_controller: Feedforward control for heat demand anticipation
+    - stability_analyzer: Time-series stability analysis with FFT
+    - air_fuel_ratio_calculator: Stoichiometric AFR and lambda calculations
+    - combustion_performance_calculator: ASME PTC 4.1 performance analysis
 
 Zero-Hallucination Guarantee:
     ✓ Deterministic: Same inputs → Same outputs (bit-perfect)
@@ -85,6 +89,41 @@ from .emissions_calculator import (
     ComplianceStatus
 )
 
+from .feedforward_controller import (
+    FeedforwardController,
+    FeedforwardInput,
+    FeedforwardOutput,
+    DisturbanceType,
+    CompensationType,
+    FeedforwardGains
+)
+
+from .stability_analyzer import (
+    StabilityAnalyzer,
+    StabilityInput as StabilityAnalysisInput,
+    StabilityResult as StabilityAnalysisResult,
+    StabilityLevel as StabilityLevelAnalysis,
+    OscillationType
+)
+
+from .air_fuel_ratio_calculator import (
+    AirFuelRatioCalculator,
+    AirFuelRatioInput,
+    AirFuelRatioOutput,
+    FuelType as AFRFuelType,
+    FuelComposition,
+    StoichiometricProperties
+)
+
+from .combustion_performance_calculator import (
+    CombustionPerformanceCalculator,
+    CombustionPerformanceInput,
+    CombustionPerformanceOutput,
+    PerformanceLevel,
+    LossCategory,
+    HeatLoss
+)
+
 __all__ = [
     # Combustion Stability
     'CombustionStabilityCalculator',
@@ -134,6 +173,37 @@ __all__ = [
     'EmissionType',
     'RegulatoryStandard',
     'ComplianceStatus',
+
+    # Feedforward Control
+    'FeedforwardController',
+    'FeedforwardInput',
+    'FeedforwardOutput',
+    'DisturbanceType',
+    'CompensationType',
+    'FeedforwardGains',
+
+    # Stability Analysis
+    'StabilityAnalyzer',
+    'StabilityAnalysisInput',
+    'StabilityAnalysisResult',
+    'StabilityLevelAnalysis',
+    'OscillationType',
+
+    # Air-Fuel Ratio
+    'AirFuelRatioCalculator',
+    'AirFuelRatioInput',
+    'AirFuelRatioOutput',
+    'AFRFuelType',
+    'FuelComposition',
+    'StoichiometricProperties',
+
+    # Combustion Performance
+    'CombustionPerformanceCalculator',
+    'CombustionPerformanceInput',
+    'CombustionPerformanceOutput',
+    'PerformanceLevel',
+    'LossCategory',
+    'HeatLoss',
 ]
 
 __version__ = '1.0.0'

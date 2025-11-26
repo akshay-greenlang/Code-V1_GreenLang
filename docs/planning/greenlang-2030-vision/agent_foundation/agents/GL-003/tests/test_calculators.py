@@ -19,6 +19,7 @@ Target: 50+ tests covering:
 
 import pytest
 import math
+import logging
 from decimal import Decimal, getcontext
 from typing import Dict, Any, List
 from unittest.mock import Mock, patch

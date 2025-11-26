@@ -1,0 +1,723 @@
+# ============================================================================
+# GL-009 THERMALIQ - ThermalEfficiencyCalculator Pack Manifest
+# GreenLang Pack Specification v1.0
+# ============================================================================
+
+metadata:
+  pack_id: "gl-009-thermaliq"
+  pack_name: "ThermalEfficiencyCalculator"
+  agent_id: "GL-009"
+  codename: "THERMALIQ"
+  domain: "analytics"
+  role: "calculator"
+  version: "1.0.0"
+  description: "Calculates overall thermal efficiency of heat processes with zero-hallucination using First and Second Law thermodynamic analysis"
+  author: "GreenLang Foundation"
+  license: "Apache-2.0"
+  homepage: "https://greenlang.org/agents/gl-009"
+  repository: "https://github.com/greenlang/agents/gl-009"
+  documentation: "https://docs.greenlang.org/agents/gl-009"
+
+  tags:
+    - "thermal-efficiency"
+    - "heat-balance"
+    - "sankey-diagram"
+    - "energy-analytics"
+    - "process-optimization"
+    - "industrial"
+    - "thermodynamics"
+    - "first-law"
+    - "second-law"
+    - "exergy"
+
+  category: "industrial-analytics"
+  market_size_usd: 7000000000  # $7B TAM
+  target_deployment: "2026-Q1"
+  priority: "P1"
+  complexity: "medium"
+
+# ----------------------------------------------------------------------------
+# MISSION STATEMENT
+# ----------------------------------------------------------------------------
+
+mission:
+  primary_function: "Calculate overall thermal efficiency of heat processes with zero-hallucination"
+  value_proposition: "Transform raw energy data into actionable efficiency insights with Sankey diagrams and improvement opportunities"
+  target_users:
+    - "Energy engineers"
+    - "Process engineers"
+    - "Plant managers"
+    - "Sustainability officers"
+    - "Energy auditors"
+    - "Operations teams"
+
+# ----------------------------------------------------------------------------
+# INPUTS
+# ----------------------------------------------------------------------------
+
+inputs:
+  energy_input_measurements:
+    description: "All energy inputs to the thermal process"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        fuel_inputs:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              fuel_type:
+                type: "string"
+                enum: ["natural_gas", "coal", "fuel_oil", "biomass", "hydrogen", "lpg", "electricity"]
+              mass_flow_kg_hr:
+                type: "number"
+                minimum: 0
+              volume_flow_m3_hr:
+                type: "number"
+                minimum: 0
+              heating_value_mj_kg:
+                type: "number"
+                minimum: 0
+              temperature_c:
+                type: "number"
+        electrical_inputs:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              power_kw:
+                type: "number"
+              duration_hours:
+                type: "number"
+
+  useful_heat_output:
+    description: "Heat transferred to the process or product"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        process_heat_mw:
+          type: "number"
+          description: "Heat transferred to process"
+        steam_output:
+          type: "object"
+          properties:
+            mass_flow_kg_hr:
+              type: "number"
+            pressure_bar:
+              type: "number"
+            temperature_c:
+              type: "number"
+            enthalpy_kj_kg:
+              type: "number"
+        hot_water_output:
+          type: "object"
+          properties:
+            mass_flow_kg_hr:
+              type: "number"
+            inlet_temperature_c:
+              type: "number"
+            outlet_temperature_c:
+              type: "number"
+        product_heating:
+          type: "object"
+          properties:
+            mass_flow_kg_hr:
+              type: "number"
+            specific_heat_kj_kg_k:
+              type: "number"
+            inlet_temperature_c:
+              type: "number"
+            outlet_temperature_c:
+              type: "number"
+
+  heat_losses:
+    description: "All heat loss mechanisms"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        flue_gas_losses:
+          type: "object"
+          properties:
+            mass_flow_kg_hr:
+              type: "number"
+            exit_temperature_c:
+              type: "number"
+            co2_percent:
+              type: "number"
+            o2_percent:
+              type: "number"
+            excess_air_percent:
+              type: "number"
+        radiation_losses:
+          type: "object"
+          properties:
+            surface_area_m2:
+              type: "number"
+            surface_temperature_c:
+              type: "number"
+            ambient_temperature_c:
+              type: "number"
+            emissivity:
+              type: "number"
+              minimum: 0
+              maximum: 1
+        convection_losses:
+          type: "object"
+          properties:
+            surface_area_m2:
+              type: "number"
+            surface_temperature_c:
+              type: "number"
+            ambient_temperature_c:
+              type: "number"
+            heat_transfer_coefficient_w_m2_k:
+              type: "number"
+        blowdown_losses:
+          type: "object"
+          properties:
+            mass_flow_kg_hr:
+              type: "number"
+            temperature_c:
+              type: "number"
+        unaccounted_losses_percent:
+          type: "number"
+          minimum: 0
+          maximum: 10
+
+  ambient_conditions:
+    description: "Environmental reference conditions"
+    required: false
+    schema:
+      type: "object"
+      properties:
+        ambient_temperature_c:
+          type: "number"
+          default: 25.0
+        ambient_pressure_bar:
+          type: "number"
+          default: 1.01325
+        relative_humidity_percent:
+          type: "number"
+          default: 60.0
+        reference_temperature_c:
+          type: "number"
+          default: 25.0
+          description: "Dead state temperature for exergy calculations"
+
+  process_parameters:
+    description: "Process-specific configuration"
+    required: false
+    schema:
+      type: "object"
+      properties:
+        process_type:
+          type: "string"
+          enum: ["boiler", "furnace", "dryer", "kiln", "heat_exchanger", "reactor", "distillation", "evaporator"]
+        design_efficiency_percent:
+          type: "number"
+          minimum: 0
+          maximum: 100
+        rated_capacity_mw:
+          type: "number"
+        operating_hours_per_year:
+          type: "number"
+          default: 8760
+
+# ----------------------------------------------------------------------------
+# OUTPUTS
+# ----------------------------------------------------------------------------
+
+outputs:
+  thermal_efficiency_percentage:
+    description: "Calculated thermal efficiency metrics"
+    schema:
+      type: "object"
+      properties:
+        first_law_efficiency_percent:
+          type: "number"
+          description: "Energy efficiency (useful output / total input)"
+        second_law_efficiency_percent:
+          type: "number"
+          description: "Exergy efficiency (useful exergy output / exergy input)"
+        combustion_efficiency_percent:
+          type: "number"
+          description: "Fuel-to-heat conversion efficiency"
+        gross_efficiency_percent:
+          type: "number"
+        net_efficiency_percent:
+          type: "number"
+        efficiency_gap_percent:
+          type: "number"
+          description: "Gap from design efficiency"
+        efficiency_trend:
+          type: "string"
+          enum: ["improving", "stable", "degrading"]
+
+  sankey_diagram_data:
+    description: "Data structure for Sankey energy flow visualization"
+    schema:
+      type: "object"
+      properties:
+        nodes:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              id:
+                type: "string"
+              label:
+                type: "string"
+              value_mw:
+                type: "number"
+              percentage:
+                type: "number"
+              color:
+                type: "string"
+        links:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              source:
+                type: "string"
+              target:
+                type: "string"
+              value_mw:
+                type: "number"
+              percentage:
+                type: "number"
+        total_input_mw:
+          type: "number"
+        total_output_mw:
+          type: "number"
+        total_losses_mw:
+          type: "number"
+
+  improvement_opportunities:
+    description: "Prioritized efficiency improvement recommendations"
+    schema:
+      type: "array"
+      items:
+        type: "object"
+        properties:
+          opportunity_id:
+            type: "string"
+          category:
+            type: "string"
+            enum: ["heat_recovery", "combustion_optimization", "insulation", "process_integration", "equipment_upgrade", "operational"]
+          description:
+            type: "string"
+          potential_savings_mw:
+            type: "number"
+          potential_savings_percent:
+            type: "number"
+          estimated_cost_usd:
+            type: "number"
+          payback_months:
+            type: "number"
+          priority:
+            type: "string"
+            enum: ["critical", "high", "medium", "low"]
+          implementation_complexity:
+            type: "string"
+            enum: ["simple", "moderate", "complex"]
+          confidence_score:
+            type: "number"
+            minimum: 0
+            maximum: 1
+
+  loss_breakdown:
+    description: "Detailed breakdown of all heat losses"
+    schema:
+      type: "object"
+      properties:
+        total_losses_mw:
+          type: "number"
+        total_losses_percent:
+          type: "number"
+        breakdown:
+          type: "array"
+          items:
+            type: "object"
+            properties:
+              loss_type:
+                type: "string"
+              loss_mw:
+                type: "number"
+              loss_percent:
+                type: "number"
+              reducible_percent:
+                type: "number"
+              root_cause:
+                type: "string"
+        exergy_destruction_mw:
+          type: "number"
+        exergy_destruction_percent:
+          type: "number"
+
+  benchmark_comparison:
+    description: "Comparison against industry benchmarks"
+    schema:
+      type: "object"
+      properties:
+        current_efficiency_percent:
+          type: "number"
+        industry_average_percent:
+          type: "number"
+        best_in_class_percent:
+          type: "number"
+        theoretical_maximum_percent:
+          type: "number"
+        percentile_rank:
+          type: "number"
+        efficiency_gap_from_average_percent:
+          type: "number"
+        efficiency_gap_from_best_percent:
+          type: "number"
+        benchmark_source:
+          type: "string"
+
+# ----------------------------------------------------------------------------
+# INTEGRATIONS
+# ----------------------------------------------------------------------------
+
+integrations:
+  energy_meters:
+    protocol: "Modbus TCP/RTU"
+    required: true
+    description: "Real-time energy metering data"
+    supported_devices:
+      - "Siemens PAC"
+      - "Schneider ION"
+      - "ABB M4M"
+      - "Honeywell"
+
+  process_historians:
+    protocol: "OPC UA / OPC DA"
+    required: true
+    description: "Historical process data"
+    supported_systems:
+      - "OSIsoft PI"
+      - "Honeywell PHD"
+      - "AspenTech InfoPlus.21"
+      - "GE Proficy Historian"
+      - "Wonderware InSQL"
+
+  scada_systems:
+    protocol: "OPC UA"
+    required: false
+    description: "Real-time control system data"
+    supported_systems:
+      - "Siemens WinCC"
+      - "Rockwell FactoryTalk"
+      - "Schneider ClearSCADA"
+      - "ABB Ability Symphony"
+
+  erp_integration:
+    protocol: "REST API / SAP RFC"
+    required: false
+    description: "Enterprise resource planning integration"
+    supported_systems:
+      - "SAP S/4HANA"
+      - "Oracle ERP"
+      - "Microsoft Dynamics"
+
+  dcs_integration:
+    protocol: "OPC UA"
+    required: false
+    description: "Distributed control system integration"
+    supported_systems:
+      - "Emerson DeltaV"
+      - "Honeywell Experion"
+      - "ABB 800xA"
+      - "Yokogawa CENTUM"
+
+# ----------------------------------------------------------------------------
+# DEPENDENCIES
+# ----------------------------------------------------------------------------
+
+dependencies:
+  python:
+    - "numpy>=1.24.0,<2.0.0"
+    - "scipy>=1.10.0,<2.0.0"
+    - "pandas>=2.0.0,<3.0.0"
+    - "pydantic>=2.0.0,<3.0.0"
+    - "fastapi>=0.104.0,<1.0.0"
+    - "uvicorn>=0.24.0,<1.0.0"
+    - "prometheus-client>=0.18.0,<1.0.0"
+    - "matplotlib>=3.7.0,<4.0.0"
+    - "plotly>=5.18.0,<6.0.0"
+    - "python-json-logger>=2.0.7,<3.0.0"
+    - "aiofiles>=23.0.0,<24.0.0"
+    - "pyyaml>=6.0.0,<7.0.0"
+    - "CoolProp>=6.4.0,<7.0.0"  # Thermodynamic property calculations
+
+  external_services:
+    - service: "anthropic"
+      optional: true
+      purpose: "LLM classification for improvement opportunities (deterministic, temp=0.0)"
+    - service: "historian"
+      optional: true
+      purpose: "Historical data retrieval"
+    - service: "scada"
+      optional: true
+      purpose: "Real-time process data"
+
+  data_sources:
+    - name: "steam_tables"
+      type: "internal"
+      description: "IAPWS-IF97 steam property tables"
+    - name: "fuel_properties"
+      type: "internal"
+      description: "Fuel heating values and compositions"
+    - name: "benchmark_database"
+      type: "internal"
+      description: "Industry efficiency benchmarks by process type"
+    - name: "heat_transfer_correlations"
+      type: "internal"
+      description: "Validated heat transfer correlations"
+
+# ----------------------------------------------------------------------------
+# RUNTIME CONFIGURATION
+# ----------------------------------------------------------------------------
+
+runtime:
+  python_version: ">=3.10,<4.0"
+  entrypoint: "thermal_efficiency_calculator.py"
+  main_class: "ThermalEfficiencyCalculator"
+  async_execution: true
+  requires_gpu: false
+  min_memory_mb: 512
+  max_memory_mb: 2048
+  min_cpu_cores: 1
+  max_cpu_cores: 4
+
+  deterministic: true
+  temperature: 0.0  # Zero temperature for exact calculations
+  seed: 42  # Fixed seed for reproducibility
+
+# ----------------------------------------------------------------------------
+# CAPABILITIES (TOOLS)
+# ----------------------------------------------------------------------------
+
+capabilities:
+  tools:
+    - name: "calculate_first_law_efficiency"
+      deterministic: true
+      description: "Calculate energy efficiency using First Law of Thermodynamics"
+      formula: "eta_1 = Q_useful / Q_input = (Q_input - Q_losses) / Q_input"
+      inputs: ["energy_inputs", "useful_outputs", "heat_losses"]
+      outputs: ["efficiency_percent", "energy_balance_mw", "closure_error_percent"]
+
+    - name: "calculate_second_law_efficiency"
+      deterministic: true
+      description: "Calculate exergy efficiency using Second Law of Thermodynamics"
+      formula: "eta_2 = Ex_useful / Ex_input = 1 - (Ex_destruction / Ex_input)"
+      inputs: ["exergy_inputs", "exergy_outputs", "reference_state"]
+      outputs: ["exergy_efficiency_percent", "exergy_destruction_mw", "improvement_potential_mw"]
+
+    - name: "calculate_combustion_efficiency"
+      deterministic: true
+      description: "Calculate fuel combustion efficiency from flue gas analysis"
+      formula: "eta_comb = 100 - (L_dry + L_moisture + L_unburned)"
+      inputs: ["fuel_composition", "flue_gas_analysis", "excess_air"]
+      outputs: ["combustion_efficiency_percent", "dry_flue_gas_loss_percent", "moisture_loss_percent"]
+
+    - name: "calculate_heat_losses"
+      deterministic: true
+      description: "Calculate individual heat loss components"
+      formulas:
+        radiation: "Q_rad = epsilon * sigma * A * (T_s^4 - T_amb^4)"
+        convection: "Q_conv = h * A * (T_s - T_amb)"
+        flue_gas: "Q_flue = m_dot * Cp * (T_exit - T_ref)"
+      inputs: ["surface_conditions", "flue_gas_data", "ambient_conditions"]
+      outputs: ["radiation_loss_mw", "convection_loss_mw", "flue_gas_loss_mw", "total_loss_mw"]
+
+    - name: "generate_sankey_diagram"
+      deterministic: true
+      description: "Generate Sankey diagram data for energy flow visualization"
+      inputs: ["energy_balance", "loss_breakdown"]
+      outputs: ["sankey_nodes", "sankey_links", "diagram_config"]
+
+    - name: "calculate_heat_balance"
+      deterministic: true
+      description: "Perform complete heat balance calculation"
+      formula: "Q_input = Q_useful + Q_losses (closure within tolerance)"
+      inputs: ["all_inputs", "all_outputs", "all_losses"]
+      outputs: ["heat_balance_mw", "closure_error_percent", "unaccounted_losses_mw"]
+
+    - name: "identify_improvement_opportunities"
+      deterministic: true
+      description: "Identify and prioritize efficiency improvement opportunities"
+      inputs: ["current_efficiency", "loss_breakdown", "benchmarks"]
+      outputs: ["opportunities", "potential_savings", "priority_ranking"]
+
+    - name: "benchmark_efficiency"
+      deterministic: true
+      description: "Compare efficiency against industry benchmarks"
+      inputs: ["current_efficiency", "process_type", "capacity"]
+      outputs: ["percentile_rank", "gap_analysis", "best_practice_targets"]
+
+    - name: "calculate_exergy_flows"
+      deterministic: true
+      description: "Calculate exergy flows for Second Law analysis"
+      formula: "Ex = (h - h_0) - T_0 * (s - s_0)"
+      inputs: ["thermodynamic_states", "reference_state"]
+      outputs: ["exergy_in_mw", "exergy_out_mw", "exergy_destruction_mw"]
+
+    - name: "trend_analysis"
+      deterministic: true
+      description: "Analyze efficiency trends over time"
+      inputs: ["historical_efficiency_data", "time_period"]
+      outputs: ["trend_direction", "degradation_rate", "anomalies"]
+
+  operation_modes:
+    - "calculate"    # Calculate efficiency from inputs
+    - "analyze"      # Deep analysis with loss breakdown
+    - "benchmark"    # Compare against industry benchmarks
+    - "visualize"    # Generate Sankey diagrams and charts
+    - "report"       # Generate comprehensive efficiency report
+    - "optimize"     # Identify improvement opportunities
+    - "monitor"      # Real-time efficiency monitoring
+
+# ----------------------------------------------------------------------------
+# STANDARDS COMPLIANCE
+# ----------------------------------------------------------------------------
+
+standards_compliance:
+  - name: "ISO 50001:2018"
+    description: "Energy management systems"
+    version: "2018"
+    applicability: "Energy performance indicators (EnPIs)"
+
+  - name: "ASME PTC 4.1"
+    description: "Steam Generating Units - Performance Test Codes"
+    version: "2008"
+    applicability: "Boiler efficiency calculations"
+
+  - name: "ASME PTC 4"
+    description: "Fired Steam Generators"
+    version: "2013"
+    applicability: "Input-output and heat loss methods"
+
+  - name: "EPA 40 CFR Part 60"
+    description: "EPA emissions monitoring"
+    version: "Current"
+    applicability: "Flue gas analysis and emissions"
+
+  - name: "IEC 61508"
+    description: "Functional Safety of E/E/PE Systems"
+    version: "2010"
+    applicability: "Safety-critical calculations"
+
+  - name: "ISO 14001:2015"
+    description: "Environmental management systems"
+    version: "2015"
+    applicability: "Environmental performance reporting"
+
+  - name: "EN 12952"
+    description: "Water-tube boilers and auxiliary installations"
+    version: "2011"
+    applicability: "European boiler efficiency standards"
+
+  - name: "BS 845"
+    description: "Methods for assessing thermal performance of boilers"
+    version: "1987"
+    applicability: "Boiler efficiency testing"
+
+# ----------------------------------------------------------------------------
+# PERFORMANCE TARGETS
+# ----------------------------------------------------------------------------
+
+performance_targets:
+  calculation_accuracy: 0.99  # >99% accuracy vs. validated calculations
+  first_law_closure_tolerance: 0.02  # 2% heat balance closure
+  execution_time_ms: 2000  # <2 seconds typical
+  max_execution_time_ms: 5000  # <5 seconds max
+  cache_hit_rate: 0.85  # >85%
+  test_coverage: 0.90  # >90%
+  sankey_generation_ms: 500  # <500ms for diagram generation
+
+# ----------------------------------------------------------------------------
+# AI CONFIGURATION
+# ----------------------------------------------------------------------------
+
+ai_configuration:
+  deterministic: true
+  temperature: 0.0  # Exact, no approximation
+  seed: 42  # Fixed for reproducibility
+  llm_purpose: "classification_and_recommendations"
+  max_llm_cost_per_query_usd: 0.05
+  fallback_mode: "pure_deterministic"
+
+  llm_use_cases:
+    - "Categorizing improvement opportunities"
+    - "Generating natural language recommendations"
+    - "Root cause classification"
+
+  llm_constraints:
+    - "NEVER used for numerical calculations"
+    - "ALWAYS deterministic (temp=0.0)"
+    - "Fallback to rule-based if LLM unavailable"
+    - "All physics calculations are lookup-based"
+
+# ----------------------------------------------------------------------------
+# SECURITY
+# ----------------------------------------------------------------------------
+
+security:
+  zero_secrets: true
+  provenance_tracking: true
+  audit_logging: true
+  encryption_at_rest: true
+  encryption_in_transit: true
+  rbac_enabled: true
+  data_classification: "internal"
+
+# ----------------------------------------------------------------------------
+# DEPLOYMENT
+# ----------------------------------------------------------------------------
+
+deployment:
+  container_image: "greenlang/gl-009-thermaliq:1.0.0"
+  platform: "kubernetes"
+  min_replicas: 2
+  max_replicas: 20
+  autoscaling_metric: "cpu_utilization"
+  autoscaling_target: 70
+  health_check_endpoint: "/health"
+  metrics_endpoint: "/metrics"
+  log_level: "INFO"
+  namespace: "greenlang-agents"
+
+# ----------------------------------------------------------------------------
+# BUSINESS METRICS
+# ----------------------------------------------------------------------------
+
+business_metrics:
+  market_segment: "industrial-energy-analytics"
+  target_customers:
+    - "manufacturing"
+    - "chemical"
+    - "petrochemical"
+    - "power-generation"
+    - "food-processing"
+    - "pulp-paper"
+    - "steel"
+    - "cement"
+  typical_savings_percent: 15  # 10-25% efficiency improvement potential
+  typical_payback_months: 18  # 12-24 month range
+  addressable_emissions_gt_co2e: 2.5  # Industrial heat processes globally
+
+# ----------------------------------------------------------------------------
+# LICENSE
+# ----------------------------------------------------------------------------
+
+license:
+  type: "Apache-2.0"
+  commercial_use: true
+  attribution_required: true
+  patent_grant: true

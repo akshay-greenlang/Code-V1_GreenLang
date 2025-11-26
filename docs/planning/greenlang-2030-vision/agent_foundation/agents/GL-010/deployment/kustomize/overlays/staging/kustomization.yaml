@@ -1,0 +1,191 @@
+# GL-010 EMISSIONWATCH - Staging Environment
+# Pre-production environment for final testing
+# Uses EPA/EU ETS sandbox environments for compliance testing
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration
+resources:
+  - ../../base
+  - staging-configmap-patch.yaml
+
+# Namespace override
+namespace: greenlang-staging
+
+# Name prefix for all resources
+namePrefix: staging-
+
+# Common labels for staging environment
+commonLabels:
+  environment: staging
+  tier: staging
+
+# Common annotations
+commonAnnotations:
+  environment: "staging"
+  managed-by: "kustomize"
+
+# Images - use staging tag
+images:
+  - name: gcr.io/greenlang/gl-010-emissionwatch
+    newTag: "staging-latest"
+
+# Replicas - 2 for staging
+replicas:
+  - name: gl-010-emissionwatch
+    count: 2
+
+# ConfigMap patches for staging
+patches:
+  # Set replicas to 2
+  - target:
+      kind: Deployment
+      name: gl-010-emissionwatch
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 2
+
+  # Update environment-specific config
+  - target:
+      kind: ConfigMap
+      name: gl-010-config
+    patch: |-
+      - op: replace
+        path: /data/environment
+        value: "staging"
+      - op: replace
+        path: /data/log_level
+        value: "INFO"
+      - op: replace
+        path: /data/database_pool_size
+        value: "15"
+      - op: replace
+        path: /data/cems_polling_interval
+        value: "60"
+      - op: replace
+        path: /data/cems_data_buffer_size
+        value: "5000"
+      - op: replace
+        path: /data/sentry_enabled
+        value: "true"
+      - op: replace
+        path: /data/sentry_traces_sample_rate
+        value: "0.5"
+      - op: replace
+        path: /data/epa_ecmps_enabled
+        value: "true"
+      - op: replace
+        path: /data/eu_ets_enabled
+        value: "true"
+      - op: replace
+        path: /data/auto_submit_reports
+        value: "false"
+      - op: add
+        path: /data/use_sandbox_apis
+        value: "true"
+      - op: add
+        path: /data/enable_debug_endpoints
+        value: "true"
+      - op: replace
+        path: /data/emissions_alert_threshold_percent
+        value: "85"
+
+  # Moderate resource requests and limits
+  - target:
+      kind: Deployment
+      name: gl-010-emissionwatch
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "768Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "750m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1536Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "1500m"
+
+  # Update HPA for staging
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: gl-010-emissionwatch-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 2
+      - op: replace
+        path: /spec/maxReplicas
+        value: 5
+      - op: replace
+        path: /spec/metrics/0/resource/target/averageUtilization
+        value: 75
+
+  # Update PDB for staging
+  - target:
+      kind: PodDisruptionBudget
+      name: gl-010-emissionwatch-pdb
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 1
+
+  # Update Ingress for staging domain
+  - target:
+      kind: Ingress
+      name: gl-010-emissionwatch-ingress
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts
+        value:
+          - staging.emissionwatch.greenlang.ai
+          - staging-api.emissionwatch.greenlang.ai
+      - op: replace
+        path: /spec/rules/0/host
+        value: "staging.emissionwatch.greenlang.ai"
+      - op: replace
+        path: /spec/rules/1/host
+        value: "staging-api.emissionwatch.greenlang.ai"
+
+# Secret management - use External Secrets with staging AWS Secrets Manager
+patchesStrategicMerge:
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-database-secret
+    spec:
+      dataFrom:
+        - extract:
+            key: greenlang/staging/gl-010/database
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-timescale-secret
+    spec:
+      dataFrom:
+        - extract:
+            key: greenlang/staging/gl-010/timescaledb
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-epa-cdx-secret
+    spec:
+      dataFrom:
+        - extract:
+            key: greenlang/staging/gl-010/epa-cdx-sandbox
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-eu-ets-secret
+    spec:
+      dataFrom:
+        - extract:
+            key: greenlang/staging/gl-010/eu-ets-sandbox

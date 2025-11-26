@@ -1,0 +1,22 @@
+# GL-008 SteamTrapInspector - Pod Disruption Budget
+# Ensures minimum availability during voluntary disruptions
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-008-steam-trap-inspector-pdb
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+  annotations:
+    description: "PDB for GL-008 SteamTrapInspector - ensures 2 pods always available"
+spec:
+  # Minimum number of pods that must remain available
+  minAvailable: 2
+
+  # Selector to match pods
+  selector:
+    matchLabels:
+      app: gl-008-steam-trap-inspector
+      agent: "GL-008"

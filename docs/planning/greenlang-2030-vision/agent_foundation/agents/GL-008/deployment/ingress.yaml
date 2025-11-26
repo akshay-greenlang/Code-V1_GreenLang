@@ -1,0 +1,41 @@
+# GL-008 SteamTrapInspector - Ingress
+# NGINX ingress with TLS termination
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-008-steam-trap-inspector
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+spec:
+  # TLS configuration
+  tls:
+    - hosts:
+        - gl-008.greenlang.io
+      secretName: gl-008-tls-cert
+
+  # Routing rules
+  rules:
+    - host: gl-008.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-008-steam-trap-inspector
+                port:
+                  number: 9090

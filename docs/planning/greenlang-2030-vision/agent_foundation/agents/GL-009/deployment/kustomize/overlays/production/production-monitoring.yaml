@@ -1,0 +1,228 @@
+# GL-009 THERMALIQ - Production Monitoring Resources
+# ServiceMonitor and PrometheusRule for production monitoring
+
+---
+# ServiceMonitor for Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-009-thermaliq
+  namespace: greenlang-production
+  labels:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+    prometheus: kube-prometheus
+spec:
+  selector:
+    matchLabels:
+      app: gl-009-thermaliq
+      service-type: metrics
+  endpoints:
+    - port: metrics
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /api/v1/metrics
+      scheme: http
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_pod_node_name]
+          targetLabel: node
+
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-009-thermaliq-alerts
+  namespace: greenlang-production
+  labels:
+    app: gl-009-thermaliq
+    agent: "GL-009"
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: gl-009-thermaliq.rules
+      interval: 30s
+      rules:
+        # High error rate alert
+        - alert: GL009HighErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{app="gl-009-thermaliq",status=~"5.."}[5m]))
+              /
+              sum(rate(http_requests_total{app="gl-009-thermaliq"}[5m]))
+            ) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+            agent: GL-009
+          annotations:
+            summary: "High error rate for GL-009 THERMALIQ"
+            description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+        # High latency alert
+        - alert: GL009HighLatency
+          expr: |
+            histogram_quantile(0.95,
+              sum(rate(http_request_duration_seconds_bucket{app="gl-009-thermaliq"}[5m])) by (le)
+            ) > 5
+          for: 10m
+          labels:
+            severity: warning
+            agent: GL-009
+          annotations:
+            summary: "High latency for GL-009 THERMALIQ"
+            description: "95th percentile latency is {{ $value }}s (threshold: 5s)"
+
+        # Pod down alert
+        - alert: GL009PodDown
+          expr: |
+            kube_deployment_status_replicas_available{deployment="gl-009-thermaliq"} < 2
+          for: 5m
+          labels:
+            severity: critical
+            agent: GL-009
+          annotations:
+            summary: "GL-009 THERMALIQ pod availability low"
+            description: "Only {{ $value }} pods available (minimum: 2)"
+
+        # High memory usage
+        - alert: GL009HighMemoryUsage
+          expr: |
+            (
+              container_memory_usage_bytes{pod=~"gl-009-thermaliq.*"}
+              /
+              container_spec_memory_limit_bytes{pod=~"gl-009-thermaliq.*"}
+            ) > 0.9
+          for: 10m
+          labels:
+            severity: warning
+            agent: GL-009
+          annotations:
+            summary: "High memory usage for GL-009 THERMALIQ"
+            description: "Memory usage is {{ $value | humanizePercentage }} (threshold: 90%)"
+
+        # High CPU usage
+        - alert: GL009HighCPUUsage
+          expr: |
+            (
+              rate(container_cpu_usage_seconds_total{pod=~"gl-009-thermaliq.*"}[5m])
+            ) > 1.8
+          for: 10m
+          labels:
+            severity: warning
+            agent: GL-009
+          annotations:
+            summary: "High CPU usage for GL-009 THERMALIQ"
+            description: "CPU usage is {{ $value }} cores (limit: 2 cores)"
+
+        # Calculation queue depth alert
+        - alert: GL009HighQueueDepth
+          expr: |
+            calculation_queue_depth{app="gl-009-thermaliq"} > 100
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-009
+          annotations:
+            summary: "High calculation queue depth for GL-009"
+            description: "Queue depth is {{ $value }} (threshold: 100)"
+
+        # Database connection pool exhaustion
+        - alert: GL009DatabasePoolExhaustion
+          expr: |
+            (
+              database_connections_active{app="gl-009-thermaliq"}
+              /
+              database_connections_max{app="gl-009-thermaliq"}
+            ) > 0.9
+          for: 5m
+          labels:
+            severity: critical
+            agent: GL-009
+          annotations:
+            summary: "Database connection pool near exhaustion"
+            description: "{{ $value | humanizePercentage }} of connections in use (threshold: 90%)"
+
+        # Redis connection issues
+        - alert: GL009RedisConnectionFailure
+          expr: |
+            redis_connection_errors_total{app="gl-009-thermaliq"} > 10
+          for: 5m
+          labels:
+            severity: critical
+            agent: GL-009
+          annotations:
+            summary: "Redis connection failures detected"
+            description: "{{ $value }} connection errors in the last 5 minutes"
+
+---
+# Grafana Dashboard ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-009-thermaliq-dashboard
+  namespace: greenlang-production
+  labels:
+    app: gl-009-thermaliq
+    grafana_dashboard: "true"
+data:
+  gl-009-thermaliq.json: |
+    {
+      "dashboard": {
+        "title": "GL-009 THERMALIQ - Production Dashboard",
+        "tags": ["greenlang", "gl-009", "thermal-engineering"],
+        "timezone": "UTC",
+        "panels": [
+          {
+            "title": "Request Rate",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{app=\"gl-009-thermaliq\"}[5m]))"
+              }
+            ]
+          },
+          {
+            "title": "Error Rate",
+            "targets": [
+              {
+                "expr": "sum(rate(http_requests_total{app=\"gl-009-thermaliq\",status=~\"5..\"}[5m]))"
+              }
+            ]
+          },
+          {
+            "title": "Response Time (p95)",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{app=\"gl-009-thermaliq\"}[5m])) by (le))"
+              }
+            ]
+          },
+          {
+            "title": "Active Calculations",
+            "targets": [
+              {
+                "expr": "active_calculations{app=\"gl-009-thermaliq\"}"
+              }
+            ]
+          },
+          {
+            "title": "Pod CPU Usage",
+            "targets": [
+              {
+                "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"gl-009-thermaliq.*\"}[5m])) by (pod)"
+              }
+            ]
+          },
+          {
+            "title": "Pod Memory Usage",
+            "targets": [
+              {
+                "expr": "sum(container_memory_usage_bytes{pod=~\"gl-009-thermaliq.*\"}) by (pod)"
+              }
+            ]
+          }
+        ]
+      }
+    }

@@ -9,7 +9,7 @@ All tools follow zero-hallucination design with deterministic control algorithms
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ValidationInfo
 
 
 class ReadCombustionStateInput(BaseModel):
@@ -69,7 +69,8 @@ class OptimizeFuelAirRatioInput(BaseModel):
     fuel_type: str = Field(..., description="Fuel type")
     enable_o2_trim: bool = Field(True, description="Enable O2 trim correction")
 
-    @validator('fuel_type')
+    @field_validator('fuel_type')
+    @classmethod
     def validate_fuel_type(cls, v: str) -> str:
         valid_types = ['natural_gas', 'fuel_oil', 'coal', 'biomass', 'propane', 'lng']
         if v not in valid_types:
@@ -244,7 +245,8 @@ class TunePIDParametersInput(BaseModel):
     tuning_method: str = Field("ziegler_nichols", description="Tuning method to use")
     aggressive_tuning: bool = Field(False, description="Use aggressive (fast) tuning")
 
-    @validator('tuning_method')
+    @field_validator('tuning_method')
+    @classmethod
     def validate_tuning_method(cls, v: str) -> str:
         valid_methods = ['ziegler_nichols', 'cohen_coon', 'lambda_tuning', 'imc', 'auto']
         if v not in valid_methods:

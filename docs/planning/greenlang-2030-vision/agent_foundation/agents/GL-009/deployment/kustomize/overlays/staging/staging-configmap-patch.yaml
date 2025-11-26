@@ -1,0 +1,22 @@
+# GL-009 THERMALIQ - Staging ConfigMap Patch
+# Additional staging-specific configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-009-config-staging-patch
+  namespace: greenlang-staging
+  labels:
+    app: gl-009-thermaliq
+    environment: staging
+data:
+  # Staging-specific feature flags
+  feature_experimental_ml: "true"
+  feature_beta_ui: "true"
+
+  # Enhanced logging for staging
+  enable_request_logging: "true"
+  enable_sql_logging: "false"
+
+  # Staging API endpoints
+  external_api_base_url: "https://staging-api.greenlang.ai"

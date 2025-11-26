@@ -1,0 +1,141 @@
+# GL-010 EMISSIONWATCH EmissionsComplianceAgent - Kubernetes Services
+# Multiple services for different types of traffic
+# Supports real-time emissions monitoring and compliance reporting
+
+---
+# Main ClusterIP Service for API traffic
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-010-emissionwatch
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    service-type: "main"
+  annotations:
+    description: "Main API service for emissions monitoring and compliance"
+spec:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours for long-running compliance operations
+  selector:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: websocket
+      port: 8082
+      targetPort: 8082
+      protocol: TCP
+
+---
+# Metrics Service for Prometheus scraping
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-010-emissionwatch-metrics
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    service-type: "metrics"
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/api/v1/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+
+---
+# Admin Service for internal management
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-010-emissionwatch-admin
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    service-type: "admin"
+  annotations:
+    description: "Admin API for internal management, CEMS status, and diagnostics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  ports:
+    - name: admin
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+
+---
+# Headless Service for StatefulSet-style discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-010-emissionwatch-headless
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    service-type: "headless"
+  annotations:
+    description: "Headless service for direct pod-to-pod communication"
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  publishNotReadyAddresses: true
+  selector:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+
+---
+# CEMS Integration Service (for industrial protocol access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-010-emissionwatch-cems
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    service-type: "cems"
+  annotations:
+    description: "Service for CEMS and industrial protocol integration"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+  ports:
+    # OPC UA port for CEMS communication
+    - name: opcua
+      port: 4840
+      targetPort: 4840
+      protocol: TCP
+    # Modbus TCP port
+    - name: modbus
+      port: 502
+      targetPort: 502
+      protocol: TCP

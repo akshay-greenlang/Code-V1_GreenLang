@@ -1,0 +1,306 @@
+# GL-010 EMISSIONWATCH - Production Monitoring Resources
+# ServiceMonitor, PrometheusRules, and Grafana Dashboard configuration
+
+---
+# ServiceMonitor for Prometheus Operator
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: gl-010-emissionwatch-monitor
+  namespace: greenlang-production
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: gl-010-emissionwatch
+      agent: "GL-010"
+  namespaceSelector:
+    matchNames:
+      - greenlang-production
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /api/v1/metrics
+      scheme: http
+      scrapeTimeout: 10s
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+
+---
+# PrometheusRule for alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: gl-010-emissionwatch-alerts
+  namespace: greenlang-production
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    release: prometheus
+    role: alert-rules
+spec:
+  groups:
+    - name: gl-010-emissionwatch-availability
+      interval: 30s
+      rules:
+        # Pod availability alerts
+        - alert: GL010EmissionWatchPodUnavailable
+          expr: |
+            kube_deployment_status_replicas_available{
+              deployment="prod-gl-010-emissionwatch",
+              namespace="greenlang-production"
+            } < 2
+          for: 5m
+          labels:
+            severity: critical
+            agent: GL-010
+            compliance: emissions
+          annotations:
+            summary: "GL-010 EMISSIONWATCH pod availability critical"
+            description: "Less than 2 pods available for GL-010 EMISSIONWATCH. Current: {{ $value }}. Emissions monitoring may be interrupted."
+            runbook_url: "https://runbooks.greenlang.ai/gl-010/pod-unavailable"
+
+        - alert: GL010EmissionWatchPodCrashLooping
+          expr: |
+            rate(kube_pod_container_status_restarts_total{
+              pod=~"prod-gl-010-emissionwatch-.*",
+              namespace="greenlang-production"
+            }[15m]) > 0.1
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-010
+          annotations:
+            summary: "GL-010 EMISSIONWATCH pod crash looping"
+            description: "Pod {{ $labels.pod }} is crash looping. This may affect emissions data collection."
+
+    - name: gl-010-emissionwatch-performance
+      interval: 30s
+      rules:
+        # High error rate
+        - alert: GL010EmissionWatchHighErrorRate
+          expr: |
+            sum(rate(http_requests_total{
+              service="gl-010-emissionwatch",
+              status=~"5.."
+            }[5m])) / sum(rate(http_requests_total{
+              service="gl-010-emissionwatch"
+            }[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-010
+          annotations:
+            summary: "GL-010 EMISSIONWATCH high error rate"
+            description: "Error rate is {{ $value | humanizePercentage }}. Check application logs."
+
+        # High latency
+        - alert: GL010EmissionWatchHighLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{
+              service="gl-010-emissionwatch"
+            }[5m])) by (le)) > 5
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-010
+          annotations:
+            summary: "GL-010 EMISSIONWATCH high latency"
+            description: "P95 latency is {{ $value }}s. Check for performance issues."
+
+        # High memory usage
+        - alert: GL010EmissionWatchHighMemoryUsage
+          expr: |
+            container_memory_usage_bytes{
+              pod=~"prod-gl-010-emissionwatch-.*",
+              namespace="greenlang-production",
+              container="emissionwatch"
+            } / container_spec_memory_limit_bytes{
+              pod=~"prod-gl-010-emissionwatch-.*",
+              namespace="greenlang-production",
+              container="emissionwatch"
+            } > 0.9
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-010
+          annotations:
+            summary: "GL-010 EMISSIONWATCH high memory usage"
+            description: "Memory usage is {{ $value | humanizePercentage }}. Consider scaling or increasing limits."
+
+        # High CPU usage
+        - alert: GL010EmissionWatchHighCPUUsage
+          expr: |
+            rate(container_cpu_usage_seconds_total{
+              pod=~"prod-gl-010-emissionwatch-.*",
+              namespace="greenlang-production",
+              container="emissionwatch"
+            }[5m]) > 1.8
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-010
+          annotations:
+            summary: "GL-010 EMISSIONWATCH high CPU usage"
+            description: "CPU usage is {{ $value }} cores. Check for performance issues."
+
+    - name: gl-010-emissionwatch-cems
+      interval: 30s
+      rules:
+        # CEMS connection failures
+        - alert: GL010CEMSConnectionFailure
+          expr: |
+            gl010_cems_connection_failures_total > 3
+          for: 5m
+          labels:
+            severity: critical
+            agent: GL-010
+            compliance: emissions
+          annotations:
+            summary: "GL-010 CEMS connection failure"
+            description: "CEMS connection has failed {{ $value }} times. Emissions data collection is interrupted."
+            runbook_url: "https://runbooks.greenlang.ai/gl-010/cems-connection-failure"
+
+        # CEMS data gap
+        - alert: GL010CEMSDataGap
+          expr: |
+            time() - gl010_cems_last_data_timestamp_seconds > 900
+          for: 5m
+          labels:
+            severity: critical
+            agent: GL-010
+            compliance: emissions
+          annotations:
+            summary: "GL-010 CEMS data gap detected"
+            description: "No CEMS data received for {{ $value | humanizeDuration }}. This may result in compliance violations."
+            runbook_url: "https://runbooks.greenlang.ai/gl-010/cems-data-gap"
+
+        # High emissions queue depth
+        - alert: GL010EmissionsQueueDepthHigh
+          expr: |
+            gl010_emissions_calculation_queue_depth > 100
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-010
+          annotations:
+            summary: "GL-010 emissions calculation queue depth high"
+            description: "Queue depth is {{ $value }}. Consider scaling up."
+
+    - name: gl-010-emissionwatch-compliance
+      interval: 60s
+      rules:
+        # Emissions threshold approaching
+        - alert: GL010EmissionsThresholdApproaching
+          expr: |
+            gl010_current_emissions_percent_of_limit > 80
+          for: 15m
+          labels:
+            severity: warning
+            agent: GL-010
+            compliance: emissions
+          annotations:
+            summary: "GL-010 emissions approaching regulatory limit"
+            description: "Current emissions are at {{ $value }}% of regulatory limit for {{ $labels.pollutant }}."
+
+        # Emissions threshold exceeded
+        - alert: GL010EmissionsThresholdExceeded
+          expr: |
+            gl010_current_emissions_percent_of_limit > 100
+          for: 5m
+          labels:
+            severity: critical
+            agent: GL-010
+            compliance: emissions
+          annotations:
+            summary: "GL-010 REGULATORY VIOLATION - Emissions limit exceeded"
+            description: "CRITICAL: Emissions have exceeded regulatory limit. Current: {{ $value }}% for {{ $labels.pollutant }}. Immediate action required."
+            runbook_url: "https://runbooks.greenlang.ai/gl-010/emissions-exceedance"
+
+        # Compliance report submission failure
+        - alert: GL010ComplianceReportSubmissionFailure
+          expr: |
+            gl010_compliance_report_submission_failures_total > 0
+          for: 1m
+          labels:
+            severity: critical
+            agent: GL-010
+            compliance: regulatory
+          annotations:
+            summary: "GL-010 compliance report submission failed"
+            description: "Failed to submit compliance report to {{ $labels.regulatory_body }}. Manual intervention required."
+            runbook_url: "https://runbooks.greenlang.ai/gl-010/report-submission-failure"
+
+        # Pending compliance reports
+        - alert: GL010ComplianceReportsPending
+          expr: |
+            gl010_pending_compliance_reports > 5
+          for: 1h
+          labels:
+            severity: warning
+            agent: GL-010
+            compliance: regulatory
+          annotations:
+            summary: "GL-010 pending compliance reports accumulating"
+            description: "{{ $value }} compliance reports pending. Review and submit promptly."
+
+    - name: gl-010-emissionwatch-database
+      interval: 30s
+      rules:
+        # Database connection pool exhaustion
+        - alert: GL010DatabasePoolExhaustion
+          expr: |
+            gl010_database_pool_available_connections / gl010_database_pool_max_connections < 0.1
+          for: 5m
+          labels:
+            severity: warning
+            agent: GL-010
+          annotations:
+            summary: "GL-010 database connection pool near exhaustion"
+            description: "Only {{ $value | humanizePercentage }} connections available. Consider increasing pool size."
+
+        # TimescaleDB connection issues
+        - alert: GL010TimescaleDBConnectionFailure
+          expr: |
+            gl010_timescaledb_connection_failures_total > 0
+          for: 2m
+          labels:
+            severity: critical
+            agent: GL-010
+          annotations:
+            summary: "GL-010 TimescaleDB connection failure"
+            description: "Cannot connect to TimescaleDB. Emissions time-series data storage is affected."
+
+        # Redis connection issues
+        - alert: GL010RedisConnectionFailure
+          expr: |
+            gl010_redis_connection_failures_total > 0
+          for: 2m
+          labels:
+            severity: warning
+            agent: GL-010
+          annotations:
+            summary: "GL-010 Redis connection failure"
+            description: "Cannot connect to Redis. Caching and real-time features may be degraded."
+
+---
+# PriorityClass for compliance-critical workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: compliance-critical
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+value: 1000000
+globalDefault: false
+description: "Priority class for compliance-critical workloads like emissions monitoring"
+preemptionPolicy: PreemptLowerPriority

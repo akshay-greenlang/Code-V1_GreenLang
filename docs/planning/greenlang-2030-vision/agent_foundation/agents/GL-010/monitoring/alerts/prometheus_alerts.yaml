@@ -1,0 +1,927 @@
+# GL-010 EMISSIONWATCH Prometheus Alert Rules
+# EmissionsComplianceAgent Alert Configuration
+#
+# This file defines comprehensive alerting rules for emissions monitoring,
+# compliance tracking, CEMS operations, reporting, and system health.
+#
+# Alert Severity Levels:
+# - critical: Immediate action required, regulatory violation imminent or occurring
+# - warning: Attention needed, approaching limits or degraded performance
+# - info: Informational, tracking events or minor issues
+#
+# Notification Routing:
+# - critical: PagerDuty, SMS, Email to on-call + managers
+# - warning: Email to operations team, Slack #emissions-alerts
+# - info: Slack #emissions-monitoring
+
+groups:
+  # ============================================================================
+  # EMISSIONS EXCEEDANCE ALERTS - CRITICAL
+  # ============================================================================
+  - name: gl010_emissions_critical
+    interval: 15s
+    rules:
+      - alert: GL010NOxExceedance
+        expr: gl010_nox_limit_percent > 100
+        for: 1m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: exceedance
+        annotations:
+          summary: "NOx emissions exceeding permit limit"
+          description: "NOx emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit in {{ $labels.jurisdiction }}. Immediate corrective action required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/nox-exceedance"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010SOxExceedance
+        expr: gl010_sox_limit_percent > 100
+        for: 1m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: exceedance
+        annotations:
+          summary: "SOx emissions exceeding permit limit"
+          description: "SOx emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit in {{ $labels.jurisdiction }}. Immediate corrective action required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/sox-exceedance"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010COExceedance
+        expr: gl010_co_limit_percent > 100
+        for: 1m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: exceedance
+        annotations:
+          summary: "CO emissions exceeding permit limit"
+          description: "CO emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Immediate corrective action required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/co-exceedance"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010PMExceedance
+        expr: gl010_pm_limit_percent > 100
+        for: 1m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: exceedance
+        annotations:
+          summary: "Particulate matter emissions exceeding permit limit"
+          description: "PM emissions at {{ $labels.source }} ({{ $labels.size_class }}) are at {{ $value | printf \"%.1f\" }}% of permit limit. Immediate corrective action required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/pm-exceedance"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010VOCExceedance
+        expr: gl010_voc_limit_percent > 100
+        for: 1m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: exceedance
+        annotations:
+          summary: "VOC emissions exceeding permit limit"
+          description: "VOC emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Immediate corrective action required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/voc-exceedance"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010OpacityExceedance
+        expr: gl010_opacity_limit_percent > 100
+        for: 1m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: exceedance
+        annotations:
+          summary: "Stack opacity exceeding permit limit"
+          description: "Opacity at {{ $labels.source }}/{{ $labels.stack }} is at {{ $value | printf \"%.1f\" }}% of permit limit. Visible emissions violation."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/opacity-exceedance"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010ViolationDetected
+        expr: gl010_compliance_status == 0
+        for: 0m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: violation
+        annotations:
+          summary: "Compliance violation detected"
+          description: "{{ $labels.pollutant }} compliance violation at {{ $labels.source }} in {{ $labels.jurisdiction }} (permit {{ $labels.permit_id }}). Regulatory reporting may be required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/violation-response"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010MultipleViolationsActive
+        expr: sum(gl010_violations_active) > 3
+        for: 5m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: violation
+        annotations:
+          summary: "Multiple active violations detected"
+          description: "{{ $value }} active violations detected across facility. Systemic issue likely. Immediate investigation required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/multiple-violations"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+  # ============================================================================
+  # EMISSIONS APPROACHING LIMITS - WARNING
+  # ============================================================================
+  - name: gl010_emissions_warning
+    interval: 30s
+    rules:
+      - alert: GL010NOxApproaching95Percent
+        expr: gl010_nox_limit_percent > 95 and gl010_nox_limit_percent <= 100
+        for: 5m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: approaching_limit
+        annotations:
+          summary: "NOx emissions at 95% of permit limit"
+          description: "NOx emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Proactive adjustment recommended."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/emissions-approaching"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010NOxApproaching90Percent
+        expr: gl010_nox_limit_percent > 90 and gl010_nox_limit_percent <= 95
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: approaching_limit
+        annotations:
+          summary: "NOx emissions at 90% of permit limit"
+          description: "NOx emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Monitor closely."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/emissions-approaching"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010NOxApproaching80Percent
+        expr: gl010_nox_limit_percent > 80 and gl010_nox_limit_percent <= 90
+        for: 30m
+        labels:
+          severity: info
+          team: emissions
+          agent: gl010
+          category: approaching_limit
+        annotations:
+          summary: "NOx emissions at 80% of permit limit"
+          description: "NOx emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Trending upward."
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010SOxApproaching95Percent
+        expr: gl010_sox_limit_percent > 95 and gl010_sox_limit_percent <= 100
+        for: 5m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: approaching_limit
+        annotations:
+          summary: "SOx emissions at 95% of permit limit"
+          description: "SOx emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Proactive adjustment recommended."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/emissions-approaching"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010SOxApproaching90Percent
+        expr: gl010_sox_limit_percent > 90 and gl010_sox_limit_percent <= 95
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: approaching_limit
+        annotations:
+          summary: "SOx emissions at 90% of permit limit"
+          description: "SOx emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Monitor closely."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/emissions-approaching"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010PMApproaching95Percent
+        expr: gl010_pm_limit_percent > 95 and gl010_pm_limit_percent <= 100
+        for: 5m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: approaching_limit
+        annotations:
+          summary: "PM emissions at 95% of permit limit"
+          description: "PM emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Proactive adjustment recommended."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/emissions-approaching"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010COApproaching95Percent
+        expr: gl010_co_limit_percent > 95 and gl010_co_limit_percent <= 100
+        for: 5m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: approaching_limit
+        annotations:
+          summary: "CO emissions at 95% of permit limit"
+          description: "CO emissions at {{ $labels.source }} are at {{ $value | printf \"%.1f\" }}% of permit limit. Proactive adjustment recommended."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/emissions-approaching"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010ComplianceMarginLow
+        expr: gl010_compliance_margin_percent < 5 and gl010_compliance_margin_percent > 0
+        for: 10m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: margin
+        annotations:
+          summary: "Low compliance margin"
+          description: "{{ $labels.pollutant }} compliance margin at {{ $labels.source }} is only {{ $value | printf \"%.1f\" }}%. Very close to limit."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/low-margin"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+  # ============================================================================
+  # CEMS ALERTS - CRITICAL
+  # ============================================================================
+  - name: gl010_cems_critical
+    interval: 30s
+    rules:
+      - alert: GL010CEMSDown
+        expr: up{job="gl010-cems"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS system down"
+          description: "CEMS monitoring system is not responding. Data collection halted. Substitute data procedures may be required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/cems-down"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSAnalyzerDown
+        expr: gl010_cems_maintenance_status == 0
+        for: 5m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS analyzer offline"
+          description: "Analyzer {{ $labels.analyzer }} at {{ $labels.stack }} is offline. Substitute data procedures required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/analyzer-down"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSAvailabilityBelowThreshold
+        expr: gl010_cems_availability_percent{period="quarterly"} < 90
+        for: 1h
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS availability below regulatory threshold"
+          description: "CEMS availability for {{ $labels.stack }}/{{ $labels.pollutant }} is {{ $value | printf \"%.1f\" }}%, below 90% regulatory requirement."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/cems-availability"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSCalibrationInvalid
+        expr: gl010_cems_calibration_status == 0
+        for: 0m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS calibration invalid"
+          description: "Calibration for {{ $labels.analyzer }} ({{ $labels.gas_type }}) is invalid. Recalibration required immediately."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/calibration-invalid"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSRATAExpired
+        expr: gl010_cems_rata_status == 0
+        for: 0m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS RATA test expired"
+          description: "RATA for {{ $labels.stack }}/{{ $labels.pollutant }} is expired. Data may not be valid for regulatory compliance."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/rata-expired"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSLinearityFailed
+        expr: gl010_cems_linearity_check_status == 0
+        for: 0m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS linearity check failed"
+          description: "Linearity check for {{ $labels.analyzer }}/{{ $labels.pollutant }} failed. Analyzer accuracy compromised."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/linearity-failed"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+  # ============================================================================
+  # CEMS ALERTS - WARNING
+  # ============================================================================
+  - name: gl010_cems_warning
+    interval: 60s
+    rules:
+      - alert: GL010CEMSDriftHigh
+        expr: abs(gl010_cems_drift_percent) > 5
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS analyzer drift exceeds threshold"
+          description: "{{ $labels.analyzer }} drift ({{ $labels.direction }}) is {{ $value | printf \"%.2f\" }}% for {{ $labels.pollutant }}. Calibration recommended."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/cems-drift"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSCalibrationExpiringSoon
+        expr: gl010_cems_calibration_days_remaining < 7
+        for: 1h
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS calibration expiring soon"
+          description: "Calibration for {{ $labels.analyzer }} expires in {{ $value | printf \"%.0f\" }} days. Schedule calibration."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/calibration-schedule"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSRATAExpiringSoon
+        expr: gl010_cems_rata_days_remaining < 60
+        for: 1h
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS RATA test expiring soon"
+          description: "RATA for {{ $labels.stack }}/{{ $labels.pollutant }} expires in {{ $value | printf \"%.0f\" }} days. Schedule RATA testing."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/rata-schedule"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSDataQualityLow
+        expr: gl010_cems_data_quality{quality_aspect="overall"} < 75
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS data quality degraded"
+          description: "Data quality for {{ $labels.analyzer }} is {{ $value | printf \"%.0f\" }}%. Investigation recommended."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/data-quality"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSSubstituteDataHigh
+        expr: gl010_cems_substitute_data_percent{period="quarterly"} > 8
+        for: 1h
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "High substitute data usage"
+          description: "Substitute data usage for {{ $labels.stack }}/{{ $labels.pollutant }} is {{ $value | printf \"%.1f\" }}%. Approaching 10% limit."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/substitute-data"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSCylinderGasLow
+        expr: gl010_cems_cylinder_gas_days_remaining < 14
+        for: 1h
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS cylinder gas running low"
+          description: "{{ $labels.gas_type }} ({{ $labels.level }}) for {{ $labels.analyzer }} has {{ $value | printf \"%.0f\" }} days remaining. Order replacement."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/cylinder-gas"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010CEMSMaintenanceDue
+        expr: gl010_cems_maintenance_days_until < 7
+        for: 1h
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: cems
+        annotations:
+          summary: "CEMS maintenance due"
+          description: "{{ $labels.maintenance_type }} for {{ $labels.analyzer }} due in {{ $value | printf \"%.0f\" }} days. Schedule maintenance."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/maintenance-schedule"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+  # ============================================================================
+  # REPORTING ALERTS
+  # ============================================================================
+  - name: gl010_reporting
+    interval: 60s
+    rules:
+      - alert: GL010ReportDeadlineUrgent
+        expr: gl010_report_deadline_days < 3
+        for: 1h
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: reporting
+        annotations:
+          summary: "Report deadline imminent"
+          description: "{{ $labels.report_type }} report for {{ $labels.jurisdiction }} due in {{ $value | printf \"%.0f\" }} days. Urgent action required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/report-deadline"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010ReportDeadlineApproaching
+        expr: gl010_report_deadline_days > 3 and gl010_report_deadline_days < 14
+        for: 1h
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: reporting
+        annotations:
+          summary: "Report deadline approaching"
+          description: "{{ $labels.report_type }} report for {{ $labels.jurisdiction }} due in {{ $value | printf \"%.0f\" }} days."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/report-deadline"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010ReportGenerationFailing
+        expr: rate(gl010_report_errors_total[1h]) > 0.1
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: reporting
+        annotations:
+          summary: "Report generation errors detected"
+          description: "{{ $labels.type }} report generation experiencing errors. {{ $value | printf \"%.2f\" }} errors/hour."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/report-errors"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010ReportSubmissionFailed
+        expr: increase(gl010_reports_rejected_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: reporting
+        annotations:
+          summary: "Report submission rejected"
+          description: "{{ $labels.report_type }} report rejected by {{ $labels.portal }}. Reason: {{ $labels.rejection_reason }}. Immediate correction required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/report-rejected"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010ReportQueueBacklog
+        expr: gl010_report_queue_size > 10
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: reporting
+        annotations:
+          summary: "Report generation backlog"
+          description: "{{ $value | printf \"%.0f\" }} reports queued for generation. Processing capacity may be insufficient."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/report-backlog"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010ECMPSSubmissionPending
+        expr: gl010_ecmps_submission_status < 3 and gl010_report_deadline_days{report_type="quarterly_ecmps"} < 7
+        for: 1h
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: reporting
+        annotations:
+          summary: "ECMPS quarterly submission pending"
+          description: "EPA ECMPS submission for Q{{ $labels.quarter }} {{ $labels.year }} not yet completed. Deadline approaching."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/ecmps-submission"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+  # ============================================================================
+  # PERMIT ALERTS
+  # ============================================================================
+  - name: gl010_permits
+    interval: 300s
+    rules:
+      - alert: GL010PermitExpiringSoon
+        expr: gl010_permit_expiration_days < 90
+        for: 1h
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: permits
+        annotations:
+          summary: "Permit expiring soon"
+          description: "Permit {{ $labels.permit_id }} ({{ $labels.permit_type }}) in {{ $labels.jurisdiction }} expires in {{ $value | printf \"%.0f\" }} days. Initiate renewal."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/permit-renewal"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010PermitExpired
+        expr: gl010_permit_expiration_days < 0
+        for: 0m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: permits
+        annotations:
+          summary: "Permit expired"
+          description: "Permit {{ $labels.permit_id }} ({{ $labels.permit_type }}) in {{ $labels.jurisdiction }} has expired. Legal compliance at risk."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/permit-expired"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010EnforcementActionReceived
+        expr: increase(gl010_enforcement_actions_total[24h]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: enforcement
+        annotations:
+          summary: "Regulatory enforcement action received"
+          description: "{{ $labels.action_type }} enforcement action from {{ $labels.jurisdiction }}. Severity: {{ $labels.severity }}. Legal review required."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/enforcement-action"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+  # ============================================================================
+  # ALERT MANAGEMENT ALERTS
+  # ============================================================================
+  - name: gl010_alert_management
+    interval: 60s
+    rules:
+      - alert: GL010AlertResponseSlow
+        expr: histogram_quantile(0.95, rate(gl010_alert_response_time_seconds_bucket{severity="critical"}[1h])) > 300
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: alerting
+        annotations:
+          summary: "Slow alert response time"
+          description: "P95 alert response time for critical alerts is {{ $value | printf \"%.0f\" }} seconds. SLO target is 300s."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/alert-response"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010AlertNotificationFailure
+        expr: rate(gl010_alert_notification_failures_total[1h]) > 0.05
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: alerting
+        annotations:
+          summary: "Alert notification failures"
+          description: "Alert notifications failing via {{ $labels.channel }}. {{ $value | printf \"%.2f\" }} failures/hour."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/notification-failure"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010TooManyCriticalAlerts
+        expr: sum(gl010_alerts_active{severity="critical"}) > 5
+        for: 10m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: alerting
+        annotations:
+          summary: "Too many critical alerts"
+          description: "{{ $value | printf \"%.0f\" }} critical alerts currently active. Systemic issue or alert storm detected."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/alert-storm"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+  # ============================================================================
+  # CALCULATION PERFORMANCE ALERTS
+  # ============================================================================
+  - name: gl010_calculations
+    interval: 60s
+    rules:
+      - alert: GL010CalculationLatencyHigh
+        expr: histogram_quantile(0.99, rate(gl010_calculation_duration_seconds_bucket[5m])) > 1
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: performance
+        annotations:
+          summary: "High calculation latency"
+          description: "P99 calculation latency for {{ $labels.type }} is {{ $value | printf \"%.3f\" }}s. Target is <1s."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/calculation-latency"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010CalculationErrorsHigh
+        expr: rate(gl010_calculation_errors_total[15m]) > 0.01
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: calculations
+        annotations:
+          summary: "High calculation error rate"
+          description: "Calculation errors for {{ $labels.type }}: {{ $value | printf \"%.3f\" }} errors/second."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/calculation-errors"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010EmissionFactorCacheMissHigh
+        expr: rate(gl010_emission_factor_cache_misses_total[5m]) / (rate(gl010_emission_factor_cache_hits_total[5m]) + rate(gl010_emission_factor_cache_misses_total[5m])) > 0.3
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: performance
+        annotations:
+          summary: "High emission factor cache miss rate"
+          description: "Emission factor cache miss rate is {{ $value | printf \"%.0f\" }}%. Performance degraded."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/cache-optimization"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+  # ============================================================================
+  # INTEGRATION ALERTS
+  # ============================================================================
+  - name: gl010_integrations
+    interval: 30s
+    rules:
+      - alert: GL010DCSConnectionLost
+        expr: gl010_dcs_connection_status == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: integration
+        annotations:
+          summary: "DCS connection lost"
+          description: "Connection to {{ $labels.dcs_system }} at {{ $labels.facility }} lost. Real-time data unavailable."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/dcs-connection"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010HistorianConnectionLost
+        expr: gl010_historian_connection_status == 0
+        for: 5m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: integration
+        annotations:
+          summary: "Historian connection lost"
+          description: "Connection to {{ $labels.historian_system }} lost. Historical data retrieval unavailable."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/historian-connection"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-cems-operations"
+
+      - alert: GL010RegulatoryPortalUnavailable
+        expr: gl010_regulatory_portal_connection_status == 0
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: integration
+        annotations:
+          summary: "Regulatory portal unavailable"
+          description: "{{ $labels.portal }} portal in {{ $labels.jurisdiction }} not responding. Report submissions affected."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/portal-unavailable"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+      - alert: GL010RegulatoryAPIErrors
+        expr: rate(gl010_regulatory_api_errors_total[15m]) > 0.1
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: integration
+        annotations:
+          summary: "Regulatory API errors"
+          description: "{{ $labels.portal }} API errors: {{ $value | printf \"%.2f\" }} errors/second. Type: {{ $labels.error_type }}."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/api-errors"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-compliance-status"
+
+  # ============================================================================
+  # SYSTEM HEALTH ALERTS
+  # ============================================================================
+  - name: gl010_system_health
+    interval: 30s
+    rules:
+      - alert: GL010AgentDown
+        expr: up{job="gl010-emissionwatch"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: system
+        annotations:
+          summary: "GL-010 EMISSIONWATCH agent down"
+          description: "EmissionsComplianceAgent is not responding. Emissions monitoring halted."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/agent-down"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010HighMemoryUsage
+        expr: gl010_memory_usage_bytes / gl010_memory_limit_bytes > 0.9
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: system
+        annotations:
+          summary: "High memory usage"
+          description: "GL-010 agent memory usage at {{ $value | printf \"%.0f\" }}%. OOM risk."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/memory-usage"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010HighCPUUsage
+        expr: gl010_cpu_usage_percent > 90
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: system
+        annotations:
+          summary: "High CPU usage"
+          description: "GL-010 agent CPU usage at {{ $value | printf \"%.0f\" }}%. Performance degraded."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/cpu-usage"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010DiskSpaceLow
+        expr: gl010_disk_usage_percent > 85
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: system
+        annotations:
+          summary: "Low disk space"
+          description: "Disk usage at {{ $labels.mount_point }} is {{ $value | printf \"%.0f\" }}%. Cleanup needed."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/disk-space"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010DatabaseConnectionPoolExhausted
+        expr: gl010_db_connections_active / gl010_db_connection_pool_size > 0.9
+        for: 10m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: database
+        annotations:
+          summary: "Database connection pool nearly exhausted"
+          description: "{{ $labels.database }} connection pool at {{ $value | printf \"%.0f\" }}% utilization."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/db-connections"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010DatabaseQueryLatencyHigh
+        expr: histogram_quantile(0.99, rate(gl010_db_query_duration_seconds_bucket[5m])) > 5
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: database
+        annotations:
+          summary: "High database query latency"
+          description: "P99 query latency for {{ $labels.database }} is {{ $value | printf \"%.2f\" }}s."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/db-latency"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010HealthCheckFailing
+        expr: gl010_health_check_status == 0
+        for: 5m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: system
+        annotations:
+          summary: "Health check failing"
+          description: "{{ $labels.check_type }} health check is failing. Investigation needed."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/health-check"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+  # ============================================================================
+  # QUEUE AND BATCH PROCESSING ALERTS
+  # ============================================================================
+  - name: gl010_processing
+    interval: 60s
+    rules:
+      - alert: GL010QueueBacklogHigh
+        expr: gl010_queue_size > 1000
+        for: 15m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: processing
+        annotations:
+          summary: "High queue backlog"
+          description: "{{ $labels.queue_name }} has {{ $value | printf \"%.0f\" }} messages pending."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/queue-backlog"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010DeadLetterQueueGrowing
+        expr: rate(gl010_queue_dead_letter_total[1h]) > 0.1
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: processing
+        annotations:
+          summary: "Dead letter queue growing"
+          description: "{{ $labels.queue_name }} DLQ receiving {{ $value | printf \"%.2f\" }} messages/hour. Reason: {{ $labels.reason }}."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/dead-letter"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010BatchJobFailing
+        expr: rate(gl010_batch_job_errors_total[1h]) > 0.1
+        for: 30m
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: processing
+        annotations:
+          summary: "Batch job failures"
+          description: "{{ $labels.job_type }} batch jobs failing at {{ $value | printf \"%.2f\" }} errors/hour."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/batch-failures"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+  # ============================================================================
+  # AUDIT AND PROVENANCE ALERTS
+  # ============================================================================
+  - name: gl010_audit
+    interval: 300s
+    rules:
+      - alert: GL010ProvenanceVerificationFailing
+        expr: rate(gl010_provenance_verification_failures_total[1h]) > 0
+        for: 15m
+        labels:
+          severity: critical
+          team: emissions
+          agent: gl010
+          category: audit
+        annotations:
+          summary: "Provenance verification failures"
+          description: "Data provenance verification failing. Reason: {{ $labels.failure_reason }}. Data integrity at risk."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/provenance-failure"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"
+
+      - alert: GL010AuditTrailStorageHigh
+        expr: gl010_audit_trail_size_bytes > 10737418240
+        for: 1h
+        labels:
+          severity: warning
+          team: emissions
+          agent: gl010
+          category: audit
+        annotations:
+          summary: "Audit trail storage high"
+          description: "Audit trail storage at {{ $value | humanize1024 }}B. Archive or cleanup needed."
+          runbook_url: "https://docs.greenlang.io/runbooks/gl010/audit-storage"
+          dashboard_url: "https://grafana.greenlang.io/d/gl010-emissions-main"

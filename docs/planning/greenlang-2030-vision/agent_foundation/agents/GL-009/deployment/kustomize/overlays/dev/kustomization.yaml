@@ -1,0 +1,151 @@
+# GL-009 THERMALIQ - Development Environment
+# Optimized for local development and testing
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration
+bases:
+  - ../../base
+
+# Namespace override
+namespace: greenlang-dev
+
+# Name prefix for all resources
+namePrefix: dev-
+
+# Common labels for dev environment
+commonLabels:
+  environment: development
+  tier: dev
+
+# Common annotations
+commonAnnotations:
+  environment: "development"
+  managed-by: "kustomize"
+
+# Images - use development tag
+images:
+  - name: gcr.io/greenlang/gl-009-thermaliq
+    newTag: "dev-latest"
+
+# Replicas - single replica for development
+replicas:
+  - name: gl-009-thermaliq
+    count: 1
+
+# ConfigMap patches for development
+patches:
+  # Reduce replicas to 1
+  - target:
+      kind: Deployment
+      name: gl-009-thermaliq
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+
+  # Update environment-specific config
+  - target:
+      kind: ConfigMap
+      name: gl-009-config
+    patch: |-
+      - op: replace
+        path: /data/environment
+        value: "development"
+      - op: replace
+        path: /data/log_level
+        value: "DEBUG"
+      - op: replace
+        path: /data/database_pool_size
+        value: "5"
+      - op: replace
+        path: /data/max_concurrent_calculations
+        value: "10"
+      - op: replace
+        path: /data/calculation_timeout_seconds
+        value: "600"
+      - op: replace
+        path: /data/sentry_enabled
+        value: "false"
+
+  # Reduce resource requests and limits
+  - target:
+      kind: Deployment
+      name: gl-009-thermaliq
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "512Mi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "250m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "500m"
+
+  # Disable HPA in development
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: gl-009-thermaliq-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+
+  # Update PDB for single replica
+  - target:
+      kind: PodDisruptionBudget
+      name: gl-009-thermaliq-pdb
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 0
+
+  # Use development secrets
+  - target:
+      kind: Deployment
+      name: gl-009-thermaliq
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env
+        value:
+          - name: GREENLANG_ENV
+            value: "development"
+          - name: LOG_LEVEL
+            value: "DEBUG"
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef:
+                name: gl-009-secrets-dev
+                key: database_url
+          - name: REDIS_URL
+            valueFrom:
+              secretKeyRef:
+                name: gl-009-secrets-dev
+                key: redis_url
+          - name: API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: gl-009-secrets-dev
+                key: api_key
+          - name: JWT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: gl-009-secrets-dev
+                key: jwt_secret
+
+# Remove External Secrets in dev (use static secrets instead)
+patchesStrategicMerge:
+  - |-
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: gl-009-secrets-dev
+    $patch: replace

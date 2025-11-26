@@ -1,13 +1,15 @@
 # GL-008 TRAPCATCHER - GreenLang Agent Specification
 # AgentSpec v2.0 Compliant
 
+schema_version: "2.0.0"
+
 agent_metadata:
   agent_id: "GL-008"
   agent_name: "TRAPCATCHER"
   agent_class: "SteamTrapInspector"
   version: "1.0.0"
   category: "industrial-monitoring"
-  domain: "steam-systems"
+  domain: "steam_systems"
   priority: "P2"
   maturity: "production"
   created_date: "2025-01-22"

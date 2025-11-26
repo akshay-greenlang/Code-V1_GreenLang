@@ -1,0 +1,155 @@
+# GL-008 SteamTrapInspector - ConfigMap
+# Non-sensitive configuration data for steam trap inspection
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-008-config
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+  annotations:
+    description: "Configuration for GL-008 SteamTrapInspector"
+data:
+  # Application configuration
+  app_name: "GL-008 SteamTrapInspector"
+  app_version: "1.0.0"
+  environment: "production"
+  log_level: "INFO"
+  log_format: "json"
+
+  # Server configuration
+  host: "0.0.0.0"
+  port: "9090"
+  metrics_port: "9091"
+  workers: "4"
+
+  # Database configuration
+  database_host: "postgresql-service"
+  database_port: "5432"
+  database_name: "greenlang_gl008"
+  database_pool_size: "20"
+  database_max_overflow: "10"
+
+  # Redis configuration
+  redis_host: "redis-service"
+  redis_port: "6379"
+  redis_db: "0"
+  redis_max_connections: "50"
+
+  # S3 configuration
+  s3_bucket_name: "greenlang-steam-trap-data"
+  s3_region: "us-east-1"
+  s3_acoustic_prefix: "acoustic-data/"
+  s3_thermal_prefix: "thermal-data/"
+  s3_reports_prefix: "inspection-reports/"
+
+  # Acoustic analysis thresholds
+  acoustic_enabled: "true"
+  acoustic_sample_rate: "44100"
+  acoustic_duration_seconds: "10"
+  acoustic_frequency_min_hz: "50"
+  acoustic_frequency_max_hz: "20000"
+  acoustic_normal_threshold_db: "65"
+  acoustic_warning_threshold_db: "75"
+  acoustic_critical_threshold_db: "85"
+  acoustic_ultrasonic_min_khz: "20"
+  acoustic_ultrasonic_max_khz: "100"
+
+  # Thermal analysis thresholds
+  thermal_enabled: "true"
+  thermal_resolution: "320x240"
+  thermal_fps: "9"
+  thermal_emissivity: "0.95"
+  thermal_normal_temp_c: "120"
+  thermal_warning_temp_c: "150"
+  thermal_critical_temp_c: "180"
+  thermal_delta_threshold_c: "30"
+  thermal_hotspot_threshold_c: "200"
+
+  # Steam trap types and parameters
+  trap_types: "mechanical,thermostatic,thermodynamic,venturi"
+  trap_mechanical_normal_temp_c: "100-120"
+  trap_thermostatic_normal_temp_c: "80-100"
+  trap_thermodynamic_normal_temp_c: "120-150"
+  trap_venturi_normal_temp_c: "100-130"
+
+  # Failure detection thresholds
+  failure_blowthrough_acoustic_db: "80"
+  failure_blowthrough_thermal_c: "160"
+  failure_blocked_thermal_c: "50"
+  failure_blocked_acoustic_db: "40"
+  failure_leaking_acoustic_pattern: "continuous_high_frequency"
+  failure_cold_condensate_temp_c: "40"
+
+  # Energy cost calculations
+  energy_enabled: "true"
+  steam_cost_per_1000lb: "8.50"
+  electricity_cost_per_kwh: "0.12"
+  natural_gas_cost_per_therm: "1.20"
+  steam_pressure_psig: "100"
+  steam_latent_heat_btu_lb: "880"
+  condensate_recovery_percent: "80"
+
+  # Energy loss calculations
+  leak_flow_rate_lb_hr: "100"
+  blowthrough_flow_rate_lb_hr: "500"
+  annual_operating_hours: "8760"
+  energy_efficiency_factor: "0.85"
+
+  # ML model configuration
+  ml_models_path: "/models"
+  ml_acoustic_model: "acoustic_classifier_v1.0.onnx"
+  ml_thermal_model: "thermal_classifier_v1.0.onnx"
+  ml_failure_predictor: "failure_predictor_v1.0.onnx"
+  ml_confidence_threshold: "0.85"
+  ml_batch_size: "32"
+  ml_inference_timeout_seconds: "10"
+
+  # Inspection scheduling
+  inspection_interval_days: "30"
+  inspection_priority_critical: "7"
+  inspection_priority_high: "14"
+  inspection_priority_medium: "30"
+  inspection_priority_low: "90"
+
+  # Data retention
+  data_retention_acoustic_days: "90"
+  data_retention_thermal_days: "90"
+  data_retention_reports_days: "730"
+  data_compression_enabled: "true"
+  data_archival_enabled: "true"
+
+  # Monitoring configuration
+  prometheus_enabled: "true"
+  metrics_enabled: "true"
+  metrics_interval_seconds: "15"
+  metrics_history_hours: "24"
+
+  # Alerting configuration
+  alerts_enabled: "true"
+  alert_email_enabled: "true"
+  alert_slack_enabled: "true"
+  alert_pagerduty_enabled: "false"
+  alert_critical_failures: "true"
+  alert_energy_waste_threshold_usd: "1000"
+
+  # Performance tuning
+  max_concurrent_inspections: "10"
+  request_timeout_seconds: "60"
+  keepalive_timeout_seconds: "5"
+
+  # Feature flags
+  feature_acoustic_analysis: "true"
+  feature_thermal_analysis: "true"
+  feature_ml_classification: "true"
+  feature_predictive_maintenance: "true"
+  feature_energy_cost_analysis: "true"
+  feature_automated_reporting: "true"
+  feature_mobile_app_integration: "true"
+
+  # Health checks
+  health_check_path: "/api/v1/health"
+  readiness_check_path: "/api/v1/ready"
+  liveness_check_path: "/api/v1/alive"

@@ -1,0 +1,288 @@
+# GL-010 EMISSIONWATCH - Production Environment
+# Full production configuration with high availability and regulatory compliance
+# Connects to real EPA ECMPS/CDX and EU ETS registry systems
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration
+resources:
+  - ../../base
+  - production-configmap-patch.yaml
+  - production-monitoring.yaml
+
+# Namespace override
+namespace: greenlang-production
+
+# Name prefix for all resources
+namePrefix: prod-
+
+# Common labels for production environment
+commonLabels:
+  environment: production
+  tier: production
+  criticality: high
+  compliance: regulatory
+
+# Common annotations
+commonAnnotations:
+  environment: "production"
+  managed-by: "kustomize"
+  backup-policy: "continuous"
+  monitoring: "enabled"
+  alerting: "enabled"
+  compliance-audit: "enabled"
+
+# Images - use production tag with digest for immutability
+images:
+  - name: gcr.io/greenlang/gl-010-emissionwatch
+    newTag: "1.0.0"
+    # digest: sha256:...  # Add digest for production immutability
+
+# Replicas - 3 for production (HPA will scale up to 10)
+replicas:
+  - name: gl-010-emissionwatch
+    count: 3
+
+# ConfigMap patches for production
+patches:
+  # Set replicas to 3 (HPA will manage scaling)
+  - target:
+      kind: Deployment
+      name: gl-010-emissionwatch
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 3
+
+  # Update environment-specific config
+  - target:
+      kind: ConfigMap
+      name: gl-010-config
+    patch: |-
+      - op: replace
+        path: /data/environment
+        value: "production"
+      - op: replace
+        path: /data/log_level
+        value: "WARNING"
+      - op: replace
+        path: /data/database_pool_size
+        value: "20"
+      - op: replace
+        path: /data/cems_polling_interval
+        value: "60"
+      - op: replace
+        path: /data/cems_data_buffer_size
+        value: "10000"
+      - op: replace
+        path: /data/sentry_enabled
+        value: "true"
+      - op: replace
+        path: /data/sentry_traces_sample_rate
+        value: "0.1"
+      - op: replace
+        path: /data/epa_ecmps_enabled
+        value: "true"
+      - op: replace
+        path: /data/eu_ets_enabled
+        value: "true"
+      - op: replace
+        path: /data/auto_submit_reports
+        value: "false"
+      - op: add
+        path: /data/enable_debug_endpoints
+        value: "false"
+      - op: add
+        path: /data/enable_production_optimizations
+        value: "true"
+      - op: replace
+        path: /data/emissions_alert_threshold_percent
+        value: "80"
+      - op: replace
+        path: /data/emissions_warning_threshold_percent
+        value: "90"
+      - op: replace
+        path: /data/emissions_critical_threshold_percent
+        value: "95"
+
+  # Full resource requests and limits for production
+  - target:
+      kind: Deployment
+      name: gl-010-emissionwatch
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/memory
+        value: "1Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/requests/cpu
+        value: "1000m"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/memory
+        value: "2Gi"
+      - op: replace
+        path: /spec/template/spec/containers/0/resources/limits/cpu
+        value: "2000m"
+
+  # Production HPA configuration
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: gl-010-emissionwatch-hpa
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 3
+      - op: replace
+        path: /spec/maxReplicas
+        value: 10
+      - op: replace
+        path: /spec/metrics/0/resource/target/averageUtilization
+        value: 70
+      - op: replace
+        path: /spec/metrics/1/resource/target/averageUtilization
+        value: 80
+
+  # Production PDB - always keep 2 pods available
+  - target:
+      kind: PodDisruptionBudget
+      name: gl-010-emissionwatch-pdb
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 2
+
+  # Update Ingress for production domain
+  - target:
+      kind: Ingress
+      name: gl-010-emissionwatch-ingress
+    patch: |-
+      - op: replace
+        path: /spec/tls/0/hosts
+        value:
+          - emissionwatch.greenlang.ai
+          - api.emissionwatch.greenlang.ai
+      - op: replace
+        path: /spec/rules/0/host
+        value: "emissionwatch.greenlang.ai"
+      - op: replace
+        path: /spec/rules/1/host
+        value: "api.emissionwatch.greenlang.ai"
+      - op: add
+        path: /metadata/annotations/nginx.ingress.kubernetes.io~1rate-limit
+        value: "200"
+
+  # Add required pod anti-affinity for production
+  - target:
+      kind: Deployment
+      name: gl-010-emissionwatch
+    patch: |-
+      - op: add
+        path: /spec/template/spec/affinity/podAntiAffinity/requiredDuringSchedulingIgnoredDuringExecution
+        value:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - gl-010-emissionwatch
+            topologyKey: kubernetes.io/hostname
+
+  # Add production-grade health checks with tighter constraints
+  - target:
+      kind: Deployment
+      name: gl-010-emissionwatch
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe/periodSeconds
+        value: 10
+      - op: replace
+        path: /spec/template/spec/containers/0/livenessProbe/failureThreshold
+        value: 3
+      - op: replace
+        path: /spec/template/spec/containers/0/readinessProbe/periodSeconds
+        value: 5
+      - op: replace
+        path: /spec/template/spec/containers/0/readinessProbe/failureThreshold
+        value: 2
+
+  # Add priority class for compliance-critical workloads
+  - target:
+      kind: Deployment
+      name: gl-010-emissionwatch
+    patch: |-
+      - op: add
+        path: /spec/template/spec/priorityClassName
+        value: "compliance-critical"
+
+# Secret management - use External Secrets with production AWS Secrets Manager
+patchesStrategicMerge:
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-database-secret
+    spec:
+      refreshInterval: 30m
+      dataFrom:
+        - extract:
+            key: greenlang/production/gl-010/database
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-timescale-secret
+    spec:
+      refreshInterval: 30m
+      dataFrom:
+        - extract:
+            key: greenlang/production/gl-010/timescaledb
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-redis-secret
+    spec:
+      refreshInterval: 30m
+      dataFrom:
+        - extract:
+            key: greenlang/production/gl-010/redis
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-api-secret
+    spec:
+      refreshInterval: 30m
+      dataFrom:
+        - extract:
+            key: greenlang/production/gl-010/api
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-epa-cdx-secret
+    spec:
+      refreshInterval: 1h
+      dataFrom:
+        - extract:
+            key: greenlang/production/gl-010/epa-cdx
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-eu-ets-secret
+    spec:
+      refreshInterval: 1h
+      dataFrom:
+        - extract:
+            key: greenlang/production/gl-010/eu-ets
+  - |-
+    apiVersion: external-secrets.io/v1beta1
+    kind: ExternalSecret
+    metadata:
+      name: gl-010-signing-secret
+    spec:
+      refreshInterval: 24h
+      dataFrom:
+        - extract:
+            key: greenlang/production/gl-010/signing-certificate

@@ -1,0 +1,677 @@
+# GL-010 EMISSIONWATCH EmissionsComplianceAgent - Kubernetes Deployment
+# Production-grade deployment with resource limits, health checks, and auto-scaling
+# Compatible with Kubernetes 1.24+
+# Supports EPA 40 CFR Part 75, EU ETS, and ISO 14064 compliance requirements
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-010-emissionwatch
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    version: "1.0.0"
+    component: "emissions-compliance-agent"
+    category: "emissions-monitoring"
+  annotations:
+    description: "EMISSIONWATCH EmissionsComplianceAgent - Industrial emissions monitoring and regulatory compliance agent"
+    documentation: "https://docs.greenlang.ai/agents/GL-010"
+    contact: "devops@greenlang.ai"
+    compliance: "EPA-40-CFR-75,EU-ETS,ISO-14064"
+
+spec:
+  # Replicas for production (3 for high availability)
+  replicas: 3
+
+  # Rolling update strategy with zero downtime
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Allow 1 extra pod during update
+      maxUnavailable: 0  # Never take down all pods simultaneously
+
+  # Minimum time for pod to be ready before considering it available
+  minReadySeconds: 10
+
+  # Label selector for pod management
+  selector:
+    matchLabels:
+      app: gl-010-emissionwatch
+      agent: "GL-010"
+
+  template:
+    metadata:
+      labels:
+        app: gl-010-emissionwatch
+        agent: "GL-010"
+        version: "1.0.0"
+        component: "emissions-compliance-agent"
+      annotations:
+        # Prometheus metrics scraping
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/api/v1/metrics"
+        prometheus.io/interval: "30s"
+
+        # Checksum for automatic rollout on config changes
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+        checksum/secret: "{{ include (print $.Template.BasePath \"/secret.yaml\") . | sha256sum }}"
+
+    spec:
+      # Service account for RBAC
+      serviceAccountName: gl-010-emissionwatch
+
+      # Security context for pod-level security
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Affinity rules for high availability and optimal placement
+      affinity:
+        # Pod Anti-Affinity: Spread pods across nodes
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-010-emissionwatch
+                topologyKey: kubernetes.io/hostname
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-010-emissionwatch
+                topologyKey: topology.kubernetes.io/zone
+
+        # Node Affinity: Prefer nodes with specific labels
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - compliance-critical
+            - weight: 60
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - high-memory
+
+      # Topology spread constraints for even distribution
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-010-emissionwatch
+
+      # Termination grace period for graceful shutdown
+      # Extended for emissions data flush and CEMS disconnection
+      terminationGracePeriodSeconds: 90
+
+      # DNS Policy
+      dnsPolicy: ClusterFirst
+
+      # Init containers for pre-flight checks
+      initContainers:
+        - name: check-database
+          image: postgres:14-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER}; do
+                echo "Waiting for database to be ready..."
+                sleep 2
+              done
+              echo "Database is ready!"
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: database_host
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: database_user
+
+        - name: check-redis
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until redis-cli -h ${REDIS_HOST} -p ${REDIS_PORT} ping; do
+                echo "Waiting for Redis to be ready..."
+                sleep 2
+              done
+              echo "Redis is ready!"
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: redis_host
+            - name: REDIS_PORT
+              value: "6379"
+
+        - name: check-timescaledb
+          image: postgres:14-alpine
+          command:
+            - sh
+            - -c
+            - |
+              until psql -h ${TIMESCALE_HOST} -p ${TIMESCALE_PORT} -U ${TIMESCALE_USER} -d ${TIMESCALE_DB} -c "SELECT 1"; do
+                echo "Waiting for TimescaleDB to be ready..."
+                sleep 2
+              done
+              echo "TimescaleDB is ready!"
+          env:
+            - name: TIMESCALE_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: timescale_host
+            - name: TIMESCALE_PORT
+              value: "5432"
+            - name: TIMESCALE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: timescale_user
+            - name: TIMESCALE_DB
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: timescale_database
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: timescale_password
+
+      containers:
+        - name: emissionwatch
+          image: "gcr.io/greenlang/gl-010-emissionwatch:1.0.0"
+          imagePullPolicy: IfNotPresent
+
+          # Security context for container-level security
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
+
+          # Ports exposed by the container
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: admin
+              containerPort: 8081
+              protocol: TCP
+            - name: websocket
+              containerPort: 8082
+              protocol: TCP
+
+          # Environment variables from ConfigMap and Secrets
+          env:
+            # Environment type
+            - name: GREENLANG_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: environment
+
+            # Logging configuration
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: log_level
+
+            - name: LOGGING_FORMAT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: logging_format
+
+            # Database configuration
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: database_url
+
+            - name: DATABASE_POOL_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: database_pool_size
+
+            # TimescaleDB for time-series emissions data
+            - name: TIMESCALE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: timescale_url
+
+            # Redis cache configuration
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: redis_url
+
+            - name: CACHE_TTL_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: cache_ttl_seconds
+
+            # API keys and authentication
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: api_key
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: jwt_secret
+
+            - name: JWT_ALGORITHM
+              value: "HS256"
+
+            - name: JWT_EXPIRATION_MINUTES
+              value: "60"
+
+            # EPA CDX credentials
+            - name: EPA_CDX_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: epa_cdx_username
+
+            - name: EPA_CDX_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: epa_cdx_password
+
+            - name: EPA_CDX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: epa_cdx_api_key
+
+            # EU ETS registry credentials
+            - name: EU_ETS_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: eu_ets_api_key
+
+            - name: EU_ETS_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: eu_ets_client_id
+
+            - name: EU_ETS_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gl-010-secrets
+                  key: eu_ets_client_secret
+
+            # Metrics and monitoring
+            - name: METRICS_ENABLED
+              value: "true"
+
+            - name: METRICS_PORT
+              value: "9090"
+
+            - name: PROMETHEUS_ENABLED
+              value: "true"
+
+            - name: OPENTELEMETRY_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: opentelemetry_enabled
+
+            - name: JAEGER_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: jaeger_endpoint
+
+            # CEMS configuration
+            - name: CEMS_POLLING_INTERVAL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: cems_polling_interval
+
+            - name: CEMS_CONNECTION_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: cems_connection_timeout
+
+            - name: CEMS_DATA_BUFFER_SIZE
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: cems_data_buffer_size
+
+            # Emissions limits configuration
+            - name: EMISSIONS_ALERT_THRESHOLD_PERCENT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: emissions_alert_threshold_percent
+
+            - name: EMISSIONS_EXCEEDANCE_NOTIFICATION
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: emissions_exceedance_notification
+
+            # Reporting configuration
+            - name: COMPLIANCE_REPORT_SCHEDULE
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: compliance_report_schedule
+
+            - name: AUTO_SUBMIT_REPORTS
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: auto_submit_reports
+
+            # Industrial protocol configuration
+            - name: MODBUS_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: modbus_enabled
+
+            - name: OPCUA_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: opcua_enabled
+
+            - name: MQTT_ENABLED
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-010-config
+                  key: mqtt_enabled
+
+            # Pod information for logging and observability
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+
+            # Resource limits as environment variables
+            - name: MEMORY_LIMIT_MB
+              valueFrom:
+                resourceFieldRef:
+                  containerName: emissionwatch
+                  resource: limits.memory
+                  divisor: 1Mi
+
+            - name: CPU_LIMIT_CORES
+              valueFrom:
+                resourceFieldRef:
+                  containerName: emissionwatch
+                  resource: limits.cpu
+                  divisor: 1m
+
+          # Resource requests and limits
+          # Higher memory for emissions data buffering and compliance calculations
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "1000m"
+              ephemeral-storage: "2Gi"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+              ephemeral-storage: "5Gi"
+
+          # Liveness probe - restart pod if unresponsive
+          # Detects deadlocks, memory leaks, infinite loops
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+              httpHeaders:
+                - name: X-Probe-Type
+                  value: liveness
+            initialDelaySeconds: 60   # Wait for startup (CEMS connections)
+            periodSeconds: 15         # Check every 15 seconds
+            timeoutSeconds: 10        # 10 second timeout
+            failureThreshold: 3       # Restart after 3 failures (45 seconds)
+            successThreshold: 1       # 1 success to declare healthy
+
+          # Readiness probe - remove from service if not ready
+          # Detects slow startup, initialization issues
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: http
+              scheme: HTTP
+              httpHeaders:
+                - name: X-Probe-Type
+                  value: readiness
+            initialDelaySeconds: 20   # Quick readiness check
+            periodSeconds: 10         # Check every 10 seconds
+            timeoutSeconds: 5         # 5 second timeout
+            failureThreshold: 3       # Remove after 3 failures (30 seconds)
+            successThreshold: 1       # 1 success to add back to service
+
+          # Startup probe - allow time for application bootstrap
+          # CEMS connections and regulatory system auth may take time
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+              httpHeaders:
+                - name: X-Probe-Type
+                  value: startup
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30      # 300 seconds (30 * 10s) for startup
+
+          # Lifecycle hooks for graceful shutdown
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    # Flush emissions data buffer to database
+                    curl -X POST http://localhost:8080/api/v1/admin/flush-buffer
+                    # Send SIGTERM and wait for graceful shutdown
+                    kill -TERM 1
+                    # Wait for CEMS disconnection and data persistence
+                    sleep 60
+
+          # Volume mounts for logs, cache, and emissions data
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/cache
+            - name: data
+              mountPath: /app/data
+            - name: emissions
+              mountPath: /app/emissions
+            - name: reports
+              mountPath: /app/reports
+            - name: compliance
+              mountPath: /app/compliance
+            - name: cems-data
+              mountPath: /app/cems_data
+            - name: regulatory
+              mountPath: /app/regulatory
+
+      # Volumes for ephemeral storage
+      volumes:
+        - name: logs
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: cache
+          emptyDir:
+            sizeLimit: 5Gi
+        - name: data
+          emptyDir:
+            sizeLimit: 10Gi
+        - name: emissions
+          emptyDir:
+            sizeLimit: 10Gi
+        - name: reports
+          emptyDir:
+            sizeLimit: 5Gi
+        - name: compliance
+          emptyDir:
+            sizeLimit: 5Gi
+        - name: cems-data
+          emptyDir:
+            sizeLimit: 10Gi
+        - name: regulatory
+          emptyDir:
+            sizeLimit: 5Gi
+
+---
+# ServiceAccount with RBAC permissions
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gl-010-emissionwatch
+  namespace: greenlang
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+
+---
+# ClusterRole for GL-010
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gl-010-emissionwatch
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+rules:
+  # Read ConfigMaps and Secrets
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+
+  # Read Pods (for pod discovery and health checks)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+  # Read Nodes (for node information and resource availability)
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list"]
+
+  # Read Services
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch"]
+
+  # Read and create Events
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "create"]
+
+  # Read Endpoints for service discovery
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch"]
+
+---
+# ClusterRoleBinding for GL-010
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gl-010-emissionwatch
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gl-010-emissionwatch
+subjects:
+  - kind: ServiceAccount
+    name: gl-010-emissionwatch
+    namespace: greenlang

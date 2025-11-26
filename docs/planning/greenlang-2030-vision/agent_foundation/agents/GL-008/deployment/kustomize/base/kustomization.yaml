@@ -1,0 +1,47 @@
+# GL-008 SteamTrapInspector - Kustomize Base Configuration
+# Base resources for all environments
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Namespace
+namespace: greenlang
+
+# Common labels applied to all resources
+commonLabels:
+  app: gl-008-steam-trap-inspector
+  agent: "GL-008"
+  managed-by: kustomize
+
+# Common annotations applied to all resources
+commonAnnotations:
+  documentation: "https://greenlang.io/docs/agents/GL-008"
+  support: "devops@greenlang.io"
+
+# Resources
+resources:
+  - ../../deployment.yaml
+  - ../../service.yaml
+  - ../../configmap.yaml
+  - ../../secret.yaml
+  - ../../hpa.yaml
+  - ../../pdb.yaml
+  - ../../servicemonitor.yaml
+  - ../../networkpolicy.yaml
+  - ../../ingress.yaml
+
+# ConfigMap generator (for additional config files)
+# configMapGenerator:
+#   - name: gl-008-config-files
+#     files:
+#       - configs/app.conf
+
+# Images (can be overridden in overlays)
+images:
+  - name: gcr.io/greenlang/gl-008-steam-trap-inspector
+    newTag: 1.0.0
+
+# Replicas (can be overridden in overlays)
+replicas:
+  - name: gl-008-steam-trap-inspector
+    count: 3

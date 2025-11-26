@@ -1,0 +1,431 @@
+{
+  "schema_version": "1.0.0",
+
+  "agent_runtime_config": {
+    "agent_id": "GL-009",
+    "agent_name": "ThermalEfficiencyCalculator",
+    "codename": "THERMALIQ",
+    "version": "1.0.0",
+    "execution_mode": "async",
+    "entry_point": "thermal_efficiency_calculator.ThermalEfficiencyCalculator"
+  },
+
+  "compute_configuration": {
+    "min_cpu_cores": 1,
+    "max_cpu_cores": 4,
+    "min_memory_mb": 512,
+    "max_memory_mb": 2048,
+    "gpu_enabled": false,
+    "timeout_seconds": 60,
+    "max_concurrent_executions": 20
+  },
+
+  "ai_configuration": {
+    "deterministic": true,
+    "temperature": 0.0,
+    "seed": 42,
+    "llm_provider": "anthropic",
+    "llm_model": "claude-sonnet-4-20250514",
+    "max_tokens": 1000,
+    "enable_llm": true,
+    "llm_purpose": "classification_and_recommendations",
+    "fallback_mode": "deterministic",
+    "max_llm_cost_per_query_usd": 0.05,
+    "budget_limit_usd_per_day": 50.0,
+    "llm_use_cases": [
+      "Categorizing improvement opportunities",
+      "Generating natural language explanations",
+      "Root cause classification",
+      "Prioritization reasoning"
+    ],
+    "llm_constraints": [
+      "Never used for numerical calculations",
+      "Always deterministic (temp=0.0)",
+      "Fallback to rule-based if unavailable"
+    ]
+  },
+
+  "operation_modes": {
+    "default_mode": "calculate",
+    "available_modes": [
+      "calculate",
+      "analyze",
+      "benchmark",
+      "visualize",
+      "report",
+      "optimize",
+      "monitor"
+    ],
+    "mode_descriptions": {
+      "calculate": "Calculate thermal efficiency from inputs",
+      "analyze": "Deep analysis with loss breakdown and exergy",
+      "benchmark": "Compare against industry benchmarks",
+      "visualize": "Generate Sankey diagrams and charts",
+      "report": "Generate comprehensive efficiency report",
+      "optimize": "Identify improvement opportunities with ROI",
+      "monitor": "Real-time efficiency monitoring"
+    }
+  },
+
+  "calculation_parameters": {
+    "heat_balance_closure_tolerance_percent": 2.0,
+    "minimum_efficiency_percent": 20.0,
+    "maximum_efficiency_percent": 99.5,
+    "reference_temperature_c": 25.0,
+    "reference_pressure_bar": 1.01325,
+    "stefan_boltzmann_constant": 5.67e-8,
+    "default_emissivity": 0.9,
+    "default_convection_coefficient_w_m2_k": 10.0,
+
+    "efficiency_thresholds": {
+      "critical_low_percent": 50.0,
+      "warning_low_percent": 70.0,
+      "good_percent": 85.0,
+      "excellent_percent": 92.0
+    },
+
+    "exergy_analysis": {
+      "enable_second_law_analysis": true,
+      "dead_state_temperature_c": 25.0,
+      "dead_state_pressure_bar": 1.01325,
+      "chemical_exergy_enabled": true
+    },
+
+    "combustion_analysis": {
+      "default_excess_air_percent": 15.0,
+      "optimal_o2_range_percent": [2.0, 4.0],
+      "max_co_ppm": 100,
+      "siegert_coefficients": {
+        "natural_gas": {"k1": 0.37, "k2": 0.5},
+        "fuel_oil_no2": {"k1": 0.44, "k2": 0.7},
+        "fuel_oil_no6": {"k1": 0.50, "k2": 1.0},
+        "coal": {"k1": 0.63, "k2": 1.5},
+        "propane": {"k1": 0.40, "k2": 0.6},
+        "biomass": {"k1": 0.55, "k2": 1.2}
+      }
+    }
+  },
+
+  "visualization_settings": {
+    "sankey_diagram_config": {
+      "default_width": 1200,
+      "default_height": 600,
+      "font_size": 12,
+      "orientation": "horizontal",
+      "node_padding": 20,
+      "link_opacity": 0.5,
+      "color_scheme": {
+        "inputs": "#4CAF50",
+        "useful_outputs": "#2196F3",
+        "losses": "#F44336",
+        "flue_gas": "#FF9800",
+        "radiation": "#E91E63",
+        "convection": "#9C27B0",
+        "blowdown": "#795548"
+      }
+    },
+
+    "chart_config": {
+      "efficiency_gauge": {
+        "min_value": 0,
+        "max_value": 100,
+        "zones": [
+          {"min": 0, "max": 50, "color": "#F44336"},
+          {"min": 50, "max": 70, "color": "#FF9800"},
+          {"min": 70, "max": 85, "color": "#FFEB3B"},
+          {"min": 85, "max": 92, "color": "#8BC34A"},
+          {"min": 92, "max": 100, "color": "#4CAF50"}
+        ]
+      },
+      "loss_breakdown_pie": {
+        "show_percentages": true,
+        "min_slice_percent": 1.0
+      },
+      "trend_chart": {
+        "default_period_days": 365,
+        "moving_average_window": 7
+      }
+    },
+
+    "export_formats": ["png", "svg", "pdf", "html", "json"]
+  },
+
+  "benchmark_configuration": {
+    "database_source": "greenlang_benchmark_db",
+    "update_frequency_days": 90,
+    "minimum_sample_size": 10,
+
+    "process_benchmarks": {
+      "boiler": {
+        "industry_average_percent": 82.0,
+        "top_quartile_percent": 87.0,
+        "best_in_class_percent": 94.0,
+        "theoretical_maximum_percent": 99.0
+      },
+      "furnace": {
+        "industry_average_percent": 65.0,
+        "top_quartile_percent": 75.0,
+        "best_in_class_percent": 85.0,
+        "theoretical_maximum_percent": 95.0
+      },
+      "dryer": {
+        "industry_average_percent": 45.0,
+        "top_quartile_percent": 55.0,
+        "best_in_class_percent": 70.0,
+        "theoretical_maximum_percent": 85.0
+      },
+      "kiln": {
+        "industry_average_percent": 50.0,
+        "top_quartile_percent": 60.0,
+        "best_in_class_percent": 75.0,
+        "theoretical_maximum_percent": 90.0
+      },
+      "heat_exchanger": {
+        "industry_average_percent": 75.0,
+        "top_quartile_percent": 85.0,
+        "best_in_class_percent": 95.0,
+        "theoretical_maximum_percent": 99.0
+      }
+    }
+  },
+
+  "improvement_opportunity_settings": {
+    "min_savings_threshold_kw": 10.0,
+    "min_payback_months": 1,
+    "max_payback_months": 60,
+    "discount_rate_percent": 10.0,
+    "analysis_period_years": 10,
+
+    "opportunity_categories": {
+      "heat_recovery": {
+        "typical_savings_percent": [5, 20],
+        "typical_cost_per_kw_saved_usd": [100, 500],
+        "implementation_time_months": [3, 12]
+      },
+      "combustion_optimization": {
+        "typical_savings_percent": [2, 8],
+        "typical_cost_per_kw_saved_usd": [50, 200],
+        "implementation_time_months": [1, 6]
+      },
+      "insulation": {
+        "typical_savings_percent": [1, 5],
+        "typical_cost_per_kw_saved_usd": [20, 100],
+        "implementation_time_months": [1, 3]
+      },
+      "process_integration": {
+        "typical_savings_percent": [10, 30],
+        "typical_cost_per_kw_saved_usd": [200, 1000],
+        "implementation_time_months": [6, 24]
+      },
+      "equipment_upgrade": {
+        "typical_savings_percent": [5, 25],
+        "typical_cost_per_kw_saved_usd": [500, 2000],
+        "implementation_time_months": [6, 18]
+      },
+      "operational": {
+        "typical_savings_percent": [1, 5],
+        "typical_cost_per_kw_saved_usd": [0, 50],
+        "implementation_time_months": [0, 3]
+      }
+    }
+  },
+
+  "integration_endpoints": {
+    "energy_meters": {
+      "protocol": "modbus_tcp",
+      "default_port": 502,
+      "polling_interval_seconds": 60,
+      "timeout_seconds": 5,
+      "supported_manufacturers": ["Siemens", "Schneider", "ABB", "Honeywell"]
+    },
+    "process_historians": {
+      "protocol": "opc_ua",
+      "default_port": 4840,
+      "query_timeout_seconds": 30,
+      "supported_systems": ["OSIsoft PI", "Honeywell PHD", "AspenTech InfoPlus.21", "GE Proficy"]
+    },
+    "scada_systems": {
+      "protocol": "opc_ua",
+      "default_port": 4840,
+      "subscription_enabled": true,
+      "supported_systems": ["Siemens WinCC", "Rockwell FactoryTalk", "Schneider ClearSCADA"]
+    },
+    "erp_integration": {
+      "protocol": "rest",
+      "authentication": "oauth2",
+      "supported_systems": ["SAP S/4HANA", "Oracle ERP", "Microsoft Dynamics"]
+    },
+    "webhook": {
+      "enabled": false,
+      "url": null,
+      "retry_count": 3,
+      "retry_delay_seconds": 5
+    }
+  },
+
+  "alert_thresholds": {
+    "critical_efficiency_drop_percent": 10.0,
+    "warning_efficiency_drop_percent": 5.0,
+    "heat_balance_closure_exceeded": 5.0,
+    "excess_air_high_percent": 30.0,
+    "stack_temperature_high_c": 300.0,
+    "co_high_ppm": 200,
+    "surface_temperature_high_c": 80.0
+  },
+
+  "alert_configuration": {
+    "enable_email_alerts": false,
+    "enable_sms_alerts": false,
+    "enable_webhook_alerts": false,
+    "alert_cooldown_minutes": 60,
+    "escalation_delay_minutes": 30,
+    "recipients": []
+  },
+
+  "performance_configuration": {
+    "enable_caching": true,
+    "cache_ttl_seconds": 600,
+    "cache_max_size": 5000,
+    "enable_metrics": true,
+    "metrics_export_interval_seconds": 60,
+    "enable_audit_logging": true,
+    "enable_profiling": false
+  },
+
+  "data_sources": {
+    "steam_tables_path": "data/steam_tables_iapws97.json",
+    "fuel_properties_path": "data/fuel_properties.json",
+    "benchmark_database_path": "data/efficiency_benchmarks.json",
+    "heat_transfer_correlations_path": "data/heat_transfer_correlations.json"
+  },
+
+  "error_handling": {
+    "max_retries": 3,
+    "retry_delay_seconds": 2.0,
+    "retry_backoff_multiplier": 2.0,
+    "enable_error_recovery": true,
+    "fallback_to_degraded_mode": true,
+    "log_failed_calculations": true
+  },
+
+  "logging": {
+    "log_level": "INFO",
+    "log_format": "json",
+    "log_directory": "./logs",
+    "enable_file_logging": true,
+    "enable_console_logging": true,
+    "max_log_file_size_mb": 100,
+    "log_retention_days": 90,
+    "log_calculation_details": true,
+    "log_provenance": true
+  },
+
+  "security": {
+    "zero_secrets": true,
+    "provenance_tracking": true,
+    "enable_encryption_at_rest": true,
+    "enable_encryption_in_transit": true,
+    "enable_rbac": false,
+    "require_authentication": false,
+    "audit_all_calculations": true
+  },
+
+  "monitoring": {
+    "enable_prometheus_metrics": true,
+    "metrics_port": 9090,
+    "health_check_endpoint": "/health",
+    "readiness_endpoint": "/ready",
+    "metrics_endpoint": "/metrics",
+    "health_check_interval_seconds": 30,
+    "custom_metrics": [
+      "thermal_efficiency_calculations_total",
+      "calculation_latency_seconds",
+      "heat_balance_closure_error_percent",
+      "improvement_opportunities_identified_total",
+      "sankey_diagrams_generated_total"
+    ]
+  },
+
+  "example_inputs": {
+    "calculate_mode": {
+      "operation_mode": "calculate",
+      "process_type": "boiler",
+      "energy_inputs": {
+        "fuel_inputs": [
+          {
+            "fuel_type": "natural_gas",
+            "volume_flow_m3_hr": 500,
+            "heating_value_mj_kg": 50.0,
+            "temperature_c": 25
+          }
+        ]
+      },
+      "useful_outputs": {
+        "steam_output": [
+          {
+            "stream_name": "main_steam",
+            "mass_flow_kg_hr": 10000,
+            "pressure_bar": 10,
+            "temperature_c": 185
+          }
+        ]
+      },
+      "heat_losses": {
+        "flue_gas_losses": {
+          "exit_temperature_c": 180,
+          "o2_percent": 4.0,
+          "co_ppm": 50
+        },
+        "radiation_losses": {
+          "surfaces": [
+            {
+              "name": "boiler_shell",
+              "surface_area_m2": 50,
+              "surface_temperature_c": 60,
+              "emissivity": 0.9
+            }
+          ]
+        }
+      },
+      "ambient_conditions": {
+        "ambient_temperature_c": 25,
+        "relative_humidity_percent": 60
+      }
+    },
+    "analyze_mode": {
+      "operation_mode": "analyze",
+      "include_exergy_analysis": true,
+      "include_loss_breakdown": true,
+      "include_benchmarks": true
+    },
+    "visualize_mode": {
+      "operation_mode": "visualize",
+      "output_format": "html",
+      "include_sankey": true,
+      "include_efficiency_gauge": true,
+      "include_loss_pie_chart": true
+    }
+  },
+
+  "standards_compliance": [
+    "ISO 50001:2018 (Energy Management)",
+    "ASME PTC 4.1 (Steam Generating Units)",
+    "ASME PTC 4 (Fired Steam Generators)",
+    "EPA 40 CFR Part 60 (Emissions)",
+    "IEC 61508 (Functional Safety)",
+    "EN 12952 (Water-tube Boilers)",
+    "BS 845 (Boiler Efficiency)"
+  ],
+
+  "deployment": {
+    "container_image": "greenlang/gl-009-thermaliq:1.0.0",
+    "platform": "kubernetes",
+    "namespace": "greenlang-agents",
+    "service_name": "thermal-efficiency-calculator",
+    "replicas": 2,
+    "autoscaling_enabled": true,
+    "min_replicas": 2,
+    "max_replicas": 20,
+    "target_cpu_utilization_percent": 70
+  }
+}

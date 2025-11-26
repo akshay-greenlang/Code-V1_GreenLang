@@ -1,0 +1,85 @@
+# GL-008 SteamTrapInspector - Kubernetes Services
+# Exposes the application for internal access and monitoring
+
+---
+# Main application service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-008-steam-trap-inspector
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+    service-type: application
+  annotations:
+    description: "Main service for GL-008 SteamTrapInspector"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+  ports:
+    - name: http
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 3600  # 1 hour for inspection sessions
+
+---
+# Metrics service for Prometheus
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-008-metrics
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+    service-type: metrics
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9091"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+  ports:
+    - name: metrics
+      port: 9091
+      targetPort: 9091
+      protocol: TCP
+
+---
+# Headless service for direct pod access
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-008-headless
+  namespace: greenlang
+  labels:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+    service-type: headless
+  annotations:
+    description: "Headless service for direct pod access"
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  selector:
+    app: gl-008-steam-trap-inspector
+    agent: "GL-008"
+  ports:
+    - name: http
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+    - name: metrics
+      port: 9091
+      targetPort: 9091
+      protocol: TCP

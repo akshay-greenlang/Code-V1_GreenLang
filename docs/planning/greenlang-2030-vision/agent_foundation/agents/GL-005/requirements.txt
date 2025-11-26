@@ -51,8 +51,8 @@ bcrypt==4.1.2
 fastapi==0.109.2
 uvicorn[standard]==0.27.1
 httpx==0.26.0
-aiohttp==3.9.3
-requests==2.31.0
+aiohttp==3.9.5  # Updated from 3.9.3 - Fixes CVE-2024-23334, CVE-2024-23829
+requests==2.32.3  # Updated from 2.31.0 - Fixes CVE-2024-35195
 websockets==12.0
 
 # Async & Concurrency

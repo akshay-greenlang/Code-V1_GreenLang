@@ -1,0 +1,51 @@
+# GL-010 EMISSIONWATCH - Staging Environment ConfigMap Patch
+# Additional configuration for staging environment
+# Uses EPA/EU ETS sandbox APIs for compliance testing
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-010-staging-config
+  namespace: greenlang-staging
+  labels:
+    app: gl-010-emissionwatch
+    agent: "GL-010"
+    environment: staging
+  annotations:
+    description: "Staging environment configuration overrides for GL-010"
+
+data:
+  # Staging-specific EPA CDX configuration (sandbox)
+  epa_ecmps_submission_url: "https://ecmps-beta.epa.gov/api"
+  epa_cdx_environment: "sandbox"
+
+  # Staging-specific EU ETS configuration (sandbox)
+  eu_ets_registry_url: "https://ec.europa.eu/ets-registry-sandbox/api"
+  eu_ets_environment: "sandbox"
+
+  # Extended logging for staging
+  enable_request_logging: "true"
+  enable_response_logging: "true"
+  log_sql_queries: "true"
+
+  # Staging CEMS configuration
+  cems_simulator_enabled: "false"
+  cems_test_mode: "true"
+
+  # Staging compliance report settings
+  compliance_report_draft_mode: "true"
+  compliance_report_watermark: "STAGING - NOT FOR SUBMISSION"
+
+  # Staging alert configuration
+  alert_email_recipients: "staging-alerts@greenlang.ai"
+  alert_slack_channel: "#gl-010-staging-alerts"
+  alert_pagerduty_enabled: "false"
+
+  # Staging data retention (shorter for cost optimization)
+  raw_emissions_data_retention_days: "90"
+  aggregated_emissions_data_retention_days: "180"
+  compliance_reports_retention_days: "365"
+
+  # Performance testing configuration
+  enable_load_test_endpoints: "true"
+  synthetic_data_generation: "true"

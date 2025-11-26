@@ -2,6 +2,9 @@
 # Generated: 2025-11-17
 # Python Version: 3.11+
 
+# GreenLang Framework
+greenlang>=1.0.0
+
 # Core AI/ML Dependencies
 anthropic==0.18.1
 openai==1.12.0
