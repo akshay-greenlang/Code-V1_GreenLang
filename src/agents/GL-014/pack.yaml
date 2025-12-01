@@ -1,0 +1,751 @@
+# ==============================================================================
+# GL-014 EXCHANGER-PRO Heat Exchanger Optimizer - Agent Pack Manifest
+# ==============================================================================
+# Pack Schema Version: 1.0
+# Agent ID: GL-014
+# Codename: EXCHANGER-PRO
+# ==============================================================================
+
+kind: Pack
+pack_schema_version: "1.0"
+license: Apache-2.0
+
+# ==============================================================================
+# AGENT METADATA
+# ==============================================================================
+metadata:
+  # Core Identification
+  agent_id: GL-014
+  codename: EXCHANGER-PRO
+  name: HeatExchangerOptimizer
+  version: "1.0.0"
+
+  # Classification
+  category: heat_exchangers
+  type: optimizer
+  domain: Heat Exchangers
+
+  # Business Priority
+  priority: high
+  business_priority: P1
+  market_tam: "$6B"
+  target_date: "Q2 2026"
+
+  # Description
+  description: >-
+    Optimizes heat exchanger performance, prevents fouling, and generates
+    intelligent cleaning schedules. Uses real-time process data to calculate
+    thermal efficiency, predict fouling progression, and optimize maintenance
+    timing for maximum ROI. Supports shell-and-tube, plate, air-cooled, and
+    spiral heat exchangers across refining, chemical, and power industries.
+
+  # Extended Description
+  long_description: |
+    The EXCHANGER-PRO agent provides comprehensive heat exchanger optimization
+    capabilities including:
+
+    1. THERMAL PERFORMANCE MONITORING
+       - Real-time heat duty calculations
+       - LMTD and effectiveness-NTU analysis
+       - Overall heat transfer coefficient tracking
+       - Temperature approach monitoring
+
+    2. FOULING ANALYSIS & PREDICTION
+       - Fouling factor calculation (shell and tube side)
+       - Asymptotic fouling model predictions
+       - Multi-mechanism fouling analysis (scaling, biological, corrosion, etc.)
+       - Fouling rate trending and forecasting
+
+    3. INTELLIGENT CLEANING SCHEDULES
+       - Cost-benefit optimized cleaning timing
+       - Cleaning method recommendations
+       - Downtime minimization strategies
+       - Integration with CMMS systems
+
+    4. ECONOMIC IMPACT ANALYSIS
+       - Energy loss quantification
+       - Cleaning cost vs. energy savings analysis
+       - ROI calculations for cleaning decisions
+       - Annual maintenance budget optimization
+
+    Zero-Hallucination Guarantee: All thermal calculations use deterministic
+    engineering formulas from TEMA, HTRI, and validated thermodynamic equations.
+
+apiVersion: greenlang.io/v1
+
+# ==============================================================================
+# RUNTIME SPECIFICATION
+# ==============================================================================
+spec:
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: main:app
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+    zero_hallucination: true
+    max_retries: 3
+    cache_ttl_seconds: 300
+    batch_processing:
+      enabled: true
+      max_batch_size: 500
+
+  # ============================================================================
+  # DEPENDENCIES
+  # ============================================================================
+  dependencies:
+    required:
+      # Web Framework
+      - fastapi>=0.104.1
+      - uvicorn>=0.24.0
+
+      # Data Validation
+      - pydantic>=2.5.0
+      - pydantic-settings>=2.1.0
+
+      # Database
+      - asyncpg>=0.29.0
+      - sqlalchemy>=2.0.23
+
+      # Cache
+      - redis>=5.0.1
+
+      # Industrial Protocols
+      - pymodbus>=3.5.4
+      - opcua-asyncio>=1.0.5
+
+      # Monitoring
+      - prometheus-client>=0.19.0
+
+      # Numerical Computing
+      - numpy>=1.26.2
+      - scipy>=1.11.4
+      - pandas>=2.1.3
+
+      # Utilities
+      - python-dateutil>=2.8.2
+      - pytz>=2023.3
+
+    optional:
+      # Observability
+      - opentelemetry-api>=1.21.0
+      - opentelemetry-sdk>=1.21.0
+      - opentelemetry-exporter-otlp>=1.21.0
+
+      # Logging
+      - structlog>=23.2.0
+
+      # Advanced Analytics
+      - scikit-learn>=1.3.2
+
+      # Thermodynamic Properties
+      - CoolProp>=6.6.0
+      - iapws>=1.5.3
+
+  # ============================================================================
+  # RESOURCE REQUIREMENTS
+  # ============================================================================
+  resources:
+    cpu:
+      requests: "500m"
+      limits: "2000m"
+    memory:
+      requests: "512Mi"
+      limits: "2Gi"
+    storage: "20Gi"
+
+  # ============================================================================
+  # NETWORK PORTS
+  # ============================================================================
+  ports:
+    - name: http
+      port: 8000
+      protocol: TCP
+      description: "Main API endpoint"
+    - name: metrics
+      port: 8001
+      protocol: TCP
+      description: "Prometheus metrics endpoint"
+    - name: health
+      port: 8002
+      protocol: TCP
+      description: "Health check endpoint"
+
+  # ============================================================================
+  # INPUT SPECIFICATION
+  # ============================================================================
+  inputs:
+    - name: temperature_data
+      type: object
+      required: true
+      description: "Inlet/outlet temperatures for hot and cold streams"
+      schema:
+        hot_inlet_temp_c:
+          type: float
+          description: "Hot stream inlet temperature (Celsius)"
+          min: -50.0
+          max: 500.0
+        hot_outlet_temp_c:
+          type: float
+          description: "Hot stream outlet temperature (Celsius)"
+          min: -50.0
+          max: 500.0
+        cold_inlet_temp_c:
+          type: float
+          description: "Cold stream inlet temperature (Celsius)"
+          min: -50.0
+          max: 500.0
+        cold_outlet_temp_c:
+          type: float
+          description: "Cold stream outlet temperature (Celsius)"
+          min: -50.0
+          max: 500.0
+        ambient_temp_c:
+          type: float
+          description: "Ambient temperature (Celsius)"
+          default: 25.0
+
+    - name: pressure_data
+      type: object
+      required: true
+      description: "Pressure drops across shell and tube sides"
+      schema:
+        shell_inlet_pressure_kpa:
+          type: float
+          description: "Shell side inlet pressure (kPa)"
+        shell_outlet_pressure_kpa:
+          type: float
+          description: "Shell side outlet pressure (kPa)"
+        tube_inlet_pressure_kpa:
+          type: float
+          description: "Tube side inlet pressure (kPa)"
+        tube_outlet_pressure_kpa:
+          type: float
+          description: "Tube side outlet pressure (kPa)"
+
+    - name: flow_data
+      type: object
+      required: true
+      description: "Mass and volumetric flow rates"
+      schema:
+        hot_mass_flow_kg_s:
+          type: float
+          description: "Hot stream mass flow rate (kg/s)"
+          min: 0.001
+        cold_mass_flow_kg_s:
+          type: float
+          description: "Cold stream mass flow rate (kg/s)"
+          min: 0.001
+        hot_volumetric_flow_m3_h:
+          type: float
+          description: "Hot stream volumetric flow rate (m3/h)"
+          optional: true
+        cold_volumetric_flow_m3_h:
+          type: float
+          description: "Cold stream volumetric flow rate (m3/h)"
+          optional: true
+
+    - name: exchanger_parameters
+      type: object
+      required: true
+      description: "Heat exchanger design specifications"
+      schema:
+        exchanger_id:
+          type: string
+          description: "Unique heat exchanger identifier"
+        exchanger_type:
+          type: string
+          enum: [shell_and_tube, plate, air_cooled, spiral, double_pipe, finned_tube]
+          description: "Type of heat exchanger"
+        design_heat_duty_kw:
+          type: float
+          description: "Design heat duty (kW)"
+        design_u_w_m2k:
+          type: float
+          description: "Design overall heat transfer coefficient (W/m2-K)"
+        heat_transfer_area_m2:
+          type: float
+          description: "Total heat transfer area (m2)"
+        shell_type:
+          type: string
+          enum: [E, F, G, H, J, K, X]
+          description: "TEMA shell type"
+        tube_layout:
+          type: string
+          enum: [triangular_30, rotated_triangular_60, square_90, rotated_square_45]
+          description: "Tube layout pattern"
+        number_of_tubes:
+          type: integer
+          description: "Total number of tubes"
+        tube_length_m:
+          type: float
+          description: "Tube length (m)"
+        tube_od_mm:
+          type: float
+          description: "Tube outer diameter (mm)"
+        tube_id_mm:
+          type: float
+          description: "Tube inner diameter (mm)"
+        tube_pitch_mm:
+          type: float
+          description: "Tube pitch (mm)"
+        number_of_passes:
+          type: integer
+          description: "Number of tube passes"
+        baffle_spacing_mm:
+          type: float
+          description: "Baffle spacing (mm)"
+        baffle_cut_percent:
+          type: float
+          description: "Baffle cut percentage"
+
+    - name: fluid_properties
+      type: object
+      required: true
+      description: "Thermal and physical properties of process fluids"
+      schema:
+        hot_fluid:
+          type: object
+          description: "Hot stream fluid properties"
+          properties:
+            name:
+              type: string
+            fluid_type:
+              type: string
+              enum: [water, steam, oil, gas, refrigerant, chemical, crude_oil, naphtha]
+            cp_j_kgk:
+              type: float
+              description: "Specific heat capacity (J/kg-K)"
+            density_kg_m3:
+              type: float
+              description: "Density (kg/m3)"
+            viscosity_pa_s:
+              type: float
+              description: "Dynamic viscosity (Pa-s)"
+            thermal_conductivity_w_mk:
+              type: float
+              description: "Thermal conductivity (W/m-K)"
+        cold_fluid:
+          type: object
+          description: "Cold stream fluid properties"
+          properties:
+            name:
+              type: string
+            fluid_type:
+              type: string
+              enum: [water, steam, oil, gas, refrigerant, chemical, crude_oil, naphtha]
+            cp_j_kgk:
+              type: float
+              description: "Specific heat capacity (J/kg-K)"
+            density_kg_m3:
+              type: float
+              description: "Density (kg/m3)"
+            viscosity_pa_s:
+              type: float
+              description: "Dynamic viscosity (Pa-s)"
+            thermal_conductivity_w_mk:
+              type: float
+              description: "Thermal conductivity (W/m-K)"
+
+    - name: operating_history
+      type: object
+      required: false
+      description: "Historical operating and cleaning data"
+      schema:
+        last_cleaning_date:
+          type: string
+          format: date
+          description: "Date of last cleaning"
+        last_cleaning_method:
+          type: string
+          enum: [chemical, mechanical, hydroblast, offline_chemical, online_chemical]
+          description: "Last cleaning method used"
+        days_since_cleaning:
+          type: integer
+          description: "Days since last cleaning"
+        historical_fouling_rates:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              fouling_factor:
+                type: float
+        cleaning_cost_history:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              method:
+                type: string
+              cost:
+                type: float
+              downtime_hours:
+                type: float
+
+  # ============================================================================
+  # OUTPUT SPECIFICATION
+  # ============================================================================
+  outputs:
+    - name: cleaning_schedule
+      type: object
+      description: "Optimized cleaning schedule with cost-benefit analysis"
+      schema:
+        recommended_cleaning_date:
+          type: string
+          format: date
+        recommended_cleaning_method:
+          type: string
+        urgency_level:
+          type: string
+          enum: [routine, planned, urgent, critical]
+        cost_benefit_ratio:
+          type: float
+        estimated_cleaning_cost:
+          type: float
+        estimated_downtime_hours:
+          type: float
+        energy_savings_if_cleaned:
+          type: float
+        payback_period_days:
+          type: integer
+        optimal_cleaning_window:
+          type: object
+          properties:
+            start_date:
+              type: string
+            end_date:
+              type: string
+
+    - name: performance_metrics
+      type: object
+      description: "Current and projected performance metrics"
+      schema:
+        current_heat_duty_kw:
+          type: float
+        design_heat_duty_kw:
+          type: float
+        heat_duty_ratio:
+          type: float
+        current_u_w_m2k:
+          type: float
+        design_u_w_m2k:
+          type: float
+        u_ratio:
+          type: float
+        lmtd_k:
+          type: float
+        effectiveness:
+          type: float
+        ntu:
+          type: float
+        approach_temperature_k:
+          type: float
+        performance_status:
+          type: string
+          enum: [optimal, good, degraded, poor, critical]
+
+    - name: fouling_analysis
+      type: object
+      description: "Fouling state, predictions, and trends"
+      schema:
+        shell_side_fouling_factor:
+          type: float
+          unit: "m2-K/W"
+        tube_side_fouling_factor:
+          type: float
+          unit: "m2-K/W"
+        total_fouling_factor:
+          type: float
+          unit: "m2-K/W"
+        fouling_state:
+          type: string
+          enum: [clean, light, moderate, heavy, severe]
+        fouling_mechanisms:
+          type: array
+          items:
+            type: string
+        predicted_days_to_threshold:
+          type: integer
+        fouling_rate_m2k_w_per_day:
+          type: float
+        asymptotic_fouling_factor:
+          type: float
+        fouling_trend:
+          type: string
+          enum: [stable, increasing, accelerating, decelerating]
+
+    - name: efficiency_report
+      type: object
+      description: "Thermal efficiency and optimization recommendations"
+      schema:
+        thermal_efficiency_percent:
+          type: float
+        design_efficiency_percent:
+          type: float
+        efficiency_loss_percent:
+          type: float
+        energy_loss_kw:
+          type: float
+        annual_energy_loss_mwh:
+          type: float
+        recommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              priority:
+                type: string
+              action:
+                type: string
+              expected_improvement:
+                type: float
+              estimated_cost:
+                type: float
+
+    - name: economic_impact
+      type: object
+      description: "Cost analysis and ROI projections"
+      schema:
+        daily_energy_cost_loss:
+          type: float
+          currency: USD
+        monthly_energy_cost_loss:
+          type: float
+          currency: USD
+        annual_energy_cost_loss:
+          type: float
+          currency: USD
+        cleaning_roi_percent:
+          type: float
+        optimal_cleaning_frequency_days:
+          type: integer
+        total_cost_of_fouling:
+          type: float
+        potential_annual_savings:
+          type: float
+
+  # ============================================================================
+  # INTEGRATIONS
+  # ============================================================================
+  integrations:
+    process_historian:
+      - name: OSIsoft_PI
+        protocol: "PI Web API"
+        description: "OSIsoft PI data historian integration"
+        required: false
+      - name: Honeywell_PHD
+        protocol: "PHD API"
+        description: "Honeywell PHD historian integration"
+        required: false
+      - name: AspenTech_IP21
+        protocol: "IP21 API"
+        description: "AspenTech IP.21 historian integration"
+        required: false
+      - name: OPC_UA
+        protocol: "OPC UA"
+        description: "Generic OPC UA historian integration"
+        required: false
+
+    cmms_systems:
+      - name: SAP_PM
+        protocol: "SAP RFC/BAPI"
+        description: "SAP Plant Maintenance integration"
+        required: false
+      - name: IBM_Maximo
+        protocol: "Maximo REST API"
+        description: "IBM Maximo Asset Management integration"
+        required: false
+      - name: Oracle_EAM
+        protocol: "Oracle REST API"
+        description: "Oracle Enterprise Asset Management integration"
+        required: false
+
+    dcs_scada:
+      - name: DeltaV
+        protocol: "OPC UA/DA"
+        description: "Emerson DeltaV DCS integration"
+        required: false
+      - name: Honeywell_Experion
+        protocol: "OPC UA"
+        description: "Honeywell Experion PKS integration"
+        required: false
+      - name: Yokogawa_CENTUM
+        protocol: "OPC UA"
+        description: "Yokogawa CENTUM VP integration"
+        required: false
+
+    greenlang_agents:
+      - name: GL-001_THERMOSYNC
+        description: "Steam trap optimization coordination"
+        required: false
+      - name: GL-006_HEATRECLAIM
+        description: "Heat recovery network optimization"
+        required: false
+      - name: GL-013_PREDICTMAINT
+        description: "Predictive maintenance coordination"
+        required: false
+
+  # ============================================================================
+  # CAPABILITIES
+  # ============================================================================
+  capabilities:
+    thermal_analysis:
+      - heat_duty_calculation
+      - lmtd_calculation
+      - effectiveness_ntu_analysis
+      - overall_htc_calculation
+      - approach_temperature_monitoring
+
+    fouling_analysis:
+      - fouling_factor_calculation
+      - fouling_rate_trending
+      - fouling_mechanism_identification
+      - asymptotic_fouling_prediction
+      - fouling_threshold_monitoring
+
+    cleaning_optimization:
+      - optimal_cleaning_timing
+      - cleaning_method_recommendation
+      - cost_benefit_analysis
+      - downtime_minimization
+      - maintenance_scheduling
+
+    economic_analysis:
+      - energy_loss_quantification
+      - cleaning_roi_calculation
+      - annual_cost_projection
+      - budget_optimization
+
+    predictive_capabilities:
+      - fouling_progression_forecasting
+      - performance_degradation_prediction
+      - remaining_useful_life_estimation
+
+  # ============================================================================
+  # COMPLIANCE
+  # ============================================================================
+  compliance:
+    standards:
+      - standard: TEMA
+        version: "10th Edition"
+        description: "Tubular Exchanger Manufacturers Association standards"
+      - standard: API 660
+        version: "9th Edition"
+        description: "Shell-and-Tube Heat Exchangers for General Refinery Service"
+      - standard: API 661
+        version: "7th Edition"
+        description: "Petroleum, Petrochemical, and Natural Gas Industries - Air-Cooled Heat Exchangers"
+      - standard: ASME VIII
+        version: "2023"
+        description: "Boiler and Pressure Vessel Code, Division 1"
+      - standard: HTRI
+        version: "Latest"
+        description: "Heat Transfer Research Inc. design methods"
+      - standard: ISO 50001
+        version: "2018"
+        description: "Energy Management Systems"
+
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+
+    zero_hallucination: true
+    deterministic_calculations: true
+
+  # ============================================================================
+  # MONITORING
+  # ============================================================================
+  monitoring:
+    metrics_enabled: true
+    metrics_port: 8001
+    metrics_path: /metrics
+
+    dashboards:
+      - agent_performance
+      - heat_exchanger_efficiency
+      - fouling_trends
+      - cleaning_schedule
+      - economic_impact
+
+    alerts:
+      - name: critical_fouling
+        condition: "fouling_factor > threshold"
+        severity: critical
+      - name: low_efficiency
+        condition: "efficiency < 70%"
+        severity: warning
+      - name: overdue_cleaning
+        condition: "days_since_cleaning > recommended"
+        severity: warning
+      - name: high_pressure_drop
+        condition: "pressure_drop > design * 1.5"
+        severity: critical
+
+  # ============================================================================
+  # SECURITY
+  # ============================================================================
+  security:
+    authentication: jwt
+    authorization: rbac
+    encryption: tls_1_3
+    secrets_management: kubernetes
+    api_key_required: true
+    audit_logging: true
+
+  # ============================================================================
+  # DEPLOYMENT
+  # ============================================================================
+  deployment:
+    replicas: 3
+    strategy: rolling_update
+    max_surge: 1
+    max_unavailable: 0
+
+    health_check:
+      path: /health
+      interval: 30s
+      timeout: 10s
+      failure_threshold: 3
+
+    readiness_check:
+      path: /readiness
+      interval: 10s
+      timeout: 5s
+      failure_threshold: 3
+
+    liveness_check:
+      path: /liveness
+      interval: 30s
+      timeout: 10s
+      failure_threshold: 3
+
+# ==============================================================================
+# AUTHOR & DOCUMENTATION
+# ==============================================================================
+authors:
+  - name: GreenLang AI Agent Factory
+    email: agents@greenlang.io
+
+repository: https://github.com/greenlang/agents/gl-014
+documentation: https://docs.greenlang.io/agents/gl-014
+changelog: https://github.com/greenlang/agents/gl-014/blob/main/CHANGELOG.md
+
+tags:
+  - heat-exchanger
+  - fouling
+  - optimization
+  - cleaning-schedule
+  - thermal-efficiency
+  - predictive-maintenance
+  - industrial
+  - energy-efficiency
+  - TEMA
+  - HTRI

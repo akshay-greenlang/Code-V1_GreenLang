@@ -1,0 +1,285 @@
+# ==============================================================================
+# GL-015 INSULSCAN - Horizontal Pod Autoscaler
+# ==============================================================================
+# Auto-scaling configuration for insulation inspection agent
+# Scales based on CPU, memory, and custom metrics
+# ==============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-015-insulscan-hpa
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: insulscan
+    app.kubernetes.io/instance: gl-015
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: autoscaler
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/agent-id: gl-015
+    greenlang.io/agent-codename: insulscan
+  annotations:
+    description: "HPA for GL-015 INSULSCAN insulation inspection agent"
+spec:
+  # Target deployment to scale
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-015-insulscan
+
+  # Replica bounds
+  minReplicas: 3
+  maxReplicas: 15
+
+  # Scaling metrics
+  metrics:
+    # CPU utilization - primary scaling metric
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory utilization - important for image processing
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom metric: Request rate per second
+    # Requires Prometheus Adapter
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+
+    # Custom metric: Thermal image processing queue length
+    - type: Pods
+      pods:
+        metric:
+          name: thermal_processing_queue_length
+        target:
+          type: AverageValue
+          averageValue: "50"
+
+    # External metric: SQS queue depth (if using AWS SQS)
+    # - type: External
+    #   external:
+    #     metric:
+    #       name: sqs_queue_messages_visible
+    #       selector:
+    #         matchLabels:
+    #           queue_name: gl-015-insulscan-tasks
+    #     target:
+    #       type: AverageValue
+    #       averageValue: "100"
+
+  # Scaling behavior configuration
+  behavior:
+    # Scale up behavior - respond quickly to load
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        # Scale up by 2 pods at a time
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+        # Or scale up by 50% of current replicas
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+      selectPolicy: Max
+
+    # Scale down behavior - be conservative to avoid flapping
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        # Scale down by 1 pod at a time
+        - type: Pods
+          value: 1
+          periodSeconds: 120
+        # Or scale down by 20% of current replicas
+        - type: Percent
+          value: 20
+          periodSeconds: 120
+      selectPolicy: Min
+
+---
+# ==============================================================================
+# Vertical Pod Autoscaler (Optional)
+# ==============================================================================
+# Automatically adjusts resource requests and limits
+# Requires VPA controller installed
+# ---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: gl-015-insulscan-vpa
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: insulscan
+    app.kubernetes.io/instance: gl-015
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-015-insulscan
+
+  # Update mode: Auto, Recreate, Initial, or Off
+  # - Auto: Apply recommendations automatically (may restart pods)
+  # - Recreate: Apply only when pods are recreated
+  # - Initial: Apply only for new pods
+  # - Off: Only generate recommendations, don't apply
+  updatePolicy:
+    updateMode: "Auto"
+    minReplicas: 2
+
+  # Resource policies
+  resourcePolicy:
+    containerPolicies:
+      - containerName: insulscan
+        # Minimum allowed resources
+        minAllowed:
+          cpu: "250m"
+          memory: "256Mi"
+        # Maximum allowed resources
+        maxAllowed:
+          cpu: "4000m"
+          memory: "8Gi"
+        # Which resources to control
+        controlledResources:
+          - cpu
+          - memory
+        # Scaling mode
+        controlledValues: RequestsAndLimits
+
+---
+# ==============================================================================
+# KEDA ScaledObject (Alternative - for event-driven scaling)
+# ==============================================================================
+# Requires KEDA operator installed
+# Enables scaling based on external events (Redis queue, Kafka, etc.)
+# ---
+# apiVersion: keda.sh/v1alpha1
+# kind: ScaledObject
+# metadata:
+#   name: gl-015-insulscan-scaledobject
+#   namespace: greenlang
+#   labels:
+#     app: gl-015-insulscan
+# spec:
+#   scaleTargetRef:
+#     apiVersion: apps/v1
+#     kind: Deployment
+#     name: gl-015-insulscan
+#
+#   pollingInterval: 15
+#   cooldownPeriod: 300
+#   minReplicaCount: 3
+#   maxReplicaCount: 20
+#
+#   triggers:
+#     # Scale based on Redis list length
+#     - type: redis
+#       metadata:
+#         address: gl-015-insulscan-redis:6379
+#         listName: thermal_processing_queue
+#         listLength: "50"
+#         passwordFromEnv: REDIS_PASSWORD
+#
+#     # Scale based on Prometheus metric
+#     - type: prometheus
+#       metadata:
+#         serverAddress: http://prometheus-server.monitoring:9090
+#         metricName: insulscan_pending_requests
+#         threshold: "100"
+#         query: |
+#           sum(insulscan_http_requests_in_progress{namespace="greenlang"})
+#
+#     # Scale based on CPU (KEDA built-in)
+#     - type: cpu
+#       metadata:
+#         type: Utilization
+#         value: "70"
+#
+#   advanced:
+#     horizontalPodAutoscalerConfig:
+#       behavior:
+#         scaleUp:
+#           stabilizationWindowSeconds: 60
+#           policies:
+#             - type: Percent
+#               value: 50
+#               periodSeconds: 30
+#         scaleDown:
+#           stabilizationWindowSeconds: 300
+#           policies:
+#             - type: Percent
+#               value: 20
+#               periodSeconds: 60
+
+---
+# ==============================================================================
+# Prometheus Adapter Custom Metrics ConfigMap
+# ==============================================================================
+# Required for custom metrics in HPA
+# Add this configuration to your Prometheus Adapter
+# ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-adapter-gl-015-rules
+  namespace: monitoring
+  labels:
+    app: gl-015-insulscan
+data:
+  rules.yaml: |
+    rules:
+      # HTTP requests per second metric
+      - seriesQuery: 'insulscan_http_requests_total{namespace="greenlang",job="gl-015-insulscan"}'
+        seriesFilters: []
+        resources:
+          overrides:
+            namespace:
+              resource: namespace
+            pod:
+              resource: pod
+        name:
+          matches: "^(.*)_total$"
+          as: "${1}_per_second"
+        metricsQuery: 'sum(rate(<<.Series>>{<<.LabelMatchers>>}[2m])) by (<<.GroupBy>>)'
+
+      # Thermal processing queue length
+      - seriesQuery: 'insulscan_thermal_queue_length{namespace="greenlang",job="gl-015-insulscan"}'
+        seriesFilters: []
+        resources:
+          overrides:
+            namespace:
+              resource: namespace
+            pod:
+              resource: pod
+        name:
+          matches: "^(.*)$"
+          as: "thermal_processing_queue_length"
+        metricsQuery: 'avg(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)'
+
+      # Active image processing tasks
+      - seriesQuery: 'insulscan_active_processing_tasks{namespace="greenlang",job="gl-015-insulscan"}'
+        seriesFilters: []
+        resources:
+          overrides:
+            namespace:
+              resource: namespace
+            pod:
+              resource: pod
+        name:
+          matches: "^(.*)$"
+          as: "active_processing_tasks"
+        metricsQuery: 'sum(<<.Series>>{<<.LabelMatchers>>}) by (<<.GroupBy>>)'

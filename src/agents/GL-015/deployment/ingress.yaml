@@ -1,0 +1,264 @@
+# ==============================================================================
+# GL-015 INSULSCAN - Kubernetes Ingress
+# ==============================================================================
+# Ingress configuration with TLS termination, rate limiting, and security
+# Supports NGINX Ingress Controller and AWS ALB
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-015-insulscan
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    app.kubernetes.io/name: insulscan
+    app.kubernetes.io/instance: gl-015
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: greenlang
+    greenlang.io/agent-id: gl-015
+    greenlang.io/agent-codename: insulscan
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: "nginx"
+
+    # TLS configuration with cert-manager
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/acme-challenge-type: "http01"
+
+    # SSL/TLS settings
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+
+    # HSTS configuration
+    nginx.ingress.kubernetes.io/hsts: "true"
+    nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
+    nginx.ingress.kubernetes.io/hsts-include-subdomains: "true"
+    nginx.ingress.kubernetes.io/hsts-preload: "true"
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-rpm: "3000"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    nginx.ingress.kubernetes.io/limit-whitelist: "10.0.0.0/8,172.16.0.0/12"
+
+    # Request size limits (for thermal image uploads)
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "10m"
+
+    # Timeouts (extended for image processing)
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-next-upstream-timeout: "60"
+
+    # Backend protocol
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+
+    # Load balancing
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$request_uri"
+    nginx.ingress.kubernetes.io/load-balance: "round_robin"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self'; connect-src 'self' https://api.greenlang.io";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=()";
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://greenlang.io,https://dashboard.greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,X-API-Key"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-max-age: "86400"
+
+    # WebSocket support (if needed)
+    nginx.ingress.kubernetes.io/proxy-http-version: "1.1"
+    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "32"
+
+    # Monitoring
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "true"
+
+spec:
+  ingressClassName: nginx
+
+  # TLS configuration
+  tls:
+    - hosts:
+        - insulscan.greenlang.io
+        - gl-015.greenlang.io
+        - api.insulscan.greenlang.io
+      secretName: gl-015-insulscan-tls
+
+  # Routing rules
+  rules:
+    # Primary domain
+    - host: insulscan.greenlang.io
+      http:
+        paths:
+          # API endpoints
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+          # Health check endpoints (public)
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+          # OpenAPI documentation
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+          - path: /redoc
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+          - path: /openapi.json
+            pathType: Exact
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+          # Catch-all
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+    # Agent ID-based domain
+    - host: gl-015.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+    # API subdomain
+    - host: api.insulscan.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+---
+# ==============================================================================
+# AWS ALB Ingress (Alternative)
+# ==============================================================================
+# Uncomment for AWS Application Load Balancer
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: gl-015-insulscan-alb
+#   namespace: greenlang
+#   labels:
+#     app: gl-015-insulscan
+#   annotations:
+#     kubernetes.io/ingress.class: "alb"
+#     alb.ingress.kubernetes.io/scheme: "internet-facing"
+#     alb.ingress.kubernetes.io/target-type: "ip"
+#     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+#     alb.ingress.kubernetes.io/certificate-arn: "arn:aws:acm:us-east-1:123456789:certificate/xxx"
+#     alb.ingress.kubernetes.io/ssl-policy: "ELBSecurityPolicy-TLS-1-2-2017-01"
+#     alb.ingress.kubernetes.io/healthcheck-path: "/api/v1/health"
+#     alb.ingress.kubernetes.io/healthcheck-interval-seconds: "30"
+#     alb.ingress.kubernetes.io/healthcheck-timeout-seconds: "5"
+#     alb.ingress.kubernetes.io/healthy-threshold-count: "2"
+#     alb.ingress.kubernetes.io/unhealthy-threshold-count: "3"
+#     alb.ingress.kubernetes.io/target-group-attributes: "stickiness.enabled=false,deregistration_delay.timeout_seconds=30"
+#     alb.ingress.kubernetes.io/load-balancer-attributes: "idle_timeout.timeout_seconds=300"
+#     alb.ingress.kubernetes.io/wafv2-acl-arn: "arn:aws:wafv2:us-east-1:123456789:regional/webacl/xxx"
+# spec:
+#   ingressClassName: alb
+#   tls:
+#     - hosts:
+#         - insulscan.greenlang.io
+#   rules:
+#     - host: insulscan.greenlang.io
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: gl-015-insulscan
+#                 port:
+#                   number: 80
+
+---
+# ==============================================================================
+# Internal Ingress (for internal-only access)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-015-insulscan-internal
+  namespace: greenlang
+  labels:
+    app: gl-015-insulscan
+    access: internal
+  annotations:
+    kubernetes.io/ingress.class: "nginx-internal"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx-internal
+  rules:
+    - host: insulscan.internal.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 80
+
+          # Metrics endpoint (internal only)
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: gl-015-insulscan
+                port:
+                  number: 9090

@@ -1,0 +1,1975 @@
+# ==============================================================================
+# GL-015 INSULSCAN Insulation Inspection Agent - AgentSpec v2.0
+# ==============================================================================
+# GreenLang Agent Configuration Specification
+# Schema Version: 2.0
+# Agent ID: GL-015
+# Codename: INSULSCAN
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# AGENT IDENTIFICATION
+# ------------------------------------------------------------------------------
+agent:
+  id: GL-015
+  codename: INSULSCAN
+  name: InsulationInspectionAgent
+  version: "1.0.0"
+  type: monitor
+  category: energy_conservation
+  domain: Energy Conservation
+
+  description: >-
+    Industrial insulation inspection agent for detecting degradation using
+    thermal imaging and advanced analytics for energy conservation optimization.
+
+  long_description: |
+    INSULSCAN is a comprehensive insulation inspection agent that:
+
+    1. Processes thermal images from IR cameras to detect heat anomalies
+    2. Quantifies heat losses using ASTM C680 and Stefan-Boltzmann calculations
+    3. Assesses insulation degradation severity and remaining life
+    4. Identifies Corrosion Under Insulation (CUI) risk factors
+    5. Generates ROI-prioritized repair recommendations
+    6. Integrates with CMMS for work order generation
+
+    The agent uses deterministic heat transfer calculations following ASTM,
+    CINI, and 3E Plus methodologies to ensure zero-hallucination operation.
+
+# ------------------------------------------------------------------------------
+# RUNTIME CONFIGURATION
+# ------------------------------------------------------------------------------
+configuration:
+  # Runtime Settings
+  runtime:
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+    zero_hallucination: true
+    max_retries: 3
+    timeout_seconds: 300
+
+  # Cache Configuration
+  cache:
+    enabled: true
+    ttl_seconds: 600
+    max_entries: 5000
+    strategy: lru
+
+  # Batch Processing
+  batch:
+    enabled: true
+    max_batch_size: 100
+    parallel_workers: 4
+    chunk_size: 25
+
+  # Heat Loss Thresholds (W/m2)
+  thresholds:
+    # Heat flux thresholds for severity classification
+    heat_flux_minor: 50.0       # W/m2 - Minor heat loss
+    heat_flux_moderate: 150.0   # W/m2 - Moderate heat loss
+    heat_flux_severe: 300.0     # W/m2 - Severe heat loss
+    heat_flux_critical: 500.0   # W/m2 - Critical heat loss
+
+    # Surface temperature thresholds (above ambient)
+    temp_delta_minor: 10.0      # K - Minor elevation
+    temp_delta_moderate: 25.0   # K - Moderate elevation
+    temp_delta_severe: 50.0     # K - Severe elevation
+    temp_delta_critical: 100.0  # K - Critical elevation
+
+    # CUI risk temperature range
+    cui_risk_min_c: 0.0         # Lower bound for CUI risk
+    cui_risk_max_c: 175.0       # Upper bound for CUI risk
+    cui_optimal_min_c: 50.0     # Optimal CUI range start
+    cui_optimal_max_c: 150.0    # Optimal CUI range end
+
+    # Insulation efficiency thresholds
+    efficiency_excellent: 95.0
+    efficiency_good: 85.0
+    efficiency_fair: 70.0
+    efficiency_poor: 50.0
+    efficiency_critical: 30.0
+
+    # ROI thresholds
+    min_roi_for_repair: 25.0    # Minimum ROI (%) to recommend repair
+    max_payback_months: 36      # Maximum payback period (months)
+
+  # Economic Parameters
+  economics:
+    natural_gas_cost_per_mmbtu: 4.50
+    electricity_cost_per_kwh: 0.10
+    steam_cost_per_klb: 12.00
+    thermal_oil_cost_per_kwh: 0.08
+    labor_cost_per_hour: 85.00
+    scaffold_cost_per_day: 500.00
+    carbon_cost_per_ton: 50.00
+
+  # Repair Cost Estimates
+  repair_costs:
+    spot_repair_per_m2: 150.0
+    partial_replacement_per_m2: 350.0
+    full_replacement_per_m2: 550.0
+    cui_remediation_per_m2: 800.0
+    scaffold_setup: 2500.0
+    equipment_rental_per_day: 350.0
+
+  # Insulation Properties (thermal conductivity W/m-K at mean temp)
+  insulation_properties:
+    mineral_wool:
+      k_value: 0.040
+      max_temp_c: 650
+      density_kg_m3: 128
+      moisture_resistance: low
+    calcium_silicate:
+      k_value: 0.055
+      max_temp_c: 650
+      density_kg_m3: 240
+      moisture_resistance: low
+    cellular_glass:
+      k_value: 0.050
+      max_temp_c: 430
+      density_kg_m3: 120
+      moisture_resistance: excellent
+    perlite:
+      k_value: 0.052
+      max_temp_c: 650
+      density_kg_m3: 144
+      moisture_resistance: low
+    aerogel:
+      k_value: 0.015
+      max_temp_c: 650
+      density_kg_m3: 150
+      moisture_resistance: moderate
+    polyurethane:
+      k_value: 0.025
+      max_temp_c: 120
+      density_kg_m3: 40
+      moisture_resistance: moderate
+    polystyrene:
+      k_value: 0.035
+      max_temp_c: 75
+      density_kg_m3: 30
+      moisture_resistance: moderate
+    phenolic_foam:
+      k_value: 0.022
+      max_temp_c: 120
+      density_kg_m3: 35
+      moisture_resistance: good
+    fiberglass:
+      k_value: 0.038
+      max_temp_c: 450
+      density_kg_m3: 24
+      moisture_resistance: low
+
+  # Emissivity Values
+  emissivity:
+    aluminum_weathered: 0.20
+    aluminum_oxidized: 0.30
+    stainless_steel_weathered: 0.60
+    galvanized_steel_weathered: 0.30
+    galvanized_steel_oxidized: 0.50
+    pvc_jacket: 0.90
+    painted_surface: 0.90
+    bare_steel_oxidized: 0.80
+    bare_steel_polished: 0.15
+
+  # Safety Limits
+  safety:
+    max_safe_surface_temp_c: 60.0   # ASTM C1055 personnel protection
+    max_process_temp_c: 800.0
+    min_ambient_temp_c: -50.0
+    max_ambient_temp_c: 60.0
+    max_wind_speed_m_s: 20.0
+    min_emissivity: 0.10
+    max_emissivity: 0.98
+
+# ------------------------------------------------------------------------------
+# INPUT SCHEMA (Detailed)
+# ------------------------------------------------------------------------------
+inputs:
+  # Thermal Image Data Input
+  thermal_image_data:
+    type: object
+    required: true
+    description: "IR camera thermal images with temperature matrices"
+    properties:
+      image_id:
+        type: string
+        required: true
+        description: "Unique image identifier"
+        pattern: "^[A-Z0-9-]+$"
+        max_length: 50
+
+      camera_type:
+        type: enum
+        required: true
+        description: "Thermal camera manufacturer"
+        values:
+          - FLIR
+          - Fluke
+          - Testo
+          - Optris
+          - InfraTec
+          - Seek
+          - HIKMICRO
+
+      camera_model:
+        type: string
+        required: false
+        description: "Camera model identifier"
+        max_length: 100
+
+      temperature_matrix:
+        type: array
+        required: true
+        description: "2D array of temperature values in Celsius"
+        items:
+          type: array
+          items:
+            type: float
+
+      min_temp_c:
+        type: float
+        required: true
+        description: "Minimum temperature in image"
+        unit: "Celsius"
+        constraints:
+          min: -50.0
+          max: 1000.0
+
+      max_temp_c:
+        type: float
+        required: true
+        description: "Maximum temperature in image"
+        unit: "Celsius"
+        constraints:
+          min: -50.0
+          max: 1000.0
+
+      avg_temp_c:
+        type: float
+        required: true
+        description: "Average temperature in image"
+        unit: "Celsius"
+        constraints:
+          min: -50.0
+          max: 1000.0
+
+      resolution_width:
+        type: integer
+        required: true
+        description: "Image width in pixels"
+        constraints:
+          min: 80
+          max: 4096
+
+      resolution_height:
+        type: integer
+        required: true
+        description: "Image height in pixels"
+        constraints:
+          min: 60
+          max: 4096
+
+      emissivity_setting:
+        type: float
+        required: true
+        description: "Camera emissivity setting"
+        constraints:
+          min: 0.10
+          max: 0.98
+        default: 0.95
+
+      reflected_temp_c:
+        type: float
+        required: false
+        description: "Reflected apparent temperature"
+        unit: "Celsius"
+        constraints:
+          min: -50.0
+          max: 100.0
+
+      distance_m:
+        type: float
+        required: false
+        description: "Distance from camera to target"
+        unit: "m"
+        constraints:
+          min: 0.1
+          max: 100.0
+        default: 3.0
+
+      atmospheric_temp_c:
+        type: float
+        required: false
+        description: "Atmospheric temperature"
+        unit: "Celsius"
+
+      relative_humidity_percent:
+        type: float
+        required: false
+        description: "Relative humidity for transmission correction"
+        unit: "%"
+        constraints:
+          min: 0.0
+          max: 100.0
+
+      capture_timestamp:
+        type: datetime
+        required: true
+        description: "Image capture timestamp"
+        format: "ISO8601"
+
+      hotspots:
+        type: array
+        required: false
+        description: "Identified hotspot regions"
+        items:
+          type: object
+          properties:
+            hotspot_id:
+              type: string
+            center_x:
+              type: integer
+            center_y:
+              type: integer
+            radius_pixels:
+              type: integer
+            max_temp_c:
+              type: float
+            avg_temp_c:
+              type: float
+            area_pixels:
+              type: integer
+
+      regions_of_interest:
+        type: array
+        required: false
+        description: "User-defined regions of interest"
+        items:
+          type: object
+          properties:
+            roi_id:
+              type: string
+            roi_type:
+              type: string
+              enum: [rectangle, ellipse, polygon]
+            coordinates:
+              type: array
+            statistics:
+              type: object
+
+  # Ambient Conditions Input
+  ambient_conditions:
+    type: object
+    required: true
+    description: "Environmental conditions during inspection"
+    properties:
+      ambient_temp_c:
+        type: float
+        required: true
+        description: "Ambient air temperature"
+        unit: "Celsius"
+        constraints:
+          min: -50.0
+          max: 60.0
+
+      wind_speed_m_s:
+        type: float
+        required: true
+        description: "Wind speed at inspection location"
+        unit: "m/s"
+        constraints:
+          min: 0.0
+          max: 30.0
+
+      wind_direction_deg:
+        type: float
+        required: false
+        description: "Wind direction from North"
+        unit: "degrees"
+        constraints:
+          min: 0.0
+          max: 360.0
+
+      relative_humidity_percent:
+        type: float
+        required: true
+        description: "Relative humidity"
+        unit: "%"
+        constraints:
+          min: 0.0
+          max: 100.0
+
+      solar_loading_w_m2:
+        type: float
+        required: false
+        description: "Solar radiation intensity"
+        unit: "W/m2"
+        constraints:
+          min: 0.0
+          max: 1400.0
+        default: 0.0
+
+      sky_condition:
+        type: enum
+        required: false
+        description: "Sky conditions"
+        values:
+          - clear
+          - partly_cloudy
+          - overcast
+          - rain
+          - night
+        default: overcast
+
+      precipitation:
+        type: boolean
+        required: false
+        description: "Whether precipitation is occurring"
+        default: false
+
+      measurement_timestamp:
+        type: datetime
+        required: true
+        description: "Ambient measurement timestamp"
+        format: "ISO8601"
+
+  # Equipment Parameters Input
+  equipment_parameters:
+    type: object
+    required: true
+    description: "Equipment specifications for insulated asset"
+    properties:
+      equipment_id:
+        type: string
+        required: true
+        description: "Unique equipment identifier"
+        pattern: "^[A-Za-z0-9-_]+$"
+        max_length: 50
+
+      equipment_name:
+        type: string
+        required: false
+        description: "Equipment name/description"
+        max_length: 200
+
+      equipment_type:
+        type: enum
+        required: true
+        description: "Type of equipment"
+        values:
+          - pipe
+          - vessel
+          - tank
+          - exchanger
+          - column
+          - duct
+          - valve
+          - flange
+          - fitting
+          - turbine
+          - pump
+          - boiler
+          - reactor
+
+      process_temp_c:
+        type: float
+        required: true
+        description: "Internal process temperature"
+        unit: "Celsius"
+        constraints:
+          min: -200.0
+          max: 800.0
+
+      design_temp_c:
+        type: float
+        required: false
+        description: "Design operating temperature"
+        unit: "Celsius"
+        constraints:
+          min: -200.0
+          max: 800.0
+
+      process_fluid:
+        type: enum
+        required: false
+        description: "Process fluid type"
+        values:
+          - steam
+          - hot_water
+          - thermal_oil
+          - process_gas
+          - process_liquid
+          - condensate
+          - air
+          - nitrogen
+          - other
+
+      pipe_diameter_mm:
+        type: float
+        required: false
+        description: "Pipe outer diameter - for pipes only"
+        unit: "mm"
+        constraints:
+          min: 10.0
+          max: 3000.0
+
+      pipe_length_m:
+        type: float
+        required: false
+        description: "Inspected pipe length"
+        unit: "m"
+        constraints:
+          min: 0.1
+          max: 1000.0
+
+      vessel_diameter_m:
+        type: float
+        required: false
+        description: "Vessel diameter - for vessels/tanks"
+        unit: "m"
+        constraints:
+          min: 0.1
+          max: 50.0
+
+      vessel_height_m:
+        type: float
+        required: false
+        description: "Vessel height - for vessels/tanks"
+        unit: "m"
+        constraints:
+          min: 0.1
+          max: 100.0
+
+      surface_area_m2:
+        type: float
+        required: false
+        description: "Total insulated surface area"
+        unit: "m2"
+        constraints:
+          min: 0.01
+          max: 10000.0
+
+      surface_orientation:
+        type: enum
+        required: false
+        description: "Surface orientation"
+        values:
+          - horizontal
+          - vertical
+          - angled_up
+          - angled_down
+        default: horizontal
+
+      operating_hours_per_year:
+        type: integer
+        required: false
+        description: "Annual operating hours"
+        constraints:
+          min: 0
+          max: 8760
+        default: 8760
+
+      location:
+        type: string
+        required: false
+        description: "Physical location identifier"
+        max_length: 200
+
+      unit:
+        type: string
+        required: false
+        description: "Process unit name"
+        max_length: 100
+
+      elevation_m:
+        type: float
+        required: false
+        description: "Equipment elevation"
+        unit: "m"
+
+      criticality:
+        type: enum
+        required: false
+        description: "Equipment criticality"
+        values:
+          - critical
+          - high
+          - medium
+          - low
+        default: medium
+
+  # Insulation Specifications Input
+  insulation_specifications:
+    type: object
+    required: true
+    description: "Insulation design specifications"
+    properties:
+      insulation_type:
+        type: enum
+        required: true
+        description: "Insulation material type"
+        values:
+          - mineral_wool
+          - calcium_silicate
+          - cellular_glass
+          - perlite
+          - aerogel
+          - polyurethane
+          - polystyrene
+          - phenolic_foam
+          - fiberglass
+          - microporous
+          - ceramic_fiber
+          - unknown
+
+      insulation_thickness_mm:
+        type: float
+        required: true
+        description: "Design insulation thickness"
+        unit: "mm"
+        constraints:
+          min: 10.0
+          max: 500.0
+
+      actual_thickness_mm:
+        type: float
+        required: false
+        description: "Measured/estimated actual thickness"
+        unit: "mm"
+        constraints:
+          min: 0.0
+          max: 500.0
+
+      thermal_conductivity_w_mk:
+        type: float
+        required: false
+        description: "Insulation thermal conductivity"
+        unit: "W/m-K"
+        constraints:
+          min: 0.010
+          max: 0.200
+
+      density_kg_m3:
+        type: float
+        required: false
+        description: "Insulation density"
+        unit: "kg/m3"
+        constraints:
+          min: 10.0
+          max: 500.0
+
+      jacket_type:
+        type: enum
+        required: true
+        description: "Weather barrier/jacketing material"
+        values:
+          - aluminum
+          - stainless_steel
+          - galvanized_steel
+          - pvc
+          - none
+          - painted_metal
+          - fiberglass_reinforced
+
+      jacket_thickness_mm:
+        type: float
+        required: false
+        description: "Jacket thickness"
+        unit: "mm"
+        constraints:
+          min: 0.3
+          max: 5.0
+        default: 0.8
+
+      jacket_condition:
+        type: enum
+        required: false
+        description: "Visual jacket condition"
+        values:
+          - excellent
+          - good
+          - fair
+          - poor
+          - damaged
+        default: good
+
+      vapor_barrier:
+        type: boolean
+        required: false
+        description: "Whether vapor barrier is present"
+        default: true
+
+      installation_date:
+        type: date
+        required: false
+        description: "Insulation installation date"
+
+      expected_life_years:
+        type: integer
+        required: false
+        description: "Expected insulation service life"
+        constraints:
+          min: 1
+          max: 50
+        default: 20
+
+      age_years:
+        type: float
+        required: false
+        description: "Current insulation age"
+        unit: "years"
+        constraints:
+          min: 0.0
+          max: 100.0
+
+      manufacturer:
+        type: string
+        required: false
+        description: "Insulation manufacturer"
+        max_length: 100
+
+      product_name:
+        type: string
+        required: false
+        description: "Insulation product name"
+        max_length: 100
+
+      last_inspection_date:
+        type: date
+        required: false
+        description: "Date of last inspection"
+
+      last_repair_date:
+        type: date
+        required: false
+        description: "Date of last repair"
+
+  # Historical Data Input
+  historical_data:
+    type: object
+    required: false
+    description: "Historical inspection and performance data"
+    properties:
+      previous_inspections:
+        type: array
+        required: false
+        description: "Array of previous inspection records"
+        items:
+          type: object
+          properties:
+            inspection_date:
+              type: date
+            inspector:
+              type: string
+            condition_rating:
+              type: string
+            heat_loss_w_m2:
+              type: float
+            findings:
+              type: string
+            recommendations:
+              type: string
+
+      repair_history:
+        type: array
+        required: false
+        description: "History of repairs and replacements"
+        items:
+          type: object
+          properties:
+            repair_date:
+              type: date
+            repair_type:
+              type: string
+            area_repaired_m2:
+              type: float
+            cost_usd:
+              type: float
+            contractor:
+              type: string
+
+      energy_baseline:
+        type: object
+        required: false
+        description: "Baseline energy performance data"
+        properties:
+          baseline_heat_loss_w_m2:
+            type: float
+          baseline_date:
+            type: date
+          baseline_conditions:
+            type: string
+
+      failure_history:
+        type: array
+        required: false
+        description: "History of insulation failures"
+        items:
+          type: object
+          properties:
+            failure_date:
+              type: date
+            failure_mode:
+              type: string
+            root_cause:
+              type: string
+            consequence:
+              type: string
+
+# ------------------------------------------------------------------------------
+# OUTPUT SCHEMA (Detailed)
+# ------------------------------------------------------------------------------
+outputs:
+  # Heat Loss Analysis Output
+  heat_loss_analysis:
+    type: object
+    description: "Quantified heat losses with energy and cost impact"
+    properties:
+      equipment_id:
+        type: string
+        description: "Equipment identifier"
+
+      analysis_timestamp:
+        type: datetime
+        description: "Timestamp of analysis"
+
+      # Heat Loss Measurements
+      surface_temp_c:
+        type: float
+        unit: "Celsius"
+        description: "Measured surface temperature"
+
+      surface_temp_elevation_c:
+        type: float
+        unit: "Celsius"
+        description: "Surface temp above ambient"
+
+      total_heat_loss_w:
+        type: float
+        unit: "W"
+        description: "Total heat loss rate"
+
+      heat_loss_per_area_w_m2:
+        type: float
+        unit: "W/m2"
+        description: "Heat flux per unit area"
+
+      radiative_heat_loss_w_m2:
+        type: float
+        unit: "W/m2"
+        description: "Radiative heat flux component"
+
+      convective_heat_loss_w_m2:
+        type: float
+        unit: "W/m2"
+        description: "Convective heat flux component"
+
+      # Baseline Comparison
+      baseline_heat_loss_w:
+        type: float
+        unit: "W"
+        description: "Expected heat loss with proper insulation"
+
+      baseline_heat_loss_w_m2:
+        type: float
+        unit: "W/m2"
+        description: "Expected heat flux with proper insulation"
+
+      excess_heat_loss_w:
+        type: float
+        unit: "W"
+        description: "Excess heat loss above baseline"
+
+      excess_heat_loss_percent:
+        type: float
+        unit: "%"
+        description: "Percentage excess heat loss"
+
+      # Energy Impact
+      hourly_energy_loss_kwh:
+        type: float
+        unit: "kWh"
+        description: "Hourly energy loss"
+
+      daily_energy_loss_kwh:
+        type: float
+        unit: "kWh"
+        description: "Daily energy loss"
+
+      annual_energy_loss_mwh:
+        type: float
+        unit: "MWh"
+        description: "Annual energy loss"
+
+      annual_excess_energy_mwh:
+        type: float
+        unit: "MWh"
+        description: "Annual excess energy loss vs baseline"
+
+      # Cost Impact
+      hourly_energy_cost_usd:
+        type: float
+        unit: "USD"
+        description: "Hourly energy cost"
+
+      daily_energy_cost_usd:
+        type: float
+        unit: "USD"
+        description: "Daily energy cost"
+
+      annual_energy_cost_usd:
+        type: float
+        unit: "USD"
+        description: "Annual energy cost"
+
+      annual_excess_cost_usd:
+        type: float
+        unit: "USD"
+        description: "Annual excess cost vs baseline"
+
+      # Carbon Impact
+      annual_co2_emissions_kg:
+        type: float
+        unit: "kg"
+        description: "Annual CO2 emissions from heat loss"
+
+      annual_excess_co2_kg:
+        type: float
+        unit: "kg"
+        description: "Annual excess CO2 vs baseline"
+
+      # Efficiency Metrics
+      thermal_efficiency_percent:
+        type: float
+        unit: "%"
+        description: "Current insulation thermal efficiency"
+
+      design_efficiency_percent:
+        type: float
+        unit: "%"
+        description: "Design insulation efficiency"
+
+      efficiency_loss_percent:
+        type: float
+        unit: "%"
+        description: "Efficiency degradation"
+
+      provenance_hash:
+        type: string
+        description: "SHA-256 hash for audit trail"
+
+  # Degradation Assessment Output
+  degradation_assessment:
+    type: object
+    description: "Insulation condition and degradation severity"
+    properties:
+      equipment_id:
+        type: string
+        description: "Equipment identifier"
+
+      analysis_timestamp:
+        type: datetime
+        description: "Timestamp of analysis"
+
+      # Overall Condition
+      overall_condition:
+        type: enum
+        description: "Overall insulation condition"
+        values:
+          - excellent    # >95% efficiency, no defects
+          - good         # 85-95% efficiency, minor issues
+          - fair         # 70-85% efficiency, some degradation
+          - poor         # 50-70% efficiency, significant issues
+          - critical     # <50% efficiency, failed
+
+      degradation_severity:
+        type: enum
+        description: "Degradation severity classification"
+        values:
+          - none         # No degradation detected
+          - minor        # 0-15% performance loss
+          - moderate     # 15-30% performance loss
+          - severe       # 30-50% performance loss
+          - failed       # >50% performance loss or missing
+
+      condition_score:
+        type: float
+        description: "Numeric condition score (0-100)"
+        constraints:
+          min: 0.0
+          max: 100.0
+
+      # Damage Assessment
+      damage_types:
+        type: array
+        description: "Identified damage types"
+        items:
+          type: object
+          properties:
+            damage_type:
+              type: enum
+              values:
+                - moisture_ingress
+                - mechanical_damage
+                - thermal_degradation
+                - compression
+                - missing_insulation
+                - jacket_damage
+                - seal_failure
+                - cui_corrosion
+                - settling
+                - weathering
+            severity:
+              type: string
+            location:
+              type: string
+            area_affected_m2:
+              type: float
+            confidence:
+              type: float
+
+      primary_damage_type:
+        type: string
+        description: "Primary damage mechanism"
+
+      # Moisture Assessment
+      moisture_detected:
+        type: boolean
+        description: "Whether moisture is detected"
+
+      moisture_severity:
+        type: enum
+        description: "Moisture severity level"
+        values:
+          - none
+          - trace
+          - moderate
+          - saturated
+
+      moisture_indicators:
+        type: array
+        description: "Indicators of moisture presence"
+        items:
+          type: string
+
+      # CUI Risk Assessment
+      cui_risk_level:
+        type: enum
+        description: "Corrosion Under Insulation risk"
+        values:
+          - low
+          - medium
+          - high
+          - critical
+
+      cui_risk_score:
+        type: float
+        description: "CUI risk score (0-100)"
+        constraints:
+          min: 0.0
+          max: 100.0
+
+      cui_risk_factors:
+        type: array
+        description: "Contributing CUI risk factors"
+        items:
+          type: object
+          properties:
+            factor:
+              type: string
+            weight:
+              type: float
+            assessment:
+              type: string
+
+      # Life Assessment
+      estimated_age_years:
+        type: float
+        description: "Estimated insulation age"
+
+      remaining_life_years:
+        type: float
+        description: "Estimated remaining useful life"
+
+      life_consumed_percent:
+        type: float
+        description: "Percentage of life consumed"
+
+      # Confidence
+      confidence_score:
+        type: float
+        description: "Assessment confidence (0-1)"
+        constraints:
+          min: 0.0
+          max: 1.0
+
+      confidence_factors:
+        type: array
+        description: "Factors affecting confidence"
+        items:
+          type: string
+
+      provenance_hash:
+        type: string
+        description: "SHA-256 hash for audit trail"
+
+  # Repair Priorities Output
+  repair_priorities:
+    type: object
+    description: "Prioritized repair recommendations with ROI"
+    properties:
+      equipment_id:
+        type: string
+        description: "Equipment identifier"
+
+      analysis_timestamp:
+        type: datetime
+        description: "Timestamp of analysis"
+
+      # Priority Assessment
+      priority_ranking:
+        type: integer
+        description: "Priority rank (1 = highest)"
+        constraints:
+          min: 1
+
+      priority_score:
+        type: float
+        description: "Priority score (0-100)"
+        constraints:
+          min: 0.0
+          max: 100.0
+
+      urgency_level:
+        type: enum
+        description: "Repair urgency classification"
+        values:
+          - routine      # Schedule for next turnaround
+          - planned      # Schedule within 6 months
+          - urgent       # Schedule within 30 days
+          - critical     # Immediate action required
+
+      # Recommended Action
+      recommended_action:
+        type: enum
+        description: "Recommended repair action"
+        values:
+          - monitor                 # Continue monitoring
+          - spot_repair             # Localized repair
+          - partial_replacement     # Replace damaged sections
+          - full_replacement        # Complete replacement
+          - emergency_repair        # Immediate temporary fix
+
+      action_description:
+        type: string
+        description: "Detailed action description"
+
+      repair_scope:
+        type: object
+        description: "Scope of repair work"
+        properties:
+          area_m2:
+            type: float
+          linear_m:
+            type: float
+          sections:
+            type: integer
+
+      # Cost Estimates
+      material_cost_usd:
+        type: float
+        description: "Estimated material cost"
+
+      labor_cost_usd:
+        type: float
+        description: "Estimated labor cost"
+
+      scaffold_cost_usd:
+        type: float
+        description: "Scaffolding/access cost"
+
+      equipment_cost_usd:
+        type: float
+        description: "Equipment rental cost"
+
+      total_repair_cost_usd:
+        type: float
+        description: "Total estimated repair cost"
+
+      cost_confidence:
+        type: string
+        description: "Cost estimate confidence level"
+
+      # Economic Analysis
+      annual_savings_usd:
+        type: float
+        description: "Annual energy savings after repair"
+
+      payback_period_months:
+        type: float
+        description: "Simple payback period"
+
+      roi_percent:
+        type: float
+        description: "Return on investment"
+
+      npv_10yr_usd:
+        type: float
+        description: "10-year Net Present Value"
+
+      irr_percent:
+        type: float
+        description: "Internal Rate of Return"
+
+      # Schedule
+      recommended_timing:
+        type: string
+        description: "Recommended repair timing"
+
+      estimated_duration_days:
+        type: float
+        description: "Estimated repair duration"
+
+      shutdown_required:
+        type: boolean
+        description: "Whether process shutdown is required"
+
+      # Alternative Actions
+      alternative_actions:
+        type: array
+        description: "Alternative repair options"
+        items:
+          type: object
+          properties:
+            action:
+              type: string
+            cost_usd:
+              type: float
+            savings_usd:
+              type: float
+            payback_months:
+              type: float
+            pros:
+              type: array
+            cons:
+              type: array
+
+      provenance_hash:
+        type: string
+        description: "SHA-256 hash for audit trail"
+
+  # Inspection Report Output
+  inspection_report:
+    type: object
+    description: "Comprehensive inspection findings and recommendations"
+    properties:
+      report_id:
+        type: string
+        description: "Unique report identifier"
+
+      inspection_date:
+        type: date
+        description: "Inspection date"
+
+      inspection_timestamp:
+        type: datetime
+        description: "Inspection timestamp"
+
+      inspector:
+        type: string
+        description: "Inspector name/ID"
+
+      # Equipment Summary
+      equipment_summary:
+        type: object
+        description: "Equipment summary"
+        properties:
+          equipment_id:
+            type: string
+          equipment_name:
+            type: string
+          equipment_type:
+            type: string
+          location:
+            type: string
+          unit:
+            type: string
+          process_temp_c:
+            type: float
+          surface_area_m2:
+            type: float
+          insulation_type:
+            type: string
+          insulation_thickness_mm:
+            type: float
+
+      # Conditions Summary
+      inspection_conditions:
+        type: object
+        description: "Inspection conditions"
+        properties:
+          ambient_temp_c:
+            type: float
+          wind_speed_m_s:
+            type: float
+          sky_condition:
+            type: string
+          camera_used:
+            type: string
+
+      # Findings
+      findings:
+        type: array
+        description: "Inspection findings"
+        items:
+          type: object
+          properties:
+            finding_id:
+              type: string
+            location:
+              type: string
+            finding_type:
+              type: string
+            severity:
+              type: string
+            description:
+              type: string
+            evidence:
+              type: string
+            image_reference:
+              type: string
+
+      # Overall Assessment
+      overall_assessment:
+        type: object
+        description: "Overall assessment summary"
+        properties:
+          condition:
+            type: string
+          heat_loss_w_m2:
+            type: float
+          annual_cost_usd:
+            type: float
+          cui_risk:
+            type: string
+          remaining_life_years:
+            type: float
+
+      # Recommendations
+      recommendations:
+        type: array
+        description: "Action recommendations"
+        items:
+          type: object
+          properties:
+            recommendation_id:
+              type: string
+            priority:
+              type: string
+            action:
+              type: string
+            description:
+              type: string
+            estimated_cost_usd:
+              type: float
+            estimated_savings_usd:
+              type: float
+            target_date:
+              type: date
+
+      # Images
+      images:
+        type: array
+        description: "Associated thermal images"
+        items:
+          type: object
+          properties:
+            image_id:
+              type: string
+            image_type:
+              type: string
+            caption:
+              type: string
+            location:
+              type: string
+            url:
+              type: string
+
+      # Compliance
+      compliance_status:
+        type: object
+        description: "Compliance assessment"
+        properties:
+          astm_c1055_compliant:
+            type: boolean
+          personnel_protection_ok:
+            type: boolean
+          energy_code_compliant:
+            type: boolean
+          violations:
+            type: array
+
+      # Sign-off
+      approval_status:
+        type: string
+        description: "Report approval status"
+
+      approved_by:
+        type: string
+        description: "Approver name"
+
+      approval_date:
+        type: date
+        description: "Approval date"
+
+      provenance_hash:
+        type: string
+        description: "SHA-256 hash for audit trail"
+
+  # Economic Impact Output
+  economic_impact:
+    type: object
+    description: "Energy waste costs and repair payback analysis"
+    properties:
+      analysis_timestamp:
+        type: datetime
+        description: "Timestamp of analysis"
+
+      currency:
+        type: string
+        description: "Currency for monetary values"
+        default: "USD"
+
+      # Current State Costs
+      current_annual_energy_cost_usd:
+        type: float
+        description: "Current annual energy cost"
+
+      baseline_annual_energy_cost_usd:
+        type: float
+        description: "Baseline annual energy cost"
+
+      annual_waste_usd:
+        type: float
+        description: "Annual energy waste cost"
+
+      # Portfolio Summary (for multiple assets)
+      total_equipment_count:
+        type: integer
+        description: "Total equipment inspected"
+
+      equipment_requiring_action:
+        type: integer
+        description: "Equipment needing repair"
+
+      total_area_inspected_m2:
+        type: float
+        description: "Total area inspected"
+
+      total_degraded_area_m2:
+        type: float
+        description: "Total degraded area"
+
+      # Cost Summary
+      total_annual_waste_usd:
+        type: float
+        description: "Total annual energy waste"
+
+      total_repair_cost_usd:
+        type: float
+        description: "Total repair investment needed"
+
+      total_annual_savings_usd:
+        type: float
+        description: "Total annual savings if repaired"
+
+      # ROI Analysis
+      portfolio_simple_payback_years:
+        type: float
+        description: "Portfolio simple payback"
+
+      portfolio_roi_percent:
+        type: float
+        description: "Portfolio ROI"
+
+      portfolio_npv_10yr_usd:
+        type: float
+        description: "10-year portfolio NPV"
+
+      portfolio_irr_percent:
+        type: float
+        description: "Portfolio IRR"
+
+      # Carbon Impact
+      current_annual_co2_tons:
+        type: float
+        description: "Current annual CO2 emissions"
+
+      baseline_annual_co2_tons:
+        type: float
+        description: "Baseline annual CO2 emissions"
+
+      annual_co2_reduction_potential_tons:
+        type: float
+        description: "Potential annual CO2 reduction"
+
+      carbon_cost_savings_usd:
+        type: float
+        description: "Carbon cost savings"
+
+      # Priority Breakdown
+      critical_repairs:
+        type: object
+        description: "Critical priority repairs"
+        properties:
+          count:
+            type: integer
+          total_cost_usd:
+            type: float
+          total_savings_usd:
+            type: float
+
+      urgent_repairs:
+        type: object
+        description: "Urgent priority repairs"
+        properties:
+          count:
+            type: integer
+          total_cost_usd:
+            type: float
+          total_savings_usd:
+            type: float
+
+      planned_repairs:
+        type: object
+        description: "Planned priority repairs"
+        properties:
+          count:
+            type: integer
+          total_cost_usd:
+            type: float
+          total_savings_usd:
+            type: float
+
+      routine_repairs:
+        type: object
+        description: "Routine priority repairs"
+        properties:
+          count:
+            type: integer
+          total_cost_usd:
+            type: float
+          total_savings_usd:
+            type: float
+
+      provenance_hash:
+        type: string
+        description: "SHA-256 hash for audit trail"
+
+# ------------------------------------------------------------------------------
+# TOOLS SPECIFICATION
+# ------------------------------------------------------------------------------
+tools:
+  # Thermal Analysis Tools
+  - name: calculate_heat_flux
+    description: "Calculate heat flux from surface temperature"
+    deterministic: true
+    zero_hallucination: true
+    formula: "Stefan-Boltzmann + Newton's Law of Cooling"
+    inputs:
+      - surface_temp_c
+      - ambient_temp_c
+      - emissivity
+      - wind_speed_m_s
+    outputs:
+      - radiative_flux_w_m2
+      - convective_flux_w_m2
+      - total_flux_w_m2
+
+  - name: calculate_convection_coefficient
+    description: "Calculate convective heat transfer coefficient"
+    deterministic: true
+    zero_hallucination: true
+    formula: "Churchill-Chu correlation for natural/forced convection"
+    inputs:
+      - surface_temp_c
+      - ambient_temp_c
+      - characteristic_length_m
+      - wind_speed_m_s
+      - surface_orientation
+    outputs:
+      - h_conv_w_m2k
+
+  - name: calculate_baseline_heat_loss
+    description: "Calculate expected heat loss for properly insulated system"
+    deterministic: true
+    zero_hallucination: true
+    formula: "3E Plus methodology / ASTM C680"
+    inputs:
+      - process_temp_c
+      - ambient_temp_c
+      - insulation_type
+      - insulation_thickness_mm
+      - geometry
+    outputs:
+      - baseline_surface_temp_c
+      - baseline_heat_loss_w_m2
+
+  - name: detect_hotspots
+    description: "Detect thermal anomalies in temperature matrix"
+    deterministic: true
+    zero_hallucination: true
+    inputs:
+      - temperature_matrix
+      - ambient_temp_c
+      - threshold_delta_c
+    outputs:
+      - hotspot_list
+      - hotspot_statistics
+
+  # Economic Analysis Tools
+  - name: calculate_energy_cost
+    description: "Calculate energy cost from heat loss"
+    deterministic: true
+    zero_hallucination: true
+    inputs:
+      - heat_loss_w
+      - operating_hours
+      - energy_type
+      - energy_cost_rate
+    outputs:
+      - annual_energy_mwh
+      - annual_cost_usd
+
+  - name: calculate_repair_roi
+    description: "Calculate ROI for repair investment"
+    deterministic: true
+    zero_hallucination: true
+    inputs:
+      - repair_cost
+      - annual_savings
+      - discount_rate
+    outputs:
+      - simple_payback_years
+      - roi_percent
+      - npv_10yr
+      - irr_percent
+
+  # Assessment Tools
+  - name: assess_degradation_severity
+    description: "Assess insulation degradation severity"
+    deterministic: true
+    zero_hallucination: true
+    inputs:
+      - heat_loss_actual_w_m2
+      - heat_loss_baseline_w_m2
+      - surface_temp_c
+      - ambient_temp_c
+    outputs:
+      - severity_level
+      - condition_score
+
+  - name: assess_cui_risk
+    description: "Assess Corrosion Under Insulation risk"
+    deterministic: true
+    zero_hallucination: true
+    inputs:
+      - process_temp_c
+      - insulation_type
+      - moisture_detected
+      - age_years
+      - jacket_condition
+    outputs:
+      - cui_risk_level
+      - cui_risk_score
+      - risk_factors
+
+  - name: estimate_remaining_life
+    description: "Estimate remaining insulation life"
+    deterministic: true
+    zero_hallucination: true
+    inputs:
+      - current_condition
+      - age_years
+      - degradation_rate
+      - operating_conditions
+    outputs:
+      - remaining_life_years
+      - end_of_life_date
+
+# ------------------------------------------------------------------------------
+# DATA SOURCES
+# ------------------------------------------------------------------------------
+data_sources:
+  # Thermal Camera Integration
+  - id: thermal_camera
+    type: imaging
+    protocols:
+      - FLIR_Atlas_SDK
+      - Fluke_Connect
+      - Generic_Radiometric_JPEG
+    poll_interval: on_demand
+    batch_size: 10
+
+  # Weather Data
+  - id: weather_service
+    type: api
+    protocols:
+      - OpenWeatherMap
+      - NOAA
+      - DarkSky
+    poll_interval: 3600
+    cache_ttl: 1800
+
+  # Asset Database
+  - id: asset_database
+    type: database
+    protocol: postgresql
+    description: "Equipment and insulation records"
+
+# ------------------------------------------------------------------------------
+# DATA SINKS
+# ------------------------------------------------------------------------------
+data_sinks:
+  # CMMS Integration
+  - id: cmms_interface
+    type: cmms
+    systems:
+      - SAP_PM
+      - IBM_Maximo
+      - Oracle_EAM
+    publish_interval: 3600
+    events:
+      - inspection_complete
+      - work_order_creation
+      - repair_recommendation
+
+  # Report Storage
+  - id: report_storage
+    type: blob_storage
+    protocol: S3
+    description: "Inspection reports and images"
+
+  # MQTT Telemetry
+  - id: mqtt_telemetry
+    type: mqtt
+    broker: "${MQTT_BROKER_URL}"
+    topic_prefix: "greenlang/gl-015"
+    publish_interval: 60
+    qos: 1
+
+# ------------------------------------------------------------------------------
+# PERSISTENCE
+# ------------------------------------------------------------------------------
+persistence:
+  database:
+    type: postgresql
+    url: "${DATABASE_URL}"
+    pool_size: "${DB_POOL_SIZE}"
+    max_overflow: "${DB_MAX_OVERFLOW}"
+
+  cache:
+    type: redis
+    url: "${REDIS_URL}"
+    ttl: "${CACHE_TTL}"
+    pool_size: "${REDIS_POOL_SIZE}"
+
+  blob_storage:
+    type: s3
+    bucket: "${S3_BUCKET}"
+    region: "${AWS_REGION}"
+    description: "Thermal images and reports"
+
+# ------------------------------------------------------------------------------
+# OBSERVABILITY
+# ------------------------------------------------------------------------------
+observability:
+  metrics:
+    enabled: true
+    port: 8001
+    path: /metrics
+    custom_metrics:
+      - name: insulation_condition_score
+        type: gauge
+        description: "Current insulation condition score"
+        labels: [equipment_id, location]
+      - name: heat_loss_w_m2
+        type: gauge
+        description: "Current heat loss rate"
+        labels: [equipment_id]
+      - name: cui_risk_score
+        type: gauge
+        description: "CUI risk score"
+        labels: [equipment_id]
+      - name: inspections_total
+        type: counter
+        description: "Total inspections performed"
+        labels: [location, condition]
+      - name: repair_recommendations_total
+        type: counter
+        description: "Total repair recommendations"
+        labels: [urgency, action_type]
+
+  tracing:
+    enabled: true
+    exporter: otlp
+    endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+    sampling_rate: 0.1
+
+  logging:
+    level: "${LOG_LEVEL}"
+    format: "${LOG_FORMAT}"
+    structured: true
+    correlation_id: true
+
+# ------------------------------------------------------------------------------
+# POLICIES
+# ------------------------------------------------------------------------------
+policies:
+  retry:
+    max_attempts: 3
+    backoff: exponential
+    initial_delay_ms: 1000
+    max_delay_ms: 60000
+    retryable_errors:
+      - connection_timeout
+      - temporary_failure
+
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    timeout_seconds: 30
+    recovery_timeout_seconds: 60
+
+  rate_limiting:
+    enabled: true
+    requests_per_minute: "${RATE_LIMIT_PER_MINUTE}"
+    burst: 10
+
+  timeout:
+    default_seconds: 30
+    image_processing_seconds: 120
+    report_generation_seconds: 60
+
+# ------------------------------------------------------------------------------
+# WORKFLOWS
+# ------------------------------------------------------------------------------
+workflows:
+  # Single Image Analysis Workflow
+  thermal_image_analysis:
+    description: "Analyze single thermal image"
+    trigger: on_demand
+    steps:
+      - name: validate_image
+        tool: validate_thermal_image
+        timeout_seconds: 10
+        on_failure: abort
+
+      - name: detect_hotspots
+        tool: detect_hotspots
+        depends_on: [validate_image]
+        timeout_seconds: 30
+
+      - name: calculate_heat_loss
+        tool: calculate_heat_flux
+        depends_on: [detect_hotspots]
+        timeout_seconds: 30
+
+      - name: assess_condition
+        tool: assess_degradation_severity
+        depends_on: [calculate_heat_loss]
+        timeout_seconds: 30
+
+      - name: generate_report
+        tool: generate_analysis_report
+        depends_on: [assess_condition]
+        timeout_seconds: 60
+
+    on_success: log_completion
+    on_failure: alert_and_retry
+
+  # Full Inspection Workflow
+  full_inspection:
+    description: "Complete insulation inspection workflow"
+    trigger: scheduled
+    schedule: "0 6 * * 1"  # Weekly Monday 6 AM
+    steps:
+      - name: collect_images
+        tool: collect_thermal_images
+        timeout_seconds: 300
+
+      - name: process_batch
+        tool: batch_image_analysis
+        depends_on: [collect_images]
+        timeout_seconds: 600
+
+      - name: generate_portfolio_report
+        tool: generate_portfolio_report
+        depends_on: [process_batch]
+        timeout_seconds: 120
+
+      - name: create_work_orders
+        tool: create_cmms_work_orders
+        depends_on: [generate_portfolio_report]
+        condition: "has_critical_findings"
+        timeout_seconds: 60
+
+      - name: send_notifications
+        tool: send_notifications
+        depends_on: [generate_portfolio_report]
+        timeout_seconds: 30
+
+    on_success: log_completion
+    on_failure: escalate
+
+# ------------------------------------------------------------------------------
+# DEPLOYMENT
+# ------------------------------------------------------------------------------
+deployment:
+  replicas: 2
+  strategy: rolling_update
+  max_surge: 1
+  max_unavailable: 0
+
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+
+  health_check:
+    path: /health
+    interval_seconds: 30
+    timeout_seconds: 10
+    failure_threshold: 3
+
+  readiness_check:
+    path: /readiness
+    interval_seconds: 10
+    timeout_seconds: 5
+    failure_threshold: 3
+
+  liveness_check:
+    path: /liveness
+    interval_seconds: 30
+    timeout_seconds: 10
+    failure_threshold: 3
+
+  autoscaling:
+    enabled: true
+    min_replicas: 2
+    max_replicas: 8
+    target_cpu_percent: 70
+    target_memory_percent: 80
+
+  pod_disruption_budget:
+    min_available: 1
+
+  security_context:
+    run_as_non_root: true
+    read_only_root_filesystem: true
+    drop_capabilities: [ALL]

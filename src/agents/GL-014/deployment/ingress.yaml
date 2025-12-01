@@ -1,0 +1,259 @@
+# ==============================================================================
+# GL-014 EXCHANGER-PRO - Kubernetes Ingress Configuration
+# ==============================================================================
+# Ingress configuration for external access to the heat exchanger optimizer API
+# Features:
+#   - TLS termination with Let's Encrypt
+#   - Path-based routing
+#   - Rate limiting (100 RPS, 1000 RPM)
+#   - CORS headers
+#   - Security headers
+#   - Health check endpoints
+#   - gRPC passthrough support
+# ==============================================================================
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-014-exchanger-pro-ingress
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/name: gl-014-exchanger-pro
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: greenlang-platform
+    team: iota
+  annotations:
+    # Ingress controller class
+    kubernetes.io/ingress.class: "nginx"
+    # Alternative annotation for newer versions
+    # nginx.ingress.kubernetes.io/ingress.class: "nginx"
+
+    # ==============================================================================
+    # TLS Configuration (cert-manager)
+    # ==============================================================================
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    cert-manager.io/acme-challenge-type: "http01"
+
+    # ==============================================================================
+    # SSL/TLS Settings
+    # ==============================================================================
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384"
+
+    # ==============================================================================
+    # Rate Limiting
+    # ==============================================================================
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+    nginx.ingress.kubernetes.io/limit-rpm: "1000"
+    nginx.ingress.kubernetes.io/limit-burst-multiplier: "5"
+
+    # ==============================================================================
+    # Security Headers
+    # ==============================================================================
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header X-XSS-Protection "1; mode=block" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+      add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+      add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+
+    # ==============================================================================
+    # CORS Configuration
+    # ==============================================================================
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.greenlang.io,https://dashboard.greenlang.io,https://heatexchanger.greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,X-API-Key"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-max-age: "3600"
+
+    # ==============================================================================
+    # Proxy Settings
+    # ==============================================================================
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    nginx.ingress.kubernetes.io/proxy-buffers-number: "4"
+
+    # ==============================================================================
+    # Backend Configuration
+    # ==============================================================================
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$remote_addr"
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+
+    # ==============================================================================
+    # Logging and Monitoring
+    # ==============================================================================
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "false"
+
+spec:
+  # Ingress class name (Kubernetes 1.18+)
+  ingressClassName: nginx
+
+  # ==============================================================================
+  # TLS Configuration
+  # ==============================================================================
+  tls:
+    - hosts:
+        - exchanger.greenlang.io
+        - api-exchanger.greenlang.io
+        - heatexchanger.greenlang.io
+      secretName: gl-014-exchanger-pro-tls
+
+  # ==============================================================================
+  # Routing Rules
+  # ==============================================================================
+  rules:
+    # Primary host: exchanger.greenlang.io
+    - host: exchanger.greenlang.io
+      http:
+        paths:
+          # API endpoints
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-014-exchanger-pro
+                port:
+                  number: 8080
+
+          # Health check endpoint (no auth required)
+          - path: /health
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-014-exchanger-pro
+                port:
+                  number: 8080
+
+          # Readiness endpoint
+          - path: /ready
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-014-exchanger-pro
+                port:
+                  number: 8080
+
+          # OpenAPI documentation
+          - path: /docs
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-014-exchanger-pro
+                port:
+                  number: 8080
+
+          # OpenAPI JSON schema
+          - path: /openapi.json
+            pathType: Exact
+            backend:
+              service:
+                name: gl-014-exchanger-pro
+                port:
+                  number: 8080
+
+    # API-specific host: api-exchanger.greenlang.io
+    - host: api-exchanger.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-014-exchanger-pro
+                port:
+                  number: 8080
+
+    # Heat exchanger specific host: heatexchanger.greenlang.io
+    - host: heatexchanger.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-014-exchanger-pro
+                port:
+                  number: 8080
+
+---
+# ==============================================================================
+# gRPC Ingress Configuration
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-014-exchanger-pro-grpc-ingress
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/component: grpc-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    # gRPC backend protocol
+    nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    # gRPC specific timeouts (longer for streaming)
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    # HTTP/2 support for gRPC
+    nginx.ingress.kubernetes.io/http2-push-preload: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - grpc-exchanger.greenlang.io
+      secretName: gl-014-exchanger-pro-grpc-tls
+  rules:
+    - host: grpc-exchanger.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-014-exchanger-pro-grpc
+                port:
+                  number: 50051
+
+---
+# ==============================================================================
+# Separate Ingress for Metrics (Internal only)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-014-exchanger-pro-metrics-ingress
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/component: metrics-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx-internal"
+    # No external access - internal ingress controller only
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+spec:
+  ingressClassName: nginx-internal
+  rules:
+    - host: metrics-exchanger.internal.greenlang.io
+      http:
+        paths:
+          - path: /metrics
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-014-exchanger-pro-metrics
+                port:
+                  number: 9090

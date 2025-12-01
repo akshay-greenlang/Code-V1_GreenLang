@@ -1,0 +1,184 @@
+# ==============================================================================
+# GL-014 EXCHANGER-PRO - Kubernetes Service Manifest
+# ==============================================================================
+# Service configuration for exposing the heat exchanger optimizer application
+# Features:
+#   - ClusterIP service for internal communication
+#   - Headless service for StatefulSet (if needed)
+#   - Separate metrics service for Prometheus scraping
+#   - gRPC service for high-performance communication
+# Ports:
+#   - 8080: REST API
+#   - 9090: Prometheus metrics
+#   - 50051: gRPC endpoint
+# ==============================================================================
+---
+# ------------------------------------------------------------------------------
+# Primary Application Service - ClusterIP
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-014-exchanger-pro
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/name: gl-014-exchanger-pro
+    app.kubernetes.io/component: heat-exchanger-optimizer
+    app.kubernetes.io/part-of: greenlang-platform
+    team: iota
+    tier: backend
+  annotations:
+    description: "GL-014 EXCHANGER-PRO - Main application service"
+    # Prometheus service discovery
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  # Session affinity for sticky sessions (optional)
+  sessionAffinity: None
+  # IP family configuration
+  ipFamilyPolicy: SingleStack
+  ipFamilies:
+    - IPv4
+  # Port configuration
+  ports:
+    # Main REST API port
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    # Metrics port for Prometheus
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+    # gRPC port for high-performance communication
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+  # Pod selector
+  selector:
+    app: gl-014-exchanger-pro
+
+---
+# ------------------------------------------------------------------------------
+# Headless Service - For StatefulSet DNS resolution
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-014-exchanger-pro-headless
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/name: gl-014-exchanger-pro
+    app.kubernetes.io/component: heat-exchanger-optimizer
+    service-type: headless
+  annotations:
+    description: "GL-014 EXCHANGER-PRO - Headless service for pod DNS"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+  selector:
+    app: gl-014-exchanger-pro
+
+---
+# ------------------------------------------------------------------------------
+# Metrics Service - Dedicated service for Prometheus scraping
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-014-exchanger-pro-metrics
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/name: gl-014-exchanger-pro
+    app.kubernetes.io/component: metrics
+    service-type: metrics
+  annotations:
+    description: "GL-014 EXCHANGER-PRO - Metrics endpoint for Prometheus"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  selector:
+    app: gl-014-exchanger-pro
+
+---
+# ------------------------------------------------------------------------------
+# gRPC Service - Dedicated service for gRPC communication
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-014-exchanger-pro-grpc
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/name: gl-014-exchanger-pro
+    app.kubernetes.io/component: grpc
+    service-type: grpc
+  annotations:
+    description: "GL-014 EXCHANGER-PRO - gRPC endpoint"
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      protocol: TCP
+      appProtocol: grpc
+  selector:
+    app: gl-014-exchanger-pro
+
+---
+# ------------------------------------------------------------------------------
+# External Service - NodePort for development/testing (optional)
+# ------------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-014-exchanger-pro-external
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/name: gl-014-exchanger-pro
+    app.kubernetes.io/component: heat-exchanger-optimizer
+    service-type: external
+  annotations:
+    description: "GL-014 EXCHANGER-PRO - External access service (dev only)"
+spec:
+  type: NodePort
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      nodePort: 30014
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+      nodePort: 30051
+      protocol: TCP
+  selector:
+    app: gl-014-exchanger-pro

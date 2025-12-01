@@ -1,0 +1,517 @@
+# ==============================================================================
+# GL-014 EXCHANGER-PRO - Kubernetes Deployment Manifest
+# ==============================================================================
+# Deployment configuration for production-grade heat exchanger optimizer service
+# Features:
+#   - High availability with 3 replicas
+#   - Rolling update strategy with zero downtime
+#   - Resource limits and requests for QoS (CPU: 4000m, Memory: 4Gi)
+#   - Security context (non-root, read-only filesystem)
+#   - Pod anti-affinity for fault tolerance
+#   - Comprehensive health probes
+# ==============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-014-exchanger-pro
+  namespace: greenlang
+  labels:
+    app: gl-014-exchanger-pro
+    app.kubernetes.io/name: gl-014-exchanger-pro
+    app.kubernetes.io/component: heat-exchanger-optimizer
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/managed-by: kubectl
+    team: iota
+    tier: backend
+    environment: production
+  annotations:
+    description: "GL-014 EXCHANGER-PRO - Heat Exchanger Optimizer Agent"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  # ------------------------------------------------------------------------------
+  # Replica Configuration
+  # ------------------------------------------------------------------------------
+  replicas: 3
+  revisionHistoryLimit: 10
+
+  # ------------------------------------------------------------------------------
+  # Update Strategy - Rolling update with zero downtime
+  # ------------------------------------------------------------------------------
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # Maximum number of pods that can be created above desired replicas
+      maxSurge: 1
+      # Maximum number of pods that can be unavailable during update
+      maxUnavailable: 0
+
+  # Pod selector
+  selector:
+    matchLabels:
+      app: gl-014-exchanger-pro
+
+  # ------------------------------------------------------------------------------
+  # Pod Template Specification
+  # ------------------------------------------------------------------------------
+  template:
+    metadata:
+      labels:
+        app: gl-014-exchanger-pro
+        app.kubernetes.io/name: gl-014-exchanger-pro
+        app.kubernetes.io/component: heat-exchanger-optimizer
+        version: "1.0.0"
+      annotations:
+        # Prometheus scraping configuration
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+        # Force rolling update on configmap/secret change
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+        checksum/secret: "{{ include (print $.Template.BasePath \"/secret.yaml\") . | sha256sum }}"
+        # Istio sidecar injection (if using service mesh)
+        sidecar.istio.io/inject: "true"
+
+    spec:
+      # Service account for RBAC
+      serviceAccountName: gl-014-exchanger-pro-sa
+
+      # Graceful termination period (seconds)
+      terminationGracePeriodSeconds: 60
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+
+      # Restart policy
+      restartPolicy: Always
+
+      # ------------------------------------------------------------------------------
+      # Security Context - Pod Level
+      # ------------------------------------------------------------------------------
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # ------------------------------------------------------------------------------
+      # Pod Anti-Affinity - Spread pods across nodes for HA
+      # ------------------------------------------------------------------------------
+      affinity:
+        podAntiAffinity:
+          # Required: Pods must be on different nodes
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app: gl-014-exchanger-pro
+              topologyKey: kubernetes.io/hostname
+          # Preferred: Try to spread across availability zones
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-014-exchanger-pro
+                topologyKey: topology.kubernetes.io/zone
+
+        # Node affinity - prefer compute-optimized nodes
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - compute-optimized
+                      - memory-optimized
+
+      # ------------------------------------------------------------------------------
+      # Tolerations - Allow scheduling on specific nodes
+      # ------------------------------------------------------------------------------
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "greenlang"
+          effect: "NoSchedule"
+
+      # ------------------------------------------------------------------------------
+      # Init Containers - Pre-startup tasks
+      # ------------------------------------------------------------------------------
+      initContainers:
+        # Wait for database to be ready
+        - name: wait-for-db
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL to be ready..."
+              until nc -z ${DB_HOST} ${DB_PORT}; do
+                echo "PostgreSQL not ready, sleeping..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready!"
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: DB_PORT
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+        # Wait for Redis to be ready
+        - name: wait-for-redis
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Redis to be ready..."
+              until nc -z ${REDIS_HOST} ${REDIS_PORT}; do
+                echo "Redis not ready, sleeping..."
+                sleep 2
+              done
+              echo "Redis is ready!"
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: REDIS_PORT
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+        # Wait for process historian to be ready
+        - name: wait-for-historian
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Process Historian to be ready..."
+              until nc -z ${HISTORIAN_HOST} ${HISTORIAN_PORT}; do
+                echo "Historian not ready, sleeping..."
+                sleep 2
+              done
+              echo "Process Historian is ready!"
+          env:
+            - name: HISTORIAN_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: HISTORIAN_HOST
+            - name: HISTORIAN_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: HISTORIAN_PORT
+          resources:
+            limits:
+              cpu: "100m"
+              memory: "64Mi"
+            requests:
+              cpu: "50m"
+              memory: "32Mi"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+      # ------------------------------------------------------------------------------
+      # Main Container
+      # ------------------------------------------------------------------------------
+      containers:
+        - name: gl-014-exchanger-pro
+          image: gcr.io/greenlang/gl-014-exchanger-pro:1.0.0
+          imagePullPolicy: Always
+
+          # Container ports
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+
+          # ------------------------------------------------------------------------------
+          # Environment Variables
+          # ------------------------------------------------------------------------------
+          env:
+            # Application configuration
+            - name: ENVIRONMENT
+              value: "production"
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: LOG_LEVEL
+            - name: SERVICE_NAME
+              value: "gl-014-exchanger-pro"
+
+            # Pod metadata for logging/tracing
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+            # Database configuration
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: DB_PORT
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: DB_NAME
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchanger-pro-secrets
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchanger-pro-secrets
+                  key: DB_PASSWORD
+
+            # Redis configuration
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-014-exchanger-pro-config
+                  key: REDIS_PORT
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchanger-pro-secrets
+                  key: REDIS_PASSWORD
+
+            # API keys and secrets
+            - name: API_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchanger-pro-secrets
+                  key: API_SECRET_KEY
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchanger-pro-secrets
+                  key: JWT_SECRET
+
+            # Historian credentials
+            - name: HISTORIAN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchanger-pro-secrets
+                  key: HISTORIAN_USERNAME
+            - name: HISTORIAN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: gl-014-exchanger-pro-secrets
+                  key: HISTORIAN_PASSWORD
+
+          # Environment from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: gl-014-exchanger-pro-config
+
+          # ------------------------------------------------------------------------------
+          # Resource Limits and Requests
+          # ------------------------------------------------------------------------------
+          resources:
+            requests:
+              cpu: "1000m"
+              memory: "2Gi"
+              ephemeral-storage: "512Mi"
+            limits:
+              cpu: "4000m"
+              memory: "4Gi"
+              ephemeral-storage: "1Gi"
+
+          # ------------------------------------------------------------------------------
+          # Security Context - Container Level
+          # ------------------------------------------------------------------------------
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          # ------------------------------------------------------------------------------
+          # Liveness Probe - Restart unhealthy containers
+          # ------------------------------------------------------------------------------
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+
+          # ------------------------------------------------------------------------------
+          # Readiness Probe - Route traffic only to ready pods
+          # ------------------------------------------------------------------------------
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          # ------------------------------------------------------------------------------
+          # Startup Probe - Allow slow starting containers
+          # ------------------------------------------------------------------------------
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+
+          # ------------------------------------------------------------------------------
+          # Volume Mounts
+          # ------------------------------------------------------------------------------
+          volumeMounts:
+            # Temporary directory for runtime data
+            - name: tmp-volume
+              mountPath: /tmp
+            # Application logs (if needed)
+            - name: logs-volume
+              mountPath: /app/logs
+            # Model storage
+            - name: models-volume
+              mountPath: /app/models
+              readOnly: true
+            # Configuration files
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            # Thermodynamic data cache
+            - name: thermo-cache-volume
+              mountPath: /app/data/thermo-cache
+
+          # Lifecycle hooks
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - "sleep 10"
+
+      # ------------------------------------------------------------------------------
+      # Volumes
+      # ------------------------------------------------------------------------------
+      volumes:
+        # Temporary storage (emptyDir for read-only root filesystem)
+        - name: tmp-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: "256Mi"
+
+        # Logs storage
+        - name: logs-volume
+          emptyDir:
+            sizeLimit: "512Mi"
+
+        # Models from PersistentVolumeClaim
+        - name: models-volume
+          persistentVolumeClaim:
+            claimName: gl-014-exchanger-pro-models-pvc
+
+        # Configuration from ConfigMap
+        - name: config-volume
+          configMap:
+            name: gl-014-exchanger-pro-config
+            items:
+              - key: application.yaml
+                path: application.yaml
+
+        # Thermodynamic data cache
+        - name: thermo-cache-volume
+          emptyDir:
+            sizeLimit: "1Gi"
+
+      # Image pull secrets for private registry
+      imagePullSecrets:
+        - name: gcr-json-key
