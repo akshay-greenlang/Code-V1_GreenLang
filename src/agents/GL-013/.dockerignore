@@ -1,0 +1,231 @@
+# ==============================================================================
+# GL-013 PREDICTMAINT - Docker Ignore File
+# ==============================================================================
+# Files and directories to exclude from Docker build context
+# This reduces build time and image size by excluding unnecessary files
+# ==============================================================================
+
+# ==============================================================================
+# Git
+# ==============================================================================
+.git
+.gitignore
+.gitattributes
+.github
+
+# ==============================================================================
+# Python
+# ==============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.python-version
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==============================================================================
+# Testing
+# ==============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# ==============================================================================
+# IDE and Editor
+# ==============================================================================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+
+# ==============================================================================
+# Documentation
+# ==============================================================================
+docs/
+*.md
+!requirements.txt
+LICENSE
+CHANGELOG
+CHANGELOG.md
+CONTRIBUTING.md
+README.md
+README.rst
+AUTHORS
+
+# ==============================================================================
+# CI/CD
+# ==============================================================================
+.travis.yml
+.circleci/
+.gitlab-ci.yml
+Jenkinsfile
+azure-pipelines.yml
+.github/
+
+# ==============================================================================
+# Docker
+# ==============================================================================
+Dockerfile*
+docker-compose*.yml
+docker-compose*.yaml
+.docker/
+.dockerignore
+
+# ==============================================================================
+# Kubernetes
+# ==============================================================================
+deployment/
+*.yaml
+!requirements.txt
+helm/
+charts/
+
+# ==============================================================================
+# Terraform
+# ==============================================================================
+terraform/
+*.tf
+*.tfstate
+*.tfvars
+.terraform/
+
+# ==============================================================================
+# Environment and Secrets
+# ==============================================================================
+.env
+.env.*
+!.env.template
+*.pem
+*.key
+*.crt
+*.p12
+secrets/
+credentials/
+
+# ==============================================================================
+# Logs and Temporary Files
+# ==============================================================================
+*.log
+logs/
+tmp/
+temp/
+.tmp/
+.temp/
+
+# ==============================================================================
+# OS Generated Files
+# ==============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==============================================================================
+# Project-Specific
+# ==============================================================================
+# Test fixtures and data
+tests/
+test_*.py
+*_test.py
+conftest.py
+fixtures/
+
+# Models (include only in production image if needed)
+models/*.pkl
+models/*.joblib
+*.h5
+*.pt
+*.onnx
+
+# Data files
+data/
+*.csv
+*.json
+*.parquet
+*.feather
+
+# Jupyter notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Makefile
+Makefile
+
+# Local configuration
+local.py
+local_settings.py
+
+# ==============================================================================
+# Miscellaneous
+# ==============================================================================
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.diff
+*.patch

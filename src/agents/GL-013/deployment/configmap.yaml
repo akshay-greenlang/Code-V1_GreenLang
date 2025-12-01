@@ -1,0 +1,236 @@
+# ==============================================================================
+# GL-013 PREDICTMAINT - Kubernetes ConfigMap
+# ==============================================================================
+# Non-sensitive configuration for the predictive maintenance application
+# Features:
+#   - Database connection parameters (non-sensitive)
+#   - Redis connection parameters (non-sensitive)
+#   - Application settings
+#   - Feature flags
+#   - External service endpoints
+# ==============================================================================
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gl-013-predictmaint-config
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/name: gl-013-predictmaint
+    app.kubernetes.io/component: config
+    app.kubernetes.io/part-of: greenlang-platform
+    team: iota
+  annotations:
+    description: "GL-013 PREDICTMAINT - Application configuration"
+data:
+  # ==============================================================================
+  # Application Settings
+  # ==============================================================================
+  ENVIRONMENT: "production"
+  SERVICE_NAME: "gl-013-predictmaint"
+  SERVICE_VERSION: "1.0.0"
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "json"
+  DEBUG: "false"
+
+  # API Configuration
+  API_VERSION: "v1"
+  API_PREFIX: "/api/v1"
+  API_TITLE: "GL-013 PREDICTMAINT API"
+  API_DESCRIPTION: "Predictive Maintenance Service for GreenLang Platform"
+
+  # Server Configuration
+  SERVER_HOST: "0.0.0.0"
+  SERVER_PORT: "8000"
+  SERVER_WORKERS: "4"
+  SERVER_TIMEOUT: "60"
+  SERVER_KEEPALIVE: "5"
+
+  # ==============================================================================
+  # Database Configuration (Non-Sensitive)
+  # ==============================================================================
+  DB_HOST: "postgresql.greenlang.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "gl013_predictmaint"
+  DB_POOL_SIZE: "10"
+  DB_MAX_OVERFLOW: "20"
+  DB_POOL_TIMEOUT: "30"
+  DB_POOL_RECYCLE: "1800"
+  DB_ECHO: "false"
+
+  # ==============================================================================
+  # Redis Configuration (Non-Sensitive)
+  # ==============================================================================
+  REDIS_HOST: "redis.greenlang.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  REDIS_MAX_CONNECTIONS: "100"
+  REDIS_SOCKET_TIMEOUT: "5"
+  REDIS_SOCKET_CONNECT_TIMEOUT: "5"
+  REDIS_RETRY_ON_TIMEOUT: "true"
+
+  # Cache Configuration
+  CACHE_DEFAULT_TTL: "3600"
+  CACHE_MAX_TTL: "86400"
+  CACHE_PREFIX: "gl013:"
+
+  # ==============================================================================
+  # Monitoring & Observability
+  # ==============================================================================
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+  METRICS_PATH: "/metrics"
+
+  # OpenTelemetry Configuration
+  OTEL_ENABLED: "true"
+  OTEL_SERVICE_NAME: "gl-013-predictmaint"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.monitoring.svc.cluster.local:4317"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  OTEL_TRACES_SAMPLER: "parentbased_traceidratio"
+  OTEL_TRACES_SAMPLER_ARG: "0.1"
+
+  # Jaeger Configuration (if using Jaeger directly)
+  JAEGER_AGENT_HOST: "jaeger-agent.monitoring.svc.cluster.local"
+  JAEGER_AGENT_PORT: "6831"
+
+  # ==============================================================================
+  # Predictive Maintenance Configuration
+  # ==============================================================================
+  # Model Configuration
+  MODEL_UPDATE_INTERVAL: "3600"
+  MODEL_RETRAIN_THRESHOLD: "0.85"
+  MODEL_STORAGE_PATH: "/app/models"
+  MODEL_MAX_VERSIONS: "5"
+
+  # Prediction Configuration
+  PREDICTION_BATCH_SIZE: "100"
+  PREDICTION_TIMEOUT: "30"
+  PREDICTION_CACHE_TTL: "300"
+
+  # Anomaly Detection
+  ANOMALY_THRESHOLD: "3.0"
+  ANOMALY_WINDOW_SIZE: "100"
+  ANOMALY_MIN_SAMPLES: "30"
+
+  # Failure Prediction
+  FAILURE_PREDICTION_HORIZON: "168"
+  FAILURE_CONFIDENCE_THRESHOLD: "0.75"
+  FAILURE_ALERT_LEAD_TIME: "24"
+
+  # ==============================================================================
+  # Feature Flags
+  # ==============================================================================
+  FEATURE_ML_PREDICTIONS: "true"
+  FEATURE_ANOMALY_DETECTION: "true"
+  FEATURE_RUL_ESTIMATION: "true"
+  FEATURE_MAINTENANCE_SCHEDULING: "true"
+  FEATURE_COST_OPTIMIZATION: "true"
+  FEATURE_REAL_TIME_MONITORING: "true"
+  FEATURE_BATCH_PROCESSING: "true"
+  FEATURE_API_RATE_LIMITING: "true"
+
+  # ==============================================================================
+  # Rate Limiting
+  # ==============================================================================
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_REQUESTS_PER_MINUTE: "100"
+  RATE_LIMIT_BURST_SIZE: "20"
+  RATE_LIMIT_WINDOW_SIZE: "60"
+
+  # ==============================================================================
+  # External Services
+  # ==============================================================================
+  # Message Queue
+  MQTT_BROKER_HOST: "mqtt.greenlang.svc.cluster.local"
+  MQTT_BROKER_PORT: "1883"
+  MQTT_CLIENT_ID: "gl-013-predictmaint"
+  MQTT_KEEPALIVE: "60"
+  MQTT_QOS: "1"
+
+  # OPC UA Server
+  OPCUA_SERVER_URL: "opc.tcp://opcua.greenlang.svc.cluster.local:4840"
+  OPCUA_NAMESPACE: "ns=2"
+  OPCUA_SECURITY_POLICY: "Basic256Sha256"
+
+  # Modbus Gateway
+  MODBUS_HOST: "modbus-gateway.greenlang.svc.cluster.local"
+  MODBUS_PORT: "502"
+  MODBUS_UNIT_ID: "1"
+
+  # ==============================================================================
+  # Health Check Configuration
+  # ==============================================================================
+  HEALTH_CHECK_ENABLED: "true"
+  HEALTH_CHECK_PATH: "/health"
+  HEALTH_CHECK_INTERVAL: "30"
+  HEALTH_CHECK_TIMEOUT: "10"
+  HEALTH_CHECK_DB_ENABLED: "true"
+  HEALTH_CHECK_REDIS_ENABLED: "true"
+
+  # ==============================================================================
+  # Application YAML Configuration
+  # ==============================================================================
+  application.yaml: |
+    # GL-013 PREDICTMAINT Application Configuration
+    # This file is mounted at /app/config/application.yaml
+
+    application:
+      name: gl-013-predictmaint
+      version: 1.0.0
+      environment: production
+
+    server:
+      host: 0.0.0.0
+      port: 8000
+      workers: 4
+      timeout: 60
+      cors:
+        enabled: true
+        origins:
+          - "https://app.greenlang.io"
+          - "https://api.greenlang.io"
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        allow_headers:
+          - "*"
+        allow_credentials: true
+
+    database:
+      pool:
+        min_size: 5
+        max_size: 20
+        timeout: 30
+        recycle: 1800
+
+    cache:
+      backend: redis
+      default_ttl: 3600
+      key_prefix: "gl013:"
+
+    monitoring:
+      prometheus:
+        enabled: true
+        port: 9090
+        path: /metrics
+      tracing:
+        enabled: true
+        sampler: 0.1
+
+    maintenance:
+      models:
+        update_interval: 3600
+        max_versions: 5
+      predictions:
+        batch_size: 100
+        timeout: 30
+      anomaly:
+        threshold: 3.0
+        window_size: 100
+      failure:
+        horizon_hours: 168
+        confidence_threshold: 0.75

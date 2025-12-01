@@ -1,0 +1,572 @@
+# GreenLang AgentSpec v2.0
+# GL-013 PREDICTMAINT PredictiveMaintenanceAgent
+# Full agent specification for production deployment
+
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+
+metadata:
+  name: PredictiveMaintenanceAgent
+  version: "1.0.0"
+  agent_id: GL-013
+  codename: PREDICTMAINT
+  labels:
+    type: predictor
+    category: Maintenance
+    domain: predictive_maintenance
+    priority: P1
+    complexity: high
+    id: GL-013
+  annotations:
+    description: "Predicts equipment failures before they occur using ML models and deterministic calculations"
+    created_by: "GreenLang Team"
+    created_date: "2024-12-01"
+    last_modified: "2024-12-01"
+    documentation: "https://greenlang.io/agents/GL-013"
+    tam: "$10B"
+    target_date: "Q1 2026"
+
+spec:
+  # Input specifications with full schema
+  inputs:
+    - name: vibration_data
+      type: object
+      required: true
+      description: "Sensor data from accelerometers including velocity and acceleration"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+            description: "Unique identifier for the equipment"
+          timestamp:
+            type: string
+            format: datetime
+          velocity_mm_s_rms:
+            type: number
+            description: "Velocity in mm/s RMS"
+          acceleration_g:
+            type: number
+            description: "Acceleration in g units"
+          frequency_hz:
+            type: number
+            description: "Dominant frequency in Hz"
+          measurement_point:
+            type: string
+            enum: ["DE", "NDE", "AXIAL", "HORIZONTAL", "VERTICAL"]
+
+    - name: temperature_data
+      type: object
+      required: true
+      description: "RTD/thermocouple readings from equipment"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          timestamp:
+            type: string
+            format: datetime
+          bearing_temp_c:
+            type: number
+          winding_temp_c:
+            type: number
+          ambient_temp_c:
+            type: number
+          oil_temp_c:
+            type: number
+          rate_of_change_c_hr:
+            type: number
+
+    - name: pressure_data
+      type: object
+      required: false
+      description: "Pressure transmitter readings"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          timestamp:
+            type: string
+            format: datetime
+          inlet_pressure_bar:
+            type: number
+          outlet_pressure_bar:
+            type: number
+          differential_pressure_bar:
+            type: number
+
+    - name: operating_hours
+      type: object
+      required: true
+      description: "Equipment runtime counters and operational data"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          total_run_hours:
+            type: number
+          hours_since_last_maintenance:
+            type: number
+          start_count:
+            type: integer
+          average_load_percent:
+            type: number
+
+    - name: maintenance_history
+      type: object
+      required: true
+      description: "Historical work orders and repairs from CMMS"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          work_orders:
+            type: array
+          failure_history:
+            type: array
+          mean_time_between_failures_hours:
+            type: number
+          mean_time_to_repair_hours:
+            type: number
+
+    - name: equipment_parameters
+      type: object
+      required: true
+      description: "Nameplate data and equipment specifications"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          equipment_type:
+            type: string
+            enum: ["PUMP", "MOTOR", "COMPRESSOR", "FAN", "GEARBOX", "BEARING", "TURBINE", "GENERATOR"]
+          criticality:
+            type: string
+            enum: ["A", "B", "C", "D"]
+          iso_vibration_class:
+            type: string
+            enum: ["I", "II", "III", "IV"]
+          alarm_thresholds:
+            type: object
+
+  # Output specifications with full schema
+  outputs:
+    - name: maintenance_schedules
+      type: object
+      description: "Optimized maintenance timing recommendations"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          schedule_type:
+            type: string
+          recommended_actions:
+            type: array
+          optimization_score:
+            type: number
+          provenance_hash:
+            type: string
+
+    - name: failure_predictions
+      type: object
+      description: "Equipment-specific failure forecasts"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          failure_modes:
+            type: array
+          overall_failure_probability:
+            type: number
+          provenance_hash:
+            type: string
+
+    - name: health_indices
+      type: object
+      description: "Equipment health scores (0-100)"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          overall_health_score:
+            type: number
+          health_status:
+            type: string
+            enum: ["EXCELLENT", "GOOD", "SATISFACTORY", "POOR", "CRITICAL"]
+          component_scores:
+            type: object
+          trend:
+            type: string
+          provenance_hash:
+            type: string
+
+    - name: remaining_useful_life
+      type: object
+      description: "RUL estimates with confidence intervals"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          rul_hours:
+            type: number
+          rul_days:
+            type: number
+          confidence_interval:
+            type: object
+          end_of_life_date:
+            type: string
+            format: date
+          provenance_hash:
+            type: string
+
+    - name: anomaly_alerts
+      type: object
+      description: "Real-time condition alerts"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          alerts:
+            type: array
+          total_alert_count:
+            type: integer
+          critical_alert_count:
+            type: integer
+          provenance_hash:
+            type: string
+
+    - name: parts_inventory
+      type: object
+      description: "Spare parts requirements and forecasts"
+      schema:
+        properties:
+          equipment_id:
+            type: string
+          required_parts:
+            type: array
+          total_parts_cost_usd:
+            type: number
+          stockout_risk:
+            type: boolean
+          provenance_hash:
+            type: string
+
+  # Agent capabilities
+  capabilities:
+    - name: remaining_useful_life_calculation
+      description: "Calculate RUL using Weibull analysis and physics-based models"
+      deterministic: true
+      standard: ISO_13381
+
+    - name: failure_probability_estimation
+      description: "Estimate failure probability using survival analysis"
+      deterministic: true
+      standard: FMEA
+
+    - name: vibration_analysis
+      description: "Analyze vibration data per ISO 10816 standards"
+      deterministic: true
+      standard: ISO_10816
+
+    - name: thermal_degradation_analysis
+      description: "Analyze thermal trends and degradation patterns"
+      deterministic: true
+      standard: ISO_13373
+
+    - name: maintenance_scheduling_optimization
+      description: "Optimize maintenance schedules using cost-benefit analysis"
+      deterministic: true
+      standard: ISO_55000
+
+    - name: spare_parts_forecasting
+      description: "Forecast spare parts requirements based on failure predictions"
+      deterministic: true
+
+    - name: anomaly_detection
+      description: "Detect anomalies using statistical and threshold methods"
+      deterministic: true
+      standard: ISO_17359
+
+    - name: condition_monitoring
+      description: "Monitor equipment condition in real-time"
+      deterministic: true
+      standard: ISO_17359
+
+    - name: cmms_integration
+      description: "Integrate with CMMS systems for work order management"
+      deterministic: true
+
+    - name: agent_coordination
+      description: "Coordinate with other GreenLang agents"
+      deterministic: true
+
+  # Tool specifications
+  tools:
+    - name: calculate_remaining_useful_life
+      description: "Calculate RUL using Weibull distribution and degradation models"
+      function: PredictiveMaintenanceTools.calculate_remaining_useful_life
+      deterministic: true
+      inputs:
+        - operating_hours
+        - maintenance_history
+        - equipment_parameters
+      outputs:
+        - RemainingUsefulLifeResult
+
+    - name: calculate_failure_probability
+      description: "Calculate failure probability using survival analysis"
+      function: PredictiveMaintenanceTools.calculate_failure_probability
+      deterministic: true
+      inputs:
+        - operating_hours
+        - maintenance_history
+        - vibration_data
+      outputs:
+        - FailureProbabilityResult
+
+    - name: analyze_vibration
+      description: "Analyze vibration data per ISO 10816 standards"
+      function: PredictiveMaintenanceTools.analyze_vibration
+      deterministic: true
+      inputs:
+        - vibration_data
+        - equipment_parameters
+      outputs:
+        - VibrationAnalysisResult
+
+    - name: analyze_thermal_degradation
+      description: "Analyze thermal trends and predict degradation"
+      function: PredictiveMaintenanceTools.analyze_thermal_degradation
+      deterministic: true
+      inputs:
+        - temperature_data
+        - equipment_parameters
+      outputs:
+        - ThermalAnalysisResult
+
+    - name: optimize_maintenance_schedule
+      description: "Optimize maintenance timing using cost-benefit analysis"
+      function: PredictiveMaintenanceTools.optimize_maintenance_schedule
+      deterministic: true
+      inputs:
+        - failure_predictions
+        - remaining_useful_life
+        - maintenance_history
+      outputs:
+        - MaintenanceScheduleResult
+
+    - name: forecast_spare_parts
+      description: "Forecast spare parts requirements"
+      function: PredictiveMaintenanceTools.forecast_spare_parts
+      deterministic: true
+      inputs:
+        - failure_predictions
+        - maintenance_schedules
+      outputs:
+        - SparePartsForecastResult
+
+    - name: detect_anomalies
+      description: "Detect anomalies in sensor data"
+      function: PredictiveMaintenanceTools.detect_anomalies
+      deterministic: true
+      inputs:
+        - vibration_data
+        - temperature_data
+        - pressure_data
+      outputs:
+        - AnomalyDetectionResult
+
+    - name: calculate_health_index
+      description: "Calculate overall equipment health index"
+      function: PredictiveMaintenanceTools.calculate_health_index
+      deterministic: true
+      inputs:
+        - vibration_data
+        - temperature_data
+        - operating_hours
+      outputs:
+        - HealthIndexResult
+
+    - name: integrate_cmms
+      description: "Integrate with CMMS for work order data"
+      function: PredictiveMaintenanceTools.integrate_cmms
+      deterministic: true
+      inputs:
+        - cmms_data
+      outputs:
+        - CMSSIntegrationResult
+
+    - name: integrate_condition_monitoring
+      description: "Integrate with condition monitoring systems"
+      function: PredictiveMaintenanceTools.integrate_condition_monitoring
+      deterministic: true
+      inputs:
+        - cms_data
+      outputs:
+        - CMSIntegrationResult
+
+    - name: coordinate_agents
+      description: "Coordinate with other GreenLang agents"
+      function: PredictiveMaintenanceTools.coordinate_agents
+      deterministic: true
+      inputs:
+        - agent_ids
+        - coordination_request
+      outputs:
+        - CoordinationResult
+
+    - name: generate_maintenance_report
+      description: "Generate comprehensive maintenance report"
+      function: PredictiveMaintenanceTools.generate_maintenance_report
+      deterministic: true
+      inputs:
+        - health_indices
+        - failure_predictions
+        - maintenance_schedules
+      outputs:
+        - MaintenanceReportResult
+
+  # Requirements
+  requirements:
+    python_version: ">=3.10"
+    memory_mb: 4096
+    cpu_cores: 4
+    gpu_required: false
+    packages:
+      - numpy>=1.24.0
+      - scipy>=1.10.0
+      - pandas>=2.0.0
+      - scikit-learn>=1.3.0
+      - pydantic>=2.0.0
+      - fastapi>=0.100.0
+      - prometheus-client>=0.17.0
+      - httpx>=0.24.0
+      - reliability>=0.8.0
+
+# AI configuration for determinism
+ai_config:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.0
+  seed: 42
+  max_tokens: 4096
+  deterministic: true
+  allowed_operations:
+    - classification
+    - entity_resolution
+    - natural_language_generation
+    - failure_mode_classification
+    - work_order_categorization
+  prohibited_operations:
+    - numeric_calculation
+    - failure_probability_generation
+    - rul_estimation
+    - health_score_calculation
+
+# Deployment configuration
+deployment:
+  replicas: 3
+  strategy: RollingUpdate
+  resources:
+    requests:
+      memory: "2Gi"
+      cpu: "1000m"
+    limits:
+      memory: "4Gi"
+      cpu: "4000m"
+  autoscaling:
+    enabled: true
+    min_replicas: 2
+    max_replicas: 10
+    target_cpu_utilization: 70
+    target_memory_utilization: 80
+  health_check:
+    liveness_probe:
+      path: /health
+      port: 8080
+      initial_delay_seconds: 30
+      period_seconds: 10
+    readiness_probe:
+      path: /ready
+      port: 8080
+      initial_delay_seconds: 5
+      period_seconds: 5
+  environment:
+    - name: LOG_LEVEL
+      value: INFO
+    - name: METRICS_ENABLED
+      value: "true"
+    - name: CACHE_TTL_SECONDS
+      value: "300"
+    - name: DETERMINISTIC_MODE
+      value: "true"
+    - name: ZERO_HALLUCINATION
+      value: "true"
+
+# Monitoring configuration
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    path: /metrics
+    scrape_interval: 15s
+  grafana:
+    enabled: true
+    dashboards:
+      - predictive_maintenance_overview
+      - equipment_health_monitoring
+      - failure_predictions
+      - maintenance_schedule_optimization
+      - rul_tracking
+      - anomaly_detection
+  alerts:
+    - name: high_failure_probability
+      condition: "failure_probability > 80%"
+      severity: critical
+    - name: low_health_score
+      condition: "health_score < 40"
+      severity: critical
+    - name: rul_threshold
+      condition: "rul_days < 30"
+      severity: warning
+    - name: anomaly_detected
+      condition: "anomaly_severity == ALARM"
+      severity: high
+
+# Security configuration
+security:
+  authentication:
+    type: oauth2
+    provider: keycloak
+  authorization:
+    type: rbac
+    roles:
+      - admin
+      - maintenance_engineer
+      - operator
+      - viewer
+  encryption:
+    at_rest: AES_256
+    in_transit: TLS_1_3
+  audit:
+    enabled: true
+    retention_days: 2555
+
+# Compliance configuration
+compliance:
+  standards:
+    - ISO_10816
+    - ISO_13373
+    - ISO_17359
+    - ISO_55000
+    - IEC_61511
+    - ASME
+  audit_trail:
+    enabled: true
+    provenance_tracking: true
+    sha256_hashing: true
+  reporting:
+    enabled: true
+    frequency: daily
+    formats:
+      - json
+      - pdf

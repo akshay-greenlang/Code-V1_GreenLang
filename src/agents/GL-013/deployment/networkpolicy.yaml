@@ -1,0 +1,326 @@
+# ==============================================================================
+# GL-013 PREDICTMAINT - Kubernetes Network Policy
+# ==============================================================================
+# Network security policies implementing zero-trust networking
+# Features:
+#   - Default deny all ingress/egress
+#   - Allow specific ingress from ingress controller
+#   - Allow specific egress to database, cache, and external services
+#   - Prometheus scraping allowed from monitoring namespace
+# ==============================================================================
+---
+# ==============================================================================
+# Default Deny All - Zero Trust Base Policy
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-013-predictmaint-default-deny
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/name: gl-013-predictmaint
+    app.kubernetes.io/component: network-policy
+    policy-type: default-deny
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-013-predictmaint
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# ==============================================================================
+# Allow Ingress from Ingress Controller
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-013-predictmaint-allow-ingress
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/component: network-policy
+    policy-type: allow-ingress
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-013-predictmaint
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from nginx ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow from internal services in greenlang namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow health checks from kubelet
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# ==============================================================================
+# Allow Prometheus Scraping
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-013-predictmaint-allow-prometheus
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/component: network-policy
+    policy-type: allow-monitoring
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-013-predictmaint
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow Prometheus to scrape metrics
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow from any pod with prometheus label
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+---
+# ==============================================================================
+# Allow Egress to Database (PostgreSQL)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-013-predictmaint-allow-db-egress
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/component: network-policy
+    policy-type: allow-database
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-013-predictmaint
+  policyTypes:
+    - Egress
+  egress:
+    # Allow to PostgreSQL service
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow to RDS endpoint (if using AWS RDS)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8  # VPC CIDR range
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# ==============================================================================
+# Allow Egress to Cache (Redis)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-013-predictmaint-allow-redis-egress
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/component: network-policy
+    policy-type: allow-cache
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-013-predictmaint
+  policyTypes:
+    - Egress
+  egress:
+    # Allow to Redis service
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow to ElastiCache endpoint (if using AWS ElastiCache)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8  # VPC CIDR range
+      ports:
+        - protocol: TCP
+          port: 6379
+
+---
+# ==============================================================================
+# Allow Egress to External Services (OPC UA, Modbus, MQTT)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-013-predictmaint-allow-industrial-egress
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/component: network-policy
+    policy-type: allow-industrial-protocols
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-013-predictmaint
+  policyTypes:
+    - Egress
+  egress:
+    # Allow OPC UA communication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 4840
+
+    # Allow Modbus communication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 502
+
+    # Allow MQTT communication
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+      ports:
+        - protocol: TCP
+          port: 1883
+        - protocol: TCP
+          port: 8883  # MQTT over TLS
+
+---
+# ==============================================================================
+# Allow DNS Resolution
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-013-predictmaint-allow-dns
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/component: network-policy
+    policy-type: allow-dns
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-013-predictmaint
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS queries to kube-dns/coredns
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# ==============================================================================
+# Allow Egress to Monitoring (OpenTelemetry, Jaeger)
+# ==============================================================================
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-013-predictmaint-allow-monitoring-egress
+  namespace: greenlang
+  labels:
+    app: gl-013-predictmaint
+    app.kubernetes.io/component: network-policy
+    policy-type: allow-monitoring-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-013-predictmaint
+  policyTypes:
+    - Egress
+  egress:
+    # Allow to OpenTelemetry Collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317  # gRPC
+        - protocol: TCP
+          port: 4318  # HTTP
+
+    # Allow to Jaeger
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: UDP
+          port: 6831  # Jaeger agent
+        - protocol: TCP
+          port: 14268 # Jaeger collector
