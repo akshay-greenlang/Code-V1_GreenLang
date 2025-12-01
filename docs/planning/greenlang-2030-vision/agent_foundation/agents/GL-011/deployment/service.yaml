@@ -1,0 +1,93 @@
+# GL-011 FUELCRAFT - Kubernetes Service
+# ClusterIP service for internal communication
+# Provides stable endpoint for load balancing across pods
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-011-fuelcraft
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    version: "1.0.0"
+  annotations:
+    description: "Service for GL-011 FUELCRAFT fuel optimization agent"
+
+spec:
+  # ClusterIP for internal-only service
+  type: ClusterIP
+
+  # Selector matches deployment labels
+  selector:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+
+  # Port configuration
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+
+  # Session affinity for stateful connections (optional)
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+---
+# Headless Service for StatefulSet compatibility (optional)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-011-fuelcraft-headless
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    version: "1.0.0"
+
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  selector:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+
+---
+# External Service for metrics scraping
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-011-fuelcraft-metrics
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    service: metrics
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/api/v1/metrics"
+
+spec:
+  type: ClusterIP
+  selector:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+      protocol: TCP
+  sessionAffinity: None

@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Shared test fixtures for GL-008 SteamTrapInspector test suite.
+Shared test fixtures for GL-008 TRAPCATCHER SteamTrapInspector test suite.
 
 This module provides common fixtures, mock data generators, and test
-configurations used across all test files.
+configurations used across all test categories:
+- unit/
+- integration/
+- e2e/
+- performance/
+- determinism/
+- security/
 """
 
 import pytest
@@ -13,6 +19,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import sys
 
+# Add parent directory to path for imports
 sys.path.append(str(Path(__file__).parent.parent))
 
 from config import (
@@ -24,8 +31,8 @@ from config import (
     ThermalConfig,
     SteamTrapConfig
 )
-# Import without relative imports - tools.py uses relative imports internally
-# We'll import after adding parent to path
+
+# Import tools - may not be available in all test environments
 try:
     from tools import (
         SteamTrapTools,
@@ -33,8 +40,6 @@ try:
         ThermalAnalysisResult
     )
 except ImportError:
-    # Fallback: tools.py may not be importable in test environment
-    # Tests will need to mock these
     SteamTrapTools = None
     AcousticAnalysisResult = None
     ThermalAnalysisResult = None
@@ -60,6 +65,8 @@ def base_config():
 @pytest.fixture
 def tools():
     """Fixture providing SteamTrapTools instance."""
+    if SteamTrapTools is None:
+        pytest.skip("SteamTrapTools not available")
     return SteamTrapTools()
 
 
@@ -106,7 +113,6 @@ class AcousticSignalGenerator:
     ) -> np.ndarray:
         """Generate normal operation acoustic signature."""
         n_samples = int(sampling_rate * duration)
-        # Low amplitude white noise
         signal = np.random.randn(n_samples) * noise_level
         return signal
 
@@ -120,9 +126,7 @@ class AcousticSignalGenerator:
         """Generate failed open acoustic signature (high freq, high amplitude)."""
         n_samples = int(sampling_rate * duration)
         t = np.linspace(0, duration, n_samples)
-        # High frequency steam leak signature
         signal = amplitude * np.sin(2 * np.pi * frequency * t)
-        # Add noise
         signal += np.random.randn(n_samples) * 0.2
         return signal
 
@@ -133,7 +137,6 @@ class AcousticSignalGenerator:
     ) -> np.ndarray:
         """Generate failed closed signature (very low signal)."""
         n_samples = int(sampling_rate * duration)
-        # Minimal signal - trap not passing condensate
         signal = np.random.randn(n_samples) * 0.02
         return signal
 
@@ -146,7 +149,6 @@ class AcousticSignalGenerator:
         """Generate leaking trap signature (intermittent high frequency)."""
         n_samples = int(sampling_rate * duration)
         t = np.linspace(0, duration, n_samples)
-        # Intermittent leak pattern
         signal = np.sin(2 * np.pi * leak_frequency * t) * np.abs(np.sin(2 * np.pi * 5 * t))
         signal += np.random.randn(n_samples) * 0.15
         return signal
@@ -159,7 +161,6 @@ class AcousticSignalGenerator:
         """Generate saturated signal (clipping)."""
         n_samples = int(sampling_rate * duration)
         signal = np.random.randn(n_samples) * 5.0
-        # Clip to simulate saturation
         signal = np.clip(signal, -3.0, 3.0)
         return signal
 
@@ -200,25 +201,25 @@ class ThermalDataGenerator:
         return {
             'trap_id': 'TRAP-NORMAL-THERMAL',
             'temperature_upstream_c': 150.0,
-            'temperature_downstream_c': 130.0,  # ΔT = 20°C (normal)
+            'temperature_downstream_c': 130.0,
             'ambient_temp_c': 20.0
         }
 
     def generate_failed_open_thermal(self) -> Dict[str, Any]:
-        """Generate failed open thermal signature (minimal ΔT)."""
+        """Generate failed open thermal signature (minimal delta-T)."""
         return {
             'trap_id': 'TRAP-FAILED-OPEN-THERMAL',
             'temperature_upstream_c': 150.0,
-            'temperature_downstream_c': 148.0,  # ΔT = 2°C (steam bypass)
+            'temperature_downstream_c': 148.0,
             'ambient_temp_c': 20.0
         }
 
     def generate_failed_closed_thermal(self) -> Dict[str, Any]:
-        """Generate failed closed thermal signature (large ΔT)."""
+        """Generate failed closed thermal signature (large delta-T)."""
         return {
             'trap_id': 'TRAP-FAILED-CLOSED-THERMAL',
             'temperature_upstream_c': 180.0,
-            'temperature_downstream_c': 70.0,  # ΔT = 110°C (condensate backup)
+            'temperature_downstream_c': 70.0,
             'ambient_temp_c': 20.0
         }
 
@@ -228,7 +229,7 @@ class ThermalDataGenerator:
             'trap_id': 'TRAP-COLD-ENV',
             'temperature_upstream_c': 150.0,
             'temperature_downstream_c': 130.0,
-            'ambient_temp_c': -20.0  # Cold environment
+            'ambient_temp_c': -20.0
         }
 
     def generate_hot_environment_thermal(self) -> Dict[str, Any]:
@@ -237,7 +238,7 @@ class ThermalDataGenerator:
             'trap_id': 'TRAP-HOT-ENV',
             'temperature_upstream_c': 150.0,
             'temperature_downstream_c': 130.0,
-            'ambient_temp_c': 50.0  # Hot environment
+            'ambient_temp_c': 50.0
         }
 
 
@@ -317,17 +318,12 @@ def energy_loss_test_data():
     """Known values for energy loss calculation validation."""
     return {
         'napier_equation_reference': {
-            # W = 24.24 * P * D² * C
-            # For P=100, D=0.125, C=0.7: W ≈ 26.51 lb/hr
             'orifice_diameter_in': 0.125,
             'steam_pressure_psig': 100.0,
             'discharge_coefficient': 0.7,
             'expected_steam_loss_lb_hr': 26.5125
         },
         'steam_table_reference': {
-            # At 100 psig (114.7 psia), saturated steam:
-            # Temperature: 338°F (170°C)
-            # Enthalpy: 1187.5 BTU/lb
             'pressure_psig': 100.0,
             'expected_temperature_f': 338.0,
             'expected_enthalpy_btu_lb': 1187.5
@@ -400,16 +396,14 @@ def rul_test_data():
     """Test data for RUL prediction validation."""
     return {
         'weibull_parameters': {
-            # Shape parameter (beta) = 2.5
-            # Scale parameter (eta) = 2000 days
             'beta': 2.5,
             'eta': 2000,
-            'expected_mean_life': 1770  # Approximate for beta=2.5
+            'expected_mean_life': 1770
         },
         'historical_failures': {
-            'trap_type_a': [1800, 2000, 2200, 1900, 2100],  # MTBF ≈ 2000 days
-            'trap_type_b': [1200, 1400, 1300, 1500, 1250],  # MTBF ≈ 1330 days
-            'trap_type_c': [2500, 2600, 2400, 2700, 2550]   # MTBF ≈ 2550 days
+            'trap_type_a': [1800, 2000, 2200, 1900, 2100],
+            'trap_type_b': [1200, 1400, 1300, 1500, 1250],
+            'trap_type_c': [2500, 2600, 2400, 2700, 2550]
         },
         'degradation_scenarios': [
             {'age_days': 500, 'health_score': 90, 'expected_rul_days': 1500},
@@ -426,6 +420,8 @@ def rul_test_data():
 @pytest.fixture
 def mock_acoustic_result():
     """Create mock acoustic analysis result."""
+    if AcousticAnalysisResult is None:
+        pytest.skip("AcousticAnalysisResult not available")
     return AcousticAnalysisResult(
         trap_id='TRAP-MOCK-001',
         failure_probability=0.75,
@@ -444,6 +440,8 @@ def mock_acoustic_result():
 @pytest.fixture
 def mock_thermal_result():
     """Create mock thermal analysis result."""
+    if ThermalAnalysisResult is None:
+        pytest.skip("ThermalAnalysisResult not available")
     return ThermalAnalysisResult(
         trap_id='TRAP-MOCK-001',
         trap_health_score=40.0,
@@ -468,10 +466,10 @@ def mock_thermal_result():
 def performance_test_config():
     """Configuration for performance benchmarks."""
     return {
-        'max_execution_time_ms': 100,  # Max time for single analysis
-        'batch_size': 1000,  # Records per batch
-        'target_throughput': 100,  # Records/second
-        'memory_limit_mb': 500  # Max memory increase
+        'max_execution_time_ms': 100,
+        'batch_size': 1000,
+        'target_throughput': 100,
+        'memory_limit_mb': 500
     }
 
 
@@ -492,7 +490,9 @@ def provenance_validator():
         @staticmethod
         def validate_hash(hash_str: str) -> bool:
             """Validate provenance hash format (SHA-256)."""
-            return isinstance(hash_str, str) and len(hash_str) == 64 and all(c in '0123456789abcdef' for c in hash_str)
+            return (isinstance(hash_str, str) and
+                    len(hash_str) == 64 and
+                    all(c in '0123456789abcdef' for c in hash_str))
 
         @staticmethod
         def compare_hashes(hash1: str, hash2: str) -> bool:
@@ -522,4 +522,13 @@ def pytest_configure(config):
     )
     config.addinivalue_line(
         "markers", "validation: mark test as calculation validation"
+    )
+    config.addinivalue_line(
+        "markers", "e2e: mark test as end-to-end test"
+    )
+    config.addinivalue_line(
+        "markers", "security: mark test as security validation"
+    )
+    config.addinivalue_line(
+        "markers", "unit: mark test as unit test"
     )

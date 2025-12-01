@@ -1,7 +1,36 @@
 # -*- coding: utf-8 -*-
+"""
+GreenLang Agents Module
+========================
+
+This module provides the agent framework and all available agents.
+
+Base Classes:
+- BaseAgent: Original base agent class (legacy)
+- AgentSpecV2Base: Standardized base class for AgentSpec v2 compliant agents
+
+Category Mixins (AgentSpec v2 Pattern):
+- DeterministicMixin: Zero-hallucination calculation agents
+- ReasoningMixin: AI-powered reasoning agents
+- InsightMixin: Hybrid calculation + AI agents
+
+Migration Guide:
+See greenlang/agents/MIGRATION_TO_AGENTSPECV2.md for migration instructions.
+"""
+
 # Lazy imports to avoid requiring analytics dependencies at import time
 # Import base agent directly as it has no heavy dependencies
 from greenlang.agents.base import BaseAgent
+
+# Import AgentSpec v2 base classes and mixins
+from greenlang.agents.agentspec_v2_base import AgentSpecV2Base, AgentExecutionContext
+from greenlang.agents.mixins import (
+    DeterministicMixin,
+    ReasoningMixin,
+    InsightMixin,
+    get_category_mixin,
+    validate_mixin_usage,
+)
 
 
 # Define lazy imports for agents that require pandas/numpy
@@ -123,7 +152,20 @@ def __getattr__(name):
 
 
 __all__ = [
+    # Base classes (legacy)
     "BaseAgent",
+
+    # AgentSpec v2 Base Classes
+    "AgentSpecV2Base",
+    "AgentExecutionContext",
+
+    # Category Mixins (AgentSpec v2 Pattern)
+    "DeterministicMixin",
+    "ReasoningMixin",
+    "InsightMixin",
+    "get_category_mixin",
+    "validate_mixin_usage",
+
     # CRITICAL PATH agents (deterministic for regulatory/compliance)
     "FuelAgent",
     "GridFactorAgent",
@@ -140,15 +182,18 @@ __all__ = [
     "LoadProfileAgent",
     "FieldLayoutAgent",
     "EnergyBalanceAgent",
+
     # RECOMMENDATION PATH agents (AI for decision support)
     "IndustrialProcessHeatAgent_AI",
     "BoilerReplacementAgent_AI",
     "IndustrialHeatPumpAgent_AI",
     "DecarbonizationRoadmapAgentAI",
     "ThermalStorageAgent_AI",
+
     # Phase 6 V4 agents with shared tool library
     "IndustrialHeatPumpAgentAI_V4",
     "BoilerReplacementAgentAI_V4",
+
     # DEPRECATED: AI versions of CRITICAL PATH agents (backward compatibility only)
     # Use deterministic versions (FuelAgent, GridFactorAgent) for regulatory work
     "FuelAgentAI",  # DEPRECATED - use FuelAgent

@@ -1,0 +1,129 @@
+# GL-011 FUELCRAFT - ResourceQuota
+# Prevents resource exhaustion in greenlang namespace
+# Sets hard limits on total resource consumption
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: gl-011-fuelcraft-quota
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+  annotations:
+    description: "Dedicated quota for GL-011 FUELCRAFT fuel optimization agent"
+    documentation: "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+
+spec:
+  hard:
+    # Compute Resources for GL-011
+    # Based on: 2-10 replicas with 1CPU/2Gi request, 2CPU/4Gi limit each
+
+    # Total CPU requests across all GL-011 pods
+    # For 10 pods max: 10 * 1000m = 10 CPUs
+    requests.cpu: "12"          # 12 CPU cores (buffer for scaling + rolling updates)
+
+    # Total CPU limits across all GL-011 pods
+    # For 10 pods max: 10 * 2000m = 20 CPUs
+    limits.cpu: "24"            # 24 CPU cores max
+
+    # Total memory requests across all GL-011 pods
+    # For 10 pods max: 10 * 2Gi = 20 GiB
+    requests.memory: "24Gi"     # 24 GiB (buffer for scaling)
+
+    # Total memory limits across all GL-011 pods
+    # For 10 pods max: 10 * 4Gi = 40 GiB
+    limits.memory: "48Gi"       # 48 GiB max
+
+    # Storage Resources
+    # Ephemeral storage for fuel data processing
+    requests.ephemeral-storage: "50Gi"
+    limits.ephemeral-storage: "100Gi"
+
+    # Object Count Limits
+    # Maximum number of GL-011 pods (HPA max + buffer for rolling updates)
+    pods: "15"
+
+    # Maximum number of services (main + headless + metrics)
+    services: "5"
+
+    # Maximum number of config maps
+    configmaps: "5"
+
+    # Maximum number of secrets
+    secrets: "5"
+
+---
+# Namespace-wide ResourceQuota (if GL-011 has dedicated namespace)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-namespace-quota
+  namespace: greenlang
+  labels:
+    app: greenlang-platform
+    managed-by: "platform-team"
+  annotations:
+    description: "ResourceQuota for greenlang namespace (all agents)"
+
+spec:
+  hard:
+    # Compute Resources (namespace-wide)
+    requests.cpu: "100"        # 100 CPU cores total for all agents
+    limits.cpu: "200"          # 200 CPU cores max
+    requests.memory: "200Gi"   # 200 GiB total
+    limits.memory: "400Gi"     # 400 GiB max
+
+    # Storage Resources
+    requests.storage: "1Ti"    # 1 TiB total PVC storage
+    requests.ephemeral-storage: "500Gi"
+    limits.ephemeral-storage: "1Ti"
+
+    # Object Count Limits
+    pods: "200"                # Max 200 pods in namespace
+    services: "100"
+    services.loadbalancers: "10"
+    persistentvolumeclaims: "50"
+    secrets: "100"
+    configmaps: "100"
+    replicationcontrollers: "50"
+
+---
+# ResourceQuota Calculations for GL-011:
+#
+# Per-pod resources:
+#   - requests.cpu: 1000m (1 core)
+#   - limits.cpu: 2000m (2 cores)
+#   - requests.memory: 2Gi
+#   - limits.memory: 4Gi
+#   - ephemeral-storage: 2Gi request, 4Gi limit
+#
+# Scaling scenarios:
+#
+# Minimum (2 pods):
+#   - requests: 2 CPU, 4 GiB memory
+#   - limits: 4 CPU, 8 GiB memory
+#
+# Default (3 pods):
+#   - requests: 3 CPU, 6 GiB memory
+#   - limits: 6 CPU, 12 GiB memory
+#
+# Maximum (10 pods):
+#   - requests: 10 CPU, 20 GiB memory
+#   - limits: 20 CPU, 40 GiB memory
+#
+# Rolling update (11 pods during update):
+#   - requests: 11 CPU, 22 GiB memory
+#   - limits: 22 CPU, 44 GiB memory
+#
+# Recommended quota (with 20% buffer):
+#   - requests: 12 CPU, 24 GiB memory
+#   - limits: 24 CPU, 48 GiB memory
+#
+# Monitoring:
+#   kubectl describe resourcequota gl-011-fuelcraft-quota -n greenlang
+#   kubectl get resourcequota -n greenlang -o yaml
+#
+# Alert thresholds:
+#   - Warning: 70% quota usage
+#   - Critical: 90% quota usage

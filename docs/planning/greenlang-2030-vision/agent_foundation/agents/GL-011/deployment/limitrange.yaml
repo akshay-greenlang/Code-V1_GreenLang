@@ -1,0 +1,178 @@
+# GL-011 FUELCRAFT - LimitRange
+# Sets default, minimum, and maximum resource constraints
+# Applies to pods/containers without explicit resource specifications
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-011-fuelcraft-limitrange
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+  annotations:
+    description: "LimitRange for GL-011 FUELCRAFT fuel optimization agent"
+    documentation: "https://kubernetes.io/docs/concepts/policy/limit-range/"
+
+spec:
+  limits:
+    # Container-level limits for GL-011
+    - type: Container
+      # Default resource limits (if not specified)
+      default:
+        cpu: "1000m"     # Default CPU limit (1 core)
+        memory: "2Gi"    # Default memory limit
+
+      # Default resource requests (if not specified)
+      defaultRequest:
+        cpu: "500m"      # Default CPU request
+        memory: "1Gi"    # Default memory request
+
+      # Minimum resources a container can request
+      min:
+        cpu: "250m"      # Minimum CPU (0.25 cores)
+        memory: "512Mi"  # Minimum memory
+
+      # Maximum resources a container can request
+      max:
+        cpu: "4000m"     # Maximum CPU (4 cores)
+        memory: "8Gi"    # Maximum memory
+
+      # Maximum ratio of limit to request
+      maxLimitRequestRatio:
+        cpu: "4"         # Limit can be max 4x request
+        memory: "2"      # Limit can be max 2x request
+
+    # Pod-level limits (sum of all containers)
+    - type: Pod
+      min:
+        cpu: "250m"
+        memory: "512Mi"
+
+      max:
+        cpu: "8000m"     # Max 8 cores per pod
+        memory: "16Gi"   # Max 16 GiB per pod
+
+    # PersistentVolumeClaim limits (for fuel data storage)
+    - type: PersistentVolumeClaim
+      min:
+        storage: "1Gi"   # Minimum PVC size
+
+      max:
+        storage: "500Gi" # Maximum PVC size (fuel data can be large)
+
+---
+# LimitRange for development environment (more permissive)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-011-fuelcraft-limitrange-dev
+  namespace: greenlang-dev
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    environment: development
+  annotations:
+    description: "Development LimitRange for GL-011 (more permissive for testing)"
+
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "1Gi"
+
+      defaultRequest:
+        cpu: "100m"
+        memory: "256Mi"
+
+      min:
+        cpu: "50m"
+        memory: "128Mi"
+
+      max:
+        cpu: "8000m"     # Higher limits for load testing
+        memory: "16Gi"
+
+      maxLimitRequestRatio:
+        cpu: "10"        # More flexible for testing
+        memory: "4"
+
+---
+# LimitRange for production environment (more restrictive)
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gl-011-fuelcraft-limitrange-prod
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    environment: production
+  annotations:
+    description: "Production LimitRange for GL-011 (enforces resource discipline)"
+
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: "1000m"
+        memory: "2Gi"
+
+      defaultRequest:
+        cpu: "500m"
+        memory: "1Gi"
+
+      min:
+        cpu: "250m"      # Enforce minimum resources
+        memory: "512Mi"
+
+      max:
+        cpu: "2000m"     # Stricter limits for stability
+        memory: "4Gi"
+
+      maxLimitRequestRatio:
+        cpu: "2"         # Tight ratio for predictability
+        memory: "2"
+
+    - type: Pod
+      max:
+        cpu: "4000m"
+        memory: "8Gi"
+
+---
+# LimitRange Best Practices for GL-011 FUELCRAFT:
+#
+# 1. **GL-011 Compliance Check**:
+#    GL-011 deployment.yaml specifies:
+#      - requests.cpu: 1000m (within min 250m, max 4000m) OK
+#      - requests.memory: 2Gi (within min 512Mi, max 8Gi) OK
+#      - limits.cpu: 2000m (within max 4000m) OK
+#      - limits.memory: 4Gi (within max 8Gi) OK
+#      - Ratio CPU: 2000m/1000m = 2 (within max ratio 4) OK
+#      - Ratio Memory: 4Gi/2Gi = 2 (within max ratio 2) OK
+#
+# 2. **QoS Class**:
+#    GL-011 is Burstable (requests < limits), appropriate for:
+#      - Variable workload (fuel optimization runs)
+#      - Occasional CPU bursts for complex calculations
+#      - Memory buffering for market data processing
+#
+# 3. **Fuel Data Processing Considerations**:
+#    - Large fuel datasets may require more memory
+#    - Market data streaming needs consistent CPU
+#    - Consider dedicated storage limits for fuel data
+#
+# 4. **Monitoring LimitRange**:
+#    kubectl describe limitrange gl-011-fuelcraft-limitrange -n greenlang
+#    kubectl get limitrange -n greenlang -o yaml
+#
+# 5. **Testing LimitRange**:
+#    # Try creating pod with resources outside limits
+#    kubectl run test-pod --image=nginx --requests=cpu=50m -n greenlang
+#    # Should be adjusted to min 250m CPU
+#
+# 6. **Environment-Specific Tuning**:
+#    - Development: Permissive (allow experimentation)
+#    - Staging: Moderate (match production resources)
+#    - Production: Restrictive (enforce discipline)

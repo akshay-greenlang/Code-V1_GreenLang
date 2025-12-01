@@ -1,0 +1,100 @@
+# GL-011 FUELCRAFT - PodDisruptionBudget
+# Ensures minimum availability during voluntary disruptions
+# (node drains, cluster upgrades, maintenance operations)
+
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-011-fuelcraft-pdb
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    version: "1.0.0"
+  annotations:
+    description: "PodDisruptionBudget for GL-011 FUELCRAFT fuel optimization agent"
+    documentation: "https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
+
+spec:
+  # Selector to match GL-011 pods
+  selector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      agent: "GL-011"
+
+  # Minimum available pods during disruption (as specified: min 2)
+  # With 3 replicas default, this ensures at least 2 are always running
+  minAvailable: 2
+
+  # Alternative: maxUnavailable - maximum pods that can be unavailable
+  # maxUnavailable: 1
+
+  # Unhealthy pod eviction policy (Kubernetes 1.26+)
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+---
+# PodDisruptionBudget for scaled operations
+# This PDB variant is used when GL-011 is scaled beyond default
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-011-fuelcraft-pdb-scaled
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    version: "1.0.0"
+    scenario: high-load
+  annotations:
+    description: "PDB for scaled GL-011 deployment (> 5 pods)"
+
+spec:
+  selector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      agent: "GL-011"
+
+  # When scaled to 6-10 pods, allow up to 2 disruptions
+  # This enables faster node drains during maintenance
+  maxUnavailable: 2
+
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+---
+# PodDisruptionBudget Documentation for GL-011 FUELCRAFT:
+#
+# 1. **Why PDB for Fuel Optimization**:
+#    - Fuel optimization requests are time-sensitive
+#    - Market prices change rapidly, continuous service is critical
+#    - ERP integration requires stable endpoints
+#
+# 2. **minAvailable vs maxUnavailable**:
+#    - minAvailable: 2 ensures fuel optimization always available
+#    - maxUnavailable: 1 would give same effect with 3 replicas
+#    - Choose based on HA requirements
+#
+# 3. **With default 3 replicas**:
+#    - minAvailable: 2 -> 66% availability (recommended)
+#    - During rolling update: 3 -> 4 -> 3 pods (zero downtime)
+#
+# 4. **With scaled 6-10 replicas**:
+#    - maxUnavailable: 2 -> faster maintenance operations
+#    - Still maintains 80%+ availability
+#
+# 5. **Maintenance Window Planning**:
+#    - Avoid maintenance during peak trading hours (09:00-17:00)
+#    - Best window: nights/weekends for non-critical updates
+#    - Use for planned node drains, cluster upgrades
+#
+# 6. **Monitoring PDB**:
+#    kubectl get pdb -n greenlang
+#    kubectl describe pdb gl-011-fuelcraft-pdb -n greenlang
+#
+# 7. **PDB and HPA Interaction**:
+#    - HPA can scale to 2 (min) but PDB requires 2 available
+#    - At minimum scale, no pods can be disrupted
+#    - Scale above minReplicas before maintenance
+#
+# 8. **Emergency Override** (use with extreme caution):
+#    kubectl drain <node> --ignore-daemonsets --delete-emptydir-data --disable-eviction
+#    # Bypasses PDB constraints - only for emergencies

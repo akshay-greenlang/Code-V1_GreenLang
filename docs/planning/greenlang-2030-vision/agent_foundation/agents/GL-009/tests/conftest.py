@@ -432,6 +432,9 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "determinism: marks tests for determinism verification"
     )
+    config.addinivalue_line(
+        "markers", "security: marks tests as security validation tests"
+    )
 
 
 def pytest_collection_modifyitems(config, items):
@@ -449,6 +452,10 @@ def pytest_collection_modifyitems(config, items):
         # Add determinism marker to determinism tests
         if "determinism" in str(item.fspath):
             item.add_marker(pytest.mark.determinism)
+
+        # Add security marker to security tests
+        if "security" in str(item.fspath):
+            item.add_marker(pytest.mark.security)
 
 
 # Helper functions for tests

@@ -1,0 +1,140 @@
+{
+  "$schema": "https://greenlang.ai/schemas/run.json",
+  "version": "1.0.0",
+  "agent": {
+    "id": "GL-011",
+    "name": "FuelManagementOrchestrator",
+    "version": "1.0.0",
+    "entrypoint": "fuel_management_orchestrator.py",
+    "class": "FuelManagementOrchestrator"
+  },
+  "runtime": {
+    "python_version": ">=3.11",
+    "async_enabled": true,
+    "multiprocessing": false,
+    "threading": {
+      "enabled": true,
+      "max_workers": 4,
+      "thread_safe_cache": true
+    }
+  },
+  "execution": {
+    "timeout_seconds": 30,
+    "max_retries": 3,
+    "retry_delay_seconds": 1,
+    "graceful_shutdown_seconds": 10
+  },
+  "ai": {
+    "provider": "anthropic",
+    "model": "claude-3-opus",
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 4096,
+    "deterministic": true
+  },
+  "cache": {
+    "enabled": true,
+    "type": "thread_safe",
+    "max_size": 1000,
+    "ttl_seconds": 120,
+    "lock_type": "RLock"
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "include_timestamp": true,
+    "include_provenance": true,
+    "handlers": [
+      {
+        "type": "console",
+        "level": "INFO"
+      },
+      {
+        "type": "file",
+        "level": "DEBUG",
+        "path": "logs/gl-011.log",
+        "max_size_mb": 100,
+        "backup_count": 5
+      }
+    ]
+  },
+  "metrics": {
+    "enabled": true,
+    "type": "prometheus",
+    "port": 9090,
+    "prefix": "gl_011",
+    "labels": {
+      "agent": "fuel_management",
+      "environment": "production"
+    }
+  },
+  "health": {
+    "enabled": true,
+    "port": 8080,
+    "path": "/health",
+    "readiness_path": "/ready",
+    "liveness_path": "/live"
+  },
+  "validation": {
+    "input_validation": true,
+    "output_validation": true,
+    "schema_enforcement": "strict",
+    "pydantic_version": "v2"
+  },
+  "provenance": {
+    "enabled": true,
+    "hash_algorithm": "sha256",
+    "include_inputs": true,
+    "include_outputs": true,
+    "include_tool_calls": true
+  },
+  "determinism": {
+    "enabled": true,
+    "verify_at_startup": true,
+    "seed_propagation": true,
+    "random_seed": 42,
+    "clock_type": "deterministic"
+  },
+  "integrations": {
+    "erp": {
+      "enabled": true,
+      "timeout_seconds": 10
+    },
+    "market_data": {
+      "enabled": true,
+      "update_interval_seconds": 300,
+      "timeout_seconds": 5
+    },
+    "storage": {
+      "enabled": true,
+      "polling_interval_seconds": 10
+    },
+    "emissions_monitoring": {
+      "enabled": true,
+      "link_agent": "GL-010"
+    }
+  },
+  "environment": {
+    "required_vars": [
+      "GREENLANG_API_KEY",
+      "ANTHROPIC_API_KEY"
+    ],
+    "optional_vars": [
+      "ERP_ENDPOINT",
+      "MARKET_DATA_API_KEY",
+      "STORAGE_ENDPOINT"
+    ]
+  },
+  "resources": {
+    "memory_mb": 1024,
+    "cpu_cores": 2,
+    "disk_gb": 5
+  },
+  "test": {
+    "unit_test_path": "tests/unit",
+    "integration_test_path": "tests/integration",
+    "coverage_threshold": 85,
+    "determinism_tests": true,
+    "golden_tests": true
+  }
+}

@@ -1,0 +1,235 @@
+# GL-011 FUELCRAFT Agent Configuration
+# GreenLang Agent Framework v1.0
+
+agent:
+  id: GL-011
+  name: FuelManagementOrchestrator
+  display_name: FUELCRAFT Multi-Fuel Optimizer
+  version: 1.0.0
+  type: optimizer
+  category: fuel-management
+  status: production
+
+# Zero-Hallucination Configuration
+zero_hallucination:
+  enabled: true
+  temperature: 0.0
+  seed: 42
+  deterministic: true
+  provenance_tracking: sha256
+  audit_trail: complete
+
+# AI Model Configuration
+ai:
+  provider: anthropic
+  model: claude-3-opus
+  temperature: 0.0
+  seed: 42
+  max_tokens: 4096
+  use_for:
+    - classification
+    - text_generation
+    - entity_resolution
+  never_use_for:
+    - numeric_calculations
+    - formula_evaluation
+    - emission_factors
+
+# Calculation Engine
+calculation_engine:
+  type: deterministic
+  precision: decimal_28
+  rounding: ROUND_HALF_UP
+  cache_enabled: true
+  cache_ttl_seconds: 120
+  thread_safe: true
+
+# Supported Fuel Types
+supported_fuels:
+  - id: coal
+    name: Coal
+    subtypes:
+      - bituminous
+      - anthracite
+      - lignite
+      - sub_bituminous
+  - id: natural_gas
+    name: Natural Gas
+    subtypes:
+      - pipeline
+      - lng
+      - cng
+  - id: biomass
+    name: Biomass
+    subtypes:
+      - wood_pellets
+      - wood_chips
+      - agricultural_residue
+      - energy_crops
+  - id: hydrogen
+    name: Hydrogen
+    subtypes:
+      - green
+      - blue
+      - grey
+  - id: fuel_oil
+    name: Fuel Oil
+    subtypes:
+      - heavy_fuel_oil
+      - light_fuel_oil
+  - id: diesel
+    name: Diesel
+    subtypes:
+      - ulsd
+      - biodiesel
+  - id: propane
+    name: Propane/LPG
+  - id: biogas
+    name: Biogas
+
+# Optimization Objectives
+optimization_objectives:
+  - minimize_cost
+  - minimize_emissions
+  - maximize_efficiency
+  - balanced
+  - security_of_supply
+  - renewable_priority
+
+# Standards Compliance
+compliance:
+  standards:
+    iso_6976:
+      description: Natural gas calorific value
+      version: '2016'
+    iso_17225:
+      description: Solid biofuels specifications
+      parts: [1, 2, 3, 4, 5, 6]
+    astm_d4809:
+      description: Heat of combustion liquid fuels
+    ghg_protocol:
+      description: Greenhouse Gas Protocol
+      scopes: [1, 2, 3]
+    ipcc:
+      description: IPCC Guidelines
+      version: '2006'
+
+# Tool Definitions
+tools:
+  - name: optimize_multi_fuel_selection
+    description: Optimize fuel mix for energy demand
+    deterministic: true
+    inputs:
+      - energy_demand_mw
+      - available_fuels
+      - market_prices
+      - emission_limits
+      - constraints
+    outputs:
+      - optimal_fuel_mix
+      - total_cost_usd
+      - total_emissions_kg
+      - provenance_hash
+
+  - name: optimize_fuel_cost
+    description: Minimize fuel cost
+    deterministic: true
+    inputs:
+      - energy_demand_mw
+      - available_fuels
+      - market_prices
+      - fuel_inventories
+    outputs:
+      - optimal_fuel_selection
+      - cost_usd
+      - savings_vs_alternatives
+
+  - name: optimize_fuel_blending
+    description: Optimize fuel blend ratios
+    deterministic: true
+    inputs:
+      - available_fuels
+      - constraints
+      - emission_limits
+    outputs:
+      - blend_ratios
+      - blend_properties
+      - quality_score
+
+  - name: minimize_carbon_footprint
+    description: Minimize carbon emissions
+    deterministic: true
+    inputs:
+      - energy_demand_mw
+      - available_fuels
+    outputs:
+      - total_co2e_kg
+      - carbon_intensity_kg_mwh
+      - reduction_potential
+
+  - name: calculate_emissions
+    description: Calculate emissions for fuel mix
+    deterministic: true
+    inputs:
+      - fuel_mix
+      - fuel_quantities
+    outputs:
+      - co2_kg_hr
+      - nox_kg_hr
+      - sox_kg_hr
+      - compliance_status
+
+  - name: optimize_procurement
+    description: Optimize fuel procurement
+    deterministic: true
+    inputs:
+      - fuel_inventories
+      - market_prices
+      - constraints
+    outputs:
+      - recommendations
+      - total_procurement_cost
+
+# Performance Targets
+performance:
+  optimization_time_ms: 500
+  throughput_per_minute: 60
+  cache_hit_rate: 0.80
+  memory_usage_mb: 1024
+
+# Monitoring
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    metrics_prefix: gl_011
+  health_checks:
+    enabled: true
+    interval_seconds: 30
+  logging:
+    level: INFO
+    format: json
+    include_provenance: true
+
+# Integration Endpoints
+integrations:
+  erp:
+    enabled: true
+    protocols:
+      - rest
+      - odata
+  market_data:
+    enabled: true
+    sources:
+      - ice
+      - nymex
+      - eia
+    update_interval_seconds: 300
+  storage:
+    enabled: true
+    protocols:
+      - modbus
+      - opcua
+  emissions_monitoring:
+    enabled: true
+    link_to: GL-010

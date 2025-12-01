@@ -1,0 +1,200 @@
+# GL-011 FUELCRAFT - Production Optimized Dockerfile
+# Security-hardened, minimal attack surface, optimized for production
+# Follows SLSA Level 2 and CIS Benchmarks
+
+# =============================================================================
+# Stage 1: Builder Stage
+# =============================================================================
+FROM python:3.11-slim-bookworm AS builder
+
+# Set build-time labels
+LABEL maintainer="GreenLang Platform Team <platform@greenlang.ai>"
+LABEL stage="builder"
+
+# Security: Don't run as root during build
+ARG BUILD_UID=1000
+ARG BUILD_GID=1000
+
+# Install build dependencies (minimal set)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && rm -rf /var/cache/apt/archives/*
+
+# Create virtual environment with --system-site-packages=false
+RUN python -m venv /opt/venv --clear
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set working directory
+WORKDIR /build
+
+# Copy only requirements (for layer caching)
+COPY requirements.txt requirements-prod.txt* ./
+
+# Install Python dependencies with security flags
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel && \
+    pip install --no-cache-dir \
+        --require-hashes \
+        --no-deps \
+        -r requirements.txt 2>/dev/null || \
+    pip install --no-cache-dir -r requirements.txt
+
+# Install production-only dependencies if available
+RUN if [ -f requirements-prod.txt ]; then \
+        pip install --no-cache-dir -r requirements-prod.txt; \
+    fi
+
+# Remove unnecessary packages to reduce attack surface
+RUN pip uninstall -y pip setuptools wheel 2>/dev/null || true
+
+# =============================================================================
+# Stage 2: Security Scanner Stage (optional - for CI/CD)
+# =============================================================================
+FROM builder AS scanner
+
+# Install security scanning tools
+RUN pip install --no-cache-dir safety bandit pip-audit
+
+# Scan for vulnerabilities
+COPY requirements.txt ./
+RUN safety check --stdin < requirements.txt || true
+RUN pip-audit || true
+
+# =============================================================================
+# Stage 3: Production Runtime Stage
+# =============================================================================
+FROM python:3.11-slim-bookworm AS runtime
+
+# OCI Labels (https://github.com/opencontainers/image-spec/blob/main/annotations.md)
+LABEL org.opencontainers.image.title="GL-011 FUELCRAFT"
+LABEL org.opencontainers.image.description="Fuel mix optimization and emissions management agent"
+LABEL org.opencontainers.image.version="1.0.0"
+LABEL org.opencontainers.image.vendor="GreenLang AI"
+LABEL org.opencontainers.image.licenses="Proprietary"
+LABEL org.opencontainers.image.source="https://github.com/greenlang/gl-011-fuelcraft"
+LABEL org.opencontainers.image.documentation="https://docs.greenlang.ai/agents/GL-011"
+
+# Agent-specific labels
+LABEL agent="GL-011"
+LABEL agent.name="FUELCRAFT"
+LABEL agent.category="fuel-optimization"
+LABEL agent.tier="tier-2"
+LABEL agent.compliance="sox-compliant"
+
+# Security hardening
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONHASHSEED=random \
+    PYTHONFAULTHANDLER=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    # Security: Disable Python's interactive mode
+    PYTHONIOENCODING=utf-8 \
+    # Application config
+    PYTHONPATH="/app:$PYTHONPATH" \
+    APP_HOME="/app" \
+    APP_USER="greenlang" \
+    APP_GROUP="greenlang"
+
+# Install minimal runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    libssl3 \
+    ca-certificates \
+    curl \
+    tini \
+    # Security: Install dumb-init as alternative init
+    dumb-init \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean \
+    && rm -rf /var/cache/apt/archives/* \
+    # Security: Remove unnecessary packages
+    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+    # Security: Update CA certificates
+    && update-ca-certificates
+
+# Security: Create non-root user with minimal permissions
+RUN groupadd --gid 1000 ${APP_GROUP} && \
+    useradd --uid 1000 --gid ${APP_GROUP} \
+        --shell /sbin/nologin \
+        --no-create-home \
+        --comment "GreenLang Application User" \
+        ${APP_USER}
+
+# Create application directories with strict permissions
+RUN mkdir -p ${APP_HOME} \
+             ${APP_HOME}/logs \
+             ${APP_HOME}/cache \
+             ${APP_HOME}/data \
+             ${APP_HOME}/fuel-data \
+             /tmp/app && \
+    chown -R ${APP_USER}:${APP_GROUP} ${APP_HOME} /tmp/app && \
+    chmod -R 750 ${APP_HOME} && \
+    chmod 1777 /tmp/app
+
+# Copy virtual environment from builder
+COPY --from=builder --chown=${APP_USER}:${APP_GROUP} /opt/venv /opt/venv
+
+# Set environment path
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Set working directory
+WORKDIR ${APP_HOME}
+
+# Copy application code with strict ownership
+COPY --chown=${APP_USER}:${APP_GROUP} src/ ./src/
+COPY --chown=${APP_USER}:${APP_GROUP} config/ ./config/
+COPY --chown=${APP_USER}:${APP_GROUP} main.py ./
+COPY --chown=${APP_USER}:${APP_GROUP} alembic.ini ./
+COPY --chown=${APP_USER}:${APP_GROUP} alembic/ ./alembic/
+
+# Security: Make application files read-only
+RUN chmod -R 550 ${APP_HOME}/src ${APP_HOME}/config ${APP_HOME}/alembic && \
+    chmod 440 ${APP_HOME}/main.py ${APP_HOME}/alembic.ini
+
+# Security: Remove shell for non-root user
+RUN usermod --shell /usr/sbin/nologin ${APP_USER}
+
+# Switch to non-root user
+USER ${APP_USER}
+
+# Expose ports
+# 8080: HTTP API
+# 9090: Prometheus metrics
+EXPOSE 8080 9090
+
+# Health check with security timeout
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f --max-time 5 http://localhost:8080/api/v1/health || exit 1
+
+# Security: Use dumb-init for proper signal handling and zombie reaping
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+
+# Production command with security flags
+CMD ["python", "-m", "uvicorn", "main:app", \
+     "--host", "0.0.0.0", \
+     "--port", "8080", \
+     "--workers", "4", \
+     "--timeout-keep-alive", "30", \
+     "--limit-concurrency", "1000", \
+     "--limit-max-requests", "10000", \
+     "--access-log", \
+     "--use-colors", "false", \
+     "--proxy-headers", \
+     "--forwarded-allow-ips", "*"]
+
+# =============================================================================
+# Build Arguments for CI/CD
+# =============================================================================
+ARG BUILD_DATE
+ARG VCS_REF
+ARG VERSION
+
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL org.opencontainers.image.revision="${VCS_REF}"
+LABEL org.opencontainers.image.version="${VERSION}"

@@ -1,0 +1,155 @@
+# Kustomize Overlay - Staging Environment
+# Production-like configuration for pre-release testing
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration
+resources:
+  - ../../base
+
+# Namespace override
+namespace: greenlang-staging
+
+# Name prefix for resources
+namePrefix: staging-
+
+# Common labels for staging environment
+commonLabels:
+  environment: staging
+  tier: staging
+
+# Common annotations
+commonAnnotations:
+  environment: "staging"
+  cost-center: "engineering-staging"
+  purpose: "pre-production-testing"
+
+# ConfigMap overrides
+configMapGenerator:
+  - name: gl-011-config
+    behavior: merge
+    literals:
+      - environment=staging
+      - log_level=INFO
+      - logging_format=json
+      - optimization_timeout=450
+      - feature_market_integration=true
+      - feature_carbon_trading=true
+      - database_echo=false
+      - metrics_enabled=true
+      - enable_emissions_tracking=true
+      - enable_cost_optimization=true
+
+# Image tag override (staging release candidates)
+images:
+  - name: gcr.io/greenlang/gl-011-fuelcraft
+    newTag: staging-1.0.0-rc.1
+
+# Replica count override (2 replicas for HA testing)
+replicas:
+  - name: gl-011-fuelcraft
+    count: 2
+
+# Patches for staging-specific changes
+patches:
+  # Patch deployment for staging environment
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-011-fuelcraft
+        annotations:
+          deployment-type: "staging"
+          auto-deploy: "true"
+      spec:
+        template:
+          spec:
+            containers:
+            - name: gl-011-fuelcraft
+              resources:
+                requests:
+                  cpu: "500m"
+                  memory: "1Gi"
+                limits:
+                  cpu: "1500m"
+                  memory: "3Gi"
+              env:
+              - name: GREENLANG_ENV
+                value: "staging"
+              - name: ENABLE_PROFILING
+                value: "true"
+              - name: SENTRY_ENVIRONMENT
+                value: "staging"
+
+  # Patch HPA for staging
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: gl-011-fuelcraft-hpa
+      spec:
+        minReplicas: 2
+        maxReplicas: 5
+        metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 70
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 80
+
+  # Patch Ingress for staging domain
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: gl-011-fuelcraft-ingress
+        annotations:
+          cert-manager.io/cluster-issuer: "letsencrypt-staging"
+          nginx.ingress.kubernetes.io/limit-rps: "50"
+      spec:
+        tls:
+        - hosts:
+          - staging-fuelcraft.greenlang.io
+          secretName: gl-011-tls-staging
+        rules:
+        - host: staging-fuelcraft.greenlang.io
+          http:
+            paths:
+            - path: /api/v1
+              pathType: Prefix
+              backend:
+                service:
+                  name: gl-011-fuelcraft
+                  port:
+                    number: 8080
+
+  # Patch PDB for staging
+  - patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: gl-011-fuelcraft-pdb
+      spec:
+        minAvailable: 1
+
+  # Patch ResourceQuota for staging
+  - patch: |-
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: gl-011-fuelcraft-quota
+      spec:
+        hard:
+          requests.cpu: "8"
+          limits.cpu: "16"
+          requests.memory: "16Gi"
+          limits.memory: "32Gi"
+          pods: "10"

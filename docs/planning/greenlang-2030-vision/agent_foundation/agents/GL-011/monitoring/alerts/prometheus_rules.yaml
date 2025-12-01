@@ -1,0 +1,919 @@
+# GL-011 FUELCRAFT - Prometheus Alert Rules
+#
+# This file contains 55+ alert rules for comprehensive monitoring of the FUELCRAFT
+# intelligent fuel procurement and optimization agent.
+#
+# Severity Levels:
+# - CRITICAL: Immediate response required, service impact
+# - HIGH: Urgent attention needed, potential service degradation
+# - MEDIUM: Investigation required, no immediate impact
+# - LOW: Informational, routine monitoring
+
+groups:
+  #############################################################################
+  # CRITICAL SEVERITY ALERTS (15 rules)
+  # These require immediate attention and may indicate service outage
+  #############################################################################
+  - name: fuelcraft_critical
+    interval: 30s
+    rules:
+      - alert: AgentDown
+        expr: up{job="fuelcraft"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: agent
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#agent-down
+        annotations:
+          summary: "GL-011 FUELCRAFT agent is down"
+          description: "FUELCRAFT agent {{ $labels.instance }} has been down for 5 minutes. All fuel optimization operations are halted."
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#agent-down"
+          action: "1. Check pod status with kubectl get pods. 2. Check logs. 3. Check resource constraints. 4. Escalate to on-call if unresolved in 10 minutes"
+          impact: "No fuel procurement optimization available. Manual intervention required for fuel orders."
+
+      - alert: HighErrorRate
+        expr: (rate(fuelcraft_errors_total[10m]) / rate(fuelcraft_requests_total[10m])) > 0.05
+        for: 10m
+        labels:
+          severity: critical
+          component: optimization
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#high-error-rate
+        annotations:
+          summary: "High error rate detected in FUELCRAFT"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%) over the last 10 minutes on instance {{ $labels.instance }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#high-error-rate"
+          action: "1. Check error logs. 2. Identify error patterns. 3. Check dependencies. 4. Consider rollback if recent deployment"
+          impact: "High failure rate may result in incorrect optimization decisions and financial losses."
+
+      - alert: OptimizationFailure
+        expr: increase(fuelcraft_optimization_failures_total[15m]) >= 3
+        for: 5m
+        labels:
+          severity: critical
+          component: optimizer
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#optimization-failure
+        annotations:
+          summary: "Multiple optimization failures detected"
+          description: "Optimization failed {{ $value }} times in the last 15 minutes on instance {{ $labels.instance }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#optimization-failure"
+          action: "1. Check solver logs. 2. Verify input data quality. 3. Check constraint feasibility. 4. Consider fallback to heuristic mode"
+          impact: "Unable to generate optimal fuel procurement plans. Risk of suboptimal purchasing decisions."
+
+      - alert: FuelShortage
+        expr: fuelcraft_inventory_hours_remaining < 24
+        for: 5m
+        labels:
+          severity: critical
+          component: inventory
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#fuel-shortage
+        annotations:
+          summary: "Critical fuel shortage detected"
+          description: "Fuel inventory for {{ $labels.fuel_type }} is only {{ $value }} hours remaining (threshold: 24 hours)"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#fuel-shortage"
+          action: "1. Trigger emergency procurement. 2. Notify operations team. 3. Activate backup suppliers. 4. Consider temporary consumption reduction"
+          impact: "Risk of fuel stockout within 24 hours. Production may be impacted."
+
+      - alert: ContractBreach
+        expr: fuelcraft_contract_utilization_ratio > 1.0
+        for: 2m
+        labels:
+          severity: critical
+          component: contracts
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#contract-breach
+        annotations:
+          summary: "Fuel contract limit exceeded"
+          description: "Contract {{ $labels.contract_id }} has been exceeded. Utilization: {{ $value | humanizePercentage }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#contract-breach"
+          action: "1. Halt automated procurement on this contract. 2. Notify legal/procurement. 3. Switch to alternative suppliers. 4. Document overage"
+          impact: "Contract breach may result in penalties and legal consequences."
+
+      - alert: CriticalIntegrationDown
+        expr: fuelcraft_integration_up{integration=~"erp|market_data"} == 0
+        for: 5m
+        labels:
+          severity: critical
+          component: integration
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#integration-down
+        annotations:
+          summary: "Critical integration {{ $labels.integration }} is down"
+          description: "Integration {{ $labels.integration }} has been unavailable for 5 minutes"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#integration-down"
+          action: "1. Check integration endpoint health. 2. Verify credentials. 3. Check network connectivity. 4. Enable cached data mode if available"
+          impact: "Unable to access critical data for optimization. May result in stale or incorrect decisions."
+
+      - alert: SecurityViolation
+        expr: increase(fuelcraft_security_violations_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: security
+          team: security
+          agent: GL-011
+          runbook: runbooks/SECURITY.md#violation-detected
+        annotations:
+          summary: "Security violation detected in FUELCRAFT"
+          description: "{{ $value }} security violation(s) detected: {{ $labels.violation_type }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/security#violation-detected"
+          action: "1. Identify violation source. 2. Lock down affected resources. 3. Notify security team. 4. Preserve logs for investigation"
+          impact: "Potential unauthorized access or data breach. Immediate security response required."
+
+      - alert: DataCorruption
+        expr: increase(fuelcraft_provenance_hash_mismatches_total[10m]) > 0
+        for: 2m
+        labels:
+          severity: critical
+          component: provenance
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#data-corruption
+        annotations:
+          summary: "Data corruption detected in provenance chain"
+          description: "{{ $value }} provenance hash mismatches detected in the last 10 minutes"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#data-corruption"
+          action: "1. Stop affected calculations. 2. Identify corrupted data. 3. Restore from backup. 4. Verify data integrity"
+          impact: "Data integrity compromised. Calculations may be invalid. Audit trail broken."
+
+      - alert: EmissionsViolation
+        expr: fuelcraft_emissions_current_kg_co2 > fuelcraft_emissions_regulatory_limit_kg_co2
+        for: 5m
+        labels:
+          severity: critical
+          component: emissions
+          team: sustainability
+          agent: GL-011
+          runbook: runbooks/COMPLIANCE.md#emissions-violation
+        annotations:
+          summary: "Emissions exceed regulatory limit"
+          description: "Current emissions: {{ $value }} kg CO2 (limit: {{ $labels.limit }} kg CO2)"
+          runbook_url: "https://docs.greenlang.io/runbooks/compliance#emissions-violation"
+          action: "1. Trigger emergency emissions reduction protocol. 2. Switch to low-carbon fuels. 3. Notify regulatory compliance team. 4. Document incident"
+          impact: "Regulatory violation. Potential fines and legal consequences."
+
+      - alert: FuelQualityFailure
+        expr: fuelcraft_fuel_quality_score < fuelcraft_fuel_quality_minimum_spec
+        for: 5m
+        labels:
+          severity: critical
+          component: quality
+          team: operations
+          agent: GL-011
+          runbook: runbooks/QUALITY.md#quality-failure
+        annotations:
+          summary: "Fuel quality below specification"
+          description: "Fuel {{ $labels.fuel_type }} quality score: {{ $value }} (minimum: {{ $labels.minimum_spec }})"
+          runbook_url: "https://docs.greenlang.io/runbooks/quality#quality-failure"
+          action: "1. Quarantine affected fuel batch. 2. Notify supplier. 3. Arrange quality testing. 4. Activate replacement procurement"
+          impact: "Substandard fuel may damage equipment or violate specifications."
+
+      - alert: DeadlockDetected
+        expr: increase(fuelcraft_deadlocks_detected_total[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+          component: system
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#deadlock
+        annotations:
+          summary: "Thread deadlock detected"
+          description: "{{ $value }} deadlock(s) detected in the last 5 minutes"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#deadlock"
+          action: "1. Capture thread dump. 2. Identify deadlocked threads. 3. Restart affected service. 4. Review code for lock ordering issues"
+          impact: "Service may be unresponsive. Operations halted until deadlock resolved."
+
+      - alert: MemoryExhaustion
+        expr: (fuelcraft_memory_used_bytes / fuelcraft_memory_total_bytes) > 0.95
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#memory-exhaustion
+        annotations:
+          summary: "Memory exhaustion on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} (threshold: 95%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#memory-exhaustion"
+          action: "1. Check for memory leaks. 2. Analyze heap dump. 3. Increase memory allocation. 4. Consider service restart"
+          impact: "Risk of OOM kill. Service may crash."
+
+      - alert: DiskFull
+        expr: (fuelcraft_disk_used_bytes / fuelcraft_disk_total_bytes) > 0.95
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#disk-full
+        annotations:
+          summary: "Disk space critical on {{ $labels.instance }}"
+          description: "Disk usage is {{ $value | humanizePercentage }} (threshold: 95%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#disk-full"
+          action: "1. Clean up old logs. 2. Archive historical data. 3. Expand disk volume. 4. Enable log rotation"
+          impact: "Cannot write data. Service may fail or lose data."
+
+      - alert: DatabaseConnectionLoss
+        expr: fuelcraft_database_connection_pool_active >= fuelcraft_database_connection_pool_max
+        for: 5m
+        labels:
+          severity: critical
+          component: database
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#db-connection-exhaustion
+        annotations:
+          summary: "Database connection pool exhausted"
+          description: "All {{ $value }} database connections are in use"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#db-connection-exhaustion"
+          action: "1. Check for connection leaks. 2. Identify long-running queries. 3. Increase pool size. 4. Restart service if needed"
+          impact: "Cannot execute database queries. Service requests will fail."
+
+      - alert: CertificateExpiringSoon
+        expr: (fuelcraft_tls_certificate_expiry_timestamp - time()) < (7 * 24 * 3600)
+        for: 1h
+        labels:
+          severity: critical
+          component: security
+          team: security
+          agent: GL-011
+          runbook: runbooks/SECURITY.md#certificate-expiry
+        annotations:
+          summary: "TLS certificate expiring in less than 7 days"
+          description: "Certificate {{ $labels.cert_name }} expires in {{ $value | humanizeDuration }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/security#certificate-expiry"
+          action: "1. Renew certificate immediately. 2. Update certificate in secrets manager. 3. Deploy updated certificate. 4. Verify renewal"
+          impact: "Certificate expiry will cause service outage and integration failures."
+
+  #############################################################################
+  # HIGH SEVERITY ALERTS (20 rules)
+  # These require urgent attention and may lead to service degradation
+  #############################################################################
+  - name: fuelcraft_high
+    interval: 60s
+    rules:
+      - alert: HighLatency
+        expr: histogram_quantile(0.99, rate(fuelcraft_request_duration_seconds_bucket[5m])) > 5
+        for: 10m
+        labels:
+          severity: high
+          component: performance
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/PERFORMANCE.md#high-latency
+        annotations:
+          summary: "High P99 latency detected"
+          description: "P99 latency is {{ $value }}s (threshold: 5s) for {{ $labels.endpoint }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/performance#high-latency"
+          action: "1. Check slow query logs. 2. Analyze trace spans. 3. Review recent changes. 4. Scale if resource-constrained"
+          impact: "Degraded user experience. Optimization requests taking too long."
+
+      - alert: LowCacheHitRate
+        expr: (rate(fuelcraft_cache_hits_total[10m]) / (rate(fuelcraft_cache_hits_total[10m]) + rate(fuelcraft_cache_misses_total[10m]))) < 0.5
+        for: 15m
+        labels:
+          severity: high
+          component: cache
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/PERFORMANCE.md#low-cache-hit-rate
+        annotations:
+          summary: "Cache hit rate is low"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} (threshold: 50%) for {{ $labels.cache_name }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/performance#low-cache-hit-rate"
+          action: "1. Review cache configuration. 2. Increase cache size. 3. Optimize cache key strategy. 4. Check cache TTL settings"
+          impact: "Increased database load and slower response times."
+
+      - alert: OptimizationSlow
+        expr: histogram_quantile(0.95, rate(fuelcraft_optimization_duration_seconds_bucket[10m])) > 60
+        for: 10m
+        labels:
+          severity: high
+          component: optimizer
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/PERFORMANCE.md#slow-optimization
+        annotations:
+          summary: "Optimization taking too long"
+          description: "P95 optimization time is {{ $value }}s (threshold: 60s)"
+          runbook_url: "https://docs.greenlang.io/runbooks/performance#slow-optimization"
+          action: "1. Check problem size/complexity. 2. Tune solver parameters. 3. Consider warm-start strategies. 4. Review constraint formulation"
+          impact: "Delayed optimization results may miss market opportunities."
+
+      - alert: IntegrationLatency
+        expr: histogram_quantile(0.95, rate(fuelcraft_integration_request_duration_seconds_bucket[10m])) > 10
+        for: 10m
+        labels:
+          severity: high
+          component: integration
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/INTEGRATION.md#high-latency
+        annotations:
+          summary: "Integration {{ $labels.integration }} has high latency"
+          description: "P95 latency is {{ $value }}s (threshold: 10s)"
+          runbook_url: "https://docs.greenlang.io/runbooks/integration#high-latency"
+          action: "1. Check integration endpoint health. 2. Review network path. 3. Contact integration provider. 4. Enable timeout/retry logic"
+          impact: "Slow integration responses delay optimization and decision-making."
+
+      - alert: HighCPU
+        expr: rate(fuelcraft_cpu_usage_seconds_total[5m]) > 0.8
+        for: 15m
+        labels:
+          severity: high
+          component: system
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#high-cpu
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value | humanizePercentage }} (threshold: 80%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#high-cpu"
+          action: "1. Profile CPU usage. 2. Identify hot code paths. 3. Optimize algorithms. 4. Scale horizontally"
+          impact: "Performance degradation. May affect response times."
+
+      - alert: HighMemory
+        expr: (fuelcraft_memory_used_bytes / fuelcraft_memory_total_bytes) > 0.8
+        for: 15m
+        labels:
+          severity: high
+          component: system
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#high-memory
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }} (threshold: 80%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#high-memory"
+          action: "1. Analyze memory allocation. 2. Check for leaks. 3. Optimize data structures. 4. Increase memory allocation"
+          impact: "Risk of OOM. May lead to service restart."
+
+      - alert: LowInventory
+        expr: fuelcraft_inventory_hours_remaining < 48
+        for: 10m
+        labels:
+          severity: high
+          component: inventory
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/OPERATIONS.md#low-inventory
+        annotations:
+          summary: "Low fuel inventory warning"
+          description: "Fuel inventory for {{ $labels.fuel_type }} is {{ $value }} hours remaining (threshold: 48 hours)"
+          runbook_url: "https://docs.greenlang.io/runbooks/operations#low-inventory"
+          action: "1. Trigger procurement workflow. 2. Notify procurement team. 3. Review supplier lead times. 4. Monitor consumption rate"
+          impact: "Risk of stockout within 48 hours if procurement not initiated."
+
+      - alert: PriceSpike
+        expr: (fuelcraft_fuel_price_current - fuelcraft_fuel_price_24h_ago) / fuelcraft_fuel_price_24h_ago > 0.2
+        for: 5m
+        labels:
+          severity: high
+          component: pricing
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/MARKET.md#price-spike
+        annotations:
+          summary: "Significant fuel price increase detected"
+          description: "{{ $labels.fuel_type }} price increased {{ $value | humanizePercentage }} in 24 hours (threshold: 20%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/market#price-spike"
+          action: "1. Verify price data accuracy. 2. Review procurement strategy. 3. Consider hedging options. 4. Notify finance team"
+          impact: "Budget impact. May require procurement strategy adjustment."
+
+      - alert: SupplierUnreliable
+        expr: (fuelcraft_supplier_delivery_failures_total / fuelcraft_supplier_delivery_attempts_total) > 0.1
+        for: 1h
+        labels:
+          severity: high
+          component: suppliers
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/SUPPLIERS.md#unreliable-supplier
+        annotations:
+          summary: "Supplier {{ $labels.supplier_id }} has high failure rate"
+          description: "Delivery failure rate is {{ $value | humanizePercentage }} over 7 days (threshold: 10%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/suppliers#unreliable-supplier"
+          action: "1. Contact supplier. 2. Review supplier performance. 3. Diversify to alternative suppliers. 4. Update supplier risk score"
+          impact: "Supply chain risk. May lead to inventory shortages."
+
+      - alert: CostOverrun
+        expr: (fuelcraft_actual_cost_total - fuelcraft_budgeted_cost_total) / fuelcraft_budgeted_cost_total > 0.1
+        for: 1h
+        labels:
+          severity: high
+          component: finance
+          team: finance
+          agent: GL-011
+          runbook: runbooks/FINANCE.md#cost-overrun
+        annotations:
+          summary: "Fuel costs exceed budget"
+          description: "Actual costs are {{ $value | humanizePercentage }} over budget"
+          runbook_url: "https://docs.greenlang.io/runbooks/finance#cost-overrun"
+          action: "1. Analyze cost drivers. 2. Review procurement decisions. 3. Adjust optimization parameters. 4. Notify finance team"
+          impact: "Budget variance. May require spending controls."
+
+      - alert: CarbonTargetMiss
+        expr: fuelcraft_carbon_emissions_projected_total > fuelcraft_carbon_emissions_target_total
+        for: 1h
+        labels:
+          severity: high
+          component: sustainability
+          team: sustainability
+          agent: GL-011
+          runbook: runbooks/SUSTAINABILITY.md#target-miss
+        annotations:
+          summary: "On track to miss carbon reduction target"
+          description: "Projected emissions: {{ $value }} kg CO2 (target: {{ $labels.target }} kg CO2)"
+          runbook_url: "https://docs.greenlang.io/runbooks/sustainability#target-miss"
+          action: "1. Increase low-carbon fuel allocation. 2. Review emissions reduction strategies. 3. Adjust optimization weights. 4. Report to sustainability team"
+          impact: "Environmental goals at risk. May affect sustainability reporting."
+
+      - alert: ApiRateLimitApproaching
+        expr: (fuelcraft_api_requests_total / fuelcraft_api_rate_limit_total) > 0.8
+        for: 5m
+        labels:
+          severity: high
+          component: api
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/API.md#rate-limit-approaching
+        annotations:
+          summary: "API rate limit approaching for {{ $labels.api_name }}"
+          description: "API usage is {{ $value | humanizePercentage }} of limit (threshold: 80%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/api#rate-limit-approaching"
+          action: "1. Implement request throttling. 2. Optimize API call frequency. 3. Cache responses. 4. Request limit increase"
+          impact: "Risk of API throttling. May disrupt operations."
+
+      - alert: QueueBacklog
+        expr: fuelcraft_queue_depth > 100
+        for: 5m
+        labels:
+          severity: high
+          component: queue
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#queue-backlog
+        annotations:
+          summary: "Queue {{ $labels.queue_name }} has significant backlog"
+          description: "Queue depth is {{ $value }} messages (threshold: 100)"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#queue-backlog"
+          action: "1. Increase consumer capacity. 2. Check for stuck messages. 3. Review message processing rate. 4. Consider parallel processing"
+          impact: "Delayed processing. Backlog may continue to grow."
+
+      - alert: StaleData
+        expr: time() - fuelcraft_market_data_last_update_timestamp > 900
+        for: 5m
+        labels:
+          severity: high
+          component: data
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/DATA.md#stale-data
+        annotations:
+          summary: "Market data is stale"
+          description: "Market data for {{ $labels.data_source }} last updated {{ $value | humanizeDuration }} ago (threshold: 15 minutes)"
+          runbook_url: "https://docs.greenlang.io/runbooks/data#stale-data"
+          action: "1. Check data feed status. 2. Verify network connectivity. 3. Review ingestion logs. 4. Use cached data with caution"
+          impact: "Optimization using outdated data. Decisions may be suboptimal."
+
+      - alert: ContractUtilizationHigh
+        expr: fuelcraft_contract_utilization_ratio > 0.9
+        for: 1h
+        labels:
+          severity: high
+          component: contracts
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/CONTRACTS.md#utilization-high
+        annotations:
+          summary: "Contract {{ $labels.contract_id }} nearing capacity"
+          description: "Contract utilization is {{ $value | humanizePercentage }} (threshold: 90%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/contracts#utilization-high"
+          action: "1. Review remaining contract volume. 2. Diversify to other suppliers. 3. Negotiate contract extension. 4. Plan alternative procurement"
+          impact: "Risk of contract exhaustion. May need alternative suppliers."
+
+      - alert: ComplianceReportLate
+        expr: time() - fuelcraft_compliance_report_due_timestamp > 0
+        for: 1h
+        labels:
+          severity: high
+          component: compliance
+          team: compliance
+          agent: GL-011
+          runbook: runbooks/COMPLIANCE.md#report-late
+        annotations:
+          summary: "Compliance report {{ $labels.report_type }} is overdue"
+          description: "Report was due {{ $value | humanizeDuration }} ago"
+          runbook_url: "https://docs.greenlang.io/runbooks/compliance#report-late"
+          action: "1. Generate report immediately. 2. Verify data completeness. 3. Submit to regulatory body. 4. Document delay reason"
+          impact: "Regulatory compliance risk. Potential penalties."
+
+      - alert: CalculatorError
+        expr: increase(fuelcraft_calculator_errors_total[10m]) > 5
+        for: 5m
+        labels:
+          severity: high
+          component: calculator
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#calculator-errors
+        annotations:
+          summary: "Multiple calculator errors detected"
+          description: "{{ $value }} calculator errors in last 10 minutes for {{ $labels.calculator_type }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#calculator-errors"
+          action: "1. Review error logs. 2. Check input data validity. 3. Verify calculation formulas. 4. Consider fallback calculations"
+          impact: "Incorrect calculations may lead to wrong optimization decisions."
+
+      - alert: ProvenanceGap
+        expr: (fuelcraft_calculations_without_provenance_total / fuelcraft_calculations_total) > 0.01
+        for: 15m
+        labels:
+          severity: high
+          component: provenance
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/PROVENANCE.md#provenance-gap
+        annotations:
+          summary: "Missing provenance for calculations"
+          description: "{{ $value | humanizePercentage }} of calculations lack provenance (threshold: 1%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/provenance#provenance-gap"
+          action: "1. Identify missing provenance. 2. Regenerate provenance records. 3. Fix provenance generation logic. 4. Verify audit trail"
+          impact: "Audit trail incomplete. Compliance and traceability compromised."
+
+      - alert: ThreadPoolSaturated
+        expr: (fuelcraft_threadpool_active_threads / fuelcraft_threadpool_max_threads) > 0.9
+        for: 10m
+        labels:
+          severity: high
+          component: system
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#threadpool-saturated
+        annotations:
+          summary: "Thread pool {{ $labels.pool_name }} is saturated"
+          description: "Thread pool utilization is {{ $value | humanizePercentage }} (threshold: 90%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#threadpool-saturated"
+          action: "1. Increase thread pool size. 2. Optimize task execution time. 3. Implement task queuing. 4. Review concurrent load"
+          impact: "Thread starvation. New tasks will be queued or rejected."
+
+      - alert: DependencyVulnerability
+        expr: fuelcraft_dependency_vulnerabilities_total > 0
+        for: 1h
+        labels:
+          severity: high
+          component: security
+          team: security
+          agent: GL-011
+          runbook: runbooks/SECURITY.md#vulnerability-detected
+        annotations:
+          summary: "Security vulnerabilities detected in dependencies"
+          description: "{{ $value }} CVE(s) detected in project dependencies"
+          runbook_url: "https://docs.greenlang.io/runbooks/security#vulnerability-detected"
+          action: "1. Review CVE details. 2. Update vulnerable dependencies. 3. Assess exploit risk. 4. Deploy patched version"
+          impact: "Security risk. Vulnerable dependencies may be exploited."
+
+  #############################################################################
+  # MEDIUM SEVERITY ALERTS (15 rules)
+  # These require investigation but do not have immediate service impact
+  #############################################################################
+  - name: fuelcraft_medium
+    interval: 120s
+    rules:
+      - alert: ModerateLatency
+        expr: histogram_quantile(0.95, rate(fuelcraft_request_duration_seconds_bucket[10m])) > 2
+        for: 15m
+        labels:
+          severity: medium
+          component: performance
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/PERFORMANCE.md#moderate-latency
+        annotations:
+          summary: "Moderate P95 latency detected"
+          description: "P95 latency is {{ $value }}s (threshold: 2s) for {{ $labels.endpoint }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/performance#moderate-latency"
+          action: "1. Monitor for degradation. 2. Review recent changes. 3. Check resource utilization. 4. Consider optimization"
+          impact: "Slight performance degradation. User experience may be affected."
+
+      - alert: IntegrationWarning
+        expr: (rate(fuelcraft_integration_errors_total[1h]) / rate(fuelcraft_integration_requests_total[1h])) > 0.01
+        for: 30m
+        labels:
+          severity: medium
+          component: integration
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/INTEGRATION.md#error-rate
+        annotations:
+          summary: "Integration {{ $labels.integration }} error rate elevated"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 1%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/integration#error-rate"
+          action: "1. Review error patterns. 2. Check integration logs. 3. Contact provider if persistent. 4. Implement retry logic"
+          impact: "Some integration calls failing. Fallback or retry may compensate."
+
+      - alert: InventoryReorderPoint
+        expr: fuelcraft_inventory_hours_remaining < 72
+        for: 15m
+        labels:
+          severity: medium
+          component: inventory
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/OPERATIONS.md#reorder-point
+        annotations:
+          summary: "Fuel inventory at reorder point"
+          description: "Fuel inventory for {{ $labels.fuel_type }} is {{ $value }} hours remaining (reorder point: 72 hours)"
+          runbook_url: "https://docs.greenlang.io/runbooks/operations#reorder-point"
+          action: "1. Initiate standard procurement. 2. Review supplier availability. 3. Schedule delivery. 4. Monitor consumption"
+          impact: "Normal reorder trigger. Routine procurement needed."
+
+      - alert: PriceVolatility
+        expr: stddev_over_time(fuelcraft_fuel_price_current[24h]) > (avg_over_time(fuelcraft_fuel_price_historical_stddev[30d]) * 1.5)
+        for: 1h
+        labels:
+          severity: medium
+          component: pricing
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/MARKET.md#price-volatility
+        annotations:
+          summary: "High price volatility for {{ $labels.fuel_type }}"
+          description: "Price volatility is {{ $value | humanizePercentage }} above historical average (threshold: 50%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/market#price-volatility"
+          action: "1. Monitor market conditions. 2. Review hedging strategy. 3. Consider fixed-price contracts. 4. Adjust procurement timing"
+          impact: "Increased price risk. Budget forecasting uncertainty."
+
+      - alert: OptimizationIterationsHigh
+        expr: fuelcraft_optimization_solver_iterations > 1000
+        for: 10m
+        labels:
+          severity: medium
+          component: optimizer
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/PERFORMANCE.md#solver-iterations
+        annotations:
+          summary: "Optimization requiring many solver iterations"
+          description: "Solver required {{ $value }} iterations (threshold: 1000)"
+          runbook_url: "https://docs.greenlang.io/runbooks/performance#solver-iterations"
+          action: "1. Review problem complexity. 2. Tune solver parameters. 3. Improve initial solution. 4. Consider problem decomposition"
+          impact: "Slower optimization. May indicate difficult problem or poor formulation."
+
+      - alert: CostSavingsBelowTarget
+        expr: (fuelcraft_cost_savings_actual / fuelcraft_cost_savings_target) < 0.8
+        for: 24h
+        labels:
+          severity: medium
+          component: optimization
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/OPTIMIZATION.md#savings-below-target
+        annotations:
+          summary: "Cost savings below target"
+          description: "Achieving {{ $value | humanizePercentage }} of savings target (threshold: 80%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/optimization#savings-below-target"
+          action: "1. Review optimization objectives. 2. Analyze missed opportunities. 3. Tune optimization parameters. 4. Validate input data quality"
+          impact: "Suboptimal performance. Not maximizing cost reduction potential."
+
+      - alert: FuelEfficiencyDrop
+        expr: ((fuelcraft_fuel_efficiency_baseline - fuelcraft_fuel_efficiency_current) / fuelcraft_fuel_efficiency_baseline) > 0.05
+        for: 6h
+        labels:
+          severity: medium
+          component: efficiency
+          team: operations
+          agent: GL-011
+          runbook: runbooks/OPERATIONS.md#efficiency-drop
+        annotations:
+          summary: "Fuel efficiency decreased"
+          description: "Efficiency dropped {{ $value | humanizePercentage }} vs baseline (threshold: 5%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/operations#efficiency-drop"
+          action: "1. Investigate consumption patterns. 2. Check fuel quality. 3. Review operational changes. 4. Analyze equipment performance"
+          impact: "Increased consumption. Higher costs and emissions."
+
+      - alert: ContractUtilizationLow
+        expr: fuelcraft_contract_utilization_ratio < 0.5
+        for: 7d
+        labels:
+          severity: medium
+          component: contracts
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/CONTRACTS.md#utilization-low
+        annotations:
+          summary: "Contract {{ $labels.contract_id }} underutilized"
+          description: "Contract utilization is {{ $value | humanizePercentage }} (threshold: 50%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/contracts#utilization-low"
+          action: "1. Review contract terms. 2. Increase allocation to this supplier. 3. Renegotiate contract. 4. Consider contract termination"
+          impact: "Wasted contract capacity. May incur minimum volume penalties."
+
+      - alert: SupplierDiversityLow
+        expr: max(fuelcraft_supplier_volume_percentage) > 0.7
+        for: 7d
+        labels:
+          severity: medium
+          component: suppliers
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/SUPPLIERS.md#diversity-low
+        annotations:
+          summary: "Low supplier diversity"
+          description: "Single supplier {{ $labels.supplier_id }} represents {{ $value | humanizePercentage }} of volume (threshold: 70%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/suppliers#diversity-low"
+          action: "1. Diversify supplier base. 2. Qualify alternative suppliers. 3. Adjust procurement allocations. 4. Mitigate concentration risk"
+          impact: "Supply chain risk. Dependence on single supplier."
+
+      - alert: CacheExpired
+        expr: increase(fuelcraft_cache_invalidations_total[1h]) > 10
+        for: 15m
+        labels:
+          severity: medium
+          component: cache
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/PERFORMANCE.md#cache-invalidation
+        annotations:
+          summary: "Frequent cache invalidations for {{ $labels.cache_name }}"
+          description: "Cache invalidated {{ $value }} times in last hour (threshold: 10)"
+          runbook_url: "https://docs.greenlang.io/runbooks/performance#cache-invalidation"
+          action: "1. Review cache invalidation logic. 2. Optimize TTL settings. 3. Check for data churn. 4. Consider cache warming"
+          impact: "Reduced cache effectiveness. Increased backend load."
+
+      - alert: ApiQuotaUsage
+        expr: (fuelcraft_api_requests_total / fuelcraft_api_rate_limit_total) > 0.6
+        for: 1h
+        labels:
+          severity: medium
+          component: api
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/API.md#quota-usage
+        annotations:
+          summary: "API quota usage elevated for {{ $labels.api_name }}"
+          description: "API usage is {{ $value | humanizePercentage }} of limit (threshold: 60%)"
+          runbook_url: "https://docs.greenlang.io/runbooks/api#quota-usage"
+          action: "1. Monitor usage trends. 2. Optimize API call patterns. 3. Implement caching. 4. Plan for quota increase"
+          impact: "Approaching rate limit. May need optimization or quota increase."
+
+      - alert: TestFailure
+        expr: fuelcraft_integration_test_success == 0
+        for: 15m
+        labels:
+          severity: medium
+          component: testing
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TESTING.md#test-failure
+        annotations:
+          summary: "Integration test {{ $labels.test_name }} failing"
+          description: "Test has been failing for 15 minutes"
+          runbook_url: "https://docs.greenlang.io/runbooks/testing#test-failure"
+          action: "1. Review test logs. 2. Check test environment. 3. Verify test data. 4. Fix failing test or update test"
+          impact: "Test coverage gap. May indicate regression or environment issue."
+
+      - alert: LogVolumeHigh
+        expr: rate(fuelcraft_log_lines_total[5m]) > 10000
+        for: 15m
+        labels:
+          severity: medium
+          component: logging
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/TROUBLESHOOTING.md#log-volume
+        annotations:
+          summary: "High log volume detected"
+          description: "Logging {{ $value }} lines/minute (threshold: 10,000)"
+          runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#log-volume"
+          action: "1. Check for log spam. 2. Reduce verbose logging. 3. Implement log sampling. 4. Review log levels"
+          impact: "Increased storage costs. Log analysis more difficult."
+
+      - alert: UnusualActivity
+        expr: abs(fuelcraft_request_rate - avg_over_time(fuelcraft_request_rate[7d])) > (2 * stddev_over_time(fuelcraft_request_rate[7d]))
+        for: 30m
+        labels:
+          severity: medium
+          component: security
+          team: security
+          agent: GL-011
+          runbook: runbooks/SECURITY.md#unusual-activity
+        annotations:
+          summary: "Unusual request pattern detected"
+          description: "Request rate deviates {{ $value }}% from historical baseline"
+          runbook_url: "https://docs.greenlang.io/runbooks/security#unusual-activity"
+          action: "1. Investigate traffic source. 2. Check for automated tools. 3. Review access patterns. 4. Consider rate limiting"
+          impact: "Potential anomaly. May indicate attack or system issue."
+
+      - alert: ConfigDrift
+        expr: increase(fuelcraft_config_changes_unauthorized_total[24h]) > 0
+        for: 15m
+        labels:
+          severity: medium
+          component: configuration
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/CONFIGURATION.md#drift-detected
+        annotations:
+          summary: "Unauthorized configuration change detected"
+          description: "{{ $value }} unauthorized config change(s) in last 24 hours"
+          runbook_url: "https://docs.greenlang.io/runbooks/configuration#drift-detected"
+          action: "1. Identify configuration changes. 2. Verify authorization. 3. Revert unauthorized changes. 4. Update change management process"
+          impact: "Configuration drift. May cause unexpected behavior."
+
+  #############################################################################
+  # LOW SEVERITY ALERTS (5 rules)
+  # Informational alerts for awareness and proactive maintenance
+  #############################################################################
+  - name: fuelcraft_low
+    interval: 300s
+    rules:
+      - alert: InfoLog
+        expr: increase(fuelcraft_info_events_total[1h]) > 100
+        for: 1h
+        labels:
+          severity: low
+          component: logging
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/MONITORING.md#info-log
+        annotations:
+          summary: "High volume of informational events"
+          description: "{{ $value }} informational events in last hour"
+          runbook_url: "https://docs.greenlang.io/runbooks/monitoring#info-log"
+          action: "1. Review informational logs for patterns. 2. No immediate action required."
+          impact: "Informational only. No service impact."
+
+      - alert: ScheduledMaintenanceReminder
+        expr: (fuelcraft_scheduled_maintenance_timestamp - time()) < (24 * 3600)
+        for: 1h
+        labels:
+          severity: low
+          component: maintenance
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/MAINTENANCE.md#scheduled-reminder
+        annotations:
+          summary: "Scheduled maintenance in less than 24 hours"
+          description: "Maintenance window scheduled in {{ $value | humanizeDuration }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/maintenance#scheduled-reminder"
+          action: "1. Review maintenance checklist. 2. Notify stakeholders. 3. Prepare rollback plan. 4. Verify backup procedures"
+          impact: "Planned maintenance upcoming. Preparation needed."
+
+      - alert: CertificateExpiringNext30Days
+        expr: (fuelcraft_tls_certificate_expiry_timestamp - time()) < (30 * 24 * 3600)
+        for: 24h
+        labels:
+          severity: low
+          component: security
+          team: security
+          agent: GL-011
+          runbook: runbooks/SECURITY.md#certificate-expiry-warning
+        annotations:
+          summary: "TLS certificate expiring in less than 30 days"
+          description: "Certificate {{ $labels.cert_name }} expires in {{ $value | humanizeDuration }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/security#certificate-expiry-warning"
+          action: "1. Plan certificate renewal. 2. Schedule deployment. 3. Update renewal calendar."
+          impact: "Advance notice. Certificate renewal needed soon."
+
+      - alert: DependencyUpdateAvailable
+        expr: fuelcraft_dependency_updates_available_total > 0
+        for: 7d
+        labels:
+          severity: low
+          component: dependencies
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/MAINTENANCE.md#dependency-update
+        annotations:
+          summary: "Dependency updates available"
+          description: "{{ $value }} dependency update(s) available"
+          runbook_url: "https://docs.greenlang.io/runbooks/maintenance#dependency-update"
+          action: "1. Review available updates. 2. Test in dev environment. 3. Schedule update deployment. 4. Update changelog"
+          impact: "Maintenance opportunity. Updates available for dependencies."
+
+      - alert: PerformanceTuningOpportunity
+        expr: fuelcraft_optimization_improvement_potential_percentage > 10
+        for: 7d
+        labels:
+          severity: low
+          component: optimization
+          team: greenlang
+          agent: GL-011
+          runbook: runbooks/OPTIMIZATION.md#tuning-opportunity
+        annotations:
+          summary: "Performance tuning opportunity identified"
+          description: "Potential {{ $value | humanizePercentage }} improvement available"
+          runbook_url: "https://docs.greenlang.io/runbooks/optimization#tuning-opportunity"
+          action: "1. Analyze tuning recommendations. 2. Test parameter adjustments. 3. Implement optimizations. 4. Measure improvements"
+          impact: "Optimization opportunity. Potential performance gains available."

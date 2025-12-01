@@ -1,0 +1,480 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "GL-011-FUELCRAFT",
+  "documentNamespace": "https://greenlang.io/sbom/gl-011/1.0.0",
+  "creationInfo": {
+    "created": "2025-12-01T00:00:00Z",
+    "creators": [
+      "Tool: GreenLang SBOM Generator 1.0.0",
+      "Organization: GreenLang Foundation"
+    ],
+    "licenseListVersion": "3.21"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-GL011",
+      "name": "GL-011-FUELCRAFT",
+      "versionInfo": "1.0.0",
+      "supplier": "Organization: GreenLang Foundation",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Proprietary",
+      "licenseDeclared": "Proprietary",
+      "copyrightText": "Copyright 2025 GreenLang Foundation",
+      "description": "Master orchestrator for multi-fuel optimization operations across industrial facilities",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/gl-011-fuelcraft@1.0.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pydantic",
+      "name": "pydantic",
+      "versionInfo": "2.5.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pydantic/2.5.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pydantic@2.5.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pydantic-settings",
+      "name": "pydantic-settings",
+      "versionInfo": "2.1.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pydantic-settings/2.1.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pydantic-settings@2.1.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-cryptography",
+      "name": "cryptography",
+      "versionInfo": "42.0.5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/cryptography/42.0.5/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/cryptography@42.0.5"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-PyJWT",
+      "name": "PyJWT",
+      "versionInfo": "2.8.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/PyJWT/2.8.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/PyJWT@2.8.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-httpx",
+      "name": "httpx",
+      "versionInfo": "0.26.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/httpx/0.26.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/httpx@0.26.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-aiohttp",
+      "name": "aiohttp",
+      "versionInfo": "3.9.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/aiohttp/3.9.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/aiohttp@3.9.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-requests",
+      "name": "requests",
+      "versionInfo": "2.31.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/requests/2.31.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/requests@2.31.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-asyncpg",
+      "name": "asyncpg",
+      "versionInfo": "0.29.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/asyncpg/0.29.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/asyncpg@0.29.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-sqlalchemy",
+      "name": "sqlalchemy",
+      "versionInfo": "2.0.25",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/sqlalchemy/2.0.25/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/sqlalchemy@2.0.25"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-redis",
+      "name": "redis",
+      "versionInfo": "5.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/redis/5.0.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/redis@5.0.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-pyyaml",
+      "name": "pyyaml",
+      "versionInfo": "6.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pyyaml/6.0.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/pyyaml@6.0.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-tenacity",
+      "name": "tenacity",
+      "versionInfo": "8.2.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/tenacity/8.2.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/tenacity@8.2.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-prometheus-client",
+      "name": "prometheus-client",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/prometheus-client/0.19.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "licenseDeclared": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/prometheus-client@0.19.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-anthropic",
+      "name": "anthropic",
+      "versionInfo": "0.18.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/anthropic/0.18.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/anthropic@0.18.1"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-openai",
+      "name": "openai",
+      "versionInfo": "1.12.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/openai/1.12.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/openai@1.12.0"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-langchain",
+      "name": "langchain",
+      "versionInfo": "0.1.9",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/langchain/0.1.9/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/langchain@0.1.9"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-langchain-core",
+      "name": "langchain-core",
+      "versionInfo": "0.1.27",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/langchain-core/0.1.27/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "licenseDeclared": "MIT",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/langchain-core@0.1.27"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-numpy",
+      "name": "numpy",
+      "versionInfo": "1.26.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/numpy/1.26.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/numpy@1.26.3"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-Package-scipy",
+      "name": "scipy",
+      "versionInfo": "1.12.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/scipy/1.12.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "licenseDeclared": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/scipy@1.12.0"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-GL011"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pydantic"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pydantic-settings"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-cryptography"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-PyJWT"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-httpx"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-aiohttp"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-requests"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-asyncpg"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-sqlalchemy"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-redis"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-pyyaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-tenacity"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-prometheus-client"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-anthropic"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-openai"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-langchain"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-langchain-core"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-numpy"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-Package-scipy"
+    }
+  ]
+}

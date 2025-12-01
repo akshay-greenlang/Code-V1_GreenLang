@@ -1,0 +1,456 @@
+# GL-011 FUELCRAFT - Kubernetes Deployment
+# Production-grade deployment with resource limits, health checks, and auto-scaling
+# Compatible with Kubernetes 1.24+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-011-fuelcraft
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    version: "1.0.0"
+    component: "fuel-optimization"
+  annotations:
+    description: "FUELCRAFT - Fuel mix optimization and emissions management agent"
+    documentation: "https://docs.greenlang.ai/agents/GL-011"
+
+    # Ownership and contact information
+    owner: "greenlang-platform-team"
+    team: "fuel-optimization"
+    contact: "gl-011-oncall@greenlang.ai"
+    slack-channel: "#gl-011-alerts"
+    pagerduty-service: "GL-011-FUELCRAFT"
+
+    # Cost tracking and allocation
+    cost-center: "fuel-optimization"
+    billing-code: "GL-011-PROD"
+    environment: "production"
+
+    # Compliance and security
+    compliance-level: "sox-compliant"
+    data-classification: "confidential"
+    security-tier: "tier-2"
+
+    # Release and version tracking
+    release-date: "2025-12-01"
+    git-commit: "placeholder"
+    build-number: "1.0.0-build.1"
+    deployment-strategy: "rolling-update"
+
+    # Monitoring and observability
+    datadog.com/service: "gl-011-fuelcraft"
+    prometheus.io/scrape: "true"
+    sentry.io/project: "gl-011-fuelcraft"
+
+    # Change management
+    last-updated: "2025-12-01"
+    change-ticket: "CHG-2025-GL011"
+    approval-status: "approved"
+
+spec:
+  # Replicas for production (3 for high availability)
+  replicas: 3
+
+  # Rolling update strategy with zero downtime
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # Allow 1 extra pod during update
+      maxUnavailable: 0  # Never take down all pods
+
+  # Label selector for pod management
+  selector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      agent: "GL-011"
+
+  template:
+    metadata:
+      labels:
+        app: gl-011-fuelcraft
+        agent: "GL-011"
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/api/v1/metrics"
+
+    spec:
+      # Service account for RBAC
+      serviceAccountName: gl-011-fuelcraft
+
+      # Security context for pod-level security
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 3000
+        fsGroup: 3000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Affinity rules for high availability
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-011-fuelcraft
+                topologyKey: kubernetes.io/hostname
+
+        # Node Affinity: Prefer nodes with computation-intensive label
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: workload-type
+                    operator: In
+                    values:
+                      - computation-intensive
+
+      # Topology spread constraints for even distribution
+      topologySpreadConstraints:
+        # Spread pods across availability zones
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-011-fuelcraft
+              agent: "GL-011"
+
+        # Spread pods across nodes
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: gl-011-fuelcraft
+              agent: "GL-011"
+
+      # Termination grace period for graceful shutdown
+      terminationGracePeriodSeconds: 30
+
+      # Init containers for dependency checks
+      initContainers:
+        # Wait for PostgreSQL database to be ready
+        - name: wait-for-db
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for PostgreSQL database to be ready..."
+              until nc -z -v -w30 postgresql.database.svc.cluster.local 5432; do
+                echo "Waiting for database connection..."
+                sleep 5
+              done
+              echo "Database is ready!"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+        # Wait for Redis cache to be ready
+        - name: wait-for-redis
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for Redis cache to be ready..."
+              until nc -z -v -w30 redis.cache.svc.cluster.local 6379; do
+                echo "Waiting for Redis connection..."
+                sleep 5
+              done
+              echo "Redis is ready!"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+
+        # Database migration (if needed)
+        - name: db-migrate
+          image: "gcr.io/greenlang/gl-011-fuelcraft:1.0.0"
+          command:
+            - python
+            - -m
+            - alembic
+            - upgrade
+            - head
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-011-secrets
+                  key: database_url
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+
+      containers:
+        - name: gl-011-fuelcraft
+          image: "gcr.io/greenlang/gl-011-fuelcraft:1.0.0"
+          imagePullPolicy: IfNotPresent
+
+          # Lifecycle hooks for graceful startup and shutdown
+          lifecycle:
+            # Post-start hook - execute after container starts
+            postStart:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "GL-011 FUELCRAFT starting..."
+                    echo "Pod: $POD_NAME"
+                    echo "Namespace: $POD_NAMESPACE"
+                    echo "Node: $NODE_NAME"
+                    # Optional: Register with service discovery, warm up caches, etc.
+
+            # Pre-stop hook - execute before container is terminated
+            preStop:
+              exec:
+                command:
+                  - sh
+                  - -c
+                  - |
+                    echo "GL-011 FUELCRAFT shutting down gracefully..."
+                    # Graceful shutdown sequence:
+                    # 1. Stop accepting new requests
+                    # 2. Finish processing current requests (max 25 seconds)
+                    # 3. Close database connections
+                    # 4. Flush logs and metrics
+                    sleep 5
+
+          # Security context for container-level security
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
+
+          # Ports exposed by the container
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment variables from ConfigMap and Secrets
+          env:
+            # Environment type
+            - name: GREENLANG_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-011-config
+                  key: environment
+
+            # Logging configuration
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-011-config
+                  key: log_level
+
+            - name: LOGGING_FORMAT
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-011-config
+                  key: logging_format
+
+            # Database configuration
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-011-secrets
+                  key: database_url
+
+            # Redis cache configuration
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-011-secrets
+                  key: redis_url
+
+            # API keys and authentication
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-011-secrets
+                  key: api_key
+
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: gl-011-secrets
+                  key: jwt_secret
+
+            # Metrics and monitoring
+            - name: METRICS_ENABLED
+              value: "true"
+
+            - name: METRICS_PORT
+              value: "9090"
+
+            - name: PROMETHEUS_ENABLED
+              value: "true"
+
+            # Fuel optimization configuration
+            - name: OPTIMIZATION_TIMEOUT_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-011-config
+                  key: optimization_timeout
+
+            - name: MAX_CONCURRENT_OPTIMIZATIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-011-config
+                  key: max_concurrent_optimizations
+
+            - name: ENABLE_EMISSIONS_TRACKING
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-011-config
+                  key: enable_emissions_tracking
+
+            - name: ENABLE_COST_OPTIMIZATION
+              valueFrom:
+                configMapKeyRef:
+                  name: gl-011-config
+                  key: enable_cost_optimization
+
+            # Pod information for logging
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+            # Resource limits as environment
+            - name: MEMORY_LIMIT_MB
+              valueFrom:
+                resourceFieldRef:
+                  containerName: gl-011-fuelcraft
+                  resource: limits.memory
+                  divisor: 1Mi
+
+            - name: CPU_LIMIT_CORES
+              valueFrom:
+                resourceFieldRef:
+                  containerName: gl-011-fuelcraft
+                  resource: limits.cpu
+                  divisor: 1m
+
+          # Resource requests and limits (2 CPU, 4Gi RAM as specified)
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1000m"
+              ephemeral-storage: "2Gi"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+              ephemeral-storage: "4Gi"
+
+          # Liveness probe - restart pod if unresponsive
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 40
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - remove from service if not ready
+          readinessProbe:
+            httpGet:
+              path: /api/v1/ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 2
+            successThreshold: 1
+
+          # Startup probe - allow time for application bootstrap
+          startupProbe:
+            httpGet:
+              path: /api/v1/health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+
+          # Volume mounts for logs and temporary files
+          volumeMounts:
+            - name: logs
+              mountPath: /app/logs
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /app/cache
+            - name: data
+              mountPath: /app/data
+            - name: fuel-data
+              mountPath: /app/fuel-data
+
+      # Volumes for ephemeral storage
+      volumes:
+        - name: logs
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: cache
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: data
+          emptyDir:
+            sizeLimit: 5Gi
+        - name: fuel-data
+          emptyDir:
+            sizeLimit: 10Gi

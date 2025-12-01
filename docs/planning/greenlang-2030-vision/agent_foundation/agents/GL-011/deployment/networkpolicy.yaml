@@ -1,0 +1,280 @@
+# GL-011 FUELCRAFT - Network Policy
+# Zero-trust networking with explicit ingress/egress rules
+# Restricts pod communication to only required services
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-011-fuelcraft-netpol
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+  annotations:
+    description: "Network policy for GL-011 FUELCRAFT fuel optimization agent"
+
+spec:
+  # Apply to GL-011 pods
+  podSelector:
+    matchLabels:
+      app: gl-011-fuelcraft
+      agent: "GL-011"
+
+  # Define both ingress and egress
+  policyTypes:
+    - Ingress
+    - Egress
+
+  # INGRESS: Allow traffic into GL-011
+  ingress:
+    # Allow from Ingress controller (NGINX, etc.)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8080  # HTTP port
+
+    # Allow from Prometheus for metrics scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090  # Metrics port
+
+    # Allow from GL-001 ProcessHeatOrchestrator (parent agent)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gl-001-process-heat
+              agent: "GL-001"
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow from GL-002 BoilerEfficiencyOptimizer (sibling agent)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: gl-002-boiler-efficiency
+              agent: "GL-002"
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow from other energy/fuel related agents
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: agent
+                operator: In
+                values:
+                  - "GL-003"   # Steam system optimization
+                  - "GL-004"   # Heat exchanger optimization
+                  - "GL-012"   # Industrial IoT Gateway
+                  - "GL-020"   # Carbon accounting
+                  - "GL-023"   # Power purchase agent
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow from load balancer/service mesh (if Istio)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: istio-system
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow DNS queries (from kube-dns)
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+
+  # EGRESS: Allow traffic out of GL-011
+  egress:
+    # Allow to PostgreSQL database
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: database
+          podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow to Redis cache
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: cache
+          podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow to ERP systems (external APIs via HTTPS)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS for external APIs
+
+    # Allow to market data APIs (external)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8       # Exclude internal IPs
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443  # HTTPS only
+
+    # Allow DNS queries
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow to Kubernetes API server
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: default
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow to sibling agents for fuel data sharing
+    - to:
+        - podSelector:
+            matchExpressions:
+              - key: agent
+                operator: In
+                values:
+                  - "GL-001"
+                  - "GL-002"
+                  - "GL-003"
+                  - "GL-012"
+                  - "GL-020"
+      ports:
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 8000
+
+---
+# NetworkPolicy for database access (PostgreSQL)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-011-database-access
+  namespace: database
+  labels:
+    app: postgresql
+    policy: gl-011-access
+
+spec:
+  podSelector:
+    matchLabels:
+      app: postgresql
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: gl-011-fuelcraft
+      ports:
+        - protocol: TCP
+          port: 5432
+
+---
+# NetworkPolicy for Redis access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-011-redis-access
+  namespace: cache
+  labels:
+    app: redis
+    policy: gl-011-access
+
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: gl-011-fuelcraft
+      ports:
+        - protocol: TCP
+          port: 6379
+
+---
+# Default deny all traffic for GL-011 namespace
+# This ensures "default deny, whitelist allow" policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-011-default-deny
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    policy: default-deny
+
+spec:
+  podSelector:
+    matchLabels:
+      app: gl-011-fuelcraft
+  policyTypes:
+    - Ingress
+    - Egress
+
+# Note: This default deny is overridden by the more specific policies above
+# Apply in order: default-deny first, then specific allow policies

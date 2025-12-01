@@ -1,0 +1,1113 @@
+# GL-011 FUELCRAFT - Alert to Runbook Mapping
+#
+# This file provides a comprehensive mapping of all Prometheus alerts to their
+# corresponding runbooks, troubleshooting guides, and escalation procedures.
+#
+# Format:
+#   alert_name:
+#     severity: critical|high|medium|low
+#     component: Component name
+#     runbook_path: Relative path to runbook
+#     runbook_section: Specific section anchor
+#     escalation_path: Who to contact if alert persists
+#     sla_response_time: Expected response time
+#     sla_resolution_time: Expected resolution time
+#     related_alerts: List of related alerts that may fire together
+
+#############################################################################
+# CRITICAL SEVERITY ALERT MAPPINGS
+#############################################################################
+critical_alerts:
+  AgentDown:
+    severity: critical
+    component: agent
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#agent-down"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#agent-down"
+    description: "Agent unhealthy or unresponsive for 5+ minutes"
+    impact: "Complete service outage. No fuel optimization available."
+    escalation_path:
+      - level_1: "On-call DevOps Engineer"
+        contact_method: "PagerDuty"
+        response_time: "5 minutes"
+      - level_2: "Engineering Manager"
+        contact_method: "Phone/Slack"
+        response_time: "15 minutes"
+      - level_3: "VP Engineering"
+        contact_method: "Phone"
+        response_time: "30 minutes"
+    sla_response_time: "5 minutes"
+    sla_resolution_time: "30 minutes"
+    automated_actions:
+      - "Restart pod automatically after 10 minutes"
+      - "Failover to standby instance"
+      - "Enable maintenance mode"
+    related_alerts:
+      - HighErrorRate
+      - DatabaseConnectionLoss
+      - MemoryExhaustion
+    troubleshooting_steps:
+      - "Check pod status: kubectl get pods -n greenlang"
+      - "Check logs: kubectl logs -n greenlang <pod-name>"
+      - "Check resource usage: kubectl top pod -n greenlang"
+      - "Check events: kubectl describe pod -n greenlang <pod-name>"
+      - "Verify database connectivity"
+      - "Check external dependencies"
+
+  HighErrorRate:
+    severity: critical
+    component: optimization
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#high-error-rate"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#high-error-rate"
+    description: "Error rate exceeds 5% for 10+ minutes"
+    impact: "High failure rate leading to incorrect optimization decisions"
+    escalation_path:
+      - level_1: "On-call Developer"
+        contact_method: "PagerDuty"
+        response_time: "10 minutes"
+      - level_2: "Tech Lead"
+        contact_method: "Slack/Phone"
+        response_time: "20 minutes"
+    sla_response_time: "10 minutes"
+    sla_resolution_time: "1 hour"
+    automated_actions:
+      - "Enable circuit breaker on failing endpoints"
+      - "Switch to fallback mode"
+      - "Increase log verbosity for debugging"
+    related_alerts:
+      - OptimizationFailure
+      - CriticalIntegrationDown
+      - DatabaseConnectionLoss
+    troubleshooting_steps:
+      - "Identify error patterns in logs"
+      - "Check recent deployments/changes"
+      - "Verify input data quality"
+      - "Test dependencies (database, cache, external APIs)"
+      - "Check for resource exhaustion"
+      - "Review error stack traces"
+
+  OptimizationFailure:
+    severity: critical
+    component: optimizer
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#optimization-failure"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#optimization-failure"
+    description: "Optimization failed 3+ times in 15 minutes"
+    impact: "Cannot generate optimal fuel procurement plans"
+    escalation_path:
+      - level_1: "Optimization Engineer"
+        contact_method: "PagerDuty"
+        response_time: "10 minutes"
+      - level_2: "Data Science Lead"
+        contact_method: "Slack/Phone"
+        response_time: "20 minutes"
+    sla_response_time: "10 minutes"
+    sla_resolution_time: "2 hours"
+    automated_actions:
+      - "Switch to heuristic fallback mode"
+      - "Reduce problem complexity"
+      - "Use cached solution with adjusted parameters"
+    related_alerts:
+      - OptimizationSlow
+      - HighErrorRate
+    troubleshooting_steps:
+      - "Check solver logs for failure reason"
+      - "Verify input data constraints are feasible"
+      - "Check for numerical instability"
+      - "Reduce problem size/complexity"
+      - "Verify solver parameters"
+      - "Test with simplified problem instance"
+
+  FuelShortage:
+    severity: critical
+    component: inventory
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#fuel-shortage"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#fuel-shortage"
+    description: "Fuel inventory below 24 hours remaining"
+    impact: "Risk of stockout and production shutdown"
+    escalation_path:
+      - level_1: "Operations Manager"
+        contact_method: "Phone/SMS"
+        response_time: "Immediate"
+      - level_2: "Procurement Director"
+        contact_method: "Phone"
+        response_time: "15 minutes"
+      - level_3: "COO"
+        contact_method: "Phone"
+        response_time: "30 minutes"
+    sla_response_time: "Immediate"
+    sla_resolution_time: "4 hours (initiate emergency procurement)"
+    automated_actions:
+      - "Trigger emergency procurement workflow"
+      - "Contact all available suppliers"
+      - "Enable fuel conservation mode"
+    related_alerts:
+      - LowInventory
+      - SupplierUnreliable
+    troubleshooting_steps:
+      - "Verify inventory data accuracy"
+      - "Check consumption rate vs forecast"
+      - "Activate emergency supplier contacts"
+      - "Arrange expedited delivery"
+      - "Consider alternative fuel sources"
+      - "Notify production planning team"
+
+  ContractBreach:
+    severity: critical
+    component: contracts
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#contract-breach"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#contract-breach"
+    description: "Contract limit exceeded"
+    impact: "Legal/financial penalties, contract violations"
+    escalation_path:
+      - level_1: "Procurement Manager"
+        contact_method: "Phone/Email"
+        response_time: "15 minutes"
+      - level_2: "Legal Team"
+        contact_method: "Email/Phone"
+        response_time: "1 hour"
+      - level_3: "CFO"
+        contact_method: "Email"
+        response_time: "4 hours"
+    sla_response_time: "15 minutes"
+    sla_resolution_time: "24 hours (documentation and remediation)"
+    automated_actions:
+      - "Halt automated procurement on breached contract"
+      - "Generate breach notification report"
+      - "Redirect orders to alternative suppliers"
+    related_alerts:
+      - ContractUtilizationHigh
+    troubleshooting_steps:
+      - "Verify contract utilization data"
+      - "Review recent procurement orders"
+      - "Calculate overage amount"
+      - "Contact supplier to discuss overage"
+      - "Document breach circumstances"
+      - "Update contract limits in system"
+
+  CriticalIntegrationDown:
+    severity: critical
+    component: integration
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#integration-down"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#integration-down"
+    description: "Critical integration (ERP, market data) unavailable 5+ minutes"
+    impact: "Cannot access critical data for optimization"
+    escalation_path:
+      - level_1: "Integration Engineer"
+        contact_method: "PagerDuty"
+        response_time: "5 minutes"
+      - level_2: "External vendor contact"
+        contact_method: "Support ticket/Phone"
+        response_time: "15 minutes"
+    sla_response_time: "5 minutes"
+    sla_resolution_time: "30 minutes"
+    automated_actions:
+      - "Switch to cached data mode"
+      - "Enable integration circuit breaker"
+      - "Create vendor support ticket"
+    related_alerts:
+      - IntegrationLatency
+      - StaleData
+    troubleshooting_steps:
+      - "Check integration endpoint health"
+      - "Verify API credentials and tokens"
+      - "Test network connectivity"
+      - "Review integration logs"
+      - "Check vendor status page"
+      - "Enable fallback data sources"
+
+  SecurityViolation:
+    severity: critical
+    component: security
+    runbook_path: runbooks/SECURITY.md
+    runbook_section: "#violation-detected"
+    runbook_url: "https://docs.greenlang.io/runbooks/security#violation-detected"
+    description: "Unauthorized access or security breach detected"
+    impact: "Potential data breach or system compromise"
+    escalation_path:
+      - level_1: "Security Engineer"
+        contact_method: "PagerDuty (immediate)"
+        response_time: "Immediate"
+      - level_2: "Security Team Lead"
+        contact_method: "Phone/Slack"
+        response_time: "5 minutes"
+      - level_3: "CISO"
+        contact_method: "Phone"
+        response_time: "15 minutes"
+    sla_response_time: "Immediate"
+    sla_resolution_time: "1 hour (containment), 24 hours (full remediation)"
+    automated_actions:
+      - "Lock down affected resources"
+      - "Preserve forensic logs"
+      - "Trigger incident response workflow"
+      - "Notify security team via multiple channels"
+    related_alerts:
+      - UnusualActivity
+    troubleshooting_steps:
+      - "Identify violation source and type"
+      - "Isolate affected systems"
+      - "Preserve logs and evidence"
+      - "Block malicious IPs/users"
+      - "Review access logs"
+      - "Initiate security incident response"
+
+  DataCorruption:
+    severity: critical
+    component: provenance
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#data-corruption"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#data-corruption"
+    description: "Provenance hash mismatch indicates data corruption"
+    impact: "Data integrity compromised, calculations invalid"
+    escalation_path:
+      - level_1: "Data Engineer"
+        contact_method: "PagerDuty"
+        response_time: "10 minutes"
+      - level_2: "Data Integrity Team"
+        contact_method: "Slack/Phone"
+        response_time: "20 minutes"
+    sla_response_time: "10 minutes"
+    sla_resolution_time: "4 hours"
+    automated_actions:
+      - "Halt affected calculations"
+      - "Create data snapshot for investigation"
+      - "Switch to backup data source"
+    related_alerts:
+      - ProvenanceGap
+    troubleshooting_steps:
+      - "Identify corrupted data records"
+      - "Compare with backup/source data"
+      - "Restore from validated backup"
+      - "Recompute provenance hashes"
+      - "Verify data pipeline integrity"
+      - "Audit data access logs"
+
+  EmissionsViolation:
+    severity: critical
+    component: emissions
+    runbook_path: runbooks/COMPLIANCE.md
+    runbook_section: "#emissions-violation"
+    runbook_url: "https://docs.greenlang.io/runbooks/compliance#emissions-violation"
+    description: "Emissions exceed regulatory limit"
+    impact: "Regulatory violation, potential fines"
+    escalation_path:
+      - level_1: "Sustainability Manager"
+        contact_method: "Phone/Email"
+        response_time: "15 minutes"
+      - level_2: "Compliance Team"
+        contact_method: "Email/Phone"
+        response_time: "1 hour"
+      - level_3: "Chief Sustainability Officer"
+        contact_method: "Email"
+        response_time: "4 hours"
+    sla_response_time: "15 minutes"
+    sla_resolution_time: "24 hours (mitigation), 7 days (full compliance)"
+    automated_actions:
+      - "Trigger emissions reduction protocol"
+      - "Increase low-carbon fuel allocation"
+      - "Generate compliance report"
+    related_alerts:
+      - CarbonTargetMiss
+    troubleshooting_steps:
+      - "Verify emissions calculation accuracy"
+      - "Review fuel mix and consumption"
+      - "Switch to lower-carbon fuel alternatives"
+      - "Contact regulatory authority"
+      - "Implement emergency reduction measures"
+      - "Document violation and remediation plan"
+
+  FuelQualityFailure:
+    severity: critical
+    component: quality
+    runbook_path: runbooks/QUALITY.md
+    runbook_section: "#quality-failure"
+    runbook_url: "https://docs.greenlang.io/runbooks/quality#quality-failure"
+    description: "Fuel quality below specification"
+    impact: "Equipment damage risk, operational issues"
+    escalation_path:
+      - level_1: "Quality Manager"
+        contact_method: "Phone"
+        response_time: "10 minutes"
+      - level_2: "Operations Director"
+        contact_method: "Phone"
+        response_time: "20 minutes"
+    sla_response_time: "10 minutes"
+    sla_resolution_time: "8 hours"
+    automated_actions:
+      - "Quarantine affected fuel batch"
+      - "Halt procurement from affected supplier"
+      - "Trigger quality testing workflow"
+    related_alerts:
+      - SupplierUnreliable
+    troubleshooting_steps:
+      - "Verify quality test results"
+      - "Isolate affected fuel inventory"
+      - "Contact supplier for investigation"
+      - "Arrange independent testing"
+      - "Activate replacement procurement"
+      - "Document quality failure incident"
+
+  DeadlockDetected:
+    severity: critical
+    component: system
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#deadlock"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#deadlock"
+    description: "Thread deadlock detected"
+    impact: "Service unresponsive, operations halted"
+    escalation_path:
+      - level_1: "On-call Engineer"
+        contact_method: "PagerDuty"
+        response_time: "5 minutes"
+      - level_2: "Platform Team"
+        contact_method: "Slack"
+        response_time: "15 minutes"
+    sla_response_time: "5 minutes"
+    sla_resolution_time: "30 minutes"
+    automated_actions:
+      - "Capture thread dump for analysis"
+      - "Restart service after timeout"
+      - "Alert platform team"
+    related_alerts:
+      - ThreadPoolSaturated
+      - HighLatency
+    troubleshooting_steps:
+      - "Capture thread dump immediately"
+      - "Analyze deadlock stack traces"
+      - "Restart affected service"
+      - "Review code for lock ordering issues"
+      - "Implement deadlock prevention"
+      - "Add deadlock detection monitoring"
+
+  MemoryExhaustion:
+    severity: critical
+    component: system
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#memory-exhaustion"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#memory-exhaustion"
+    description: "Memory usage exceeds 95%"
+    impact: "Risk of OOM kill and service crash"
+    escalation_path:
+      - level_1: "On-call DevOps"
+        contact_method: "PagerDuty"
+        response_time: "5 minutes"
+      - level_2: "Platform Team"
+        contact_method: "Slack"
+        response_time: "15 minutes"
+    sla_response_time: "5 minutes"
+    sla_resolution_time: "30 minutes"
+    automated_actions:
+      - "Capture heap dump for analysis"
+      - "Increase memory allocation if possible"
+      - "Restart service to clear memory"
+    related_alerts:
+      - HighMemory
+    troubleshooting_steps:
+      - "Capture heap dump before restart"
+      - "Analyze memory allocation patterns"
+      - "Check for memory leaks"
+      - "Review recent code changes"
+      - "Increase pod memory limits"
+      - "Optimize memory usage"
+
+  DiskFull:
+    severity: critical
+    component: system
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#disk-full"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#disk-full"
+    description: "Disk usage exceeds 95%"
+    impact: "Cannot write data, service failure imminent"
+    escalation_path:
+      - level_1: "On-call DevOps"
+        contact_method: "PagerDuty"
+        response_time: "5 minutes"
+      - level_2: "Infrastructure Team"
+        contact_method: "Slack"
+        response_time: "15 minutes"
+    sla_response_time: "5 minutes"
+    sla_resolution_time: "1 hour"
+    automated_actions:
+      - "Clean up old log files"
+      - "Archive historical data"
+      - "Alert infrastructure team"
+    related_alerts: []
+    troubleshooting_steps:
+      - "Identify largest files/directories"
+      - "Clean up old logs and temp files"
+      - "Archive or delete old data"
+      - "Expand disk volume"
+      - "Enable log rotation"
+      - "Implement retention policies"
+
+  DatabaseConnectionLoss:
+    severity: critical
+    component: database
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#db-connection-exhaustion"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#db-connection-exhaustion"
+    description: "Database connection pool exhausted"
+    impact: "Cannot execute queries, requests failing"
+    escalation_path:
+      - level_1: "Database Engineer"
+        contact_method: "PagerDuty"
+        response_time: "5 minutes"
+      - level_2: "Database Team Lead"
+        contact_method: "Phone"
+        response_time: "15 minutes"
+    sla_response_time: "5 minutes"
+    sla_resolution_time: "30 minutes"
+    automated_actions:
+      - "Kill idle/long-running connections"
+      - "Restart application to reset pool"
+      - "Increase connection pool size"
+    related_alerts:
+      - AgentDown
+      - HighErrorRate
+    troubleshooting_steps:
+      - "Check for connection leaks"
+      - "Identify long-running queries"
+      - "Review connection pool configuration"
+      - "Increase max connections"
+      - "Restart application"
+      - "Fix connection leak bugs"
+
+  CertificateExpiringSoon:
+    severity: critical
+    component: security
+    runbook_path: runbooks/SECURITY.md
+    runbook_section: "#certificate-expiry"
+    runbook_url: "https://docs.greenlang.io/runbooks/security#certificate-expiry"
+    description: "TLS certificate expires in less than 7 days"
+    impact: "Service outage when certificate expires"
+    escalation_path:
+      - level_1: "Security Engineer"
+        contact_method: "Email/Slack"
+        response_time: "4 hours"
+      - level_2: "Security Team Lead"
+        contact_method: "Email"
+        response_time: "8 hours"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "48 hours"
+    automated_actions:
+      - "Generate renewal reminder"
+      - "Create certificate renewal ticket"
+    related_alerts:
+      - CertificateExpiringNext30Days
+    troubleshooting_steps:
+      - "Renew certificate immediately"
+      - "Update certificate in secrets manager"
+      - "Deploy updated certificate"
+      - "Verify certificate chain"
+      - "Test SSL/TLS connectivity"
+      - "Update monitoring for new expiry"
+
+#############################################################################
+# HIGH SEVERITY ALERT MAPPINGS
+#############################################################################
+high_alerts:
+  HighLatency:
+    severity: high
+    component: performance
+    runbook_path: runbooks/PERFORMANCE.md
+    runbook_section: "#high-latency"
+    runbook_url: "https://docs.greenlang.io/runbooks/performance#high-latency"
+    description: "P99 latency exceeds 5 seconds for 10+ minutes"
+    impact: "Degraded user experience, slow optimization"
+    escalation_path:
+      - level_1: "On-call Developer"
+        contact_method: "PagerDuty"
+        response_time: "15 minutes"
+      - level_2: "Performance Team"
+        contact_method: "Slack"
+        response_time: "1 hour"
+    sla_response_time: "15 minutes"
+    sla_resolution_time: "4 hours"
+    related_alerts:
+      - ModerateLatency
+      - OptimizationSlow
+
+  LowCacheHitRate:
+    severity: high
+    component: cache
+    runbook_path: runbooks/PERFORMANCE.md
+    runbook_section: "#low-cache-hit-rate"
+    runbook_url: "https://docs.greenlang.io/runbooks/performance#low-cache-hit-rate"
+    description: "Cache hit rate below 50% for 15+ minutes"
+    impact: "Increased database load, slower responses"
+    escalation_path:
+      - level_1: "Performance Engineer"
+        contact_method: "Slack"
+        response_time: "1 hour"
+    sla_response_time: "1 hour"
+    sla_resolution_time: "8 hours"
+    related_alerts:
+      - CacheExpired
+
+  OptimizationSlow:
+    severity: high
+    component: optimizer
+    runbook_path: runbooks/PERFORMANCE.md
+    runbook_section: "#slow-optimization"
+    runbook_url: "https://docs.greenlang.io/runbooks/performance#slow-optimization"
+    description: "P95 optimization time exceeds 60 seconds"
+    impact: "Delayed optimization results"
+    escalation_path:
+      - level_1: "Optimization Engineer"
+        contact_method: "Slack"
+        response_time: "1 hour"
+    sla_response_time: "1 hour"
+    sla_resolution_time: "8 hours"
+    related_alerts:
+      - OptimizationFailure
+      - OptimizationIterationsHigh
+
+  IntegrationLatency:
+    severity: high
+    component: integration
+    runbook_path: runbooks/INTEGRATION.md
+    runbook_section: "#high-latency"
+    runbook_url: "https://docs.greenlang.io/runbooks/integration#high-latency"
+    description: "Integration P95 latency exceeds 10 seconds"
+    impact: "Slow integration responses delay operations"
+    escalation_path:
+      - level_1: "Integration Engineer"
+        contact_method: "Slack"
+        response_time: "1 hour"
+      - level_2: "External vendor"
+        contact_method: "Support ticket"
+        response_time: "4 hours"
+    sla_response_time: "1 hour"
+    sla_resolution_time: "8 hours"
+    related_alerts:
+      - CriticalIntegrationDown
+
+  HighCPU:
+    severity: high
+    component: system
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#high-cpu"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#high-cpu"
+    description: "CPU usage exceeds 80% for 15+ minutes"
+    impact: "Performance degradation"
+    escalation_path:
+      - level_1: "On-call DevOps"
+        contact_method: "Slack"
+        response_time: "30 minutes"
+    sla_response_time: "30 minutes"
+    sla_resolution_time: "4 hours"
+    related_alerts: []
+
+  HighMemory:
+    severity: high
+    component: system
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#high-memory"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#high-memory"
+    description: "Memory usage exceeds 80% for 15+ minutes"
+    impact: "Risk of OOM"
+    escalation_path:
+      - level_1: "On-call DevOps"
+        contact_method: "Slack"
+        response_time: "30 minutes"
+    sla_response_time: "30 minutes"
+    sla_resolution_time: "4 hours"
+    related_alerts:
+      - MemoryExhaustion
+
+  LowInventory:
+    severity: high
+    component: inventory
+    runbook_path: runbooks/OPERATIONS.md
+    runbook_section: "#low-inventory"
+    runbook_url: "https://docs.greenlang.io/runbooks/operations#low-inventory"
+    description: "Fuel inventory below 48 hours"
+    impact: "Risk of stockout within 48 hours"
+    escalation_path:
+      - level_1: "Procurement Team"
+        contact_method: "Email/Phone"
+        response_time: "1 hour"
+    sla_response_time: "1 hour"
+    sla_resolution_time: "24 hours"
+    related_alerts:
+      - FuelShortage
+      - InventoryReorderPoint
+
+  PriceSpike:
+    severity: high
+    component: pricing
+    runbook_path: runbooks/MARKET.md
+    runbook_section: "#price-spike"
+    runbook_url: "https://docs.greenlang.io/runbooks/market#price-spike"
+    description: "Fuel price increased >20% in 24 hours"
+    impact: "Budget impact, strategy adjustment needed"
+    escalation_path:
+      - level_1: "Procurement Manager"
+        contact_method: "Email"
+        response_time: "2 hours"
+      - level_2: "Finance Team"
+        contact_method: "Email"
+        response_time: "4 hours"
+    sla_response_time: "2 hours"
+    sla_resolution_time: "24 hours"
+    related_alerts:
+      - PriceVolatility
+      - CostOverrun
+
+  SupplierUnreliable:
+    severity: high
+    component: suppliers
+    runbook_path: runbooks/SUPPLIERS.md
+    runbook_section: "#unreliable-supplier"
+    runbook_url: "https://docs.greenlang.io/runbooks/suppliers#unreliable-supplier"
+    description: "Supplier delivery failure rate >10% over 7 days"
+    impact: "Supply chain risk"
+    escalation_path:
+      - level_1: "Procurement Manager"
+        contact_method: "Email"
+        response_time: "4 hours"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "48 hours"
+    related_alerts:
+      - SupplierDiversityLow
+
+  CostOverrun:
+    severity: high
+    component: finance
+    runbook_path: runbooks/FINANCE.md
+    runbook_section: "#cost-overrun"
+    runbook_url: "https://docs.greenlang.io/runbooks/finance#cost-overrun"
+    description: "Actual costs exceed budget by 10%"
+    impact: "Budget variance"
+    escalation_path:
+      - level_1: "Finance Manager"
+        contact_method: "Email"
+        response_time: "4 hours"
+      - level_2: "CFO"
+        contact_method: "Email"
+        response_time: "24 hours"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "48 hours"
+    related_alerts:
+      - PriceSpike
+
+  CarbonTargetMiss:
+    severity: high
+    component: sustainability
+    runbook_path: runbooks/SUSTAINABILITY.md
+    runbook_section: "#target-miss"
+    runbook_url: "https://docs.greenlang.io/runbooks/sustainability#target-miss"
+    description: "On track to miss carbon reduction target"
+    impact: "Environmental goals at risk"
+    escalation_path:
+      - level_1: "Sustainability Manager"
+        contact_method: "Email"
+        response_time: "4 hours"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "7 days"
+    related_alerts:
+      - EmissionsViolation
+
+  ApiRateLimitApproaching:
+    severity: high
+    component: api
+    runbook_path: runbooks/API.md
+    runbook_section: "#rate-limit-approaching"
+    runbook_url: "https://docs.greenlang.io/runbooks/api#rate-limit-approaching"
+    description: "API usage at 80% of limit"
+    impact: "Risk of API throttling"
+    escalation_path:
+      - level_1: "Integration Engineer"
+        contact_method: "Slack"
+        response_time: "1 hour"
+    sla_response_time: "1 hour"
+    sla_resolution_time: "8 hours"
+    related_alerts:
+      - ApiQuotaUsage
+
+  QueueBacklog:
+    severity: high
+    component: queue
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#queue-backlog"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#queue-backlog"
+    description: "Queue depth exceeds 100 messages"
+    impact: "Delayed processing"
+    escalation_path:
+      - level_1: "Platform Engineer"
+        contact_method: "Slack"
+        response_time: "30 minutes"
+    sla_response_time: "30 minutes"
+    sla_resolution_time: "4 hours"
+    related_alerts: []
+
+  StaleData:
+    severity: high
+    component: data
+    runbook_path: runbooks/DATA.md
+    runbook_section: "#stale-data"
+    runbook_url: "https://docs.greenlang.io/runbooks/data#stale-data"
+    description: "Market data older than 15 minutes"
+    impact: "Optimization using outdated data"
+    escalation_path:
+      - level_1: "Data Engineer"
+        contact_method: "Slack"
+        response_time: "30 minutes"
+    sla_response_time: "30 minutes"
+    sla_resolution_time: "2 hours"
+    related_alerts:
+      - CriticalIntegrationDown
+
+  ContractUtilizationHigh:
+    severity: high
+    component: contracts
+    runbook_path: runbooks/CONTRACTS.md
+    runbook_section: "#utilization-high"
+    runbook_url: "https://docs.greenlang.io/runbooks/contracts#utilization-high"
+    description: "Contract utilization exceeds 90%"
+    impact: "Risk of contract exhaustion"
+    escalation_path:
+      - level_1: "Procurement Manager"
+        contact_method: "Email"
+        response_time: "4 hours"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "48 hours"
+    related_alerts:
+      - ContractBreach
+
+  ComplianceReportLate:
+    severity: high
+    component: compliance
+    runbook_path: runbooks/COMPLIANCE.md
+    runbook_section: "#report-late"
+    runbook_url: "https://docs.greenlang.io/runbooks/compliance#report-late"
+    description: "Compliance report overdue"
+    impact: "Regulatory compliance risk"
+    escalation_path:
+      - level_1: "Compliance Manager"
+        contact_method: "Email/Phone"
+        response_time: "1 hour"
+    sla_response_time: "1 hour"
+    sla_resolution_time: "24 hours"
+    related_alerts: []
+
+  CalculatorError:
+    severity: high
+    component: calculator
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#calculator-errors"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#calculator-errors"
+    description: "Multiple calculator errors detected"
+    impact: "Incorrect calculations"
+    escalation_path:
+      - level_1: "Data Engineer"
+        contact_method: "Slack"
+        response_time: "1 hour"
+    sla_response_time: "1 hour"
+    sla_resolution_time: "8 hours"
+    related_alerts: []
+
+  ProvenanceGap:
+    severity: high
+    component: provenance
+    runbook_path: runbooks/PROVENANCE.md
+    runbook_section: "#provenance-gap"
+    runbook_url: "https://docs.greenlang.io/runbooks/provenance#provenance-gap"
+    description: "Missing provenance for >1% of calculations"
+    impact: "Audit trail incomplete"
+    escalation_path:
+      - level_1: "Data Integrity Engineer"
+        contact_method: "Slack"
+        response_time: "2 hours"
+    sla_response_time: "2 hours"
+    sla_resolution_time: "24 hours"
+    related_alerts:
+      - DataCorruption
+
+  ThreadPoolSaturated:
+    severity: high
+    component: system
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#threadpool-saturated"
+    runbook_url: "https://docs.greenlang.io/runbooks/troubleshooting#threadpool-saturated"
+    description: "Thread pool 90% utilized"
+    impact: "Thread starvation"
+    escalation_path:
+      - level_1: "Platform Engineer"
+        contact_method: "Slack"
+        response_time: "1 hour"
+    sla_response_time: "1 hour"
+    sla_resolution_time: "8 hours"
+    related_alerts:
+      - DeadlockDetected
+
+  DependencyVulnerability:
+    severity: high
+    component: security
+    runbook_path: runbooks/SECURITY.md
+    runbook_section: "#vulnerability-detected"
+    runbook_url: "https://docs.greenlang.io/runbooks/security#vulnerability-detected"
+    description: "CVE detected in dependencies"
+    impact: "Security risk"
+    escalation_path:
+      - level_1: "Security Engineer"
+        contact_method: "Email"
+        response_time: "24 hours"
+    sla_response_time: "24 hours"
+    sla_resolution_time: "7 days"
+    related_alerts:
+      - DependencyUpdateAvailable
+
+#############################################################################
+# MEDIUM SEVERITY ALERT MAPPINGS
+#############################################################################
+medium_alerts:
+  ModerateLatency:
+    severity: medium
+    component: performance
+    runbook_path: runbooks/PERFORMANCE.md
+    runbook_section: "#moderate-latency"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "48 hours"
+
+  IntegrationWarning:
+    severity: medium
+    component: integration
+    runbook_path: runbooks/INTEGRATION.md
+    runbook_section: "#error-rate"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "24 hours"
+
+  InventoryReorderPoint:
+    severity: medium
+    component: inventory
+    runbook_path: runbooks/OPERATIONS.md
+    runbook_section: "#reorder-point"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "48 hours"
+
+  PriceVolatility:
+    severity: medium
+    component: pricing
+    runbook_path: runbooks/MARKET.md
+    runbook_section: "#price-volatility"
+    sla_response_time: "8 hours"
+    sla_resolution_time: "7 days"
+
+  OptimizationIterationsHigh:
+    severity: medium
+    component: optimizer
+    runbook_path: runbooks/PERFORMANCE.md
+    runbook_section: "#solver-iterations"
+    sla_response_time: "8 hours"
+    sla_resolution_time: "7 days"
+
+  CostSavingsBelowTarget:
+    severity: medium
+    component: optimization
+    runbook_path: runbooks/OPTIMIZATION.md
+    runbook_section: "#savings-below-target"
+    sla_response_time: "24 hours"
+    sla_resolution_time: "7 days"
+
+  FuelEfficiencyDrop:
+    severity: medium
+    component: efficiency
+    runbook_path: runbooks/OPERATIONS.md
+    runbook_section: "#efficiency-drop"
+    sla_response_time: "8 hours"
+    sla_resolution_time: "7 days"
+
+  ContractUtilizationLow:
+    severity: medium
+    component: contracts
+    runbook_path: runbooks/CONTRACTS.md
+    runbook_section: "#utilization-low"
+    sla_response_time: "48 hours"
+    sla_resolution_time: "30 days"
+
+  SupplierDiversityLow:
+    severity: medium
+    component: suppliers
+    runbook_path: runbooks/SUPPLIERS.md
+    runbook_section: "#diversity-low"
+    sla_response_time: "48 hours"
+    sla_resolution_time: "30 days"
+
+  CacheExpired:
+    severity: medium
+    component: cache
+    runbook_path: runbooks/PERFORMANCE.md
+    runbook_section: "#cache-invalidation"
+    sla_response_time: "8 hours"
+    sla_resolution_time: "48 hours"
+
+  ApiQuotaUsage:
+    severity: medium
+    component: api
+    runbook_path: runbooks/API.md
+    runbook_section: "#quota-usage"
+    sla_response_time: "24 hours"
+    sla_resolution_time: "7 days"
+
+  TestFailure:
+    severity: medium
+    component: testing
+    runbook_path: runbooks/TESTING.md
+    runbook_section: "#test-failure"
+    sla_response_time: "8 hours"
+    sla_resolution_time: "48 hours"
+
+  LogVolumeHigh:
+    severity: medium
+    component: logging
+    runbook_path: runbooks/TROUBLESHOOTING.md
+    runbook_section: "#log-volume"
+    sla_response_time: "24 hours"
+    sla_resolution_time: "7 days"
+
+  UnusualActivity:
+    severity: medium
+    component: security
+    runbook_path: runbooks/SECURITY.md
+    runbook_section: "#unusual-activity"
+    sla_response_time: "4 hours"
+    sla_resolution_time: "24 hours"
+
+  ConfigDrift:
+    severity: medium
+    component: configuration
+    runbook_path: runbooks/CONFIGURATION.md
+    runbook_section: "#drift-detected"
+    sla_response_time: "8 hours"
+    sla_resolution_time: "48 hours"
+
+#############################################################################
+# LOW SEVERITY ALERT MAPPINGS
+#############################################################################
+low_alerts:
+  InfoLog:
+    severity: low
+    component: logging
+    runbook_path: runbooks/MONITORING.md
+    runbook_section: "#info-log"
+    sla_response_time: "N/A"
+    sla_resolution_time: "N/A"
+
+  ScheduledMaintenanceReminder:
+    severity: low
+    component: maintenance
+    runbook_path: runbooks/MAINTENANCE.md
+    runbook_section: "#scheduled-reminder"
+    sla_response_time: "N/A"
+    sla_resolution_time: "N/A"
+
+  CertificateExpiringNext30Days:
+    severity: low
+    component: security
+    runbook_path: runbooks/SECURITY.md
+    runbook_section: "#certificate-expiry-warning"
+    sla_response_time: "7 days"
+    sla_resolution_time: "21 days"
+
+  DependencyUpdateAvailable:
+    severity: low
+    component: dependencies
+    runbook_path: runbooks/MAINTENANCE.md
+    runbook_section: "#dependency-update"
+    sla_response_time: "7 days"
+    sla_resolution_time: "30 days"
+
+  PerformanceTuningOpportunity:
+    severity: low
+    component: optimization
+    runbook_path: runbooks/OPTIMIZATION.md
+    runbook_section: "#tuning-opportunity"
+    sla_response_time: "7 days"
+    sla_resolution_time: "30 days"
+
+#############################################################################
+# ALERT CORRELATION MATRIX
+# Defines which alerts commonly fire together
+#############################################################################
+alert_correlation:
+  service_outage_pattern:
+    - AgentDown
+    - HighErrorRate
+    - DatabaseConnectionLoss
+    - MemoryExhaustion
+
+  performance_degradation_pattern:
+    - HighLatency
+    - HighCPU
+    - HighMemory
+    - ThreadPoolSaturated
+
+  integration_failure_pattern:
+    - CriticalIntegrationDown
+    - IntegrationLatency
+    - StaleData
+
+  inventory_shortage_pattern:
+    - FuelShortage
+    - LowInventory
+    - InventoryReorderPoint
+    - SupplierUnreliable
+
+  financial_risk_pattern:
+    - PriceSpike
+    - CostOverrun
+    - ContractBreach
+
+  compliance_risk_pattern:
+    - EmissionsViolation
+    - ComplianceReportLate
+    - CarbonTargetMiss
+
+  data_integrity_pattern:
+    - DataCorruption
+    - ProvenanceGap
+    - CalculatorError
+
+#############################################################################
+# ESCALATION MATRIX
+# Default escalation paths by severity and time-to-resolution
+#############################################################################
+escalation_matrix:
+  critical:
+    0_to_15_min:
+      - "On-call Engineer (PagerDuty)"
+    15_to_30_min:
+      - "Engineering Manager (Phone)"
+      - "Tech Lead (Slack)"
+    30_to_60_min:
+      - "VP Engineering (Phone)"
+      - "CTO (Email)"
+    60_plus_min:
+      - "Executive Team (All hands)"
+
+  high:
+    0_to_1_hour:
+      - "On-call Developer (PagerDuty/Slack)"
+    1_to_4_hours:
+      - "Tech Lead (Slack)"
+      - "Product Manager (Email)"
+    4_plus_hours:
+      - "Engineering Manager (Email)"
+
+  medium:
+    0_to_8_hours:
+      - "Assigned Engineer (Slack/Email)"
+    8_to_24_hours:
+      - "Team Lead (Email)"
+    24_plus_hours:
+      - "Engineering Manager (Email)"
+
+  low:
+    informational:
+      - "Team Slack channel"
+      - "Daily standup review"

@@ -1,0 +1,209 @@
+# Kustomize Overlay - Production Environment
+# Full production configuration with HA, security, and monitoring
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Base configuration
+resources:
+  - ../../base
+
+# Namespace override
+namespace: greenlang
+
+# Common labels for production environment
+commonLabels:
+  environment: production
+  tier: production
+  criticality: high
+
+# Common annotations
+commonAnnotations:
+  environment: "production"
+  cost-center: "fuel-optimization"
+  compliance-level: "sox-compliant"
+  data-classification: "confidential"
+  security-tier: "tier-2"
+  monitoring-level: "enhanced"
+
+# ConfigMap overrides
+configMapGenerator:
+  - name: gl-011-config
+    behavior: merge
+    literals:
+      - environment=production
+      - log_level=INFO
+      - logging_format=json
+      - optimization_timeout=300
+      - feature_market_integration=false
+      - feature_carbon_trading=false
+      - database_echo=false
+      - metrics_enabled=true
+      - alerting_enabled=true
+      - enable_emissions_tracking=true
+      - enable_cost_optimization=true
+      - security_tls_enabled=true
+
+# Image tag override (production stable release)
+images:
+  - name: gcr.io/greenlang/gl-011-fuelcraft
+    newTag: 1.0.0
+
+# Replica count override (3 for HA)
+replicas:
+  - name: gl-011-fuelcraft
+    count: 3
+
+# Patches for production-specific changes
+patches:
+  # Patch deployment for production environment
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: gl-011-fuelcraft
+        annotations:
+          deployment-type: "production"
+          auto-deploy: "false"
+          approval-required: "true"
+          change-freeze-exempt: "false"
+      spec:
+        strategy:
+          rollingUpdate:
+            maxSurge: 1
+            maxUnavailable: 0
+        template:
+          metadata:
+            annotations:
+              prometheus.io/scrape: "true"
+              prometheus.io/port: "9090"
+              prometheus.io/path: "/api/v1/metrics"
+              sentry.io/environment: "production"
+          spec:
+            containers:
+            - name: gl-011-fuelcraft
+              resources:
+                requests:
+                  cpu: "1000m"
+                  memory: "2Gi"
+                limits:
+                  cpu: "2000m"
+                  memory: "4Gi"
+              env:
+              - name: GREENLANG_ENV
+                value: "production"
+              - name: ENABLE_PROFILING
+                value: "false"
+              - name: SENTRY_ENVIRONMENT
+                value: "production"
+              - name: DATADOG_ENV
+                value: "production"
+
+  # Patch HPA for production (aggressive scaling)
+  - patch: |-
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: gl-011-fuelcraft-hpa
+      spec:
+        minReplicas: 2
+        maxReplicas: 10
+        metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            target:
+              type: Utilization
+              averageUtilization: 70
+        - type: Resource
+          resource:
+            name: memory
+            target:
+              type: Utilization
+              averageUtilization: 80
+        behavior:
+          scaleUp:
+            stabilizationWindowSeconds: 30
+            policies:
+            - type: Percent
+              value: 100
+              periodSeconds: 30
+          scaleDown:
+            stabilizationWindowSeconds: 300
+            policies:
+            - type: Percent
+              value: 50
+              periodSeconds: 60
+
+  # Patch Ingress for production domain
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: gl-011-fuelcraft-ingress
+        annotations:
+          cert-manager.io/cluster-issuer: "letsencrypt-prod"
+          nginx.ingress.kubernetes.io/limit-rps: "100"
+          nginx.ingress.kubernetes.io/limit-connections: "10"
+          nginx.ingress.kubernetes.io/enable-modsecurity: "true"
+          nginx.ingress.kubernetes.io/enable-owasp-core-rules: "true"
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      spec:
+        tls:
+        - hosts:
+          - fuelcraft.greenlang.io
+          - api.fuelcraft.greenlang.io
+          secretName: gl-011-tls-prod
+        rules:
+        - host: fuelcraft.greenlang.io
+          http:
+            paths:
+            - path: /api/v1
+              pathType: Prefix
+              backend:
+                service:
+                  name: gl-011-fuelcraft
+                  port:
+                    number: 8080
+
+  # Patch PDB for production (strict availability)
+  - patch: |-
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: gl-011-fuelcraft-pdb
+      spec:
+        minAvailable: 2
+
+  # Patch NetworkPolicy for production security
+  - patch: |-
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: gl-011-fuelcraft-netpol
+        annotations:
+          security-review: "approved"
+          security-tier: "tier-2"
+      spec:
+        podSelector:
+          matchLabels:
+            app: gl-011-fuelcraft
+            agent: "GL-011"
+        policyTypes:
+        - Ingress
+        - Egress
+
+  # Patch ResourceQuota for production
+  - patch: |-
+      apiVersion: v1
+      kind: ResourceQuota
+      metadata:
+        name: gl-011-fuelcraft-quota
+      spec:
+        hard:
+          requests.cpu: "12"
+          limits.cpu: "24"
+          requests.memory: "24Gi"
+          limits.memory: "48Gi"
+          pods: "15"

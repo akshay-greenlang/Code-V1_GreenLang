@@ -16,6 +16,14 @@ from functools import lru_cache
 
 from .base import BaseAgent, AgentConfig, AgentResult, AgentMetrics
 
+# Import CalculationProvenance for enhanced audit trails
+try:
+    from greenlang.core.provenance import CalculationProvenance, OperationType
+except ImportError:
+    # Fallback if provenance not available
+    CalculationProvenance = None
+    OperationType = None
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,6 +36,8 @@ class CalculatorConfig(AgentConfig):
     deterministic: bool = Field(default=True, description="Ensure deterministic calculations")
     allow_division_by_zero: bool = Field(default=False, description="Allow division by zero (returns None)")
     rounding_mode: str = Field(default="ROUND_HALF_UP", description="Decimal rounding mode")
+    enable_provenance: bool = Field(default=True, description="Enable calculation provenance tracking")
+    agent_version: str = Field(default="1.0.0", description="Agent version for provenance tracking")
 
     @validator('precision')
     def validate_precision(cls, v):
@@ -61,6 +71,7 @@ class CalculatorResult(AgentResult):
     units: Optional[str] = Field(default=None, description="Units of final result")
     precision: int = Field(default=6, description="Precision used")
     cached: bool = Field(default=False, description="Whether result was cached")
+    provenance: Optional[Dict[str, Any]] = Field(default=None, description="Calculation provenance record")
 
 
 class UnitConverter:
@@ -169,6 +180,9 @@ class BaseCalculator(BaseAgent):
         # Cache for calculation results
         self._calc_cache: Dict[str, Any] = {}
         self._calculation_steps: List[CalculationStep] = []
+
+        # Provenance tracking
+        self._current_provenance: Optional[CalculationProvenance] = None
 
     @abstractmethod
     def calculate(self, inputs: Dict[str, Any]) -> Any:
@@ -280,6 +294,55 @@ class BaseCalculator(BaseAgent):
         )
         self._calculation_steps.append(step)
 
+    def record_provenance_step(
+        self,
+        operation: str,
+        description: str,
+        inputs: Dict[str, Any],
+        output: Any,
+        formula: Optional[str] = None,
+        data_source: Optional[str] = None,
+        standard_reference: Optional[str] = None,
+        **kwargs
+    ):
+        """
+        Record a calculation step in provenance tracking.
+
+        This method records steps in the standardized CalculationProvenance
+        format for regulatory compliance and audit trails.
+
+        Args:
+            operation: Type of operation (lookup, add, multiply, etc.)
+            description: Human-readable description
+            inputs: Input values for this step
+            output: Output value from this step
+            formula: Mathematical formula (optional)
+            data_source: Source of data (optional, e.g., "EPA eGRID 2023")
+            standard_reference: Standard reference (optional, e.g., "ISO 14064-1")
+            **kwargs: Additional metadata
+
+        Example:
+            >>> self.record_provenance_step(
+            ...     operation="multiply",
+            ...     description="Calculate total emissions",
+            ...     inputs={"fuel_consumption_kg": 1000, "emission_factor": 0.18414},
+            ...     output=184.14,
+            ...     formula="emissions = fuel_consumption * emission_factor",
+            ...     standard_reference="GHG Protocol"
+            ... )
+        """
+        if self._current_provenance is not None and OperationType is not None:
+            self._current_provenance.add_step(
+                operation=operation,
+                description=description,
+                inputs=inputs,
+                output=output,
+                formula=formula,
+                data_source=data_source,
+                standard_reference=standard_reference,
+                **kwargs
+            )
+
     def get_cache_key(self, inputs: Dict[str, Any]) -> str:
         """
         Generate cache key for inputs.
@@ -356,6 +419,16 @@ class BaseCalculator(BaseAgent):
         # Clear previous steps
         self._calculation_steps = []
 
+        # Initialize provenance tracking if enabled
+        if self.config.enable_provenance and CalculationProvenance is not None:
+            calculation_type = input_data.get("calculation_type", self.__class__.__name__)
+            self._current_provenance = CalculationProvenance.create(
+                agent_name=self.config.name,
+                agent_version=self.config.agent_version,
+                calculation_type=calculation_type,
+                input_data=inputs,
+            )
+
         # Check cache
         cache_key = self.get_cache_key(inputs)
         cached_result = self.get_cached_result(cache_key)
@@ -363,6 +436,8 @@ class BaseCalculator(BaseAgent):
         if cached_result is not None:
             self.logger.debug(f"Using cached result for {cache_key[:8]}...")
             self.stats.increment("cache_hits")
+
+            # Note: Cached results don't have provenance tracking
             return CalculatorResult(
                 success=True,
                 result_value=cached_result,
@@ -380,6 +455,12 @@ class BaseCalculator(BaseAgent):
             if isinstance(result, (int, float, Decimal)):
                 result = float(self.round_decimal(result))
 
+            # Finalize provenance if enabled
+            provenance_dict = None
+            if self._current_provenance is not None:
+                self._current_provenance.finalize(output_data={"result": result})
+                provenance_dict = self._current_provenance.to_dict()
+
             # Cache result
             self.cache_result(cache_key, result)
 
@@ -389,11 +470,17 @@ class BaseCalculator(BaseAgent):
                 calculation_steps=self._calculation_steps,
                 precision=self.config.precision,
                 cached=False,
+                provenance=provenance_dict,
                 data={"result": result, "inputs": inputs}
             )
 
         except Exception as e:
             self.logger.error(f"Calculation failed: {str(e)}", exc_info=True)
+
+            # Record error in provenance
+            if self._current_provenance is not None:
+                self._current_provenance.add_error(str(e))
+
             return CalculatorResult(
                 success=False,
                 error=str(e),

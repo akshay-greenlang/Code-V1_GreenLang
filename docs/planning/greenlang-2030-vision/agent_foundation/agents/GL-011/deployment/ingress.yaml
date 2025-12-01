@@ -1,0 +1,228 @@
+# GL-011 FUELCRAFT - Kubernetes Ingress
+# HTTPS ingress with automatic TLS/SSL via cert-manager
+# Rate limiting, authentication, and traffic management
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-011-fuelcraft-ingress
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    agent: "GL-011"
+    version: "1.0.0"
+  annotations:
+    # NGINX Ingress Controller annotations
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
+    # SSL/TLS configuration
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-protocols: "TLSv1.2 TLSv1.3"
+    nginx.ingress.kubernetes.io/ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256"
+
+    # Rate limiting (production-grade)
+    nginx.ingress.kubernetes.io/limit-rps: "100"           # Max 100 requests/sec per IP
+    nginx.ingress.kubernetes.io/limit-connections: "10"    # Max 10 concurrent connections
+    nginx.ingress.kubernetes.io/limit-whitelist: "10.0.0.0/8,172.16.0.0/12"  # No limits for internal IPs
+
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.greenlang.ai"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET,POST,PUT,DELETE,OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type,Authorization,X-API-Key,X-Fuel-Type"
+    nginx.ingress.kubernetes.io/cors-expose-headers: "Content-Type,X-Request-ID,X-Optimization-ID"
+    nginx.ingress.kubernetes.io/cors-max-age: "86400"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+      more_set_headers "Permissions-Policy: geolocation=(), microphone=(), camera=()";
+      more_set_headers "X-Agent-ID: GL-011";
+
+    # Request/response size limits (larger for fuel data uploads)
+    nginx.ingress.kubernetes.io/client-max-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+
+    # Connection management
+    nginx.ingress.kubernetes.io/upstream-keepalive-connections: "32"
+    nginx.ingress.kubernetes.io/upstream-keepalive-timeout: "60"
+
+    # Proxy settings
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "120"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "120"
+
+    # Logging
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "false"
+
+spec:
+  # TLS configuration
+  tls:
+    - hosts:
+        - fuelcraft.greenlang.io
+        - api.fuelcraft.greenlang.io
+      secretName: gl-011-tls-cert
+
+  # HTTP routing rules
+  rules:
+    - host: fuelcraft.greenlang.io
+      http:
+        paths:
+          # Main API endpoints
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-011-fuelcraft
+                port:
+                  number: 8080
+
+          # Health check endpoints
+          - path: /api/v1/health
+            pathType: Exact
+            backend:
+              service:
+                name: gl-011-fuelcraft
+                port:
+                  number: 8080
+
+          - path: /api/v1/ready
+            pathType: Exact
+            backend:
+              service:
+                name: gl-011-fuelcraft
+                port:
+                  number: 8080
+
+    # Alternative API subdomain
+    - host: api.fuelcraft.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-011-fuelcraft
+                port:
+                  number: 8080
+
+---
+# Certificate Issuer configuration (Let's Encrypt)
+# Install cert-manager first: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: gl-011-fuelcraft-cert
+  namespace: greenlang
+spec:
+  secretName: gl-011-tls-cert
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: fuelcraft.greenlang.io
+  dnsNames:
+    - fuelcraft.greenlang.io
+    - api.fuelcraft.greenlang.io
+  privateKey:
+    algorithm: RSA
+    size: 4096
+
+---
+# Development Ingress (self-signed certificate)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-011-fuelcraft-ingress-dev
+  namespace: greenlang-dev
+  labels:
+    app: gl-011-fuelcraft
+    environment: development
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "selfsigned-issuer"
+    nginx.ingress.kubernetes.io/limit-rps: "200"  # Higher limit for dev testing
+
+spec:
+  tls:
+    - hosts:
+        - gl-011-dev.greenlang.local
+      secretName: gl-011-tls-dev
+
+  rules:
+    - host: gl-011-dev.greenlang.local
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-011-fuelcraft
+                port:
+                  number: 8080
+
+---
+# Staging Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-011-fuelcraft-ingress-staging
+  namespace: greenlang-staging
+  labels:
+    app: gl-011-fuelcraft
+    environment: staging
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    nginx.ingress.kubernetes.io/limit-rps: "50"
+
+spec:
+  tls:
+    - hosts:
+        - staging-fuelcraft.greenlang.io
+      secretName: gl-011-tls-staging
+
+  rules:
+    - host: staging-fuelcraft.greenlang.io
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-011-fuelcraft
+                port:
+                  number: 8080
+
+---
+# Internal Ingress (no TLS, for internal-only access)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-011-fuelcraft-ingress-internal
+  namespace: greenlang
+  labels:
+    app: gl-011-fuelcraft
+    access: internal-only
+  annotations:
+    kubernetes.io/ingress.class: "nginx-internal"
+    nginx.ingress.kubernetes.io/auth-type: "basic"
+    nginx.ingress.kubernetes.io/auth-secret: "gl-011-basic-auth"
+
+spec:
+  rules:
+    - host: gl-011.internal.greenlang
+      http:
+        paths:
+          - path: /api/v1
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-011-fuelcraft
+                port:
+                  number: 8080

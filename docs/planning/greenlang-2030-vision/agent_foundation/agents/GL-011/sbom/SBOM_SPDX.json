@@ -1,0 +1,353 @@
+{
+  "spdxVersion": "SPDX-2.3",
+  "dataLicense": "CC0-1.0",
+  "SPDXID": "SPDXRef-DOCUMENT",
+  "name": "GL-011-FUELCRAFT-SBOM",
+  "documentNamespace": "https://greenlang.io/sbom/gl-011-fuelcraft/1.0.0/2025-12-01",
+  "creationInfo": {
+    "created": "2025-12-01T00:00:00Z",
+    "creators": [
+      "Tool: GreenLang SBOM Generator-1.0.0",
+      "Organization: GreenLang Foundation",
+      "Person: GreenLang Industrial Optimization Team"
+    ],
+    "licenseListVersion": "3.21",
+    "comment": "This SBOM describes the software components of GL-011 FuelManagementOrchestrator for multi-fuel optimization operations"
+  },
+  "packages": [
+    {
+      "SPDXID": "SPDXRef-Package-GL011-FuelCraft",
+      "name": "GL-011-FUELCRAFT",
+      "versionInfo": "1.0.0",
+      "packageFileName": "gl-011-fuelcraft-1.0.0",
+      "supplier": "Organization: GreenLang Foundation (https://greenlang.io)",
+      "originator": "Organization: GreenLang Foundation",
+      "downloadLocation": "NOASSERTION",
+      "filesAnalyzed": false,
+      "homepage": "https://greenlang.io/agents/gl-011",
+      "licenseConcluded": "Proprietary",
+      "licenseDeclared": "Proprietary",
+      "copyrightText": "Copyright 2025 GreenLang Foundation. All Rights Reserved.",
+      "summary": "Master orchestrator for multi-fuel optimization operations across industrial facilities",
+      "description": "GL-011 FuelManagementOrchestrator provides comprehensive fuel management for coal, natural gas, biomass, hydrogen, and other fuel types. Features include: multi-fuel optimization, cost optimization with real-time market pricing, fuel blending algorithms, carbon footprint minimization, calorific value calculations per ISO standards, emissions factor management, procurement and inventory optimization, and complete SHA-256 provenance tracking.",
+      "externalRefs": [
+        {
+          "referenceCategory": "PACKAGE-MANAGER",
+          "referenceType": "purl",
+          "referenceLocator": "pkg:pypi/gl-011-fuelcraft@1.0.0"
+        },
+        {
+          "referenceCategory": "SECURITY",
+          "referenceType": "url",
+          "referenceLocator": "https://greenlang.io/security/gl-011/vulnerability-report.json"
+        }
+      ]
+    },
+    {
+      "SPDXID": "SPDXRef-pydantic",
+      "name": "pydantic",
+      "versionInfo": "2.5.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pydantic/2.5.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION",
+      "description": "Data validation using Python type hints - Critical for fuel specification validation"
+    },
+    {
+      "SPDXID": "SPDXRef-pydantic-settings",
+      "name": "pydantic-settings",
+      "versionInfo": "2.1.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pydantic-settings/2.1.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-cryptography",
+      "name": "cryptography",
+      "versionInfo": "42.0.5",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/cryptography/42.0.5/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "description": "Cryptographic primitives for secure market data transmission and provenance hashing"
+    },
+    {
+      "SPDXID": "SPDXRef-PyJWT",
+      "name": "PyJWT",
+      "versionInfo": "2.8.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/PyJWT/2.8.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-httpx",
+      "name": "httpx",
+      "versionInfo": "0.26.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/httpx/0.26.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "description": "HTTP client for market data provider API integration"
+    },
+    {
+      "SPDXID": "SPDXRef-aiohttp",
+      "name": "aiohttp",
+      "versionInfo": "3.9.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/aiohttp/3.9.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "description": "Async HTTP framework for real-time fuel pricing feeds"
+    },
+    {
+      "SPDXID": "SPDXRef-requests",
+      "name": "requests",
+      "versionInfo": "2.31.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/requests/2.31.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-asyncpg",
+      "name": "asyncpg",
+      "versionInfo": "0.29.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/asyncpg/0.29.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "description": "PostgreSQL client for fuel inventory and pricing database"
+    },
+    {
+      "SPDXID": "SPDXRef-sqlalchemy",
+      "name": "sqlalchemy",
+      "versionInfo": "2.0.25",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/sqlalchemy/2.0.25/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION",
+      "description": "ORM for fuel procurement and inventory management"
+    },
+    {
+      "SPDXID": "SPDXRef-redis",
+      "name": "redis",
+      "versionInfo": "5.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/redis/5.0.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION",
+      "description": "Cache for fuel optimization results and market prices"
+    },
+    {
+      "SPDXID": "SPDXRef-pyyaml",
+      "name": "pyyaml",
+      "versionInfo": "6.0.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/pyyaml/6.0.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-tenacity",
+      "name": "tenacity",
+      "versionInfo": "8.2.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/tenacity/8.2.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "description": "Retry logic for market data API connections"
+    },
+    {
+      "SPDXID": "SPDXRef-prometheus-client",
+      "name": "prometheus-client",
+      "versionInfo": "0.19.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/prometheus-client/0.19.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "Apache-2.0",
+      "copyrightText": "NOASSERTION",
+      "description": "Metrics collection for fuel optimization performance monitoring"
+    },
+    {
+      "SPDXID": "SPDXRef-anthropic",
+      "name": "anthropic",
+      "versionInfo": "0.18.1",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/anthropic/0.18.1/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION",
+      "description": "AI client for fuel recommendation explanations (non-critical path)"
+    },
+    {
+      "SPDXID": "SPDXRef-openai",
+      "name": "openai",
+      "versionInfo": "1.12.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/openai/1.12.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION",
+      "description": "AI client for natural language interfaces (non-critical path)"
+    },
+    {
+      "SPDXID": "SPDXRef-langchain",
+      "name": "langchain",
+      "versionInfo": "0.1.9",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/langchain/0.1.9/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION",
+      "description": "LLM orchestration framework for conversational interfaces"
+    },
+    {
+      "SPDXID": "SPDXRef-langchain-core",
+      "name": "langchain-core",
+      "versionInfo": "0.1.27",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/langchain-core/0.1.27/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "MIT",
+      "copyrightText": "NOASSERTION"
+    },
+    {
+      "SPDXID": "SPDXRef-numpy",
+      "name": "numpy",
+      "versionInfo": "1.26.3",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/numpy/1.26.3/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "description": "Numerical computing for fuel optimization algorithms"
+    },
+    {
+      "SPDXID": "SPDXRef-scipy",
+      "name": "scipy",
+      "versionInfo": "1.12.0",
+      "supplier": "NOASSERTION",
+      "downloadLocation": "https://pypi.org/project/scipy/1.12.0/",
+      "filesAnalyzed": false,
+      "licenseConcluded": "BSD-3-Clause",
+      "copyrightText": "NOASSERTION",
+      "description": "Scientific computing for linear programming fuel optimization"
+    }
+  ],
+  "relationships": [
+    {
+      "spdxElementId": "SPDXRef-DOCUMENT",
+      "relationshipType": "DESCRIBES",
+      "relatedSpdxElement": "SPDXRef-Package-GL011-FuelCraft"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pydantic"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pydantic-settings"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-cryptography"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-PyJWT"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-httpx"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-aiohttp"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-requests"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-asyncpg"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-sqlalchemy"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-redis"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-pyyaml"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-tenacity"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-prometheus-client"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-anthropic"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-openai"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-langchain"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-langchain-core"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-numpy"
+    },
+    {
+      "spdxElementId": "SPDXRef-Package-GL011-FuelCraft",
+      "relationshipType": "DEPENDS_ON",
+      "relatedSpdxElement": "SPDXRef-scipy"
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+apiVersion: greenlang.io/v2
+kind: AgentSpec
+metadata:
+  name: FuelManagementOrchestrator
+  version: 1.0.0
+  labels:
+    type: optimizer
+    category: Fuel Management
+    id: GL-011
+  annotations:
+    description: Multi-fuel optimization and procurement agent for industrial facilities
+    created_by: GreenLang Industrial Optimization Team
+    created_date: '2025-12-01'
+    standards_compliance:
+      - ISO 6976:2016
+      - ISO 17225
+      - ASTM D4809
+      - GHG Protocol
+      - IPCC Guidelines
+spec:
+  inputs:
+    - name: fuel_optimization_request
+      description: Request for fuel optimization including energy demand and constraints
+      format: json
+      schema: |
+        {
+          "site_id": "string",
+          "plant_id": "string",
+          "request_type": "string",  // multi_fuel, cost_optimization, blending, carbon_footprint, procurement
+          "energy_demand_mw": "number",
+          "available_fuels": ["string"],
+          "fuel_inventories": {"fuel_type": "number"},
+          "market_prices": {"fuel_type": "number"},
+          "emission_limits": {"pollutant": "number"},
+          "optimization_objective": "string",  // minimize_cost, minimize_emissions, balanced, etc.
+          "time_horizon_hours": "integer",
+          "constraints": {}
+        }
+      required: true
+    - name: fuel_specifications
+      description: Technical specifications for available fuels
+      format: json
+      schema: |
+        {
+          "fuel_id": "string",
+          "fuel_type": "string",
+          "heating_value_mj_kg": "number",
+          "carbon_content_percent": "number",
+          "emission_factor_co2_kg_gj": "number",
+          "is_renewable": "boolean"
+        }
+      required: true
+    - name: market_data
+      description: Real-time fuel market pricing data
+      format: json
+      schema: |
+        {
+          "fuel_id": "string",
+          "current_price": "number",
+          "price_unit": "string",
+          "currency": "string",
+          "timestamp": "ISO8601"
+        }
+      required: false
+  outputs:
+    - name: optimization_result
+      description: Comprehensive fuel optimization results
+      format: json
+      schema: |
+        {
+          "optimal_fuel_mix": {"fuel_type": "number"},
+          "fuel_quantities": {"fuel_type": "number"},
+          "total_cost_usd": "number",
+          "cost_per_mwh": "number",
+          "total_emissions_kg": {"pollutant": "number"},
+          "carbon_intensity_kg_mwh": "number",
+          "efficiency_percent": "number",
+          "renewable_share": "number",
+          "optimization_score": "number",
+          "recommendations": [{}],
+          "provenance_hash": "string"
+        }
+    - name: kpi_dashboard
+      description: Key performance indicators for fuel management
+      format: json
+      schema: |
+        {
+          "operational_kpis": {},
+          "cost_kpis": {},
+          "emissions_kpis": {},
+          "inventory_kpis": {},
+          "optimization_kpis": {},
+          "recommendations_summary": {}
+        }
+    - name: provenance_record
+      description: Complete calculation audit trail
+      format: json
+      schema: |
+        {
+          "calculation_hash": "SHA-256",
+          "tool_calls": ["string"],
+          "data_sources": ["string"],
+          "confidence_level": "number",
+          "timestamp": "ISO8601"
+        }
+  capabilities:
+    - multi_fuel_optimization
+    - cost_minimization
+    - emissions_minimization
+    - fuel_blending_optimization
+    - carbon_footprint_calculation
+    - procurement_optimization
+    - inventory_management
+    - transition_planning
+    - demand_forecasting
+    - real_time_price_integration
+  requirements:
+    python: '>=3.11'
+    memory_mb: 1024
+    cpu_cores: 2
+    gpu_required: false
+    network_access: true
+    deterministic: true
+    zero_hallucination: true

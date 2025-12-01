@@ -61,6 +61,7 @@ dependencies = [
   "requests==2.31.0",
   "networkx==3.2.1",
   "tenacity==8.2.3",
+  "pybreaker==1.0.1",
   "psutil==5.9.8",
 ]
 
