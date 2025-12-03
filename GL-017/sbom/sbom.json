@@ -1,0 +1,218 @@
+{
+  "$schema": "http://cyclonedx.org/schema/bom-1.5.schema.json",
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "serialNumber": "urn:uuid:gl-017-condensync-sbom-v1",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2024-12-02T00:00:00Z",
+    "tools": [
+      {
+        "vendor": "GreenLang",
+        "name": "GL-SBOM-Generator",
+        "version": "1.0.0"
+      }
+    ],
+    "authors": [
+      {
+        "name": "GreenLang AI Team",
+        "email": "engineering@greenlang.ai"
+      }
+    ],
+    "component": {
+      "type": "application",
+      "bom-ref": "gl-017-condensync",
+      "name": "GL-017 CONDENSYNC",
+      "version": "1.0.0",
+      "description": "CondenserOptimizationAgent for Steam Systems - Optimizes condenser performance for maximum heat recovery",
+      "purl": "pkg:pypi/gl-017-condensync@1.0.0",
+      "licenses": [
+        {
+          "license": {
+            "id": "LicenseRef-GreenLang-Proprietary"
+          }
+        }
+      ],
+      "supplier": {
+        "name": "GreenLang AI",
+        "url": ["https://greenlang.ai"]
+      }
+    },
+    "manufacture": {
+      "name": "GreenLang AI",
+      "url": ["https://greenlang.ai"]
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "bom-ref": "fastapi",
+      "name": "fastapi",
+      "version": "0.109.0",
+      "purl": "pkg:pypi/fastapi@0.109.0",
+      "licenses": [{"license": {"id": "MIT"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "uvicorn",
+      "name": "uvicorn",
+      "version": "0.27.0",
+      "purl": "pkg:pypi/uvicorn@0.27.0",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pydantic",
+      "name": "pydantic",
+      "version": "2.5.0",
+      "purl": "pkg:pypi/pydantic@2.5.0",
+      "licenses": [{"license": {"id": "MIT"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "numpy",
+      "name": "numpy",
+      "version": "1.24.0",
+      "purl": "pkg:pypi/numpy@1.24.0",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "scipy",
+      "name": "scipy",
+      "version": "1.11.0",
+      "purl": "pkg:pypi/scipy@1.11.0",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pandas",
+      "name": "pandas",
+      "version": "2.0.0",
+      "purl": "pkg:pypi/pandas@2.0.0",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "coolprop",
+      "name": "CoolProp",
+      "version": "6.6.0",
+      "purl": "pkg:pypi/coolprop@6.6.0",
+      "licenses": [{"license": {"id": "MIT"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "iapws",
+      "name": "iapws",
+      "version": "1.5.0",
+      "purl": "pkg:pypi/iapws@1.5.0",
+      "licenses": [{"license": {"id": "GPL-3.0"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "asyncua",
+      "name": "asyncua",
+      "version": "1.0.0",
+      "purl": "pkg:pypi/asyncua@1.0.0",
+      "licenses": [{"license": {"id": "LGPL-3.0"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "pymodbus",
+      "name": "pymodbus",
+      "version": "3.6.0",
+      "purl": "pkg:pypi/pymodbus@3.6.0",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "prometheus-client",
+      "name": "prometheus-client",
+      "version": "0.19.0",
+      "purl": "pkg:pypi/prometheus-client@0.19.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "redis",
+      "name": "redis",
+      "version": "5.0.0",
+      "purl": "pkg:pypi/redis@5.0.0",
+      "licenses": [{"license": {"id": "MIT"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "asyncpg",
+      "name": "asyncpg",
+      "version": "0.29.0",
+      "purl": "pkg:pypi/asyncpg@0.29.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "httpx",
+      "name": "httpx",
+      "version": "0.26.0",
+      "purl": "pkg:pypi/httpx@0.26.0",
+      "licenses": [{"license": {"id": "BSD-3-Clause"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "structlog",
+      "name": "structlog",
+      "version": "24.1.0",
+      "purl": "pkg:pypi/structlog@24.1.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "aiokafka",
+      "name": "aiokafka",
+      "version": "0.10.0",
+      "purl": "pkg:pypi/aiokafka@0.10.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "tenacity",
+      "name": "tenacity",
+      "version": "8.2.0",
+      "purl": "pkg:pypi/tenacity@8.2.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}]
+    },
+    {
+      "type": "library",
+      "bom-ref": "opentelemetry-api",
+      "name": "opentelemetry-api",
+      "version": "1.22.0",
+      "purl": "pkg:pypi/opentelemetry-api@1.22.0",
+      "licenses": [{"license": {"id": "Apache-2.0"}}]
+    }
+  ],
+  "dependencies": [
+    {
+      "ref": "gl-017-condensync",
+      "dependsOn": [
+        "fastapi",
+        "uvicorn",
+        "pydantic",
+        "numpy",
+        "scipy",
+        "pandas",
+        "coolprop",
+        "iapws",
+        "asyncua",
+        "pymodbus",
+        "prometheus-client",
+        "redis",
+        "asyncpg",
+        "httpx",
+        "structlog",
+        "aiokafka",
+        "tenacity",
+        "opentelemetry-api"
+      ]
+    }
+  ],
+  "vulnerabilities": []
+}

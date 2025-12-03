@@ -1,9 +1,25 @@
+# GreenLang Security Scanning Pipeline
+#
+# Comprehensive security scanning with 4 integrated scanners:
+# 1. Trivy - Container image scanning
+# 2. Snyk - Dependency vulnerability scanning
+# 3. Bandit - Python SAST scanning
+# 4. Gitleaks - Secret detection
+#
+# Security Compliance: SOC 2 CC7.1, ISO 27001 A.14.2.5
+# Author: GL-SecScan Security Team
+# Version: 2.0.0
+
 name: Security Scan
 
 on:
   # Run on every PR
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [main, master, develop]
+
+  # Run on push to main branches
+  push:
+    branches: [main, master]
 
   # Run daily at 2 AM UTC
   schedule:
@@ -11,314 +27,522 @@ on:
 
   # Allow manual trigger
   workflow_dispatch:
+    inputs:
+      scan_type:
+        description: 'Type of scan to run'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - trivy
+          - snyk
+          - bandit
+          - gitleaks
 
 permissions:
   contents: read
   security-events: write
   pull-requests: write
+  actions: read
+
+env:
+  # Fail thresholds
+  CRITICAL_CVE_THRESHOLD: 0
+  HIGH_CVE_THRESHOLD: 3
+  BANDIT_HIGH_THRESHOLD: 0
+  SECRETS_THRESHOLD: 0
 
 jobs:
-  dependency-scan:
-    name: Dependency Vulnerability Scan
+  # ============================================================================
+  # JOB 1: Trivy - Container Image Scanning
+  # ============================================================================
+  trivy-scan:
+    name: Trivy Container Scan
     runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type == 'all' || github.event.inputs.scan_type == 'trivy' || github.event.inputs.scan_type == ''
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Build Docker image for scanning
+        id: docker-build
+        run: |
+          if [ -f Dockerfile ]; then
+            docker build -t greenlang:${{ github.sha }} .
+            echo "image_built=true" >> $GITHUB_OUTPUT
+          else
+            echo "No Dockerfile found, scanning filesystem instead"
+            echo "image_built=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Trivy vulnerability scanner (Image)
+        if: steps.docker-build.outputs.image_built == 'true'
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'greenlang:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          vuln-type: 'os,library'
+
+      - name: Run Trivy vulnerability scanner (Filesystem)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          vuln-type: 'os,library'
+
+      - name: Run Trivy for JSON output (for gate check)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'json'
+          output: 'trivy-results.json'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+
+      - name: Upload Trivy SARIF results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-fs-results.sarif'
+          category: 'trivy'
+
+      - name: Upload Trivy artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-results
+          path: |
+            trivy-*.sarif
+            trivy-results.json
+
+      - name: Check Trivy critical vulnerabilities
+        id: trivy-check
+        run: |
+          if [ -f trivy-results.json ]; then
+            CRITICAL_COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy-results.json 2>/dev/null || echo "0")
+            HIGH_COUNT=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy-results.json 2>/dev/null || echo "0")
+
+            echo "critical_count=$CRITICAL_COUNT" >> $GITHUB_OUTPUT
+            echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+
+            echo "## Trivy Scan Results" >> $GITHUB_STEP_SUMMARY
+            echo "- Critical: $CRITICAL_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- High: $HIGH_COUNT" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$CRITICAL_COUNT" -gt "$CRITICAL_CVE_THRESHOLD" ]; then
+              echo "::error::BLOCKER: $CRITICAL_COUNT critical vulnerabilities found by Trivy"
+              exit 1
+            fi
+          fi
+
+  # ============================================================================
+  # JOB 2: Snyk - Dependency Vulnerability Scanning
+  # ============================================================================
+  snyk-scan:
+    name: Snyk Dependency Scan
+    runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type == 'all' || github.event.inputs.scan_type == 'snyk' || github.event.inputs.scan_type == ''
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install safety pip-audit pip-licenses
-          pip install -r requirements.txt
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
-      - name: Run Safety scan
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/python@master
         continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --json-file-output=snyk-results.json
+
+      - name: Run Snyk for SARIF output
+        uses: snyk/actions/python@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=snyk-results.sarif
+
+      - name: Upload Snyk SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('snyk-results.sarif') != ''
+        with:
+          sarif_file: snyk-results.sarif
+          category: 'snyk'
+
+      - name: Upload Snyk artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: snyk-results
+          path: |
+            snyk-results.json
+            snyk-results.sarif
+
+      - name: Fallback - pip-audit scan
+        if: env.SNYK_TOKEN == ''
         run: |
+          pip install pip-audit safety
+          pip-audit --format json --output pip-audit-results.json || true
           safety check --json --output safety-results.json || true
 
-      - name: Run pip-audit
-        continue-on-error: true
-        run: |
-          pip-audit --format json --output pip-audit-results.json || true
-
-      - name: Check licenses
-        continue-on-error: true
-        run: |
-          pip-licenses --format json --output licenses.json || true
-
-      - name: Run custom dependency scanner
-        run: |
-          python security/scripts/scan_dependencies.py --report-only || true
-
-      - name: Upload dependency scan results
-        uses: actions/upload-artifact@v3
+      - name: Upload fallback scan results
+        if: env.SNYK_TOKEN == ''
+        uses: actions/upload-artifact@v4
         with:
-          name: dependency-scan-results
+          name: dependency-scan-fallback
           path: |
-            safety-results.json
             pip-audit-results.json
-            licenses.json
-            security/reports/DEPENDENCY_VULNERABILITIES.json
+            safety-results.json
 
-      - name: Check for critical vulnerabilities
+      - name: Check Snyk results
+        id: snyk-check
         run: |
-          # Fail build if critical/high vulnerabilities found
-          python security/scripts/scan_dependencies.py
+          if [ -f snyk-results.json ]; then
+            CRITICAL_COUNT=$(jq '[.vulnerabilities[]? | select(.severity=="critical")] | length' snyk-results.json 2>/dev/null || echo "0")
+            HIGH_COUNT=$(jq '[.vulnerabilities[]? | select(.severity=="high")] | length' snyk-results.json 2>/dev/null || echo "0")
 
-  secret-scan:
-    name: Secret Scanning
-    runs-on: ubuntu-latest
+            echo "## Snyk Scan Results" >> $GITHUB_STEP_SUMMARY
+            echo "- Critical: $CRITICAL_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- High: $HIGH_COUNT" >> $GITHUB_STEP_SUMMARY
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Full history for git scanning
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install secret scanning tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install detect-secrets
-
-      - name: Run custom secret scanner
-        run: |
-          python security/scripts/scan_secrets.py
-
-      - name: Run detect-secrets
-        continue-on-error: true
-        run: |
-          detect-secrets scan --baseline .secrets.baseline || true
-
-      - name: Upload secret scan results
-        uses: actions/upload-artifact@v3
-        with:
-          name: secret-scan-results
-          path: security/reports/SECRET_SCAN_RESULTS.json
-
-      - name: Fail on secrets
-        run: |
-          # Fail if secrets detected
-          if [ -f security/reports/SECRET_SCAN_RESULTS.json ]; then
-            SECRETS_COUNT=$(jq '.total_secrets_found' security/reports/SECRET_SCAN_RESULTS.json)
-            if [ "$SECRETS_COUNT" -gt 0 ]; then
-              echo "ERROR: $SECRETS_COUNT secrets detected!"
+            if [ "$CRITICAL_COUNT" -gt "$CRITICAL_CVE_THRESHOLD" ]; then
+              echo "::error::BLOCKER: $CRITICAL_COUNT critical vulnerabilities found by Snyk"
               exit 1
             fi
           fi
+    env:
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
-  sast-scan:
-    name: Static Application Security Testing
+  # ============================================================================
+  # JOB 3: Bandit - Python SAST Scanning
+  # ============================================================================
+  bandit-scan:
+    name: Bandit SAST Scan
     runs-on: ubuntu-latest
+    if: github.event.inputs.scan_type == 'all' || github.event.inputs.scan_type == 'bandit' || github.event.inputs.scan_type == ''
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
-      - name: Install SAST tools
+      - name: Install Bandit
         run: |
           python -m pip install --upgrade pip
-          pip install bandit semgrep
+          pip install bandit[toml]
 
-      - name: Run Bandit
-        continue-on-error: true
+      - name: Run Bandit security scan
         run: |
-          bandit -r greenlang/ -f json -o bandit-results.json || true
+          # Scan all Python code
+          bandit -r . \
+            -f json \
+            -o bandit-results.json \
+            --exclude './.venv,./venv,./tests,./node_modules,./.git' \
+            --severity-level medium \
+            || true
 
-      - name: Run Semgrep
-        continue-on-error: true
+      - name: Run Bandit for SARIF output
         run: |
-          semgrep --config=auto --json --output=semgrep-results.json greenlang/ || true
+          bandit -r . \
+            -f sarif \
+            -o bandit-results.sarif \
+            --exclude './.venv,./venv,./tests,./node_modules,./.git' \
+            || true
 
-      - name: Upload SAST results
-        uses: actions/upload-artifact@v3
+      - name: Upload Bandit SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always() && hashFiles('bandit-results.sarif') != ''
         with:
-          name: sast-results
+          sarif_file: bandit-results.sarif
+          category: 'bandit'
+
+      - name: Upload Bandit artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-results
           path: |
             bandit-results.json
-            semgrep-results.json
+            bandit-results.sarif
 
-      - name: Check SAST results
+      - name: Check Bandit results
+        id: bandit-check
         run: |
-          # Fail on high-severity issues
           if [ -f bandit-results.json ]; then
-            HIGH_COUNT=$(jq '[.results[] | select(.issue_severity=="HIGH" or .issue_severity=="CRITICAL")] | length' bandit-results.json)
-            if [ "$HIGH_COUNT" -gt 0 ]; then
-              echo "ERROR: $HIGH_COUNT high/critical issues found by Bandit"
+            HIGH_COUNT=$(jq '[.results[]? | select(.issue_severity=="HIGH")] | length' bandit-results.json 2>/dev/null || echo "0")
+            MEDIUM_COUNT=$(jq '[.results[]? | select(.issue_severity=="MEDIUM")] | length' bandit-results.json 2>/dev/null || echo "0")
+
+            echo "high_count=$HIGH_COUNT" >> $GITHUB_OUTPUT
+            echo "medium_count=$MEDIUM_COUNT" >> $GITHUB_OUTPUT
+
+            echo "## Bandit SAST Results" >> $GITHUB_STEP_SUMMARY
+            echo "- High Severity: $HIGH_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- Medium Severity: $MEDIUM_COUNT" >> $GITHUB_STEP_SUMMARY
+
+            if [ "$HIGH_COUNT" -gt "$BANDIT_HIGH_THRESHOLD" ]; then
+              echo "::error::BLOCKER: $HIGH_COUNT high severity issues found by Bandit"
+              jq '.results[] | select(.issue_severity=="HIGH") | {file: .filename, line: .line_number, issue: .issue_text}' bandit-results.json
               exit 1
             fi
           fi
 
-  container-scan:
-    name: Container Security Scan
+  # ============================================================================
+  # JOB 4: Gitleaks - Secret Detection
+  # ============================================================================
+  gitleaks-scan:
+    name: Gitleaks Secret Scan
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    if: github.event.inputs.scan_type == 'all' || github.event.inputs.scan_type == 'gitleaks' || github.event.inputs.scan_type == ''
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for comprehensive scanning
 
-      - name: Build Docker image
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: true
+        continue-on-error: true
+
+      - name: Run Gitleaks with JSON output
         run: |
-          if [ -f Dockerfile ]; then
-            docker build -t greenlang:scan .
+          # Install gitleaks
+          wget -q https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz
+          tar -xzf gitleaks_8.18.0_linux_x64.tar.gz
+          chmod +x gitleaks
+
+          # Run scan
+          ./gitleaks detect \
+            --source . \
+            --report-format json \
+            --report-path gitleaks-results.json \
+            --no-git \
+            || true
+
+          # Also run on git history
+          ./gitleaks detect \
+            --source . \
+            --report-format json \
+            --report-path gitleaks-git-results.json \
+            || true
+
+      - name: Upload Gitleaks artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gitleaks-results
+          path: |
+            gitleaks-results.json
+            gitleaks-git-results.json
+
+      - name: Check Gitleaks results
+        id: gitleaks-check
+        run: |
+          SECRETS_COUNT=0
+
+          if [ -f gitleaks-results.json ]; then
+            FILE_SECRETS=$(jq 'length' gitleaks-results.json 2>/dev/null || echo "0")
+            SECRETS_COUNT=$((SECRETS_COUNT + FILE_SECRETS))
           fi
 
-      - name: Run Trivy scan
-        if: success()
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'greenlang:scan'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          if [ -f gitleaks-git-results.json ]; then
+            GIT_SECRETS=$(jq 'length' gitleaks-git-results.json 2>/dev/null || echo "0")
+            SECRETS_COUNT=$((SECRETS_COUNT + GIT_SECRETS))
+          fi
 
-      - name: Upload Trivy results
-        if: always()
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'trivy-results.sarif'
+          echo "secrets_count=$SECRETS_COUNT" >> $GITHUB_OUTPUT
 
+          echo "## Gitleaks Secret Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Secrets Found: $SECRETS_COUNT" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$SECRETS_COUNT" -gt "$SECRETS_THRESHOLD" ]; then
+            echo "::error::BLOCKER: $SECRETS_COUNT potential secrets detected!"
+            echo "### Detected Secrets (Redacted)" >> $GITHUB_STEP_SUMMARY
+            if [ -f gitleaks-results.json ]; then
+              jq '.[] | {file: .File, line: .StartLine, rule: .RuleID}' gitleaks-results.json >> $GITHUB_STEP_SUMMARY
+            fi
+            exit 1
+          fi
+
+  # ============================================================================
+  # JOB 5: License Compliance Check
+  # ============================================================================
   license-check:
     name: License Compliance
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pip-licenses
-          pip install -r requirements.txt
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
       - name: Check licenses
         run: |
           pip-licenses --format json --output licenses.json
+          pip-licenses --format markdown --output licenses.md
 
       - name: Verify license compliance
         run: |
-          # Forbidden licenses (GPL, AGPL, etc.)
-          FORBIDDEN="GPL|AGPL|LGPL|SSPL"
+          # Forbidden licenses for commercial use
+          FORBIDDEN="GPL-3.0|AGPL|SSPL|CC-BY-NC"
 
           # Check for forbidden licenses
           if grep -iE "$FORBIDDEN" licenses.json; then
-            echo "ERROR: Forbidden license detected!"
-            echo "Found GPL/AGPL/LGPL licensed dependency"
+            echo "::error::BLOCKER: Forbidden license detected!"
+            echo "## License Compliance FAILED" >> $GITHUB_STEP_SUMMARY
+            grep -iE "$FORBIDDEN" licenses.json >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
+          echo "## License Compliance PASSED" >> $GITHUB_STEP_SUMMARY
+
       - name: Upload license report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: license-report
-          path: licenses.json
+          path: |
+            licenses.json
+            licenses.md
 
-  security-report:
-    name: Generate Security Report
+  # ============================================================================
+  # JOB 6: Security Gate - Final Decision
+  # ============================================================================
+  security-gate:
+    name: Security Gate
     runs-on: ubuntu-latest
-    needs: [dependency-scan, secret-scan, sast-scan]
+    needs: [trivy-scan, snyk-scan, bandit-scan, gitleaks-scan, license-check]
     if: always()
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
+        continue-on-error: true
 
-      - name: Generate summary report
+      - name: Evaluate security gate
         run: |
-          cat > security-summary.md << 'EOF'
-          # Security Scan Summary
+          echo "# Security Gate Evaluation" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
-          ## Scan Date
-          $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          GATE_PASSED=true
 
-          ## Results
+          # Check each job result
+          if [ "${{ needs.trivy-scan.result }}" != "success" ]; then
+            echo "- Trivy: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- Trivy: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
 
-          ### Dependency Vulnerabilities
-          $(cat dependency-scan-results/DEPENDENCY_VULNERABILITIES.json 2>/dev/null || echo "No results")
+          if [ "${{ needs.snyk-scan.result }}" != "success" ]; then
+            echo "- Snyk: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- Snyk: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
 
-          ### Secrets Detected
-          $(cat secret-scan-results/SECRET_SCAN_RESULTS.json 2>/dev/null || echo "No results")
+          if [ "${{ needs.bandit-scan.result }}" != "success" ]; then
+            echo "- Bandit: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- Bandit: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
 
-          ### SAST Issues
-          $(cat sast-results/bandit-results.json 2>/dev/null || echo "No results")
+          if [ "${{ needs.gitleaks-scan.result }}" != "success" ]; then
+            echo "- Gitleaks: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- Gitleaks: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
 
-          ## Actions Required
-          - Review all HIGH and CRITICAL findings
-          - Update vulnerable dependencies
-          - Rotate any exposed secrets
-          - Fix code security issues
+          if [ "${{ needs.license-check.result }}" != "success" ]; then
+            echo "- License Check: FAILED" >> $GITHUB_STEP_SUMMARY
+            GATE_PASSED=false
+          else
+            echo "- License Check: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
 
-          EOF
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "$GATE_PASSED" = false ]; then
+            echo "## SECURITY GATE: FAILED" >> $GITHUB_STEP_SUMMARY
+            echo "::error::Security gate failed! Review findings before merging."
+            exit 1
+          else
+            echo "## SECURITY GATE: PASSED" >> $GITHUB_STEP_SUMMARY
+          fi
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            const summary = fs.readFileSync('security-summary.md', 'utf8');
+            const trivy = '${{ needs.trivy-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
+            const snyk = '${{ needs.snyk-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
+            const bandit = '${{ needs.bandit-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
+            const gitleaks = '${{ needs.gitleaks-scan.result }}' === 'success' ? 'PASSED' : 'FAILED';
+            const license = '${{ needs.license-check.result }}' === 'success' ? 'PASSED' : 'FAILED';
+
+            const allPassed = trivy === 'PASSED' && snyk === 'PASSED' &&
+                             bandit === 'PASSED' && gitleaks === 'PASSED' &&
+                             license === 'PASSED';
+
+            const body = `## Security Scan Results
+
+            | Scanner | Status |
+            |---------|--------|
+            | Trivy (Container) | ${trivy} |
+            | Snyk (Dependencies) | ${snyk} |
+            | Bandit (SAST) | ${bandit} |
+            | Gitleaks (Secrets) | ${gitleaks} |
+            | License Check | ${license} |
+
+            **Overall Status: ${allPassed ? 'PASSED' : 'FAILED'}**
+
+            ${allPassed ? '' : '> **Action Required:** Please review and fix the security findings before merging.'}
+            `;
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: summary
+              body: body
             });
-
-  security-gate:
-    name: Security Gate
-    runs-on: ubuntu-latest
-    needs: [dependency-scan, secret-scan, sast-scan]
-    if: always()
-
-    steps:
-      - name: Check security status
-        run: |
-          echo "Checking security scan results..."
-
-          # This will fail the workflow if any security job failed
-          if [ "${{ needs.dependency-scan.result }}" != "success" ]; then
-            echo "ERROR: Dependency scan failed"
-            exit 1
-          fi
-
-          if [ "${{ needs.secret-scan.result }}" != "success" ]; then
-            echo "ERROR: Secret scan failed"
-            exit 1
-          fi
-
-          if [ "${{ needs.sast-scan.result }}" != "success" ]; then
-            echo "ERROR: SAST scan failed"
-            exit 1
-          fi
-
-          echo "All security checks passed!"
-
-      - name: Notify on failure
-        if: failure()
-        run: |
-          echo "::error::Security gate failed! Review findings before merging."

@@ -1,0 +1,279 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gl-017-condensync"
+version = "1.0.0"
+description = "GL-017 CONDENSYNC - CondenserOptimizationAgent for Steam Systems"
+readme = "README.md"
+license = {text = "Proprietary"}
+requires-python = ">=3.10"
+authors = [
+    {name = "GreenLang AI Team", email = "engineering@greenlang.ai"}
+]
+maintainers = [
+    {name = "GreenLang Steam Systems Team", email = "steam-systems@greenlang.ai"}
+]
+keywords = [
+    "condenser",
+    "optimization",
+    "steam-systems",
+    "heat-transfer",
+    "vacuum-optimization",
+    "greenlang",
+    "industrial-ai"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed"
+]
+
+dependencies = [
+    "fastapi>=0.109.0,<1.0.0",
+    "uvicorn[standard]>=0.27.0,<1.0.0",
+    "pydantic>=2.5.0,<3.0.0",
+    "pydantic-settings>=2.1.0,<3.0.0",
+    "numpy>=1.24.0,<2.0.0",
+    "scipy>=1.11.0,<2.0.0",
+    "pandas>=2.0.0,<3.0.0",
+    "httpx>=0.26.0,<1.0.0",
+    "asyncpg>=0.29.0,<1.0.0",
+    "redis>=5.0.0,<6.0.0",
+    "prometheus-client>=0.19.0,<1.0.0",
+    "structlog>=24.1.0,<25.0.0",
+    "python-json-logger>=2.0.0,<3.0.0",
+    "tenacity>=8.2.0,<9.0.0",
+    "CoolProp>=6.6.0,<7.0.0",
+    "iapws>=1.5.0,<2.0.0",
+    "asyncua>=1.0.0,<2.0.0",
+    "pymodbus>=3.6.0,<4.0.0",
+    "aiokafka>=0.10.0,<1.0.0",
+    "aiofiles>=23.2.0,<24.0.0",
+    "python-dateutil>=2.8.0,<3.0.0",
+    "pytz>=2024.1",
+    "croniter>=2.0.0,<3.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0,<8.0.0",
+    "pytest-asyncio>=0.23.0,<1.0.0",
+    "pytest-cov>=4.1.0,<5.0.0",
+    "pytest-mock>=3.12.0,<4.0.0",
+    "pytest-xdist>=3.5.0,<4.0.0",
+    "pytest-timeout>=2.2.0,<3.0.0",
+    "hypothesis>=6.92.0,<7.0.0",
+    "faker>=22.0.0,<23.0.0",
+    "black>=24.1.0,<25.0.0",
+    "ruff>=0.1.14,<1.0.0",
+    "mypy>=1.8.0,<2.0.0",
+    "pre-commit>=3.6.0,<4.0.0",
+    "bandit>=1.7.7,<2.0.0",
+    "safety>=2.3.0,<3.0.0"
+]
+
+telemetry = [
+    "opentelemetry-api>=1.22.0,<2.0.0",
+    "opentelemetry-sdk>=1.22.0,<2.0.0",
+    "opentelemetry-exporter-otlp>=1.22.0,<2.0.0",
+    "opentelemetry-instrumentation-fastapi>=0.43b0,<1.0.0",
+    "opentelemetry-instrumentation-httpx>=0.43b0,<1.0.0"
+]
+
+visualization = [
+    "matplotlib>=3.8.0,<4.0.0",
+    "plotly>=5.18.0,<6.0.0",
+    "seaborn>=0.13.0,<1.0.0"
+]
+
+reporting = [
+    "reportlab>=4.0.0,<5.0.0",
+    "openpyxl>=3.1.0,<4.0.0",
+    "jinja2>=3.1.0,<4.0.0"
+]
+
+ml = [
+    "scikit-learn>=1.4.0,<2.0.0",
+    "statsmodels>=0.14.0,<1.0.0"
+]
+
+all = [
+    "gl-017-condensync[dev,telemetry,visualization,reporting,ml]"
+]
+
+[project.urls]
+Homepage = "https://greenlang.ai/agents/gl-017"
+Documentation = "https://docs.greenlang.ai/agents/gl-017"
+Repository = "https://gitlab.com/greenlang/agents/gl-017-condensync"
+Changelog = "https://gitlab.com/greenlang/agents/gl-017-condensync/-/blob/main/CHANGELOG.md"
+
+[project.scripts]
+gl-017 = "condenser_optimization_agent:main"
+condensync = "condenser_optimization_agent:main"
+
+[project.entry-points."greenlang.agents"]
+gl-017 = "condenser_optimization_agent:CondenserOptimizationAgent"
+
+[tool.setuptools]
+packages = ["calculators", "integrations", "monitoring", "security"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+"*" = ["*.yaml", "*.json", "*.md"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | buck-out
+    | build
+    | dist
+    | __pycache__
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+]
+ignore = [
+    "E501",   # line too long (handled by black)
+    "B008",   # do not perform function calls in argument defaults
+    "C901",   # too complex
+    "ARG001", # unused function argument
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["ARG001", "S101"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+follow_imports = "silent"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+    "CoolProp.*",
+    "iapws.*",
+    "asyncua.*",
+    "pymodbus.*",
+    "aiokafka.*"
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = [
+    "-ra",
+    "-q",
+    "--strict-markers",
+    "--strict-config",
+    "--cov=.",
+    "--cov-report=term-missing",
+    "--cov-report=html:coverage_html",
+    "--cov-report=xml:coverage.xml",
+    "--cov-fail-under=85"
+]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "e2e: End-to-end tests",
+    "performance: Performance tests",
+    "determinism: Determinism validation tests",
+    "security: Security tests",
+    "compliance: Compliance validation tests",
+    "scada: SCADA integration tests",
+    "cooling_tower: Cooling tower integration tests",
+    "slow: Slow running tests"
+]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning"
+]
+
+[tool.coverage.run]
+source = ["."]
+branch = true
+omit = [
+    "tests/*",
+    "*/site-packages/*",
+    "*/__pycache__/*",
+    "setup.py",
+    "example_usage.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+fail_under = 85
+show_missing = true
+
+[tool.coverage.html]
+directory = "coverage_html"
+
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv"]
+skips = ["B101", "B104"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["calculators", "integrations", "monitoring", "security"]
+known_third_party = ["fastapi", "pydantic", "numpy", "scipy", "pandas"]

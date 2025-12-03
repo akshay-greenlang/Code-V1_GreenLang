@@ -1,0 +1,865 @@
+# ==============================================================================
+# GL-016 WATERGUARD Boiler Water Treatment Agent
+# Pack Manifest (pack.yaml)
+# ==============================================================================
+# Pack Schema Version: 1.0
+# Agent ID: GL-016
+# Codename: WATERGUARD
+# ==============================================================================
+
+kind: Pack
+pack_schema_version: "1.0"
+license: Apache-2.0
+
+# ==============================================================================
+# AGENT METADATA
+# ==============================================================================
+metadata:
+  # Core Identification
+  agent_id: GL-016
+  codename: WATERGUARD
+  name: BoilerWaterTreatmentAgent
+  version: "1.0.0"
+
+  # Classification
+  category: controller
+  type: controller
+  domain: boiler_systems
+
+  # Business Priority
+  priority: high
+  business_priority: P1
+  market_tam: "$5B"
+  target_date: "Q2 2026"
+
+  # Description
+  description: >-
+    Optimizes boiler water treatment, blowdown control, and chemical dosing
+    to prevent scale, corrosion, and carryover while minimizing water and
+    energy waste. Uses deterministic calculations following ABMA/ASME standards
+    with zero-hallucination guarantees.
+
+  # Extended Description
+  long_description: |
+    The WATERGUARD agent provides comprehensive boiler water treatment
+    optimization capabilities:
+
+    1. WATER CHEMISTRY OPTIMIZATION
+       - Real-time monitoring of pH, TDS, hardness, alkalinity
+       - Compliance monitoring against ABMA/ASME standards
+       - Dissolved oxygen and corrosive gas control
+       - Silica and chloride management
+       - Chemical residual tracking
+
+    2. BLOWDOWN OPTIMIZATION
+       - Cycles of concentration calculation and optimization
+       - Continuous and intermittent blowdown balancing
+       - Heat recovery opportunity assessment
+       - Water and energy savings quantification
+       - Cost-benefit analysis
+
+    3. CHEMICAL DOSING OPTIMIZATION
+       - Oxygen scavenger dosing optimization
+       - Scale inhibitor program optimization
+       - pH control and alkalinity management
+       - Antifoam and antipriming control
+       - Chemical inventory management
+       - Cost optimization
+
+    4. SCALE RISK ASSESSMENT
+       - Langelier Saturation Index (LSI) calculation
+       - Calcium carbonate scaling prediction
+       - Calcium sulfate scaling assessment
+       - Silica scaling risk evaluation
+       - Mitigation strategy recommendations
+
+    5. CORROSION RISK ASSESSMENT
+       - Oxygen pitting risk evaluation
+       - Caustic gouging assessment
+       - Acidic corrosion detection
+       - Corrosion rate monitoring
+       - Protective measures optimization
+
+    6. PERFORMANCE REPORTING
+       - Water quality compliance tracking
+       - Blowdown efficiency metrics
+       - Chemical usage optimization
+       - Cost savings quantification
+       - Reliability metrics (MTBF, MTTR)
+
+    Zero-Hallucination Guarantee: All calculations use deterministic
+    engineering formulas from ABMA, ASME, ASTM, and NACE standards.
+    No AI is used for numeric calculations, ensuring 100% accuracy
+    and regulatory compliance.
+
+apiVersion: greenlang.io/v1
+
+# ==============================================================================
+# RUNTIME SPECIFICATION
+# ==============================================================================
+spec:
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: main:app
+    deterministic: true
+    temperature: 0.0
+    seed: 42
+    zero_hallucination: true
+    max_retries: 3
+    cache_ttl_seconds: 300
+
+    batch_processing:
+      enabled: true
+      max_batch_size: 1000
+      parallel_workers: 4
+
+  # ============================================================================
+  # DEPENDENCIES
+  # ============================================================================
+  dependencies:
+    required:
+      # Web Framework
+      - fastapi>=0.104.1
+      - uvicorn[standard]>=0.24.0
+      - pydantic>=2.5.0
+      - pydantic-settings>=2.1.0
+
+      # Database & Cache
+      - asyncpg>=0.29.0
+      - sqlalchemy>=2.0.23
+      - redis>=5.0.1
+
+      # Numerical Computing
+      - numpy>=1.26.2
+      - scipy>=1.11.4
+      - pandas>=2.1.3
+
+      # Chemistry Calculations
+      - pychemqt>=0.1.0  # Chemical engineering calculations
+
+      # Industrial Protocols
+      - opcua>=0.98.13
+      - asyncua>=1.0.0
+
+      # Monitoring
+      - prometheus-client>=0.19.0
+
+      # Utilities
+      - python-dateutil>=2.8.2
+      - pytz>=2023.3
+      - pyyaml>=6.0.1
+
+    optional:
+      # Observability
+      - opentelemetry-api>=1.21.0
+      - opentelemetry-sdk>=1.21.0
+      - opentelemetry-exporter-otlp>=1.21.0
+
+      # Advanced Analytics
+      - matplotlib>=3.8.2
+      - seaborn>=0.13.0
+      - plotly>=5.18.0
+
+      # Reporting
+      - reportlab>=4.0.7
+      - openpyxl>=3.1.2
+
+      # Logging
+      - structlog>=23.2.0
+
+    development:
+      - pytest>=7.4.3
+      - pytest-asyncio>=0.21.1
+      - pytest-cov>=4.1.0
+      - black>=23.12.0
+      - ruff>=0.1.7
+      - mypy>=1.7.1
+
+  # ============================================================================
+  # RESOURCE REQUIREMENTS
+  # ============================================================================
+  resources:
+    cpu:
+      requests: "500m"
+      limits: "2000m"
+    memory:
+      requests: "1Gi"
+      limits: "2Gi"
+    storage: "20Gi"
+    gpu: false
+
+  # ============================================================================
+  # NETWORK PORTS
+  # ============================================================================
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      description: "Main API endpoint"
+    - name: metrics
+      port: 9090
+      protocol: TCP
+      description: "Prometheus metrics endpoint"
+    - name: health
+      port: 8081
+      protocol: TCP
+      description: "Health check endpoint"
+
+  # ============================================================================
+  # INPUT SPECIFICATION
+  # ============================================================================
+  inputs:
+    - name: water_chemistry
+      type: object
+      required: true
+      description: "Real-time water quality measurements"
+      schema:
+        boiler_id:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+        boiler_water_ph:
+          type: number
+          range: [6.0, 14.0]
+        boiler_water_conductivity:
+          type: number
+          unit: "μS/cm"
+        total_dissolved_solids_ppm:
+          type: number
+          unit: "ppm"
+        dissolved_oxygen_ppb:
+          type: number
+          unit: "ppb"
+        silica_ppm:
+          type: number
+          unit: "ppm"
+        total_hardness_ppm:
+          type: number
+          unit: "ppm as CaCO3"
+        total_alkalinity_ppm:
+          type: number
+          unit: "ppm as CaCO3"
+
+    - name: blowdown_parameters
+      type: object
+      required: true
+      description: "Current blowdown system parameters"
+      schema:
+        boiler_id:
+          type: string
+        continuous_blowdown_rate_kg_hr:
+          type: number
+        intermittent_blowdown_rate_kg_hr:
+          type: number
+        cycles_of_concentration:
+          type: number
+        control_mode:
+          type: string
+          enum: [MANUAL, TDS_CONTROL, CONDUCTIVITY_CONTROL, TIMER, OPTIMIZED]
+
+    - name: chemical_dosing
+      type: object
+      required: true
+      description: "Chemical treatment dosing parameters"
+      schema:
+        boiler_id:
+          type: string
+        oxygen_scavenger_type:
+          type: string
+          enum: [SULFITE, HYDRAZINE, DEHA, CARBOHYDRAZIDE, ERYTHORBATE, ORGANIC_BLEND]
+        oxygen_scavenger_dose_ppm:
+          type: number
+        scale_inhibitor_type:
+          type: string
+          enum: [PHOSPHATE, POLYMER, CHELANT, COMBO]
+        scale_inhibitor_dose_ppm:
+          type: number
+
+    - name: boiler_operating_parameters
+      type: object
+      required: true
+      description: "Current boiler operational data"
+      schema:
+        boiler_id:
+          type: string
+        steam_pressure_bar:
+          type: number
+        steam_flow_kg_hr:
+          type: number
+        feedwater_flow_kg_hr:
+          type: number
+        makeup_water_flow_kg_hr:
+          type: number
+        condensate_return_percent:
+          type: number
+
+    - name: boiler_design_specifications
+      type: object
+      required: true
+      description: "Boiler design and specification data"
+      schema:
+        boiler_id:
+          type: string
+        boiler_type:
+          type: string
+          enum: [FIRETUBE, WATERTUBE, PACKAGED, HRSG, ELECTRIC, OTHER]
+        pressure_class:
+          type: string
+          enum: [LOW_PRESSURE, MEDIUM_PRESSURE, HIGH_PRESSURE, SUPERCRITICAL]
+        rated_capacity_kg_hr:
+          type: number
+        max_tds_ppm:
+          type: number
+        target_ph_min:
+          type: number
+        target_ph_max:
+          type: number
+
+  # ============================================================================
+  # OUTPUT SPECIFICATION
+  # ============================================================================
+  outputs:
+    - name: treatment_parameters
+      type: object
+      description: "Optimized water treatment control parameters"
+      schema:
+        boiler_id:
+          type: string
+        target_boiler_water_ph:
+          type: number
+        target_tds_ppm:
+          type: number
+        water_quality_compliant:
+          type: boolean
+        control_actions:
+          type: array
+        provenance_hash:
+          type: string
+
+    - name: blowdown_optimization
+      type: object
+      description: "Optimized blowdown control strategy"
+      schema:
+        boiler_id:
+          type: string
+        optimal_cycles_of_concentration:
+          type: number
+        optimal_blowdown_rate_kg_hr:
+          type: number
+        annual_water_savings_m3:
+          type: number
+        annual_energy_savings_mwh:
+          type: number
+        annual_cost_savings_usd:
+          type: number
+        provenance_hash:
+          type: string
+
+    - name: chemical_dosing_optimization
+      type: object
+      description: "Optimized chemical dosing recommendations"
+      schema:
+        boiler_id:
+          type: string
+        oxygen_scavenger_recommendations:
+          type: object
+        scale_inhibitor_recommendations:
+          type: object
+        annual_chemical_savings_usd:
+          type: number
+        provenance_hash:
+          type: string
+
+    - name: scale_risk_assessment
+      type: object
+      description: "Scale formation risk analysis"
+      schema:
+        boiler_id:
+          type: string
+        overall_scale_risk_level:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        scale_risk_score:
+          type: number
+        mitigation_actions:
+          type: array
+        provenance_hash:
+          type: string
+
+    - name: corrosion_risk_assessment
+      type: object
+      description: "Corrosion risk analysis"
+      schema:
+        boiler_id:
+          type: string
+        overall_corrosion_risk_level:
+          type: string
+          enum: [LOW, MEDIUM, HIGH, CRITICAL]
+        corrosion_risk_score:
+          type: number
+        mitigation_actions:
+          type: array
+        provenance_hash:
+          type: string
+
+    - name: performance_report
+      type: object
+      description: "Water treatment system performance metrics"
+      schema:
+        boiler_id:
+          type: string
+        water_quality_compliance_percent:
+          type: number
+        average_cycles_of_concentration:
+          type: number
+        total_water_treatment_cost_usd:
+          type: number
+        savings_achieved_usd:
+          type: number
+        kpi_summary:
+          type: object
+        provenance_hash:
+          type: string
+
+  # ============================================================================
+  # INTEGRATIONS
+  # ============================================================================
+  integrations:
+    scada_systems:
+      - name: OPC_UA
+        protocol: "OPC UA"
+        description: "OPC UA SCADA integration"
+        required: true
+      - name: Modbus_TCP
+        protocol: "Modbus TCP"
+        description: "Modbus TCP SCADA integration"
+        required: false
+
+    laboratory_systems:
+      - name: LIMS
+        protocol: "REST API"
+        description: "Laboratory Information Management System"
+        required: false
+
+    maintenance_systems:
+      - name: SAP_PM
+        protocol: "SAP RFC/BAPI"
+        description: "SAP Plant Maintenance"
+        required: false
+      - name: IBM_Maximo
+        protocol: "REST API"
+        description: "IBM Maximo Asset Management"
+        required: false
+
+    chemical_suppliers:
+      - name: ChemSupplier_API
+        protocol: "REST API"
+        description: "Chemical supplier ordering system"
+        required: false
+
+    greenlang_agents:
+      - name: GL-001_THERMOSYNC
+        description: "Process heat orchestrator coordination"
+        required: false
+      - name: GL-002_BoilerEfficiency
+        description: "Boiler efficiency optimization coordination"
+        required: false
+      - name: GL-013_PREDICTMAINT
+        description: "Predictive maintenance coordination"
+        required: false
+
+  # ============================================================================
+  # CAPABILITIES
+  # ============================================================================
+  capabilities:
+    water_treatment:
+      - water_chemistry_analysis
+      - ph_control_optimization
+      - tds_management
+      - hardness_control
+      - alkalinity_management
+      - dissolved_oxygen_control
+      - silica_control
+
+    blowdown_control:
+      - cycles_of_concentration_optimization
+      - continuous_blowdown_control
+      - intermittent_blowdown_scheduling
+      - heat_recovery_assessment
+      - water_savings_calculation
+      - energy_savings_calculation
+
+    chemical_optimization:
+      - oxygen_scavenger_dosing
+      - scale_inhibitor_dosing
+      - ph_adjustment_dosing
+      - antifoam_dosing
+      - inventory_management
+      - cost_optimization
+
+    risk_assessment:
+      - scale_formation_prediction
+      - corrosion_risk_evaluation
+      - water_balance_validation
+      - compliance_monitoring
+      - mitigation_planning
+
+    reporting:
+      - performance_metrics
+      - compliance_reports
+      - cost_analysis
+      - trend_analysis
+      - kpi_tracking
+
+  # ============================================================================
+  # COMPLIANCE
+  # ============================================================================
+  compliance:
+    standards:
+      - standard: ABMA
+        version: "2023"
+        description: "American Boiler Manufacturers Association Guidelines"
+
+      - standard: ASME
+        version: "2023"
+        description: "ASME Boiler and Pressure Vessel Code"
+
+      - standard: ASTM_D3739
+        version: "2021"
+        description: "Standard Practice for Internal Treatment of Water in Boilers"
+
+      - standard: NACE
+        version: "2023"
+        description: "NACE Corrosion Standards"
+
+      - standard: EPA
+        version: "2023"
+        description: "EPA Water Discharge Standards"
+
+      - standard: ISO_11963
+        version: "2019"
+        description: "Water quality for steam boiler feed-water and boiler water"
+
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+      immutable: true
+
+    zero_hallucination: true
+    deterministic_calculations: true
+
+    validation:
+      input_validation: true
+      output_validation: true
+      mass_balance_validation: true
+      energy_balance_validation: true
+      regulatory_compliance_checks: true
+
+  # ============================================================================
+  # MONITORING
+  # ============================================================================
+  monitoring:
+    metrics_enabled: true
+    metrics_port: 9090
+    metrics_path: /metrics
+
+    dashboards:
+      - water_treatment_overview
+      - water_chemistry_monitoring
+      - blowdown_optimization
+      - chemical_dosing_management
+      - scale_and_corrosion_risk
+      - performance_metrics
+      - cost_tracking
+
+    alerts:
+      - name: critical_scale_risk
+        condition: "scale_risk_score > 80"
+        severity: critical
+
+      - name: critical_corrosion_risk
+        condition: "corrosion_risk_score > 80"
+        severity: critical
+
+      - name: water_quality_violation
+        condition: "water_quality_compliant == false"
+        severity: high
+
+      - name: excessive_blowdown
+        condition: "blowdown_percent > 15"
+        severity: medium
+
+      - name: low_chemical_inventory
+        condition: "chemical_tank_level_percent < 20"
+        severity: medium
+
+  # ============================================================================
+  # SECURITY
+  # ============================================================================
+  security:
+    authentication: oauth2
+    authorization: rbac
+    encryption: tls_1_3
+    secrets_management: kubernetes
+    api_key_required: true
+    audit_logging: true
+
+    roles:
+      - admin
+      - water_treatment_engineer
+      - operations_engineer
+      - operator
+      - viewer
+
+  # ============================================================================
+  # DEPLOYMENT
+  # ============================================================================
+  deployment:
+    replicas: 3
+    strategy: rolling_update
+    max_surge: 1
+    max_unavailable: 0
+
+    health_check:
+      liveness:
+        path: /health/liveness
+        interval: 10s
+        timeout: 5s
+        failure_threshold: 3
+
+      readiness:
+        path: /health/readiness
+        interval: 5s
+        timeout: 3s
+        failure_threshold: 3
+
+    autoscaling:
+      enabled: true
+      min_replicas: 2
+      max_replicas: 10
+      target_cpu_percent: 70
+      target_memory_percent: 80
+
+  # ============================================================================
+  # DATA RETENTION
+  # ============================================================================
+  data_retention:
+    real_time_data:
+      retention_days: 90
+      compression: true
+      archive_to: s3
+
+    hourly_aggregates:
+      retention_days: 365
+      compression: true
+
+    daily_summaries:
+      retention_days: 2555  # 7 years
+      compression: true
+
+    optimization_results:
+      retention_days: 2555
+      immutable: true
+
+    audit_logs:
+      retention_days: 2555
+      immutable: true
+      encryption: true
+
+# ==============================================================================
+# AUTHOR & DOCUMENTATION
+# ==============================================================================
+authors:
+  - name: GreenLang AI Agent Factory
+    email: agents@greenlang.io
+
+repository: https://github.com/greenlang/agents/gl-016
+documentation: https://docs.greenlang.io/agents/gl-016
+changelog: https://github.com/greenlang/agents/gl-016/blob/main/CHANGELOG.md
+
+tags:
+  - boiler
+  - water-treatment
+  - blowdown
+  - chemical-dosing
+  - scale-prevention
+  - corrosion-control
+  - water-conservation
+  - energy-efficiency
+  - industrial
+  - ABMA
+  - ASME
+  - deterministic
+  - zero-hallucination
+
+# ==============================================================================
+# BUSINESS METRICS
+# ==============================================================================
+business:
+  tam: "$5B"
+  target_date: "Q2 2026"
+  priority: P1
+
+  value_proposition:
+    - Reduce water consumption by 30%
+    - Reduce chemical costs by 25%
+    - Reduce energy waste by 15%
+    - Reduce scale incidents by 80%
+    - Reduce corrosion incidents by 70%
+    - Improve boiler reliability and uptime
+    - Ensure regulatory compliance
+    - Lower maintenance costs
+
+  target_customers:
+    - industrial_facilities
+    - power_plants
+    - chemical_plants
+    - food_processing
+    - pulp_and_paper
+    - refineries
+    - hospitals
+    - universities
+
+  use_cases:
+    - continuous_water_quality_monitoring
+    - automated_blowdown_optimization
+    - predictive_scale_prevention
+    - corrosion_risk_management
+    - chemical_usage_optimization
+    - compliance_reporting
+    - cost_optimization
+    - sustainability_improvement
+
+  roi_metrics:
+    - metric: water_savings
+      target: 30
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: chemical_cost_reduction
+      target: 25
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: energy_waste_reduction
+      target: 15
+      unit: percent
+      measurement_frequency: monthly
+
+    - metric: scale_incident_reduction
+      target: 80
+      unit: percent
+      measurement_frequency: quarterly
+
+    - metric: corrosion_incident_reduction
+      target: 70
+      unit: percent
+      measurement_frequency: quarterly
+
+    - metric: payback_period
+      target: 12
+      unit: months
+
+    - metric: annual_cost_savings
+      target: 100000
+      unit: USD
+      per_facility: true
+
+# ==============================================================================
+# TECHNICAL SPECIFICATIONS
+# ==============================================================================
+technical:
+  architecture:
+    pattern: microservice
+    design: event_driven
+    messaging: async
+    state_management: stateless
+    data_persistence: postgresql
+
+  scalability:
+    horizontal: true
+    vertical: true
+    max_boilers_per_instance: 100
+    max_calculations_per_second: 1000
+
+  reliability:
+    availability: 99.9
+    mtbf_hours: 8760  # 1 year
+    mttr_minutes: 30
+    data_loss_tolerance: zero
+
+  performance:
+    latency_p50_ms: 50
+    latency_p95_ms: 200
+    latency_p99_ms: 500
+    throughput_ops_per_second: 100
+
+  testing:
+    unit_test_coverage_percent: 90
+    integration_test_coverage_percent: 80
+    e2e_test_coverage_percent: 70
+    load_testing: required
+    chaos_testing: recommended
+
+# ==============================================================================
+# LICENSING & LEGAL
+# ==============================================================================
+legal:
+  license: Apache-2.0
+  copyright: "Copyright 2024 GreenLang AI"
+  patent_pending: false
+  export_control: EAR99
+
+  disclaimers:
+    - "This software is provided 'as is' without warranty"
+    - "Users are responsible for regulatory compliance"
+    - "Consult qualified engineers for safety-critical applications"
+
+# ==============================================================================
+# VERSION HISTORY
+# ==============================================================================
+version_history:
+  - version: "1.0.0"
+    date: "2024-12-02"
+    status: production
+    changes:
+      - Initial production release
+      - Complete water chemistry analysis
+      - Blowdown optimization algorithms
+      - Chemical dosing optimization
+      - Scale and corrosion risk assessment
+      - Performance reporting
+    breaking_changes: []
+
+# ==============================================================================
+# ROADMAP
+# ==============================================================================
+roadmap:
+  - version: "1.1.0"
+    target_date: "Q3 2026"
+    features:
+      - ML-enhanced scale prediction
+      - Advanced corrosion modeling
+      - Automated chemical ordering
+      - Multi-boiler fleet optimization
+
+  - version: "1.2.0"
+    target_date: "Q4 2026"
+    features:
+      - Digital twin integration
+      - Predictive maintenance integration
+      - Advanced analytics dashboards
+      - Mobile app support
+
+  - version: "2.0.0"
+    target_date: "Q2 2027"
+    features:
+      - AI-powered anomaly detection
+      - Autonomous control mode
+      - Cloud-native architecture
+      - IoT sensor integration

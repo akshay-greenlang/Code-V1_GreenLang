@@ -1,0 +1,301 @@
+---
+# GL-016 WATERGUARD - Network Policies
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+# Default deny all ingress traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-016-waterguard-deny-all-ingress
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+  annotations:
+    description: "Default deny all ingress traffic"
+spec:
+  podSelector:
+    matchLabels:
+      app: waterguard
+      agent: gl-016
+  policyTypes:
+    - Ingress
+
+---
+# Allow ingress from monitoring/observability stack
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-016-waterguard-allow-monitoring
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+  annotations:
+    description: "Allow Prometheus and monitoring to scrape metrics"
+spec:
+  podSelector:
+    matchLabels:
+      app: waterguard
+      agent: gl-016
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow from Prometheus
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow from Grafana
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: grafana
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow from OpenTelemetry Collector
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - protocol: TCP
+          port: 9090
+
+---
+# Allow ingress from API Gateway/Ingress Controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-016-waterguard-allow-ingress
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+  annotations:
+    description: "Allow traffic from ingress controller"
+spec:
+  podSelector:
+    matchLabels:
+      app: waterguard
+      agent: gl-016
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Allow ingress from other GreenLang agents
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-016-waterguard-allow-inter-agent
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+  annotations:
+    description: "Allow communication from other GreenLang agents"
+spec:
+  podSelector:
+    matchLabels:
+      app: waterguard
+      agent: gl-016
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    # Allow from any pod in greenlang namespace with agent label
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              tier: agent
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow from agent mesh discovery service
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: agent-mesh-discovery
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# Egress policy - Allow connections to required services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-016-waterguard-egress
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+  annotations:
+    description: "Control outbound traffic from water treatment agent"
+spec:
+  podSelector:
+    matchLabels:
+      app: waterguard
+      agent: gl-016
+
+  policyTypes:
+    - Egress
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: kube-system
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow connections to Redis cache
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow connections to OpenTelemetry Collector
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+          podSelector:
+            matchLabels:
+              app: otel-collector
+      ports:
+        - protocol: TCP
+          port: 4317
+        - protocol: TCP
+          port: 4318
+
+    # Allow connections to other GreenLang agents
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              tier: agent
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow connections to agent mesh discovery
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang
+          podSelector:
+            matchLabels:
+              app: agent-mesh-discovery
+      ports:
+        - protocol: TCP
+          port: 8080
+
+    # Allow HTTPS to external services (ERP, etc.)
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow connections to SCADA system (OPC UA)
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 4840
+
+    # Allow connections to Modbus analyzers
+    - to:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 502
+
+---
+# Allow pod-to-pod communication within the same deployment
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: gl-016-waterguard-allow-same-app
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+  annotations:
+    description: "Allow communication between waterguard pods"
+spec:
+  podSelector:
+    matchLabels:
+      app: waterguard
+      agent: gl-016
+
+  policyTypes:
+    - Ingress
+
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: waterguard
+              agent: gl-016
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090

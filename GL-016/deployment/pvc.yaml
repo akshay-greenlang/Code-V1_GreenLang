@@ -1,0 +1,106 @@
+---
+# GL-016 WATERGUARD - Persistent Volume Claims
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+# PVC for ML models
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gl-016-waterguard-models
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: storage
+    type: models
+  annotations:
+    description: "Storage for water treatment ML models"
+spec:
+  accessModes:
+    - ReadOnlyMany  # Models are read-only once trained
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: fast-ssd
+  volumeMode: Filesystem
+
+---
+# PVC for application data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gl-016-waterguard-data
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: storage
+    type: data
+  annotations:
+    description: "Storage for water treatment data and archives"
+spec:
+  accessModes:
+    - ReadWriteMany  # Multiple pods can write data
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: standard
+  volumeMode: Filesystem
+
+---
+# PVC for backups
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gl-016-waterguard-backups
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: storage
+    type: backups
+  annotations:
+    description: "Storage for water treatment backups"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: backup
+  volumeMode: Filesystem
+
+---
+# StorageClass definition (example - customize for your infrastructure)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+  labels:
+    app: waterguard
+  annotations:
+    description: "Fast SSD storage for ML models"
+provisioner: kubernetes.io/gce-pd  # Change based on your cloud provider
+parameters:
+  type: pd-ssd
+  replication-type: regional-pd
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+
+---
+# Backup StorageClass
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: backup
+  annotations:
+    description: "Standard storage for backups"
+provisioner: kubernetes.io/gce-pd
+parameters:
+  type: pd-standard
+  replication-type: regional-pd
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+reclaimPolicy: Retain

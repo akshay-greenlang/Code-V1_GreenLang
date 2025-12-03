@@ -1,37 +1,215 @@
+# Dependabot Configuration for GreenLang
+#
+# Automated dependency updates for security and maintenance.
+# Enables: pip, docker, github-actions
+# Schedule: Weekly (pip/docker), Daily (github-actions)
+# Auto-merge: Minor/patch updates after CI passes
+#
+# Security Compliance: SOC 2 CC7.1, ISO 27001 A.12.6.1
+# Author: GL-SecScan Security Team
+# Version: 2.0.0
+
 version: 2
+
+registries:
+  # Private PyPI registry (if needed)
+  # greenlang-pypi:
+  #   type: python-index
+  #   url: https://pypi.greenlang.ai/simple
+  #   username: ${{ secrets.PYPI_USERNAME }}
+  #   password: ${{ secrets.PYPI_PASSWORD }}
+
 updates:
+  # =============================================================================
+  # Python Dependencies (pip)
+  # =============================================================================
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
       - "python"
+      - "security"
     commit-message:
-      prefix: "chore"
+      prefix: "chore(deps)"
       include: "scope"
+    reviewers:
+      - "greenlang/security-team"
+    assignees:
+      - "greenlang/security-team"
+    # Group minor and patch updates together
+    groups:
+      production-dependencies:
+        patterns:
+          - "*"
+        exclude-patterns:
+          - "pytest*"
+          - "mypy*"
+          - "black"
+          - "ruff"
+          - "flake8*"
+        update-types:
+          - "minor"
+          - "patch"
+      development-dependencies:
+        patterns:
+          - "pytest*"
+          - "mypy*"
+          - "black"
+          - "ruff"
+          - "flake8*"
+        update-types:
+          - "minor"
+          - "patch"
+    # Security updates always get priority
+    ignore:
+      # Ignore major version updates (require manual review)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "github-actions"
-    commit-message:
-      prefix: "ci"
-      include: "scope"
-
+  # =============================================================================
+  # Docker Dependencies
+  # =============================================================================
   - package-ecosystem: "docker"
     directory: "/"
     schedule:
       interval: "weekly"
-    open-pull-requests-limit: 10
+      day: "tuesday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "docker"
+      - "security"
     commit-message:
-      prefix: "build"
+      prefix: "build(docker)"
       include: "scope"
+    reviewers:
+      - "greenlang/security-team"
+    groups:
+      docker-base-images:
+        patterns:
+          - "python"
+          - "node"
+          - "alpine"
+          - "debian"
+          - "ubuntu"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # =============================================================================
+  # GitHub Actions
+  # =============================================================================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "github-actions"
+      - "ci"
+    commit-message:
+      prefix: "ci(actions)"
+      include: "scope"
+    reviewers:
+      - "greenlang/security-team"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # =============================================================================
+  # SDK Python Dependencies
+  # =============================================================================
+  - package-ecosystem: "pip"
+    directory: "/sdks/python/greenlang_sdk"
+    schedule:
+      interval: "weekly"
+      day: "thursday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+      - "sdk"
+    commit-message:
+      prefix: "chore(sdk-deps)"
+      include: "scope"
+    groups:
+      sdk-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # =============================================================================
+  # Agent Factory Dependencies
+  # =============================================================================
+  - package-ecosystem: "pip"
+    directory: "/GL-Agent-Factory"
+    schedule:
+      interval: "weekly"
+      day: "friday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+      - "agent-factory"
+    commit-message:
+      prefix: "chore(factory-deps)"
+      include: "scope"
+    groups:
+      factory-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # =============================================================================
+  # npm Dependencies (if applicable)
+  # =============================================================================
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "saturday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "npm"
+      - "javascript"
+    commit-message:
+      prefix: "chore(npm)"
+      include: "scope"
+    # Only update if package.json exists
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

@@ -1,0 +1,1346 @@
+{
+  "dashboard": {
+    "title": "GL-016 WATERGUARD - Comprehensive Overview",
+    "uid": "waterguard-overview",
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 1,
+    "refresh": "30s",
+    "editable": true,
+    "tags": ["waterguard", "gl-016", "water-treatment", "boiler"],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "boiler_id",
+          "type": "query",
+          "datasource": "${datasource}",
+          "query": "label_values(water_treatment_ph_value, boiler_id)",
+          "multi": true,
+          "includeAll": true,
+          "current": {
+            "text": "All",
+            "value": "$__all"
+          },
+          "refresh": 1,
+          "sort": 1
+        },
+        {
+          "name": "facility",
+          "type": "query",
+          "datasource": "${datasource}",
+          "query": "label_values(water_treatment_ph_value, facility)",
+          "multi": false,
+          "includeAll": false,
+          "current": {
+            "text": "",
+            "value": ""
+          },
+          "refresh": 1,
+          "sort": 1
+        }
+      ]
+    },
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["10s", "30s", "1m", "5m", "15m", "30m", "1h"]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "type": "row",
+        "title": "Water Chemistry Overview",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "collapsed": false
+      },
+      {
+        "id": 2,
+        "type": "timeseries",
+        "title": "pH Level",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 0,
+          "y": 1
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_ph_value{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} pH",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "pH",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "never",
+              "spanNulls": true,
+              "thresholdsStyle": {
+                "mode": "area"
+              }
+            },
+            "unit": "none",
+            "min": 8,
+            "max": 12,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 10.5
+                },
+                {
+                  "color": "green",
+                  "value": 11
+                },
+                {
+                  "color": "yellow",
+                  "value": 11.8
+                },
+                {
+                  "color": "red",
+                  "value": 12
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "timeseries",
+        "title": "Conductivity",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 6,
+          "y": 1
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_conductivity_microsiemens{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} Conductivity",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "µS/cm",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "never",
+              "spanNulls": true
+            },
+            "unit": "µS/cm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 2500
+                },
+                {
+                  "color": "red",
+                  "value": 3000
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "timeseries",
+        "title": "Total Dissolved Solids (TDS)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 12,
+          "y": 1
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_tds_ppm{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} TDS",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "ppm",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 1500
+                },
+                {
+                  "color": "red",
+                  "value": 2000
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "timeseries",
+        "title": "Dissolved Oxygen (DO)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 18,
+          "y": 1
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_dissolved_oxygen_ppb{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} DO",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "ppb",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppb",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 5
+                },
+                {
+                  "color": "red",
+                  "value": 7
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "row",
+        "title": "Blowdown Metrics",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 9
+        },
+        "collapsed": false
+      },
+      {
+        "id": 7,
+        "type": "timeseries",
+        "title": "Blowdown Rate",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 0,
+          "y": 10
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_blowdown_rate_percent{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} Blowdown %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Blowdown %",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "percent"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "timeseries",
+        "title": "Cycles of Concentration",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 8,
+          "y": 10
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_cycles_of_concentration{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} Cycles",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Cycles",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "none"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "type": "timeseries",
+        "title": "Heat Loss from Blowdown",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 16,
+          "y": 10
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_blowdown_heat_loss_mmbtu_per_hour{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} Heat Loss",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "MMBtu/hr",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "MMBtu/hr"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "type": "row",
+        "title": "Chemical Dosing",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 18
+        },
+        "collapsed": false
+      },
+      {
+        "id": 11,
+        "type": "timeseries",
+        "title": "Chemical Dosing Rates",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 19
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chemical_dosing_rate_ppm{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"phosphate\"}",
+            "legendFormat": "{{boiler_id}} Phosphate",
+            "refId": "A"
+          },
+          {
+            "expr": "water_treatment_chemical_dosing_rate_ppm{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"sulfite\"}",
+            "legendFormat": "{{boiler_id}} Sulfite",
+            "refId": "B"
+          },
+          {
+            "expr": "water_treatment_chemical_dosing_rate_ppm{boiler_id=~\"$boiler_id\", facility=\"$facility\", chemical=\"polymer\"}",
+            "legendFormat": "{{boiler_id}} Polymer",
+            "refId": "C"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "ppm",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ppm"
+          }
+        }
+      },
+      {
+        "id": 12,
+        "type": "gauge",
+        "title": "Chemical Tank Levels",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 19
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_chemical_tank_level_percent{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{chemical}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 20
+                },
+                {
+                  "color": "green",
+                  "value": 40
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "showThresholdLabels": false,
+          "showThresholdMarkers": true
+        }
+      },
+      {
+        "id": 13,
+        "type": "row",
+        "title": "Scale & Corrosion Risk",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 27
+        },
+        "collapsed": false
+      },
+      {
+        "id": 14,
+        "type": "timeseries",
+        "title": "Scale Risk Index",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 0,
+          "y": 28
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_scale_risk_index{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} Scale Risk",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Risk Index",
+              "axisPlacement": "auto",
+              "fillOpacity": 20,
+              "gradientMode": "scheme",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "none",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 50
+                },
+                {
+                  "color": "orange",
+                  "value": 70
+                },
+                {
+                  "color": "red",
+                  "value": 85
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 15,
+        "type": "timeseries",
+        "title": "Corrosion Risk Index",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 8,
+          "y": 28
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_corrosion_risk_index{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} Corrosion Risk",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Risk Index",
+              "axisPlacement": "auto",
+              "fillOpacity": 20,
+              "gradientMode": "scheme",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "none",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 50
+                },
+                {
+                  "color": "orange",
+                  "value": 70
+                },
+                {
+                  "color": "red",
+                  "value": 85
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 16,
+        "type": "stat",
+        "title": "Scale Prediction (24h)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 16,
+          "y": 28
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_scale_prediction_probability{boiler_id=~\"$boiler_id\", facility=\"$facility\", horizon=\"24h\"}",
+            "legendFormat": "{{boiler_id}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "percentunit",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 0.3
+                },
+                {
+                  "color": "orange",
+                  "value": 0.6
+                },
+                {
+                  "color": "red",
+                  "value": 0.8
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 17,
+        "type": "row",
+        "title": "Compliance Status",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 36
+        },
+        "collapsed": false
+      },
+      {
+        "id": 18,
+        "type": "stat",
+        "title": "Compliance Status",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 0,
+          "y": 37
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_compliance_status{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}}",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "mappings": [
+              {
+                "type": "value",
+                "options": {
+                  "0": {
+                    "text": "NON-COMPLIANT",
+                    "color": "red"
+                  },
+                  "1": {
+                    "text": "COMPLIANT",
+                    "color": "green"
+                  }
+                }
+              }
+            ],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "red",
+                  "value": null
+                },
+                {
+                  "color": "green",
+                  "value": 1
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none",
+          "textMode": "value"
+        }
+      },
+      {
+        "id": 19,
+        "type": "table",
+        "title": "Compliance Violations",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 18,
+          "x": 6,
+          "y": 37
+        },
+        "targets": [
+          {
+            "expr": "water_treatment_compliance_violations{boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{boiler_id}} - {{parameter}}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "left"
+            }
+          },
+          "overrides": []
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": []
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true
+              },
+              "indexByName": {},
+              "renameByName": {
+                "boiler_id": "Boiler",
+                "parameter": "Parameter",
+                "Value": "Violations"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "id": 20,
+        "type": "row",
+        "title": "Agent Health",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 43
+        },
+        "collapsed": false
+      },
+      {
+        "id": 21,
+        "type": "timeseries",
+        "title": "Agent Latency (p99)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 0,
+          "y": 44
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, rate(water_treatment_agent_latency_seconds_bucket{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[5m]))",
+            "legendFormat": "{{boiler_id}} p99 Latency",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Latency (ms)",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "ms",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 50
+                },
+                {
+                  "color": "red",
+                  "value": 100
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 22,
+        "type": "timeseries",
+        "title": "Agent Error Rate",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 8,
+          "y": 44
+        },
+        "targets": [
+          {
+            "expr": "rate(water_treatment_agent_errors_total{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[5m]) * 100",
+            "legendFormat": "{{boiler_id}} Error Rate",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Errors/sec",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "errors/sec",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "yellow",
+                  "value": 1
+                },
+                {
+                  "color": "red",
+                  "value": 5
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 23,
+        "type": "timeseries",
+        "title": "Agent Throughput",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 16,
+          "y": 44
+        },
+        "targets": [
+          {
+            "expr": "rate(water_treatment_agent_requests_total{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[5m])",
+            "legendFormat": "{{boiler_id}} Requests/sec",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "Requests/sec",
+              "axisPlacement": "auto",
+              "fillOpacity": 10,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 24,
+        "type": "row",
+        "title": "Cost Savings",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 52
+        },
+        "collapsed": false
+      },
+      {
+        "id": 25,
+        "type": "stat",
+        "title": "Water Savings (Daily)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 0,
+          "y": 53
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(water_treatment_water_saved_gallons{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[24h]))",
+            "legendFormat": "Water Saved",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "gallons",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 26,
+        "type": "stat",
+        "title": "Chemical Savings (Daily)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 6,
+          "y": 53
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(water_treatment_chemical_savings_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[24h]))",
+            "legendFormat": "Chemical Savings",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "currencyUSD",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 27,
+        "type": "stat",
+        "title": "Energy Savings (Daily)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 12,
+          "y": 53
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(water_treatment_energy_savings_mmbtu{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[24h]))",
+            "legendFormat": "Energy Saved",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "MMBtu",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 28,
+        "type": "stat",
+        "title": "Total Cost Savings (Daily)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 18,
+          "y": 53
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(water_treatment_total_cost_savings_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[24h]))",
+            "legendFormat": "Total Savings",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "unit": "currencyUSD",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "value",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 29,
+        "type": "row",
+        "title": "Historical Trends",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 59
+        },
+        "collapsed": false
+      },
+      {
+        "id": 30,
+        "type": "timeseries",
+        "title": "Cost Savings Trend (30 Days)",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 60
+        },
+        "targets": [
+          {
+            "expr": "sum(increase(water_treatment_total_cost_savings_usd{boiler_id=~\"$boiler_id\", facility=\"$facility\"}[1d]))",
+            "legendFormat": "Daily Savings",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisCenteredZero": false,
+              "axisColorMode": "text",
+              "axisLabel": "USD",
+              "axisPlacement": "auto",
+              "fillOpacity": 30,
+              "gradientMode": "none",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2
+            },
+            "unit": "currencyUSD"
+          }
+        }
+      },
+      {
+        "id": 31,
+        "type": "row",
+        "title": "Alert Status",
+        "gridPos": {
+          "h": 1,
+          "w": 24,
+          "x": 0,
+          "y": 68
+        },
+        "collapsed": false
+      },
+      {
+        "id": 32,
+        "type": "table",
+        "title": "Active Alerts",
+        "datasource": "${datasource}",
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 69
+        },
+        "targets": [
+          {
+            "expr": "ALERTS{alertname=~\"WaterTreatment.*\", boiler_id=~\"$boiler_id\", facility=\"$facility\"}",
+            "legendFormat": "{{alertname}}",
+            "refId": "A",
+            "format": "table",
+            "instant": true
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "left"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "severity"
+              },
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background"
+                },
+                {
+                  "id": "mappings",
+                  "value": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "critical": {
+                          "color": "red"
+                        },
+                        "warning": {
+                          "color": "orange"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "severity",
+              "desc": false
+            }
+          ]
+        },
+        "transformations": [
+          {
+            "id": "organize",
+            "options": {
+              "excludeByName": {
+                "Time": true,
+                "__name__": true
+              },
+              "indexByName": {},
+              "renameByName": {
+                "alertname": "Alert",
+                "boiler_id": "Boiler",
+                "severity": "Severity",
+                "summary": "Summary"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "annotations": {
+      "list": [
+        {
+          "datasource": "${datasource}",
+          "enable": true,
+          "expr": "ALERTS{alertname=~\"WaterTreatment.*\"}",
+          "name": "Water Treatment Alerts",
+          "step": "60s",
+          "tagKeys": "severity,alertname",
+          "titleFormat": "Alert",
+          "useValueForTime": false
+        }
+      ]
+    }
+  }
+}

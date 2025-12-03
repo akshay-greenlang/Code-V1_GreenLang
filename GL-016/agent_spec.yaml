@@ -1,0 +1,1971 @@
+# ==============================================================================
+# GreenLang AgentSpec v1.0
+# GL-016 WATERGUARD BoilerWaterTreatmentAgent
+# Complete agent specification for boiler water treatment operations
+# Target: $5B TAM | Priority: P1 | Release: Q2 2026
+# ==============================================================================
+
+apiVersion: greenlang.io/v1
+kind: Agent
+
+# ==============================================================================
+# METADATA SECTION
+# ==============================================================================
+metadata:
+  name: BoilerWaterTreatmentAgent
+  version: "1.0.0"
+  agent_id: GL-016
+  codename: WATERGUARD
+  labels:
+    type: controller
+    category: Controller
+    domain: boiler_systems
+    priority: P1
+    complexity: medium
+    id: GL-016
+  annotations:
+    description: "Optimizes boiler water treatment, blowdown control, and chemical dosing to prevent scale, corrosion, and carryover while minimizing water and energy waste"
+    created_by: "GreenLang Team"
+    created_date: "2024-12-02"
+    last_modified: "2024-12-02"
+    documentation: "https://greenlang.io/agents/GL-016"
+    tam: "$5B"
+    target_date: "Q2 2026"
+    support_contact: "support@greenlang.io"
+    business_value: "Reduce water consumption by 30%, chemical costs by 25%, energy waste by 15%"
+
+# ==============================================================================
+# SPECIFICATION SECTION
+# ==============================================================================
+spec:
+  # ----------------------------------------------------------------------------
+  # Input Specifications with Full Schema
+  # ----------------------------------------------------------------------------
+  inputs:
+    # Water Chemistry Input
+    - name: water_chemistry
+      type: object
+      required: true
+      description: "Real-time water quality measurements from boiler and feedwater"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Unique boiler identifier"
+          timestamp:
+            type: string
+            format: datetime
+            description: "ISO 8601 timestamp of measurement"
+
+          # pH Measurements
+          boiler_water_ph:
+            type: number
+            description: "Boiler water pH"
+            minimum: 6.0
+            maximum: 14.0
+          feedwater_ph:
+            type: number
+            description: "Feedwater pH"
+            minimum: 6.0
+            maximum: 14.0
+          makeup_water_ph:
+            type: number
+            description: "Makeup water pH"
+            minimum: 6.0
+            maximum: 10.0
+
+          # Conductivity Measurements (μS/cm)
+          boiler_water_conductivity:
+            type: number
+            description: "Boiler water conductivity in μS/cm"
+            minimum: 0
+            maximum: 10000
+          feedwater_conductivity:
+            type: number
+            description: "Feedwater conductivity in μS/cm"
+            minimum: 0
+            maximum: 5000
+          makeup_water_conductivity:
+            type: number
+            description: "Makeup water conductivity in μS/cm"
+            minimum: 0
+            maximum: 2000
+
+          # Dissolved Solids (ppm)
+          total_dissolved_solids_ppm:
+            type: number
+            description: "TDS in boiler water (ppm)"
+            minimum: 0
+            maximum: 5000
+          suspended_solids_ppm:
+            type: number
+            description: "Suspended solids in boiler water (ppm)"
+            minimum: 0
+            maximum: 100
+
+          # Hardness (ppm as CaCO3)
+          total_hardness_ppm:
+            type: number
+            description: "Total hardness as CaCO3 (ppm)"
+            minimum: 0
+            maximum: 500
+          calcium_hardness_ppm:
+            type: number
+            description: "Calcium hardness as CaCO3 (ppm)"
+            minimum: 0
+            maximum: 400
+          magnesium_hardness_ppm:
+            type: number
+            description: "Magnesium hardness as CaCO3 (ppm)"
+            minimum: 0
+            maximum: 200
+
+          # Alkalinity (ppm as CaCO3)
+          total_alkalinity_ppm:
+            type: number
+            description: "Total alkalinity as CaCO3 (ppm)"
+            minimum: 0
+            maximum: 1000
+          p_alkalinity_ppm:
+            type: number
+            description: "P-alkalinity as CaCO3 (ppm)"
+            minimum: 0
+            maximum: 500
+          m_alkalinity_ppm:
+            type: number
+            description: "M-alkalinity as CaCO3 (ppm)"
+            minimum: 0
+            maximum: 1000
+
+          # Dissolved Gases (ppb)
+          dissolved_oxygen_ppb:
+            type: number
+            description: "Dissolved oxygen (ppb)"
+            minimum: 0
+            maximum: 1000
+          carbon_dioxide_ppm:
+            type: number
+            description: "Dissolved CO2 (ppm)"
+            minimum: 0
+            maximum: 50
+
+          # Silica (ppm as SiO2)
+          silica_ppm:
+            type: number
+            description: "Silica as SiO2 (ppm)"
+            minimum: 0
+            maximum: 150
+
+          # Chlorides & Sulfates (ppm)
+          chloride_ppm:
+            type: number
+            description: "Chloride concentration (ppm)"
+            minimum: 0
+            maximum: 500
+          sulfate_ppm:
+            type: number
+            description: "Sulfate concentration (ppm)"
+            minimum: 0
+            maximum: 500
+
+          # Chemical Residuals (ppm)
+          phosphate_ppm:
+            type: number
+            description: "Phosphate residual (ppm)"
+            minimum: 0
+            maximum: 100
+          sulfite_ppm:
+            type: number
+            description: "Sulfite residual (ppm)"
+            minimum: 0
+            maximum: 50
+          hydrazine_ppm:
+            type: number
+            description: "Hydrazine residual (ppm)"
+            minimum: 0
+            maximum: 0.1
+          polymer_ppm:
+            type: number
+            description: "Polymer residual (ppm)"
+            minimum: 0
+            maximum: 20
+
+          # Iron & Copper (ppb)
+          iron_total_ppb:
+            type: number
+            description: "Total iron (ppb)"
+            minimum: 0
+            maximum: 300
+          copper_ppb:
+            type: number
+            description: "Copper (ppb)"
+            minimum: 0
+            maximum: 100
+
+        required:
+          - boiler_id
+          - timestamp
+          - boiler_water_ph
+          - boiler_water_conductivity
+          - total_dissolved_solids_ppm
+
+    # Blowdown Parameters Input
+    - name: blowdown_parameters
+      type: object
+      required: true
+      description: "Current blowdown system parameters"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Unique boiler identifier"
+          timestamp:
+            type: string
+            format: datetime
+            description: "ISO 8601 timestamp"
+
+          # Blowdown Rates
+          continuous_blowdown_rate_kg_hr:
+            type: number
+            description: "Continuous blowdown flow rate (kg/hr)"
+            minimum: 0
+            maximum: 10000
+          intermittent_blowdown_rate_kg_hr:
+            type: number
+            description: "Intermittent blowdown flow rate (kg/hr)"
+            minimum: 0
+            maximum: 5000
+          total_blowdown_rate_kg_hr:
+            type: number
+            description: "Total blowdown rate (kg/hr)"
+            minimum: 0
+            maximum: 15000
+
+          # Blowdown Percentage
+          blowdown_percent:
+            type: number
+            description: "Blowdown as % of steam generation"
+            minimum: 0
+            maximum: 20
+
+          # Cycles of Concentration
+          cycles_of_concentration:
+            type: number
+            description: "Actual cycles of concentration"
+            minimum: 1
+            maximum: 100
+          target_cycles:
+            type: number
+            description: "Target cycles of concentration"
+            minimum: 5
+            maximum: 100
+
+          # Blowdown Control Mode
+          control_mode:
+            type: string
+            description: "Blowdown control mode"
+            enum: ["MANUAL", "TDS_CONTROL", "CONDUCTIVITY_CONTROL", "TIMER", "OPTIMIZED"]
+
+          # Blowdown Recovery
+          heat_recovery_enabled:
+            type: boolean
+            description: "Whether blowdown heat recovery is operational"
+          flash_steam_recovery_enabled:
+            type: boolean
+            description: "Whether flash steam recovery is operational"
+
+          # Valve Positions
+          continuous_blowdown_valve_percent:
+            type: number
+            description: "Continuous blowdown valve position (%)"
+            minimum: 0
+            maximum: 100
+          intermittent_blowdown_valve_open:
+            type: boolean
+            description: "Intermittent blowdown valve status"
+
+          # Temperatures
+          blowdown_temp_c:
+            type: number
+            description: "Blowdown water temperature (C)"
+            minimum: 0
+            maximum: 400
+          recovered_condensate_temp_c:
+            type: number
+            description: "Recovered condensate temperature (C)"
+            minimum: 0
+            maximum: 150
+
+        required:
+          - boiler_id
+          - timestamp
+          - total_blowdown_rate_kg_hr
+          - cycles_of_concentration
+
+    # Chemical Dosing Input
+    - name: chemical_dosing
+      type: object
+      required: true
+      description: "Chemical treatment dosing parameters"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Unique boiler identifier"
+          timestamp:
+            type: string
+            format: datetime
+            description: "ISO 8601 timestamp"
+
+          # Oxygen Scavenger
+          oxygen_scavenger_type:
+            type: string
+            description: "Type of oxygen scavenger"
+            enum: ["SULFITE", "HYDRAZINE", "DEHA", "CARBOHYDRAZIDE", "ERYTHORBATE", "ORGANIC_BLEND"]
+          oxygen_scavenger_dose_ppm:
+            type: number
+            description: "Current oxygen scavenger dosage (ppm)"
+            minimum: 0
+            maximum: 100
+          oxygen_scavenger_feed_rate_kg_hr:
+            type: number
+            description: "Oxygen scavenger feed rate (kg/hr)"
+            minimum: 0
+            maximum: 50
+
+          # Scale Inhibitor
+          scale_inhibitor_type:
+            type: string
+            description: "Type of scale inhibitor"
+            enum: ["PHOSPHATE", "POLYMER", "CHELANT", "COMBO"]
+          scale_inhibitor_dose_ppm:
+            type: number
+            description: "Current scale inhibitor dosage (ppm)"
+            minimum: 0
+            maximum: 50
+          scale_inhibitor_feed_rate_kg_hr:
+            type: number
+            description: "Scale inhibitor feed rate (kg/hr)"
+            minimum: 0
+            maximum: 20
+
+          # Alkalinity Builder
+          alkalinity_builder_type:
+            type: string
+            description: "Type of alkalinity builder"
+            enum: ["CAUSTIC_SODA", "SODA_ASH", "TRISODIUM_PHOSPHATE"]
+          alkalinity_builder_dose_ppm:
+            type: number
+            description: "Current alkalinity builder dosage (ppm)"
+            minimum: 0
+            maximum: 100
+          alkalinity_builder_feed_rate_kg_hr:
+            type: number
+            description: "Alkalinity builder feed rate (kg/hr)"
+            minimum: 0
+            maximum: 30
+
+          # Antifoam/Antipriming Agent
+          antifoam_dose_ppm:
+            type: number
+            description: "Antifoam dosage (ppm)"
+            minimum: 0
+            maximum: 10
+          antifoam_feed_rate_kg_hr:
+            type: number
+            description: "Antifoam feed rate (kg/hr)"
+            minimum: 0
+            maximum: 5
+
+          # Condensate Treatment
+          filming_amine_dose_ppm:
+            type: number
+            description: "Filming amine dosage (ppm)"
+            minimum: 0
+            maximum: 5
+          neutralizing_amine_dose_ppm:
+            type: number
+            description: "Neutralizing amine dosage (ppm)"
+            minimum: 0
+            maximum: 10
+
+          # Chemical Pump Status
+          oxygen_scavenger_pump_status:
+            type: string
+            enum: ["RUNNING", "STOPPED", "FAULT", "MANUAL"]
+          scale_inhibitor_pump_status:
+            type: string
+            enum: ["RUNNING", "STOPPED", "FAULT", "MANUAL"]
+          alkalinity_builder_pump_status:
+            type: string
+            enum: ["RUNNING", "STOPPED", "FAULT", "MANUAL"]
+
+          # Chemical Tank Levels (%)
+          oxygen_scavenger_tank_level_percent:
+            type: number
+            minimum: 0
+            maximum: 100
+          scale_inhibitor_tank_level_percent:
+            type: number
+            minimum: 0
+            maximum: 100
+          alkalinity_builder_tank_level_percent:
+            type: number
+            minimum: 0
+            maximum: 100
+
+        required:
+          - boiler_id
+          - timestamp
+          - oxygen_scavenger_type
+          - scale_inhibitor_type
+
+    # Boiler Operating Parameters Input
+    - name: boiler_operating_parameters
+      type: object
+      required: true
+      description: "Current boiler operational data"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Unique boiler identifier"
+          timestamp:
+            type: string
+            format: datetime
+            description: "ISO 8601 timestamp"
+
+          # Pressure & Temperature
+          steam_pressure_bar:
+            type: number
+            description: "Steam drum pressure (bar)"
+            minimum: 0
+            maximum: 200
+          steam_temperature_c:
+            type: number
+            description: "Steam temperature (C)"
+            minimum: 0
+            maximum: 600
+          feedwater_temp_c:
+            type: number
+            description: "Feedwater temperature (C)"
+            minimum: 0
+            maximum: 250
+          drum_level_percent:
+            type: number
+            description: "Steam drum water level (%)"
+            minimum: 0
+            maximum: 100
+
+          # Flow Rates
+          steam_flow_kg_hr:
+            type: number
+            description: "Steam generation rate (kg/hr)"
+            minimum: 0
+            maximum: 500000
+          feedwater_flow_kg_hr:
+            type: number
+            description: "Feedwater flow rate (kg/hr)"
+            minimum: 0
+            maximum: 500000
+          makeup_water_flow_kg_hr:
+            type: number
+            description: "Makeup water flow rate (kg/hr)"
+            minimum: 0
+            maximum: 100000
+          condensate_return_flow_kg_hr:
+            type: number
+            description: "Condensate return flow rate (kg/hr)"
+            minimum: 0
+            maximum: 400000
+
+          # Condensate Return Percentage
+          condensate_return_percent:
+            type: number
+            description: "Percentage of condensate returned"
+            minimum: 0
+            maximum: 100
+
+          # Fuel Input
+          fuel_type:
+            type: string
+            enum: ["NATURAL_GAS", "FUEL_OIL", "COAL", "BIOMASS", "OTHER"]
+          fuel_flow_kg_hr:
+            type: number
+            description: "Fuel consumption rate (kg/hr)"
+            minimum: 0
+          fuel_flow_m3_hr:
+            type: number
+            description: "Fuel consumption rate for gas (m3/hr)"
+            minimum: 0
+
+          # Efficiency
+          thermal_efficiency_percent:
+            type: number
+            description: "Current boiler thermal efficiency (%)"
+            minimum: 0
+            maximum: 100
+
+          # Load
+          load_percent:
+            type: number
+            description: "Current boiler load (%)"
+            minimum: 0
+            maximum: 120
+
+          # Operating Mode
+          operating_mode:
+            type: string
+            enum: ["STARTUP", "NORMAL", "SHUTDOWN", "STANDBY", "EMERGENCY"]
+
+        required:
+          - boiler_id
+          - timestamp
+          - steam_pressure_bar
+          - steam_flow_kg_hr
+          - feedwater_flow_kg_hr
+
+    # Boiler Design Specifications Input
+    - name: boiler_design_specifications
+      type: object
+      required: true
+      description: "Boiler design and specification data"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Unique boiler identifier"
+          boiler_name:
+            type: string
+            description: "Boiler name/description"
+
+          # Classification
+          boiler_type:
+            type: string
+            description: "Boiler type"
+            enum: ["FIRETUBE", "WATERTUBE", "PACKAGED", "HRSG", "ELECTRIC", "OTHER"]
+          pressure_class:
+            type: string
+            description: "Pressure classification"
+            enum: ["LOW_PRESSURE", "MEDIUM_PRESSURE", "HIGH_PRESSURE", "SUPERCRITICAL"]
+
+          # Design Parameters
+          design_pressure_bar:
+            type: number
+            description: "Design pressure (bar)"
+            minimum: 0
+            maximum: 250
+          max_allowable_working_pressure_bar:
+            type: number
+            description: "MAWP (bar)"
+            minimum: 0
+            maximum: 250
+          design_temperature_c:
+            type: number
+            description: "Design temperature (C)"
+            minimum: 0
+            maximum: 650
+
+          # Capacity
+          rated_capacity_kg_hr:
+            type: number
+            description: "Rated steam capacity (kg/hr)"
+            minimum: 0
+          rated_capacity_mw:
+            type: number
+            description: "Rated thermal capacity (MW)"
+            minimum: 0
+
+          # Water Volume
+          drum_volume_m3:
+            type: number
+            description: "Steam drum water volume (m3)"
+            minimum: 0
+          total_water_content_m3:
+            type: number
+            description: "Total water content (m3)"
+            minimum: 0
+
+          # Materials
+          drum_material:
+            type: string
+            description: "Drum material specification"
+          tube_material:
+            type: string
+            description: "Tube material specification"
+
+          # Water Quality Limits (ABMA/ASME)
+          max_tds_ppm:
+            type: number
+            description: "Maximum allowable TDS (ppm)"
+            minimum: 0
+            maximum: 5000
+          max_alkalinity_ppm:
+            type: number
+            description: "Maximum allowable alkalinity (ppm)"
+            minimum: 0
+            maximum: 1000
+          max_silica_ppm:
+            type: number
+            description: "Maximum allowable silica (ppm)"
+            minimum: 0
+            maximum: 150
+          max_hardness_ppm:
+            type: number
+            description: "Maximum allowable hardness (ppm)"
+            minimum: 0
+            maximum: 5
+          target_ph_min:
+            type: number
+            description: "Target minimum pH"
+            minimum: 6.0
+            maximum: 14.0
+          target_ph_max:
+            type: number
+            description: "Target maximum pH"
+            minimum: 6.0
+            maximum: 14.0
+
+          # Installation
+          manufacturer:
+            type: string
+            description: "Boiler manufacturer"
+          model:
+            type: string
+            description: "Boiler model"
+          serial_number:
+            type: string
+            description: "Serial number"
+          installation_date:
+            type: string
+            format: date
+            description: "Installation date"
+          location:
+            type: string
+            description: "Physical location"
+
+        required:
+          - boiler_id
+          - boiler_type
+          - pressure_class
+          - rated_capacity_kg_hr
+
+    # Cost Parameters Input
+    - name: cost_parameters
+      type: object
+      required: false
+      description: "Economic parameters for optimization"
+      schema:
+        type: object
+        properties:
+          # Water Costs
+          makeup_water_cost_per_m3:
+            type: number
+            description: "Makeup water cost (USD/m3)"
+            minimum: 0
+          wastewater_disposal_cost_per_m3:
+            type: number
+            description: "Wastewater disposal cost (USD/m3)"
+            minimum: 0
+
+          # Energy Costs
+          fuel_cost_per_mmbtu:
+            type: number
+            description: "Fuel cost (USD/MMBtu)"
+            minimum: 0
+          electricity_cost_per_kwh:
+            type: number
+            description: "Electricity cost (USD/kWh)"
+            minimum: 0
+
+          # Chemical Costs
+          oxygen_scavenger_cost_per_kg:
+            type: number
+            description: "Oxygen scavenger cost (USD/kg)"
+            minimum: 0
+          scale_inhibitor_cost_per_kg:
+            type: number
+            description: "Scale inhibitor cost (USD/kg)"
+            minimum: 0
+          alkalinity_builder_cost_per_kg:
+            type: number
+            description: "Alkalinity builder cost (USD/kg)"
+            minimum: 0
+          antifoam_cost_per_kg:
+            type: number
+            description: "Antifoam cost (USD/kg)"
+            minimum: 0
+
+          # Labor & Maintenance
+          labor_cost_per_hour:
+            type: number
+            description: "Labor cost (USD/hr)"
+            minimum: 0
+          annual_maintenance_budget:
+            type: number
+            description: "Annual maintenance budget (USD)"
+            minimum: 0
+
+          # Penalties
+          downtime_cost_per_hour:
+            type: number
+            description: "Boiler downtime cost (USD/hr)"
+            minimum: 0
+          environmental_penalty_per_incident:
+            type: number
+            description: "Environmental violation penalty (USD)"
+            minimum: 0
+
+    # Historical Data Input
+    - name: historical_data
+      type: object
+      required: false
+      description: "Historical water treatment and performance data"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Unique boiler identifier"
+
+          # Historical Trends
+          water_chemistry_history:
+            type: array
+            description: "Historical water chemistry readings"
+            items:
+              type: object
+
+          blowdown_history:
+            type: array
+            description: "Historical blowdown data"
+            items:
+              type: object
+
+          chemical_consumption_history:
+            type: array
+            description: "Historical chemical usage"
+            items:
+              type: object
+
+          # Failure History
+          scale_formation_incidents:
+            type: array
+            description: "Scale-related incidents"
+            items:
+              type: object
+              properties:
+                incident_date:
+                  type: string
+                  format: date
+                severity:
+                  type: string
+                location:
+                  type: string
+                root_cause:
+                  type: string
+                downtime_hours:
+                  type: number
+                repair_cost_usd:
+                  type: number
+
+          corrosion_incidents:
+            type: array
+            description: "Corrosion-related incidents"
+            items:
+              type: object
+
+          carryover_incidents:
+            type: array
+            description: "Steam carryover incidents"
+            items:
+              type: object
+
+          # Inspection Records
+          tube_inspection_records:
+            type: array
+            description: "Boiler tube inspection records"
+            items:
+              type: object
+              properties:
+                inspection_date:
+                  type: string
+                  format: date
+                inspector:
+                  type: string
+                findings:
+                  type: string
+                scale_thickness_mm:
+                  type: number
+                corrosion_rate_mm_yr:
+                  type: number
+                recommendations:
+                  type: string
+
+  # ----------------------------------------------------------------------------
+  # Output Specifications with Full Schema
+  # ----------------------------------------------------------------------------
+  outputs:
+    # Treatment Parameters Output
+    - name: treatment_parameters
+      type: object
+      description: "Optimized water treatment control parameters"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Boiler identifier"
+          calculation_timestamp:
+            type: string
+            format: datetime
+            description: "Timestamp of calculation"
+
+          # Target Water Chemistry
+          target_boiler_water_ph:
+            type: number
+            description: "Recommended boiler water pH"
+          target_feedwater_ph:
+            type: number
+            description: "Recommended feedwater pH"
+          target_tds_ppm:
+            type: number
+            description: "Target TDS level (ppm)"
+          target_alkalinity_ppm:
+            type: number
+            description: "Target alkalinity (ppm)"
+          target_phosphate_ppm:
+            type: number
+            description: "Target phosphate residual (ppm)"
+          target_sulfite_ppm:
+            type: number
+            description: "Target sulfite residual (ppm)"
+
+          # Compliance Status
+          water_quality_compliant:
+            type: boolean
+            description: "Whether water quality is within limits"
+          deviations:
+            type: array
+            description: "Parameters outside acceptable range"
+            items:
+              type: object
+              properties:
+                parameter:
+                  type: string
+                current_value:
+                  type: number
+                target_value:
+                  type: number
+                deviation_percent:
+                  type: number
+                severity:
+                  type: string
+                  enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+
+          # Control Actions
+          control_actions:
+            type: array
+            description: "Recommended control actions"
+            items:
+              type: object
+              properties:
+                action_type:
+                  type: string
+                parameter:
+                  type: string
+                current_setpoint:
+                  type: number
+                recommended_setpoint:
+                  type: number
+                priority:
+                  type: string
+                  enum: ["LOW", "MEDIUM", "HIGH", "URGENT"]
+
+          provenance_hash:
+            type: string
+            description: "SHA-256 hash for audit trail"
+
+    # Blowdown Optimization Output
+    - name: blowdown_optimization
+      type: object
+      description: "Optimized blowdown control strategy"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Boiler identifier"
+          optimization_timestamp:
+            type: string
+            format: datetime
+            description: "Timestamp of optimization"
+
+          # Optimized Blowdown Parameters
+          optimal_cycles_of_concentration:
+            type: number
+            description: "Optimal COC for current conditions"
+            minimum: 5
+            maximum: 100
+          optimal_blowdown_rate_kg_hr:
+            type: number
+            description: "Optimal total blowdown rate (kg/hr)"
+            minimum: 0
+          optimal_blowdown_percent:
+            type: number
+            description: "Optimal blowdown as % of steam"
+            minimum: 0
+            maximum: 20
+
+          # Current vs Optimal Comparison
+          current_blowdown_rate_kg_hr:
+            type: number
+            description: "Current blowdown rate"
+          blowdown_reduction_potential_kg_hr:
+            type: number
+            description: "Potential blowdown reduction"
+          blowdown_reduction_potential_percent:
+            type: number
+            description: "Percentage blowdown reduction possible"
+
+          # Continuous vs Intermittent Split
+          optimal_continuous_blowdown_kg_hr:
+            type: number
+            description: "Recommended continuous blowdown"
+          optimal_intermittent_blowdown_kg_hr:
+            type: number
+            description: "Recommended intermittent blowdown"
+          intermittent_blowdown_frequency_minutes:
+            type: number
+            description: "Recommended intermittent frequency"
+          intermittent_blowdown_duration_seconds:
+            type: number
+            description: "Recommended intermittent duration"
+
+          # Energy & Water Savings
+          annual_water_savings_m3:
+            type: number
+            description: "Annual water savings (m3)"
+          annual_energy_savings_mwh:
+            type: number
+            description: "Annual energy savings (MWh)"
+          annual_cost_savings_usd:
+            type: number
+            description: "Annual cost savings (USD)"
+
+          # Heat Recovery Recommendations
+          heat_recovery_opportunity:
+            type: boolean
+            description: "Whether heat recovery is viable"
+          recoverable_heat_kw:
+            type: number
+            description: "Recoverable heat from blowdown (kW)"
+          heat_recovery_roi_years:
+            type: number
+            description: "Heat recovery payback period (years)"
+
+          provenance_hash:
+            type: string
+            description: "SHA-256 hash for audit trail"
+
+    # Chemical Dosing Optimization Output
+    - name: chemical_dosing_optimization
+      type: object
+      description: "Optimized chemical dosing recommendations"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Boiler identifier"
+          optimization_timestamp:
+            type: string
+            format: datetime
+            description: "Timestamp of optimization"
+
+          # Oxygen Scavenger Optimization
+          oxygen_scavenger_recommendations:
+            type: object
+            properties:
+              optimal_dose_ppm:
+                type: number
+              optimal_feed_rate_kg_hr:
+                type: number
+              current_dose_ppm:
+                type: number
+              dose_adjustment_percent:
+                type: number
+              justification:
+                type: string
+
+          # Scale Inhibitor Optimization
+          scale_inhibitor_recommendations:
+            type: object
+            properties:
+              optimal_dose_ppm:
+                type: number
+              optimal_feed_rate_kg_hr:
+                type: number
+              current_dose_ppm:
+                type: number
+              dose_adjustment_percent:
+                type: number
+              justification:
+                type: string
+
+          # Alkalinity Builder Optimization
+          alkalinity_builder_recommendations:
+            type: object
+            properties:
+              optimal_dose_ppm:
+                type: number
+              optimal_feed_rate_kg_hr:
+                type: number
+              current_dose_ppm:
+                type: number
+              dose_adjustment_percent:
+                type: number
+              justification:
+                type: string
+
+          # Antifoam Optimization
+          antifoam_recommendations:
+            type: object
+            properties:
+              optimal_dose_ppm:
+                type: number
+              optimal_feed_rate_kg_hr:
+                type: number
+              antifoam_required:
+                type: boolean
+
+          # Chemical Cost Optimization
+          current_annual_chemical_cost_usd:
+            type: number
+            description: "Current annual chemical cost"
+          optimized_annual_chemical_cost_usd:
+            type: number
+            description: "Optimized annual chemical cost"
+          annual_chemical_savings_usd:
+            type: number
+            description: "Annual chemical cost savings"
+          chemical_savings_percent:
+            type: number
+            description: "Percentage chemical cost reduction"
+
+          # Inventory Management
+          chemical_reorder_alerts:
+            type: array
+            description: "Chemicals requiring reorder"
+            items:
+              type: object
+              properties:
+                chemical:
+                  type: string
+                current_level_percent:
+                  type: number
+                days_remaining:
+                  type: number
+                reorder_quantity_kg:
+                  type: number
+
+          provenance_hash:
+            type: string
+            description: "SHA-256 hash for audit trail"
+
+    # Scale Risk Assessment Output
+    - name: scale_risk_assessment
+      type: object
+      description: "Scale formation risk analysis"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Boiler identifier"
+          assessment_timestamp:
+            type: string
+            format: datetime
+            description: "Timestamp of assessment"
+
+          # Overall Risk
+          overall_scale_risk_level:
+            type: string
+            enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+            description: "Overall scale formation risk"
+          scale_risk_score:
+            type: number
+            description: "Scale risk score (0-100)"
+            minimum: 0
+            maximum: 100
+
+          # Risk Factors
+          scale_forming_potential:
+            type: object
+            properties:
+              calcium_carbonate_scaling_index:
+                type: number
+                description: "LSI or RSI index"
+              calcium_sulfate_risk:
+                type: string
+                enum: ["LOW", "MEDIUM", "HIGH"]
+              silica_scaling_risk:
+                type: string
+                enum: ["LOW", "MEDIUM", "HIGH"]
+              magnesium_silicate_risk:
+                type: string
+                enum: ["LOW", "MEDIUM", "HIGH"]
+
+          # Hot Spots
+          high_risk_locations:
+            type: array
+            description: "Locations with high scaling risk"
+            items:
+              type: object
+              properties:
+                location:
+                  type: string
+                risk_level:
+                  type: string
+                scale_type:
+                  type: string
+                contributing_factors:
+                  type: array
+
+          # Mitigation Recommendations
+          mitigation_actions:
+            type: array
+            description: "Recommended actions to reduce scale risk"
+            items:
+              type: object
+              properties:
+                action:
+                  type: string
+                priority:
+                  type: string
+                estimated_effectiveness_percent:
+                  type: number
+                implementation_difficulty:
+                  type: string
+                  enum: ["EASY", "MODERATE", "DIFFICULT"]
+
+          # Inspection Recommendations
+          inspection_schedule:
+            type: object
+            properties:
+              next_inspection_date:
+                type: string
+                format: date
+              inspection_type:
+                type: string
+                enum: ["VISUAL", "ULTRASONIC", "EDDY_CURRENT", "BORESCOPE"]
+              inspection_frequency_months:
+                type: number
+
+          provenance_hash:
+            type: string
+            description: "SHA-256 hash for audit trail"
+
+    # Corrosion Risk Assessment Output
+    - name: corrosion_risk_assessment
+      type: object
+      description: "Corrosion risk analysis"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Boiler identifier"
+          assessment_timestamp:
+            type: string
+            format: datetime
+            description: "Timestamp of assessment"
+
+          # Overall Risk
+          overall_corrosion_risk_level:
+            type: string
+            enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+            description: "Overall corrosion risk"
+          corrosion_risk_score:
+            type: number
+            description: "Corrosion risk score (0-100)"
+            minimum: 0
+            maximum: 100
+
+          # Corrosion Types
+          corrosion_mechanisms:
+            type: array
+            description: "Active corrosion mechanisms"
+            items:
+              type: object
+              properties:
+                mechanism:
+                  type: string
+                  enum: ["OXYGEN_PITTING", "CAUSTIC_GOUGING", "ACIDIC_CORROSION", "STRESS_CORROSION", "EROSION_CORROSION", "GALVANIC_CORROSION"]
+                risk_level:
+                  type: string
+                affected_areas:
+                  type: array
+                contributing_factors:
+                  type: array
+
+          # Dissolved Oxygen Control
+          oxygen_control_assessment:
+            type: object
+            properties:
+              dissolved_oxygen_ppb:
+                type: number
+              target_oxygen_ppb:
+                type: number
+              oxygen_control_adequate:
+                type: boolean
+              scavenger_efficiency_percent:
+                type: number
+
+          # pH Control
+          ph_control_assessment:
+            type: object
+            properties:
+              current_ph:
+                type: number
+              target_ph_range:
+                type: object
+              ph_control_adequate:
+                type: boolean
+              caustic_stress_risk:
+                type: boolean
+
+          # Mitigation Recommendations
+          mitigation_actions:
+            type: array
+            description: "Recommended corrosion control actions"
+            items:
+              type: object
+              properties:
+                action:
+                  type: string
+                priority:
+                  type: string
+                estimated_effectiveness_percent:
+                  type: number
+
+          provenance_hash:
+            type: string
+            description: "SHA-256 hash for audit trail"
+
+    # Performance Report Output
+    - name: performance_report
+      type: object
+      description: "Water treatment system performance metrics"
+      schema:
+        type: object
+        properties:
+          boiler_id:
+            type: string
+            description: "Boiler identifier"
+          report_period_start:
+            type: string
+            format: datetime
+          report_period_end:
+            type: string
+            format: datetime
+
+          # Water Quality Metrics
+          water_quality_compliance_percent:
+            type: number
+            description: "% of time within water quality limits"
+          ph_stability_index:
+            type: number
+            description: "pH stability metric"
+          tds_control_effectiveness:
+            type: number
+            description: "TDS control effectiveness metric"
+
+          # Blowdown Performance
+          average_cycles_of_concentration:
+            type: number
+            description: "Average COC during period"
+          blowdown_optimization_score:
+            type: number
+            description: "Blowdown optimization effectiveness (0-100)"
+          water_savings_vs_baseline_percent:
+            type: number
+            description: "Water savings vs baseline (%)"
+
+          # Chemical Performance
+          chemical_dosing_efficiency:
+            type: number
+            description: "Chemical dosing efficiency metric"
+          chemical_cost_per_unit_steam:
+            type: number
+            description: "Chemical cost per tonne of steam"
+
+          # Energy Efficiency
+          blowdown_heat_loss_percent:
+            type: number
+            description: "Heat loss via blowdown as % of fuel input"
+          energy_efficiency_impact:
+            type: number
+            description: "Water treatment impact on boiler efficiency"
+
+          # Economic Performance
+          total_water_treatment_cost_usd:
+            type: number
+            description: "Total water treatment cost for period"
+          cost_per_unit_steam_usd:
+            type: number
+            description: "Water treatment cost per tonne steam"
+          savings_achieved_usd:
+            type: number
+            description: "Cost savings achieved vs baseline"
+
+          # Reliability Metrics
+          scale_incidents_count:
+            type: integer
+            description: "Scale-related incidents in period"
+          corrosion_incidents_count:
+            type: integer
+            description: "Corrosion-related incidents in period"
+          unplanned_downtime_hours:
+            type: number
+            description: "Unplanned downtime due to water issues"
+
+          # KPIs
+          kpi_summary:
+            type: object
+            properties:
+              water_efficiency_rating:
+                type: string
+                enum: ["EXCELLENT", "GOOD", "FAIR", "POOR"]
+              chemical_optimization_rating:
+                type: string
+                enum: ["EXCELLENT", "GOOD", "FAIR", "POOR"]
+              risk_management_rating:
+                type: string
+                enum: ["EXCELLENT", "GOOD", "FAIR", "POOR"]
+              overall_performance_rating:
+                type: string
+                enum: ["EXCELLENT", "GOOD", "FAIR", "POOR"]
+
+          provenance_hash:
+            type: string
+            description: "SHA-256 hash for audit trail"
+
+  # ----------------------------------------------------------------------------
+  # Agent Capabilities
+  # ----------------------------------------------------------------------------
+  capabilities:
+    - name: water_chemistry_analysis
+      description: "Analyze water chemistry parameters against ABMA/ASME standards"
+      deterministic: true
+      zero_hallucination: true
+      standard: "ABMA/ASME"
+
+    - name: blowdown_optimization
+      description: "Optimize blowdown rate using cycles of concentration calculations"
+      deterministic: true
+      zero_hallucination: true
+      standard: "ASME"
+
+    - name: chemical_dosing_optimization
+      description: "Optimize chemical dosing based on water chemistry and stoichiometry"
+      deterministic: true
+      zero_hallucination: true
+
+    - name: scale_risk_assessment
+      description: "Assess scale formation risk using saturation indices"
+      deterministic: true
+      zero_hallucination: true
+      standard: "ASTM_D3739"
+
+    - name: corrosion_risk_assessment
+      description: "Assess corrosion risk based on dissolved oxygen, pH, and chemistry"
+      deterministic: true
+      zero_hallucination: true
+      standard: "NACE"
+
+    - name: cycles_of_concentration_calculation
+      description: "Calculate actual and optimal cycles of concentration"
+      deterministic: true
+      zero_hallucination: true
+
+    - name: water_balance_calculation
+      description: "Calculate system water balance including makeup and losses"
+      deterministic: true
+      zero_hallucination: true
+
+    - name: energy_efficiency_impact
+      description: "Calculate energy efficiency impact of blowdown and water treatment"
+      deterministic: true
+      zero_hallucination: true
+
+    - name: chemical_inventory_management
+      description: "Track chemical inventory and generate reorder alerts"
+      deterministic: true
+
+    - name: compliance_monitoring
+      description: "Monitor compliance with water quality standards and limits"
+      deterministic: true
+      zero_hallucination: true
+
+  # ----------------------------------------------------------------------------
+  # Tool Specifications
+  # ----------------------------------------------------------------------------
+  tools:
+    - name: analyze_water_chemistry
+      description: "Analyze water chemistry against standards"
+      function: WaterTreatmentTools.analyze_water_chemistry
+      deterministic: true
+      inputs:
+        - water_chemistry
+        - boiler_design_specifications
+      outputs:
+        - WaterChemistryAnalysisResult
+
+    - name: optimize_blowdown_rate
+      description: "Calculate optimal blowdown rate"
+      function: WaterTreatmentTools.optimize_blowdown_rate
+      deterministic: true
+      inputs:
+        - water_chemistry
+        - blowdown_parameters
+        - boiler_operating_parameters
+        - cost_parameters
+      outputs:
+        - BlowdownOptimizationResult
+      formula: |
+        # Cycles of Concentration calculation
+        # COC = Conductivity_boiler / Conductivity_makeup
+        # Blowdown % = 100 / (COC - 1)
+        # Blowdown_rate = Feedwater_rate * Blowdown% / 100
+
+    - name: optimize_chemical_dosing
+      description: "Calculate optimal chemical dosing rates"
+      function: WaterTreatmentTools.optimize_chemical_dosing
+      deterministic: true
+      inputs:
+        - water_chemistry
+        - chemical_dosing
+        - boiler_operating_parameters
+        - cost_parameters
+      outputs:
+        - ChemicalDosingOptimizationResult
+      formula: |
+        # Oxygen scavenger dosing
+        # Theoretical O2 scavenger = 8 * DO_ppm (for sulfite)
+        # Actual dosage = Theoretical * safety_factor
+
+        # Scale inhibitor dosing
+        # Dosage based on hardness, silica, and alkalinity
+        # Vendor-specific calculation
+
+    - name: assess_scale_risk
+      description: "Assess scale formation risk"
+      function: WaterTreatmentTools.assess_scale_risk
+      deterministic: true
+      inputs:
+        - water_chemistry
+        - boiler_operating_parameters
+        - boiler_design_specifications
+      outputs:
+        - ScaleRiskAssessmentResult
+      formula: |
+        # Langelier Saturation Index (LSI)
+        # LSI = pH - pHs
+        # pHs = (9.3 + A + B) - (C + D)
+        # A = (log10[TDS] - 1) / 10
+        # B = -13.12 * log10(T + 273) + 34.55
+        # C = log10[Ca2+] - 0.4
+        # D = log10[Alkalinity]
+
+    - name: assess_corrosion_risk
+      description: "Assess corrosion risk"
+      function: WaterTreatmentTools.assess_corrosion_risk
+      deterministic: true
+      inputs:
+        - water_chemistry
+        - chemical_dosing
+        - boiler_operating_parameters
+      outputs:
+        - CorrosionRiskAssessmentResult
+
+    - name: calculate_cycles_of_concentration
+      description: "Calculate COC from conductivity"
+      function: WaterTreatmentTools.calculate_cycles_of_concentration
+      deterministic: true
+      inputs:
+        - water_chemistry
+      outputs:
+        - CyclesOfConcentrationResult
+      formula: |
+        # COC = Boiler_conductivity / Makeup_conductivity
+        # Or COC = Boiler_TDS / Makeup_TDS
+        # Or COC = Boiler_chlorides / Makeup_chlorides
+
+    - name: calculate_water_balance
+      description: "Calculate system water balance"
+      function: WaterTreatmentTools.calculate_water_balance
+      deterministic: true
+      inputs:
+        - boiler_operating_parameters
+        - blowdown_parameters
+      outputs:
+        - WaterBalanceResult
+      formula: |
+        # Water balance equation
+        # Feedwater = Steam + Blowdown + Unaccounted_losses
+        # Feedwater = Makeup + Condensate_return
+        # Makeup = Feedwater * (1 - Condensate_return_ratio)
+
+    - name: calculate_energy_efficiency_impact
+      description: "Calculate energy impact of blowdown"
+      function: WaterTreatmentTools.calculate_energy_efficiency_impact
+      deterministic: true
+      inputs:
+        - blowdown_parameters
+        - boiler_operating_parameters
+      outputs:
+        - EnergyEfficiencyImpactResult
+      formula: |
+        # Blowdown heat loss = Blowdown_rate * (h_blowdown - h_feedwater)
+        # Where h = enthalpy at respective temperatures
+        # Efficiency impact = Blowdown_heat_loss / Fuel_energy_input
+
+    - name: manage_chemical_inventory
+      description: "Track chemical inventory and reorder points"
+      function: WaterTreatmentTools.manage_chemical_inventory
+      deterministic: true
+      inputs:
+        - chemical_dosing
+      outputs:
+        - ChemicalInventoryResult
+
+    - name: monitor_compliance
+      description: "Monitor water quality compliance"
+      function: WaterTreatmentTools.monitor_compliance
+      deterministic: true
+      inputs:
+        - water_chemistry
+        - boiler_design_specifications
+      outputs:
+        - ComplianceMonitoringResult
+
+    - name: generate_performance_report
+      description: "Generate comprehensive performance report"
+      function: WaterTreatmentTools.generate_performance_report
+      deterministic: true
+      inputs:
+        - treatment_parameters
+        - blowdown_optimization
+        - chemical_dosing_optimization
+        - historical_data
+      outputs:
+        - PerformanceReportResult
+
+  # ----------------------------------------------------------------------------
+  # Requirements
+  # ----------------------------------------------------------------------------
+  requirements:
+    python_version: ">=3.10"
+    memory_mb: 2048
+    cpu_cores: 2
+    gpu_required: false
+    packages:
+      - numpy>=1.24.0
+      - scipy>=1.10.0
+      - pandas>=2.0.0
+      - pydantic>=2.0.0
+      - fastapi>=0.100.0
+      - prometheus-client>=0.17.0
+      - httpx>=0.24.0
+
+# ==============================================================================
+# AI CONFIGURATION
+# ==============================================================================
+ai_config:
+  provider: anthropic
+  model: claude-sonnet-4-20250514
+  temperature: 0.0
+  seed: 42
+  deterministic: true
+  max_tokens: 4096
+  allowed_operations:
+    - classification
+    - entity_resolution
+    - natural_language_generation
+    - recommendation_generation
+    - narrative_summary_generation
+  prohibited_operations:
+    - numeric_calculation
+    - water_chemistry_calculation
+    - blowdown_rate_calculation
+    - chemical_dosing_calculation
+    - risk_score_calculation
+
+# ==============================================================================
+# RUNTIME CONFIGURATION
+# ==============================================================================
+runtime:
+  timeout_seconds: 120
+  max_retries: 3
+  cache_ttl_seconds: 300
+  max_parallel_calculations: 10
+  checkpoint_enabled: true
+  checkpoint_interval_seconds: 300
+  batch_processing:
+    enabled: true
+    max_batch_size: 1000
+    parallel_workers: 4
+
+# ==============================================================================
+# COMPLIANCE CONFIGURATION
+# ==============================================================================
+compliance:
+  standards:
+    - ABMA  # American Boiler Manufacturers Association
+    - ASME  # American Society of Mechanical Engineers
+    - ASTM_D3739  # Water quality standards
+    - NACE  # National Association of Corrosion Engineers
+    - EPA  # Environmental Protection Agency
+    - ISO_11963  # Boiler water quality
+  audit_trail:
+    enabled: true
+    retention_days: 2555  # 7 years for regulatory compliance
+    storage_format: "json"
+    encryption: true
+  provenance_tracking:
+    enabled: true
+    hash_algorithm: SHA-256
+    include_timestamps: true
+    include_model_versions: true
+  zero_hallucination:
+    enabled: true
+    llm_prohibited_for:
+      - numeric_calculations
+      - water_chemistry_calculations
+      - blowdown_rate_calculations
+      - chemical_dosing_calculations
+      - cycles_of_concentration_calculations
+      - risk_score_calculations
+    llm_allowed_for:
+      - narrative_report_generation
+      - recommendation_explanation
+      - incident_description
+      - best_practice_guidance
+  validation_rules:
+    count: 150
+    categories:
+      - input_validation
+      - output_validation
+      - chemistry_validation
+      - mass_balance_validation
+      - regulatory_compliance
+
+# ==============================================================================
+# MONITORING CONFIGURATION
+# ==============================================================================
+monitoring:
+  prometheus:
+    enabled: true
+    port: 9090
+    path: /metrics
+    scrape_interval: 15s
+    metrics:
+      - name: waterguard_water_quality_score
+        type: gauge
+        help: "Current water quality score (0-100)"
+      - name: waterguard_cycles_of_concentration
+        type: gauge
+        help: "Current cycles of concentration"
+      - name: waterguard_blowdown_rate_kg_hr
+        type: gauge
+        help: "Current blowdown rate (kg/hr)"
+      - name: waterguard_scale_risk_score
+        type: gauge
+        help: "Current scale risk score (0-100)"
+      - name: waterguard_corrosion_risk_score
+        type: gauge
+        help: "Current corrosion risk score (0-100)"
+      - name: waterguard_chemical_cost_usd_hr
+        type: gauge
+        help: "Current chemical cost per hour (USD)"
+      - name: waterguard_optimizations_total
+        type: counter
+        help: "Total optimizations performed"
+      - name: waterguard_alerts_total
+        type: counter
+        help: "Total alerts generated"
+        labels: ["severity", "type"]
+  grafana:
+    enabled: true
+    dashboards:
+      - water_treatment_overview
+      - water_chemistry_monitoring
+      - blowdown_optimization
+      - chemical_dosing_management
+      - scale_and_corrosion_risk
+      - performance_metrics
+  alerts:
+    - name: high_scale_risk
+      condition: "scale_risk_score > 75"
+      severity: critical
+      notification_channels:
+        - email
+        - slack
+    - name: high_corrosion_risk
+      condition: "corrosion_risk_score > 75"
+      severity: critical
+      notification_channels:
+        - email
+        - slack
+        - pagerduty
+    - name: water_quality_violation
+      condition: "water_quality_compliant == false"
+      severity: high
+      notification_channels:
+        - email
+        - slack
+    - name: excessive_blowdown
+      condition: "blowdown_percent > 15"
+      severity: warning
+      notification_channels:
+        - email
+    - name: chemical_tank_low
+      condition: "chemical_tank_level < 20"
+      severity: warning
+      notification_channels:
+        - email
+  health_check:
+    enabled: true
+    interval_seconds: 30
+    endpoints:
+      - /health
+      - /ready
+
+# ==============================================================================
+# SECURITY CONFIGURATION
+# ==============================================================================
+security:
+  authentication:
+    type: oauth2
+    provider: keycloak
+    required: true
+  authorization:
+    type: rbac
+    roles:
+      - name: admin
+        permissions:
+          - read
+          - write
+          - delete
+          - configure
+      - name: water_treatment_engineer
+        permissions:
+          - read
+          - write
+          - acknowledge_alerts
+          - adjust_setpoints
+      - name: operator
+        permissions:
+          - read
+          - acknowledge_alerts
+      - name: viewer
+        permissions:
+          - read
+  encryption:
+    at_rest: AES_256
+    in_transit: TLS_1_3
+    key_rotation_days: 90
+  audit:
+    enabled: true
+    retention_days: 2555
+    log_level: INFO
+    include_request_body: true
+    include_response_body: false
+  secrets_management:
+    provider: hashicorp_vault
+    path: "secret/greenlang/gl-016"
+
+# ==============================================================================
+# DEPLOYMENT CONFIGURATION
+# ==============================================================================
+deployment:
+  replicas: 3
+  strategy: RollingUpdate
+  max_surge: 1
+  max_unavailable: 0
+  resources:
+    requests:
+      memory: "1Gi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "2000m"
+  autoscaling:
+    enabled: true
+    min_replicas: 2
+    max_replicas: 10
+    target_cpu_utilization: 70
+    target_memory_utilization: 80
+    scale_down_stabilization_seconds: 300
+  health_check:
+    liveness_probe:
+      path: /health
+      port: 8080
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      failure_threshold: 3
+    readiness_probe:
+      path: /ready
+      port: 8080
+      initial_delay_seconds: 5
+      period_seconds: 5
+      timeout_seconds: 3
+      failure_threshold: 3
+  environment:
+    - name: LOG_LEVEL
+      value: INFO
+    - name: METRICS_ENABLED
+      value: "true"
+    - name: CACHE_TTL_SECONDS
+      value: "300"
+    - name: DETERMINISTIC_MODE
+      value: "true"
+    - name: ZERO_HALLUCINATION
+      value: "true"
+  node_selector:
+    workload-type: computation
+  tolerations:
+    - key: "dedicated"
+      operator: "Equal"
+      value: "greenlang"
+      effect: "NoSchedule"
+  affinity:
+    pod_anti_affinity:
+      preferred_during_scheduling_ignored_during_execution:
+        - weight: 100
+          pod_affinity_term:
+            label_selector:
+              match_expressions:
+                - key: app
+                  operator: In
+                  values:
+                    - gl-016-waterguard
+            topology_key: kubernetes.io/hostname
+
+# ==============================================================================
+# INTEGRATION CONFIGURATION
+# ==============================================================================
+integrations:
+  # SCADA/DCS Integration
+  - name: scada_system
+    type: process_control
+    protocol: opc_ua
+    description: "SCADA/DCS integration for real-time data"
+    config:
+      endpoint: "${SCADA_ENDPOINT}"
+      security_mode: SignAndEncrypt
+      polling_interval_ms: 5000
+
+  # Laboratory Information Management System (LIMS)
+  - name: lims
+    type: laboratory
+    protocol: rest_api
+    description: "LIMS integration for lab analysis results"
+    config:
+      base_url: "${LIMS_URL}"
+      auth_type: api_key
+      sync_interval_minutes: 60
+
+  # Computerized Maintenance Management System (CMMS)
+  - name: cmms
+    type: maintenance
+    protocol: rest_api
+    description: "CMMS integration for work orders"
+    config:
+      base_url: "${CMMS_URL}"
+      auth_type: oauth2
+
+  # Chemical Supplier Portal
+  - name: chemical_supplier
+    type: inventory
+    protocol: rest_api
+    description: "Chemical supplier integration for ordering"
+    config:
+      base_url: "${SUPPLIER_URL}"
+      auth_type: api_key
+
+  # Agent Coordination
+  - name: greenlang_agents
+    type: agent_coordination
+    protocol: message_bus
+    description: "GreenLang agent coordination"
+    agents:
+      - GL-001  # THERMOSYNC - Process heat orchestrator
+      - GL-002  # Boiler efficiency optimizer
+      - GL-013  # PREDICTMAINT - Predictive maintenance
+
+# ==============================================================================
+# DATA RETENTION CONFIGURATION
+# ==============================================================================
+data_retention:
+  real_time_data:
+    retention_days: 90
+    compression: true
+    archive_to: s3
+  hourly_averages:
+    retention_days: 365
+    compression: true
+  daily_summaries:
+    retention_days: 2555  # 7 years
+  optimization_results:
+    retention_days: 2555  # 7 years
+    compression: true
+  audit_logs:
+    retention_days: 2555  # 7 years
+    immutable: true
+  reports:
+    retention_days: 2555  # 7 years
+
+# ==============================================================================
+# FEATURE FLAGS
+# ==============================================================================
+feature_flags:
+  auto_optimization: true
+  predictive_alerts: true
+  auto_chemical_ordering: false
+  advanced_analytics: true
+  ml_enhanced_predictions: false
+
+# ==============================================================================
+# METADATA
+# ==============================================================================
+metadata_extended:
+  author: "GreenLang Team"
+  created_date: "2024-12-02"
+  last_modified: "2024-12-02"
+  documentation_url: "https://greenlang.io/agents/GL-016"
+  support_contact: "support@greenlang.io"
+  repository: "https://github.com/greenlang/gl-016-waterguard"
+  changelog_url: "https://greenlang.io/agents/GL-016/changelog"
+  tags:
+    - boiler
+    - water_treatment
+    - blowdown
+    - chemical_dosing
+    - scale_prevention
+    - corrosion_control
+    - water_conservation
+    - energy_efficiency
+    - industrial
+  business_metrics:
+    target_water_savings_percent: 30
+    target_chemical_cost_reduction_percent: 25
+    target_energy_waste_reduction_percent: 15
+    target_scale_incident_reduction_percent: 80
+    target_corrosion_incident_reduction_percent: 70

@@ -1,0 +1,90 @@
+# =============================================================================
+# CBAM Carbon Intensity Calculator - AgentSpec v2
+# =============================================================================
+
+name: CBAM Carbon Intensity Calculator
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+id: cbam/carbon_intensity_v1
+
+summary: >
+  Calculates carbon intensity for CBAM-regulated goods (steel, cement, aluminum, fertilizers)
+  and determines CBAM certificate requirements for EU imports.
+
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+
+license: Apache-2.0
+tags: [cbam, carbon-intensity, eu-regulation, zero-hallucination]
+
+ai:
+  json_mode: true
+  system_prompt: |
+    You are a CBAM expert calculating carbon intensity for EU imports.
+    ZERO-HALLUCINATION: Always use tools for lookups and calculations.
+
+  tools:
+    - name: lookup_cbam_benchmark
+      description: Look up CBAM default benchmark values
+      impl: python://greenlang.tools.cbam:lookup_benchmark
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          product_type: {type: string}
+        required: [product_type]
+      schema_out:
+        type: object
+        properties:
+          benchmark_value: {type: number}
+          benchmark_unit: {type: string}
+
+    - name: calculate_carbon_intensity
+      description: Calculate emissions per tonne of product
+      impl: python://greenlang.tools.cbam:calculate_intensity
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          total_emissions: {type: number}
+          production_quantity: {type: number}
+        required: [total_emissions, production_quantity]
+      schema_out:
+        type: object
+        properties:
+          carbon_intensity: {type: number}
+
+provenance:
+  pin_ef: true
+  gwp_set: AR6GWP100
+
+tests:
+  golden:
+    - name: steel_basic_oxygen
+      input:
+        product_type: steel_hot_rolled
+        production_quantity: 1000
+        total_emissions: 1850
+      expect:
+        carbon_intensity: {value: 1.85, tol: 0.1}
+
+inputs:
+  - name: product_type
+    type: string
+    required: true
+  - name: production_quantity
+    type: number
+    required: true
+  - name: total_emissions
+    type: number
+    required: true
+
+outputs:
+  - name: carbon_intensity
+    type: number
+    required: true
+  - name: cbam_certificate_required
+    type: boolean
+    required: true

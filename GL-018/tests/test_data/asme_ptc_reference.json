@@ -1,0 +1,147 @@
+{
+  "description": "ASME PTC 4.1 Reference Test Cases for GL-018 FLUEFLOW",
+  "version": "1.0.0",
+  "test_cases": {
+    "natural_gas_optimal": {
+      "description": "Natural gas with optimal combustion conditions",
+      "inputs": {
+        "O2_pct": 3.5,
+        "CO2_pct": 12.0,
+        "CO_ppm": 50.0,
+        "NOx_ppm": 150.0,
+        "flue_gas_temp_c": 180.0,
+        "ambient_temp_c": 25.0,
+        "fuel_type": "Natural Gas",
+        "gas_basis": "Dry Basis"
+      },
+      "expected_outputs": {
+        "excess_air_pct": 20.0,
+        "stoichiometric_ratio": 1.20,
+        "combustion_efficiency_pct": 85.0,
+        "stack_loss_pct": 6.7,
+        "is_complete_combustion": true,
+        "combustion_quality_rating": "Excellent"
+      }
+    },
+    "fuel_oil_standard": {
+      "description": "Fuel oil standard operating conditions",
+      "inputs": {
+        "O2_pct": 3.0,
+        "CO2_pct": 14.0,
+        "CO_ppm": 100.0,
+        "NOx_ppm": 200.0,
+        "SO2_ppm": 150.0,
+        "flue_gas_temp_c": 220.0,
+        "ambient_temp_c": 25.0,
+        "fuel_type": "Fuel Oil",
+        "gas_basis": "Dry Basis"
+      },
+      "expected_outputs": {
+        "excess_air_pct": 17.6,
+        "stoichiometric_ratio": 1.176,
+        "combustion_efficiency_pct": 83.0,
+        "stack_loss_pct": 8.9,
+        "is_complete_combustion": true,
+        "combustion_quality_rating": "Good"
+      }
+    },
+    "coal_typical": {
+      "description": "Coal with typical operating conditions",
+      "inputs": {
+        "O2_pct": 5.0,
+        "CO2_pct": 16.0,
+        "CO_ppm": 200.0,
+        "NOx_ppm": 350.0,
+        "SO2_ppm": 500.0,
+        "flue_gas_temp_c": 250.0,
+        "ambient_temp_c": 25.0,
+        "fuel_type": "Coal",
+        "gas_basis": "Dry Basis"
+      },
+      "expected_outputs": {
+        "excess_air_pct": 31.25,
+        "stoichiometric_ratio": 1.3125,
+        "combustion_efficiency_pct": 78.0,
+        "stack_loss_pct": 11.0,
+        "is_complete_combustion": true,
+        "combustion_quality_rating": "Fair"
+      }
+    },
+    "low_O2_rich": {
+      "description": "Rich combustion with low O2 (incomplete combustion)",
+      "inputs": {
+        "O2_pct": 1.0,
+        "CO2_pct": 15.0,
+        "CO_ppm": 800.0,
+        "NOx_ppm": 100.0,
+        "flue_gas_temp_c": 200.0,
+        "ambient_temp_c": 25.0,
+        "fuel_type": "Natural Gas",
+        "gas_basis": "Dry Basis"
+      },
+      "expected_outputs": {
+        "excess_air_pct": 5.0,
+        "stoichiometric_ratio": 1.05,
+        "is_complete_combustion": false,
+        "combustion_quality_rating": "Poor"
+      }
+    },
+    "high_O2_lean": {
+      "description": "Lean combustion with excessive air",
+      "inputs": {
+        "O2_pct": 10.0,
+        "CO2_pct": 5.0,
+        "CO_ppm": 20.0,
+        "NOx_ppm": 80.0,
+        "flue_gas_temp_c": 150.0,
+        "ambient_temp_c": 25.0,
+        "fuel_type": "Natural Gas",
+        "gas_basis": "Dry Basis"
+      },
+      "expected_outputs": {
+        "excess_air_pct": 90.9,
+        "stoichiometric_ratio": 1.909,
+        "is_complete_combustion": true,
+        "combustion_quality_rating": "Fair"
+      }
+    }
+  },
+  "emissions_test_cases": {
+    "natural_gas_low_emissions": {
+      "description": "Natural gas with low NOx emissions",
+      "inputs": {
+        "NOx_ppm": 100.0,
+        "CO_ppm": 50.0,
+        "SO2_ppm": 0.0,
+        "CO2_pct": 12.0,
+        "O2_pct": 3.5,
+        "flue_gas_flow_nm3_hr": 50000.0,
+        "reference_O2_pct": 3.0
+      },
+      "expected_outputs": {
+        "NOx_mg_nm3": 205.25,
+        "CO_mg_nm3": 62.47,
+        "NOx_kg_hr": 10.26,
+        "CO_kg_hr": 3.12,
+        "NOx_compliance_status": "Compliant (Good Margin)",
+        "CO_compliance_status": "Compliant (Good Margin)"
+      }
+    }
+  },
+  "known_conversion_factors": {
+    "NOx_MW": 46.0,
+    "CO_MW": 28.0,
+    "SO2_MW": 64.0,
+    "molar_volume_STP": 22.414,
+    "reference_O2_combustion_turbines": 15.0,
+    "reference_O2_boilers": 3.0,
+    "reference_O2_incinerators": 11.0
+  },
+  "tolerance_requirements": {
+    "excess_air_pct": 0.02,
+    "stoichiometric_ratio": 0.01,
+    "combustion_efficiency_pct": 0.5,
+    "emissions_mg_nm3": 0.01,
+    "mass_emission_rate_kg_hr": 0.02
+  }
+}

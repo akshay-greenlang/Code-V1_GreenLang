@@ -1,0 +1,1055 @@
+# ==============================================================================
+# GL-016 WATERGUARD Boiler Water Treatment Agent
+# Production GreenLang Specification (gl.yaml)
+# ==============================================================================
+# This file defines the production deployment configuration for GL-016
+# Optimized for industrial boiler water treatment operations
+# ==============================================================================
+
+apiVersion: greenlang.io/v1
+kind: Agent
+
+# ==============================================================================
+# AGENT IDENTIFICATION
+# ==============================================================================
+metadata:
+  id: GL-016
+  codename: WATERGUARD
+  name: BoilerWaterTreatmentAgent
+  version: "1.0.0"
+  category: controller
+  domain: boiler_systems
+
+  labels:
+    environment: production
+    tier: critical
+    team: water-treatment
+    compliance: ABMA-ASME
+
+  annotations:
+    description: "Boiler water treatment optimization with zero-hallucination guarantees"
+    owner: greenlang-team
+    contact: support@greenlang.io
+    documentation: https://greenlang.io/agents/GL-016
+    jira: https://jira.greenlang.io/browse/GL-016
+    slack: "#gl-016-waterguard"
+
+# ==============================================================================
+# RUNTIME CONFIGURATION
+# ==============================================================================
+spec:
+  # ----------------------------------------------------------------------------
+  # Agent Runtime
+  # ----------------------------------------------------------------------------
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: "main:app"
+    working_directory: /app
+
+    # Deterministic Configuration
+    deterministic:
+      enabled: true
+      temperature: 0.0
+      seed: 42
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+
+    # Execution Parameters
+    execution:
+      timeout_seconds: 120
+      max_retries: 3
+      retry_delay_seconds: 5
+      retry_backoff: exponential
+      max_parallel_tasks: 10
+
+    # Caching
+    cache:
+      enabled: true
+      ttl_seconds: 300
+      max_entries: 10000
+      strategy: lru
+      redis_enabled: true
+
+    # Batch Processing
+    batch:
+      enabled: true
+      max_batch_size: 1000
+      parallel_workers: 4
+      chunk_size: 250
+
+  # ----------------------------------------------------------------------------
+  # AI Configuration
+  # ----------------------------------------------------------------------------
+  ai:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.0
+    seed: 42
+    max_tokens: 4096
+    top_p: 1.0
+
+    # Operation Boundaries
+    allowed_operations:
+      - text_classification
+      - entity_extraction
+      - narrative_generation
+      - recommendation_explanation
+      - incident_summarization
+      - best_practice_guidance
+
+    prohibited_operations:
+      - numeric_calculation
+      - water_chemistry_calculation
+      - blowdown_calculation
+      - chemical_dosing_calculation
+      - cycles_of_concentration_calculation
+      - risk_scoring
+
+    # Safety Guardrails
+    safety:
+      content_filtering: true
+      output_validation: true
+      hallucination_detection: true
+      confidence_threshold: 0.95
+
+  # ----------------------------------------------------------------------------
+  # Data Sources
+  # ----------------------------------------------------------------------------
+  data_sources:
+    # SCADA/DCS Integration
+    - id: scada_primary
+      name: "Primary SCADA System"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_PRIMARY_ENDPOINT}"
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+      polling:
+        interval_seconds: 5
+        batch_size: 100
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - water_chemistry
+        - blowdown_parameters
+        - operating_parameters
+
+    # Laboratory System
+    - id: lims
+      name: "Laboratory Information Management System"
+      type: rest_api
+      connection:
+        base_url: "${LIMS_API_URL}"
+        auth_type: api_key
+        timeout_seconds: 30
+      polling:
+        interval_minutes: 60
+        batch_size: 50
+      health_check:
+        enabled: true
+        interval_seconds: 60
+
+    # Historian
+    - id: historian
+      name: "Process Historian"
+      type: opc_hda
+      connection:
+        endpoint: "${HISTORIAN_ENDPOINT}"
+      query:
+        max_rows: 10000
+        aggregate_type: average
+
+    # Weather Service
+    - id: weather
+      name: "Weather Data Service"
+      type: rest_api
+      connection:
+        base_url: "${WEATHER_API_URL}"
+        auth_type: api_key
+      polling:
+        interval_minutes: 30
+
+  # ----------------------------------------------------------------------------
+  # Data Sinks
+  # ----------------------------------------------------------------------------
+  data_sinks:
+    # Control System Outputs
+    - id: scada_setpoints
+      name: "SCADA Setpoint Writer"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_PRIMARY_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      write_strategy: verify_then_commit
+
+    # CMMS Integration
+    - id: cmms
+      name: "Computerized Maintenance Management System"
+      type: rest_api
+      connection:
+        base_url: "${CMMS_API_URL}"
+        auth_type: oauth2
+      events:
+        - scale_risk_alert
+        - corrosion_risk_alert
+        - chemical_reorder_required
+        - water_quality_violation
+
+    # Reporting Database
+    - id: reporting_db
+      name: "Reporting Database"
+      type: postgresql
+      connection:
+        host: "${REPORTING_DB_HOST}"
+        port: 5432
+        database: greenlang_reporting
+        ssl_mode: require
+      tables:
+        - water_treatment_metrics
+        - optimization_results
+        - performance_reports
+
+    # Blob Storage
+    - id: blob_storage
+      name: "Document Storage"
+      type: s3
+      connection:
+        bucket: "${S3_BUCKET_REPORTS}"
+        region: "${AWS_REGION}"
+      content_types:
+        - reports/pdf
+        - reports/excel
+        - graphs/png
+
+  # ----------------------------------------------------------------------------
+  # Monitoring & Observability
+  # ----------------------------------------------------------------------------
+  monitoring:
+    # Metrics
+    metrics:
+      enabled: true
+      port: 9090
+      path: /metrics
+      exporter: prometheus
+
+      # Custom Metrics
+      custom:
+        - name: gl016_water_quality_score
+          type: gauge
+          description: "Water quality compliance score (0-100)"
+          labels: [boiler_id, location]
+
+        - name: gl016_cycles_of_concentration
+          type: gauge
+          description: "Current cycles of concentration"
+          labels: [boiler_id]
+
+        - name: gl016_blowdown_rate_kg_hr
+          type: gauge
+          description: "Blowdown rate (kg/hr)"
+          labels: [boiler_id, blowdown_type]
+
+        - name: gl016_scale_risk_score
+          type: gauge
+          description: "Scale formation risk score (0-100)"
+          labels: [boiler_id]
+
+        - name: gl016_corrosion_risk_score
+          type: gauge
+          description: "Corrosion risk score (0-100)"
+          labels: [boiler_id]
+
+        - name: gl016_chemical_consumption_kg_hr
+          type: gauge
+          description: "Chemical consumption rate (kg/hr)"
+          labels: [boiler_id, chemical_type]
+
+        - name: gl016_optimization_savings_usd_hr
+          type: gauge
+          description: "Optimization savings (USD/hr)"
+          labels: [boiler_id, savings_type]
+
+        - name: gl016_optimizations_total
+          type: counter
+          description: "Total optimizations performed"
+          labels: [boiler_id, optimization_type]
+
+        - name: gl016_alerts_total
+          type: counter
+          description: "Total alerts generated"
+          labels: [boiler_id, severity, alert_type]
+
+        - name: gl016_water_quality_violations_total
+          type: counter
+          description: "Total water quality violations"
+          labels: [boiler_id, parameter, severity]
+
+        - name: gl016_calculation_duration_seconds
+          type: histogram
+          description: "Calculation duration"
+          labels: [calculation_type]
+          buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1.0]
+
+    # Distributed Tracing
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+      protocol: grpc
+      sampling:
+        strategy: probabilistic
+        rate: 0.1
+      service_name: gl-016-waterguard
+
+    # Structured Logging
+    logging:
+      level: "${LOG_LEVEL:INFO}"
+      format: json
+      structured: true
+      correlation_id: true
+
+      outputs:
+        - type: stdout
+          level: INFO
+        - type: file
+          level: DEBUG
+          path: /var/log/greenlang/gl-016.log
+          rotation:
+            max_size_mb: 100
+            max_files: 10
+        - type: syslog
+          level: WARNING
+          facility: local0
+
+    # Health Checks
+    health:
+      liveness:
+        enabled: true
+        path: /health/liveness
+        port: 8080
+        initial_delay_seconds: 30
+        period_seconds: 10
+        timeout_seconds: 5
+        failure_threshold: 3
+
+      readiness:
+        enabled: true
+        path: /health/readiness
+        port: 8080
+        initial_delay_seconds: 5
+        period_seconds: 5
+        timeout_seconds: 3
+        failure_threshold: 3
+
+      startup:
+        enabled: true
+        path: /health/startup
+        port: 8080
+        initial_delay_seconds: 0
+        period_seconds: 5
+        timeout_seconds: 3
+        failure_threshold: 30
+
+    # Grafana Dashboards
+    dashboards:
+      - name: water_treatment_overview
+        refresh_interval: 30s
+        panels:
+          - water_quality_status
+          - cycles_of_concentration
+          - blowdown_rates
+          - chemical_consumption
+          - cost_savings
+
+      - name: water_chemistry_monitoring
+        refresh_interval: 30s
+        panels:
+          - ph_trends
+          - conductivity_trends
+          - tds_trends
+          - hardness_monitoring
+          - dissolved_oxygen
+
+      - name: risk_assessment
+        refresh_interval: 60s
+        panels:
+          - scale_risk_heatmap
+          - corrosion_risk_heatmap
+          - risk_trends
+          - mitigation_actions
+
+      - name: optimization_performance
+        refresh_interval: 60s
+        panels:
+          - blowdown_optimization
+          - chemical_optimization
+          - savings_tracking
+          - efficiency_metrics
+
+  # ----------------------------------------------------------------------------
+  # Alerting
+  # ----------------------------------------------------------------------------
+  alerts:
+    # Alert Channels
+    channels:
+      - name: email
+        type: email
+        config:
+          smtp_host: "${SMTP_HOST}"
+          smtp_port: 587
+          from: alerts@greenlang.io
+          recipients:
+            - water-treatment-team@company.com
+            - operations@company.com
+
+      - name: slack
+        type: slack
+        config:
+          webhook_url: "${SLACK_WEBHOOK_URL}"
+          channel: "#gl-016-alerts"
+
+      - name: pagerduty
+        type: pagerduty
+        config:
+          integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+          severity_mapping:
+            critical: critical
+            high: error
+            medium: warning
+            low: info
+
+      - name: sms
+        type: twilio
+        config:
+          account_sid: "${TWILIO_ACCOUNT_SID}"
+          auth_token: "${TWILIO_AUTH_TOKEN}"
+          from_number: "${TWILIO_FROM_NUMBER}"
+          to_numbers:
+            - "${ON_CALL_PHONE_1}"
+            - "${ON_CALL_PHONE_2}"
+
+    # Alert Rules
+    rules:
+      - name: critical_scale_risk
+        condition: "scale_risk_score > 80"
+        severity: critical
+        description: "Critical scale formation risk detected"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 30
+        auto_resolve: true
+
+      - name: critical_corrosion_risk
+        condition: "corrosion_risk_score > 80"
+        severity: critical
+        description: "Critical corrosion risk detected"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 30
+        auto_resolve: true
+
+      - name: water_quality_violation
+        condition: "water_quality_compliant == false"
+        severity: high
+        description: "Water quality parameter violation"
+        channels: [email, slack]
+        throttle_minutes: 15
+
+      - name: excessive_blowdown
+        condition: "blowdown_percent > 15"
+        severity: medium
+        description: "Blowdown rate exceeds recommended limits"
+        channels: [email, slack]
+        throttle_minutes: 60
+
+      - name: high_dissolved_oxygen
+        condition: "dissolved_oxygen_ppb > 50"
+        severity: high
+        description: "Dissolved oxygen exceeds safe limits"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 10
+
+      - name: low_chemical_inventory
+        condition: "chemical_tank_level_percent < 20"
+        severity: medium
+        description: "Chemical tank level low - reorder required"
+        channels: [email]
+        throttle_minutes: 240
+
+      - name: ph_out_of_range
+        condition: "boiler_water_ph < target_ph_min OR boiler_water_ph > target_ph_max"
+        severity: high
+        description: "Boiler water pH out of acceptable range"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 5
+
+      - name: high_tds
+        condition: "total_dissolved_solids_ppm > max_tds_ppm * 0.9"
+        severity: medium
+        description: "TDS approaching maximum limit"
+        channels: [email, slack]
+        throttle_minutes: 30
+
+      - name: data_source_failure
+        condition: "data_source_status == 'DISCONNECTED'"
+        severity: critical
+        description: "Critical data source disconnected"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 5
+
+      - name: optimization_failure
+        condition: "optimization_error_rate > 0.05"
+        severity: high
+        description: "High optimization failure rate"
+        channels: [email, slack]
+        throttle_minutes: 60
+
+  # ----------------------------------------------------------------------------
+  # Security
+  # ----------------------------------------------------------------------------
+  security:
+    # Authentication
+    authentication:
+      type: oauth2
+      provider: keycloak
+      realm: greenlang
+      client_id: gl-016-waterguard
+      required: true
+      token_expiry_seconds: 3600
+
+    # Authorization (RBAC)
+    authorization:
+      type: rbac
+
+      roles:
+        - name: admin
+          description: "Full administrative access"
+          permissions:
+            - agent:read
+            - agent:write
+            - agent:delete
+            - agent:configure
+            - setpoint:write
+            - alert:acknowledge
+            - alert:configure
+
+        - name: water_treatment_engineer
+          description: "Water treatment engineers"
+          permissions:
+            - agent:read
+            - agent:write
+            - setpoint:write
+            - alert:acknowledge
+            - report:generate
+
+        - name: operations_engineer
+          description: "Operations engineers"
+          permissions:
+            - agent:read
+            - setpoint:write
+            - alert:acknowledge
+
+        - name: operator
+          description: "Plant operators"
+          permissions:
+            - agent:read
+            - alert:acknowledge
+            - report:view
+
+        - name: viewer
+          description: "Read-only access"
+          permissions:
+            - agent:read
+            - report:view
+
+      role_mappings:
+        - user_group: "water-treatment-team"
+          role: water_treatment_engineer
+        - user_group: "operations-team"
+          role: operations_engineer
+        - user_group: "operators"
+          role: operator
+        - user_group: "management"
+          role: viewer
+
+    # Encryption
+    encryption:
+      at_rest:
+        enabled: true
+        algorithm: AES-256-GCM
+        key_rotation_days: 90
+
+      in_transit:
+        enabled: true
+        protocol: TLS
+        min_version: "1.3"
+        cipher_suites:
+          - TLS_AES_256_GCM_SHA384
+          - TLS_CHACHA20_POLY1305_SHA256
+        mutual_tls: false
+
+    # Secrets Management
+    secrets:
+      provider: hashicorp_vault
+      vault_addr: "${VAULT_ADDR}"
+      vault_namespace: greenlang
+      auth_method: kubernetes
+      secret_path: secret/gl-016
+
+      # Secret Rotation
+      rotation:
+        enabled: true
+        check_interval_hours: 24
+
+    # Audit Logging
+    audit:
+      enabled: true
+      retention_days: 2555  # 7 years
+      log_level: INFO
+
+      events:
+        - authentication_success
+        - authentication_failure
+        - authorization_failure
+        - setpoint_change
+        - configuration_change
+        - alert_acknowledged
+        - data_access
+        - report_generation
+
+      storage:
+        type: postgresql
+        encryption: true
+        immutable: true
+
+    # Network Policies
+    network:
+      ingress:
+        - from:
+            - namespace: greenlang-platform
+            - namespace: monitoring
+          ports:
+            - protocol: TCP
+              port: 8080
+            - protocol: TCP
+              port: 9090
+
+      egress:
+        - to:
+            - namespace: greenlang-platform
+          ports:
+            - protocol: TCP
+              port: 5432  # PostgreSQL
+            - protocol: TCP
+              port: 6379  # Redis
+        - to:
+            - external: scada-system
+          ports:
+            - protocol: TCP
+              port: 4840  # OPC UA
+
+  # ----------------------------------------------------------------------------
+  # Deployment
+  # ----------------------------------------------------------------------------
+  deployment:
+    # Replicas
+    replicas: 3
+
+    # Update Strategy
+    strategy:
+      type: RollingUpdate
+      rolling_update:
+        max_surge: 1
+        max_unavailable: 0
+
+    # Resource Requirements
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+        ephemeral_storage: "5Gi"
+      limits:
+        cpu: "2000m"
+        memory: "2Gi"
+        ephemeral_storage: "10Gi"
+
+    # Autoscaling
+    autoscaling:
+      enabled: true
+      min_replicas: 2
+      max_replicas: 10
+
+      metrics:
+        - type: cpu
+          target_utilization_percent: 70
+        - type: memory
+          target_utilization_percent: 80
+        - type: custom
+          metric_name: gl016_optimizations_per_second
+          target_value: 100
+
+      behavior:
+        scale_up:
+          stabilization_window_seconds: 60
+          policies:
+            - type: Percent
+              value: 50
+              period_seconds: 60
+        scale_down:
+          stabilization_window_seconds: 300
+          policies:
+            - type: Pods
+              value: 1
+              period_seconds: 120
+
+    # Pod Disruption Budget
+    pod_disruption_budget:
+      enabled: true
+      min_available: 1
+
+    # Scheduling
+    scheduling:
+      node_selector:
+        workload-type: computation
+        region: primary
+
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "greenlang"
+          effect: "NoSchedule"
+
+      affinity:
+        pod_anti_affinity:
+          preferred_during_scheduling_ignored_during_execution:
+            - weight: 100
+              pod_affinity_term:
+                label_selector:
+                  match_expressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-016-waterguard
+                topology_key: kubernetes.io/hostname
+
+        node_affinity:
+          required_during_scheduling_ignored_during_execution:
+            node_selector_terms:
+              - match_expressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                      - c5.xlarge
+                      - c5.2xlarge
+
+    # Volumes
+    volumes:
+      - name: config
+        type: configmap
+        configmap_name: gl-016-config
+        mount_path: /app/config
+        read_only: true
+
+      - name: secrets
+        type: secret
+        secret_name: gl-016-secrets
+        mount_path: /app/secrets
+        read_only: true
+
+      - name: cache
+        type: emptydir
+        mount_path: /app/cache
+        size_limit: 5Gi
+
+      - name: logs
+        type: persistentvolumeclaim
+        claim_name: gl-016-logs-pvc
+        mount_path: /var/log/greenlang
+
+    # Environment Variables
+    environment:
+      - name: LOG_LEVEL
+        value: "${LOG_LEVEL:INFO}"
+      - name: METRICS_ENABLED
+        value: "true"
+      - name: CACHE_TTL_SECONDS
+        value: "300"
+      - name: DETERMINISTIC_MODE
+        value: "true"
+      - name: ZERO_HALLUCINATION
+        value: "true"
+      - name: PYTHONUNBUFFERED
+        value: "1"
+      - name: TZ
+        value: "UTC"
+
+  # ----------------------------------------------------------------------------
+  # Compliance
+  # ----------------------------------------------------------------------------
+  compliance:
+    standards:
+      - name: ABMA
+        version: "2023"
+        description: "American Boiler Manufacturers Association Guidelines"
+        applicable_sections:
+          - water_quality_standards
+          - blowdown_control
+
+      - name: ASME
+        version: "2023"
+        description: "ASME Boiler and Pressure Vessel Code"
+        applicable_sections:
+          - Section_I
+          - Section_VII
+
+      - name: ASTM_D3739
+        version: "2021"
+        description: "Standard Practice for Internal Treatment of Water in Boilers"
+
+      - name: NACE
+        version: "2023"
+        description: "NACE Corrosion Standards"
+        applicable_sections:
+          - SP0590
+
+      - name: EPA
+        version: "2023"
+        description: "EPA Water Discharge Standards"
+
+      - name: ISO_11963
+        version: "2019"
+        description: "Water quality for steam boiler feed-water and boiler water"
+
+    # Validation Rules
+    validation:
+      enabled: true
+      rule_count: 150
+
+      categories:
+        - input_validation
+        - output_validation
+        - water_chemistry_limits
+        - mass_balance_validation
+        - energy_balance_validation
+        - regulatory_compliance
+        - safety_limits
+
+      enforcement:
+        mode: strict
+        fail_on_violation: true
+        log_violations: true
+
+    # Audit Trail
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years for regulatory compliance
+      storage_type: postgresql
+      encryption: true
+      immutable: true
+
+      tracked_events:
+        - calculation_execution
+        - optimization_performed
+        - setpoint_change
+        - alert_generated
+        - configuration_change
+        - data_access
+
+    # Provenance Tracking
+    provenance:
+      enabled: true
+      hash_algorithm: SHA-256
+      include_timestamps: true
+      include_inputs: true
+      include_model_version: true
+      include_calculation_path: true
+
+    # Zero-Hallucination Guarantees
+    zero_hallucination:
+      enabled: true
+      enforcement: strict
+
+      llm_prohibited_for:
+        - numeric_calculations
+        - water_chemistry_calculations
+        - blowdown_rate_calculations
+        - chemical_dosing_calculations
+        - cycles_of_concentration_calculations
+        - risk_score_calculations
+        - mass_balance_calculations
+        - energy_balance_calculations
+
+      llm_allowed_for:
+        - natural_language_generation
+        - recommendation_explanation
+        - incident_description
+        - report_narrative
+        - best_practice_guidance
+
+      validation:
+        cross_check_calculations: true
+        validate_against_physics: true
+        check_conservation_laws: true
+
+  # ----------------------------------------------------------------------------
+  # Performance
+  # ----------------------------------------------------------------------------
+  performance:
+    # Optimization Targets
+    targets:
+      calculation_latency_p50_ms: 50
+      calculation_latency_p95_ms: 200
+      calculation_latency_p99_ms: 500
+      throughput_calculations_per_second: 100
+      error_rate_percent: 0.1
+      availability_percent: 99.9
+
+    # Connection Pooling
+    connection_pools:
+      database:
+        min_size: 5
+        max_size: 20
+        timeout_seconds: 30
+        max_idle_seconds: 600
+
+      redis:
+        min_size: 3
+        max_size: 10
+        timeout_seconds: 5
+
+      http:
+        max_connections: 100
+        max_connections_per_host: 20
+        timeout_seconds: 30
+
+    # Rate Limiting
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 600
+      burst: 100
+
+    # Circuit Breakers
+    circuit_breakers:
+      - name: scada_connection
+        failure_threshold: 5
+        timeout_seconds: 30
+        recovery_timeout_seconds: 60
+
+      - name: database_connection
+        failure_threshold: 3
+        timeout_seconds: 10
+        recovery_timeout_seconds: 30
+
+  # ----------------------------------------------------------------------------
+  # Data Retention
+  # ----------------------------------------------------------------------------
+  data_retention:
+    policies:
+      - data_type: real_time_measurements
+        retention_days: 90
+        compression: true
+        archive_after_days: 30
+        archive_location: s3
+
+      - data_type: hourly_aggregates
+        retention_days: 365
+        compression: true
+        archive_after_days: 90
+
+      - data_type: daily_summaries
+        retention_days: 2555  # 7 years
+        compression: true
+
+      - data_type: optimization_results
+        retention_days: 2555
+        compression: true
+        immutable: true
+
+      - data_type: audit_logs
+        retention_days: 2555
+        compression: false
+        immutable: true
+
+      - data_type: reports
+        retention_days: 2555
+        compression: true
+
+      - data_type: cache_data
+        retention_hours: 24
+        auto_cleanup: true
+
+  # ----------------------------------------------------------------------------
+  # Backup & Recovery
+  # ----------------------------------------------------------------------------
+  backup:
+    enabled: true
+
+    schedule:
+      full_backup: "0 2 * * 0"  # Weekly on Sunday at 2 AM
+      incremental_backup: "0 2 * * 1-6"  # Daily at 2 AM
+
+    retention:
+      full_backups: 4  # Keep 4 weekly full backups
+      incremental_backups: 14  # Keep 14 daily incremental backups
+
+    storage:
+      type: s3
+      bucket: "${S3_BUCKET_BACKUPS}"
+      region: "${AWS_REGION}"
+      encryption: true
+
+    disaster_recovery:
+      rto_minutes: 60  # Recovery Time Objective
+      rpo_minutes: 15  # Recovery Point Objective
+
+    testing:
+      schedule: "0 3 1 * *"  # Monthly on 1st at 3 AM
+      restore_validation: true
+
+# ==============================================================================
+# METADATA
+# ==============================================================================
+metadata_extended:
+  created_by: greenlang-team
+  created_date: "2024-12-02"
+  last_modified: "2024-12-02"
+  last_modified_by: greenlang-team
+
+  version_history:
+    - version: "1.0.0"
+      date: "2024-12-02"
+      changes: "Initial production release"
+
+  documentation:
+    user_guide: https://docs.greenlang.io/agents/GL-016/user-guide
+    api_reference: https://docs.greenlang.io/agents/GL-016/api
+    architecture: https://docs.greenlang.io/agents/GL-016/architecture
+    deployment: https://docs.greenlang.io/agents/GL-016/deployment
+    troubleshooting: https://docs.greenlang.io/agents/GL-016/troubleshooting
+
+  support:
+    primary_contact: support@greenlang.io
+    slack_channel: "#gl-016-waterguard"
+    jira_project: GL-016
+    on_call_rotation: https://pagerduty.com/schedules/gl-016
+
+  business:
+    tam: "$5B"
+    target_date: "Q2 2026"
+    priority: P1
+    business_owner: water-treatment-lead
+
+    kpis:
+      - name: water_savings_percent
+        target: 30
+        measurement: monthly
+      - name: chemical_cost_reduction_percent
+        target: 25
+        measurement: monthly
+      - name: energy_waste_reduction_percent
+        target: 15
+        measurement: monthly
+      - name: scale_incident_reduction_percent
+        target: 80
+        measurement: quarterly

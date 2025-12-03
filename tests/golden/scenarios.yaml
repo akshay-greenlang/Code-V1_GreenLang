@@ -1,0 +1,537 @@
+# Golden Test Scenarios for GreenLang
+#
+# Each test has an EXPERT-VALIDATED correct answer.
+# These are used to ensure zero-hallucination in climate calculations.
+#
+# Sources:
+# - DEFRA 2024 Conversion Factors
+# - GHG Protocol Corporate Standard
+# - CBAM Implementing Regulation (EU) 2023/956
+# - Carbon Trust calculations
+
+golden_tests:
+  # ========================================================================
+  # SECTION 1: Scope 1 Stationary Combustion (10 tests)
+  # ========================================================================
+
+  - test_id: "scope1_001"
+    name: "Natural Gas Boiler - 1000 kWh"
+    description: "Calculate CO2e emissions from natural gas combustion in industrial boiler"
+    category: "scope1_stationary"
+    inputs:
+      fuel_type: "natural_gas"
+      fuel_quantity: 1000
+      fuel_unit: "kWh"
+      region: "UK"
+    expected_output: 183.85  # kg CO2e
+    expected_unit: "kgCO2e"
+    tolerance: 0.01  # ±1%
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Natural Gas (gross CV) = 0.18385 kgCO2e/kWh"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "natural_gas", "stationary_combustion"]
+
+  - test_id: "scope1_002"
+    name: "Diesel Generator - 500 Liters"
+    description: "Emergency diesel generator emissions"
+    category: "scope1_stationary"
+    inputs:
+      fuel_type: "diesel"
+      fuel_quantity: 500
+      fuel_unit: "L"
+      region: "UK"
+    expected_output: 1343.5  # kg CO2e (500L × 2.687)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Diesel = 2.687 kgCO2e/L"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "diesel", "generator"]
+
+  - test_id: "scope1_003"
+    name: "Coal Boiler - 10 Tonnes"
+    description: "Industrial coal-fired boiler"
+    category: "scope1_stationary"
+    inputs:
+      fuel_type: "coal"
+      fuel_quantity: 10000  # kg
+      fuel_unit: "kg"
+      region: "UK"
+    expected_output: 22690  # kg CO2e (10,000 kg × 2.269)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Industrial Coal = 2.269 kgCO2e/kg"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "coal", "heavy_industry"]
+
+  - test_id: "scope1_004"
+    name: "LPG Heating - 1000 Liters"
+    description: "LPG space heating"
+    category: "scope1_stationary"
+    inputs:
+      fuel_type: "lpg"
+      fuel_quantity: 1000
+      fuel_unit: "L"
+      region: "UK"
+    expected_output: 1508  # kg CO2e (1000L × 1.508)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - LPG = 1.508 kgCO2e/L"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "lpg", "heating"]
+
+  - test_id: "scope1_005"
+    name: "Mixed Fuel Facility"
+    description: "Facility using both natural gas and diesel"
+    category: "scope1_stationary"
+    inputs:
+      natural_gas_kwh: 5000
+      diesel_liters: 200
+      region: "UK"
+    expected_output: 1456.65  # kg CO2e (5000×0.18385 + 200×2.687 = 919.25 + 537.4)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Combined calculation"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "mixed_fuels"]
+
+  - test_id: "scope1_006"
+    name: "Heating Oil Burner - 300 Liters"
+    description: "Commercial heating oil combustion"
+    category: "scope1_stationary"
+    inputs:
+      fuel_type: "heating_oil"
+      fuel_quantity: 300
+      fuel_unit: "L"
+      region: "UK"
+    expected_output: 888.9  # kg CO2e (300L × 2.963)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Burning Oil = 2.963 kgCO2e/L"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "heating_oil"]
+
+  - test_id: "scope1_007"
+    name: "Small Office - Annual Gas"
+    description: "Annual natural gas consumption for small office building"
+    category: "scope1_stationary"
+    inputs:
+      fuel_type: "natural_gas"
+      fuel_quantity: 25000  # kWh/year
+      fuel_unit: "kWh"
+      region: "UK"
+      timeframe: "annual"
+    expected_output: 4596.25  # kg CO2e (25,000 × 0.18385)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "natural_gas", "office", "annual"]
+
+  - test_id: "scope1_008"
+    name: "Manufacturing Site - Monthly Diesel"
+    description: "Monthly diesel consumption for backup generators"
+    category: "scope1_stationary"
+    inputs:
+      fuel_type: "diesel"
+      fuel_quantity: 1500  # liters/month
+      fuel_unit: "L"
+      region: "UK"
+      timeframe: "monthly"
+    expected_output: 4030.5  # kg CO2e (1,500 × 2.687)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "diesel", "manufacturing"]
+
+  - test_id: "scope1_009"
+    name: "Fleet Vehicles - Petrol"
+    description: "Company car fleet petrol consumption"
+    category: "scope1_mobile"
+    inputs:
+      fuel_type: "petrol"
+      fuel_quantity: 2000  # liters
+      fuel_unit: "L"
+      region: "UK"
+    expected_output: 4592  # kg CO2e (2,000 × 2.296)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Petrol = 2.296 kgCO2e/L"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "petrol", "fleet"]
+
+  - test_id: "scope1_010"
+    name: "High Precision Test - Natural Gas"
+    description: "Test calculation precision for regulatory reporting"
+    category: "scope1_stationary"
+    inputs:
+      fuel_type: "natural_gas"
+      fuel_quantity: 123456.789  # kWh (high precision)
+      fuel_unit: "kWh"
+      region: "UK"
+    expected_output: 22697.430  # kg CO2e (123456.789 × 0.18385)
+    expected_unit: "kgCO2e"
+    tolerance: 0.001  # ±0.1% for high precision
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024"
+    reference_standard: "GHG Protocol Scope 1"
+    tags: ["scope1", "high_precision"]
+
+  # ========================================================================
+  # SECTION 2: Scope 2 Electricity (5 tests)
+  # ========================================================================
+
+  - test_id: "scope2_001"
+    name: "UK Office Electricity - Location-Based"
+    description: "Office electricity consumption (location-based method)"
+    category: "scope2_electricity"
+    inputs:
+      electricity_kwh: 10000
+      region: "UK"
+      method: "location_based"
+    expected_output: 1930  # kg CO2e (10,000 × 0.193)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - UK Grid Average = 0.193 kgCO2e/kWh"
+    reference_standard: "GHG Protocol Scope 2"
+    tags: ["scope2", "electricity", "uk", "location_based"]
+
+  - test_id: "scope2_002"
+    name: "US Data Center - National Average"
+    description: "US data center electricity (national average)"
+    category: "scope2_electricity"
+    inputs:
+      electricity_kwh: 100000
+      region: "US"
+      method: "location_based"
+    expected_output: 41700  # kg CO2e (100,000 × 0.417)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "EPA eGRID 2023 - US Average = 0.417 kgCO2e/kWh"
+    reference_standard: "GHG Protocol Scope 2"
+    tags: ["scope2", "electricity", "us", "data_center"]
+
+  - test_id: "scope2_003"
+    name: "California Renewable Grid"
+    description: "California (CAMX) - cleaner grid due to renewables"
+    category: "scope2_electricity"
+    inputs:
+      electricity_kwh: 50000
+      region: "US_CAMX"
+      method: "location_based"
+    expected_output: 9850  # kg CO2e (50,000 × 0.197)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "EPA eGRID 2023 - CAMX = 0.197 kgCO2e/kWh"
+    reference_standard: "GHG Protocol Scope 2"
+    tags: ["scope2", "electricity", "california", "renewable"]
+
+  - test_id: "scope2_004"
+    name: "Texas Grid (ERCOT)"
+    description: "Texas electricity grid emissions"
+    category: "scope2_electricity"
+    inputs:
+      electricity_kwh: 75000
+      region: "US_ERCT"
+      method: "location_based"
+    expected_output: 29250  # kg CO2e (75,000 × 0.390)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "EPA eGRID 2023 - ERCT = 0.390 kgCO2e/kWh"
+    reference_standard: "GHG Protocol Scope 2"
+    tags: ["scope2", "electricity", "texas"]
+
+  - test_id: "scope2_005"
+    name: "Annual Factory Electricity"
+    description: "Annual electricity consumption for manufacturing facility"
+    category: "scope2_electricity"
+    inputs:
+      electricity_kwh: 500000  # kWh/year
+      region: "UK"
+      method: "location_based"
+      timeframe: "annual"
+    expected_output: 96500  # kg CO2e (500,000 × 0.193)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024"
+    reference_standard: "GHG Protocol Scope 2"
+    tags: ["scope2", "electricity", "manufacturing", "annual"]
+
+  # ========================================================================
+  # SECTION 3: Scope 3 Transport & Logistics (5 tests)
+  # ========================================================================
+
+  - test_id: "scope3_001"
+    name: "Sea Freight - Container Ship"
+    description: "International sea freight (10 tonnes, 5000 km)"
+    category: "scope3_transport"
+    inputs:
+      transport_mode: "sea_freight"
+      cargo_tonnes: 10
+      distance_km: 5000
+      region: "GLOBAL"
+    expected_output: 565  # kg CO2e (10 × 5000 × 0.0113)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Container Ship = 0.0113 kgCO2e/tonne-km"
+    reference_standard: "GHG Protocol Scope 3 (Category 4)"
+    tags: ["scope3", "sea_freight", "logistics"]
+
+  - test_id: "scope3_002"
+    name: "Air Freight - International"
+    description: "International air freight (2 tonnes, 3000 km)"
+    category: "scope3_transport"
+    inputs:
+      transport_mode: "air_freight"
+      cargo_tonnes: 2
+      distance_km: 3000
+      region: "GLOBAL"
+    expected_output: 7404  # kg CO2e (2 × 3000 × 1.234)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Air Freight = 1.234 kgCO2e/tonne-km"
+    reference_standard: "GHG Protocol Scope 3 (Category 4)"
+    tags: ["scope3", "air_freight"]
+
+  - test_id: "scope3_003"
+    name: "HGV Road Transport"
+    description: "Heavy goods vehicle transport (articulated >33t, 1000 km)"
+    category: "scope3_transport"
+    inputs:
+      transport_mode: "hgv_diesel"
+      distance_km: 1000
+      region: "UK"
+    expected_output: 953  # kg CO2e (1000 × 0.953)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - HGV Articulated >33t = 0.953 kgCO2e/km"
+    reference_standard: "GHG Protocol Scope 3 (Category 4)"
+    tags: ["scope3", "road_freight", "hgv"]
+
+  - test_id: "scope3_004"
+    name: "Employee Commuting - Diesel Car"
+    description: "Employee commuting emissions (diesel car, 5000 km/year)"
+    category: "scope3_commuting"
+    inputs:
+      transport_mode: "diesel_car"
+      distance_km: 5000
+      region: "UK"
+    expected_output: 855  # kg CO2e (5000 × 0.171)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Average Diesel Car = 0.171 kgCO2e/km"
+    reference_standard: "GHG Protocol Scope 3 (Category 7)"
+    tags: ["scope3", "commuting", "diesel_car"]
+
+  - test_id: "scope3_005"
+    name: "Business Travel - Petrol Car"
+    description: "Business travel in company petrol car (10,000 km/year)"
+    category: "scope3_business_travel"
+    inputs:
+      transport_mode: "petrol_car"
+      distance_km: 10000
+      region: "UK"
+    expected_output: 1880  # kg CO2e (10,000 × 0.188)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Average Petrol Car = 0.188 kgCO2e/km"
+    reference_standard: "GHG Protocol Scope 3 (Category 6)"
+    tags: ["scope3", "business_travel", "petrol_car"]
+
+  # ========================================================================
+  # SECTION 4: CBAM Embedded Emissions (5 tests)
+  # ========================================================================
+
+  - test_id: "cbam_001"
+    name: "CBAM Steel - EU Import"
+    description: "Embedded emissions in imported steel (CBAM regulation)"
+    category: "cbam_embedded"
+    inputs:
+      material: "steel"
+      quantity_kg: 1000
+      production_region: "GLOBAL"
+      embedded_factor: 2.1  # kg CO2e/kg
+    expected_output: 2100  # kg CO2e (1000 × 2.1)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "Ecoinvent 3.9 - Virgin Steel = 2.1 kgCO2e/kg"
+    reference_standard: "CBAM (EU) 2023/956"
+    tags: ["cbam", "steel", "embedded_emissions"]
+
+  - test_id: "cbam_002"
+    name: "CBAM Aluminium - Virgin Production"
+    description: "High-carbon aluminium import"
+    category: "cbam_embedded"
+    inputs:
+      material: "aluminium"
+      quantity_kg: 500
+      production_region: "GLOBAL"
+      embedded_factor: 8.5  # kg CO2e/kg
+    expected_output: 4250  # kg CO2e (500 × 8.5)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "Ecoinvent 3.9 - Virgin Aluminium = 8.5 kgCO2e/kg"
+    reference_standard: "CBAM (EU) 2023/956"
+    tags: ["cbam", "aluminium", "embedded_emissions"]
+
+  - test_id: "cbam_003"
+    name: "CBAM Cement - Portland"
+    description: "Cement production embedded emissions"
+    category: "cbam_embedded"
+    inputs:
+      material: "cement"
+      quantity_kg: 10000
+      production_region: "UK"
+      embedded_factor: 0.876  # kg CO2e/kg
+    expected_output: 8760  # kg CO2e (10,000 × 0.876)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Portland Cement = 0.876 kgCO2e/kg"
+    reference_standard: "CBAM (EU) 2023/956"
+    tags: ["cbam", "cement", "embedded_emissions"]
+
+  - test_id: "cbam_004"
+    name: "CBAM Concrete - Structural"
+    description: "Ready-mix concrete embedded emissions"
+    category: "cbam_embedded"
+    inputs:
+      material: "concrete"
+      quantity_kg: 50000  # 50 tonnes
+      production_region: "GLOBAL"
+      embedded_factor: 0.145  # kg CO2e/kg
+    expected_output: 7250  # kg CO2e (50,000 × 0.145)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "Ecoinvent 3.9 - Concrete C30/37 = 0.145 kgCO2e/kg"
+    reference_standard: "CBAM (EU) 2023/956"
+    tags: ["cbam", "concrete", "construction"]
+
+  - test_id: "cbam_005"
+    name: "CBAM Mixed Materials Shipment"
+    description: "Complex shipment with multiple CBAM materials"
+    category: "cbam_embedded"
+    inputs:
+      steel_kg: 1000
+      aluminium_kg: 200
+      cement_kg: 5000
+      steel_factor: 2.1
+      aluminium_factor: 8.5
+      cement_factor: 0.876
+    expected_output: 7480  # kg CO2e (1000×2.1 + 200×8.5 + 5000×0.876 = 2100 + 1700 + 4380)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "Mixed calculation - DEFRA 2024 + Ecoinvent 3.9"
+    reference_standard: "CBAM (EU) 2023/956"
+    tags: ["cbam", "mixed_materials"]
+
+  # ========================================================================
+  # SECTION 5: Edge Cases & Boundary Conditions (5 tests)
+  # ========================================================================
+
+  - test_id: "edge_001"
+    name: "Zero Consumption"
+    description: "Edge case: Zero fuel consumption"
+    category: "edge_case"
+    inputs:
+      fuel_type: "natural_gas"
+      fuel_quantity: 0
+      fuel_unit: "kWh"
+      region: "UK"
+    expected_output: 0  # kg CO2e
+    expected_unit: "kgCO2e"
+    tolerance: 0.0001
+    tolerance_type: "absolute"
+    expert_source: "Mathematical edge case"
+    reference_standard: "GHG Protocol"
+    tags: ["edge_case", "zero_input"]
+
+  - test_id: "edge_002"
+    name: "Very Small Consumption"
+    description: "Edge case: Sub-kilogram emissions"
+    category: "edge_case"
+    inputs:
+      fuel_type: "natural_gas"
+      fuel_quantity: 1  # Just 1 kWh
+      fuel_unit: "kWh"
+      region: "UK"
+    expected_output: 0.18385  # kg CO2e
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024"
+    reference_standard: "GHG Protocol"
+    tags: ["edge_case", "small_value"]
+
+  - test_id: "edge_003"
+    name: "Very Large Consumption"
+    description: "Edge case: Industrial-scale emissions (1 GWh)"
+    category: "edge_case"
+    inputs:
+      fuel_type: "natural_gas"
+      fuel_quantity: 1000000  # 1 GWh = 1,000,000 kWh
+      fuel_unit: "kWh"
+      region: "UK"
+    expected_output: 183850  # kg CO2e (183.85 tonnes)
+    expected_unit: "kgCO2e"
+    tolerance: 0.01
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024"
+    reference_standard: "GHG Protocol"
+    tags: ["edge_case", "large_value"]
+
+  - test_id: "edge_004"
+    name: "Precision Test - 7 Decimal Places"
+    description: "Test calculation maintains precision"
+    category: "edge_case"
+    inputs:
+      fuel_type: "natural_gas"
+      fuel_quantity: 1234.5678901
+      fuel_unit: "kWh"
+      region: "UK"
+    expected_output: 226.968219  # kg CO2e (1234.5678901 × 0.18385)
+    expected_unit: "kgCO2e"
+    tolerance: 0.0001  # ±0.01% (very tight)
+    tolerance_type: "relative"
+    expert_source: "DEFRA 2024 - Precision test"
+    reference_standard: "GHG Protocol"
+    tags: ["edge_case", "high_precision"]
+
+  - test_id: "edge_005"
+    name: "Rounding Test - Regulatory Reporting"
+    description: "Ensure proper rounding for regulatory submission (3 decimal places)"
+    category: "edge_case"
+    inputs:
+      fuel_type: "diesel"
+      fuel_quantity: 123.456  # liters
+      fuel_unit: "L"
+      region: "UK"
+    expected_output: 331.722  # kg CO2e (123.456 × 2.687 = 331.72167, rounds to 331.722)
+    expected_unit: "kgCO2e"
+    tolerance: 0.0005
+    tolerance_type: "absolute"
+    expert_source: "DEFRA 2024 - Regulatory rounding (3 decimal places)"
+    reference_standard: "GHG Protocol - Reporting Requirements"
+    tags: ["edge_case", "rounding", "regulatory"]

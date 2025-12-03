@@ -1,0 +1,1002 @@
+# =============================================================================
+# EUDR Deforestation Compliance Agent - AgentSpec v2
+# =============================================================================
+# EU Deforestation Regulation (EU) 2023/1115 Compliance Agent
+# CRITICAL DEADLINE: December 30, 2025
+# Penalty: Up to 4% of annual EU turnover for non-compliance
+# =============================================================================
+
+name: EUDR Deforestation Compliance Agent
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+
+id: regulatory/eudr_compliance_v1
+
+summary: >
+  Validates supply chain compliance with the EU Deforestation Regulation (EU) 2023/1115.
+  Covers 7 regulated commodities: cattle, cocoa, coffee, palm oil, rubber, soya, and wood.
+  Ensures products are deforestation-free (cutoff date: December 31, 2020) and legally
+  produced. Generates EU Due Diligence Statements (DDS) for regulatory submission.
+
+author:
+  name: GreenLang Regulatory Team
+  email: regulatory@greenlang.io
+  organization: GreenLang
+
+license: Apache-2.0
+
+tags:
+  - eudr
+  - deforestation
+  - due-diligence
+  - supply-chain
+  - geolocation
+  - compliance
+  - eu-regulation
+  - zero-hallucination
+  - traceability
+
+owners:
+  - '@gl/regulatory-compliance'
+  - '@gl/supply-chain'
+
+# =============================================================================
+# AI Configuration
+# =============================================================================
+ai:
+  json_mode: true
+
+  system_prompt: |
+    You are an EU Deforestation Regulation (EUDR) compliance expert. Your role is to
+    validate that commodities and derived products comply with Regulation (EU) 2023/1115.
+
+    ZERO-HALLUCINATION RULES:
+    1. NEVER guess geolocation validity - always use validate_geolocation tool
+    2. NEVER assume commodity classification - always use classify_commodity tool
+    3. NEVER estimate country risk - always use assess_country_risk tool
+    4. ALWAYS cite data sources with URIs
+    5. ALWAYS validate against the December 31, 2020 deforestation-free cutoff date
+
+    EUDR KEY REQUIREMENTS:
+    - 7 Regulated Commodities: cattle, cocoa, coffee, palm oil, rubber, soya, wood
+    - Cutoff Date: December 31, 2020 (products must be deforestation-free after this date)
+    - Geolocation Required: GPS coordinates or polygon of production plot
+    - Traceability: Full supply chain traceability to production origin
+    - Due Diligence Statement: Operators must submit DDS to EU registry
+
+    YOUR WORKFLOW:
+    1. Validate geolocation data (coordinates within valid bounds, not in protected areas)
+    2. Classify commodity using CN codes from EU Combined Nomenclature
+    3. Assess country and region-specific deforestation risk
+    4. Verify production date is after December 31, 2020
+    5. Generate compliance assessment with risk score
+
+    RISK LEVELS:
+    - LOW: Standard due diligence sufficient
+    - MEDIUM: Enhanced due diligence required
+    - HIGH: Full verification, satellite imagery analysis required
+
+  budget:
+    max_cost_usd: 2.0
+    max_input_tokens: 15000
+    max_output_tokens: 5000
+    max_retries: 3
+
+  rag_collections:
+    - eudr_regulation_2023_1115
+    - eu_combined_nomenclature
+    - global_forest_watch
+    - fao_forest_data
+    - eu_deforestation_guidance
+
+  tools:
+    # -------------------------------------------------------------------------
+    # Tool 1: Geolocation Validator
+    # -------------------------------------------------------------------------
+    - name: validate_geolocation
+      description: >
+        Validates GPS coordinates or polygon data for EUDR compliance. Checks that
+        coordinates are within valid bounds, not in known protected forest areas,
+        and can be traced to a specific production plot. This is a DETERMINISTIC
+        validation - same inputs always return same validation results.
+      impl: python://greenlang.tools.eudr:validate_geolocation
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          coordinates:
+            type: array
+            description: GPS coordinates as [latitude, longitude] or array of coordinate pairs for polygon
+            items:
+              type: number
+            minItems: 2
+          coordinate_type:
+            type: string
+            description: Type of coordinate data
+            enum:
+              - point
+              - polygon
+            default: point
+          country_code:
+            type: string
+            description: ISO 3166-1 alpha-2 country code
+            pattern: "^[A-Z]{2}$"
+          precision_meters:
+            type: number
+            description: GPS precision in meters (required for polygon validation)
+            minimum: 0
+            maximum: 10000
+            default: 10
+        required:
+          - coordinates
+          - country_code
+      schema_out:
+        type: object
+        properties:
+          valid:
+            type: boolean
+            description: Whether geolocation is valid for EUDR compliance
+          validation_uri:
+            type: string
+            description: Validation record URI (e.g., geo://eudr/validation/2025/...)
+            pattern: "^geo://"
+          country_code:
+            type: string
+            description: Validated country code
+          region:
+            type: string
+            description: Sub-national region if identifiable
+          in_protected_area:
+            type: boolean
+            description: Whether location is in a known protected forest area
+          protected_area_name:
+            type: string
+            description: Name of protected area if applicable
+          forest_cover_2020:
+            type: number
+            description: Forest cover percentage as of December 31, 2020
+            minimum: 0
+            maximum: 100
+          warnings:
+            type: array
+            description: List of validation warnings
+            items:
+              type: string
+          data_sources:
+            type: array
+            description: Data sources used for validation
+            items:
+              type: string
+        required:
+          - valid
+          - validation_uri
+          - country_code
+          - in_protected_area
+
+    # -------------------------------------------------------------------------
+    # Tool 2: Commodity Classifier
+    # -------------------------------------------------------------------------
+    - name: classify_commodity
+      description: >
+        Classifies commodities and derived products under EUDR using EU Combined
+        Nomenclature (CN) codes. Identifies which of the 7 regulated commodities
+        the product falls under and its specific CN code classification.
+        DETERMINISTIC classification based on EU CN code database.
+      impl: python://greenlang.tools.eudr:classify_commodity
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          cn_code:
+            type: string
+            description: EU Combined Nomenclature code (4-8 digits)
+            pattern: "^[0-9]{4,8}$"
+          product_description:
+            type: string
+            description: Product description for validation/classification
+            maxLength: 500
+          quantity_kg:
+            type: number
+            description: Quantity in kilograms
+            minimum: 0
+        required:
+          - cn_code
+      schema_out:
+        type: object
+        properties:
+          eudr_regulated:
+            type: boolean
+            description: Whether product is regulated under EUDR
+          commodity_type:
+            type: string
+            description: Primary commodity type
+            enum:
+              - cattle
+              - cocoa
+              - coffee
+              - palm_oil
+              - rubber
+              - soya
+              - wood
+              - derived_product
+              - not_regulated
+          cn_code:
+            type: string
+            description: Validated/corrected CN code
+          cn_description:
+            type: string
+            description: Official CN code description
+          derived_from:
+            type: array
+            description: If derived product, list of source commodities
+            items:
+              type: string
+          classification_uri:
+            type: string
+            description: Classification record URI
+            pattern: "^cn://"
+          risk_category:
+            type: string
+            description: Commodity-specific risk category
+            enum:
+              - low
+              - medium
+              - high
+          traceability_requirements:
+            type: array
+            description: Specific traceability requirements for this commodity
+            items:
+              type: string
+        required:
+          - eudr_regulated
+          - commodity_type
+          - cn_code
+          - classification_uri
+
+    # -------------------------------------------------------------------------
+    # Tool 3: Country Risk Assessor
+    # -------------------------------------------------------------------------
+    - name: assess_country_risk
+      description: >
+        Assesses deforestation risk for a specific country and region based on
+        EC benchmarking system, FAO forest data, and Global Forest Watch. Returns
+        risk level (low/standard/high) and determines due diligence requirements.
+        DETERMINISTIC assessment based on official risk databases.
+      impl: python://greenlang.tools.eudr:assess_country_risk
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          country_code:
+            type: string
+            description: ISO 3166-1 alpha-2 country code
+            pattern: "^[A-Z]{2}$"
+          region:
+            type: string
+            description: Sub-national region (if available)
+          commodity_type:
+            type: string
+            description: EUDR commodity type for commodity-specific risk
+            enum:
+              - cattle
+              - cocoa
+              - coffee
+              - palm_oil
+              - rubber
+              - soya
+              - wood
+          production_year:
+            type: integer
+            description: Year of production
+            minimum: 2020
+            maximum: 2030
+        required:
+          - country_code
+          - commodity_type
+      schema_out:
+        type: object
+        properties:
+          risk_level:
+            type: string
+            description: EC benchmarking risk level
+            enum:
+              - low
+              - standard
+              - high
+          risk_score:
+            type: number
+            description: Numeric risk score (0-100)
+            minimum: 0
+            maximum: 100
+          risk_uri:
+            type: string
+            description: Risk assessment record URI
+            pattern: "^risk://"
+          country_name:
+            type: string
+            description: Full country name
+          forest_cover_percentage:
+            type: number
+            description: Current forest cover percentage
+          deforestation_rate:
+            type: number
+            description: Annual deforestation rate (% per year)
+          primary_deforestation_drivers:
+            type: array
+            description: Main drivers of deforestation in region
+            items:
+              type: string
+          due_diligence_level:
+            type: string
+            description: Required due diligence level
+            enum:
+              - standard
+              - enhanced
+              - full_verification
+          satellite_verification_required:
+            type: boolean
+            description: Whether satellite imagery verification is required
+          data_sources:
+            type: array
+            description: Data sources used for assessment
+            items:
+              type: string
+          last_updated:
+            type: string
+            description: Date of last risk assessment update (ISO 8601)
+            format: date
+        required:
+          - risk_level
+          - risk_score
+          - risk_uri
+          - country_name
+          - due_diligence_level
+
+    # -------------------------------------------------------------------------
+    # Tool 4: Supply Chain Tracer
+    # -------------------------------------------------------------------------
+    - name: trace_supply_chain
+      description: >
+        Traces commodity supply chain from production plot to final product.
+        Calculates traceability score and identifies gaps in documentation.
+        Used for generating traceability maps required by EUDR.
+      impl: python://greenlang.tools.eudr:trace_supply_chain
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          shipment_id:
+            type: string
+            description: Unique shipment identifier
+          supply_chain_nodes:
+            type: array
+            description: Array of supply chain nodes
+            items:
+              type: object
+              properties:
+                node_type:
+                  type: string
+                  enum:
+                    - producer
+                    - collector
+                    - processor
+                    - trader
+                    - importer
+                node_id:
+                  type: string
+                operator_name:
+                  type: string
+                country_code:
+                  type: string
+                coordinates:
+                  type: array
+                  items:
+                    type: number
+                certification:
+                  type: string
+                timestamp:
+                  type: string
+                  format: date-time
+          commodity_type:
+            type: string
+            enum:
+              - cattle
+              - cocoa
+              - coffee
+              - palm_oil
+              - rubber
+              - soya
+              - wood
+        required:
+          - shipment_id
+          - supply_chain_nodes
+          - commodity_type
+      schema_out:
+        type: object
+        properties:
+          traceability_score:
+            type: number
+            description: Traceability completeness score (0-100)
+            minimum: 0
+            maximum: 100
+          trace_uri:
+            type: string
+            description: Traceability record URI
+            pattern: "^trace://"
+          verified_nodes:
+            type: integer
+            description: Number of verified supply chain nodes
+          total_nodes:
+            type: integer
+            description: Total number of supply chain nodes
+          gaps:
+            type: array
+            description: Identified documentation gaps
+            items:
+              type: object
+              properties:
+                gap_type:
+                  type: string
+                node_id:
+                  type: string
+                severity:
+                  type: string
+                  enum:
+                    - low
+                    - medium
+                    - high
+          origin_verified:
+            type: boolean
+            description: Whether production origin is fully verified
+          chain_of_custody:
+            type: string
+            description: Chain of custody status
+            enum:
+              - complete
+              - partial
+              - broken
+        required:
+          - traceability_score
+          - trace_uri
+          - verified_nodes
+          - total_nodes
+          - origin_verified
+
+    # -------------------------------------------------------------------------
+    # Tool 5: DDS Report Generator
+    # -------------------------------------------------------------------------
+    - name: generate_dds_report
+      description: >
+        Generates EU Due Diligence Statement (DDS) for submission to the EU
+        Information System. Validates all required fields and produces
+        compliant JSON/XML output.
+      impl: python://greenlang.tools.eudr:generate_dds_report
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          operator_info:
+            type: object
+            description: Operator registration information
+            properties:
+              operator_id:
+                type: string
+              company_name:
+                type: string
+              eori_number:
+                type: string
+              country_code:
+                type: string
+            required:
+              - operator_id
+              - company_name
+              - eori_number
+          commodity_data:
+            type: object
+            description: Commodity classification data
+            properties:
+              cn_code:
+                type: string
+              commodity_type:
+                type: string
+              quantity_kg:
+                type: number
+              production_country:
+                type: string
+            required:
+              - cn_code
+              - commodity_type
+              - quantity_kg
+              - production_country
+          geolocation_data:
+            type: object
+            description: Production plot geolocation
+            properties:
+              coordinates:
+                type: array
+                items:
+                  type: number
+              coordinate_type:
+                type: string
+              precision_meters:
+                type: number
+            required:
+              - coordinates
+          risk_assessment:
+            type: object
+            description: Risk assessment results
+            properties:
+              risk_level:
+                type: string
+              risk_score:
+                type: number
+              due_diligence_level:
+                type: string
+            required:
+              - risk_level
+              - due_diligence_level
+          traceability_data:
+            type: object
+            description: Supply chain traceability data
+            properties:
+              traceability_score:
+                type: number
+              chain_of_custody:
+                type: string
+            required:
+              - traceability_score
+        required:
+          - operator_info
+          - commodity_data
+          - geolocation_data
+          - risk_assessment
+      schema_out:
+        type: object
+        properties:
+          dds_id:
+            type: string
+            description: Unique DDS identifier
+          dds_status:
+            type: string
+            description: DDS generation status
+            enum:
+              - valid
+              - incomplete
+              - rejected
+          compliance_status:
+            type: string
+            description: Overall compliance status
+            enum:
+              - compliant
+              - non_compliant
+              - requires_review
+          dds_json:
+            type: object
+            description: Complete DDS in EU schema format
+          dds_hash:
+            type: string
+            description: SHA-256 hash of DDS for integrity verification
+          submission_ready:
+            type: boolean
+            description: Whether DDS is ready for EU portal submission
+          validation_errors:
+            type: array
+            description: List of validation errors if any
+            items:
+              type: string
+          warnings:
+            type: array
+            description: List of warnings
+            items:
+              type: string
+        required:
+          - dds_id
+          - dds_status
+          - compliance_status
+          - submission_ready
+
+# =============================================================================
+# Provenance Configuration
+# =============================================================================
+provenance:
+  pin_ef: true
+  gwp_set: AR6GWP100
+  record:
+    - inputs
+    - outputs
+    - geolocation_validation
+    - commodity_classification
+    - risk_assessment
+    - supply_chain_trace
+    - dds_generation
+    - timestamp
+    - seed
+    - code_sha
+    - user
+    - data_sources
+
+# =============================================================================
+# Security Configuration
+# =============================================================================
+security:
+  allowlist_hosts:
+    - api.globalforestwatch.org
+    - ec.europa.eu
+    - eudr.ec.europa.eu
+    - www.fao.org
+    - factors.greenlang.io
+  block_on_violation: true
+  audit_log: true
+
+# =============================================================================
+# Tests - Golden Tests
+# =============================================================================
+tests:
+  golden:
+    # -------------------------------------------------------------------------
+    # Geolocation Validation Tests
+    # -------------------------------------------------------------------------
+    - name: valid_brazil_soy_coordinates
+      description: Valid GPS coordinates for soy production in Brazil
+      input:
+        tool: validate_geolocation
+        coordinates: [-15.7942, -47.8822]
+        coordinate_type: point
+        country_code: BR
+        precision_meters: 10
+      expect:
+        valid:
+          value: true
+        in_protected_area:
+          value: false
+
+    - name: invalid_amazon_protected_area
+      description: Coordinates in protected Amazon rainforest should flag warning
+      input:
+        tool: validate_geolocation
+        coordinates: [-3.4653, -62.2159]
+        coordinate_type: point
+        country_code: BR
+        precision_meters: 10
+      expect:
+        valid:
+          value: true
+        in_protected_area:
+          value: true
+
+    - name: invalid_coordinates_bounds
+      description: Coordinates outside valid latitude/longitude bounds
+      input:
+        tool: validate_geolocation
+        coordinates: [95.0, 200.0]
+        coordinate_type: point
+        country_code: BR
+      expect:
+        valid:
+          value: false
+
+    # -------------------------------------------------------------------------
+    # Commodity Classification Tests
+    # -------------------------------------------------------------------------
+    - name: palm_oil_crude
+      description: Crude palm oil CN code classification
+      input:
+        tool: classify_commodity
+        cn_code: "15111000"
+        product_description: Crude palm oil
+        quantity_kg: 10000
+      expect:
+        eudr_regulated:
+          value: true
+        commodity_type:
+          value: palm_oil
+
+    - name: cocoa_beans
+      description: Cocoa beans CN code classification
+      input:
+        tool: classify_commodity
+        cn_code: "18010000"
+        product_description: Cocoa beans whole or broken
+        quantity_kg: 5000
+      expect:
+        eudr_regulated:
+          value: true
+        commodity_type:
+          value: cocoa
+
+    - name: coffee_not_roasted
+      description: Coffee not roasted CN code classification
+      input:
+        tool: classify_commodity
+        cn_code: "09011100"
+        product_description: Coffee not roasted not decaffeinated
+        quantity_kg: 2000
+      expect:
+        eudr_regulated:
+          value: true
+        commodity_type:
+          value: coffee
+
+    - name: rubber_natural
+      description: Natural rubber CN code classification
+      input:
+        tool: classify_commodity
+        cn_code: "40011000"
+        product_description: Natural rubber latex
+        quantity_kg: 3000
+      expect:
+        eudr_regulated:
+          value: true
+        commodity_type:
+          value: rubber
+
+    - name: soya_beans
+      description: Soya beans CN code classification
+      input:
+        tool: classify_commodity
+        cn_code: "12010090"
+        product_description: Soya beans
+        quantity_kg: 15000
+      expect:
+        eudr_regulated:
+          value: true
+        commodity_type:
+          value: soya
+
+    - name: wood_logs
+      description: Wood logs CN code classification
+      input:
+        tool: classify_commodity
+        cn_code: "44032100"
+        product_description: Wood logs coniferous
+        quantity_kg: 50000
+      expect:
+        eudr_regulated:
+          value: true
+        commodity_type:
+          value: wood
+
+    - name: cattle_live
+      description: Live cattle CN code classification
+      input:
+        tool: classify_commodity
+        cn_code: "01022110"
+        product_description: Live purebred bovine animals
+        quantity_kg: 1000
+      expect:
+        eudr_regulated:
+          value: true
+        commodity_type:
+          value: cattle
+
+    - name: non_regulated_product
+      description: Non-EUDR regulated product
+      input:
+        tool: classify_commodity
+        cn_code: "84713000"
+        product_description: Portable digital computers
+        quantity_kg: 100
+      expect:
+        eudr_regulated:
+          value: false
+        commodity_type:
+          value: not_regulated
+
+    # -------------------------------------------------------------------------
+    # Country Risk Assessment Tests
+    # -------------------------------------------------------------------------
+    - name: brazil_soya_high_risk
+      description: Brazil soya has high deforestation risk in certain regions
+      input:
+        tool: assess_country_risk
+        country_code: BR
+        commodity_type: soya
+        production_year: 2024
+      expect:
+        risk_level:
+          value: high
+        satellite_verification_required:
+          value: true
+
+    - name: indonesia_palm_oil_high_risk
+      description: Indonesia palm oil high deforestation risk
+      input:
+        tool: assess_country_risk
+        country_code: ID
+        commodity_type: palm_oil
+        production_year: 2024
+      expect:
+        risk_level:
+          value: high
+        satellite_verification_required:
+          value: true
+
+    - name: france_wood_low_risk
+      description: France wood production is low risk
+      input:
+        tool: assess_country_risk
+        country_code: FR
+        commodity_type: wood
+        production_year: 2024
+      expect:
+        risk_level:
+          value: low
+        satellite_verification_required:
+          value: false
+
+    - name: ghana_cocoa_standard_risk
+      description: Ghana cocoa production standard risk
+      input:
+        tool: assess_country_risk
+        country_code: GH
+        commodity_type: cocoa
+        production_year: 2024
+      expect:
+        risk_level:
+          value: standard
+
+  # ---------------------------------------------------------------------------
+  # Property Tests - Invariants That Must Always Hold
+  # ---------------------------------------------------------------------------
+  properties:
+    - name: geolocation_valid_bounds
+      rule: input.coordinates[0] >= -90 AND input.coordinates[0] <= 90 AND input.coordinates[1] >= -180 AND input.coordinates[1] <= 180 implies output.valid is checkable
+      description: Coordinates within valid bounds should be processable
+
+    - name: eudr_commodities_always_regulated
+      rule: input.commodity_type in ['cattle', 'cocoa', 'coffee', 'palm_oil', 'rubber', 'soya', 'wood'] implies output.eudr_regulated == true
+      description: All 7 EUDR commodities must be flagged as regulated
+
+    - name: risk_score_bounded
+      rule: output.risk_score >= 0 AND output.risk_score <= 100
+      description: Risk scores must be between 0 and 100
+
+    - name: traceability_score_bounded
+      rule: output.traceability_score >= 0 AND output.traceability_score <= 100
+      description: Traceability scores must be between 0 and 100
+
+    - name: high_risk_requires_satellite
+      rule: output.risk_level == 'high' implies output.satellite_verification_required == true
+      description: High risk assessment must require satellite verification
+
+    - name: dds_hash_present
+      rule: output.dds_status == 'valid' implies output.dds_hash is not null
+      description: Valid DDS must have integrity hash
+
+    - name: provenance_complete
+      rule: output.validation_uri is not null OR output.classification_uri is not null OR output.risk_uri is not null
+      description: All outputs must have provenance tracking URIs
+
+# =============================================================================
+# Input Schema
+# =============================================================================
+inputs:
+  - name: cn_code
+    type: string
+    description: EU Combined Nomenclature code (4-8 digits)
+    required: true
+    pattern: "^[0-9]{4,8}$"
+
+  - name: coordinates
+    type: array
+    description: GPS coordinates [latitude, longitude] or polygon coordinates
+    required: true
+
+  - name: country_code
+    type: string
+    description: ISO 3166-1 alpha-2 country code of production
+    required: true
+    pattern: "^[A-Z]{2}$"
+
+  - name: production_date
+    type: string
+    description: Date of production (ISO 8601)
+    required: true
+    format: date
+
+  - name: quantity_kg
+    type: number
+    description: Quantity in kilograms
+    required: true
+    minimum: 0
+
+  - name: operator_id
+    type: string
+    description: EU operator registration ID
+    required: true
+
+  - name: shipment_id
+    type: string
+    description: Unique shipment identifier
+    required: false
+
+  - name: supply_chain_nodes
+    type: array
+    description: Array of supply chain nodes for traceability
+    required: false
+
+# =============================================================================
+# Output Schema
+# =============================================================================
+outputs:
+  - name: compliance_status
+    type: string
+    description: Overall EUDR compliance status
+    required: true
+    enum:
+      - compliant
+      - non_compliant
+      - requires_review
+
+  - name: risk_level
+    type: string
+    description: Deforestation risk level
+    required: true
+    enum:
+      - low
+      - standard
+      - high
+
+  - name: risk_score
+    type: number
+    description: Numeric risk score (0-100)
+    required: true
+    minimum: 0
+    maximum: 100
+
+  - name: commodity_type
+    type: string
+    description: EUDR commodity classification
+    required: true
+
+  - name: eudr_regulated
+    type: boolean
+    description: Whether product is regulated under EUDR
+    required: true
+
+  - name: traceability_score
+    type: number
+    description: Supply chain traceability completeness (0-100)
+    required: false
+    minimum: 0
+    maximum: 100
+
+  - name: geolocation_valid
+    type: boolean
+    description: Whether geolocation data is valid
+    required: true
+
+  - name: dds_id
+    type: string
+    description: Due Diligence Statement ID if generated
+    required: false
+
+  - name: dds_hash
+    type: string
+    description: SHA-256 hash of DDS for integrity
+    required: false
+
+  - name: satellite_verification_required
+    type: boolean
+    description: Whether satellite imagery verification is needed
+    required: true
+
+  - name: due_diligence_level
+    type: string
+    description: Required due diligence level
+    required: true
+    enum:
+      - standard
+      - enhanced
+      - full_verification
+
+  - name: validation_uri
+    type: string
+    description: Provenance URI for validation record
+    required: true
+
+  - name: data_sources
+    type: array
+    description: Data sources used in assessment
+    required: true

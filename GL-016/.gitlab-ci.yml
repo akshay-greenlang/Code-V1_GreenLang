@@ -1,0 +1,273 @@
+# GL-016 WATERGUARD - GitLab CI/CD Pipeline
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+stages:
+  - validate
+  - test
+  - build
+  - scan
+  - deploy
+
+variables:
+  DOCKER_IMAGE: $CI_REGISTRY/greenlang/agents/waterguard
+  DOCKER_TAG: $CI_COMMIT_SHORT_SHA
+  KUBERNETES_NAMESPACE: greenlang
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+
+# ============================================================================
+# Templates
+# ============================================================================
+
+.docker_template: &docker_template
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+.kubectl_template: &kubectl_template
+  image: bitnami/kubectl:latest
+  before_script:
+    - kubectl config set-cluster k8s --server="$KUBE_URL" --insecure-skip-tls-verify=true
+    - kubectl config set-credentials gitlab --token="$KUBE_TOKEN"
+    - kubectl config set-context default --cluster=k8s --user=gitlab --namespace=$KUBERNETES_NAMESPACE
+    - kubectl config use-context default
+
+# ============================================================================
+# Validate Stage
+# ============================================================================
+
+validate:code:
+  stage: validate
+  image: python:3.10-slim
+  script:
+    - pip install -r requirements.txt
+    - python validate_config.py
+    - black --check .
+    - flake8 .
+    - isort --check-only .
+  only:
+    - merge_requests
+    - main
+    - develop
+
+validate:kubernetes:
+  stage: validate
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl apply --dry-run=client -f deployment/
+  only:
+    - merge_requests
+    - main
+    - develop
+
+validate:docker:
+  stage: validate
+  <<: *docker_template
+  script:
+    - docker build --check .
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# ============================================================================
+# Test Stage
+# ============================================================================
+
+test:unit:
+  stage: test
+  image: python:3.10-slim
+  before_script:
+    - pip install -r requirements.txt
+  script:
+    - pytest tests/unit -v --cov=. --cov-report=xml --cov-report=term
+  coverage: '/(?i)total.*? (100(?:\.0+)?\%|[1-9]?\d(?:\.\d+)?\%)$/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+    paths:
+      - htmlcov/
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - develop
+
+test:integration:
+  stage: test
+  image: python:3.10-slim
+  before_script:
+    - pip install -r requirements.txt
+  script:
+    - pytest tests/integration -v
+  only:
+    - merge_requests
+    - main
+    - develop
+  when: manual
+  allow_failure: true
+
+test:security:
+  stage: test
+  image: python:3.10-slim
+  before_script:
+    - pip install bandit
+  script:
+    - bandit -r . -c pyproject.toml -f json -o bandit-report.json
+  artifacts:
+    paths:
+      - bandit-report.json
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - develop
+
+test:dependencies:
+  stage: test
+  image: python:3.10-slim
+  before_script:
+    - pip install safety
+  script:
+    - safety check --json --output safety-report.json || true
+  artifacts:
+    paths:
+      - safety-report.json
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - develop
+  allow_failure: true
+
+# ============================================================================
+# Build Stage
+# ============================================================================
+
+build:docker:
+  stage: build
+  <<: *docker_template
+  script:
+    - docker build -t $DOCKER_IMAGE:$DOCKER_TAG -t $DOCKER_IMAGE:latest .
+    - docker push $DOCKER_IMAGE:$DOCKER_TAG
+    - docker push $DOCKER_IMAGE:latest
+  only:
+    - main
+    - develop
+    - tags
+
+build:docker:mr:
+  stage: build
+  <<: *docker_template
+  script:
+    - docker build -t $DOCKER_IMAGE:mr-$CI_MERGE_REQUEST_IID .
+  only:
+    - merge_requests
+
+# ============================================================================
+# Scan Stage
+# ============================================================================
+
+scan:trivy:
+  stage: scan
+  image: aquasec/trivy:latest
+  script:
+    - trivy image --exit-code 0 --severity HIGH,CRITICAL --format json --output trivy-report.json $DOCKER_IMAGE:$DOCKER_TAG
+    - trivy image --exit-code 1 --severity CRITICAL $DOCKER_IMAGE:$DOCKER_TAG
+  artifacts:
+    paths:
+      - trivy-report.json
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+    - tags
+  needs:
+    - build:docker
+
+scan:grype:
+  stage: scan
+  image: anchore/grype:latest
+  script:
+    - grype $DOCKER_IMAGE:$DOCKER_TAG -o json --file grype-report.json
+  artifacts:
+    paths:
+      - grype-report.json
+    expire_in: 1 week
+  only:
+    - main
+    - develop
+  needs:
+    - build:docker
+  allow_failure: true
+
+# ============================================================================
+# Deploy Stage
+# ============================================================================
+
+deploy:dev:
+  stage: deploy
+  <<: *kubectl_template
+  script:
+    - kubectl set image deployment/gl-016-waterguard waterguard=$DOCKER_IMAGE:$DOCKER_TAG -n greenlang-dev
+    - kubectl rollout status deployment/gl-016-waterguard -n greenlang-dev --timeout=5m
+  environment:
+    name: development
+    url: https://waterguard-dev.greenlang.io
+  only:
+    - develop
+  needs:
+    - build:docker
+
+deploy:staging:
+  stage: deploy
+  <<: *kubectl_template
+  script:
+    - kubectl set image deployment/gl-016-waterguard waterguard=$DOCKER_IMAGE:$DOCKER_TAG -n greenlang-staging
+    - kubectl rollout status deployment/gl-016-waterguard -n greenlang-staging --timeout=5m
+  environment:
+    name: staging
+    url: https://waterguard-staging.greenlang.io
+  only:
+    - main
+  needs:
+    - build:docker
+    - scan:trivy
+
+deploy:production:
+  stage: deploy
+  <<: *kubectl_template
+  script:
+    - kubectl set image deployment/gl-016-waterguard waterguard=$DOCKER_IMAGE:$DOCKER_TAG -n greenlang
+    - kubectl rollout status deployment/gl-016-waterguard -n greenlang --timeout=5m
+  environment:
+    name: production
+    url: https://waterguard.greenlang.io
+  only:
+    - tags
+  when: manual
+  needs:
+    - build:docker
+    - scan:trivy
+
+# ============================================================================
+# Post-Deploy Validation
+# ============================================================================
+
+validate:deployment:
+  stage: deploy
+  <<: *kubectl_template
+  script:
+    - kubectl get pods -n $KUBERNETES_NAMESPACE -l app=waterguard
+    - kubectl get svc -n $KUBERNETES_NAMESPACE -l app=waterguard
+    - kubectl wait --for=condition=ready pod -l app=waterguard -n $KUBERNETES_NAMESPACE --timeout=300s
+  needs:
+    - deploy:production
+  only:
+    - tags
+  when: on_success

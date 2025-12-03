@@ -14,9 +14,11 @@ Modules:
 6. blowdown_optimizer - Optimal blowdown rate calculations
 7. economizer_performance - Economizer efficiency calculations
 8. provenance - Zero-hallucination provenance tracking
+9. boiler_efficiency_asme - Complete ASME PTC 4 indirect method (13 heat losses)
+10. load_allocation_optimizer - Multi-boiler load allocation and dispatch
 
 Author: GL-CalculatorEngineer
-Version: 1.0.0
+Version: 1.1.0
 """
 
 from .provenance import (
@@ -67,6 +69,30 @@ from .economizer_performance import (
     EconomizerData
 )
 
+from .boiler_efficiency_asme import (
+    ASMEPTC4Calculator,
+    ASMEPTC4Result,
+    FuelAnalysis,
+    FlueGasAnalysis,
+    AmbientConditions,
+    BoilerParameters,
+    HeatLossBreakdown,
+    FuelType,
+    calculate_boiler_efficiency_asme_ptc4
+)
+
+from .load_allocation_optimizer import (
+    LoadAllocationOptimizer,
+    LoadAllocationResult,
+    BoilerCharacteristics,
+    LoadAllocationConstraints,
+    BoilerLoadAllocation,
+    MarginalCostPoint,
+    BoilerStatus,
+    OptimizationObjective,
+    optimize_multi_boiler_load
+)
+
 __all__ = [
     # Provenance
     'ProvenanceTracker',
@@ -107,8 +133,30 @@ __all__ = [
     # Economizer Performance
     'EconomizerPerformanceCalculator',
     'EconomizerData',
+
+    # ASME PTC 4 Boiler Efficiency (Complete)
+    'ASMEPTC4Calculator',
+    'ASMEPTC4Result',
+    'FuelAnalysis',
+    'FlueGasAnalysis',
+    'AmbientConditions',
+    'BoilerParameters',
+    'HeatLossBreakdown',
+    'FuelType',
+    'calculate_boiler_efficiency_asme_ptc4',
+
+    # Load Allocation Optimizer
+    'LoadAllocationOptimizer',
+    'LoadAllocationResult',
+    'BoilerCharacteristics',
+    'LoadAllocationConstraints',
+    'BoilerLoadAllocation',
+    'MarginalCostPoint',
+    'BoilerStatus',
+    'OptimizationObjective',
+    'optimize_multi_boiler_load',
 ]
 
-__version__ = '1.0.0'
+__version__ = '1.1.0'
 __author__ = 'GL-CalculatorEngineer'
 __description__ = 'Zero-hallucination boiler efficiency calculation engines with 100% deterministic guarantees'

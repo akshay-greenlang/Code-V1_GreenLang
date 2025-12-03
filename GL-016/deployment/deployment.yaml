@@ -1,0 +1,249 @@
+---
+# GL-016 WATERGUARD - Kubernetes Deployment
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-016-waterguard
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: water-treatment
+    tier: agent
+    version: v1.0.0
+    managed-by: gitops
+  annotations:
+    description: "Water treatment quality control agent with predictive analytics"
+    contact: "devops@greenlang.io"
+    documentation: "https://docs.greenlang.io/agents/gl-016"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: waterguard
+      agent: gl-016
+  template:
+    metadata:
+      labels:
+        app: waterguard
+        agent: gl-016
+        component: water-treatment
+        tier: agent
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: gl-016-waterguard
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Init container for configuration validation
+      initContainers:
+        - name: config-validator
+          image: gl-016-waterguard:latest
+          command: ["python", "/app/validate_config.py"]
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+
+      containers:
+        - name: waterguard
+          image: gl-016-waterguard:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          # Environment variables from ConfigMap and Secrets
+          envFrom:
+            - configMapRef:
+                name: gl-016-waterguard-config
+            - secretRef:
+                name: gl-016-waterguard-secrets
+
+          # Additional environment variables
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+
+          # Resource requirements
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+              ephemeral-storage: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+              ephemeral-storage: 5Gi
+
+          # Liveness probe
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Readiness probe
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          # Startup probe for slow-starting container
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 30
+
+          # Security context
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 1000
+            capabilities:
+              drop:
+                - ALL
+
+          # Volume mounts
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: certs
+              mountPath: /app/certs
+              readOnly: true
+            - name: models
+              mountPath: /app/models
+              readOnly: true
+            - name: logs
+              mountPath: /app/logs
+            - name: data
+              mountPath: /app/data
+            - name: tmp
+              mountPath: /tmp
+
+      # Volumes
+      volumes:
+        - name: config
+          configMap:
+            name: gl-016-waterguard-config
+        - name: certs
+          secret:
+            secretName: gl-016-waterguard-certs
+            defaultMode: 0400
+        - name: models
+          persistentVolumeClaim:
+            claimName: gl-016-waterguard-models
+        - name: logs
+          emptyDir:
+            sizeLimit: 1Gi
+        - name: data
+          persistentVolumeClaim:
+            claimName: gl-016-waterguard-data
+        - name: tmp
+          emptyDir:
+            sizeLimit: 500Mi
+
+      # Pod placement
+      affinity:
+        # Prefer to spread across availability zones
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: waterguard
+                    agent: gl-016
+                topologyKey: topology.kubernetes.io/zone
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: waterguard
+                    agent: gl-016
+                topologyKey: kubernetes.io/hostname
+
+      # Tolerations for dedicated nodes
+      tolerations:
+        - key: agent-workload
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"
+          - name: edns0
+
+      # Restart policy
+      restartPolicy: Always
+
+      # Termination grace period
+      terminationGracePeriodSeconds: 60
+
+      # Image pull secrets
+      imagePullSecrets:
+        - name: greenlang-registry-secret

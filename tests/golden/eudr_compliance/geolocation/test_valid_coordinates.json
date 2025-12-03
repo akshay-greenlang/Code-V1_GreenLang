@@ -1,0 +1,457 @@
+{
+  "suite": "EUDR Geolocation Validation - Valid Coordinates",
+  "version": "1.0.0",
+  "description": "Golden tests for valid GPS coordinate validation across EUDR-regulated countries",
+  "tests": [
+    {
+      "test_id": "GEO-001",
+      "description": "Brazil Amazon region - valid point coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-3.1, -60.0],
+        "country_code": "BR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BR",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["brazil", "amazon", "point"]
+    },
+    {
+      "test_id": "GEO-002",
+      "description": "Indonesia Sumatra - valid point coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [3.5, 97.5],
+        "country_code": "ID",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "ID",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["indonesia", "sumatra", "point"]
+    },
+    {
+      "test_id": "GEO-003",
+      "description": "Cote d'Ivoire - valid cocoa region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [7.5, -5.5],
+        "country_code": "CI",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "CI",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["cote_divoire", "cocoa", "point"]
+    },
+    {
+      "test_id": "GEO-004",
+      "description": "Ghana - valid coffee region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [6.5, -1.5],
+        "country_code": "GH",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "GH",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["ghana", "coffee", "point"]
+    },
+    {
+      "test_id": "GEO-005",
+      "description": "Malaysia Sabah - valid palm oil region",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [5.5, 116.5],
+        "country_code": "MY",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "MY",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["malaysia", "palm_oil", "point"]
+    },
+    {
+      "test_id": "GEO-006",
+      "description": "Colombia - valid coffee region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [4.5, -74.0],
+        "country_code": "CO",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "CO",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["colombia", "coffee", "point"]
+    },
+    {
+      "test_id": "GEO-007",
+      "description": "Vietnam - valid rubber region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [11.5, 106.5],
+        "country_code": "VN",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "VN",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["vietnam", "rubber", "point"]
+    },
+    {
+      "test_id": "GEO-008",
+      "description": "Thailand - valid rubber plantation coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [8.0, 99.5],
+        "country_code": "TH",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "TH",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["thailand", "rubber", "point"]
+    },
+    {
+      "test_id": "GEO-009",
+      "description": "Paraguay - valid soya region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-23.5, -56.0],
+        "country_code": "PY",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "PY",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["paraguay", "soya", "point"]
+    },
+    {
+      "test_id": "GEO-010",
+      "description": "Argentina - valid cattle region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-34.5, -58.5],
+        "country_code": "AR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "AR",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["argentina", "cattle", "point"]
+    },
+    {
+      "test_id": "GEO-011",
+      "description": "Peru Amazon - valid wood region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-5.0, -74.0],
+        "country_code": "PE",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "PE",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["peru", "wood", "point"]
+    },
+    {
+      "test_id": "GEO-012",
+      "description": "Ecuador - valid cocoa region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-1.0, -79.5],
+        "country_code": "EC",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "EC",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["ecuador", "cocoa", "point"]
+    },
+    {
+      "test_id": "GEO-013",
+      "description": "Honduras - valid palm oil region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [15.5, -87.5],
+        "country_code": "HN",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "HN",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["honduras", "palm_oil", "point"]
+    },
+    {
+      "test_id": "GEO-014",
+      "description": "Guatemala - valid coffee region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [14.5, -90.5],
+        "country_code": "GT",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "GT",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["guatemala", "coffee", "point"]
+    },
+    {
+      "test_id": "GEO-015",
+      "description": "Ethiopia - valid coffee region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [9.0, 38.5],
+        "country_code": "ET",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "ET",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["ethiopia", "coffee", "point"]
+    },
+    {
+      "test_id": "GEO-016",
+      "description": "Nigeria - valid cocoa region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [6.5, 3.5],
+        "country_code": "NG",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "NG",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["nigeria", "cocoa", "point"]
+    },
+    {
+      "test_id": "GEO-017",
+      "description": "Cameroon - valid wood region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [4.0, 11.5],
+        "country_code": "CM",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "CM",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["cameroon", "wood", "point"]
+    },
+    {
+      "test_id": "GEO-018",
+      "description": "DRC - valid wood region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [0.0, 25.0],
+        "country_code": "CD",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "CD",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["drc", "wood", "point"]
+    },
+    {
+      "test_id": "GEO-019",
+      "description": "Bolivia - valid soya region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [-17.5, -63.0],
+        "country_code": "BO",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "BO",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["bolivia", "soya", "point"]
+    },
+    {
+      "test_id": "GEO-020",
+      "description": "Mexico - valid cattle region coordinates",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [19.5, -99.0],
+        "country_code": "MX",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "MX",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["mexico", "cattle", "point"]
+    },
+    {
+      "test_id": "GEO-021",
+      "description": "Low risk country - France wood region",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [46.0, 2.0],
+        "country_code": "FR",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "FR",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["france", "wood", "low_risk"]
+    },
+    {
+      "test_id": "GEO-022",
+      "description": "Low risk country - Germany wood region",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [50.0, 10.0],
+        "country_code": "DE",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "DE",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["germany", "wood", "low_risk"]
+    },
+    {
+      "test_id": "GEO-023",
+      "description": "Low risk country - Sweden wood region",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [62.0, 17.0],
+        "country_code": "SE",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "SE",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["sweden", "wood", "low_risk"]
+    },
+    {
+      "test_id": "GEO-024",
+      "description": "Low risk country - Finland wood region",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [64.0, 26.0],
+        "country_code": "FI",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "FI",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["finland", "wood", "low_risk"]
+    },
+    {
+      "test_id": "GEO-025",
+      "description": "Low risk country - Canada wood region",
+      "tool_name": "validate_geolocation",
+      "input": {
+        "coordinates": [49.0, -123.0],
+        "country_code": "CA",
+        "coordinate_type": "point",
+        "precision_meters": 10.0
+      },
+      "expected_output": {
+        "valid": true,
+        "country_code": "CA",
+        "in_protected_area": false
+      },
+      "tolerance": 0.01,
+      "tags": ["canada", "wood", "low_risk"]
+    }
+  ]
+}

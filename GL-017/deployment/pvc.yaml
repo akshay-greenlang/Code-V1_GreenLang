@@ -1,0 +1,75 @@
+# =============================================================================
+# GL-017 CONDENSYNC - Persistent Volume Claims
+# Storage for application data and ML models
+# =============================================================================
+
+---
+# Data Volume - Application runtime data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gl-017-condensync-data-pvc
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+    app.kubernetes.io/instance: gl-017
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: storage
+    app.kubernetes.io/part-of: greenlang
+    storage-type: data
+  annotations:
+    volume.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3-encrypted
+  resources:
+    requests:
+      storage: 10Gi
+  volumeMode: Filesystem
+
+---
+# Models Volume - ML models and optimization algorithms
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gl-017-condensync-models-pvc
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+    app.kubernetes.io/instance: gl-017
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: storage
+    app.kubernetes.io/part-of: greenlang
+    storage-type: models
+  annotations:
+    volume.kubernetes.io/storage-provisioner: kubernetes.io/aws-ebs
+spec:
+  accessModes:
+    - ReadOnlyMany
+  storageClassName: gp3-encrypted
+  resources:
+    requests:
+      storage: 5Gi
+  volumeMode: Filesystem
+
+---
+# Storage Class for encrypted GP3 volumes (if not already exists)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: gp3-encrypted
+  labels:
+    app.kubernetes.io/part-of: greenlang
+provisioner: ebs.csi.aws.com
+parameters:
+  type: gp3
+  encrypted: "true"
+  fsType: ext4
+  iops: "3000"
+  throughput: "125"
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer

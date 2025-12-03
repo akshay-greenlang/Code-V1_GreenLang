@@ -1,0 +1,132 @@
+# =============================================================================
+# Building Energy Performance Calculator - AgentSpec v2
+# =============================================================================
+
+name: Building Energy Performance Calculator
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+id: buildings/energy_performance_v1
+
+summary: >
+  Calculates Energy Use Intensity (EUI) and checks compliance with
+  Building Performance Standards for urban decarbonization.
+
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+
+license: Apache-2.0
+tags: [buildings, bps, energy-performance, eui, zero-hallucination]
+
+ai:
+  json_mode: true
+  system_prompt: |
+    You are a building energy expert calculating EUI and BPS compliance.
+    ZERO-HALLUCINATION: Always use tools for calculations and threshold lookups.
+
+  tools:
+    - name: calculate_eui
+      description: Calculate Energy Use Intensity (kWh per sqm per year)
+      impl: python://greenlang.tools.buildings:calculate_eui
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          energy_consumption_kwh: {type: number}
+          floor_area_sqm: {type: number}
+        required: [energy_consumption_kwh, floor_area_sqm]
+      schema_out:
+        type: object
+        properties:
+          eui_kwh_per_sqm: {type: number}
+
+    - name: lookup_bps_threshold
+      description: Look up BPS threshold for building type
+      impl: python://greenlang.tools.buildings:lookup_threshold
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          building_type: {type: string}
+          climate_zone: {type: string}
+        required: [building_type]
+      schema_out:
+        type: object
+        properties:
+          threshold_kwh_per_sqm: {type: number}
+
+    - name: check_bps_compliance
+      description: Check if building meets BPS threshold
+      impl: python://greenlang.tools.buildings:check_compliance
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          actual_eui: {type: number}
+          threshold_eui: {type: number}
+        required: [actual_eui, threshold_eui]
+      schema_out:
+        type: object
+        properties:
+          compliant: {type: boolean}
+          gap_kwh_per_sqm: {type: number}
+
+provenance:
+  pin_ef: true
+  gwp_set: AR6GWP100
+
+tests:
+  golden:
+    - name: office_building_compliant
+      input:
+        building_type: office
+        floor_area_sqm: 5000
+        energy_consumption_kwh: 350000
+        climate_zone: 4A
+      expect:
+        eui_kwh_per_sqm: {value: 70, tol: 1}
+        bps_compliance_status: {value: compliant}
+
+    - name: residential_building_noncompliant
+      input:
+        building_type: residential
+        floor_area_sqm: 2000
+        energy_consumption_kwh: 250000
+        climate_zone: 5A
+      expect:
+        eui_kwh_per_sqm: {value: 125, tol: 2}
+        bps_compliance_status: {value: non_compliant}
+
+inputs:
+  - name: building_type
+    type: string
+    required: true
+    enum: [office, residential, retail, industrial, warehouse]
+  - name: floor_area_sqm
+    type: number
+    required: true
+    minimum: 1
+  - name: energy_consumption_kwh
+    type: number
+    required: true
+    minimum: 0
+  - name: climate_zone
+    type: string
+    required: false
+    default: "4A"
+
+outputs:
+  - name: eui_kwh_per_sqm
+    type: number
+    required: true
+    unit: kWh/m²/yr
+  - name: bps_compliance_status
+    type: string
+    required: true
+  - name: threshold_kwh_per_sqm
+    type: number
+    required: false
+  - name: gap_kwh_per_sqm
+    type: number
+    required: false

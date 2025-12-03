@@ -1,0 +1,170 @@
+# ============================================================================
+# GreenLang Agent Factory - Building Energy Agent ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for the Building Energy Analysis Agent
+# Enables automatic service discovery and metrics scraping.
+#
+# Agent: Building Energy Analyzer (analysis/building_energy_v1)
+# Scrape Path: /metrics
+# Scrape Port: 8000
+# Scrape Interval: 15 seconds
+#
+# Created: 2025-12-03
+# Team: Monitoring & Observability
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: building-energy-agent
+  namespace: monitoring
+  labels:
+    app: building-energy-agent
+    agent-type: analysis
+    team: greenlang
+    app.kubernetes.io/name: building-energy-agent
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: greenlang-agent-factory
+    release: prometheus
+  annotations:
+    description: "ServiceMonitor for Building Energy Analysis Agent metrics"
+    agent-id: "analysis/building_energy_v1"
+    agent-version: "1.0.0"
+spec:
+  # Job label for Prometheus
+  jobLabel: building-energy-agent
+
+  # Selector for target services
+  selector:
+    matchLabels:
+      app: building-energy-agent
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-building
+      - default
+
+  # Endpoint configuration
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      scheme: http
+      honorLabels: true
+
+      # Add agent-specific labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: []
+          targetLabel: agent_id
+          replacement: "analysis/building_energy_v1"
+        - sourceLabels: []
+          targetLabel: agent_type
+          replacement: "analysis"
+        - sourceLabels: []
+          targetLabel: agent_name
+          replacement: "building-energy"
+
+      # Metric relabeling for better organization
+      metricRelabelings:
+        # Rename generic metrics with agent prefix
+        - sourceLabels: [__name__]
+          regex: 'python_(.+)'
+          targetLabel: __name__
+          replacement: 'greenlang_python_${1}'
+
+        # Add environment label
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+
+---
+# ============================================================================
+# Service Definition for Building Energy Agent
+# ============================================================================
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: building-energy-agent-metrics
+  namespace: greenlang
+  labels:
+    app: building-energy-agent
+    component: metrics
+    monitoring: enabled
+    app.kubernetes.io/name: building-energy-agent
+    app.kubernetes.io/component: metrics
+spec:
+  type: ClusterIP
+  selector:
+    app: building-energy-agent
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+
+---
+# ============================================================================
+# PodMonitor Alternative
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: building-energy-agent-pods
+  namespace: monitoring
+  labels:
+    app: building-energy-agent
+    release: prometheus
+spec:
+  jobLabel: building-energy-agent
+
+  selector:
+    matchLabels:
+      app: building-energy-agent
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-building
+      - default
+
+  podMetricsEndpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: agent_id
+          replacement: "analysis/building_energy_v1"
+        - sourceLabels: []
+          targetLabel: agent_type
+          replacement: "analysis"

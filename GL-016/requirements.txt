@@ -1,0 +1,67 @@
+# GL-016 WATERGUARD - Python Dependencies
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+# Core Framework
+pydantic>=2.0,<3.0
+pydantic-settings>=2.0
+
+# Scientific Computing
+numpy>=1.24,<2.0
+scipy>=1.10,<2.0
+pandas>=2.0,<3.0
+
+# Async Runtime
+asyncio>=3.4.3
+aiohttp>=3.9.0
+httpx>=0.25.0
+uvicorn[standard]>=0.24.0
+fastapi>=0.104.0
+
+# Industrial Protocols
+opcua>=0.98.13
+asyncua>=1.0.0
+pymodbus>=3.5.0
+
+# Monitoring & Observability
+prometheus-client>=0.19.0
+opentelemetry-api>=1.21.0
+opentelemetry-sdk>=1.21.0
+opentelemetry-exporter-prometheus>=1.21.0
+
+# Logging
+structlog>=23.2.0
+python-json-logger>=2.0.0
+
+# Data Validation & Serialization
+jsonschema>=4.20.0
+pyyaml>=6.0
+
+# Database (if needed for local caching)
+aiosqlite>=0.19.0
+redis>=5.0.0
+
+# Security
+cryptography>=41.0.0
+python-dotenv>=1.0.0
+
+# Utilities
+python-dateutil>=2.8.0
+pytz>=2023.3
+
+# Development Dependencies
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+pytest-mock>=3.12.0
+black>=23.12.0
+flake8>=6.1.0
+isort>=5.13.0
+mypy>=1.7.0
+bandit>=1.7.5
+pre-commit>=3.5.0
+
+# Type Stubs
+types-pyyaml>=6.0.0
+types-redis>=4.6.0
+types-python-dateutil>=2.8.0

@@ -1,0 +1,175 @@
+# =============================================================================
+# GreenLang Agents - RBAC Configuration
+# =============================================================================
+# Service Account, Role, and RoleBinding for agents
+# =============================================================================
+
+---
+# =============================================================================
+# Service Account for Agents
+# =============================================================================
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-agent-sa
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang-agents
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: greenlang-platform
+  annotations:
+    description: "Service account for GreenLang agents"
+    # For AWS IRSA (uncomment and configure if using AWS)
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-agent-role
+
+---
+# =============================================================================
+# Role - Minimal permissions for agents
+# =============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-agent-role
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang-agents
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: greenlang-platform
+rules:
+  # Read ConfigMaps for configuration
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch"]
+
+  # Read Secrets for credentials (limited to specific secrets)
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames: ["greenlang-agent-secrets"]
+    verbs: ["get"]
+
+  # Read Pod information for self-discovery
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+
+  # Read Service information for discovery
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list"]
+
+  # Read endpoints for service discovery
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list"]
+
+---
+# =============================================================================
+# RoleBinding - Bind Role to Service Account
+# =============================================================================
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-agent-rolebinding
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang-agents
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/part-of: greenlang-platform
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: greenlang-agent-role
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-agent-sa
+    namespace: greenlang-dev
+
+---
+# =============================================================================
+# Network Policy - Restrict agent network access
+# =============================================================================
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: greenlang-agent-network-policy
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang-agents
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang-platform
+  policyTypes:
+    - Ingress
+    - Egress
+
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow traffic from monitoring namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9090
+
+    # Allow traffic within namespace
+    - from:
+        - podSelector: {}
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 9090
+
+  egress:
+    # Allow DNS resolution
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+    # Allow HTTPS to external APIs
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Allow Redis within cluster
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: redis
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow traffic within namespace
+    - to:
+        - podSelector: {}

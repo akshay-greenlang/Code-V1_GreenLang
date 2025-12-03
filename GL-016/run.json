@@ -1,0 +1,456 @@
+{
+  "apiVersion": "greenlang.io/v1",
+  "kind": "AgentRunConfig",
+  "agent_id": "GL-016",
+  "codename": "WATERGUARD",
+  "name": "BoilerWaterTreatmentAgent",
+  "version": "1.0.0",
+  "description": "Optimizes boiler water treatment, blowdown control, and chemical dosing to prevent scale, corrosion, and carryover while minimizing water and energy waste",
+  "operation_modes": [
+    "monitor",
+    "optimize",
+    "control",
+    "report"
+  ],
+  "ai_config": {
+    "provider": "anthropic",
+    "model": "claude-sonnet-4-20250514",
+    "temperature": 0.0,
+    "seed": 42,
+    "max_tokens": 4096,
+    "top_p": 1.0,
+    "frequency_penalty": 0.0,
+    "presence_penalty": 0.0,
+    "allowed_operations": [
+      "classification",
+      "entity_resolution",
+      "natural_language_generation",
+      "recommendation_explanation",
+      "incident_description",
+      "best_practice_guidance"
+    ],
+    "prohibited_operations": [
+      "numeric_calculation",
+      "water_chemistry_calculation",
+      "blowdown_rate_calculation",
+      "chemical_dosing_calculation",
+      "cycles_of_concentration_calculation",
+      "risk_score_calculation"
+    ]
+  },
+  "determinism": {
+    "enabled": true,
+    "provenance_tracking": true,
+    "sha256_hashing": true,
+    "audit_trail": true,
+    "reproducible_results": true,
+    "fixed_seed": 42
+  },
+  "execution": {
+    "timeout_seconds": 120,
+    "max_retries": 3,
+    "retry_delay_seconds": 5,
+    "max_parallel_calculations": 10,
+    "batch_size": 1000,
+    "cache_ttl_seconds": 300
+  },
+  "memory": {
+    "short_term_capacity": 1000,
+    "long_term_enabled": true,
+    "storage_path": "./gl016_memory",
+    "persistence_interval": 100
+  },
+  "integrations": {
+    "scada": {
+      "enabled": true,
+      "protocol": "opc_ua",
+      "polling_interval_seconds": 5,
+      "data_quality_threshold": 0.95,
+      "endpoints": {
+        "primary": "${SCADA_PRIMARY_ENDPOINT}",
+        "backup": "${SCADA_BACKUP_ENDPOINT}"
+      },
+      "tags": [
+        "water_chemistry",
+        "blowdown_parameters",
+        "chemical_dosing",
+        "operating_parameters"
+      ]
+    },
+    "lims": {
+      "enabled": true,
+      "protocol": "rest_api",
+      "sync_interval_minutes": 60,
+      "batch_size": 100,
+      "base_url": "${LIMS_API_URL}",
+      "timeout_seconds": 30
+    },
+    "cmms": {
+      "enabled": true,
+      "protocol": "rest_api",
+      "system_type": "sap_pm",
+      "base_url": "${CMMS_API_URL}",
+      "auth_type": "oauth2",
+      "work_order_generation": true
+    },
+    "historian": {
+      "enabled": true,
+      "protocol": "opc_hda",
+      "endpoint": "${HISTORIAN_ENDPOINT}",
+      "query_interval_minutes": 15,
+      "max_rows": 10000
+    },
+    "message_bus": {
+      "enabled": true,
+      "type": "internal",
+      "topics": [
+        "agent.GL-001",
+        "agent.GL-002",
+        "agent.GL-013"
+      ]
+    }
+  },
+  "monitoring": {
+    "enabled": true,
+    "metrics_collection_interval": 60,
+    "prometheus_enabled": true,
+    "prometheus_port": 9090,
+    "health_check_port": 8080,
+    "log_level": "INFO",
+    "custom_metrics": [
+      "gl016_water_quality_score",
+      "gl016_cycles_of_concentration",
+      "gl016_blowdown_rate_kg_hr",
+      "gl016_scale_risk_score",
+      "gl016_corrosion_risk_score",
+      "gl016_chemical_cost_usd_hr",
+      "gl016_optimizations_total",
+      "gl016_alerts_total"
+    ]
+  },
+  "compliance": {
+    "standards": [
+      "ABMA",
+      "ASME",
+      "ASTM D3739",
+      "NACE",
+      "EPA",
+      "ISO 11963"
+    ],
+    "audit_trail_retention_days": 2555,
+    "reporting_enabled": true,
+    "water_quality_limits": {
+      "low_pressure": {
+        "max_tds_ppm": 3500,
+        "max_alkalinity_ppm": 700,
+        "max_silica_ppm": 150,
+        "ph_min": 10.5,
+        "ph_max": 11.5,
+        "max_suspended_solids_ppm": 15
+      },
+      "medium_pressure": {
+        "max_tds_ppm": 3000,
+        "max_alkalinity_ppm": 500,
+        "max_silica_ppm": 90,
+        "ph_min": 10.5,
+        "ph_max": 11.5,
+        "max_suspended_solids_ppm": 10
+      },
+      "high_pressure": {
+        "max_tds_ppm": 1500,
+        "max_alkalinity_ppm": 200,
+        "max_silica_ppm": 20,
+        "ph_min": 9.0,
+        "ph_max": 10.0,
+        "max_suspended_solids_ppm": 5
+      }
+    },
+    "validation_rules": {
+      "input_validation": true,
+      "output_validation": true,
+      "mass_balance_validation": true,
+      "energy_balance_validation": true,
+      "regulatory_compliance_checks": true
+    }
+  },
+  "optimization": {
+    "water_treatment": {
+      "enable_auto_optimization": true,
+      "optimization_interval_minutes": 15,
+      "min_cycles_of_concentration": 5,
+      "max_cycles_of_concentration": 100,
+      "target_water_savings_percent": 30,
+      "target_chemical_savings_percent": 25
+    },
+    "blowdown_control": {
+      "enable_continuous_blowdown": true,
+      "enable_intermittent_blowdown": true,
+      "continuous_blowdown_control_method": "conductivity",
+      "intermittent_blowdown_frequency_minutes": 60,
+      "heat_recovery_assessment": true
+    },
+    "chemical_dosing": {
+      "enable_auto_dosing": true,
+      "oxygen_scavenger_safety_factor": 1.2,
+      "scale_inhibitor_safety_factor": 1.1,
+      "enable_inventory_management": true,
+      "reorder_threshold_percent": 20,
+      "cost_optimization_enabled": true
+    },
+    "risk_assessment": {
+      "scale_risk_calculation_interval_minutes": 30,
+      "corrosion_risk_calculation_interval_minutes": 30,
+      "lsi_threshold_critical": 2.0,
+      "lsi_threshold_high": 1.0,
+      "do_threshold_critical_ppb": 100,
+      "do_threshold_high_ppb": 50
+    }
+  },
+  "alerts": {
+    "email_recipients": [
+      "water-treatment-team@company.com",
+      "operations@company.com"
+    ],
+    "slack_webhook": "${SLACK_WEBHOOK_URL}",
+    "pagerduty_key": "${PAGERDUTY_INTEGRATION_KEY}",
+    "thresholds": {
+      "scale_risk_warning": 60,
+      "scale_risk_critical": 80,
+      "corrosion_risk_warning": 60,
+      "corrosion_risk_critical": 80,
+      "water_quality_violation": true,
+      "excessive_blowdown_percent": 15,
+      "high_dissolved_oxygen_ppb": 50,
+      "low_chemical_tank_percent": 20,
+      "ph_deviation_units": 0.5,
+      "latency_warning_ms": 500,
+      "latency_critical_ms": 1000,
+      "error_rate_warning": 0.01,
+      "error_rate_critical": 0.05
+    },
+    "notification_rules": {
+      "critical_alerts": {
+        "channels": ["email", "slack", "pagerduty", "sms"],
+        "throttle_minutes": 30
+      },
+      "high_alerts": {
+        "channels": ["email", "slack", "pagerduty"],
+        "throttle_minutes": 60
+      },
+      "medium_alerts": {
+        "channels": ["email", "slack"],
+        "throttle_minutes": 120
+      },
+      "low_alerts": {
+        "channels": ["email"],
+        "throttle_minutes": 240
+      }
+    }
+  },
+  "security": {
+    "authentication_required": true,
+    "encryption": "TLS_1_3",
+    "audit_logging": true,
+    "rbac_enabled": true,
+    "allowed_roles": [
+      "admin",
+      "water_treatment_engineer",
+      "operations_engineer",
+      "operator",
+      "viewer"
+    ],
+    "role_permissions": {
+      "admin": [
+        "read",
+        "write",
+        "delete",
+        "configure",
+        "setpoint_write",
+        "alert_acknowledge"
+      ],
+      "water_treatment_engineer": [
+        "read",
+        "write",
+        "setpoint_write",
+        "alert_acknowledge",
+        "report_generate"
+      ],
+      "operations_engineer": [
+        "read",
+        "setpoint_write",
+        "alert_acknowledge"
+      ],
+      "operator": [
+        "read",
+        "alert_acknowledge"
+      ],
+      "viewer": [
+        "read"
+      ]
+    },
+    "secrets_management": {
+      "provider": "hashicorp_vault",
+      "vault_addr": "${VAULT_ADDR}",
+      "vault_namespace": "greenlang",
+      "secret_path": "secret/gl-016"
+    },
+    "encryption_at_rest": {
+      "enabled": true,
+      "algorithm": "AES-256-GCM"
+    },
+    "encryption_in_transit": {
+      "enabled": true,
+      "protocol": "TLS",
+      "min_version": "1.3"
+    }
+  },
+  "performance": {
+    "targets": {
+      "calculation_latency_p50_ms": 50,
+      "calculation_latency_p95_ms": 200,
+      "calculation_latency_p99_ms": 500,
+      "throughput_calculations_per_second": 100,
+      "error_rate_percent": 0.1,
+      "availability_percent": 99.9
+    },
+    "connection_pools": {
+      "database": {
+        "min_size": 5,
+        "max_size": 20,
+        "timeout_seconds": 30
+      },
+      "redis": {
+        "min_size": 3,
+        "max_size": 10,
+        "timeout_seconds": 5
+      },
+      "http": {
+        "max_connections": 100,
+        "timeout_seconds": 30
+      }
+    },
+    "rate_limiting": {
+      "enabled": true,
+      "requests_per_minute": 600,
+      "burst": 100
+    },
+    "circuit_breakers": {
+      "scada_connection": {
+        "failure_threshold": 5,
+        "timeout_seconds": 30,
+        "recovery_timeout_seconds": 60
+      },
+      "database_connection": {
+        "failure_threshold": 3,
+        "timeout_seconds": 10,
+        "recovery_timeout_seconds": 30
+      }
+    }
+  },
+  "data_retention": {
+    "real_time_measurements": {
+      "retention_days": 90,
+      "compression": true,
+      "archive_location": "s3"
+    },
+    "hourly_aggregates": {
+      "retention_days": 365,
+      "compression": true
+    },
+    "daily_summaries": {
+      "retention_days": 2555,
+      "compression": true
+    },
+    "optimization_results": {
+      "retention_days": 2555,
+      "compression": true,
+      "immutable": true
+    },
+    "audit_logs": {
+      "retention_days": 2555,
+      "compression": false,
+      "immutable": true,
+      "encryption": true
+    },
+    "reports": {
+      "retention_days": 2555,
+      "compression": true
+    }
+  },
+  "calculations": {
+    "water_chemistry": {
+      "cycles_of_concentration": {
+        "formula": "COC = Boiler_conductivity / Makeup_conductivity",
+        "alternative_formulas": [
+          "COC = Boiler_TDS / Makeup_TDS",
+          "COC = Boiler_chlorides / Makeup_chlorides"
+        ]
+      },
+      "blowdown_percentage": {
+        "formula": "Blowdown_percent = 100 / (COC - 1)"
+      },
+      "blowdown_rate": {
+        "formula": "Blowdown_rate = Feedwater_rate * Blowdown_percent / 100"
+      },
+      "langelier_saturation_index": {
+        "formula": "LSI = pH - pHs",
+        "phs_calculation": "pHs = (9.3 + A + B) - (C + D)",
+        "components": {
+          "A": "(log10[TDS] - 1) / 10",
+          "B": "-13.12 * log10(T + 273) + 34.55",
+          "C": "log10[Ca2+] - 0.4",
+          "D": "log10[Alkalinity]"
+        }
+      }
+    },
+    "chemical_dosing": {
+      "oxygen_scavenger_sulfite": {
+        "formula": "Dose_ppm = 8 * DO_ppm * safety_factor",
+        "safety_factor": 1.2
+      },
+      "oxygen_scavenger_hydrazine": {
+        "formula": "Dose_ppm = 1.0 * DO_ppm * safety_factor",
+        "safety_factor": 1.5
+      }
+    },
+    "energy_calculations": {
+      "blowdown_heat_loss": {
+        "formula": "Heat_loss_kW = Blowdown_rate * (h_blowdown - h_feedwater) / 3600",
+        "description": "Where h = specific enthalpy at respective temperatures"
+      },
+      "blowdown_efficiency_impact": {
+        "formula": "Efficiency_impact = (Blowdown_heat_loss / Fuel_energy_input) * 100"
+      }
+    }
+  },
+  "metadata": {
+    "author": "GreenLang Team",
+    "created_date": "2024-12-02",
+    "last_modified": "2024-12-02",
+    "documentation_url": "https://greenlang.io/agents/GL-016",
+    "support_contact": "support@greenlang.io",
+    "repository": "https://github.com/greenlang/gl-016-waterguard",
+    "tags": [
+      "boiler",
+      "water_treatment",
+      "blowdown",
+      "chemical_dosing",
+      "scale_prevention",
+      "corrosion_control",
+      "water_conservation",
+      "energy_efficiency",
+      "industrial",
+      "compliance"
+    ],
+    "business_metrics": {
+      "tam": "$5B",
+      "target_date": "Q2 2026",
+      "priority": "P1",
+      "target_water_savings_percent": 30,
+      "target_chemical_cost_reduction_percent": 25,
+      "target_energy_waste_reduction_percent": 15,
+      "target_scale_incident_reduction_percent": 80,
+      "target_corrosion_incident_reduction_percent": 70
+    }
+  }
+}

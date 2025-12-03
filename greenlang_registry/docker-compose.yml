@@ -1,0 +1,180 @@
+# =============================================================================
+# GreenLang Agent Registry - Docker Compose Configuration
+# =============================================================================
+#
+# Local development environment with PostgreSQL and Redis.
+#
+# Usage:
+#   Start all services:     docker-compose up -d
+#   View logs:              docker-compose logs -f
+#   Stop all services:      docker-compose down
+#   Reset database:         docker-compose down -v && docker-compose up -d
+#
+# Endpoints:
+#   API:          http://localhost:8000
+#   API Docs:     http://localhost:8000/docs
+#   PostgreSQL:   localhost:5432
+#   pgAdmin:      http://localhost:5050
+#
+# =============================================================================
+
+version: "3.9"
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL Database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: greenlang-registry-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: greenlang_registry
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d greenlang_registry"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - greenlang-network
+
+  # ---------------------------------------------------------------------------
+  # Redis Cache (Optional - for future use)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: greenlang-registry-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - greenlang-network
+
+  # ---------------------------------------------------------------------------
+  # Agent Registry API
+  # ---------------------------------------------------------------------------
+  registry-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: greenlang-registry-api
+    restart: unless-stopped
+    environment:
+      # Database
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/greenlang_registry
+      DB_POOL_SIZE: "10"
+      DB_MAX_OVERFLOW: "5"
+      DB_ECHO: "false"
+      # Redis
+      REDIS_URL: redis://redis:6379/0
+      # API Settings
+      PORT: "8000"
+      LOG_LEVEL: "debug"
+      CORS_ORIGINS: "*"
+      # Security
+      SECRET_KEY: "dev-secret-key-change-in-production"
+    volumes:
+      - .:/app:cached
+      - pip_cache:/root/.cache/pip
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - greenlang-network
+
+  # ---------------------------------------------------------------------------
+  # Database Migrations
+  # ---------------------------------------------------------------------------
+  migrations:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    container_name: greenlang-registry-migrations
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/greenlang_registry
+    volumes:
+      - .:/app
+    command: ["alembic", "upgrade", "head"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - greenlang-network
+    profiles:
+      - migrations
+
+  # ---------------------------------------------------------------------------
+  # pgAdmin (Database Management UI)
+  # ---------------------------------------------------------------------------
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: greenlang-registry-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@greenlang.ai
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - greenlang-network
+    profiles:
+      - tools
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  greenlang-network:
+    driver: bridge
+    name: greenlang-registry-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  postgres_data:
+    driver: local
+    name: greenlang-registry-postgres
+  redis_data:
+    driver: local
+    name: greenlang-registry-redis
+  pgadmin_data:
+    driver: local
+    name: greenlang-registry-pgadmin
+  pip_cache:
+    driver: local
+    name: greenlang-registry-pip-cache

@@ -49,6 +49,15 @@ anomaly_detector
     Statistical anomaly detection including CUSUM, SPC,
     Mahalanobis distance, and Isolation Forest.
 
+weibull_analysis_calculator
+    Comprehensive Weibull analysis with MLE parameter estimation,
+    Median Rank Regression, B-life calculations, and confidence intervals.
+
+vibration_analysis_calculator
+    Advanced vibration analysis with FFT spectrum analysis,
+    order analysis, bearing defect frequencies, envelope analysis,
+    and ISO 10816 severity assessment.
+
 Example Usage:
 --------------
 >>> from calculators import RULCalculator, VibrationAnalyzer
@@ -363,6 +372,56 @@ from .anomaly_detector import (
 )
 
 # =============================================================================
+# IMPORTS - Weibull Analysis Calculator
+# =============================================================================
+
+from .weibull_analysis_calculator import (
+    # Enums
+    EstimationMethod,
+    DataType,
+    WeibullType,
+
+    # Data classes
+    WeibullParameterEstimate,
+    BLifeResult,
+    ReliabilityResult,
+    HazardRateProfileResult,
+    ConfidenceIntervalResult,
+    MLEIterationResult,
+
+    # Main class
+    WeibullAnalysisCalculator,
+)
+
+# =============================================================================
+# IMPORTS - Vibration Analysis Calculator
+# =============================================================================
+
+from .vibration_analysis_calculator import (
+    # Enums
+    VibrationParameter,
+    AnalysisType,
+    FaultCategory,
+    SeverityLevel,
+    TrendStatus,
+
+    # Constants
+    ISO_10816_EXTENDED_LIMITS,
+
+    # Data classes
+    FFTSpectrumResult,
+    OrderAnalysisResult,
+    BearingDefectFrequencies as AdvancedBearingDefectFrequencies,
+    EnvelopeAnalysisResult as AdvancedEnvelopeAnalysisResult,
+    OverallVibrationResult,
+    TrendAnalysisResult as AdvancedTrendAnalysisResult,
+    FaultDiagnosisResult,
+
+    # Main class
+    VibrationAnalysisCalculator,
+)
+
+# =============================================================================
 # MODULE EXPORTS
 # =============================================================================
 
@@ -556,6 +615,38 @@ __all__ = [
     "MahalanobisResult",
     "IsolationForestResult",
     "AnomalyDetector",
+
+    # ==========================================================================
+    # WEIBULL ANALYSIS CALCULATOR
+    # ==========================================================================
+    "EstimationMethod",
+    "DataType",
+    "WeibullType",
+    "WeibullParameterEstimate",
+    "BLifeResult",
+    "ReliabilityResult",
+    "HazardRateProfileResult",
+    "ConfidenceIntervalResult",
+    "MLEIterationResult",
+    "WeibullAnalysisCalculator",
+
+    # ==========================================================================
+    # VIBRATION ANALYSIS CALCULATOR (Advanced)
+    # ==========================================================================
+    "VibrationParameter",
+    "AnalysisType",
+    "FaultCategory",
+    "SeverityLevel",
+    "TrendStatus",
+    "ISO_10816_EXTENDED_LIMITS",
+    "FFTSpectrumResult",
+    "OrderAnalysisResult",
+    "AdvancedBearingDefectFrequencies",
+    "AdvancedEnvelopeAnalysisResult",
+    "OverallVibrationResult",
+    "AdvancedTrendAnalysisResult",
+    "FaultDiagnosisResult",
+    "VibrationAnalysisCalculator",
 ]
 
 
@@ -598,6 +689,16 @@ def create_anomaly_detector(**kwargs) -> AnomalyDetector:
     return AnomalyDetector(**kwargs)
 
 
+def create_weibull_calculator(**kwargs) -> WeibullAnalysisCalculator:
+    """Create a configured Weibull Analysis Calculator."""
+    return WeibullAnalysisCalculator(**kwargs)
+
+
+def create_vibration_analysis_calculator(**kwargs) -> VibrationAnalysisCalculator:
+    """Create a configured Vibration Analysis Calculator."""
+    return VibrationAnalysisCalculator(**kwargs)
+
+
 # Add factory functions to exports
 __all__.extend([
     "create_rul_calculator",
@@ -607,4 +708,6 @@ __all__.extend([
     "create_maintenance_scheduler",
     "create_spare_parts_calculator",
     "create_anomaly_detector",
+    "create_weibull_calculator",
+    "create_vibration_analysis_calculator",
 ])

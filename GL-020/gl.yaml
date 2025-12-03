@@ -1,0 +1,756 @@
+# ==============================================================================
+# GL-020 ECONOPULSE Economizer Performance Agent
+# Production GreenLang Specification (gl.yaml)
+# ==============================================================================
+# This file defines the production deployment configuration for GL-020
+# Optimized for economizer performance monitoring and fouling analysis
+# ==============================================================================
+
+apiVersion: greenlang.io/v1
+kind: Agent
+
+# ==============================================================================
+# AGENT IDENTIFICATION
+# ==============================================================================
+metadata:
+  id: GL-020
+  codename: ECONOPULSE
+  name: EconomizerPerformanceAgent
+  version: "1.0.0"
+  category: heat_recovery
+  domain: thermal_systems
+
+  labels:
+    environment: production
+    tier: standard
+    team: thermal-optimization
+    compliance: ASME-PTC-4.3-TEMA
+
+  annotations:
+    description: "Economizer performance monitoring with zero-hallucination guarantees"
+    owner: greenlang-team
+    contact: support@greenlang.io
+    documentation: https://greenlang.io/agents/GL-020
+    jira: https://jira.greenlang.io/browse/GL-020
+    slack: "#gl-020-econopulse"
+
+# ==============================================================================
+# RUNTIME CONFIGURATION
+# ==============================================================================
+spec:
+  # ----------------------------------------------------------------------------
+  # Agent Runtime
+  # ----------------------------------------------------------------------------
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: "main:app"
+    working_directory: /app
+
+    # Deterministic Configuration
+    deterministic:
+      enabled: true
+      temperature: 0.0
+      seed: 42
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+
+    # Execution Parameters
+    execution:
+      timeout_seconds: 30
+      max_retries: 3
+      retry_delay_seconds: 2
+      retry_backoff: exponential
+      max_parallel_tasks: 20
+
+    # Caching
+    cache:
+      enabled: true
+      ttl_seconds: 60
+      max_entries: 5000
+      strategy: lru
+      redis_enabled: true
+
+    # Batch Processing
+    batch:
+      enabled: true
+      max_batch_size: 100
+      parallel_workers: 4
+      chunk_size: 25
+
+  # ----------------------------------------------------------------------------
+  # AI Configuration
+  # ----------------------------------------------------------------------------
+  ai:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.0
+    seed: 42
+    max_tokens: 4096
+    top_p: 1.0
+
+    # Operation Boundaries
+    allowed_operations:
+      - text_classification
+      - entity_extraction
+      - narrative_generation
+      - recommendation_explanation
+      - alert_summarization
+      - report_generation
+      - anomaly_explanation
+      - maintenance_guidance
+
+    prohibited_operations:
+      - numeric_calculation
+      - heat_transfer_calculation
+      - fouling_factor_calculation
+      - lmtd_calculation
+      - u_value_calculation
+      - effectiveness_calculation
+      - thermal_property_lookup
+      - statistical_calculation
+
+    # Safety Guardrails
+    safety:
+      content_filtering: true
+      output_validation: true
+      hallucination_detection: true
+      confidence_threshold: 0.95
+
+  # ----------------------------------------------------------------------------
+  # Data Sources
+  # ----------------------------------------------------------------------------
+  data_sources:
+    # Feedwater Temperature Sensors
+    - id: feedwater_temps
+      name: "Feedwater Temperature Sensors"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_ENDPOINT}"
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+      polling:
+        interval_seconds: 5
+        batch_size: 10
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - feedwater_inlet_temp
+        - feedwater_outlet_temp
+        - feedwater_intermediate_temps
+
+    # Flue Gas Temperature Sensors
+    - id: flue_gas_temps
+      name: "Flue Gas Temperature Sensors"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      polling:
+        interval_seconds: 5
+        batch_size: 10
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - flue_gas_inlet_temp
+        - flue_gas_outlet_temp
+        - flue_gas_intermediate_temps
+
+    # Flow Sensors
+    - id: flow_sensors
+      name: "Flow Rate Sensors"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      polling:
+        interval_seconds: 10
+        batch_size: 5
+      health_check:
+        enabled: true
+        interval_seconds: 60
+      tags:
+        - feedwater_flow_rate
+        - flue_gas_flow_rate
+
+    # Differential Pressure Sensors
+    - id: diff_pressure
+      name: "Differential Pressure Sensors"
+      type: modbus_tcp
+      connection:
+        host: "${DP_SENSOR_HOST}"
+        port: 502
+        unit_id: 1
+      polling:
+        interval_seconds: 10
+        batch_size: 5
+      health_check:
+        enabled: true
+        interval_seconds: 60
+      tags:
+        - gas_side_dp
+        - water_side_dp
+
+    # Soot Blower Status
+    - id: soot_blowers
+      name: "Soot Blower System"
+      type: opc_ua
+      connection:
+        endpoint: "${SOOT_BLOWER_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      polling:
+        interval_seconds: 30
+        batch_size: 20
+      health_check:
+        enabled: true
+        interval_seconds: 60
+      tags:
+        - blower_status
+        - blower_position
+        - steam_consumption
+        - last_cleaning_time
+
+  # ----------------------------------------------------------------------------
+  # Data Sinks
+  # ----------------------------------------------------------------------------
+  data_sinks:
+    # Time-Series Database
+    - id: timescaledb
+      name: "TimescaleDB"
+      type: postgresql
+      connection:
+        host: "${TIMESCALE_HOST}"
+        port: 5432
+        database: econopulse
+        ssl_mode: require
+      write_mode: batch
+      batch_size: 100
+      batch_interval_seconds: 10
+      tags:
+        - performance_metrics
+        - fouling_data
+        - cleaning_events
+
+    # Alert System
+    - id: alert_system
+      name: "Alert Management"
+      type: webhook
+      connection:
+        endpoints:
+          - "${ALERT_WEBHOOK_URL}"
+          - "${SCADA_ALARM_URL}"
+      write_mode: immediate
+      retry_count: 3
+      tags:
+        - cleaning_alerts
+        - performance_alerts
+        - sensor_faults
+
+    # Notification Channels
+    - id: notifications
+      name: "Notification System"
+      type: webhook
+      connection:
+        endpoints:
+          - "${SLACK_WEBHOOK_URL}"
+          - "${EMAIL_WEBHOOK_URL}"
+      write_mode: async
+      retry_count: 3
+      tags:
+        - alert_notifications
+        - daily_summaries
+
+  # ----------------------------------------------------------------------------
+  # Agent Pipeline
+  # ----------------------------------------------------------------------------
+  pipeline:
+    stages:
+      - name: sensor_data_intake
+        description: "Collect temperature and flow sensor data"
+        timeout_seconds: 10
+        retry_count: 3
+        inputs:
+          - feedwater_temps
+          - flue_gas_temps
+          - flow_sensors
+          - diff_pressure
+        outputs:
+          - raw_sensor_readings
+          - data_quality_flags
+        validation:
+          - range_check
+          - rate_of_change_check
+          - redundancy_voting
+
+      - name: heat_transfer_calculation
+        description: "Calculate heat transfer performance metrics"
+        timeout_seconds: 5
+        retry_count: 2
+        inputs:
+          - raw_sensor_readings
+        outputs:
+          - lmtd
+          - heat_duty
+          - u_value
+          - effectiveness
+        validation:
+          - energy_balance_check
+          - physical_bounds_check
+        zero_hallucination: true
+        deterministic: true
+
+      - name: fouling_analysis
+        description: "Analyze fouling status and trends"
+        timeout_seconds: 5
+        retry_count: 2
+        inputs:
+          - u_value
+          - baseline_u_value
+        outputs:
+          - fouling_factor
+          - cleanliness_factor
+          - fouling_rate
+          - fouling_severity
+        validation:
+          - fouling_factor_positive_check
+        zero_hallucination: true
+        deterministic: true
+
+      - name: efficiency_loss_calculation
+        description: "Quantify efficiency losses from fouling"
+        timeout_seconds: 3
+        retry_count: 2
+        inputs:
+          - fouling_factor
+          - operating_conditions
+          - fuel_prices
+        outputs:
+          - efficiency_loss_pct
+          - heat_loss_mmbtu_hr
+          - fuel_penalty_usd_hr
+          - annual_cost_impact
+        validation:
+          - positive_loss_check
+        zero_hallucination: true
+        deterministic: true
+
+      - name: alert_generation
+        description: "Generate cleaning alerts"
+        timeout_seconds: 3
+        retry_count: 2
+        inputs:
+          - fouling_factor
+          - fouling_rate
+          - alert_thresholds
+        outputs:
+          - cleaning_alerts
+          - alert_priorities
+        validation:
+          - threshold_check
+
+      - name: soot_blower_optimization
+        description: "Optimize soot blowing schedule"
+        timeout_seconds: 5
+        retry_count: 1
+        inputs:
+          - fouling_analysis
+          - soot_blowers
+          - cleaning_history
+        outputs:
+          - optimal_cleaning_interval
+          - cleaning_recommendations
+          - cleaning_roi
+        validation:
+          - economic_validation
+        zero_hallucination: true
+        deterministic: true
+
+      - name: reporting
+        description: "Generate reports and store data"
+        timeout_seconds: 10
+        retry_count: 2
+        inputs:
+          - all_metrics
+        outputs:
+          - performance_report
+          - trend_data
+          - notifications
+        ai_enabled: true  # Narrative generation only
+
+  # ----------------------------------------------------------------------------
+  # Calculation Engine
+  # ----------------------------------------------------------------------------
+  calculations:
+    engine: deterministic
+    zero_hallucination: true
+    provenance_tracking: true
+
+    formulas:
+      lmtd:
+        formula: "LMTD = (dT1 - dT2) / ln(dT1/dT2)"
+        description: "Log Mean Temperature Difference"
+        standard: "ASME PTC 4.3"
+        variables:
+          dT1: "Temperature difference at one end (°F)"
+          dT2: "Temperature difference at other end (°F)"
+        validation: true
+        precision: 2
+
+      u_value:
+        formula: "U = Q / (A × LMTD)"
+        description: "Overall Heat Transfer Coefficient"
+        standard: "ASME PTC 4.3"
+        variables:
+          Q: "Heat duty (Btu/hr)"
+          A: "Heat transfer surface area (ft²)"
+          LMTD: "Log mean temperature difference (°F)"
+        validation: true
+        precision: 3
+
+      fouling_factor:
+        formula: "Rf = (1/U_fouled) - (1/U_clean)"
+        description: "Fouling Resistance"
+        standard: "TEMA"
+        variables:
+          U_fouled: "Current U-value (Btu/hr-ft²-°F)"
+          U_clean: "Clean baseline U-value (Btu/hr-ft²-°F)"
+        validation: true
+        precision: 6
+
+      effectiveness:
+        formula: "ε = (T_water_out - T_water_in) / (T_gas_in - T_water_in)"
+        description: "Heat Exchanger Effectiveness"
+        standard: "ASME PTC 4.3"
+        validation: true
+        precision: 4
+
+      efficiency_loss:
+        formula: "η_loss = (Rf × U_clean²) / (1 + Rf × U_clean) × 100"
+        description: "Efficiency Loss from Fouling"
+        validation: true
+        precision: 2
+
+  # ----------------------------------------------------------------------------
+  # Performance Thresholds
+  # ----------------------------------------------------------------------------
+  thresholds:
+    # Heat Transfer
+    min_lmtd_f: 20
+    max_approach_temp_f: 150
+    min_effectiveness: 0.6
+
+    # Fouling
+    warning_fouling_factor: 0.001  # hr-ft²-°F/Btu
+    critical_fouling_factor: 0.002
+    max_fouling_rate_per_day: 0.0001
+
+    # Data Quality
+    max_sensor_deviation: 5.0  # °F
+    max_rate_of_change: 10.0  # °F/min
+
+    # Performance
+    calculation_time_warning_ms: 50
+    calculation_time_critical_ms: 200
+
+  # ----------------------------------------------------------------------------
+  # Alerting
+  # ----------------------------------------------------------------------------
+  alerts:
+    - name: high_fouling_factor
+      condition: "fouling_factor > warning_fouling_factor"
+      severity: high
+      notification:
+        channels: [slack, email, scada]
+        message: "High fouling detected: {{fouling_factor}} hr-ft²-°F/Btu"
+        escalation_minutes: 60
+
+    - name: critical_fouling
+      condition: "fouling_factor > critical_fouling_factor"
+      severity: critical
+      notification:
+        channels: [slack, email, scada, pager]
+        message: "CRITICAL: Fouling factor {{fouling_factor}} - immediate cleaning required"
+        escalation_minutes: 15
+
+    - name: rapid_fouling_increase
+      condition: "fouling_rate > max_fouling_rate_per_day"
+      severity: high
+      notification:
+        channels: [slack, email]
+        message: "Rapid fouling increase detected: {{fouling_rate}}/day"
+
+    - name: low_effectiveness
+      condition: "effectiveness < min_effectiveness"
+      severity: medium
+      notification:
+        channels: [slack, email]
+        message: "Economizer effectiveness below minimum: {{effectiveness}}"
+
+    - name: high_approach_temp
+      condition: "approach_temp > max_approach_temp_f"
+      severity: high
+      notification:
+        channels: [slack, email, scada]
+        message: "High approach temperature: {{approach_temp}}°F"
+
+    - name: sensor_fault
+      condition: "sensor_quality == 'BAD'"
+      severity: high
+      notification:
+        channels: [slack, scada]
+        message: "Sensor fault detected: {{sensor_id}}"
+
+  # ----------------------------------------------------------------------------
+  # Monitoring
+  # ----------------------------------------------------------------------------
+  monitoring:
+    prometheus:
+      enabled: true
+      port: 9090
+      path: /metrics
+      scrape_interval: 15s
+
+    metrics:
+      # Performance Metrics
+      - name: gl020_u_value
+        type: gauge
+        description: "Current U-value"
+        labels: [economizer_id]
+
+      - name: gl020_fouling_factor
+        type: gauge
+        description: "Current fouling factor"
+        labels: [economizer_id]
+
+      - name: gl020_effectiveness
+        type: gauge
+        description: "Current effectiveness"
+        labels: [economizer_id]
+
+      - name: gl020_approach_temp_f
+        type: gauge
+        description: "Approach temperature"
+        labels: [economizer_id]
+
+      # Operational Metrics
+      - name: gl020_calculations_total
+        type: counter
+        description: "Total calculations performed"
+        labels: [calculation_type]
+
+      - name: gl020_calculation_duration_seconds
+        type: histogram
+        description: "Calculation duration"
+        buckets: [0.001, 0.005, 0.01, 0.05, 0.1, 0.5]
+
+      - name: gl020_alerts_generated_total
+        type: counter
+        description: "Total alerts generated"
+        labels: [alert_type, severity]
+
+      - name: gl020_cleaning_cycles_total
+        type: counter
+        description: "Total cleaning cycles"
+        labels: [economizer_id]
+
+      # Data Quality Metrics
+      - name: gl020_sensor_readings_total
+        type: counter
+        description: "Total sensor readings"
+        labels: [sensor_type, quality]
+
+      - name: gl020_data_quality_score
+        type: gauge
+        description: "Data quality score"
+        labels: [economizer_id]
+
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_ENDPOINT}"
+      sampling_rate: 0.1
+
+    logging:
+      level: INFO
+      format: json
+      structured: true
+      include_context: true
+
+  # ----------------------------------------------------------------------------
+  # Security
+  # ----------------------------------------------------------------------------
+  security:
+    authentication:
+      type: oauth2
+      provider: "${AUTH_PROVIDER}"
+      token_endpoint: "${AUTH_TOKEN_ENDPOINT}"
+      required_scopes:
+        - read:economizers
+        - read:performance
+        - read:alerts
+        - write:alerts
+        - admin:config
+
+    authorization:
+      type: rbac
+      roles:
+        admin:
+          permissions: ["*"]
+        performance_engineer:
+          permissions:
+            - read:economizers
+            - read:performance
+            - read:alerts
+            - write:baselines
+        maintenance_engineer:
+          permissions:
+            - read:economizers
+            - read:performance
+            - read:alerts
+            - write:alerts
+            - trigger:cleaning
+        operator:
+          permissions:
+            - read:economizers
+            - read:performance
+            - read:alerts
+        viewer:
+          permissions:
+            - read:economizers
+            - read:performance
+
+    encryption:
+      in_transit: tls_1_3
+      at_rest: aes_256_gcm
+      key_management: kubernetes_secrets
+
+    audit:
+      enabled: true
+      log_all_requests: true
+      log_calculations: true
+      retention_days: 2555
+      immutable: true
+
+  # ----------------------------------------------------------------------------
+  # Resource Limits
+  # ----------------------------------------------------------------------------
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "512Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2Gi"
+    storage:
+      size: "10Gi"
+      class: ssd
+
+  # ----------------------------------------------------------------------------
+  # Deployment
+  # ----------------------------------------------------------------------------
+  deployment:
+    replicas: 2
+    strategy:
+      type: RollingUpdate
+      maxSurge: 1
+      maxUnavailable: 0
+
+    probes:
+      liveness:
+        httpGet:
+          path: /health/liveness
+          port: 8080
+        initialDelaySeconds: 15
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+
+      readiness:
+        httpGet:
+          path: /health/readiness
+          port: 8080
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        timeoutSeconds: 3
+        failureThreshold: 3
+
+    autoscaling:
+      enabled: true
+      minReplicas: 1
+      maxReplicas: 5
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+        - type: Resource
+          resource:
+            name: memory
+            targetAverageUtilization: 80
+
+# ==============================================================================
+# VALIDATION RULES
+# ==============================================================================
+validation:
+  inputs:
+    temperature_readings:
+      required: true
+      schema_validation: true
+      range_check: true
+      rate_of_change_check: true
+
+    flow_readings:
+      required: true
+      schema_validation: true
+      positive_check: true
+
+  outputs:
+    performance_metrics:
+      physical_bounds_check: true
+      energy_balance_check: true
+      provenance_required: true
+
+    fouling_analysis:
+      positive_fouling_factor_check: true
+      provenance_required: true
+
+# ==============================================================================
+# COMPLIANCE
+# ==============================================================================
+compliance:
+  standards:
+    - id: ASME_PTC_4_3
+      name: "ASME PTC 4.3 Air Heaters and Economizers"
+      requirements:
+        - lmtd_calculation
+        - u_value_calculation
+        - effectiveness_calculation
+      evidence:
+        - calculation_provenance
+        - formula_documentation
+
+    - id: TEMA
+      name: "TEMA Standards for Heat Exchangers"
+      requirements:
+        - fouling_factor_methodology
+        - cleanliness_factor_definition
+
+    - id: IAPWS_IF97
+      name: "IAPWS-IF97 Water/Steam Properties"
+      requirements:
+        - water_property_calculations
+        - steam_property_calculations
+
+  audit_trail:
+    enabled: true
+    hash_algorithm: SHA-256
+    retention_years: 7
+    immutable: true
+    encryption: true
+
+# ==============================================================================
+# END OF GL-020 SPECIFICATION
+# ==============================================================================

@@ -311,6 +311,41 @@ from .repair_prioritization import (
     CUI_RISK_FACTORS,
 )
 
+# Import from heat_loss_calculator module (advanced features)
+from .heat_loss_calculator import (
+    # Advanced Calculator
+    AdvancedHeatLossCalculator,
+    # Advanced Result classes
+    CriticalRadiusResult,
+    EconomicThicknessResult,
+    ThreeKMethodResult,
+    MultiLayerResult,
+    InsulationLayer,
+)
+
+# Import from thermal_conductivity_library module
+from .thermal_conductivity_library import (
+    # Enumerations
+    InsulationCategory,
+    InsulationMaterialType,
+    AgingCondition,
+    MoistureCondition,
+    # Data classes
+    ThermalConductivitySpec,
+    AgingCorrectionFactor,
+    MoistureCorrectionFactor,
+    ThermalConductivityResult,
+    # Main class
+    ThermalConductivityLibrary,
+    # Databases
+    THERMAL_CONDUCTIVITY_DATABASE,
+    AGING_CORRECTION_FACTORS,
+    MOISTURE_CORRECTION_FACTORS,
+    # Convenience functions
+    get_k_value,
+    list_available_materials,
+)
+
 __all__ = [
     # === Constants Module ===
     # Physical constants
@@ -548,6 +583,28 @@ __all__ = [
     "REPAIR_LABOR_RATES",
     "PRODUCTION_RATES",
     "CUI_RISK_FACTORS",
+    # === Advanced Heat Loss Calculator ===
+    "AdvancedHeatLossCalculator",
+    "CriticalRadiusResult",
+    "EconomicThicknessResult",
+    "ThreeKMethodResult",
+    "MultiLayerResult",
+    "InsulationLayer",
+    # === Thermal Conductivity Library ===
+    "ThermalConductivityLibrary",
+    "InsulationCategory",
+    "InsulationMaterialType",
+    "AgingCondition",
+    "MoistureCondition",
+    "ThermalConductivitySpec",
+    "AgingCorrectionFactor",
+    "MoistureCorrectionFactor",
+    "ThermalConductivityResult",
+    "THERMAL_CONDUCTIVITY_DATABASE",
+    "AGING_CORRECTION_FACTORS",
+    "MOISTURE_CORRECTION_FACTORS",
+    "get_k_value",
+    "list_available_materials",
 ]
 
 __version__ = "1.0.0"

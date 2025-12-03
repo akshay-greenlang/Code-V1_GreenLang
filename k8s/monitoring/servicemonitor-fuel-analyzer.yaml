@@ -1,0 +1,187 @@
+# ============================================================================
+# GreenLang Agent Factory - Fuel Analyzer Agent ServiceMonitor
+# ============================================================================
+# Prometheus ServiceMonitor for the Fuel Emissions Analyzer Agent
+# Enables automatic service discovery and metrics scraping.
+#
+# Agent: Fuel Emissions Analyzer (emissions/fuel_analyzer_v1)
+# Scrape Path: /metrics
+# Scrape Port: 8000
+# Scrape Interval: 15 seconds
+#
+# Created: 2025-12-03
+# Team: Monitoring & Observability
+# ============================================================================
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fuel-analyzer-agent
+  namespace: monitoring
+  labels:
+    app: fuel-analyzer-agent
+    agent-type: emissions
+    team: greenlang
+    app.kubernetes.io/name: fuel-analyzer-agent
+    app.kubernetes.io/component: monitoring
+    app.kubernetes.io/part-of: greenlang-agent-factory
+    release: prometheus
+  annotations:
+    description: "ServiceMonitor for Fuel Emissions Analyzer Agent metrics"
+    agent-id: "emissions/fuel_analyzer_v1"
+    agent-version: "1.0.0"
+spec:
+  # Job label for Prometheus
+  jobLabel: fuel-analyzer-agent
+
+  # Selector for target services
+  selector:
+    matchLabels:
+      app: fuel-analyzer-agent
+    matchExpressions:
+      - key: monitoring
+        operator: NotIn
+        values: ["disabled"]
+
+  # Target namespaces
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-fuel
+      - default
+
+  # Endpoint configuration
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+      scheme: http
+      honorLabels: true
+
+      # Add agent-specific labels
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_name]
+          targetLabel: service
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: []
+          targetLabel: agent_id
+          replacement: "emissions/fuel_analyzer_v1"
+        - sourceLabels: []
+          targetLabel: agent_type
+          replacement: "emissions"
+        - sourceLabels: []
+          targetLabel: agent_name
+          replacement: "fuel-analyzer"
+
+      # Metric relabeling for better organization
+      metricRelabelings:
+        # Rename generic metrics with agent prefix
+        - sourceLabels: [__name__]
+          regex: 'python_(.+)'
+          targetLabel: __name__
+          replacement: 'greenlang_python_${1}'
+
+        # Add environment label based on namespace
+        - sourceLabels: [namespace]
+          regex: '.*-prod'
+          targetLabel: environment
+          replacement: 'production'
+        - sourceLabels: [namespace]
+          regex: '.*-staging'
+          targetLabel: environment
+          replacement: 'staging'
+        - sourceLabels: [namespace]
+          regex: '.*-dev'
+          targetLabel: environment
+          replacement: 'development'
+
+      # TLS configuration (if using HTTPS)
+      # tlsConfig:
+      #   insecureSkipVerify: false
+      #   ca:
+      #     secret:
+      #       name: monitoring-ca
+      #       key: ca.crt
+
+      # Basic auth (if required)
+      # basicAuth:
+      #   username:
+      #     name: prometheus-basic-auth
+      #     key: username
+      #   password:
+      #     name: prometheus-basic-auth
+      #     key: password
+
+---
+# ============================================================================
+# Service Definition (if not exists)
+# ============================================================================
+# This Service ensures the agent is discoverable by the ServiceMonitor.
+# Deploy this if the agent doesn't already have a Service with 'app: fuel-analyzer-agent' label.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fuel-analyzer-agent-metrics
+  namespace: greenlang
+  labels:
+    app: fuel-analyzer-agent
+    component: metrics
+    monitoring: enabled
+    app.kubernetes.io/name: fuel-analyzer-agent
+    app.kubernetes.io/component: metrics
+spec:
+  type: ClusterIP
+  selector:
+    app: fuel-analyzer-agent
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+      protocol: TCP
+
+---
+# ============================================================================
+# PodMonitor Alternative (for pods without Service)
+# ============================================================================
+# Use this if agents are deployed as standalone pods without a Service.
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: fuel-analyzer-agent-pods
+  namespace: monitoring
+  labels:
+    app: fuel-analyzer-agent
+    release: prometheus
+spec:
+  jobLabel: fuel-analyzer-agent
+
+  selector:
+    matchLabels:
+      app: fuel-analyzer-agent
+
+  namespaceSelector:
+    matchNames:
+      - greenlang
+      - gl-fuel
+      - default
+
+  podMetricsEndpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
+      scrapeTimeout: 10s
+
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace
+        - sourceLabels: []
+          targetLabel: agent_id
+          replacement: "emissions/fuel_analyzer_v1"

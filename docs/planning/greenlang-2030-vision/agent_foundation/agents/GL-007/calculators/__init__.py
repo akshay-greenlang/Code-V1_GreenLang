@@ -8,10 +8,12 @@ reproducibility with complete provenance tracking via SHA-256 hashing.
 
 Standards Compliance:
 - ASME PTC 4.2: Performance Test Code on Industrial Furnaces
+- API 560: Fired Heaters for General Refinery Service
 - ISO 50001: Energy Management Systems
 - ISO 50006: Energy Baseline and Energy Performance Indicators
 - ISO 17359: Condition Monitoring and Diagnostics of Machines
 - ISO 13579-1: Industrial Furnaces and Associated Processing Equipment
+- ISO 13705: Petroleum and Natural Gas Industries - Fired Heaters
 
 Zero-Hallucination Guarantees:
 - All calculations use Decimal arithmetic for precision
@@ -24,6 +26,8 @@ Module Structure:
     thermal_efficiency_calculator.py - ASME PTC 4.2 efficiency calculations
     performance_kpi_calculator.py - Production and energy KPIs
     maintenance_predictor.py - Predictive maintenance calculations
+    radiant_heat_transfer_calculator.py - Stefan-Boltzmann, view factors, flame emissivity
+    furnace_efficiency_calculator.py - Available heat, stack/wall/opening losses
 
 Example:
     >>> from calculators import ThermalEfficiencyCalculator, FurnaceInputData
@@ -41,7 +45,7 @@ Example:
 
 Author: GL-CalculatorEngineer
 Agent: GL-007 FURNACEPULSE
-Version: 1.0.0
+Version: 1.1.0
 """
 
 # Provenance Tracking
@@ -105,8 +109,46 @@ from .maintenance_predictor import (
     REFRACTORY_PROPERTIES_DB,
 )
 
+# Radiant Heat Transfer Calculator
+from .radiant_heat_transfer_calculator import (
+    # Main calculator
+    RadiantHeatTransferCalculator,
+    # Data classes
+    RadiantSectionGeometry,
+    FlameProperties,
+    TubeConditions,
+    ViewFactorResult,
+    FlameEmissivityResult,
+    TubeMetalTemperatureResult,
+    HeatFluxResult,
+    RadiantSectionDutyResult,
+    # Enums
+    RadiantSectionType,
+    TubeArrangement,
+    FlameType,
+)
+
+# Furnace Efficiency Calculator
+from .furnace_efficiency_calculator import (
+    # Main calculator
+    FurnaceEfficiencyCalculator,
+    # Data classes
+    CombustionInputs,
+    FurnaceHeatLossInputs,
+    ProductHeatInputs,
+    AvailableHeatResult,
+    StackLossResult,
+    WallLossResult,
+    OpeningLossResult,
+    FurnaceEfficiencyResult,
+    # Enums
+    EfficiencyMethod,
+    FurnaceOperatingMode,
+    AtmosphereType,
+)
+
 # Version information
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "GL-CalculatorEngineer"
 __agent__ = "GL-007 FURNACEPULSE"
 
@@ -148,6 +190,32 @@ __all__ = [
     "SeverityLevel",
     "RefractoryType",
     "REFRACTORY_PROPERTIES_DB",
+    # Radiant Heat Transfer
+    "RadiantHeatTransferCalculator",
+    "RadiantSectionGeometry",
+    "FlameProperties",
+    "TubeConditions",
+    "ViewFactorResult",
+    "FlameEmissivityResult",
+    "TubeMetalTemperatureResult",
+    "HeatFluxResult",
+    "RadiantSectionDutyResult",
+    "RadiantSectionType",
+    "TubeArrangement",
+    "FlameType",
+    # Furnace Efficiency
+    "FurnaceEfficiencyCalculator",
+    "CombustionInputs",
+    "FurnaceHeatLossInputs",
+    "ProductHeatInputs",
+    "AvailableHeatResult",
+    "StackLossResult",
+    "WallLossResult",
+    "OpeningLossResult",
+    "FurnaceEfficiencyResult",
+    "EfficiencyMethod",
+    "FurnaceOperatingMode",
+    "AtmosphereType",
     # Version info
     "__version__",
     "__author__",
@@ -182,6 +250,16 @@ def get_calculator_info() -> dict:
                 "name": "MaintenancePredictor",
                 "description": "Predictive maintenance for furnace components",
                 "standards": ["ISO 17359", "ISO 13379-1", "ASTM C155"]
+            },
+            {
+                "name": "RadiantHeatTransferCalculator",
+                "description": "Stefan-Boltzmann radiation, view factors, flame emissivity, tube metal temperature",
+                "standards": ["API 560", "ASME PTC 4.2", "ISO 13705", "Hottel & Sarofim"]
+            },
+            {
+                "name": "FurnaceEfficiencyCalculator",
+                "description": "Available heat, stack loss, wall loss, opening loss, total efficiency (direct/indirect)",
+                "standards": ["ASME PTC 4.2", "API 560", "EN 746-2"]
             }
         ],
         "zero_hallucination_guarantee": True,

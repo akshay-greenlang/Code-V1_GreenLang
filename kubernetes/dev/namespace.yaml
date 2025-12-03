@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-dev
+  labels:
+    name: greenlang-dev
+    environment: development
+    managed-by: kubernetes
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: infrastructure

@@ -20,6 +20,13 @@ app = typer.Typer(
 
 from . import cmd_init, cmd_run, cmd_pack, cmd_verify, cmd_policy, cmd_doctor
 
+# Import agent generator command
+try:
+    from .generate import app as agent_app
+    _has_agent_generator = True
+except ImportError:
+    _has_agent_generator = False
+
 app.add_typer(cmd_init.app, name="init", help="Initialize new projects/packs")
 app.add_typer(cmd_run.app, name="run", help="Execute pipelines and packs")
 app.add_typer(cmd_pack.app, name="pack", help="Manage packs")
@@ -31,6 +38,10 @@ app.add_typer(
     help="Environment diagnostics",
     invoke_without_command=True,
 )
+
+# Add agent generator command
+if _has_agent_generator:
+    app.add_typer(agent_app, name="agent", help="Generate agents from AgentSpec YAML")
 
 
 @app.callback()

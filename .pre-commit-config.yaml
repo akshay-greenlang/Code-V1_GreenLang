@@ -39,6 +39,14 @@ repos:
         name: TruffleHog Secret Scanner
         args: ['--no-update']
 
+  # Gitleaks - Fast secret detection (SOC 2 CC6.1 compliant)
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+        name: Gitleaks Secret Scanner
+        args: ['--config', '.gitleaks.toml']
+
   # AWS Credentials Detection
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0

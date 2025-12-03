@@ -1,0 +1,211 @@
+# =============================================================================
+# GreenLang Agents - Docker Compose (Local Development)
+# =============================================================================
+# This file orchestrates the 3 production agents for local development
+# Version: 1.0.0
+# =============================================================================
+
+version: '3.9'
+
+services:
+  # ===========================================================================
+  # Fuel Emissions Analyzer Agent
+  # ===========================================================================
+  fuel-analyzer:
+    build:
+      context: .
+      dockerfile: generated/fuel_analyzer_agent/Dockerfile
+    container_name: greenlang-fuel-analyzer
+    ports:
+      - "8001:8000"
+      - "9091:9090"
+    environment:
+      - GREENLANG_ENV=development
+      - GREENLANG_LOG_LEVEL=DEBUG
+      - GREENLANG_LOG_FORMAT=text
+      - AGENT_NAME=fuel-emissions-analyzer
+      - SERVER_PORT=8000
+      - METRICS_PORT=9090
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - greenlang-network
+    volumes:
+      - fuel-analyzer-data:/app/data
+      - ./logs/fuel-analyzer:/app/logs
+    restart: unless-stopped
+    labels:
+      - "app=greenlang"
+      - "agent=fuel-analyzer"
+      - "version=1.0.0"
+
+  # ===========================================================================
+  # CBAM Carbon Intensity Calculator
+  # ===========================================================================
+  carbon-intensity:
+    build:
+      context: .
+      dockerfile: generated/carbon_intensity_v1/Dockerfile
+    container_name: greenlang-carbon-intensity
+    ports:
+      - "8002:8000"
+      - "9092:9090"
+    environment:
+      - GREENLANG_ENV=development
+      - GREENLANG_LOG_LEVEL=DEBUG
+      - GREENLANG_LOG_FORMAT=text
+      - AGENT_NAME=cbam-carbon-intensity
+      - SERVER_PORT=8000
+      - METRICS_PORT=9090
+      - REDIS_URL=redis://redis:6379/1
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - greenlang-network
+    volumes:
+      - carbon-intensity-data:/app/data
+      - ./logs/carbon-intensity:/app/logs
+    restart: unless-stopped
+    labels:
+      - "app=greenlang"
+      - "agent=carbon-intensity"
+      - "version=1.0.0"
+
+  # ===========================================================================
+  # Building Energy Performance Calculator
+  # ===========================================================================
+  energy-performance:
+    build:
+      context: .
+      dockerfile: generated/energy_performance_v1/Dockerfile
+    container_name: greenlang-energy-performance
+    ports:
+      - "8003:8000"
+      - "9093:9090"
+    environment:
+      - GREENLANG_ENV=development
+      - GREENLANG_LOG_LEVEL=DEBUG
+      - GREENLANG_LOG_FORMAT=text
+      - AGENT_NAME=building-energy-performance
+      - SERVER_PORT=8000
+      - METRICS_PORT=9090
+      - REDIS_URL=redis://redis:6379/2
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - greenlang-network
+    volumes:
+      - energy-performance-data:/app/data
+      - ./logs/energy-performance:/app/logs
+    restart: unless-stopped
+    labels:
+      - "app=greenlang"
+      - "agent=energy-performance"
+      - "version=1.0.0"
+
+  # ===========================================================================
+  # Redis (Shared Caching)
+  # ===========================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: greenlang-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - greenlang-network
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Prometheus (Metrics Collection) - Optional
+  # ===========================================================================
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: greenlang-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - greenlang-network
+    profiles:
+      - monitoring
+    restart: unless-stopped
+
+  # ===========================================================================
+  # Grafana (Visualization) - Optional
+  # ===========================================================================
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: greenlang-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=greenlang
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - greenlang-network
+    profiles:
+      - monitoring
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+# =============================================================================
+# Networks
+# =============================================================================
+networks:
+  greenlang-network:
+    driver: bridge
+    name: greenlang-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+volumes:
+  fuel-analyzer-data:
+  carbon-intensity-data:
+  energy-performance-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:

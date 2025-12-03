@@ -1,0 +1,209 @@
+---
+# GL-016 WATERGUARD - Ingress Configuration
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-016-waterguard-ingress
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: water-treatment
+    tier: agent
+  annotations:
+    # Ingress class
+    kubernetes.io/ingress.class: "nginx"
+
+    # TLS/SSL Configuration
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+
+    # Security headers
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains";
+
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    nginx.ingress.kubernetes.io/limit-connections: "50"
+
+    # CORS (if needed)
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://*.greenlang.io"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+
+    # Timeouts
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+
+    # Body size limit
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+
+    # WebSocket support (if needed)
+    nginx.ingress.kubernetes.io/websocket-services: "gl-016-waterguard"
+
+    # Load balancing
+    nginx.ingress.kubernetes.io/load-balance: "ewma"
+    nginx.ingress.kubernetes.io/upstream-hash-by: "$binary_remote_addr"
+
+    # Authentication (optional - can use OAuth2 proxy)
+    # nginx.ingress.kubernetes.io/auth-url: "https://auth.greenlang.io/oauth2/auth"
+    # nginx.ingress.kubernetes.io/auth-signin: "https://auth.greenlang.io/oauth2/start"
+
+spec:
+  # TLS configuration
+  tls:
+    - hosts:
+        - waterguard.greenlang.io
+        - gl-016.greenlang.io
+      secretName: gl-016-waterguard-tls
+
+  # Routing rules
+  rules:
+    # Primary domain
+    - host: waterguard.greenlang.io
+      http:
+        paths:
+          # API endpoints
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-016-waterguard
+                port:
+                  number: 8000
+
+          # Health check endpoint
+          - path: /health
+            pathType: Exact
+            backend:
+              service:
+                name: gl-016-waterguard
+                port:
+                  number: 8000
+
+          # Metrics endpoint (restricted access)
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: gl-016-waterguard-metrics
+                port:
+                  number: 9090
+
+          # Root path
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-016-waterguard
+                port:
+                  number: 8000
+
+    # Alternative domain with agent ID
+    - host: gl-016.greenlang.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-016-waterguard
+                port:
+                  number: 8000
+
+---
+# Internal Ingress (for cluster-internal access only)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-016-waterguard-internal
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    access: internal
+  annotations:
+    kubernetes.io/ingress.class: "nginx-internal"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+spec:
+  rules:
+    - host: waterguard.internal.greenlang.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gl-016-waterguard
+                port:
+                  number: 8000
+
+---
+# Metrics Ingress (restricted to monitoring namespace)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gl-016-waterguard-metrics
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: metrics
+  annotations:
+    kubernetes.io/ingress.class: "nginx-internal"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # Restrict to Prometheus/monitoring systems only
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.244.0.0/16"
+spec:
+  rules:
+    - host: waterguard-metrics.greenlang.local
+      http:
+        paths:
+          - path: /metrics
+            pathType: Exact
+            backend:
+              service:
+                name: gl-016-waterguard-metrics
+                port:
+                  number: 9090
+
+---
+# Gateway API alternative (future-ready)
+# Uncomment when using Gateway API instead of Ingress
+# apiVersion: gateway.networking.k8s.io/v1beta1
+# kind: HTTPRoute
+# metadata:
+#   name: gl-016-waterguard-route
+#   namespace: greenlang
+# spec:
+#   parentRefs:
+#     - name: greenlang-gateway
+#       namespace: greenlang
+#   hostnames:
+#     - "waterguard.greenlang.io"
+#     - "gl-016.greenlang.io"
+#   rules:
+#     - matches:
+#         - path:
+#             type: PathPrefix
+#             value: /api
+#       backendRefs:
+#         - name: gl-016-waterguard
+#           port: 8000
+#     - matches:
+#         - path:
+#             type: Exact
+#             value: /health
+#       backendRefs:
+#         - name: gl-016-waterguard
+#           port: 8000

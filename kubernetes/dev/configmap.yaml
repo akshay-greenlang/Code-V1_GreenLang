@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: greenlang-config
+  namespace: greenlang-dev
+  labels:
+    app: greenlang-api
+    environment: development
+data:
+  # Application Configuration
+  ENVIRONMENT: "development"
+  LOG_LEVEL: "debug"
+  WORKERS: "2"
+  PORT: "8000"
+
+  # Feature Flags
+  ENABLE_METRICS: "true"
+  ENABLE_TRACING: "true"
+  ENABLE_DEBUG: "true"
+
+  # Cache Configuration
+  CACHE_TTL: "3600"
+  CACHE_MAX_SIZE: "1000"
+
+  # API Configuration
+  API_VERSION: "v1"
+  API_PREFIX: "/api/v1"
+  CORS_ORIGINS: "http://localhost:3000,http://localhost:8080"
+
+  # Database Configuration (non-sensitive)
+  DATABASE_POOL_SIZE: "20"
+  DATABASE_MAX_OVERFLOW: "10"
+  DATABASE_POOL_TIMEOUT: "30"
+
+  # Redis Configuration (non-sensitive)
+  REDIS_MAX_CONNECTIONS: "50"
+  REDIS_SOCKET_TIMEOUT: "5"
+
+  # Observability
+  PROMETHEUS_PORT: "9090"
+  METRICS_PATH: "/metrics"
+
+  # Rate Limiting
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_PER_MINUTE: "60"
+
+  # Application Metadata
+  APP_NAME: "greenlang-api"
+  APP_VERSION: "0.3.0"

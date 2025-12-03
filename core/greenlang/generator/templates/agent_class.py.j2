@@ -1,0 +1,432 @@
+"""
+{{ name }} Agent - {{ summary or "Generated GreenLang Agent" }}
+
+This module implements the {{ agent_class_name }} for the GreenLang platform.
+Generated from AgentSpec: {{ id }}
+
+Version: {{ version }}
+License: {{ license }}
+Generated: {{ generated_at }}
+
+ZERO-HALLUCINATION GUARANTEE:
+- All numeric calculations use deterministic tools
+- No LLM calls in the calculation path
+- Complete provenance tracking with SHA-256 hashes
+"""
+
+from typing import Any, Dict, List, Optional, Union
+from datetime import datetime
+import hashlib
+import logging
+
+from pydantic import BaseModel, Field, validator
+
+from {{ sdk_import_path }}.agent_base import SDKAgentBase, AgentResult
+from {{ sdk_import_path }}.provenance import ProvenanceTracker, ProvenanceRecord
+
+from .tools import {% for tool in tools %}{{ tool.class_name }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+logger = logging.getLogger(__name__)
+
+
+# =============================================================================
+# Input/Output Models (Pydantic)
+# =============================================================================
+
+class {{ agent_class_name }}Input(BaseModel):
+    """
+    Input data model for {{ agent_class_name }}.
+
+    All inputs are validated using Pydantic before processing.
+    """
+
+{% for input in inputs %}
+    {{ input.name }}: {% if not input.required %}Optional[{% endif %}{{ input.python_type }}{% if not input.required %}]{% endif %} = Field(
+        {{ input.pydantic_field_args }}
+    )
+{% endfor %}
+{% if not inputs %}
+    # TODO: Define input fields based on your requirements
+    pass
+{% endif %}
+
+    class Config:
+        """Pydantic configuration."""
+        extra = "forbid"  # Reject unknown fields
+        validate_assignment = True
+
+
+class {{ agent_class_name }}Output(BaseModel):
+    """
+    Output data model for {{ agent_class_name }}.
+
+    Includes standard provenance fields for audit trails.
+    """
+
+{% for output in outputs %}
+    {{ output.name }}: {% if not output.required %}Optional[{% endif %}{{ output.python_type }}{% if not output.required %}]{% endif %} = Field(
+        ...,
+        description="{{ output.description or output.name }}"
+    )
+{% endfor %}
+{% if not outputs %}
+    # TODO: Define output fields based on your requirements
+    result: Dict[str, Any] = Field(..., description="Processing result")
+{% endif %}
+
+    # Standard provenance fields
+    provenance_hash: Optional[str] = Field(None, description="SHA-256 provenance chain hash")
+    processing_time_ms: Optional[float] = Field(None, description="Processing duration in milliseconds")
+    validation_status: str = Field("PASS", description="Validation status: PASS or FAIL")
+
+    class Config:
+        """Pydantic configuration."""
+        extra = "allow"  # Allow additional fields
+
+
+# =============================================================================
+# Agent Implementation
+# =============================================================================
+
+class {{ agent_class_name }}(SDKAgentBase[{{ agent_class_name }}Input, {{ agent_class_name }}Output]):
+    """
+    {{ name }} Agent Implementation.
+
+    {{ summary or "Generated from AgentSpec." }}
+
+    This agent follows GreenLang's zero-hallucination principle:
+    - All calculations use deterministic tools (NO LLM in calculation path)
+    - Complete provenance tracking with SHA-256 hashes
+    - Full audit trail for regulatory compliance
+    - Citation tracking for all data sources
+
+    Lifecycle:
+        1. pre_validate  - Transform raw input
+        2. validate_input - Validate against schema
+        3. post_validate  - Enrich validated data
+        4. pre_execute    - Setup execution
+        5. execute        - Main logic (ZERO-HALLUCINATION)
+        6. post_execute   - Transform output
+        7. validate_output - Validate output
+        8. finalize       - Cleanup and provenance
+
+    Attributes:
+        agent_id: Unique identifier for this agent
+        agent_version: Semantic version string
+        enable_provenance: Whether to track provenance
+        enable_citations: Whether to track citations
+
+    Example:
+        >>> agent = {{ agent_class_name }}()
+        >>> result = await agent.run({"key": "value"})
+        >>> print(result.output)
+        >>> print(result.provenance.provenance_chain)
+    """
+
+    # =========================================================================
+    # Class Attributes
+    # =========================================================================
+
+    AGENT_ID = "{{ id }}"
+    AGENT_VERSION = "{{ version }}"
+
+    SYSTEM_PROMPT = """{{ system_prompt | escape_string }}"""
+
+{% if provenance %}
+    # Provenance configuration
+    GWP_SET = "{{ provenance.gwp_set.value }}"
+    PIN_EMISSION_FACTORS = {{ provenance.pin_ef }}
+    PROVENANCE_FIELDS = {{ provenance.record }}
+{% endif %}
+
+    # =========================================================================
+    # Initialization
+    # =========================================================================
+
+    def __init__(
+        self,
+        agent_id: str = "{{ id }}",
+        agent_version: str = "{{ version }}",
+        enable_provenance: bool = True,
+        enable_citations: bool = True,
+    ):
+        """
+        Initialize {{ agent_class_name }}.
+
+        Args:
+            agent_id: Unique agent identifier
+            agent_version: Agent version string
+            enable_provenance: Enable SHA-256 provenance tracking
+            enable_citations: Enable citation aggregation
+        """
+        super().__init__(
+            agent_id=agent_id,
+            agent_version=agent_version,
+            enable_provenance=enable_provenance,
+            enable_citations=enable_citations,
+        )
+
+        # Initialize tool instances
+        self._tools: Dict[str, Any] = {}
+        self._register_tools()
+
+        logger.info(f"Initialized {self.agent_id} v{self.agent_version}")
+
+    def _register_tools(self) -> None:
+        """Register all available tools."""
+{% for tool in tools %}
+        self._tools["{{ tool.name }}"] = {{ tool.class_name }}()
+{% endfor %}
+{% if not tools %}
+        pass  # No tools to register
+{% endif %}
+
+    # =========================================================================
+    # Lifecycle Methods
+    # =========================================================================
+
+{% if use_async %}
+    async def validate_input(
+        self,
+        input_data: {{ agent_class_name }}Input,
+        context: dict
+    ) -> {{ agent_class_name }}Input:
+{% else %}
+    def validate_input(
+        self,
+        input_data: {{ agent_class_name }}Input,
+        context: dict
+    ) -> {{ agent_class_name }}Input:
+{% endif %}
+        """
+        Validate input data against schema and business rules.
+
+        Args:
+            input_data: Input data (already Pydantic validated)
+            context: Execution context
+
+        Returns:
+            Validated input data
+
+        Raises:
+            ValidationError: If business rules fail
+        """
+        logger.debug(f"Validating input for {self.agent_id}")
+
+        # Pydantic handles schema validation
+        # Add custom business rule validation here
+{% for input in inputs %}
+{% if input.minimum is not none %}
+        if input_data.{{ input.name }} is not None and input_data.{{ input.name }} < {{ input.minimum }}:
+            raise ValueError(f"{{ input.name }} must be >= {{ input.minimum }}")
+{% endif %}
+{% if input.maximum is not none %}
+        if input_data.{{ input.name }} is not None and input_data.{{ input.name }} > {{ input.maximum }}:
+            raise ValueError(f"{{ input.name }} must be <= {{ input.maximum }}")
+{% endif %}
+{% endfor %}
+
+        return input_data
+
+{% if use_async %}
+    async def execute(
+        self,
+        validated_input: {{ agent_class_name }}Input,
+        context: dict
+    ) -> {{ agent_class_name }}Output:
+{% else %}
+    def execute(
+        self,
+        validated_input: {{ agent_class_name }}Input,
+        context: dict
+    ) -> {{ agent_class_name }}Output:
+{% endif %}
+        """
+        Execute main agent logic.
+
+        ZERO-HALLUCINATION GUARANTEE:
+        This method uses ONLY deterministic tools for all calculations.
+        No LLM calls are made for numeric computations.
+
+        Args:
+            validated_input: Validated input data
+            context: Execution context
+
+        Returns:
+            Processed output with provenance
+
+        Raises:
+            ExecutionError: If processing fails
+        """
+        start_time = datetime.utcnow()
+        logger.info(f"Executing {self.agent_id}")
+
+        try:
+            # Execute core logic using deterministic tools
+{% if use_async %}
+            result_data = await self._execute_core_logic(validated_input, context)
+{% else %}
+            result_data = self._execute_core_logic(validated_input, context)
+{% endif %}
+
+            # Calculate processing time
+            processing_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+
+            # Build output with provenance
+            output = {{ agent_class_name }}Output(
+                **result_data,
+                processing_time_ms=processing_time,
+                validation_status="PASS",
+            )
+
+            logger.info(f"{self.agent_id} completed in {processing_time:.2f}ms")
+            return output
+
+        except Exception as e:
+            logger.error(f"{self.agent_id} execution failed: {e}", exc_info=True)
+            raise
+
+{% if use_async %}
+    async def _execute_core_logic(
+        self,
+        input_data: {{ agent_class_name }}Input,
+        context: dict
+    ) -> Dict[str, Any]:
+{% else %}
+    def _execute_core_logic(
+        self,
+        input_data: {{ agent_class_name }}Input,
+        context: dict
+    ) -> Dict[str, Any]:
+{% endif %}
+        """
+        Execute core business logic using deterministic tools.
+
+        IMPORTANT: This method must use ONLY registered tools.
+        NO LLM calls for numeric calculations.
+
+        Args:
+            input_data: Validated input
+            context: Execution context
+
+        Returns:
+            Dictionary of output field values
+        """
+        # TODO: Implement your business logic here
+        # Example:
+        #
+        # # Step 1: Look up emission factor (deterministic)
+{% if tools %}
+        # result = await self.call_{{ tools[0].name }}(...)
+{% endif %}
+        #
+        # # Step 2: Calculate emissions (deterministic)
+        # emissions = activity_data * emission_factor
+        #
+        # # Step 3: Return results
+        # return {
+        #     "emissions_tco2e": emissions,
+        #     "ef_uri": result["ef_uri"],
+        # }
+
+        return {}
+
+    # =========================================================================
+    # Tool Methods
+    # =========================================================================
+
+{% for tool in tools %}
+{% if use_async %}
+    async def call_{{ tool.name }}(
+        self,
+{% for param in tool.input_parameters %}
+        {{ param.name }}: {% if not param.required %}Optional[{% endif %}{{ param.type | json_type_to_python }}{% if not param.required %}]{% endif %}{% if param.default is not none %} = {{ param.default | repr }}{% elif not param.required %} = None{% endif %},
+{% endfor %}
+    ) -> Dict[str, Any]:
+{% else %}
+    def call_{{ tool.name }}(
+        self,
+{% for param in tool.input_parameters %}
+        {{ param.name }}: {% if not param.required %}Optional[{% endif %}{{ param.type | json_type_to_python }}{% if not param.required %}]{% endif %}{% if param.default is not none %} = {{ param.default | repr }}{% elif not param.required %} = None{% endif %},
+{% endfor %}
+    ) -> Dict[str, Any]:
+{% endif %}
+        """
+        {{ tool.description }}
+
+        This is a DETERMINISTIC tool - results are reproducible and trackable.
+
+{% for param in tool.input_parameters %}
+        Args:
+            {{ param.name }}: {{ param.description or param.name }}
+{% endfor %}
+
+        Returns:
+            Tool execution result with provenance
+
+        Raises:
+            ValueError: If required parameters are missing
+            ToolExecutionError: If tool execution fails
+        """
+        params = {
+{% for param in tool.input_parameters %}
+            "{{ param.name }}": {{ param.name }},
+{% endfor %}
+        }
+
+        # Execute tool
+{% if use_async %}
+        result = await self._tools["{{ tool.name }}"].execute(params)
+{% else %}
+        result = self._tools["{{ tool.name }}"].execute(params)
+{% endif %}
+
+        # Record tool call for provenance
+        self.record_tool_call("{{ tool.name }}", params, result)
+
+        return result
+
+{% endfor %}
+
+    # =========================================================================
+    # Helper Methods
+    # =========================================================================
+
+    def _hash_data(self, data: Any) -> str:
+        """Calculate SHA-256 hash of data for provenance."""
+        import json
+        json_str = json.dumps(data, sort_keys=True, default=str)
+        return hashlib.sha256(json_str.encode()).hexdigest()
+
+
+# =============================================================================
+# Factory Functions
+# =============================================================================
+
+{% if use_async %}
+async def create_agent(**kwargs) -> {{ agent_class_name }}:
+{% else %}
+def create_agent(**kwargs) -> {{ agent_class_name }}:
+{% endif %}
+    """
+    Factory function to create {{ agent_class_name }} instance.
+
+    Args:
+        **kwargs: Arguments passed to {{ agent_class_name }}.__init__
+
+    Returns:
+        Initialized agent instance
+    """
+    return {{ agent_class_name }}(**kwargs)
+
+
+# =============================================================================
+# Module Exports
+# =============================================================================
+
+__all__ = [
+    "{{ agent_class_name }}",
+    "{{ agent_class_name }}Input",
+    "{{ agent_class_name }}Output",
+    "create_agent",
+]

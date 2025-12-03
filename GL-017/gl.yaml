@@ -1,0 +1,1895 @@
+# ==============================================================================
+# GL-017 CONDENSYNC Condenser Optimization Agent
+# Production GreenLang Specification (gl.yaml)
+# ==============================================================================
+# This file defines the production deployment configuration for GL-017
+# Optimized for steam condenser operations and efficiency optimization
+# ==============================================================================
+
+apiVersion: greenlang.io/v1
+kind: Agent
+
+# ==============================================================================
+# AGENT IDENTIFICATION
+# ==============================================================================
+metadata:
+  id: GL-017
+  codename: CONDENSYNC
+  name: CondenserOptimizationAgent
+  version: "1.0.0"
+  category: optimizer
+  domain: steam_systems
+
+  labels:
+    environment: production
+    tier: critical
+    team: condenser-optimization
+    compliance: HEI-ASME-TEMA
+
+  annotations:
+    description: "Condenser optimization with zero-hallucination guarantees for steam systems"
+    owner: greenlang-team
+    contact: support@greenlang.io
+    documentation: https://greenlang.io/agents/GL-017
+    jira: https://jira.greenlang.io/browse/GL-017
+    slack: "#gl-017-condensync"
+
+# ==============================================================================
+# RUNTIME CONFIGURATION
+# ==============================================================================
+spec:
+  # ----------------------------------------------------------------------------
+  # Agent Runtime
+  # ----------------------------------------------------------------------------
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: "main:app"
+    working_directory: /app
+
+    # Deterministic Configuration
+    deterministic:
+      enabled: true
+      temperature: 0.0
+      seed: 42
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+      reproducibility_guarantee: true
+
+    # Execution Parameters
+    execution:
+      timeout_seconds: 180
+      max_retries: 3
+      retry_delay_seconds: 5
+      retry_backoff: exponential
+      max_parallel_tasks: 12
+
+    # Caching
+    cache:
+      enabled: true
+      ttl_seconds: 300
+      max_entries: 15000
+      strategy: lru
+      redis_enabled: true
+      cache_layers:
+        - name: condenser_metrics
+          ttl_seconds: 60
+          max_entries: 5000
+        - name: historical_data
+          ttl_seconds: 600
+          max_entries: 10000
+        - name: calculation_results
+          ttl_seconds: 300
+          max_entries: 5000
+
+    # Batch Processing
+    batch:
+      enabled: true
+      max_batch_size: 1000
+      parallel_workers: 6
+      chunk_size: 200
+
+  # ----------------------------------------------------------------------------
+  # AI Configuration
+  # ----------------------------------------------------------------------------
+  ai:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.0
+    seed: 42
+    max_tokens: 4096
+    top_p: 1.0
+    zero_hallucination: true
+
+    # Operation Boundaries
+    allowed_operations:
+      - text_classification
+      - entity_extraction
+      - narrative_generation
+      - recommendation_explanation
+      - incident_summarization
+      - maintenance_guidance
+      - trend_interpretation
+      - anomaly_description
+
+    prohibited_operations:
+      - numeric_calculation
+      - heat_transfer_calculation
+      - vacuum_calculation
+      - condensate_flow_calculation
+      - air_inleakage_calculation
+      - fouling_factor_calculation
+      - cleanliness_factor_calculation
+      - subcooling_calculation
+      - performance_correction
+
+    # Safety Guardrails
+    safety:
+      content_filtering: true
+      output_validation: true
+      hallucination_detection: true
+      confidence_threshold: 0.95
+      calculation_isolation: true
+
+  # ----------------------------------------------------------------------------
+  # Data Sources
+  # ----------------------------------------------------------------------------
+  data_sources:
+    # Primary SCADA/DCS Integration
+    - id: scada_primary
+      name: "Primary SCADA OPC-UA Server"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_PRIMARY_ENDPOINT}"
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+        application_name: GL-017-CONDENSYNC
+        application_uri: urn:greenlang:gl-017:condensync
+      polling:
+        interval_seconds: 5
+        batch_size: 150
+        timeout_ms: 5000
+      health_check:
+        enabled: true
+        interval_seconds: 30
+        failure_threshold: 3
+      tags:
+        - condenser_vacuum_pressure
+        - cooling_water_inlet_temp
+        - cooling_water_outlet_temp
+        - cooling_water_flow_rate
+        - condensate_flow_rate
+        - condensate_temperature
+        - hotwell_level
+        - hotwell_temperature
+        - turbine_exhaust_pressure
+        - turbine_exhaust_temperature
+        - steam_flow_to_condenser
+        - air_ejector_pressure
+        - air_ejector_flow
+
+    # Secondary DCS Integration
+    - id: dcs_secondary
+      name: "Distributed Control System"
+      type: opc_ua
+      connection:
+        endpoint: "${DCS_SECONDARY_ENDPOINT}"
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+      polling:
+        interval_seconds: 10
+        batch_size: 100
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - condenser_shell_pressure
+        - tube_bundle_dp
+        - waterbox_inlet_pressure
+        - waterbox_outlet_pressure
+        - expansion_joint_temp
+        - tube_sheet_temp
+
+    # Process Historian
+    - id: historian
+      name: "Process Historian"
+      type: opc_hda
+      connection:
+        endpoint: "${HISTORIAN_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      query:
+        max_rows: 50000
+        aggregate_type: average
+        default_interval_minutes: 15
+      data_categories:
+        - condenser_performance
+        - vacuum_trends
+        - heat_transfer_history
+        - fouling_progression
+      health_check:
+        enabled: true
+        interval_seconds: 60
+
+    # Cooling Tower PLC Integration
+    - id: cooling_tower_plc
+      name: "Cooling Tower PLC System"
+      type: modbus_tcp
+      connection:
+        host: "${COOLING_TOWER_PLC_HOST}"
+        port: 502
+        unit_id: 1
+        timeout_seconds: 10
+      polling:
+        interval_seconds: 15
+        batch_size: 50
+      registers:
+        - name: cooling_tower_outlet_temp
+          address: 40001
+          data_type: float32
+          scale: 0.1
+        - name: cooling_tower_inlet_temp
+          address: 40003
+          data_type: float32
+          scale: 0.1
+        - name: cooling_tower_fan_speed
+          address: 40005
+          data_type: uint16
+          scale: 1
+        - name: cooling_tower_wet_bulb
+          address: 40007
+          data_type: float32
+          scale: 0.1
+        - name: makeup_water_flow
+          address: 40009
+          data_type: float32
+          scale: 0.01
+        - name: blowdown_flow
+          address: 40011
+          data_type: float32
+          scale: 0.01
+      health_check:
+        enabled: true
+        interval_seconds: 30
+
+    # Circulating Water Pump System
+    - id: cw_pump_plc
+      name: "Circulating Water Pump PLC"
+      type: modbus_tcp
+      connection:
+        host: "${CW_PUMP_PLC_HOST}"
+        port: 502
+        unit_id: 2
+      polling:
+        interval_seconds: 10
+        batch_size: 30
+      registers:
+        - name: cw_pump_speed
+          address: 40101
+          data_type: uint16
+          scale: 1
+        - name: cw_pump_power
+          address: 40103
+          data_type: float32
+          scale: 0.1
+        - name: cw_pump_discharge_pressure
+          address: 40105
+          data_type: float32
+          scale: 0.01
+        - name: cw_pump_suction_pressure
+          address: 40107
+          data_type: float32
+          scale: 0.01
+        - name: cw_pump_flow_rate
+          address: 40109
+          data_type: float32
+          scale: 0.1
+        - name: cw_pump_bearing_temp
+          address: 40111
+          data_type: float32
+          scale: 0.1
+      health_check:
+        enabled: true
+        interval_seconds: 30
+
+    # Air Removal System
+    - id: air_removal_system
+      name: "Air Removal System PLC"
+      type: modbus_tcp
+      connection:
+        host: "${AIR_REMOVAL_PLC_HOST}"
+        port: 502
+        unit_id: 3
+      polling:
+        interval_seconds: 10
+        batch_size: 20
+      registers:
+        - name: air_ejector_steam_pressure
+          address: 40201
+          data_type: float32
+          scale: 0.01
+        - name: air_ejector_steam_flow
+          address: 40203
+          data_type: float32
+          scale: 0.001
+        - name: vacuum_pump_status
+          address: 40205
+          data_type: uint16
+          scale: 1
+        - name: intercondenser_level
+          address: 40207
+          data_type: float32
+          scale: 0.1
+        - name: air_inleakage_rate
+          address: 40209
+          data_type: float32
+          scale: 0.001
+      health_check:
+        enabled: true
+        interval_seconds: 30
+
+    # Weather Service for Ambient Conditions
+    - id: weather_service
+      name: "Weather Data Service"
+      type: rest_api
+      connection:
+        base_url: "${WEATHER_API_URL}"
+        auth_type: api_key
+        api_key_header: X-API-Key
+        timeout_seconds: 30
+      polling:
+        interval_minutes: 15
+        batch_size: 1
+      fields:
+        - ambient_temperature
+        - relative_humidity
+        - wet_bulb_temperature
+        - barometric_pressure
+        - wind_speed
+        - wind_direction
+      health_check:
+        enabled: true
+        interval_seconds: 120
+
+    # Laboratory Water Quality System
+    - id: water_quality_lims
+      name: "Water Quality LIMS"
+      type: rest_api
+      connection:
+        base_url: "${LIMS_API_URL}"
+        auth_type: oauth2
+        client_id: "${LIMS_CLIENT_ID}"
+        client_secret: "${LIMS_CLIENT_SECRET}"
+        token_url: "${LIMS_TOKEN_URL}"
+        timeout_seconds: 30
+      polling:
+        interval_minutes: 60
+        batch_size: 50
+      data_points:
+        - cooling_water_ph
+        - cooling_water_conductivity
+        - cooling_water_chlorides
+        - cooling_water_sulfates
+        - biocide_concentration
+        - corrosion_inhibitor_ppm
+        - scale_inhibitor_ppm
+        - total_suspended_solids
+      health_check:
+        enabled: true
+        interval_seconds: 300
+
+    # Equipment Vibration Monitoring
+    - id: vibration_monitoring
+      name: "Vibration Monitoring System"
+      type: rest_api
+      connection:
+        base_url: "${VIBRATION_API_URL}"
+        auth_type: api_key
+        timeout_seconds: 15
+      polling:
+        interval_seconds: 60
+        batch_size: 20
+      measurements:
+        - cw_pump_vibration_velocity
+        - cw_pump_vibration_displacement
+        - vacuum_pump_vibration
+        - cooling_tower_fan_vibration
+      health_check:
+        enabled: true
+        interval_seconds: 120
+
+  # ----------------------------------------------------------------------------
+  # Data Sinks
+  # ----------------------------------------------------------------------------
+  data_sinks:
+    # Control System Setpoint Writer
+    - id: scada_setpoints
+      name: "SCADA Setpoint Writer"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_PRIMARY_ENDPOINT}"
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+      write_strategy: verify_then_commit
+      confirmation_timeout_ms: 5000
+      setpoints:
+        - tag: cooling_water_flow_setpoint
+          min_value: 50
+          max_value: 100
+          unit: percent
+          rate_limit_per_minute: 2
+        - tag: cooling_tower_fan_speed_setpoint
+          min_value: 20
+          max_value: 100
+          unit: percent
+          rate_limit_per_minute: 2
+        - tag: air_ejector_steam_pressure_setpoint
+          min_value: 100
+          max_value: 200
+          unit: kPa
+          rate_limit_per_minute: 1
+        - tag: cw_pump_speed_setpoint
+          min_value: 40
+          max_value: 100
+          unit: percent
+          rate_limit_per_minute: 1
+
+    # CMMS Integration
+    - id: cmms
+      name: "Computerized Maintenance Management System"
+      type: rest_api
+      connection:
+        base_url: "${CMMS_API_URL}"
+        auth_type: oauth2
+        client_id: "${CMMS_CLIENT_ID}"
+        client_secret: "${CMMS_CLIENT_SECRET}"
+        token_url: "${CMMS_TOKEN_URL}"
+        timeout_seconds: 30
+      events:
+        - tube_cleaning_required
+        - air_inleakage_investigation
+        - vacuum_pump_maintenance
+        - cooling_tower_inspection
+        - cw_pump_maintenance
+        - waterbox_cleaning_required
+        - tube_plugging_recommendation
+        - performance_degradation_alert
+      work_order_templates:
+        - id: condenser_tube_cleaning
+          priority: high
+          craft: mechanical
+          estimated_hours: 24
+        - id: air_leak_investigation
+          priority: medium
+          craft: mechanical
+          estimated_hours: 8
+        - id: vacuum_equipment_pm
+          priority: low
+          craft: mechanical
+          estimated_hours: 4
+
+    # Reporting Database
+    - id: reporting_db
+      name: "Reporting Database"
+      type: postgresql
+      connection:
+        host: "${REPORTING_DB_HOST}"
+        port: 5432
+        database: greenlang_condenser
+        ssl_mode: require
+        max_connections: 20
+      tables:
+        - condenser_performance_metrics
+        - vacuum_optimization_results
+        - heat_transfer_analysis
+        - fouling_trend_data
+        - air_inleakage_logs
+        - cleanliness_factor_history
+        - optimization_recommendations
+        - energy_savings_tracking
+
+    # Time Series Database
+    - id: timeseries_db
+      name: "Time Series Database"
+      type: influxdb
+      connection:
+        url: "${INFLUXDB_URL}"
+        org: greenlang
+        bucket: gl-017-condensync
+        token: "${INFLUXDB_TOKEN}"
+      write_options:
+        batch_size: 5000
+        flush_interval_ms: 1000
+        precision: ms
+      measurements:
+        - condenser_vacuum
+        - heat_transfer_coefficient
+        - cleanliness_factor
+        - terminal_temperature_difference
+        - subcooling_temperature
+        - air_inleakage_rate
+
+    # Blob Storage
+    - id: blob_storage
+      name: "Document Storage"
+      type: s3
+      connection:
+        bucket: "${S3_BUCKET_REPORTS}"
+        region: "${AWS_REGION}"
+        encryption: AES256
+      content_types:
+        - reports/pdf
+        - reports/excel
+        - graphs/png
+        - graphs/svg
+        - exports/csv
+        - analysis/json
+      lifecycle:
+        - prefix: reports/
+          retention_days: 2555
+        - prefix: temp/
+          retention_days: 7
+
+    # Event Streaming
+    - id: event_bus
+      name: "Event Bus (Kafka)"
+      type: kafka
+      connection:
+        bootstrap_servers: "${KAFKA_BOOTSTRAP_SERVERS}"
+        security_protocol: SASL_SSL
+        sasl_mechanism: SCRAM-SHA-512
+      topics:
+        - gl017_condenser_events
+        - gl017_optimization_results
+        - gl017_alerts
+        - gl017_performance_metrics
+      producer_config:
+        acks: all
+        retries: 3
+        batch_size: 16384
+        linger_ms: 10
+
+  # ----------------------------------------------------------------------------
+  # Monitoring & Observability
+  # ----------------------------------------------------------------------------
+  monitoring:
+    # Metrics
+    metrics:
+      enabled: true
+      port: 9017
+      path: /metrics
+      exporter: prometheus
+
+      # Custom Metrics
+      custom:
+        - name: gl017_condenser_vacuum_kpa_abs
+          type: gauge
+          description: "Condenser vacuum pressure (kPa absolute)"
+          labels: [condenser_id, unit_id]
+
+        - name: gl017_heat_transfer_coefficient_w_m2k
+          type: gauge
+          description: "Overall heat transfer coefficient (W/m2.K)"
+          labels: [condenser_id]
+
+        - name: gl017_cleanliness_factor_percent
+          type: gauge
+          description: "Tube cleanliness factor (0-100%)"
+          labels: [condenser_id, tube_bundle]
+
+        - name: gl017_terminal_temp_diff_celsius
+          type: gauge
+          description: "Terminal temperature difference (celsius)"
+          labels: [condenser_id]
+
+        - name: gl017_subcooling_celsius
+          type: gauge
+          description: "Condensate subcooling temperature (celsius)"
+          labels: [condenser_id]
+
+        - name: gl017_air_inleakage_kg_hr
+          type: gauge
+          description: "Air in-leakage rate (kg/hr)"
+          labels: [condenser_id]
+
+        - name: gl017_cooling_water_flow_m3_hr
+          type: gauge
+          description: "Cooling water flow rate (m3/hr)"
+          labels: [condenser_id, pump_id]
+
+        - name: gl017_heat_duty_mw
+          type: gauge
+          description: "Condenser heat duty (MW)"
+          labels: [condenser_id]
+
+        - name: gl017_fouling_factor_m2k_w
+          type: gauge
+          description: "Fouling factor (m2.K/W)"
+          labels: [condenser_id, side]
+
+        - name: gl017_cw_pump_power_kw
+          type: gauge
+          description: "Circulating water pump power (kW)"
+          labels: [pump_id]
+
+        - name: gl017_cooling_tower_approach_celsius
+          type: gauge
+          description: "Cooling tower approach temperature (celsius)"
+          labels: [tower_id]
+
+        - name: gl017_vacuum_deviation_kpa
+          type: gauge
+          description: "Vacuum deviation from design (kPa)"
+          labels: [condenser_id]
+
+        - name: gl017_efficiency_percent
+          type: gauge
+          description: "Condenser efficiency percentage"
+          labels: [condenser_id]
+
+        - name: gl017_optimizations_total
+          type: counter
+          description: "Total optimizations performed"
+          labels: [condenser_id, optimization_type]
+
+        - name: gl017_alerts_total
+          type: counter
+          description: "Total alerts generated"
+          labels: [condenser_id, severity, alert_type]
+
+        - name: gl017_tube_plugging_count
+          type: gauge
+          description: "Number of plugged tubes"
+          labels: [condenser_id, tube_bundle]
+
+        - name: gl017_calculation_duration_seconds
+          type: histogram
+          description: "Calculation duration"
+          labels: [calculation_type]
+          buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0]
+
+        - name: gl017_energy_savings_mwh
+          type: counter
+          description: "Cumulative energy savings (MWh)"
+          labels: [condenser_id, savings_type]
+
+    # Distributed Tracing
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_OTLP_ENDPOINT}"
+      protocol: grpc
+      sampling:
+        strategy: probabilistic
+        rate: 0.1
+      service_name: gl-017-condensync
+      resource_attributes:
+        service.namespace: greenlang
+        service.version: "1.0.0"
+        deployment.environment: production
+
+    # Structured Logging
+    logging:
+      level: "${LOG_LEVEL:INFO}"
+      format: json
+      structured: true
+      correlation_id: true
+
+      outputs:
+        - type: stdout
+          level: INFO
+        - type: file
+          level: DEBUG
+          path: /var/log/greenlang/gl-017.log
+          rotation:
+            max_size_mb: 100
+            max_files: 10
+            compress: true
+        - type: syslog
+          level: WARNING
+          facility: local0
+          protocol: tcp
+          host: "${SYSLOG_HOST}"
+          port: 514
+
+      fields:
+        - timestamp
+        - level
+        - message
+        - correlation_id
+        - condenser_id
+        - calculation_type
+        - duration_ms
+        - error_code
+
+    # Health Checks
+    health:
+      liveness:
+        enabled: true
+        path: /health/liveness
+        port: 8080
+        initial_delay_seconds: 30
+        period_seconds: 10
+        timeout_seconds: 5
+        failure_threshold: 3
+
+      readiness:
+        enabled: true
+        path: /health/readiness
+        port: 8080
+        initial_delay_seconds: 5
+        period_seconds: 5
+        timeout_seconds: 3
+        failure_threshold: 3
+        checks:
+          - scada_connection
+          - database_connection
+          - redis_connection
+          - historian_connection
+
+      startup:
+        enabled: true
+        path: /health/startup
+        port: 8080
+        initial_delay_seconds: 0
+        period_seconds: 5
+        timeout_seconds: 3
+        failure_threshold: 30
+
+    # Grafana Dashboards
+    dashboards:
+      - name: condenser_overview
+        refresh_interval: 30s
+        panels:
+          - vacuum_status
+          - heat_transfer_coefficient
+          - cleanliness_factor
+          - terminal_temp_diff
+          - air_inleakage_trend
+          - energy_efficiency
+
+      - name: heat_transfer_analysis
+        refresh_interval: 30s
+        panels:
+          - overall_htc_trend
+          - fouling_factor_progression
+          - tube_cleanliness_heatmap
+          - heat_duty_tracking
+          - design_vs_actual_performance
+
+      - name: vacuum_monitoring
+        refresh_interval: 15s
+        panels:
+          - vacuum_pressure_trend
+          - vacuum_deviation_gauge
+          - air_inleakage_correlation
+          - ejector_performance
+          - vacuum_pump_status
+
+      - name: cooling_water_system
+        refresh_interval: 30s
+        panels:
+          - cw_flow_rate
+          - cw_temperature_rise
+          - cooling_tower_approach
+          - pump_power_consumption
+          - system_efficiency
+
+      - name: optimization_performance
+        refresh_interval: 60s
+        panels:
+          - optimization_count
+          - savings_tracking
+          - recommendation_status
+          - alert_summary
+          - kpi_scorecard
+
+  # ----------------------------------------------------------------------------
+  # Alerting
+  # ----------------------------------------------------------------------------
+  alerts:
+    # Alert Channels
+    channels:
+      - name: email
+        type: email
+        config:
+          smtp_host: "${SMTP_HOST}"
+          smtp_port: 587
+          smtp_secure: true
+          from: alerts@greenlang.io
+          recipients:
+            - condenser-team@company.com
+            - operations@company.com
+            - turbine-engineers@company.com
+
+      - name: slack
+        type: slack
+        config:
+          webhook_url: "${SLACK_WEBHOOK_URL}"
+          channel: "#gl-017-alerts"
+          username: CONDENSYNC-Bot
+          icon_emoji: ":thermometer:"
+
+      - name: pagerduty
+        type: pagerduty
+        config:
+          integration_key: "${PAGERDUTY_INTEGRATION_KEY}"
+          severity_mapping:
+            critical: critical
+            high: error
+            medium: warning
+            low: info
+
+      - name: sms
+        type: twilio
+        config:
+          account_sid: "${TWILIO_ACCOUNT_SID}"
+          auth_token: "${TWILIO_AUTH_TOKEN}"
+          from_number: "${TWILIO_FROM_NUMBER}"
+          to_numbers:
+            - "${ON_CALL_PHONE_1}"
+            - "${ON_CALL_PHONE_2}"
+            - "${ON_CALL_PHONE_3}"
+
+    # Alert Rules
+    rules:
+      # Vacuum Deviation Alerts
+      - name: high_vacuum_deviation_critical
+        condition: "abs(vacuum_pressure_actual - vacuum_pressure_design) > 3.0"
+        severity: critical
+        description: "Critical vacuum deviation detected - turbine efficiency severely impacted"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 15
+        auto_resolve: true
+        runbook: https://docs.greenlang.io/runbooks/gl-017/vacuum-deviation
+
+      - name: high_vacuum_deviation_warning
+        condition: "abs(vacuum_pressure_actual - vacuum_pressure_design) > 1.5"
+        severity: high
+        description: "High vacuum deviation detected - investigate condenser performance"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 30
+        auto_resolve: true
+
+      - name: vacuum_trending_degradation
+        condition: "vacuum_trend_slope > 0.1 AND vacuum_trend_duration_hours > 4"
+        severity: medium
+        description: "Vacuum pressure trending toward degradation"
+        channels: [email, slack]
+        throttle_minutes: 60
+
+      # Heat Transfer Coefficient Alerts
+      - name: low_htc_critical
+        condition: "heat_transfer_coefficient < design_htc * 0.60"
+        severity: critical
+        description: "Critical heat transfer coefficient degradation - immediate attention required"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 30
+        auto_resolve: true
+        runbook: https://docs.greenlang.io/runbooks/gl-017/low-htc
+
+      - name: low_htc_high
+        condition: "heat_transfer_coefficient < design_htc * 0.75"
+        severity: high
+        description: "Low heat transfer coefficient - schedule tube cleaning"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 60
+        auto_resolve: true
+
+      - name: low_htc_warning
+        condition: "heat_transfer_coefficient < design_htc * 0.85"
+        severity: medium
+        description: "Heat transfer coefficient below optimal - monitor closely"
+        channels: [email, slack]
+        throttle_minutes: 120
+
+      # Air In-leakage Alerts
+      - name: air_inleakage_alarm_critical
+        condition: "air_inleakage_rate > max_allowable_inleakage * 2.0"
+        severity: critical
+        description: "Critical air in-leakage - severe vacuum degradation risk"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 15
+        auto_resolve: true
+        runbook: https://docs.greenlang.io/runbooks/gl-017/air-inleakage
+
+      - name: air_inleakage_alarm_high
+        condition: "air_inleakage_rate > max_allowable_inleakage * 1.5"
+        severity: high
+        description: "High air in-leakage detected - leak investigation required"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 30
+        auto_resolve: true
+
+      - name: air_inleakage_elevated
+        condition: "air_inleakage_rate > max_allowable_inleakage"
+        severity: medium
+        description: "Air in-leakage above design limit"
+        channels: [email, slack]
+        throttle_minutes: 60
+
+      # Condensate Subcooling Alerts
+      - name: high_condensate_subcooling_critical
+        condition: "condensate_subcooling > 8.0"
+        severity: critical
+        description: "Critical condensate subcooling - significant thermal efficiency loss"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 30
+        auto_resolve: true
+        runbook: https://docs.greenlang.io/runbooks/gl-017/subcooling
+
+      - name: high_condensate_subcooling_high
+        condition: "condensate_subcooling > 5.0"
+        severity: high
+        description: "High condensate subcooling detected - investigate hotwell operation"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 60
+        auto_resolve: true
+
+      - name: high_condensate_subcooling_warning
+        condition: "condensate_subcooling > 3.0"
+        severity: medium
+        description: "Elevated condensate subcooling - monitor thermal performance"
+        channels: [email, slack]
+        throttle_minutes: 120
+
+      # Fouling Factor Alerts
+      - name: fouling_factor_exceeded_critical
+        condition: "fouling_factor > design_fouling_factor * 3.0"
+        severity: critical
+        description: "Critical fouling - immediate tube cleaning required"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 60
+        auto_resolve: false
+        runbook: https://docs.greenlang.io/runbooks/gl-017/fouling
+
+      - name: fouling_factor_exceeded_high
+        condition: "fouling_factor > design_fouling_factor * 2.0"
+        severity: high
+        description: "High fouling factor - schedule tube cleaning"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 120
+        auto_resolve: false
+
+      - name: fouling_factor_exceeded_warning
+        condition: "fouling_factor > design_fouling_factor * 1.5"
+        severity: medium
+        description: "Fouling factor approaching cleaning threshold"
+        channels: [email, slack]
+        throttle_minutes: 240
+
+      # Cooling Water System Alerts
+      - name: cw_flow_low_critical
+        condition: "cooling_water_flow < design_cw_flow * 0.70"
+        severity: critical
+        description: "Critical low cooling water flow - condenser at risk"
+        channels: [email, slack, pagerduty, sms]
+        throttle_minutes: 5
+        auto_resolve: true
+
+      - name: cw_temp_rise_high
+        condition: "cw_temp_rise > design_temp_rise * 1.25"
+        severity: high
+        description: "High cooling water temperature rise - check flow and fouling"
+        channels: [email, slack]
+        throttle_minutes: 30
+
+      - name: cooling_tower_approach_high
+        condition: "cooling_tower_approach > 8.0"
+        severity: medium
+        description: "High cooling tower approach temperature"
+        channels: [email, slack]
+        throttle_minutes: 60
+
+      # System Health Alerts
+      - name: data_source_failure
+        condition: "data_source_status == 'DISCONNECTED'"
+        severity: critical
+        description: "Critical data source disconnected"
+        channels: [email, slack, pagerduty]
+        throttle_minutes: 5
+        auto_resolve: true
+
+      - name: calculation_error_rate_high
+        condition: "calculation_error_rate > 0.05"
+        severity: high
+        description: "High calculation failure rate"
+        channels: [email, slack]
+        throttle_minutes: 30
+
+      - name: optimization_disabled
+        condition: "optimization_mode == 'DISABLED' AND duration_minutes > 60"
+        severity: medium
+        description: "Optimization has been disabled for over 1 hour"
+        channels: [email, slack]
+        throttle_minutes: 120
+
+  # ----------------------------------------------------------------------------
+  # Security
+  # ----------------------------------------------------------------------------
+  security:
+    # Authentication
+    authentication:
+      type: oauth2
+      provider: keycloak
+      realm: greenlang
+      client_id: gl-017-condensync
+      required: true
+      token_expiry_seconds: 3600
+      refresh_token_enabled: true
+      refresh_token_expiry_seconds: 86400
+
+    # Authorization (RBAC)
+    authorization:
+      type: rbac
+
+      roles:
+        - name: admin
+          description: "Full administrative access"
+          permissions:
+            - agent:read
+            - agent:write
+            - agent:delete
+            - agent:configure
+            - setpoint:write
+            - setpoint:override
+            - alert:acknowledge
+            - alert:configure
+            - report:generate
+            - report:export
+            - audit:read
+
+        - name: condenser_engineer
+          description: "Condenser system engineers"
+          permissions:
+            - agent:read
+            - agent:write
+            - setpoint:write
+            - alert:acknowledge
+            - report:generate
+            - report:export
+            - analysis:execute
+
+        - name: operations_engineer
+          description: "Plant operations engineers"
+          permissions:
+            - agent:read
+            - setpoint:write
+            - alert:acknowledge
+            - report:view
+
+        - name: operator
+          description: "Plant operators"
+          permissions:
+            - agent:read
+            - alert:acknowledge
+            - report:view
+            - dashboard:view
+
+        - name: viewer
+          description: "Read-only access for monitoring"
+          permissions:
+            - agent:read
+            - report:view
+            - dashboard:view
+
+      role_mappings:
+        - user_group: "condenser-team"
+          role: condenser_engineer
+        - user_group: "operations-team"
+          role: operations_engineer
+        - user_group: "operators"
+          role: operator
+        - user_group: "management"
+          role: viewer
+        - user_group: "turbine-team"
+          role: viewer
+
+    # Encryption
+    encryption:
+      at_rest:
+        enabled: true
+        algorithm: AES-256-GCM
+        key_rotation_days: 90
+
+      in_transit:
+        enabled: true
+        protocol: TLS
+        min_version: "1.3"
+        cipher_suites:
+          - TLS_AES_256_GCM_SHA384
+          - TLS_CHACHA20_POLY1305_SHA256
+          - TLS_AES_128_GCM_SHA256
+        mutual_tls: false
+        certificate_verification: true
+
+    # Secrets Management
+    secrets:
+      provider: hashicorp_vault
+      vault_addr: "${VAULT_ADDR}"
+      vault_namespace: greenlang
+      auth_method: kubernetes
+      secret_path: secret/gl-017
+      auto_renewal: true
+
+      # Secret Rotation
+      rotation:
+        enabled: true
+        check_interval_hours: 24
+        auto_rotate: true
+
+      secrets_list:
+        - SCADA_PRIMARY_ENDPOINT
+        - DCS_SECONDARY_ENDPOINT
+        - HISTORIAN_ENDPOINT
+        - REPORTING_DB_HOST
+        - REPORTING_DB_PASSWORD
+        - INFLUXDB_TOKEN
+        - KAFKA_PASSWORD
+        - LIMS_CLIENT_SECRET
+        - CMMS_CLIENT_SECRET
+        - PAGERDUTY_INTEGRATION_KEY
+        - SLACK_WEBHOOK_URL
+        - TWILIO_AUTH_TOKEN
+
+    # Audit Logging
+    audit:
+      enabled: true
+      retention_days: 2555  # 7 years for regulatory compliance
+      log_level: INFO
+
+      events:
+        - authentication_success
+        - authentication_failure
+        - authorization_failure
+        - setpoint_change
+        - setpoint_override
+        - configuration_change
+        - alert_acknowledged
+        - alert_suppressed
+        - data_access
+        - report_generation
+        - report_export
+        - optimization_executed
+        - manual_override
+
+      storage:
+        type: postgresql
+        encryption: true
+        immutable: true
+        table_name: gl017_audit_log
+
+    # Network Policies
+    network:
+      ingress:
+        - from:
+            - namespace: greenlang-platform
+            - namespace: monitoring
+            - namespace: api-gateway
+          ports:
+            - protocol: TCP
+              port: 8080
+            - protocol: TCP
+              port: 9017
+
+      egress:
+        - to:
+            - namespace: greenlang-platform
+          ports:
+            - protocol: TCP
+              port: 5432  # PostgreSQL
+            - protocol: TCP
+              port: 6379  # Redis
+            - protocol: TCP
+              port: 8086  # InfluxDB
+        - to:
+            - namespace: kafka
+          ports:
+            - protocol: TCP
+              port: 9092
+        - to:
+            - external: scada-system
+          ports:
+            - protocol: TCP
+              port: 4840  # OPC UA
+        - to:
+            - external: cooling-tower-plc
+          ports:
+            - protocol: TCP
+              port: 502  # Modbus TCP
+
+  # ----------------------------------------------------------------------------
+  # Deployment
+  # ----------------------------------------------------------------------------
+  deployment:
+    # Replicas
+    replicas: 3
+
+    # Update Strategy
+    strategy:
+      type: RollingUpdate
+      rolling_update:
+        max_surge: 1
+        max_unavailable: 0
+
+    # Resource Requirements
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+        ephemeral_storage: "5Gi"
+      limits:
+        cpu: "2000m"
+        memory: "4Gi"
+        ephemeral_storage: "10Gi"
+
+    # Autoscaling
+    autoscaling:
+      enabled: true
+      min_replicas: 2
+      max_replicas: 10
+
+      metrics:
+        - type: cpu
+          target_utilization_percent: 70
+        - type: memory
+          target_utilization_percent: 80
+        - type: custom
+          metric_name: gl017_calculations_per_second
+          target_value: 100
+
+      behavior:
+        scale_up:
+          stabilization_window_seconds: 60
+          policies:
+            - type: Percent
+              value: 50
+              period_seconds: 60
+            - type: Pods
+              value: 2
+              period_seconds: 60
+        scale_down:
+          stabilization_window_seconds: 300
+          policies:
+            - type: Pods
+              value: 1
+              period_seconds: 120
+
+    # Pod Disruption Budget
+    pod_disruption_budget:
+      enabled: true
+      min_available: 1
+
+    # Scheduling
+    scheduling:
+      node_selector:
+        workload-type: computation
+        region: primary
+
+      tolerations:
+        - key: "dedicated"
+          operator: "Equal"
+          value: "greenlang"
+          effect: "NoSchedule"
+
+      affinity:
+        pod_anti_affinity:
+          preferred_during_scheduling_ignored_during_execution:
+            - weight: 100
+              pod_affinity_term:
+                label_selector:
+                  match_expressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - gl-017-condensync
+                topology_key: kubernetes.io/hostname
+
+        node_affinity:
+          required_during_scheduling_ignored_during_execution:
+            node_selector_terms:
+              - match_expressions:
+                  - key: node.kubernetes.io/instance-type
+                    operator: In
+                    values:
+                      - c5.xlarge
+                      - c5.2xlarge
+                      - c6i.xlarge
+                      - c6i.2xlarge
+
+    # Volumes
+    volumes:
+      - name: config
+        type: configmap
+        configmap_name: gl-017-config
+        mount_path: /app/config
+        read_only: true
+
+      - name: secrets
+        type: secret
+        secret_name: gl-017-secrets
+        mount_path: /app/secrets
+        read_only: true
+
+      - name: cache
+        type: emptydir
+        mount_path: /app/cache
+        size_limit: 5Gi
+
+      - name: logs
+        type: persistentvolumeclaim
+        claim_name: gl-017-logs-pvc
+        mount_path: /var/log/greenlang
+
+      - name: reference-data
+        type: configmap
+        configmap_name: gl-017-reference-data
+        mount_path: /app/data/reference
+        read_only: true
+
+    # Environment Variables
+    environment:
+      - name: LOG_LEVEL
+        value: "${LOG_LEVEL:INFO}"
+      - name: METRICS_ENABLED
+        value: "true"
+      - name: METRICS_PORT
+        value: "9017"
+      - name: CACHE_TTL_SECONDS
+        value: "300"
+      - name: DETERMINISTIC_MODE
+        value: "true"
+      - name: ZERO_HALLUCINATION
+        value: "true"
+      - name: PYTHONUNBUFFERED
+        value: "1"
+      - name: TZ
+        value: "UTC"
+      - name: MAX_WORKERS
+        value: "6"
+      - name: BATCH_SIZE
+        value: "200"
+
+  # ----------------------------------------------------------------------------
+  # Compliance
+  # ----------------------------------------------------------------------------
+  compliance:
+    standards:
+      - name: HEI
+        code: HEI-2629
+        version: "2022"
+        description: "Heat Exchange Institute Standards for Steam Surface Condensers"
+        applicable_sections:
+          - performance_calculations
+          - cleanliness_factor
+          - heat_transfer_coefficients
+          - tube_velocity_limits
+
+      - name: ASME_PTC
+        code: ASME_PTC_12.2
+        version: "2022"
+        description: "ASME Performance Test Code for Steam Surface Condensers"
+        applicable_sections:
+          - test_procedures
+          - measurement_uncertainty
+          - performance_corrections
+          - instrumentation_requirements
+
+      - name: TEMA
+        code: TEMA
+        version: "2019"
+        description: "Tubular Exchanger Manufacturers Association Standards"
+        applicable_sections:
+          - mechanical_design
+          - tube_specifications
+          - fouling_factors
+          - material_selection
+
+      - name: EPRI
+        version: "2023"
+        description: "Electric Power Research Institute Guidelines"
+        applicable_sections:
+          - condenser_optimization
+          - performance_monitoring
+          - tube_leak_detection
+
+      - name: ASME_BPV
+        code: ASME_Section_VIII
+        version: "2023"
+        description: "ASME Boiler and Pressure Vessel Code"
+        applicable_sections:
+          - pressure_vessel_design
+          - shell_design
+
+      - name: ISO_5167
+        version: "2022"
+        description: "Measurement of fluid flow by means of pressure differential devices"
+        applicable_sections:
+          - flow_measurement
+          - uncertainty_calculation
+
+    # Validation Rules
+    validation:
+      enabled: true
+      rule_count: 175
+
+      categories:
+        - input_validation
+        - output_validation
+        - thermodynamic_limits
+        - mass_balance_validation
+        - energy_balance_validation
+        - heat_transfer_validation
+        - vacuum_calculation_validation
+        - regulatory_compliance
+        - safety_limits
+        - equipment_constraints
+
+      enforcement:
+        mode: strict
+        fail_on_violation: true
+        log_violations: true
+        notify_on_violation: true
+
+    # Audit Trail
+    audit_trail:
+      enabled: true
+      retention_days: 2555  # 7 years for regulatory compliance
+      storage_type: postgresql
+      encryption: true
+      immutable: true
+
+      tracked_events:
+        - calculation_execution
+        - optimization_performed
+        - setpoint_change
+        - alert_generated
+        - configuration_change
+        - data_access
+        - report_generation
+        - manual_override
+        - cleaning_scheduled
+        - maintenance_requested
+
+    # Provenance Tracking
+    provenance:
+      enabled: true
+      hash_algorithm: SHA-256
+      include_timestamps: true
+      include_inputs: true
+      include_model_version: true
+      include_calculation_path: true
+      include_data_sources: true
+      chain_verification: true
+
+    # Zero-Hallucination Guarantees
+    zero_hallucination:
+      enabled: true
+      enforcement: strict
+
+      llm_prohibited_for:
+        - numeric_calculations
+        - heat_transfer_calculations
+        - vacuum_pressure_calculations
+        - condensate_flow_calculations
+        - air_inleakage_calculations
+        - fouling_factor_calculations
+        - cleanliness_factor_calculations
+        - subcooling_calculations
+        - performance_corrections
+        - mass_balance_calculations
+        - energy_balance_calculations
+        - efficiency_calculations
+        - cooling_water_calculations
+
+      llm_allowed_for:
+        - natural_language_generation
+        - recommendation_explanation
+        - incident_description
+        - report_narrative
+        - trend_interpretation
+        - anomaly_explanation
+        - maintenance_guidance
+
+      validation:
+        cross_check_calculations: true
+        validate_against_thermodynamics: true
+        check_conservation_laws: true
+        verify_against_design_data: true
+
+  # ----------------------------------------------------------------------------
+  # Performance
+  # ----------------------------------------------------------------------------
+  performance:
+    # Optimization Targets
+    targets:
+      calculation_latency_p50_ms: 25
+      calculation_latency_p95_ms: 100
+      calculation_latency_p99_ms: 250
+      throughput_calculations_per_second: 150
+      error_rate_percent: 0.1
+      availability_percent: 99.9
+      data_freshness_seconds: 10
+
+    # Connection Pooling
+    connection_pools:
+      database:
+        min_size: 5
+        max_size: 25
+        timeout_seconds: 30
+        max_idle_seconds: 600
+        validation_interval_seconds: 60
+
+      redis:
+        min_size: 3
+        max_size: 15
+        timeout_seconds: 5
+        max_idle_seconds: 300
+
+      http:
+        max_connections: 150
+        max_connections_per_host: 30
+        timeout_seconds: 30
+        keep_alive_seconds: 120
+
+      opc_ua:
+        max_sessions: 10
+        session_timeout_ms: 60000
+        subscription_publishing_interval_ms: 1000
+
+    # Rate Limiting
+    rate_limiting:
+      enabled: true
+      requests_per_minute: 1200
+      burst: 200
+      per_client_limit: 300
+
+    # Circuit Breakers
+    circuit_breakers:
+      - name: scada_connection
+        failure_threshold: 5
+        timeout_seconds: 30
+        recovery_timeout_seconds: 60
+        half_open_max_calls: 3
+
+      - name: dcs_connection
+        failure_threshold: 5
+        timeout_seconds: 30
+        recovery_timeout_seconds: 60
+
+      - name: historian_connection
+        failure_threshold: 3
+        timeout_seconds: 60
+        recovery_timeout_seconds: 120
+
+      - name: database_connection
+        failure_threshold: 3
+        timeout_seconds: 10
+        recovery_timeout_seconds: 30
+
+      - name: cooling_tower_plc
+        failure_threshold: 5
+        timeout_seconds: 10
+        recovery_timeout_seconds: 30
+
+  # ----------------------------------------------------------------------------
+  # Data Retention
+  # ----------------------------------------------------------------------------
+  data_retention:
+    policies:
+      - data_type: real_time_measurements
+        retention_days: 90
+        compression: true
+        archive_after_days: 30
+        archive_location: s3
+        archive_format: parquet
+
+      - data_type: hourly_aggregates
+        retention_days: 365
+        compression: true
+        archive_after_days: 90
+        archive_location: s3
+
+      - data_type: daily_summaries
+        retention_days: 2555  # 7 years
+        compression: true
+        archive_after_days: 365
+
+      - data_type: optimization_results
+        retention_days: 2555
+        compression: true
+        immutable: true
+
+      - data_type: performance_baselines
+        retention_days: 2555
+        compression: true
+        immutable: true
+
+      - data_type: audit_logs
+        retention_days: 2555
+        compression: false
+        immutable: true
+
+      - data_type: reports
+        retention_days: 2555
+        compression: true
+        archive_location: s3
+
+      - data_type: cache_data
+        retention_hours: 24
+        auto_cleanup: true
+
+      - data_type: temp_calculations
+        retention_hours: 4
+        auto_cleanup: true
+
+  # ----------------------------------------------------------------------------
+  # Backup & Recovery
+  # ----------------------------------------------------------------------------
+  backup:
+    enabled: true
+
+    schedule:
+      full_backup: "0 2 * * 0"  # Weekly on Sunday at 2 AM
+      incremental_backup: "0 2 * * 1-6"  # Daily at 2 AM
+      config_backup: "0 * * * *"  # Hourly
+
+    retention:
+      full_backups: 4  # Keep 4 weekly full backups
+      incremental_backups: 14  # Keep 14 daily incremental backups
+      config_backups: 168  # Keep 7 days of hourly config backups
+
+    storage:
+      type: s3
+      bucket: "${S3_BUCKET_BACKUPS}"
+      region: "${AWS_REGION}"
+      encryption: true
+      storage_class: STANDARD_IA
+
+    disaster_recovery:
+      rto_minutes: 60  # Recovery Time Objective
+      rpo_minutes: 15  # Recovery Point Objective
+      cross_region_replication: true
+      secondary_region: "${AWS_DR_REGION}"
+
+    testing:
+      schedule: "0 3 1 * *"  # Monthly on 1st at 3 AM
+      restore_validation: true
+      notification_on_failure: true
+
+# ==============================================================================
+# CONDENSER-SPECIFIC CALCULATIONS
+# ==============================================================================
+calculations:
+  # Heat Duty Calculation
+  heat_duty:
+    formula: "Q = m_cw * Cp_water * (T_cw_out - T_cw_in)"
+    inputs:
+      - m_cw: "Cooling water mass flow rate (kg/s)"
+      - Cp_water: "Specific heat of water (kJ/kg.K)"
+      - T_cw_out: "Cooling water outlet temperature (celsius)"
+      - T_cw_in: "Cooling water inlet temperature (celsius)"
+    output:
+      - Q: "Heat duty (kW)"
+    validation:
+      - "Q > 0"
+      - "T_cw_out > T_cw_in"
+      - "m_cw > 0"
+
+  # Overall Heat Transfer Coefficient
+  heat_transfer_coefficient:
+    formula: "U = Q / (A * LMTD)"
+    inputs:
+      - Q: "Heat duty (kW)"
+      - A: "Heat transfer area (m2)"
+      - LMTD: "Log mean temperature difference (K)"
+    output:
+      - U: "Overall heat transfer coefficient (W/m2.K)"
+    validation:
+      - "U > 0"
+      - "U <= design_U * 1.1"
+
+  # Cleanliness Factor
+  cleanliness_factor:
+    formula: "CF = U_actual / U_clean * 100"
+    inputs:
+      - U_actual: "Actual heat transfer coefficient (W/m2.K)"
+      - U_clean: "Clean tube heat transfer coefficient (W/m2.K)"
+    output:
+      - CF: "Cleanliness factor (percent)"
+    thresholds:
+      - excellent: ">= 90"
+      - good: ">= 80"
+      - fair: ">= 70"
+      - poor: "< 70"
+
+  # Terminal Temperature Difference
+  ttd:
+    formula: "TTD = T_sat - T_cw_out"
+    inputs:
+      - T_sat: "Saturation temperature at condenser pressure (celsius)"
+      - T_cw_out: "Cooling water outlet temperature (celsius)"
+    output:
+      - TTD: "Terminal temperature difference (celsius)"
+    optimal_range: [1.5, 3.5]
+
+  # Condensate Subcooling
+  subcooling:
+    formula: "Subcooling = T_sat - T_condensate"
+    inputs:
+      - T_sat: "Saturation temperature at condenser pressure (celsius)"
+      - T_condensate: "Condensate temperature (celsius)"
+    output:
+      - Subcooling: "Condensate subcooling (celsius)"
+    optimal_range: [0, 2.0]
+    alarm_threshold: 5.0
+
+  # Fouling Factor
+  fouling_factor:
+    formula: "Rf = (1/U_actual) - (1/U_clean)"
+    inputs:
+      - U_actual: "Actual heat transfer coefficient (W/m2.K)"
+      - U_clean: "Clean tube heat transfer coefficient (W/m2.K)"
+    output:
+      - Rf: "Fouling factor (m2.K/W)"
+    design_values:
+      - freshwater: 0.000088
+      - seawater: 0.000088
+      - brackish_water: 0.000176
+
+  # Air In-leakage Rate (HEI Method)
+  air_inleakage:
+    formula: "Based on HEI 2629 methodology"
+    inputs:
+      - condenser_capacity_mw: "Condenser capacity (MW)"
+      - vacuum_pressure: "Condenser vacuum pressure (kPa abs)"
+      - ejector_measurements: "Air ejector flow measurements"
+    output:
+      - air_inleakage_rate: "Air in-leakage rate (kg/hr)"
+    acceptable_limits:
+      - small_unit: 1.36  # kg/hr per 100 MW
+      - large_unit: 0.91  # kg/hr per 100 MW
+
+  # Vacuum Pressure Correction
+  vacuum_correction:
+    formula: "P_corrected = P_actual * (design_load / actual_load)^n"
+    inputs:
+      - P_actual: "Actual vacuum pressure (kPa abs)"
+      - design_load: "Design heat load (MW)"
+      - actual_load: "Actual heat load (MW)"
+      - n: "Correction exponent"
+    output:
+      - P_corrected: "Corrected vacuum pressure (kPa abs)"
+
+# ==============================================================================
+# METADATA
+# ==============================================================================
+metadata_extended:
+  created_by: greenlang-team
+  created_date: "2024-12-02"
+  last_modified: "2024-12-02"
+  last_modified_by: greenlang-team
+
+  version_history:
+    - version: "1.0.0"
+      date: "2024-12-02"
+      changes: "Initial production release"
+
+  documentation:
+    user_guide: https://docs.greenlang.io/agents/GL-017/user-guide
+    api_reference: https://docs.greenlang.io/agents/GL-017/api
+    architecture: https://docs.greenlang.io/agents/GL-017/architecture
+    deployment: https://docs.greenlang.io/agents/GL-017/deployment
+    troubleshooting: https://docs.greenlang.io/agents/GL-017/troubleshooting
+    hei_reference: https://docs.greenlang.io/agents/GL-017/hei-standards
+
+  support:
+    primary_contact: support@greenlang.io
+    slack_channel: "#gl-017-condensync"
+    jira_project: GL-017
+    on_call_rotation: https://pagerduty.com/schedules/gl-017
+
+  business:
+    tam: "$4B"
+    target_date: "Q2 2026"
+    priority: P1
+    business_owner: steam-systems-lead
+
+    kpis:
+      - name: vacuum_improvement_kpa
+        target: 1.0
+        measurement: monthly
+      - name: heat_rate_improvement_percent
+        target: 0.5
+        measurement: monthly
+      - name: cw_pump_energy_savings_percent
+        target: 10
+        measurement: monthly
+      - name: cleaning_optimization_percent
+        target: 20
+        measurement: quarterly
+      - name: unplanned_outage_reduction_percent
+        target: 30
+        measurement: annual
+
+    value_proposition:
+      - "Real-time condenser performance optimization"
+      - "Predictive fouling detection and cleaning scheduling"
+      - "Air in-leakage monitoring and leak localization"
+      - "Heat rate improvement through vacuum optimization"
+      - "Cooling water pump energy optimization"
+      - "Zero-hallucination calculations for regulatory compliance"
+
+# ==============================================================================
+# DATA FLOW SPECIFICATION
+# ==============================================================================
+data_flows:
+  # Cooling Water Temperature Flow
+  cooling_water_temperatures:
+    source: [scada_primary, cooling_tower_plc]
+    processing:
+      - collect_inlet_outlet_temps
+      - calculate_temperature_rise
+      - validate_against_design
+    calculations:
+      - heat_duty
+      - cooling_water_delta_t
+    sinks: [reporting_db, timeseries_db]
+    frequency: 5s
+
+  # Vacuum Pressure Optimization
+  vacuum_pressure:
+    source: [scada_primary, dcs_secondary]
+    processing:
+      - collect_vacuum_readings
+      - apply_corrections
+      - calculate_deviation
+    calculations:
+      - vacuum_correction
+      - turbine_backpressure_impact
+    sinks: [scada_setpoints, reporting_db]
+    frequency: 5s
+
+  # Condensate Flow Verification
+  condensate_flow:
+    source: [scada_primary]
+    processing:
+      - collect_flow_measurements
+      - verify_mass_balance
+      - calculate_subcooling
+    calculations:
+      - mass_balance
+      - subcooling
+    sinks: [reporting_db, cmms]
+    frequency: 10s
+
+  # Air In-leakage Tracking
+  air_inleakage:
+    source: [air_removal_system, scada_primary]
+    processing:
+      - collect_ejector_data
+      - calculate_inleakage_rate
+      - trend_analysis
+    calculations:
+      - air_inleakage
+      - vacuum_impact
+    sinks: [reporting_db, cmms, event_bus]
+    frequency: 30s
+
+  # Tube Fouling Analysis
+  fouling_analysis:
+    source: [scada_primary, historian, water_quality_lims]
+    processing:
+      - calculate_current_htc
+      - determine_cleanliness_factor
+      - predict_cleaning_time
+    calculations:
+      - heat_transfer_coefficient
+      - cleanliness_factor
+      - fouling_factor
+    sinks: [reporting_db, cmms, blob_storage]
+    frequency: 60s
+
+# ==============================================================================
+# END OF GL-017 CONDENSYNC SPECIFICATION
+# ==============================================================================

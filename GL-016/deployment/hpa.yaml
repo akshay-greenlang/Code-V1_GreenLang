@@ -1,0 +1,157 @@
+---
+# GL-016 WATERGUARD - Horizontal Pod Autoscaler
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gl-016-waterguard-hpa
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: water-treatment
+    tier: agent
+  annotations:
+    description: "Horizontal Pod Autoscaler for water treatment agent"
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-016-waterguard
+
+  minReplicas: 3
+  maxReplicas: 10
+
+  # Scaling behavior
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300  # 5 minutes
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 60
+        - type: Pods
+          value: 1
+          periodSeconds: 60
+      selectPolicy: Min
+
+    scaleUp:
+      stabilizationWindowSeconds: 60  # 1 minute
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+
+  # Metrics for scaling decisions
+  metrics:
+    # CPU utilization
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+
+    # Memory utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+    # Custom metrics from Prometheus
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "1000"
+
+    - type: Pods
+      pods:
+        metric:
+          name: water_quality_measurements_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+
+    # External metric: SCADA connection count
+    - type: External
+      external:
+        metric:
+          name: scada_active_connections
+          selector:
+            matchLabels:
+              agent: gl-016
+        target:
+          type: AverageValue
+          averageValue: "10"
+
+---
+# Vertical Pod Autoscaler (VPA) - Optional but recommended
+# Provides recommendations for resource requests/limits
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: gl-016-waterguard-vpa
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gl-016-waterguard
+
+  updatePolicy:
+    updateMode: "Auto"  # Can be "Off", "Initial", "Recreate", or "Auto"
+
+  resourcePolicy:
+    containerPolicies:
+      - containerName: waterguard
+        minAllowed:
+          cpu: 250m
+          memory: 512Mi
+        maxAllowed:
+          cpu: 4000m
+          memory: 8Gi
+        controlledResources:
+          - cpu
+          - memory
+
+---
+# Pod Disruption Budget - Ensures availability during voluntary disruptions
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: gl-016-waterguard-pdb
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: water-treatment
+    tier: agent
+  annotations:
+    description: "Ensures minimum availability during disruptions"
+spec:
+  minAvailable: 2  # At least 2 pods must be available
+
+  selector:
+    matchLabels:
+      app: waterguard
+      agent: gl-016
+
+  # Alternative: use maxUnavailable instead of minAvailable
+  # maxUnavailable: 1
+
+  # Unhealthy pod eviction policy
+  unhealthyPodEvictionPolicy: IfHealthyBudget

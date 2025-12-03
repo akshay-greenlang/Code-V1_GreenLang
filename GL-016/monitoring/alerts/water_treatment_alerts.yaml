@@ -1,0 +1,468 @@
+---
+# GL-016 WATERGUARD - Water Treatment Alerting Rules
+# Prometheus Alert Rules for Water Chemistry and Treatment Monitoring
+# Version: 1.0.0
+
+groups:
+  - name: water_treatment_critical
+    interval: 30s
+    rules:
+      # CRITICAL: pH Out of Range - High
+      - alert: WaterTreatmentPHCriticalHigh
+        expr: water_treatment_ph_value > 12.0
+        for: 2m
+        labels:
+          severity: critical
+          component: water_chemistry
+          alert_type: ph_high
+          runbook: https://runbooks.greenlang.io/gl-016/ph-critical-high
+        annotations:
+          summary: "Critical: pH Exceeds Safe Upper Limit on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} at {{ $labels.facility }} has pH of {{ $value | humanize }},
+            exceeding critical limit of 12.0. Immediate action required to prevent caustic embrittlement
+            and stress corrosion cracking.
+
+            Current Value: {{ $value | humanize }}
+            Upper Limit: 12.0
+            Boiler: {{ $labels.boiler_id }}
+            Facility: {{ $labels.facility }}
+          impact: "Risk of caustic embrittlement, stress corrosion cracking, and equipment damage"
+          action: |
+            1. Reduce caustic feed immediately
+            2. Verify pH probe calibration
+            3. Check blowdown system operation
+            4. Contact water treatment specialist
+            5. Review boiler water sampling procedures
+
+      # CRITICAL: pH Out of Range - Low
+      - alert: WaterTreatmentPHCriticalLow
+        expr: water_treatment_ph_value < 10.5
+        for: 2m
+        labels:
+          severity: critical
+          component: water_chemistry
+          alert_type: ph_low
+          runbook: https://runbooks.greenlang.io/gl-016/ph-critical-low
+        annotations:
+          summary: "Critical: pH Below Safe Lower Limit on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} at {{ $labels.facility }} has pH of {{ $value | humanize }},
+            below critical limit of 10.5. Immediate action required to prevent acidic corrosion.
+
+            Current Value: {{ $value | humanize }}
+            Lower Limit: 10.5
+            Boiler: {{ $labels.boiler_id }}
+            Facility: {{ $labels.facility }}
+          impact: "Risk of acidic corrosion, metal loss, and tube failures"
+          action: |
+            1. Increase caustic feed immediately
+            2. Verify pH probe calibration
+            3. Check for condensate contamination
+            4. Review feedwater treatment
+            5. Contact water treatment specialist
+
+      # CRITICAL: High Dissolved Oxygen
+      - alert: WaterTreatmentDissolvedOxygenCritical
+        expr: water_treatment_dissolved_oxygen_ppb > 7
+        for: 5m
+        labels:
+          severity: critical
+          component: water_chemistry
+          alert_type: dissolved_oxygen
+          runbook: https://runbooks.greenlang.io/gl-016/dissolved-oxygen-critical
+        annotations:
+          summary: "Critical: High Dissolved Oxygen on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} at {{ $labels.facility }} has dissolved oxygen of {{ $value | humanize }} ppb,
+            exceeding critical limit of 7 ppb. Corrosion risk is elevated.
+
+            Current Value: {{ $value | humanize }} ppb
+            Critical Limit: 7 ppb
+            Boiler: {{ $labels.boiler_id }}
+            Facility: {{ $labels.facility }}
+          impact: "Accelerated oxygen pitting corrosion, tube failures, reduced equipment life"
+          action: |
+            1. Increase oxygen scavenger (sulfite) dosing immediately
+            2. Check deaerator operation and pressure
+            3. Verify feedwater heater performance
+            4. Inspect for air in-leakage in feedwater system
+            5. Review sulfite residual targets
+
+      # CRITICAL: High Silica
+      - alert: WaterTreatmentSilicaCritical
+        expr: water_treatment_silica_ppm > 150
+        for: 5m
+        labels:
+          severity: critical
+          component: water_chemistry
+          alert_type: silica
+          runbook: https://runbooks.greenlang.io/gl-016/silica-critical
+        annotations:
+          summary: "Critical: High Silica Concentration on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} at {{ $labels.facility }} has silica of {{ $value | humanize }} ppm,
+            exceeding critical limit of 150 ppm. Risk of silica deposition on turbine blades.
+
+            Current Value: {{ $value | humanize }} ppm
+            Critical Limit: 150 ppm
+            Boiler: {{ $labels.boiler_id }}
+            Facility: {{ $labels.facility }}
+          impact: "Silica deposition on turbine blades, reduced efficiency, potential turbine damage"
+          action: |
+            1. Increase blowdown rate immediately
+            2. Verify blowdown control operation
+            3. Check makeup water silica content
+            4. Review condensate return quality
+            5. Consider polymer dispersant adjustment
+
+      # CRITICAL: Low Phosphate Residual
+      - alert: WaterTreatmentPhosphateResidualLow
+        expr: water_treatment_phosphate_residual_ppm < 10
+        for: 5m
+        labels:
+          severity: critical
+          component: water_chemistry
+          alert_type: phosphate_low
+          runbook: https://runbooks.greenlang.io/gl-016/phosphate-low
+        annotations:
+          summary: "Critical: Low Phosphate Residual on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} at {{ $labels.facility }} has phosphate residual of {{ $value | humanize }} ppm,
+            below critical minimum of 10 ppm. Scale protection compromised.
+
+            Current Value: {{ $value | humanize }} ppm
+            Minimum Target: 10 ppm
+            Boiler: {{ $labels.boiler_id }}
+            Facility: {{ $labels.facility }}
+          impact: "Loss of scale protection, risk of calcium/magnesium scale formation"
+          action: |
+            1. Increase phosphate feed immediately
+            2. Check phosphate pump operation
+            3. Verify chemical tank level
+            4. Review feedwater hardness
+            5. Check for phosphate hideout conditions
+
+      # CRITICAL: High Conductivity
+      - alert: WaterTreatmentConductivityCritical
+        expr: water_treatment_conductivity_microsiemens > 3000
+        for: 5m
+        labels:
+          severity: critical
+          component: water_chemistry
+          alert_type: conductivity
+          runbook: https://runbooks.greenlang.io/gl-016/conductivity-critical
+        annotations:
+          summary: "Critical: High Conductivity on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} at {{ $labels.facility }} has conductivity of {{ $value | humanize }} µS/cm,
+            exceeding critical limit of 3000 µS/cm. TDS too high.
+
+            Current Value: {{ $value | humanize }} µS/cm
+            Critical Limit: 3000 µS/cm
+            Boiler: {{ $labels.boiler_id }}
+            Facility: {{ $labels.facility }}
+          impact: "High TDS increases carryover risk, foaming, and scale formation"
+          action: |
+            1. Increase blowdown rate immediately
+            2. Verify blowdown control operation
+            3. Check conductivity probe calibration
+            4. Review makeup water quality
+            5. Inspect for condensate contamination
+
+      # CRITICAL: Agent Health - Multiple Errors
+      - alert: WaterTreatmentAgentHealthCritical
+        expr: rate(water_treatment_agent_errors_total[5m]) > 5
+        for: 2m
+        labels:
+          severity: critical
+          component: agent_health
+          alert_type: error_rate
+          runbook: https://runbooks.greenlang.io/gl-016/agent-health-critical
+        annotations:
+          summary: "Critical: WATERGUARD Agent Error Rate Elevated on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent for {{ $labels.boiler_id }} at {{ $labels.facility }} is experiencing
+            {{ $value | humanize }} errors/second. Agent functionality may be impaired.
+
+            Error Rate: {{ $value | humanize }} errors/sec
+            Threshold: 5 errors/sec
+            Boiler: {{ $labels.boiler_id }}
+            Facility: {{ $labels.facility }}
+          impact: "Loss of automated water treatment control, potential chemistry excursions"
+          action: |
+            1. Check agent logs for error details
+            2. Verify SCADA connectivity
+            3. Check database connectivity
+            4. Review system resources (CPU, memory)
+            5. Switch to manual control if necessary
+            6. Contact GL-016 support team
+
+  - name: water_treatment_warnings
+    interval: 1m
+    rules:
+      # WARNING: pH Approaching High Limit
+      - alert: WaterTreatmentPHWarningHigh
+        expr: water_treatment_ph_value > 11.8 and water_treatment_ph_value <= 12.0
+        for: 5m
+        labels:
+          severity: warning
+          component: water_chemistry
+          alert_type: ph_approaching_high
+          runbook: https://runbooks.greenlang.io/gl-016/ph-warning-high
+        annotations:
+          summary: "Warning: pH Approaching Upper Limit on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} pH is {{ $value | humanize }}, approaching upper limit of 12.0.
+
+            Current Value: {{ $value | humanize }}
+            Warning Threshold: 11.8
+            Critical Limit: 12.0
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review caustic dosing rate and adjust if needed. Monitor trend closely."
+
+      # WARNING: pH Approaching Low Limit
+      - alert: WaterTreatmentPHWarningLow
+        expr: water_treatment_ph_value < 11.0 and water_treatment_ph_value >= 10.5
+        for: 5m
+        labels:
+          severity: warning
+          component: water_chemistry
+          alert_type: ph_approaching_low
+          runbook: https://runbooks.greenlang.io/gl-016/ph-warning-low
+        annotations:
+          summary: "Warning: pH Approaching Lower Limit on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} pH is {{ $value | humanize }}, approaching lower limit of 10.5.
+
+            Current Value: {{ $value | humanize }}
+            Warning Threshold: 11.0
+            Critical Limit: 10.5
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review caustic dosing rate and adjust if needed. Monitor trend closely."
+
+      # WARNING: Dissolved Oxygen Elevated
+      - alert: WaterTreatmentDissolvedOxygenWarning
+        expr: water_treatment_dissolved_oxygen_ppb > 5 and water_treatment_dissolved_oxygen_ppb <= 7
+        for: 10m
+        labels:
+          severity: warning
+          component: water_chemistry
+          alert_type: dissolved_oxygen_elevated
+          runbook: https://runbooks.greenlang.io/gl-016/dissolved-oxygen-warning
+        annotations:
+          summary: "Warning: Elevated Dissolved Oxygen on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} dissolved oxygen is {{ $value | humanize }} ppb, elevated above target.
+
+            Current Value: {{ $value | humanize }} ppb
+            Warning Threshold: 5 ppb
+            Target: < 5 ppb
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review oxygen scavenger dosing. Check deaerator performance. Monitor corrosion risk."
+
+      # WARNING: Silica Elevated
+      - alert: WaterTreatmentSilicaWarning
+        expr: water_treatment_silica_ppm > 120 and water_treatment_silica_ppm <= 150
+        for: 10m
+        labels:
+          severity: warning
+          component: water_chemistry
+          alert_type: silica_elevated
+          runbook: https://runbooks.greenlang.io/gl-016/silica-warning
+        annotations:
+          summary: "Warning: Elevated Silica on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} silica is {{ $value | humanize }} ppm, approaching limit.
+
+            Current Value: {{ $value | humanize }} ppm
+            Warning Threshold: 120 ppm
+            Critical Limit: 150 ppm
+            Boiler: {{ $labels.boiler_id }}
+          action: "Consider increasing blowdown rate. Monitor trend. Check makeup water quality."
+
+      # WARNING: Phosphate Out of Target Range
+      - alert: WaterTreatmentPhosphateOutOfRange
+        expr: water_treatment_phosphate_residual_ppm < 15 or water_treatment_phosphate_residual_ppm > 35
+        for: 10m
+        labels:
+          severity: warning
+          component: water_chemistry
+          alert_type: phosphate_out_of_range
+          runbook: https://runbooks.greenlang.io/gl-016/phosphate-out-of-range
+        annotations:
+          summary: "Warning: Phosphate Residual Out of Target Range on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} phosphate residual is {{ $value | humanize }} ppm, outside target range of 15-35 ppm.
+
+            Current Value: {{ $value | humanize }} ppm
+            Target Range: 15-35 ppm
+            Boiler: {{ $labels.boiler_id }}
+          action: "Adjust phosphate dosing rate to bring residual within target range."
+
+      # WARNING: Conductivity Elevated
+      - alert: WaterTreatmentConductivityWarning
+        expr: water_treatment_conductivity_microsiemens > 2500 and water_treatment_conductivity_microsiemens <= 3000
+        for: 10m
+        labels:
+          severity: warning
+          component: water_chemistry
+          alert_type: conductivity_elevated
+          runbook: https://runbooks.greenlang.io/gl-016/conductivity-warning
+        annotations:
+          summary: "Warning: Elevated Conductivity on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} conductivity is {{ $value | humanize }} µS/cm, approaching limit.
+
+            Current Value: {{ $value | humanize }} µS/cm
+            Warning Threshold: 2500 µS/cm
+            Critical Limit: 3000 µS/cm
+            Boiler: {{ $labels.boiler_id }}
+          action: "Consider increasing blowdown rate. Monitor TDS trend."
+
+      # WARNING: Chemical Tank Low
+      - alert: WaterTreatmentChemicalTankLow
+        expr: water_treatment_chemical_tank_level_percent < 20
+        for: 15m
+        labels:
+          severity: warning
+          component: chemical_management
+          alert_type: tank_low
+          runbook: https://runbooks.greenlang.io/gl-016/chemical-tank-low
+        annotations:
+          summary: "Warning: {{ $labels.chemical | title }} Tank Low on {{ $labels.boiler_id }}"
+          description: |
+            {{ $labels.chemical | title }} tank for {{ $labels.boiler_id }} is at {{ $value | humanize }}% capacity.
+
+            Current Level: {{ $value | humanize }}%
+            Warning Threshold: 20%
+            Chemical: {{ $labels.chemical }}
+            Boiler: {{ $labels.boiler_id }}
+          action: "Schedule chemical delivery. Monitor consumption rate. Ensure adequate inventory."
+
+      # WARNING: Blowdown Inefficiency
+      - alert: WaterTreatmentBlowdownInefficient
+        expr: water_treatment_blowdown_rate_percent > 10
+        for: 30m
+        labels:
+          severity: warning
+          component: blowdown_control
+          alert_type: blowdown_high
+          runbook: https://runbooks.greenlang.io/gl-016/blowdown-inefficient
+        annotations:
+          summary: "Warning: High Blowdown Rate on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} blowdown rate is {{ $value | humanize }}%, higher than typical.
+
+            Current Rate: {{ $value | humanize }}%
+            Typical Range: 4-8%
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review blowdown control strategy. Check makeup water quality. Verify conductivity setpoint."
+
+      # WARNING: Scale Risk Elevated
+      - alert: WaterTreatmentScaleRiskElevated
+        expr: water_treatment_scale_risk_index > 70 and water_treatment_scale_risk_index <= 85
+        for: 15m
+        labels:
+          severity: warning
+          component: predictive
+          alert_type: scale_risk
+          runbook: https://runbooks.greenlang.io/gl-016/scale-risk-elevated
+        annotations:
+          summary: "Warning: Elevated Scale Risk on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} scale risk index is {{ $value | humanize }}, elevated.
+
+            Risk Index: {{ $value | humanize }}
+            Warning Threshold: 70
+            Critical Threshold: 85
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review hardness, alkalinity, and phosphate levels. Consider treatment adjustment."
+
+      # WARNING: Corrosion Risk Elevated
+      - alert: WaterTreatmentCorrosionRiskElevated
+        expr: water_treatment_corrosion_risk_index > 70 and water_treatment_corrosion_risk_index <= 85
+        for: 15m
+        labels:
+          severity: warning
+          component: predictive
+          alert_type: corrosion_risk
+          runbook: https://runbooks.greenlang.io/gl-016/corrosion-risk-elevated
+        annotations:
+          summary: "Warning: Elevated Corrosion Risk on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} corrosion risk index is {{ $value | humanize }}, elevated.
+
+            Risk Index: {{ $value | humanize }}
+            Warning Threshold: 70
+            Critical Threshold: 85
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review pH, DO, and sulfite levels. Verify oxygen scavenger performance."
+
+  - name: water_treatment_compliance
+    interval: 5m
+    rules:
+      # Compliance Violation
+      - alert: WaterTreatmentComplianceViolation
+        expr: water_treatment_compliance_status == 0
+        for: 5m
+        labels:
+          severity: warning
+          component: compliance
+          alert_type: compliance_violation
+          runbook: https://runbooks.greenlang.io/gl-016/compliance-violation
+        annotations:
+          summary: "Compliance: Parameter Out of Limits on {{ $labels.boiler_id }}"
+          description: |
+            Boiler {{ $labels.boiler_id }} has one or more parameters out of regulatory/operational limits.
+
+            Boiler: {{ $labels.boiler_id }}
+            Facility: {{ $labels.facility }}
+            Status: NON-COMPLIANT
+          action: |
+            1. Review all water chemistry parameters
+            2. Identify specific violations
+            3. Take corrective action immediately
+            4. Document incident per compliance procedures
+            5. Notify operations manager
+
+  - name: water_treatment_agent_performance
+    interval: 1m
+    rules:
+      # Agent High Latency
+      - alert: WaterTreatmentAgentHighLatency
+        expr: histogram_quantile(0.99, rate(water_treatment_agent_latency_seconds_bucket[5m])) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          component: agent_health
+          alert_type: latency
+          runbook: https://runbooks.greenlang.io/gl-016/agent-latency
+        annotations:
+          summary: "Warning: WATERGUARD Agent High Latency on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent p99 latency is {{ $value | humanize }}s, exceeding threshold of 100ms.
+
+            p99 Latency: {{ $value | humanize }}s
+            Threshold: 0.1s (100ms)
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review agent performance. Check system resources. Investigate network latency."
+
+      # Agent Error Rate Warning
+      - alert: WaterTreatmentAgentErrorRateWarning
+        expr: rate(water_treatment_agent_errors_total[5m]) > 1 and rate(water_treatment_agent_errors_total[5m]) <= 5
+        for: 5m
+        labels:
+          severity: warning
+          component: agent_health
+          alert_type: error_rate_elevated
+          runbook: https://runbooks.greenlang.io/gl-016/agent-error-rate
+        annotations:
+          summary: "Warning: WATERGUARD Agent Error Rate Elevated on {{ $labels.boiler_id }}"
+          description: |
+            WATERGUARD agent error rate is {{ $value | humanize }} errors/sec.
+
+            Error Rate: {{ $value | humanize }} errors/sec
+            Warning Threshold: 1 error/sec
+            Boiler: {{ $labels.boiler_id }}
+          action: "Review agent logs. Check for transient issues. Monitor trend."

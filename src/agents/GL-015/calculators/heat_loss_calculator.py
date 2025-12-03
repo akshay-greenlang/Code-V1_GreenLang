@@ -2348,6 +2348,1094 @@ class HeatLossCalculator:
 
 
 # =============================================================================
+# ADVANCED RESULT DATA CLASSES
+# =============================================================================
+
+@dataclass(frozen=True)
+class CriticalRadiusResult:
+    """
+    Result of critical radius of insulation calculation.
+
+    The critical radius is the outer radius at which adding more insulation
+    actually increases heat loss (due to increased surface area for convection
+    and radiation outweighing insulation's resistance).
+
+    For cylindrical geometry: r_cr = k_ins / h_outer
+
+    Below critical radius, adding insulation INCREASES heat loss.
+    Above critical radius, adding insulation DECREASES heat loss.
+
+    Attributes:
+        critical_radius_m: Critical radius in meters
+        critical_thickness_m: Critical thickness from pipe surface
+        is_above_critical: True if current config is above critical
+        current_radius_m: Current outer radius
+        heat_loss_at_critical_w_per_m: Heat loss at critical radius
+        recommendation: Text recommendation based on analysis
+        provenance_hash: SHA-256 hash for audit trail
+    """
+    critical_radius_m: Decimal
+    critical_thickness_m: Decimal
+    is_above_critical: bool
+    current_radius_m: Decimal
+    heat_loss_at_critical_w_per_m: Decimal
+    recommendation: str
+    provenance_hash: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "critical_radius_m": str(self.critical_radius_m),
+            "critical_thickness_m": str(self.critical_thickness_m),
+            "is_above_critical": self.is_above_critical,
+            "current_radius_m": str(self.current_radius_m),
+            "heat_loss_at_critical_w_per_m": str(self.heat_loss_at_critical_w_per_m),
+            "recommendation": self.recommendation,
+            "provenance_hash": self.provenance_hash,
+        }
+
+
+@dataclass(frozen=True)
+class EconomicThicknessResult:
+    """
+    Result of economic thickness optimization calculation.
+
+    Determines the insulation thickness that minimizes total lifecycle cost
+    (insulation cost + energy cost) over the analysis period.
+
+    Based on ASTM C680 and 3E Plus methodology.
+
+    Attributes:
+        economic_thickness_m: Optimal insulation thickness
+        total_installed_cost_usd: Cost of insulation at economic thickness
+        annual_energy_cost_usd: Annual energy cost at economic thickness
+        annual_energy_savings_usd: Savings vs bare pipe
+        simple_payback_years: Simple payback period
+        npv_savings_usd: NPV of savings over analysis period
+        irr_percent: Internal rate of return (if calculable)
+        heat_loss_w_per_m: Heat loss at economic thickness
+        surface_temp_c: Surface temperature at economic thickness
+        thickness_analysis: List of (thickness, cost) tuples analyzed
+        provenance_hash: SHA-256 hash for audit trail
+    """
+    economic_thickness_m: Decimal
+    total_installed_cost_usd: Decimal
+    annual_energy_cost_usd: Decimal
+    annual_energy_savings_usd: Decimal
+    simple_payback_years: Decimal
+    npv_savings_usd: Decimal
+    irr_percent: Optional[Decimal]
+    heat_loss_w_per_m: Decimal
+    surface_temp_c: Decimal
+    thickness_analysis: List[Dict[str, Any]]
+    provenance_hash: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "economic_thickness_m": str(self.economic_thickness_m),
+            "total_installed_cost_usd": str(self.total_installed_cost_usd),
+            "annual_energy_cost_usd": str(self.annual_energy_cost_usd),
+            "annual_energy_savings_usd": str(self.annual_energy_savings_usd),
+            "simple_payback_years": str(self.simple_payback_years),
+            "npv_savings_usd": str(self.npv_savings_usd),
+            "irr_percent": str(self.irr_percent) if self.irr_percent else None,
+            "heat_loss_w_per_m": str(self.heat_loss_w_per_m),
+            "surface_temp_c": str(self.surface_temp_c),
+            "thickness_analysis": self.thickness_analysis,
+            "provenance_hash": self.provenance_hash,
+        }
+
+
+@dataclass(frozen=True)
+class ThreeKMethodResult:
+    """
+    Result of 3K/4K method calculation for optimal insulation.
+
+    The 3K and 4K methods are simplified approaches to determine
+    insulation thickness based on surface temperature targets:
+    - 3K: Surface should be max 3K above ambient (energy conservation)
+    - 4K: Surface should be max 4K above ambient (personnel protection)
+
+    Attributes:
+        target_delta_k: Target temperature difference (3 or 4 Kelvin)
+        required_thickness_m: Insulation thickness to achieve target
+        achieved_delta_k: Actual temperature difference achieved
+        surface_temperature_c: Resulting surface temperature
+        heat_loss_w_per_m: Heat loss at this thickness
+        meets_target: True if target delta is achieved
+        provenance_hash: SHA-256 hash for audit trail
+    """
+    target_delta_k: Decimal
+    required_thickness_m: Decimal
+    achieved_delta_k: Decimal
+    surface_temperature_c: Decimal
+    heat_loss_w_per_m: Decimal
+    meets_target: bool
+    provenance_hash: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "target_delta_k": str(self.target_delta_k),
+            "required_thickness_m": str(self.required_thickness_m),
+            "achieved_delta_k": str(self.achieved_delta_k),
+            "surface_temperature_c": str(self.surface_temperature_c),
+            "heat_loss_w_per_m": str(self.heat_loss_w_per_m),
+            "meets_target": self.meets_target,
+            "provenance_hash": self.provenance_hash,
+        }
+
+
+@dataclass(frozen=True)
+class MultiLayerResult:
+    """
+    Result of multi-layer insulation heat loss calculation.
+
+    Handles systems with multiple insulation layers of different materials,
+    such as calcium silicate inner layer with mineral wool outer layer.
+
+    Attributes:
+        total_heat_loss_w: Total heat loss through all layers
+        heat_loss_w_per_m: Heat loss per unit length
+        total_thermal_resistance: Combined thermal resistance
+        layer_results: Individual results for each layer
+        interface_temperatures_c: Temperatures at each interface
+        outer_surface_temperature_c: Final outer surface temperature
+        overall_u_value_w_m2_k: Overall heat transfer coefficient
+        provenance_hash: SHA-256 hash for audit trail
+    """
+    total_heat_loss_w: Decimal
+    heat_loss_w_per_m: Decimal
+    total_thermal_resistance: Decimal
+    layer_results: List[Dict[str, Any]]
+    interface_temperatures_c: List[Decimal]
+    outer_surface_temperature_c: Decimal
+    overall_u_value_w_m2_k: Decimal
+    provenance_hash: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "total_heat_loss_w": str(self.total_heat_loss_w),
+            "heat_loss_w_per_m": str(self.heat_loss_w_per_m),
+            "total_thermal_resistance": str(self.total_thermal_resistance),
+            "layer_results": self.layer_results,
+            "interface_temperatures_c": [str(t) for t in self.interface_temperatures_c],
+            "outer_surface_temperature_c": str(self.outer_surface_temperature_c),
+            "overall_u_value_w_m2_k": str(self.overall_u_value_w_m2_k),
+            "provenance_hash": self.provenance_hash,
+        }
+
+
+@dataclass
+class InsulationLayer:
+    """
+    Definition of a single insulation layer.
+
+    Attributes:
+        material_name: Insulation material identifier
+        thickness_m: Layer thickness in meters
+        custom_k_value: Optional custom thermal conductivity
+    """
+    material_name: str
+    thickness_m: Union[Decimal, float]
+    custom_k_value: Optional[Union[Decimal, float]] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary."""
+        return {
+            "material_name": self.material_name,
+            "thickness_m": str(self.thickness_m),
+            "custom_k_value": str(self.custom_k_value) if self.custom_k_value else None,
+        }
+
+
+# =============================================================================
+# ADVANCED CALCULATION METHODS
+# =============================================================================
+
+class AdvancedHeatLossCalculator(HeatLossCalculator):
+    """
+    Extended heat loss calculator with advanced features.
+
+    Adds capabilities for:
+    - Critical radius of insulation analysis
+    - Economic thickness optimization (3E Plus methodology)
+    - 3K/4K method for thickness determination
+    - Multi-layer insulation systems
+    - Annual energy cost calculations
+
+    All calculations maintain zero-hallucination guarantees:
+    - DETERMINISTIC: Same inputs produce identical outputs
+    - TRACEABLE: Complete provenance with SHA-256 hashing
+    - STANDARDS-BASED: Per ASTM C680, VDI 2055
+
+    Example:
+        >>> calc = AdvancedHeatLossCalculator()
+        >>> result = calc.calculate_economic_thickness(
+        ...     process_temperature_c=150,
+        ...     ambient_temperature_c=20,
+        ...     pipe_outer_diameter_m=0.1143,
+        ...     insulation_material="mineral_wool",
+        ...     pipe_length_m=100,
+        ...     energy_cost_per_kwh=0.10,
+        ...     operating_hours_per_year=8760
+        ... )
+        >>> print(f"Economic thickness: {result.economic_thickness_m} m")
+    """
+
+    # Default economic parameters
+    DEFAULT_ENERGY_COST_USD_KWH: Decimal = Decimal("0.10")
+    DEFAULT_OPERATING_HOURS: Decimal = Decimal("8760")  # Continuous
+    DEFAULT_BOILER_EFFICIENCY: Decimal = Decimal("0.85")
+    DEFAULT_DISCOUNT_RATE: Decimal = Decimal("0.08")  # 8%
+    DEFAULT_ANALYSIS_YEARS: int = 20
+    DEFAULT_INSULATION_COST_USD_M3: Decimal = Decimal("500")  # Installed cost
+
+    # Standard insulation thicknesses to analyze (meters)
+    STANDARD_THICKNESSES_M: List[Decimal] = [
+        Decimal("0.025"), Decimal("0.038"), Decimal("0.050"),
+        Decimal("0.063"), Decimal("0.076"), Decimal("0.089"),
+        Decimal("0.102"), Decimal("0.127"), Decimal("0.152"),
+        Decimal("0.178"), Decimal("0.203"), Decimal("0.254"),
+    ]
+
+    def calculate_critical_radius(
+        self,
+        pipe_outer_diameter_m: Union[Decimal, float, str],
+        insulation_material: str,
+        process_temperature_c: Union[Decimal, float, str],
+        ambient_temperature_c: Union[Decimal, float, str],
+        current_insulation_thickness_m: Optional[Union[Decimal, float, str]] = None,
+        surface_heat_transfer_coeff: Optional[Union[Decimal, float, str]] = None
+    ) -> CriticalRadiusResult:
+        """
+        Calculate critical radius of insulation.
+
+        The critical radius determines when adding insulation becomes
+        counterproductive. For small pipes/tubes, this is important because
+        the outer surface area increases faster than thermal resistance.
+
+        Critical radius: r_cr = k_ins / h_outer
+
+        Below r_cr: Adding insulation INCREASES heat loss (more surface area)
+        Above r_cr: Adding insulation DECREASES heat loss (more resistance)
+
+        This is typically only relevant for small diameter pipes (<25mm)
+        and low thermal conductivity insulation.
+
+        Args:
+            pipe_outer_diameter_m: Pipe outer diameter
+            insulation_material: Insulation material name
+            process_temperature_c: Process/hot side temperature
+            ambient_temperature_c: Ambient temperature
+            current_insulation_thickness_m: Current insulation thickness
+            surface_heat_transfer_coeff: Optional custom h value
+
+        Returns:
+            CriticalRadiusResult with analysis
+
+        Reference:
+            ASTM C680-14, Section 6.3
+            VDI 2055-1:2019, Section 4.2
+        """
+        builder = ProvenanceBuilder(CalculationType.SURFACE_TEMPERATURE)
+
+        # Convert inputs
+        D_pipe = self._to_decimal(pipe_outer_diameter_m)
+        T_proc = self._to_decimal(process_temperature_c)
+        T_amb = self._to_decimal(ambient_temperature_c)
+        r_pipe = D_pipe / Decimal("2")
+
+        builder.add_input("pipe_outer_diameter_m", D_pipe)
+        builder.add_input("insulation_material", insulation_material)
+        builder.add_input("process_temperature_c", T_proc)
+        builder.add_input("ambient_temperature_c", T_amb)
+
+        # Get insulation thermal conductivity at mean temperature
+        if insulation_material in INSULATION_MATERIALS:
+            material = INSULATION_MATERIALS[insulation_material]
+            T_mean = (T_proc + T_amb) / Decimal("2")
+            k_ins = material.get_thermal_conductivity(T_mean)
+        else:
+            raise ValueError(f"Unknown insulation material: {insulation_material}")
+
+        builder.add_step(
+            step_number=1,
+            operation="lookup",
+            description="Get insulation thermal conductivity",
+            inputs={"material": insulation_material, "T_mean": T_mean},
+            output_name="k_ins",
+            output_value=k_ins,
+            reference="Material database"
+        )
+
+        # Calculate or use provided surface heat transfer coefficient
+        if surface_heat_transfer_coeff is not None:
+            h_outer = self._to_decimal(surface_heat_transfer_coeff)
+        else:
+            # Estimate h for natural convection at typical conditions
+            # Using simplified correlation: h ~ 5 + 0.05 * (T_s - T_amb)
+            # For bare surface, T_s is close to T_proc
+            h_outer = Decimal("10")  # Conservative estimate W/m2.K
+
+        builder.add_step(
+            step_number=2,
+            operation="estimate",
+            description="Estimate surface heat transfer coefficient",
+            inputs={"h_outer": h_outer},
+            output_name="h_outer",
+            output_value=h_outer
+        )
+
+        # Calculate critical radius: r_cr = k_ins / h_outer
+        r_critical = k_ins / h_outer
+
+        builder.add_step(
+            step_number=3,
+            operation="calculate",
+            description="Calculate critical radius",
+            inputs={"k_ins": k_ins, "h_outer": h_outer},
+            output_name="r_critical",
+            output_value=r_critical,
+            formula="r_cr = k_ins / h_outer",
+            reference="Heat transfer fundamentals"
+        )
+
+        # Calculate critical thickness from pipe surface
+        t_critical = r_critical - r_pipe
+
+        builder.add_step(
+            step_number=4,
+            operation="calculate",
+            description="Calculate critical thickness",
+            inputs={"r_critical": r_critical, "r_pipe": r_pipe},
+            output_name="t_critical",
+            output_value=t_critical,
+            formula="t_cr = r_cr - r_pipe"
+        )
+
+        # Determine current radius
+        if current_insulation_thickness_m is not None:
+            t_current = self._to_decimal(current_insulation_thickness_m)
+            r_current = r_pipe + t_current
+        else:
+            r_current = r_pipe  # Bare pipe
+
+        # Analyze if current configuration is above or below critical
+        is_above_critical = r_current > r_critical
+
+        # Calculate heat loss at critical radius for reference
+        # Use simplified formula for cylindrical heat loss per meter
+        L_unit = Decimal("1")  # 1 meter length
+        if r_critical > r_pipe:
+            # Heat loss at critical radius
+            ln_ratio = self._ln(r_critical / r_pipe)
+            R_cond = ln_ratio / (Decimal("2") * PI * k_ins)
+            R_conv = Decimal("1") / (Decimal("2") * PI * r_critical * h_outer)
+            R_total = R_cond + R_conv
+            Q_critical = (T_proc - T_amb) / R_total
+        else:
+            Q_critical = Decimal("0")
+
+        # Generate recommendation
+        if t_critical <= Decimal("0"):
+            recommendation = (
+                "Critical radius is less than pipe radius. "
+                "Any insulation will reduce heat loss. Normal insulation design applies."
+            )
+        elif r_current > r_critical:
+            recommendation = (
+                f"Current configuration is ABOVE critical radius. "
+                f"Adding more insulation will REDUCE heat loss as expected."
+            )
+        else:
+            recommendation = (
+                f"WARNING: Current configuration is BELOW critical radius ({r_critical:.4f}m). "
+                f"Adding insulation may initially INCREASE heat loss until "
+                f"outer radius exceeds {r_critical:.4f}m. "
+                f"Consider using thicker insulation or different material."
+            )
+
+        # Build provenance hash
+        builder.add_output("critical_radius_m", r_critical)
+        builder.add_output("is_above_critical", is_above_critical)
+        provenance_hash = builder.build_hash()
+
+        return CriticalRadiusResult(
+            critical_radius_m=self._apply_precision(r_critical, 5),
+            critical_thickness_m=self._apply_precision(t_critical, 5),
+            is_above_critical=is_above_critical,
+            current_radius_m=self._apply_precision(r_current, 5),
+            heat_loss_at_critical_w_per_m=self._apply_precision(Q_critical),
+            recommendation=recommendation,
+            provenance_hash=provenance_hash
+        )
+
+    def calculate_economic_thickness(
+        self,
+        process_temperature_c: Union[Decimal, float, str],
+        ambient_temperature_c: Union[Decimal, float, str],
+        pipe_outer_diameter_m: Union[Decimal, float, str],
+        insulation_material: str,
+        pipe_length_m: Union[Decimal, float, str],
+        energy_cost_per_kwh: Union[Decimal, float, str] = "0.10",
+        operating_hours_per_year: Union[Decimal, float, str] = "8760",
+        boiler_efficiency: Union[Decimal, float, str] = "0.85",
+        insulation_cost_per_m3: Union[Decimal, float, str] = "500",
+        discount_rate: Union[Decimal, float, str] = "0.08",
+        analysis_years: int = 20,
+        surface_material: SurfaceMaterial = SurfaceMaterial.ALUMINUM_JACKETING,
+        is_outdoor: bool = False
+    ) -> EconomicThicknessResult:
+        """
+        Calculate economic thickness using NPV optimization.
+
+        Determines insulation thickness that minimizes total lifecycle cost
+        (capital cost of insulation + present value of energy losses).
+
+        Based on ASTM C680 and 3E Plus methodology from US DOE.
+
+        Algorithm:
+        1. Calculate heat loss for each standard thickness
+        2. Convert heat loss to annual energy cost
+        3. Calculate insulation capital cost
+        4. Compute NPV of total cost (capital + PV of energy)
+        5. Select thickness with minimum total cost
+
+        Args:
+            process_temperature_c: Process fluid temperature
+            ambient_temperature_c: Ambient air temperature
+            pipe_outer_diameter_m: Pipe outer diameter
+            insulation_material: Insulation material name
+            pipe_length_m: Total pipe length
+            energy_cost_per_kwh: Energy cost ($/kWh equivalent)
+            operating_hours_per_year: Annual operating hours
+            boiler_efficiency: Heat generation efficiency
+            insulation_cost_per_m3: Installed insulation cost ($/m3)
+            discount_rate: Annual discount rate for NPV
+            analysis_years: Years for economic analysis
+            surface_material: Surface/jacketing material
+            is_outdoor: Whether installation is outdoors
+
+        Returns:
+            EconomicThicknessResult with optimal thickness and analysis
+
+        Reference:
+            ASTM C680-14, Annex A3
+            3E Plus (DOE) methodology
+            ASHRAE 90.1 Economic Insulation Requirements
+        """
+        builder = ProvenanceBuilder(CalculationType.HEAT_LOSS_TOTAL)
+
+        # Convert inputs
+        T_proc = self._to_decimal(process_temperature_c)
+        T_amb = self._to_decimal(ambient_temperature_c)
+        D_pipe = self._to_decimal(pipe_outer_diameter_m)
+        L = self._to_decimal(pipe_length_m)
+        energy_cost = self._to_decimal(energy_cost_per_kwh)
+        hours_per_year = self._to_decimal(operating_hours_per_year)
+        efficiency = self._to_decimal(boiler_efficiency)
+        ins_cost_m3 = self._to_decimal(insulation_cost_per_m3)
+        discount = self._to_decimal(discount_rate)
+
+        builder.add_input("process_temperature_c", T_proc)
+        builder.add_input("ambient_temperature_c", T_amb)
+        builder.add_input("pipe_outer_diameter_m", D_pipe)
+        builder.add_input("insulation_material", insulation_material)
+        builder.add_input("energy_cost_per_kwh", energy_cost)
+        builder.add_input("analysis_years", analysis_years)
+
+        r_pipe = D_pipe / Decimal("2")
+
+        # Calculate bare pipe heat loss for baseline
+        bare_result = self._calculate_bare_pipe_loss(
+            T_proc, T_amb, D_pipe, L, is_outdoor, surface_material
+        )
+        Q_bare = bare_result["heat_loss_w"]
+        bare_annual_energy_kwh = (Q_bare * hours_per_year) / Decimal("1000")
+        bare_annual_energy_cost = (bare_annual_energy_kwh * energy_cost) / efficiency
+
+        builder.add_step(
+            step_number=1,
+            operation="calculate",
+            description="Calculate bare pipe baseline",
+            inputs={"Q_bare": Q_bare},
+            output_name="bare_annual_cost",
+            output_value=bare_annual_energy_cost
+        )
+
+        # Analyze each standard thickness
+        thickness_analysis = []
+        min_total_cost = Decimal("999999999")
+        optimal_thickness = Decimal("0")
+        optimal_data = {}
+
+        # Calculate present value factor for annuity
+        # PV = payment * (1 - (1+r)^-n) / r
+        pv_factor = (
+            Decimal("1") - self._power(Decimal("1") + discount, -analysis_years)
+        ) / discount
+
+        for thickness in self.STANDARD_THICKNESSES_M:
+            try:
+                # Calculate heat loss at this thickness
+                heat_result = self.calculate_total_heat_loss(
+                    process_temperature_c=T_proc,
+                    ambient_temperature_c=T_amb,
+                    pipe_outer_diameter_m=D_pipe,
+                    insulation_thickness_m=thickness,
+                    insulation_material=insulation_material,
+                    pipe_length_m=L,
+                    surface_material=surface_material,
+                    is_outdoor=is_outdoor
+                )
+
+                Q_insulated = heat_result.total_heat_loss_w
+                T_surface = heat_result.surface_temperature_c
+
+                # Annual energy cost
+                annual_energy_kwh = (Q_insulated * hours_per_year) / Decimal("1000")
+                annual_energy_cost = (annual_energy_kwh * energy_cost) / efficiency
+
+                # Annual energy savings
+                annual_savings = bare_annual_energy_cost - annual_energy_cost
+
+                # Insulation capital cost
+                # Volume = pi * L * (r_outer^2 - r_pipe^2)
+                r_outer = r_pipe + thickness
+                ins_volume = PI * L * (r_outer * r_outer - r_pipe * r_pipe)
+                capital_cost = ins_volume * ins_cost_m3
+
+                # Present value of energy costs over analysis period
+                pv_energy_cost = annual_energy_cost * pv_factor
+
+                # Total lifecycle cost
+                total_cost = capital_cost + pv_energy_cost
+
+                # NPV of savings (vs bare pipe)
+                pv_savings = annual_savings * pv_factor
+                npv = pv_savings - capital_cost
+
+                # Simple payback
+                if annual_savings > Decimal("0"):
+                    payback = capital_cost / annual_savings
+                else:
+                    payback = Decimal("999")
+
+                analysis_entry = {
+                    "thickness_m": str(thickness),
+                    "heat_loss_w": str(Q_insulated),
+                    "heat_loss_w_per_m": str(Q_insulated / L),
+                    "surface_temp_c": str(T_surface),
+                    "annual_energy_cost": str(annual_energy_cost),
+                    "annual_savings": str(annual_savings),
+                    "capital_cost": str(capital_cost),
+                    "pv_energy_cost": str(pv_energy_cost),
+                    "total_lifecycle_cost": str(total_cost),
+                    "npv_savings": str(npv),
+                    "payback_years": str(payback),
+                }
+                thickness_analysis.append(analysis_entry)
+
+                # Check if this is the minimum total cost
+                if total_cost < min_total_cost:
+                    min_total_cost = total_cost
+                    optimal_thickness = thickness
+                    optimal_data = {
+                        "heat_loss_w": Q_insulated,
+                        "surface_temp_c": T_surface,
+                        "annual_energy_cost": annual_energy_cost,
+                        "annual_savings": annual_savings,
+                        "capital_cost": capital_cost,
+                        "npv": npv,
+                        "payback": payback,
+                    }
+
+            except Exception as e:
+                # Skip thicknesses that cause calculation errors
+                continue
+
+        # Calculate IRR if possible (simplified Newton-Raphson)
+        irr = self._estimate_irr(
+            optimal_data.get("capital_cost", Decimal("0")),
+            optimal_data.get("annual_savings", Decimal("0")),
+            analysis_years
+        )
+
+        # Build provenance hash
+        builder.add_output("economic_thickness_m", optimal_thickness)
+        builder.add_output("total_lifecycle_cost", min_total_cost)
+        provenance_hash = builder.build_hash()
+
+        return EconomicThicknessResult(
+            economic_thickness_m=optimal_thickness,
+            total_installed_cost_usd=self._apply_precision(
+                optimal_data.get("capital_cost", Decimal("0")), 2
+            ),
+            annual_energy_cost_usd=self._apply_precision(
+                optimal_data.get("annual_energy_cost", Decimal("0")), 2
+            ),
+            annual_energy_savings_usd=self._apply_precision(
+                optimal_data.get("annual_savings", Decimal("0")), 2
+            ),
+            simple_payback_years=self._apply_precision(
+                optimal_data.get("payback", Decimal("0")), 2
+            ),
+            npv_savings_usd=self._apply_precision(
+                optimal_data.get("npv", Decimal("0")), 2
+            ),
+            irr_percent=self._apply_precision(irr, 2) if irr else None,
+            heat_loss_w_per_m=self._apply_precision(
+                optimal_data.get("heat_loss_w", Decimal("0")) / L
+            ),
+            surface_temp_c=self._apply_precision(
+                optimal_data.get("surface_temp_c", Decimal("0")), 1
+            ),
+            thickness_analysis=thickness_analysis,
+            provenance_hash=provenance_hash
+        )
+
+    def calculate_3k_4k_thickness(
+        self,
+        process_temperature_c: Union[Decimal, float, str],
+        ambient_temperature_c: Union[Decimal, float, str],
+        pipe_outer_diameter_m: Union[Decimal, float, str],
+        insulation_material: str,
+        pipe_length_m: Union[Decimal, float, str] = "1.0",
+        target_delta_k: Union[Decimal, float, str] = "3",
+        surface_material: SurfaceMaterial = SurfaceMaterial.ALUMINUM_JACKETING,
+        is_outdoor: bool = False
+    ) -> ThreeKMethodResult:
+        """
+        Calculate insulation thickness using 3K/4K method.
+
+        The 3K and 4K methods are simplified approaches from European
+        insulation standards (VDI 2055, CINI) to determine thickness
+        based on surface temperature targets:
+
+        - 3K Method: Surface temp should be max 3C above ambient
+          (aggressive energy conservation)
+        - 4K Method: Surface temp should be max 4C above ambient
+          (balance of energy savings and cost)
+        - Personnel Protection: Surface temp should be max 60C
+          (safety, not the 3K/4K method but related)
+
+        Uses iterative approach to find thickness where:
+        T_surface - T_ambient <= target_delta_k
+
+        Args:
+            process_temperature_c: Process fluid temperature
+            ambient_temperature_c: Ambient air temperature
+            pipe_outer_diameter_m: Pipe outer diameter
+            insulation_material: Insulation material name
+            pipe_length_m: Pipe length for calculation
+            target_delta_k: Target surface-ambient temperature difference (K/C)
+            surface_material: Surface/jacketing material
+            is_outdoor: Whether installation is outdoors
+
+        Returns:
+            ThreeKMethodResult with required thickness
+
+        Reference:
+            VDI 2055-1:2019, Section 6
+            CINI Manual, Section 3.4
+            NIA (UK) Thermal Insulation Handbook
+        """
+        builder = ProvenanceBuilder(CalculationType.SURFACE_TEMPERATURE)
+
+        # Convert inputs
+        T_proc = self._to_decimal(process_temperature_c)
+        T_amb = self._to_decimal(ambient_temperature_c)
+        D_pipe = self._to_decimal(pipe_outer_diameter_m)
+        L = self._to_decimal(pipe_length_m)
+        delta_target = self._to_decimal(target_delta_k)
+
+        builder.add_input("process_temperature_c", T_proc)
+        builder.add_input("ambient_temperature_c", T_amb)
+        builder.add_input("target_delta_k", delta_target)
+
+        # Target surface temperature
+        T_surface_target = T_amb + delta_target
+
+        builder.add_step(
+            step_number=1,
+            operation="calculate",
+            description="Calculate target surface temperature",
+            inputs={"T_amb": T_amb, "delta_target": delta_target},
+            output_name="T_surface_target",
+            output_value=T_surface_target
+        )
+
+        # Search for thickness that achieves target
+        # Use binary search between min and max thicknesses
+        t_min = Decimal("0.010")  # 10mm minimum
+        t_max = Decimal("0.300")  # 300mm maximum
+        tolerance = Decimal("0.001")  # 1mm tolerance
+
+        iteration = 0
+        max_iterations = 50
+        found_thickness = t_max
+        found_delta = Decimal("0")
+        found_heat_loss = Decimal("0")
+        found_surface_temp = T_amb
+
+        while t_max - t_min > tolerance and iteration < max_iterations:
+            t_mid = (t_min + t_max) / Decimal("2")
+
+            try:
+                # Calculate heat loss at this thickness
+                result = self.calculate_total_heat_loss(
+                    process_temperature_c=T_proc,
+                    ambient_temperature_c=T_amb,
+                    pipe_outer_diameter_m=D_pipe,
+                    insulation_thickness_m=t_mid,
+                    insulation_material=insulation_material,
+                    pipe_length_m=L,
+                    surface_material=surface_material,
+                    is_outdoor=is_outdoor
+                )
+
+                T_surface = result.surface_temperature_c
+                delta_achieved = T_surface - T_amb
+
+                # Record for final result
+                found_thickness = t_mid
+                found_delta = delta_achieved
+                found_surface_temp = T_surface
+                found_heat_loss = result.total_heat_loss_w_per_m
+
+                # Binary search logic
+                if delta_achieved > delta_target:
+                    # Surface too hot, need more insulation
+                    t_min = t_mid
+                else:
+                    # Surface cool enough, can reduce insulation
+                    t_max = t_mid
+
+            except Exception:
+                # If calculation fails, try thicker insulation
+                t_min = t_mid
+
+            iteration += 1
+
+        # Determine if target was met
+        meets_target = found_delta <= delta_target + Decimal("0.1")
+
+        # Round to standard thickness
+        standard_thickness = self._round_to_standard_thickness(found_thickness)
+
+        # Recalculate at standard thickness for final values
+        try:
+            final_result = self.calculate_total_heat_loss(
+                process_temperature_c=T_proc,
+                ambient_temperature_c=T_amb,
+                pipe_outer_diameter_m=D_pipe,
+                insulation_thickness_m=standard_thickness,
+                insulation_material=insulation_material,
+                pipe_length_m=L,
+                surface_material=surface_material,
+                is_outdoor=is_outdoor
+            )
+            found_delta = final_result.surface_temperature_c - T_amb
+            found_surface_temp = final_result.surface_temperature_c
+            found_heat_loss = final_result.total_heat_loss_w_per_m
+            meets_target = found_delta <= delta_target + Decimal("0.1")
+        except Exception:
+            pass
+
+        builder.add_output("required_thickness_m", standard_thickness)
+        builder.add_output("achieved_delta_k", found_delta)
+        provenance_hash = builder.build_hash()
+
+        return ThreeKMethodResult(
+            target_delta_k=delta_target,
+            required_thickness_m=standard_thickness,
+            achieved_delta_k=self._apply_precision(found_delta, 2),
+            surface_temperature_c=self._apply_precision(found_surface_temp, 1),
+            heat_loss_w_per_m=self._apply_precision(found_heat_loss),
+            meets_target=meets_target,
+            provenance_hash=provenance_hash
+        )
+
+    def calculate_multi_layer_heat_loss(
+        self,
+        process_temperature_c: Union[Decimal, float, str],
+        ambient_temperature_c: Union[Decimal, float, str],
+        pipe_outer_diameter_m: Union[Decimal, float, str],
+        layers: List[InsulationLayer],
+        pipe_length_m: Union[Decimal, float, str],
+        surface_material: SurfaceMaterial = SurfaceMaterial.ALUMINUM_JACKETING,
+        is_outdoor: bool = False
+    ) -> MultiLayerResult:
+        """
+        Calculate heat loss for multi-layer insulation system.
+
+        Handles systems with multiple insulation layers such as:
+        - Calcium silicate inner layer (high temp resistance)
+        - Mineral wool outer layer (cost effective)
+
+        Uses thermal resistance series addition:
+        R_total = R_layer1 + R_layer2 + ... + R_layerN + R_surface
+
+        Temperature at each interface is calculated using:
+        T_i = T_proc - Q * R_i (cumulative resistance)
+
+        Args:
+            process_temperature_c: Process fluid temperature
+            ambient_temperature_c: Ambient air temperature
+            pipe_outer_diameter_m: Pipe outer diameter (innermost layer)
+            layers: List of InsulationLayer defining each layer (inside to out)
+            pipe_length_m: Pipe length
+            surface_material: Outer surface/jacketing material
+            is_outdoor: Whether installation is outdoors
+
+        Returns:
+            MultiLayerResult with total heat loss and layer analysis
+
+        Reference:
+            ASTM C680-14, Section 7.3 (Multi-layer systems)
+            VDI 2055-1:2019, Section 4.3
+        """
+        builder = ProvenanceBuilder(CalculationType.HEAT_LOSS_TOTAL)
+
+        # Convert inputs
+        T_proc = self._to_decimal(process_temperature_c)
+        T_amb = self._to_decimal(ambient_temperature_c)
+        D_pipe = self._to_decimal(pipe_outer_diameter_m)
+        L = self._to_decimal(pipe_length_m)
+
+        builder.add_input("process_temperature_c", T_proc)
+        builder.add_input("ambient_temperature_c", T_amb)
+        builder.add_input("num_layers", len(layers))
+
+        r_current = D_pipe / Decimal("2")  # Start at pipe surface
+        total_R_conduction = Decimal("0")
+        layer_results = []
+        cumulative_R = []
+
+        # Calculate thermal resistance for each layer
+        for i, layer in enumerate(layers):
+            t = self._to_decimal(layer.thickness_m)
+            r_inner = r_current
+            r_outer = r_current + t
+
+            # Get thermal conductivity at mean temperature (estimate)
+            T_layer_mean = (T_proc + T_amb) / Decimal("2")  # Initial estimate
+
+            if layer.custom_k_value is not None:
+                k = self._to_decimal(layer.custom_k_value)
+            elif layer.material_name in INSULATION_MATERIALS:
+                material = INSULATION_MATERIALS[layer.material_name]
+                k = material.get_thermal_conductivity(T_layer_mean)
+            else:
+                raise ValueError(f"Unknown insulation material: {layer.material_name}")
+
+            # Cylindrical thermal resistance: R = ln(r2/r1) / (2*pi*k*L)
+            ln_ratio = self._ln(r_outer / r_inner)
+            R_layer = ln_ratio / (Decimal("2") * PI * k * L)
+
+            total_R_conduction += R_layer
+            cumulative_R.append(total_R_conduction)
+
+            layer_results.append({
+                "layer_number": i + 1,
+                "material": layer.material_name,
+                "thickness_m": str(t),
+                "r_inner_m": str(r_inner),
+                "r_outer_m": str(r_outer),
+                "k_value": str(k),
+                "thermal_resistance": str(R_layer),
+            })
+
+            r_current = r_outer
+
+            builder.add_step(
+                step_number=i + 1,
+                operation="calculate",
+                description=f"Calculate layer {i+1} thermal resistance",
+                inputs={"material": layer.material_name, "thickness": t, "k": k},
+                output_name=f"R_layer_{i+1}",
+                output_value=R_layer
+            )
+
+        # Final outer radius and surface area
+        D_outer = r_current * Decimal("2")
+        A_outer = Decimal("2") * PI * r_current * L
+
+        # Iterate for surface temperature (simplified - one iteration)
+        T_s_guess = T_amb + Decimal("0.1") * (T_proc - T_amb)
+
+        # Calculate surface heat transfer coefficient
+        conv_result = self.calculate_convection_coefficient(
+            surface_temperature_c=T_s_guess,
+            ambient_temperature_c=T_amb,
+            geometry=SurfaceGeometry.CYLINDER_HORIZONTAL,
+            characteristic_length_m=D_outer,
+            is_outdoor=is_outdoor
+        )
+        h_conv = conv_result.heat_transfer_coefficient_w_m2_k
+
+        # Radiation coefficient
+        epsilon = SURFACE_EMISSIVITY.get(surface_material, Decimal("0.90"))
+        T_s_k = T_s_guess + KELVIN_OFFSET
+        T_amb_k = T_amb + KELVIN_OFFSET
+        h_rad = (
+            epsilon * STEFAN_BOLTZMANN *
+            (T_s_k * T_s_k + T_amb_k * T_amb_k) *
+            (T_s_k + T_amb_k)
+        )
+
+        h_total = h_conv + h_rad
+        R_surface = Decimal("1") / (h_total * A_outer)
+
+        total_R = total_R_conduction + R_surface
+
+        # Calculate heat loss
+        Q_total = (T_proc - T_amb) / total_R
+        Q_per_m = Q_total / L
+
+        # Overall U-value
+        U = Decimal("1") / (total_R * A_outer)
+
+        # Calculate interface temperatures
+        interface_temps = [T_proc]
+        for i, R_cum in enumerate(cumulative_R):
+            T_interface = T_proc - Q_total * R_cum
+            interface_temps.append(T_interface)
+
+        # Final surface temperature
+        T_surface = T_proc - Q_total * total_R_conduction
+
+        builder.add_output("total_heat_loss_w", Q_total)
+        builder.add_output("total_thermal_resistance", total_R)
+        provenance_hash = builder.build_hash()
+
+        return MultiLayerResult(
+            total_heat_loss_w=self._apply_precision(Q_total),
+            heat_loss_w_per_m=self._apply_precision(Q_per_m),
+            total_thermal_resistance=self._apply_precision(total_R, 6),
+            layer_results=layer_results,
+            interface_temperatures_c=[
+                self._apply_precision(t, 1) for t in interface_temps
+            ],
+            outer_surface_temperature_c=self._apply_precision(T_surface, 1),
+            overall_u_value_w_m2_k=self._apply_precision(U),
+            provenance_hash=provenance_hash
+        )
+
+    def calculate_annual_energy_cost(
+        self,
+        heat_loss_w: Union[Decimal, float, str],
+        operating_hours_per_year: Union[Decimal, float, str] = "8760",
+        energy_cost_per_kwh: Union[Decimal, float, str] = "0.10",
+        boiler_efficiency: Union[Decimal, float, str] = "0.85"
+    ) -> Dict[str, Decimal]:
+        """
+        Calculate annual energy cost from heat loss.
+
+        Converts heat loss (W) to annual energy consumption and cost,
+        accounting for boiler/heater efficiency.
+
+        Args:
+            heat_loss_w: Heat loss in Watts
+            operating_hours_per_year: Annual operating hours
+            energy_cost_per_kwh: Energy cost ($/kWh equivalent)
+            boiler_efficiency: Heat generation efficiency
+
+        Returns:
+            Dictionary with energy and cost metrics
+        """
+        Q = self._to_decimal(heat_loss_w)
+        hours = self._to_decimal(operating_hours_per_year)
+        cost = self._to_decimal(energy_cost_per_kwh)
+        eff = self._to_decimal(boiler_efficiency)
+
+        # Energy in kWh
+        annual_kwh = (Q * hours) / Decimal("1000")
+
+        # Account for boiler efficiency
+        fuel_kwh = annual_kwh / eff
+
+        # Cost
+        annual_cost = fuel_kwh * cost
+
+        # Convert to other units
+        annual_gj = annual_kwh * Decimal("0.0036")
+        annual_mmbtu = annual_kwh * Decimal("0.003412")
+
+        return {
+            "annual_heat_loss_kwh": self._apply_precision(annual_kwh),
+            "annual_fuel_kwh": self._apply_precision(fuel_kwh),
+            "annual_energy_gj": self._apply_precision(annual_gj),
+            "annual_energy_mmbtu": self._apply_precision(annual_mmbtu),
+            "annual_energy_cost_usd": self._apply_precision(annual_cost, 2),
+            "operating_hours": hours,
+        }
+
+    # =========================================================================
+    # HELPER METHODS FOR ADVANCED CALCULATIONS
+    # =========================================================================
+
+    def _round_to_standard_thickness(self, thickness: Decimal) -> Decimal:
+        """Round thickness to nearest standard size."""
+        for std_t in self.STANDARD_THICKNESSES_M:
+            if thickness <= std_t:
+                return std_t
+        return self.STANDARD_THICKNESSES_M[-1]
+
+    def _estimate_irr(
+        self,
+        investment: Decimal,
+        annual_savings: Decimal,
+        years: int
+    ) -> Optional[Decimal]:
+        """
+        Estimate internal rate of return using Newton-Raphson.
+
+        Simple approximation for uniform annual savings.
+        """
+        if investment <= Decimal("0") or annual_savings <= Decimal("0"):
+            return None
+
+        # Initial guess
+        r = Decimal("0.15")
+
+        for _ in range(20):
+            # NPV at current rate
+            pv_factor = (
+                Decimal("1") - self._power(Decimal("1") + r, -years)
+            ) / r
+            npv = annual_savings * pv_factor - investment
+
+            # Derivative of NPV with respect to r (approximate)
+            r_plus = r + Decimal("0.001")
+            pv_factor_plus = (
+                Decimal("1") - self._power(Decimal("1") + r_plus, -years)
+            ) / r_plus
+            npv_plus = annual_savings * pv_factor_plus - investment
+
+            d_npv = (npv_plus - npv) / Decimal("0.001")
+
+            if abs(d_npv) < Decimal("0.0001"):
+                break
+
+            # Update estimate
+            r_new = r - npv / d_npv
+
+            # Clamp to reasonable range
+            r_new = max(min(r_new, Decimal("1.0")), Decimal("-0.99"))
+
+            if abs(r_new - r) < Decimal("0.0001"):
+                break
+
+            r = r_new
+
+        return r * Decimal("100")  # Return as percentage
+
+
+# =============================================================================
 # MODULE EXPORTS
 # =============================================================================
 
@@ -2371,7 +3459,7 @@ __all__ = [
     "InsulationMaterial",
     "INSULATION_MATERIALS",
 
-    # Result classes
+    # Result classes - Core
     "ConductionResult",
     "ConvectionResult",
     "RadiationResult",
@@ -2380,6 +3468,14 @@ __all__ = [
     "AnnualEnergyLossResult",
     "InsulationComparisonResult",
 
-    # Main calculator
+    # Result classes - Advanced
+    "CriticalRadiusResult",
+    "EconomicThicknessResult",
+    "ThreeKMethodResult",
+    "MultiLayerResult",
+    "InsulationLayer",
+
+    # Calculators
     "HeatLossCalculator",
+    "AdvancedHeatLossCalculator",
 ]

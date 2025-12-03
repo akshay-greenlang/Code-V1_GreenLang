@@ -1,0 +1,99 @@
+---
+# GL-016 WATERGUARD - Kubernetes Service
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-016-waterguard
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: water-treatment
+    tier: agent
+  annotations:
+    description: "Water treatment quality control agent service"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+    prometheus.io/path: "/metrics"
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service for StatefulSet-like behavior if needed
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+  selector:
+    app: waterguard
+    agent: gl-016
+
+  ports:
+    # Main API port
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+
+    # Prometheus metrics port
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+
+---
+# Additional Service for external access (if needed)
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-016-waterguard-external
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: water-treatment
+    tier: agent
+  annotations:
+    description: "Water treatment agent external service"
+spec:
+  type: LoadBalancer
+  sessionAffinity: ClientIP
+
+  selector:
+    app: waterguard
+    agent: gl-016
+
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+
+---
+# Monitoring Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: gl-016-waterguard-metrics
+  namespace: greenlang
+  labels:
+    app: waterguard
+    agent: gl-016
+    component: water-treatment
+    tier: agent
+  annotations:
+    description: "Water treatment agent metrics service"
+spec:
+  type: ClusterIP
+
+  selector:
+    app: waterguard
+    agent: gl-016
+
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP

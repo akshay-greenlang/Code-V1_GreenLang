@@ -1,0 +1,355 @@
+{
+  "suite": "Building Energy Calculations",
+  "version": "1.0.0",
+  "description": "Golden tests for building energy performance and emissions calculations",
+  "tests": [
+    {
+      "test_id": "BLDG-EUI-001",
+      "description": "Office building EUI calculation - US",
+      "tool_name": "calculate_building_energy",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 10000,
+        "annual_electricity_kwh": 1500000,
+        "annual_gas_therms": 15000,
+        "country": "US",
+        "climate_zone": "4A"
+      },
+      "expected_output": {
+        "eui_kwh_per_sqm": 229.5,
+        "total_emissions_tco2e": 656.25,
+        "energy_star_eligible": true
+      },
+      "tolerance": 0.01,
+      "tags": ["office", "eui", "usa"]
+    },
+    {
+      "test_id": "BLDG-EUI-002",
+      "description": "Retail building EUI - UK",
+      "tool_name": "calculate_building_energy",
+      "input": {
+        "building_type": "retail",
+        "gross_floor_area_sqm": 5000,
+        "annual_electricity_kwh": 900000,
+        "annual_gas_kwh": 200000,
+        "country": "GB",
+        "climate_zone": "temperate"
+      },
+      "expected_output": {
+        "eui_kwh_per_sqm": 220.0,
+        "total_emissions_tco2e": 212.4
+      },
+      "tolerance": 0.01,
+      "tags": ["retail", "eui", "uk"]
+    },
+    {
+      "test_id": "BLDG-EUI-003",
+      "description": "Warehouse EUI - Germany",
+      "tool_name": "calculate_building_energy",
+      "input": {
+        "building_type": "warehouse",
+        "gross_floor_area_sqm": 25000,
+        "annual_electricity_kwh": 500000,
+        "annual_gas_kwh": 1000000,
+        "country": "DE",
+        "climate_zone": "5"
+      },
+      "expected_output": {
+        "eui_kwh_per_sqm": 60.0,
+        "total_emissions_tco2e": 375.0
+      },
+      "tolerance": 0.01,
+      "tags": ["warehouse", "eui", "germany"]
+    },
+    {
+      "test_id": "BLDG-EUI-004",
+      "description": "Hospital EUI - India",
+      "tool_name": "calculate_building_energy",
+      "input": {
+        "building_type": "hospital",
+        "gross_floor_area_sqm": 15000,
+        "annual_electricity_kwh": 4500000,
+        "annual_diesel_liters": 50000,
+        "country": "IN",
+        "climate_zone": "hot_humid"
+      },
+      "expected_output": {
+        "eui_kwh_per_sqm": 339.0,
+        "total_emissions_tco2e": 3329.5
+      },
+      "tolerance": 0.01,
+      "tags": ["hospital", "eui", "india"]
+    },
+    {
+      "test_id": "BLDG-EUI-005",
+      "description": "Hotel EUI - UAE",
+      "tool_name": "calculate_building_energy",
+      "input": {
+        "building_type": "hotel",
+        "gross_floor_area_sqm": 20000,
+        "annual_electricity_kwh": 6000000,
+        "annual_gas_kwh": 500000,
+        "country": "AE",
+        "climate_zone": "hot_dry"
+      },
+      "expected_output": {
+        "eui_kwh_per_sqm": 325.0,
+        "total_emissions_tco2e": 2850.0
+      },
+      "tolerance": 0.01,
+      "tags": ["hotel", "eui", "uae"]
+    },
+    {
+      "test_id": "BLDG-BENCH-001",
+      "description": "Office benchmark comparison - Energy Star",
+      "tool_name": "calculate_building_benchmark",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 10000,
+        "annual_electricity_kwh": 1200000,
+        "annual_gas_therms": 10000,
+        "country": "US",
+        "benchmark_system": "energy_star"
+      },
+      "expected_output": {
+        "energy_star_score": 72,
+        "percentile": 72,
+        "above_median": true
+      },
+      "tolerance": 0.05,
+      "tags": ["benchmark", "energy_star", "office"]
+    },
+    {
+      "test_id": "BLDG-BENCH-002",
+      "description": "Office benchmark - NABERS Australia",
+      "tool_name": "calculate_building_benchmark",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 8000,
+        "annual_electricity_kwh": 800000,
+        "country": "AU",
+        "benchmark_system": "nabers"
+      },
+      "expected_output": {
+        "nabers_rating": 4.5,
+        "rating_band": "good"
+      },
+      "tolerance": 0.1,
+      "tags": ["benchmark", "nabers", "australia"]
+    },
+    {
+      "test_id": "BLDG-BENCH-003",
+      "description": "Office benchmark - DEC UK",
+      "tool_name": "calculate_building_benchmark",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 6000,
+        "annual_co2_kg": 180000,
+        "country": "GB",
+        "benchmark_system": "dec"
+      },
+      "expected_output": {
+        "dec_rating": "C",
+        "operational_rating": 85
+      },
+      "tolerance": 0.05,
+      "tags": ["benchmark", "dec", "uk"]
+    },
+    {
+      "test_id": "BLDG-SCOPE-001",
+      "description": "Scope 1 and 2 emissions - mixed fuel",
+      "tool_name": "calculate_building_emissions",
+      "input": {
+        "building_type": "mixed_use",
+        "gross_floor_area_sqm": 15000,
+        "annual_electricity_kwh": 2000000,
+        "annual_gas_kwh": 800000,
+        "annual_diesel_liters": 5000,
+        "country": "DE"
+      },
+      "expected_output": {
+        "scope1_emissions_tco2e": 163.0,
+        "scope2_emissions_tco2e": 700.0,
+        "total_emissions_tco2e": 863.0,
+        "emissions_intensity_kgco2e_per_sqm": 57.53
+      },
+      "tolerance": 0.01,
+      "tags": ["emissions", "scope1", "scope2"]
+    },
+    {
+      "test_id": "BLDG-SCOPE-002",
+      "description": "Market vs location based - green electricity",
+      "tool_name": "calculate_building_emissions",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 5000,
+        "annual_electricity_kwh": 500000,
+        "country": "DE",
+        "green_electricity_percentage": 100,
+        "calculation_method": "market_based"
+      },
+      "expected_output": {
+        "scope2_location_tco2e": 175.0,
+        "scope2_market_tco2e": 0.0,
+        "green_electricity_offset_tco2e": 175.0
+      },
+      "tolerance": 0.01,
+      "tags": ["emissions", "market_based", "green"]
+    },
+    {
+      "test_id": "BLDG-PV-001",
+      "description": "On-site solar PV generation",
+      "tool_name": "calculate_building_energy",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 8000,
+        "annual_electricity_kwh": 1000000,
+        "annual_pv_generation_kwh": 250000,
+        "country": "ES"
+      },
+      "expected_output": {
+        "net_electricity_kwh": 750000,
+        "pv_self_consumption_percentage": 80.0,
+        "avoided_emissions_tco2e": 50.0
+      },
+      "tolerance": 0.01,
+      "tags": ["solar", "pv", "generation"]
+    },
+    {
+      "test_id": "BLDG-CHP-001",
+      "description": "Combined heat and power efficiency",
+      "tool_name": "calculate_building_energy",
+      "input": {
+        "building_type": "hospital",
+        "gross_floor_area_sqm": 20000,
+        "chp_gas_input_kwh": 2000000,
+        "chp_electricity_output_kwh": 700000,
+        "chp_heat_output_kwh": 800000,
+        "country": "GB"
+      },
+      "expected_output": {
+        "chp_overall_efficiency": 0.75,
+        "chp_primary_energy_savings_percentage": 15.0,
+        "chp_emissions_tco2e": 400.0
+      },
+      "tolerance": 0.05,
+      "tags": ["chp", "cogeneration", "efficiency"]
+    },
+    {
+      "test_id": "BLDG-CRREM-001",
+      "description": "CRREM pathway alignment - office",
+      "tool_name": "calculate_crrem_alignment",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 10000,
+        "current_emissions_kgco2e_per_sqm": 45.0,
+        "country": "DE",
+        "target_year": 2030
+      },
+      "expected_output": {
+        "crrem_2030_target_kgco2e_per_sqm": 25.0,
+        "gap_to_target_percentage": 80.0,
+        "stranding_year": 2028,
+        "aligned": false
+      },
+      "tolerance": 0.05,
+      "tags": ["crrem", "stranding", "pathway"]
+    },
+    {
+      "test_id": "BLDG-CRREM-002",
+      "description": "CRREM aligned building",
+      "tool_name": "calculate_crrem_alignment",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 8000,
+        "current_emissions_kgco2e_per_sqm": 18.0,
+        "country": "SE",
+        "target_year": 2030
+      },
+      "expected_output": {
+        "crrem_2030_target_kgco2e_per_sqm": 22.0,
+        "gap_to_target_percentage": -18.0,
+        "aligned": true
+      },
+      "tolerance": 0.05,
+      "tags": ["crrem", "aligned", "low_carbon"]
+    },
+    {
+      "test_id": "BLDG-DEGREE-001",
+      "description": "Heating degree days normalization",
+      "tool_name": "normalize_building_energy",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 5000,
+        "annual_heating_kwh": 200000,
+        "actual_hdd": 2500,
+        "normal_hdd": 2800,
+        "country": "DE"
+      },
+      "expected_output": {
+        "normalized_heating_kwh": 224000,
+        "normalization_factor": 1.12
+      },
+      "tolerance": 0.01,
+      "tags": ["normalization", "hdd", "heating"]
+    },
+    {
+      "test_id": "BLDG-DEGREE-002",
+      "description": "Cooling degree days normalization",
+      "tool_name": "normalize_building_energy",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 8000,
+        "annual_cooling_kwh": 150000,
+        "actual_cdd": 1800,
+        "normal_cdd": 1500,
+        "country": "US"
+      },
+      "expected_output": {
+        "normalized_cooling_kwh": 125000,
+        "normalization_factor": 0.833
+      },
+      "tolerance": 0.01,
+      "tags": ["normalization", "cdd", "cooling"]
+    },
+    {
+      "test_id": "BLDG-MULTI-001",
+      "description": "Multi-tenant building allocation",
+      "tool_name": "calculate_building_energy",
+      "input": {
+        "building_type": "office",
+        "gross_floor_area_sqm": 20000,
+        "tenant_floor_area_sqm": 2500,
+        "whole_building_electricity_kwh": 3000000,
+        "whole_building_gas_kwh": 500000,
+        "common_area_percentage": 15,
+        "country": "GB"
+      },
+      "expected_output": {
+        "tenant_allocated_electricity_kwh": 406250,
+        "tenant_allocated_gas_kwh": 67708,
+        "tenant_emissions_tco2e": 98.3
+      },
+      "tolerance": 0.01,
+      "tags": ["multi_tenant", "allocation"]
+    },
+    {
+      "test_id": "BLDG-BASE-001",
+      "description": "Baseload identification",
+      "tool_name": "analyze_building_energy",
+      "input": {
+        "building_type": "office",
+        "monthly_electricity_kwh": [80000, 75000, 82000, 85000, 95000, 110000, 125000, 130000, 115000, 90000, 82000, 78000],
+        "country": "US"
+      },
+      "expected_output": {
+        "baseload_kwh_per_month": 75000,
+        "baseload_percentage": 63.8,
+        "cooling_load_kwh": 175000,
+        "heating_load_kwh": 0
+      },
+      "tolerance": 0.05,
+      "tags": ["baseload", "analysis"]
+    }
+  ]
+}

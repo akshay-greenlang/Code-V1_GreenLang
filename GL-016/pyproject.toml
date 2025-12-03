@@ -1,0 +1,185 @@
+# GL-016 WATERGUARD - Python Project Configuration
+# Project: GreenLang Industrial Sustainability Framework
+# Agent: Water Treatment Quality Control
+
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gl-016-waterguard"
+version = "1.0.0"
+description = "Intelligent water treatment quality control agent"
+authors = [
+    {name = "GreenLang Team", email = "devops@greenlang.io"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+keywords = ["water-treatment", "industrial-automation", "sustainability", "iot"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Manufacturing",
+    "Topic :: Scientific/Engineering :: Industrial Engineering",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+]
+
+dependencies = [
+    "pydantic>=2.0",
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "asyncio>=3.4.3",
+    "aiohttp>=3.9.0",
+    "httpx>=0.25.0",
+    "opcua>=0.98.13",
+    "pymodbus>=3.5.0",
+    "prometheus-client>=0.19.0",
+    "structlog>=23.2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.12.0",
+    "flake8>=6.1.0",
+    "isort>=5.13.0",
+    "mypy>=1.7.0",
+    "bandit>=1.7.5",
+    "pre-commit>=3.5.0",
+]
+
+[project.urls]
+Homepage = "https://greenlang.io"
+Documentation = "https://docs.greenlang.io/agents/gl-016"
+Repository = "https://github.com/greenlang/agents"
+Issues = "https://github.com/greenlang/agents/issues"
+
+# ============================================================================
+# Black Configuration
+# ============================================================================
+[tool.black]
+line-length = 88
+target-version = ['py310']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.venv
+  | build
+  | dist
+  | __pycache__
+)/
+'''
+
+# ============================================================================
+# isort Configuration
+# ============================================================================
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+skip_glob = ["**/venv/*", "**/.venv/*", "**/build/*", "**/dist/*"]
+
+# ============================================================================
+# Pytest Configuration
+# ============================================================================
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "-ra",
+    "--strict-markers",
+    "--cov=.",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-branch",
+    "--cov-fail-under=80",
+]
+markers = [
+    "unit: Unit tests",
+    "integration: Integration tests",
+    "e2e: End-to-end tests",
+    "performance: Performance tests",
+    "security: Security tests",
+    "determinism: Determinism tests",
+    "slow: Slow running tests",
+]
+
+# ============================================================================
+# MyPy Configuration
+# ============================================================================
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+strict_equality = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+# ============================================================================
+# Bandit Configuration
+# ============================================================================
+[tool.bandit]
+exclude_dirs = ["tests", "venv", ".venv", "build", "dist"]
+skips = ["B101", "B601"]
+tests = ["B201", "B301", "B302", "B303", "B304", "B305", "B306", "B307", "B308", "B309", "B310", "B311", "B312", "B313", "B314", "B315", "B316", "B317", "B318", "B319", "B320", "B321", "B322", "B323", "B324", "B325", "B401", "B402", "B403", "B404", "B405", "B406", "B407", "B408", "B409", "B410", "B411", "B412", "B413", "B501", "B502", "B503", "B504", "B505", "B506", "B507", "B601", "B602", "B603", "B604", "B605", "B606", "B607", "B608", "B609", "B610", "B611", "B701", "B702", "B703"]
+
+# ============================================================================
+# Coverage Configuration
+# ============================================================================
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/tests/*",
+    "*test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/.venv/*",
+    "*/site-packages/*",
+    "setup.py",
+]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "logger.debug",
+]
+precision = 2
+show_missing = true
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+# ============================================================================
+# Flake8 Configuration (in separate .flake8 file)
+# ============================================================================
+# See .flake8 file for flake8 configuration

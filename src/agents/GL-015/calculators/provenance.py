@@ -40,7 +40,7 @@ import json
 import uuid
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any, Union
+from typing import Dict, List, Optional, Any, Union, Tuple
 from enum import Enum
 import logging
 

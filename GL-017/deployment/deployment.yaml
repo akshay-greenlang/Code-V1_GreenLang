@@ -1,0 +1,277 @@
+# =============================================================================
+# GL-017 CONDENSYNC - Kubernetes Deployment
+# Production-grade deployment with security and high availability
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gl-017-condensync
+  namespace: greenlang
+  labels:
+    app: gl-017-condensync
+    app.kubernetes.io/name: condensync
+    app.kubernetes.io/instance: gl-017
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: agent
+    app.kubernetes.io/part-of: greenlang
+    app.kubernetes.io/managed-by: kubectl
+    tier: backend
+    environment: production
+  annotations:
+    kubernetes.io/change-cause: "Initial deployment of GL-017 CONDENSYNC"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9017"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 3
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: gl-017-condensync
+      app.kubernetes.io/name: condensync
+      app.kubernetes.io/instance: gl-017
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  minReadySeconds: 30
+  progressDeadlineSeconds: 600
+  template:
+    metadata:
+      labels:
+        app: gl-017-condensync
+        app.kubernetes.io/name: condensync
+        app.kubernetes.io/instance: gl-017
+        app.kubernetes.io/version: "1.0.0"
+        app.kubernetes.io/component: agent
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9017"
+        prometheus.io/path: "/metrics"
+        checksum/config: "{{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}"
+    spec:
+      serviceAccountName: gl-017-condensync-sa
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 60
+
+      # Pod-level security context
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+
+      # Node affinity and anti-affinity rules
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-017-condensync
+                topologyKey: kubernetes.io/hostname
+            - weight: 50
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: gl-017-condensync
+                topologyKey: topology.kubernetes.io/zone
+
+      # Topology spread constraints for HA
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: gl-017-condensync
+
+      # Init containers for setup
+      initContainers:
+        - name: init-permissions
+          image: busybox:1.36
+          command: ['sh', '-c', 'chmod -R 755 /app/data /app/logs && chown -R 1000:1000 /app/data /app/logs']
+          securityContext:
+            runAsUser: 0
+            runAsNonRoot: false
+            allowPrivilegeEscalation: false
+          volumeMounts:
+            - name: data-volume
+              mountPath: /app/data
+            - name: logs-volume
+              mountPath: /app/logs
+
+      containers:
+        - name: condensync
+          image: greenlang/gl-017-condensync:1.0.0
+          imagePullPolicy: Always
+
+          ports:
+            - name: http
+              containerPort: 8017
+              protocol: TCP
+            - name: metrics
+              containerPort: 9017
+              protocol: TCP
+
+          # Container-level security context
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+          # Environment variables
+          env:
+            - name: AGENT_ID
+              value: "GL-017"
+            - name: AGENT_NAME
+              value: "CONDENSYNC"
+            - name: ENVIRONMENT
+              value: "production"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-017-condensync-secrets
+                  key: database-url
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: gl-017-condensync-secrets
+                  key: redis-url
+            - name: SCADA_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: gl-017-condensync-secrets
+                  key: scada-api-key
+
+          # Environment from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: gl-017-condensync-config
+
+          # Resource limits and requests
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+              ephemeral-storage: 100Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+              ephemeral-storage: 1Gi
+
+          # Startup probe - generous timeout for initialization
+          startupProbe:
+            httpGet:
+              path: /health/startup
+              port: 8017
+              scheme: HTTP
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+            successThreshold: 1
+
+          # Liveness probe - detect hung processes
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8017
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Readiness probe - traffic routing
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8017
+              scheme: HTTP
+            initialDelaySeconds: 0
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+            successThreshold: 1
+
+          # Volume mounts
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/config
+              readOnly: true
+            - name: data-volume
+              mountPath: /app/data
+            - name: logs-volume
+              mountPath: /app/logs
+            - name: models-volume
+              mountPath: /app/models
+              readOnly: true
+            - name: tls-certs
+              mountPath: /app/certs
+              readOnly: true
+            - name: tmp-volume
+              mountPath: /tmp
+
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 15"]
+
+      # Volumes
+      volumes:
+        - name: config-volume
+          configMap:
+            name: gl-017-condensync-config
+            defaultMode: 0444
+        - name: data-volume
+          persistentVolumeClaim:
+            claimName: gl-017-condensync-data-pvc
+        - name: logs-volume
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: models-volume
+          persistentVolumeClaim:
+            claimName: gl-017-condensync-models-pvc
+        - name: tls-certs
+          secret:
+            secretName: gl-017-condensync-tls
+            defaultMode: 0400
+        - name: tmp-volume
+          emptyDir:
+            sizeLimit: 100Mi
+
+      # Image pull secrets
+      imagePullSecrets:
+        - name: greenlang-registry-secret
+
+      # DNS configuration
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        options:
+          - name: ndots
+            value: "2"

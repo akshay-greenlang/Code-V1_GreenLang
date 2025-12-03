@@ -1,0 +1,603 @@
+{
+  "suite": "EUDR Commodity Classification - CN Codes",
+  "version": "1.0.0",
+  "description": "Golden tests for EU Combined Nomenclature code classification under EUDR",
+  "tests": [
+    {
+      "test_id": "CN-CATTLE-001",
+      "description": "Cattle - Live purebred breeding bovine animals",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "01022110",
+        "product_description": "Live purebred breeding bovine animals",
+        "quantity_kg": 5000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cattle",
+        "cn_code": "01022110",
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["cattle", "live_animals"]
+    },
+    {
+      "test_id": "CN-CATTLE-002",
+      "description": "Cattle - Bovine carcasses fresh or chilled",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "02011000",
+        "product_description": "Bovine carcasses and half-carcasses, fresh or chilled",
+        "quantity_kg": 10000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cattle",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["cattle", "derived"]
+    },
+    {
+      "test_id": "CN-CATTLE-003",
+      "description": "Cattle - Bovine leather full grains",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "41041111",
+        "product_description": "Bovine leather, full grains unsplit",
+        "quantity_kg": 500.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cattle",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["cattle", "leather", "derived"]
+    },
+    {
+      "test_id": "CN-COCOA-001",
+      "description": "Cocoa - Raw cocoa beans",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "18010000",
+        "product_description": "Cocoa beans, whole or broken, raw or roasted",
+        "quantity_kg": 25000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cocoa",
+        "cn_code": "18010000",
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["cocoa", "raw"]
+    },
+    {
+      "test_id": "CN-COCOA-002",
+      "description": "Cocoa - Cocoa butter",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "18040000",
+        "product_description": "Cocoa butter, fat and oil",
+        "quantity_kg": 5000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cocoa",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["cocoa", "derived"]
+    },
+    {
+      "test_id": "CN-COCOA-003",
+      "description": "Cocoa - Chocolate bars",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "18063100",
+        "product_description": "Chocolate in blocks, slabs or bars (filled)",
+        "quantity_kg": 1000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cocoa",
+        "is_derived_product": true,
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["cocoa", "chocolate", "derived"]
+    },
+    {
+      "test_id": "CN-COCOA-004",
+      "description": "Cocoa - Cocoa powder unsweetened",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "18050000",
+        "product_description": "Cocoa powder, not containing added sugar",
+        "quantity_kg": 2000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cocoa",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["cocoa", "powder", "derived"]
+    },
+    {
+      "test_id": "CN-COFFEE-001",
+      "description": "Coffee - Green coffee beans",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "09011100",
+        "product_description": "Coffee, not roasted, not decaffeinated",
+        "quantity_kg": 50000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "coffee",
+        "cn_code": "09011100",
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["coffee", "green"]
+    },
+    {
+      "test_id": "CN-COFFEE-002",
+      "description": "Coffee - Roasted coffee",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "09012100",
+        "product_description": "Coffee, roasted, not decaffeinated",
+        "quantity_kg": 10000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "coffee",
+        "is_derived_product": true,
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["coffee", "roasted", "derived"]
+    },
+    {
+      "test_id": "CN-COFFEE-003",
+      "description": "Coffee - Coffee extracts",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "21011100",
+        "product_description": "Extracts, essences of coffee",
+        "quantity_kg": 500.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "coffee",
+        "is_derived_product": true,
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["coffee", "extract", "derived"]
+    },
+    {
+      "test_id": "CN-PALM-001",
+      "description": "Palm Oil - Crude palm oil",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "15111000",
+        "product_description": "Crude palm oil",
+        "quantity_kg": 100000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "palm_oil",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["palm_oil", "crude"]
+    },
+    {
+      "test_id": "CN-PALM-002",
+      "description": "Palm Oil - Palm kernel oil",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "15132110",
+        "product_description": "Crude palm kernel oil",
+        "quantity_kg": 25000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "palm_oil",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["palm_oil", "kernel"]
+    },
+    {
+      "test_id": "CN-PALM-003",
+      "description": "Palm Oil - Palm biodiesel",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "38260010",
+        "product_description": "Biodiesel containing palm oil",
+        "quantity_kg": 50000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "palm_oil",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["palm_oil", "biodiesel", "derived"]
+    },
+    {
+      "test_id": "CN-RUBBER-001",
+      "description": "Rubber - Natural rubber latex",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "40011000",
+        "product_description": "Natural rubber latex, whether or not prevulcanised",
+        "quantity_kg": 30000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "rubber",
+        "cn_code": "40011000",
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["rubber", "latex"]
+    },
+    {
+      "test_id": "CN-RUBBER-002",
+      "description": "Rubber - Smoked rubber sheets",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "40012100",
+        "product_description": "Natural rubber in smoked sheets",
+        "quantity_kg": 15000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "rubber",
+        "is_derived_product": true,
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["rubber", "sheets", "derived"]
+    },
+    {
+      "test_id": "CN-RUBBER-003",
+      "description": "Rubber - Tyres for motor cars",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "40111000",
+        "product_description": "New pneumatic tyres for motor cars",
+        "quantity_kg": 5000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "rubber",
+        "is_derived_product": true,
+        "risk_category": "low"
+      },
+      "tolerance": 0.01,
+      "tags": ["rubber", "tyres", "derived"]
+    },
+    {
+      "test_id": "CN-SOYA-001",
+      "description": "Soya - Soya beans for sowing",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "12010010",
+        "product_description": "Soya beans for sowing",
+        "quantity_kg": 100000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "soya",
+        "cn_code": "12010010",
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["soya", "beans"]
+    },
+    {
+      "test_id": "CN-SOYA-002",
+      "description": "Soya - Crude soya bean oil",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "15071000",
+        "product_description": "Crude soya bean oil",
+        "quantity_kg": 50000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "soya",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["soya", "oil", "derived"]
+    },
+    {
+      "test_id": "CN-SOYA-003",
+      "description": "Soya - Soya bean meal",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "23040000",
+        "product_description": "Soya bean oilcake and other solid residues",
+        "quantity_kg": 75000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "soya",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["soya", "meal", "derived"]
+    },
+    {
+      "test_id": "CN-WOOD-001",
+      "description": "Wood - Fuel wood",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "44011100",
+        "product_description": "Fuel wood, in logs, billets, twigs",
+        "quantity_kg": 20000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "wood",
+        "cn_code": "44011100",
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["wood", "fuel"]
+    },
+    {
+      "test_id": "CN-WOOD-002",
+      "description": "Wood - Sawn mahogany",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "44072100",
+        "product_description": "Sawn wood, mahogany",
+        "quantity_kg": 5000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "wood",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["wood", "mahogany", "high_risk"]
+    },
+    {
+      "test_id": "CN-WOOD-003",
+      "description": "Wood - Tropical plywood",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "44123100",
+        "product_description": "Plywood with tropical wood outer ply",
+        "quantity_kg": 10000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "wood",
+        "is_derived_product": true,
+        "risk_category": "high"
+      },
+      "tolerance": 0.01,
+      "tags": ["wood", "plywood", "tropical"]
+    },
+    {
+      "test_id": "CN-WOOD-004",
+      "description": "Wood - Wood pulp",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "47010000",
+        "product_description": "Mechanical wood pulp",
+        "quantity_kg": 100000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "wood",
+        "is_derived_product": true,
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["wood", "pulp", "derived"]
+    },
+    {
+      "test_id": "CN-WOOD-005",
+      "description": "Wood - Newsprint",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "48010000",
+        "product_description": "Newsprint in rolls or sheets",
+        "quantity_kg": 50000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "wood",
+        "is_derived_product": true,
+        "risk_category": "low"
+      },
+      "tolerance": 0.01,
+      "tags": ["wood", "paper", "newsprint"]
+    },
+    {
+      "test_id": "CN-WOOD-006",
+      "description": "Wood - Printed books",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "49011000",
+        "product_description": "Printed books, brochures, leaflets",
+        "quantity_kg": 2000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "wood",
+        "is_derived_product": true,
+        "risk_category": "low"
+      },
+      "tolerance": 0.01,
+      "tags": ["wood", "books", "printed"]
+    },
+    {
+      "test_id": "CN-WOOD-007",
+      "description": "Wood - Wooden office furniture",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "94033000",
+        "product_description": "Wooden office furniture",
+        "quantity_kg": 3000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "wood",
+        "is_derived_product": true,
+        "risk_category": "medium"
+      },
+      "tolerance": 0.01,
+      "tags": ["wood", "furniture", "office"]
+    },
+    {
+      "test_id": "CN-INVALID-001",
+      "description": "Invalid CN code - too short",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "123",
+        "product_description": "Unknown product",
+        "quantity_kg": 100.0
+      },
+      "expected_output": {
+        "eudr_regulated": false,
+        "commodity_type": "not_regulated"
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "format"]
+    },
+    {
+      "test_id": "CN-INVALID-002",
+      "description": "Invalid CN code - too long",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "123456789",
+        "product_description": "Unknown product",
+        "quantity_kg": 100.0
+      },
+      "expected_output": {
+        "eudr_regulated": false,
+        "commodity_type": "not_regulated"
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "format"]
+    },
+    {
+      "test_id": "CN-INVALID-003",
+      "description": "Invalid CN code - contains letters",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "1801ABC0",
+        "product_description": "Unknown product",
+        "quantity_kg": 100.0
+      },
+      "expected_output": {
+        "eudr_regulated": false,
+        "commodity_type": "not_regulated"
+      },
+      "tolerance": 0.01,
+      "tags": ["invalid", "format"]
+    },
+    {
+      "test_id": "CN-NOTREG-001",
+      "description": "Not regulated - wheat",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "10019100",
+        "product_description": "Durum wheat seed",
+        "quantity_kg": 50000.0
+      },
+      "expected_output": {
+        "eudr_regulated": false,
+        "commodity_type": "not_regulated"
+      },
+      "tolerance": 0.01,
+      "tags": ["not_regulated", "wheat"]
+    },
+    {
+      "test_id": "CN-NOTREG-002",
+      "description": "Not regulated - rice",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "10061010",
+        "product_description": "Rice for sowing",
+        "quantity_kg": 25000.0
+      },
+      "expected_output": {
+        "eudr_regulated": false,
+        "commodity_type": "not_regulated"
+      },
+      "tolerance": 0.01,
+      "tags": ["not_regulated", "rice"]
+    },
+    {
+      "test_id": "CN-LARGE-001",
+      "description": "Large quantity warning test",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "18010000",
+        "product_description": "Cocoa beans bulk shipment",
+        "quantity_kg": 2000000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cocoa"
+      },
+      "tolerance": 0.01,
+      "tags": ["cocoa", "large_quantity", "warning"]
+    },
+    {
+      "test_id": "CN-PREFIX-001",
+      "description": "4-digit prefix lookup - cocoa chapter",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "1801",
+        "product_description": "Cocoa beans",
+        "quantity_kg": 1000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cocoa"
+      },
+      "tolerance": 0.01,
+      "tags": ["cocoa", "prefix"]
+    },
+    {
+      "test_id": "CN-PREFIX-002",
+      "description": "6-digit prefix lookup - cattle meat",
+      "tool_name": "classify_commodity",
+      "input": {
+        "cn_code": "020110",
+        "product_description": "Bovine carcasses",
+        "quantity_kg": 5000.0
+      },
+      "expected_output": {
+        "eudr_regulated": true,
+        "commodity_type": "cattle"
+      },
+      "tolerance": 0.01,
+      "tags": ["cattle", "prefix"]
+    }
+  ]
+}

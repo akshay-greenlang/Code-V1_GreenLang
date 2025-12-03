@@ -1,0 +1,207 @@
+# Gitleaks Configuration for GreenLang
+#
+# Secret detection patterns for pre-commit and CI scanning.
+# Blocks commits containing secrets, API keys, tokens, etc.
+#
+# Security Compliance: SOC 2 CC6.1, ISO 27001 A.9.4.3
+# Author: GL-SecScan Security Team
+# Version: 1.0.0
+
+title = "GreenLang Secret Detection Rules"
+
+[extend]
+# Extend the default gitleaks rules
+useDefault = true
+
+# Custom rules for GreenLang-specific patterns
+[[rules]]
+id = "greenlang-api-key"
+description = "GreenLang API Key"
+regex = '''glk_[a-f0-9]{16}_[A-Za-z0-9_-]{32,}'''
+tags = ["key", "greenlang", "api"]
+keywords = ["glk_"]
+
+[[rules]]
+id = "greenlang-jwt-secret"
+description = "GreenLang JWT Secret"
+regex = '''GL_JWT_SECRET[=:]\s*['\"]?[A-Za-z0-9+/=]{32,}['\"]?'''
+tags = ["key", "jwt", "greenlang"]
+keywords = ["GL_JWT"]
+
+[[rules]]
+id = "greenlang-secret-key"
+description = "GreenLang Secret Key"
+regex = '''GL_SECRET_KEY[=:]\s*['\"]?[A-Za-z0-9+/=_-]{32,}['\"]?'''
+tags = ["key", "secret", "greenlang"]
+keywords = ["GL_SECRET"]
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API Key"
+regex = '''sk-[A-Za-z0-9]{48,}'''
+tags = ["key", "openai", "api"]
+keywords = ["sk-"]
+
+[[rules]]
+id = "anthropic-api-key"
+description = "Anthropic API Key"
+regex = '''sk-ant-[A-Za-z0-9_-]{40,}'''
+tags = ["key", "anthropic", "api"]
+keywords = ["sk-ant-"]
+
+[[rules]]
+id = "database-connection-string"
+description = "Database Connection String with Password"
+regex = '''(postgres|postgresql|mysql|mongodb)://[^:]+:[^@]+@[^/]+'''
+tags = ["database", "connection", "password"]
+keywords = ["postgres://", "postgresql://", "mysql://", "mongodb://"]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["key", "aws", "access"]
+keywords = ["AKIA"]
+
+[[rules]]
+id = "aws-secret-key"
+description = "AWS Secret Access Key"
+regex = '''(?i)aws_secret_access_key[=:]\s*['\"]?[A-Za-z0-9/+=]{40}['\"]?'''
+tags = ["key", "aws", "secret"]
+keywords = ["aws_secret"]
+
+[[rules]]
+id = "private-key-header"
+description = "Private Key File"
+regex = '''-----BEGIN (RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'''
+tags = ["key", "private", "pem"]
+keywords = ["PRIVATE KEY"]
+
+[[rules]]
+id = "github-token"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[A-Za-z0-9]{36}'''
+tags = ["key", "github", "token"]
+keywords = ["ghp_"]
+
+[[rules]]
+id = "github-oauth"
+description = "GitHub OAuth Token"
+regex = '''gho_[A-Za-z0-9]{36}'''
+tags = ["key", "github", "oauth"]
+keywords = ["gho_"]
+
+[[rules]]
+id = "slack-token"
+description = "Slack Token"
+regex = '''xox[baprs]-[0-9]{10,13}-[0-9]{10,13}-[a-zA-Z0-9]{24}'''
+tags = ["key", "slack", "token"]
+keywords = ["xox"]
+
+[[rules]]
+id = "stripe-api-key"
+description = "Stripe API Key"
+regex = '''sk_(live|test)_[0-9a-zA-Z]{24,}'''
+tags = ["key", "stripe", "payment"]
+keywords = ["sk_live", "sk_test"]
+
+[[rules]]
+id = "sendgrid-api-key"
+description = "SendGrid API Key"
+regex = '''SG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}'''
+tags = ["key", "sendgrid", "email"]
+keywords = ["SG."]
+
+[[rules]]
+id = "twilio-api-key"
+description = "Twilio API Key"
+regex = '''SK[0-9a-fA-F]{32}'''
+tags = ["key", "twilio", "sms"]
+keywords = ["SK"]
+
+[[rules]]
+id = "generic-password-in-url"
+description = "Password in URL"
+regex = '''[a-zA-Z]{3,10}://[^:]+:([^@]{8,})@'''
+tags = ["password", "url", "generic"]
+
+[[rules]]
+id = "generic-api-key-assignment"
+description = "Generic API Key Assignment"
+regex = '''(?i)(api[_-]?key|apikey|api[_-]?secret)\s*[=:]\s*['\"]?[A-Za-z0-9_-]{20,}['\"]?'''
+tags = ["key", "api", "generic"]
+keywords = ["api_key", "apikey", "api_secret"]
+
+[[rules]]
+id = "generic-password-assignment"
+description = "Generic Password Assignment"
+regex = '''(?i)(password|passwd|pwd)\s*[=:]\s*['\"][^'\"]{8,}['\"]'''
+tags = ["password", "generic"]
+keywords = ["password", "passwd", "pwd"]
+
+# Allowlist - paths and patterns to ignore
+[allowlist]
+description = "Global allowlist"
+
+# Paths to ignore (documentation, tests, examples)
+paths = [
+    '''.*test.*''',
+    '''.*_test\.py''',
+    '''.*\.md$''',
+    '''.*\.rst$''',
+    '''.*example.*''',
+    '''.*fixture.*''',
+    '''.*mock.*''',
+    '''\.env\.example''',
+    '''\.env\.sample''',
+    '''.*CHANGELOG.*''',
+    '''docs/.*''',
+]
+
+# Specific file patterns to ignore
+files = [
+    '''\.gitleaks\.toml''',
+    '''poetry\.lock''',
+    '''package-lock\.json''',
+    '''yarn\.lock''',
+    '''Pipfile\.lock''',
+]
+
+# Regex patterns to allow (false positive prevention)
+regexes = [
+    # Example values commonly used in documentation
+    '''sk-[xX]{48}''',
+    '''your[-_]api[-_]key[-_]here''',
+    '''<your[-_].*[-_]key>''',
+    '''REPLACE[-_]WITH[-_]YOUR[-_].*''',
+    '''example[-_.]?key''',
+    # Test/mock values
+    '''test[-_]?api[-_]?key''',
+    '''mock[-_]?secret''',
+    '''dummy[-_]?password''',
+    # Placeholder patterns
+    '''\$\{.*\}''',
+    '''%\(.*\)s''',
+    '''\{\{.*\}\}''',
+]
+
+# Commits to ignore (already in history, remediated)
+commits = [
+    # Add commit SHAs of remediated commits to stop rescanning
+]
+
+# Stopwords - strings that if present indicate a false positive
+stopwords = [
+    "example",
+    "sample",
+    "test",
+    "mock",
+    "fake",
+    "dummy",
+    "placeholder",
+    "template",
+    "CHANGEME",
+    "YOUR_",
+    "XXX",
+    "TODO",
+]

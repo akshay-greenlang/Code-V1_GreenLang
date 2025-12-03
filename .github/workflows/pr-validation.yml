@@ -1,0 +1,425 @@
+# GreenLang PR Validation Workflow
+# Runs on all PRs to ensure quality before merge
+#
+# This workflow:
+# - Runs unit tests for all agents (Fuel Analyzer, CBAM, Building Energy)
+# - Runs core library tests (emission_factor_db, cbam_benchmarks, bps_thresholds)
+# - Enforces 85% minimum coverage
+# - Blocks merge if coverage is below threshold
+# - Runs determinism checks
+
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+      - master
+      - develop
+    paths:
+      - '**.py'
+      - 'tests/**'
+      - 'generated/**'
+      - 'greenlang/**'
+      - 'core/**'
+      - 'pyproject.toml'
+      - 'requirements*.txt'
+      - '.github/workflows/pr-validation.yml'
+
+  # Allow manual triggering
+  workflow_dispatch:
+
+# Cancel in-progress runs when a new commit is pushed
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: '3.11'
+  COVERAGE_THRESHOLD: 85
+  GL_SIGNING_MODE: ephemeral
+
+jobs:
+  # ==========================================================================
+  # Lint and Format Check
+  # ==========================================================================
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install linting dependencies
+        run: |
+          pip install black flake8 isort mypy ruff
+
+      - name: Run Black (format check)
+        run: |
+          black --check --diff generated/ greenlang/ tests/ || true
+
+      - name: Run isort (import check)
+        run: |
+          isort --check-only --diff generated/ greenlang/ tests/ || true
+
+      - name: Run Ruff (fast linter)
+        run: |
+          ruff check generated/ greenlang/ tests/ || true
+
+  # ==========================================================================
+  # Unit Tests - Fuel Analyzer Agent
+  # ==========================================================================
+  test-fuel-analyzer:
+    name: Unit Tests - Fuel Analyzer Agent
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements_test.txt
+          pip install -e .
+
+      - name: Run Fuel Analyzer Tests
+        run: |
+          pytest tests/unit/test_fuel_analyzer.py \
+            -v \
+            --tb=short \
+            --cov=generated/fuel_analyzer_agent \
+            --cov-report=xml:coverage-fuel-analyzer.xml \
+            --cov-report=term-missing \
+            --junitxml=test-results-fuel-analyzer.xml \
+            -m "unit and fuel_analyzer"
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage-fuel-analyzer.xml
+          flags: fuel-analyzer
+          name: fuel-analyzer-coverage
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-fuel-analyzer
+          path: test-results-fuel-analyzer.xml
+
+  # ==========================================================================
+  # Unit Tests - CBAM Agent
+  # ==========================================================================
+  test-cbam-agent:
+    name: Unit Tests - CBAM Agent
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements_test.txt
+          pip install -e .
+
+      - name: Run CBAM Agent Tests
+        run: |
+          pytest tests/unit/test_cbam_agent.py \
+            -v \
+            --tb=short \
+            --cov=generated/carbon_intensity_v1 \
+            --cov-report=xml:coverage-cbam.xml \
+            --cov-report=term-missing \
+            --junitxml=test-results-cbam.xml \
+            -m "unit and cbam_agent"
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage-cbam.xml
+          flags: cbam-agent
+          name: cbam-coverage
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-cbam
+          path: test-results-cbam.xml
+
+  # ==========================================================================
+  # Unit Tests - Building Energy Agent
+  # ==========================================================================
+  test-building-energy:
+    name: Unit Tests - Building Energy Agent
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements_test.txt
+          pip install -e .
+
+      - name: Run Building Energy Tests
+        run: |
+          pytest tests/unit/test_building_energy.py \
+            -v \
+            --tb=short \
+            --cov=generated/energy_performance_v1 \
+            --cov-report=xml:coverage-building-energy.xml \
+            --cov-report=term-missing \
+            --junitxml=test-results-building-energy.xml \
+            -m "unit and building_energy"
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage-building-energy.xml
+          flags: building-energy
+          name: building-energy-coverage
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-building-energy
+          path: test-results-building-energy.xml
+
+  # ==========================================================================
+  # Unit Tests - Core Libraries
+  # ==========================================================================
+  test-core-libraries:
+    name: Unit Tests - Core Libraries
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements_test.txt
+          pip install -e .
+
+      - name: Run Core Library Tests
+        run: |
+          pytest tests/unit/test_emission_factor_db.py \
+                 tests/unit/test_cbam_benchmarks.py \
+                 tests/unit/test_bps_thresholds.py \
+            -v \
+            --tb=short \
+            --cov=core/greenlang/data \
+            --cov-report=xml:coverage-core.xml \
+            --cov-report=term-missing \
+            --junitxml=test-results-core.xml \
+            -m "unit and core_library"
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage-core.xml
+          flags: core-libraries
+          name: core-libraries-coverage
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-core
+          path: test-results-core.xml
+
+  # ==========================================================================
+  # Combined Coverage Check
+  # ==========================================================================
+  coverage-check:
+    name: Coverage Check (85% minimum)
+    runs-on: ubuntu-latest
+    needs:
+      - test-fuel-analyzer
+      - test-cbam-agent
+      - test-building-energy
+      - test-core-libraries
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements_test.txt
+          pip install -e .
+
+      - name: Run all unit tests with coverage
+        run: |
+          pytest tests/unit/ \
+            -v \
+            --tb=short \
+            --cov=generated \
+            --cov=core/greenlang/data \
+            --cov-report=xml:coverage-combined.xml \
+            --cov-report=html:htmlcov \
+            --cov-report=term-missing \
+            --cov-fail-under=${{ env.COVERAGE_THRESHOLD }} \
+            --junitxml=test-results-combined.xml
+
+      - name: Upload combined coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage-combined.xml
+          flags: combined
+          name: combined-coverage
+
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report-html
+          path: htmlcov/
+
+      - name: Comment coverage on PR
+        uses: py-cov-action/python-coverage-comment-action@v3
+        if: github.event_name == 'pull_request'
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MINIMUM_GREEN: ${{ env.COVERAGE_THRESHOLD }}
+          MINIMUM_ORANGE: 70
+
+  # ==========================================================================
+  # Determinism Tests
+  # ==========================================================================
+  determinism-tests:
+    name: Determinism Verification
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements_test.txt
+          pip install -e .
+
+      - name: Run determinism tests
+        run: |
+          pytest tests/unit/ \
+            -v \
+            --tb=short \
+            -m "determinism" \
+            --junitxml=test-results-determinism.xml
+
+      - name: Upload determinism test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-determinism
+          path: test-results-determinism.xml
+
+  # ==========================================================================
+  # Compliance Tests
+  # ==========================================================================
+  compliance-tests:
+    name: Compliance Tests (CBAM, BPS)
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r tests/requirements_test.txt
+          pip install -e .
+
+      - name: Run compliance tests
+        run: |
+          pytest tests/unit/ \
+            -v \
+            --tb=short \
+            -m "compliance" \
+            --junitxml=test-results-compliance.xml
+
+      - name: Upload compliance test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-compliance
+          path: test-results-compliance.xml
+
+  # ==========================================================================
+  # Final Status Check
+  # ==========================================================================
+  pr-validation-complete:
+    name: PR Validation Complete
+    runs-on: ubuntu-latest
+    needs:
+      - coverage-check
+      - determinism-tests
+      - compliance-tests
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ needs.coverage-check.result }}" == "failure" ]]; then
+            echo "Coverage check failed - PR cannot be merged"
+            exit 1
+          fi
+          if [[ "${{ needs.determinism-tests.result }}" == "failure" ]]; then
+            echo "Determinism tests failed - PR cannot be merged"
+            exit 1
+          fi
+          if [[ "${{ needs.compliance-tests.result }}" == "failure" ]]; then
+            echo "Compliance tests failed - PR cannot be merged"
+            exit 1
+          fi
+          echo "All checks passed - PR is ready for review"

@@ -1,0 +1,349 @@
+# =============================================================================
+# GL-017 CONDENSYNC - GitLab CI/CD Pipeline
+# Complete build, test, security scan, and deployment pipeline
+# =============================================================================
+
+variables:
+  # Docker configuration
+  DOCKER_DRIVER: overlay2
+  DOCKER_TLS_CERTDIR: "/certs"
+  DOCKER_BUILDKIT: "1"
+
+  # Image configuration
+  IMAGE_NAME: greenlang/gl-017-condensync
+  REGISTRY: registry.greenlang.io
+
+  # Kubernetes configuration
+  KUBE_NAMESPACE: greenlang
+
+  # Application configuration
+  APP_NAME: gl-017-condensync
+  AGENT_ID: GL-017
+
+# Pipeline stages
+stages:
+  - validate
+  - build
+  - test
+  - security
+  - performance
+  - deploy-staging
+  - deploy-production
+  - cleanup
+
+# Default settings
+default:
+  image: python:3.10-slim
+  tags:
+    - docker
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+# Cache configuration
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+    - .venv/
+
+# =============================================================================
+# Validate Stage
+# =============================================================================
+lint:
+  stage: validate
+  script:
+    - pip install ruff black isort mypy
+    - ruff check .
+    - black --check .
+    - isort --check-only .
+    - mypy --ignore-missing-imports .
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+validate-manifests:
+  stage: validate
+  image: bitnami/kubectl:latest
+  script:
+    - kubectl apply --dry-run=client -f deployment/ -o yaml
+    - echo "Kubernetes manifests validated successfully"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+validate-dockerfile:
+  stage: validate
+  image: hadolint/hadolint:latest-debian
+  script:
+    - hadolint Dockerfile --ignore DL3008 --ignore DL3013
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# =============================================================================
+# Build Stage
+# =============================================================================
+build-image:
+  stage: build
+  image: docker:24
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_VERIFY: "1"
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $REGISTRY
+  script:
+    - docker build
+      --cache-from ${REGISTRY}/${IMAGE_NAME}:latest
+      --build-arg BUILDKIT_INLINE_CACHE=1
+      --tag ${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHA}
+      --tag ${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+      --tag ${REGISTRY}/${IMAGE_NAME}:latest
+      .
+    - docker push ${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHA}
+    - docker push ${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}
+    - docker push ${REGISTRY}/${IMAGE_NAME}:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# =============================================================================
+# Test Stage
+# =============================================================================
+unit-tests:
+  stage: test
+  before_script:
+    - pip install -r requirements.txt
+    - pip install pytest pytest-cov pytest-asyncio
+  script:
+    - pytest tests/unit/
+      --cov=.
+      --cov-report=xml
+      --cov-report=html
+      --cov-report=term
+      --junitxml=junit-report.xml
+  coverage: '/TOTAL.*\s+(\d+%)$/'
+  artifacts:
+    when: always
+    paths:
+      - coverage/
+      - junit-report.xml
+    reports:
+      junit: junit-report.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+integration-tests:
+  stage: test
+  services:
+    - postgres:15-alpine
+    - redis:7-alpine
+  variables:
+    POSTGRES_DB: test_db
+    POSTGRES_USER: test_user
+    POSTGRES_PASSWORD: test_password
+    DATABASE_URL: postgresql://test_user:test_password@postgres:5432/test_db
+    REDIS_URL: redis://redis:6379/0
+  before_script:
+    - pip install -r requirements.txt
+    - pip install pytest pytest-asyncio httpx
+  script:
+    - pytest tests/integration/
+      --junitxml=integration-junit-report.xml
+      -v
+  artifacts:
+    when: always
+    paths:
+      - integration-junit-report.xml
+    reports:
+      junit: integration-junit-report.xml
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# =============================================================================
+# Security Stage
+# =============================================================================
+sast:
+  stage: security
+  image: semgrep/semgrep:latest
+  script:
+    - semgrep --config=auto --json --output=semgrep-report.json .
+  artifacts:
+    when: always
+    paths:
+      - semgrep-report.json
+    reports:
+      sast: semgrep-report.json
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+container-scan:
+  stage: security
+  image: aquasec/trivy:latest
+  services:
+    - docker:24-dind
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+  script:
+    - trivy image
+      --exit-code 1
+      --severity HIGH,CRITICAL
+      --ignore-unfixed
+      --format json
+      --output trivy-report.json
+      ${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHA}
+  artifacts:
+    when: always
+    paths:
+      - trivy-report.json
+  allow_failure: true
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+dependency-scan:
+  stage: security
+  image: python:3.10-slim
+  before_script:
+    - pip install safety pip-audit
+  script:
+    - safety check -r requirements.txt --json > safety-report.json || true
+    - pip-audit -r requirements.txt --format json > pip-audit-report.json || true
+  artifacts:
+    when: always
+    paths:
+      - safety-report.json
+      - pip-audit-report.json
+  allow_failure: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# =============================================================================
+# Performance Stage
+# =============================================================================
+performance-test:
+  stage: performance
+  image: grafana/k6:latest
+  script:
+    - k6 run
+      --out json=k6-results.json
+      tests/performance/load_test.js
+  artifacts:
+    when: always
+    paths:
+      - k6-results.json
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  allow_failure: true
+
+# =============================================================================
+# Deploy Staging Stage
+# =============================================================================
+deploy-staging:
+  stage: deploy-staging
+  image: bitnami/kubectl:latest
+  environment:
+    name: staging
+    url: https://staging.gl-017.greenlang.io
+  before_script:
+    - echo "$KUBE_CONFIG_STAGING" | base64 -d > kubeconfig
+    - export KUBECONFIG=kubeconfig
+  script:
+    - kubectl set image deployment/${APP_NAME}
+      ${APP_NAME}=${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHA}
+      -n ${KUBE_NAMESPACE}-staging
+    - kubectl rollout status deployment/${APP_NAME}
+      -n ${KUBE_NAMESPACE}-staging
+      --timeout=300s
+    - kubectl get pods -n ${KUBE_NAMESPACE}-staging -l app=${APP_NAME}
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+smoke-test-staging:
+  stage: deploy-staging
+  image: curlimages/curl:latest
+  needs:
+    - deploy-staging
+  script:
+    - |
+      for i in $(seq 1 30); do
+        if curl -sf https://staging.gl-017.greenlang.io/health; then
+          echo "Health check passed"
+          exit 0
+        fi
+        echo "Waiting for service... ($i/30)"
+        sleep 10
+      done
+      echo "Health check failed"
+      exit 1
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+# =============================================================================
+# Deploy Production Stage
+# =============================================================================
+deploy-production:
+  stage: deploy-production
+  image: bitnami/kubectl:latest
+  environment:
+    name: production
+    url: https://gl-017.greenlang.io
+  before_script:
+    - echo "$KUBE_CONFIG_PRODUCTION" | base64 -d > kubeconfig
+    - export KUBECONFIG=kubeconfig
+  script:
+    - kubectl set image deployment/${APP_NAME}
+      ${APP_NAME}=${REGISTRY}/${IMAGE_NAME}:${CI_COMMIT_SHA}
+      -n ${KUBE_NAMESPACE}
+    - kubectl rollout status deployment/${APP_NAME}
+      -n ${KUBE_NAMESPACE}
+      --timeout=600s
+    - kubectl get pods -n ${KUBE_NAMESPACE} -l app=${APP_NAME}
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  needs:
+    - smoke-test-staging
+
+rollback-production:
+  stage: deploy-production
+  image: bitnami/kubectl:latest
+  environment:
+    name: production
+  before_script:
+    - echo "$KUBE_CONFIG_PRODUCTION" | base64 -d > kubeconfig
+    - export KUBECONFIG=kubeconfig
+  script:
+    - kubectl rollout undo deployment/${APP_NAME} -n ${KUBE_NAMESPACE}
+    - kubectl rollout status deployment/${APP_NAME} -n ${KUBE_NAMESPACE}
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  needs:
+    - deploy-production
+
+# =============================================================================
+# Cleanup Stage
+# =============================================================================
+cleanup-old-images:
+  stage: cleanup
+  image: docker:24
+  services:
+    - docker:24-dind
+  script:
+    - echo "Cleaning up old Docker images..."
+    - docker image prune -af --filter "until=168h"
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+  allow_failure: true

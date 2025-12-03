@@ -1,0 +1,309 @@
+{
+  "natural_gas": {
+    "US": {
+      "2023": {
+        "co2": 56.1,
+        "ch4": 0.001,
+        "n2o": 0.0001,
+        "co2e_ar6": 56.3,
+        "unit": "kgCO2e/GJ",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Natural Gas",
+        "url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2023"
+      },
+      "2022": {
+        "co2": 56.0,
+        "ch4": 0.001,
+        "n2o": 0.0001,
+        "co2e_ar6": 56.2,
+        "unit": "kgCO2e/GJ",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2022 Conversion Factors for Company Reporting, Natural Gas"
+      }
+    },
+    "GB": {
+      "2023": {
+        "co2": 56.1,
+        "ch4": 0.001,
+        "n2o": 0.0001,
+        "co2e_ar6": 56.3,
+        "unit": "kgCO2e/GJ",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Natural Gas"
+      }
+    },
+    "EU": {
+      "2023": {
+        "co2": 56.2,
+        "ch4": 0.001,
+        "n2o": 0.0001,
+        "co2e_ar6": 56.4,
+        "unit": "kgCO2e/GJ",
+        "uncertainty": 0.025,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Natural Gas (EU Average)"
+      }
+    }
+  },
+  "diesel": {
+    "US": {
+      "2023": {
+        "co2": 2.64,
+        "ch4": 0.0002,
+        "n2o": 0.00003,
+        "co2e_ar6": 2.67,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.01,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Diesel (Average Biofuel Blend)"
+      }
+    },
+    "GB": {
+      "2023": {
+        "co2": 2.64,
+        "ch4": 0.0002,
+        "n2o": 0.00003,
+        "co2e_ar6": 2.67,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.01,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Diesel (Average Biofuel Blend)"
+      }
+    },
+    "EU": {
+      "2023": {
+        "co2": 2.65,
+        "ch4": 0.0002,
+        "n2o": 0.00003,
+        "co2e_ar6": 2.68,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.015,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Diesel (EU Average)"
+      }
+    }
+  },
+  "gasoline": {
+    "US": {
+      "2023": {
+        "co2": 2.28,
+        "ch4": 0.0002,
+        "n2o": 0.00003,
+        "co2e_ar6": 2.31,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.01,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Petrol (Average Biofuel Blend)"
+      }
+    },
+    "GB": {
+      "2023": {
+        "co2": 2.28,
+        "ch4": 0.0002,
+        "n2o": 0.00003,
+        "co2e_ar6": 2.31,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.01,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Petrol (Average Biofuel Blend)"
+      }
+    },
+    "EU": {
+      "2023": {
+        "co2": 2.29,
+        "ch4": 0.0002,
+        "n2o": 0.00003,
+        "co2e_ar6": 2.32,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.015,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Petrol (EU Average)"
+      }
+    }
+  },
+  "lpg": {
+    "US": {
+      "2023": {
+        "co2": 2.98,
+        "ch4": 0.0001,
+        "n2o": 0.00001,
+        "co2e_ar6": 2.99,
+        "unit": "kgCO2e/kg",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, LPG"
+      }
+    },
+    "GB": {
+      "2023": {
+        "co2": 2.98,
+        "ch4": 0.0001,
+        "n2o": 0.00001,
+        "co2e_ar6": 2.99,
+        "unit": "kgCO2e/kg",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, LPG"
+      }
+    },
+    "UK": {
+      "2022": {
+        "co2": 2.97,
+        "ch4": 0.0001,
+        "n2o": 0.00001,
+        "co2e_ar6": 2.98,
+        "unit": "kgCO2e/kg",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2022 Conversion Factors for Company Reporting, LPG"
+      }
+    },
+    "EU": {
+      "2023": {
+        "co2": 2.99,
+        "ch4": 0.0001,
+        "n2o": 0.00001,
+        "co2e_ar6": 3.00,
+        "unit": "kgCO2e/kg",
+        "uncertainty": 0.025,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, LPG (EU Average)"
+      }
+    }
+  },
+  "fuel_oil": {
+    "US": {
+      "2023": {
+        "co2": 3.18,
+        "ch4": 0.0003,
+        "n2o": 0.00005,
+        "co2e_ar6": 3.21,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Fuel Oil"
+      }
+    },
+    "GB": {
+      "2023": {
+        "co2": 3.18,
+        "ch4": 0.0003,
+        "n2o": 0.00005,
+        "co2e_ar6": 3.21,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Fuel Oil"
+      }
+    }
+  },
+  "coal": {
+    "US": {
+      "2023": {
+        "co2": 94.6,
+        "ch4": 0.002,
+        "n2o": 0.0015,
+        "co2e_ar6": 95.0,
+        "unit": "kgCO2e/GJ",
+        "uncertainty": 0.05,
+        "quality": "2",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Coal (Industrial)"
+      }
+    }
+  },
+  "electricity_grid": {
+    "US": {
+      "2023": {
+        "co2": 420.0,
+        "ch4": 0.8,
+        "n2o": 0.3,
+        "co2e_ar6": 429.0,
+        "unit": "kgCO2e/MWh",
+        "uncertainty": 0.10,
+        "quality": "2",
+        "citation": "EPA eGRID 2023, US Average Grid Intensity"
+      }
+    },
+    "GB": {
+      "2023": {
+        "co2": 220.0,
+        "ch4": 0.3,
+        "n2o": 0.1,
+        "co2e_ar6": 225.0,
+        "unit": "kgCO2e/MWh",
+        "uncertainty": 0.08,
+        "quality": "1",
+        "citation": "DEFRA 2023, UK Grid Average"
+      }
+    },
+    "EU": {
+      "2023": {
+        "co2": 295.0,
+        "ch4": 0.5,
+        "n2o": 0.2,
+        "co2e_ar6": 302.0,
+        "unit": "kgCO2e/MWh",
+        "uncertainty": 0.12,
+        "quality": "2",
+        "citation": "European Environment Agency 2023, EU-27 Grid Average"
+      }
+    }
+  },
+  "propane": {
+    "US": {
+      "2023": {
+        "co2": 2.98,
+        "ch4": 0.0001,
+        "n2o": 0.00001,
+        "co2e_ar6": 2.99,
+        "unit": "kgCO2e/kg",
+        "uncertainty": 0.02,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Propane"
+      }
+    }
+  },
+  "kerosene": {
+    "US": {
+      "2023": {
+        "co2": 2.54,
+        "ch4": 0.0002,
+        "n2o": 0.00003,
+        "co2e_ar6": 2.57,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.015,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Kerosene/Jet Fuel"
+      }
+    },
+    "GB": {
+      "2023": {
+        "co2": 2.54,
+        "ch4": 0.0002,
+        "n2o": 0.00003,
+        "co2e_ar6": 2.57,
+        "unit": "kgCO2e/L",
+        "uncertainty": 0.015,
+        "quality": "1",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Kerosene/Jet Fuel"
+      }
+    }
+  },
+  "biomass": {
+    "US": {
+      "2023": {
+        "co2": 0.0,
+        "ch4": 0.03,
+        "n2o": 0.004,
+        "co2e_ar6": 2.5,
+        "unit": "kgCO2e/GJ",
+        "uncertainty": 0.30,
+        "quality": "3",
+        "citation": "DEFRA 2023 Conversion Factors for Company Reporting, Biomass (Wood Pellets)"
+      }
+    }
+  }
+}

@@ -1,0 +1,226 @@
+name: Build & Push Docker Images
+
+on:
+  push:
+    branches: [master, main]
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      push_to_registry:
+        description: 'Push to Docker registry'
+        required: true
+        default: 'true'
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    name: Build & Push Multi-Platform Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    strategy:
+      matrix:
+        include:
+          - dockerfile: Dockerfile
+            image_suffix: ""
+            description: "GreenLang CLI - Production Runtime"
+          - dockerfile: Dockerfile.full
+            image_suffix: "-full"
+            description: "GreenLang Full - All Features"
+          - dockerfile: Dockerfile.runner.optimized
+            image_suffix: "-runner"
+            description: "GreenLang Runner - Optimized Execution"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:latest
+            network=host
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ matrix.image_suffix }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=GreenLang${{ matrix.image_suffix }}
+            org.opencontainers.image.description=${{ matrix.description }}
+            org.opencontainers.image.vendor=GreenLang Team
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_to_registry != 'false') }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            GL_VERSION=0.3.0
+            BUILD_DATE=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.created'] }}
+            VCS_REF=${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.revision'] }}
+          provenance: true
+          sbom: true
+
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v1
+        if: github.event_name != 'pull_request'
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ matrix.image_suffix }}
+          subject-digest: ${{ steps.build-and-push.outputs.digest }}
+          push-to-registry: true
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${{ matrix.image_suffix }}:${{ steps.meta.outputs.version }}
+          format: 'sarif'
+          output: 'trivy-results-${{ matrix.image_suffix }}.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results-${{ matrix.image_suffix }}.sarif'
+          category: 'trivy-${{ matrix.image_suffix }}'
+
+  docker-smoke-test:
+    name: Docker Smoke Tests
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull and test Docker image
+        run: |
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+          # Test basic functionality
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --version
+          docker run --rm ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --help
+
+          # Test health check
+          docker run -d --name test-container ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest --help
+          sleep 10
+          docker inspect --format='{{.State.Health.Status}}' test-container || echo "No healthcheck"
+          docker stop test-container
+          docker rm test-container
+
+      - name: Test Docker Compose stack
+        run: |
+          docker compose -f docker-compose.yml config
+          docker compose -f docker-compose.yml up -d
+          sleep 15
+          docker compose -f docker-compose.yml ps
+          docker compose -f docker-compose.yml down
+
+  image-signing:
+    name: Sign Container Images
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sign container images
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          # Sign each image variant
+          for suffix in "" "-full" "-runner"; do
+            IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}${suffix}:${GITHUB_REF_NAME}"
+            echo "Signing image: ${IMAGE}"
+            cosign sign --yes "${IMAGE}"
+          done
+
+  release-notification:
+    name: Post Release Notification
+    needs: [build-and-push, docker-smoke-test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Create release summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          # Docker Images Released
+
+          ## Images Published
+          - \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${GITHUB_REF_NAME}\`
+          - \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-full:${GITHUB_REF_NAME}\`
+          - \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runner:${GITHUB_REF_NAME}\`
+
+          ## Pull Commands
+          \`\`\`bash
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${GITHUB_REF_NAME}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-full:${GITHUB_REF_NAME}
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runner:${GITHUB_REF_NAME}
+          \`\`\`
+
+          ## Verification
+          All images have been:
+          - Built for linux/amd64 and linux/arm64
+          - Scanned with Trivy
+          - Signed with Cosign (keyless)
+          - Attested with SLSA provenance
+          EOF

@@ -1,0 +1,501 @@
+# =============================================================================
+# Fuel Analyzer Agent - AgentSpec v2
+# =============================================================================
+# This is a complete example AgentSpec demonstrating all capabilities of the
+# GreenLang Agent Generator. It defines a fuel emissions analyzer with:
+# - Complete input/output schemas
+# - Deterministic tools for zero-hallucination
+# - Provenance tracking configuration
+# - Golden tests and property tests
+# =============================================================================
+
+name: Fuel Emissions Analyzer
+version: 1.0.0
+kind: pack
+pack_schema_version: '1.0'
+
+id: emissions/fuel_analyzer_v1
+
+summary: >
+  Calculates greenhouse gas emissions from fuel combustion using IPCC emission
+  factors. Supports multiple fuel types (natural gas, diesel, gasoline, LPG)
+  and provides complete provenance tracking for regulatory compliance.
+
+author:
+  name: GreenLang Team
+  email: support@greenlang.io
+  organization: GreenLang
+
+license: Apache-2.0
+
+tags:
+  - emissions
+  - fuel
+  - scope1
+  - combustion
+  - ghg-protocol
+  - ipcc
+  - zero-hallucination
+
+owners:
+  - '@gl/climate-science'
+  - '@gl/industry-buildings'
+
+# =============================================================================
+# AI Configuration
+# =============================================================================
+ai:
+  json_mode: true
+
+  system_prompt: |
+    You are a climate emissions expert specialized in calculating fuel-based
+    greenhouse gas emissions following GHG Protocol Corporate Standard.
+
+    ZERO-HALLUCINATION RULES:
+    1. NEVER guess emission factors - always use lookup_emission_factor tool
+    2. NEVER perform calculations manually - use calculate_emissions tool
+    3. ALWAYS cite emission factor sources with EF URIs
+    4. ALWAYS validate inputs before calculation
+
+    Your workflow:
+    1. Validate input fuel type and quantity
+    2. Look up appropriate emission factor from IPCC/EPA database
+    3. Calculate emissions using deterministic tool
+    4. Return results with full provenance
+
+    Supported fuel types:
+    - natural_gas: Pipeline natural gas (MJ or m3)
+    - diesel: Diesel fuel (liters)
+    - gasoline: Motor gasoline (liters)
+    - lpg: Liquefied petroleum gas (kg)
+    - fuel_oil: Heavy fuel oil (liters)
+
+  budget:
+    max_cost_usd: 1.0
+    max_input_tokens: 10000
+    max_output_tokens: 2000
+    max_retries: 3
+
+  rag_collections:
+    - ghg_protocol_corp
+    - ipcc_ar6_wg3
+    - epa_ghg_inventory
+
+  tools:
+    # -------------------------------------------------------------------------
+    # Tool 1: Emission Factor Lookup
+    # -------------------------------------------------------------------------
+    - name: lookup_emission_factor
+      description: >
+        Look up emission factor for a fuel type from the IPCC/EPA emission
+        factor database. Returns the emission factor value, unit, and source
+        citation. This is a DETERMINISTIC lookup - same inputs always return
+        same outputs.
+      impl: python://greenlang.tools.emission_factors:lookup_emission_factor
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          fuel_type:
+            type: string
+            description: Type of fuel
+            enum:
+              - natural_gas
+              - diesel
+              - gasoline
+              - lpg
+              - fuel_oil
+          region:
+            type: string
+            description: ISO 3166-1 alpha-2 country code (e.g., US, EU, UK)
+            pattern: "^[A-Z]{2}$"
+          year:
+            type: integer
+            description: Reference year for emission factor
+            minimum: 2000
+            maximum: 2030
+          gwp_set:
+            type: string
+            description: GWP set to use
+            enum:
+              - AR6GWP100
+              - AR5GWP100
+              - AR4GWP100
+            default: AR6GWP100
+        required:
+          - fuel_type
+          - region
+          - year
+      schema_out:
+        type: object
+        properties:
+          ef_uri:
+            type: string
+            description: Emission factor URI (e.g., ef://ipcc/2021/natural_gas/US)
+            pattern: "^ef://"
+          ef_value:
+            type: number
+            description: Emission factor value
+          ef_unit:
+            type: string
+            description: Emission factor unit (e.g., kgCO2e/MJ, kgCO2e/L)
+          source:
+            type: string
+            description: Data source (IPCC, EPA, etc.)
+          gwp_set:
+            type: string
+            description: GWP set used
+          uncertainty:
+            type: number
+            description: Uncertainty percentage (e.g., 0.05 for 5%)
+        required:
+          - ef_uri
+          - ef_value
+          - ef_unit
+          - source
+
+    # -------------------------------------------------------------------------
+    # Tool 2: Emissions Calculator
+    # -------------------------------------------------------------------------
+    - name: calculate_emissions
+      description: >
+        Calculate GHG emissions from fuel combustion using emission factor
+        and activity data. Uses deterministic formula: emissions = activity *
+        emission_factor. All calculations are traceable and reproducible.
+      impl: python://greenlang.tools.calculators:calculate_emissions
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          activity_value:
+            type: number
+            description: Amount of fuel consumed
+            minimum: 0
+          activity_unit:
+            type: string
+            description: Unit of fuel consumption (MJ, L, kg, m3)
+            enum:
+              - MJ
+              - L
+              - kg
+              - m3
+              - kWh
+              - MMBTU
+          ef_value:
+            type: number
+            description: Emission factor value
+          ef_unit:
+            type: string
+            description: Emission factor unit
+          output_unit:
+            type: string
+            description: Desired output unit
+            enum:
+              - kgCO2e
+              - tCO2e
+              - MtCO2e
+            default: tCO2e
+        required:
+          - activity_value
+          - activity_unit
+          - ef_value
+          - ef_unit
+      schema_out:
+        type: object
+        properties:
+          emissions_value:
+            type: number
+            description: Calculated emissions
+          emissions_unit:
+            type: string
+            description: Emissions unit
+          calculation_formula:
+            type: string
+            description: Formula used for calculation
+          conversion_factor:
+            type: number
+            description: Unit conversion factor applied
+        required:
+          - emissions_value
+          - emissions_unit
+
+    # -------------------------------------------------------------------------
+    # Tool 3: Input Validator
+    # -------------------------------------------------------------------------
+    - name: validate_fuel_input
+      description: >
+        Validate fuel input for physical plausibility. Checks that values
+        are within reasonable ranges and units are compatible.
+      impl: python://greenlang.tools.validators:validate_fuel_input
+      safe: true
+      schema_in:
+        type: object
+        properties:
+          fuel_type:
+            type: string
+            description: Fuel type to validate
+          quantity:
+            type: number
+            description: Quantity value
+          unit:
+            type: string
+            description: Quantity unit
+        required:
+          - fuel_type
+          - quantity
+          - unit
+      schema_out:
+        type: object
+        properties:
+          valid:
+            type: boolean
+            description: Whether input is valid
+          warnings:
+            type: array
+            description: List of warnings
+            items:
+              type: string
+          suggested_value:
+            type: number
+            description: Suggested value if input seems wrong
+          plausibility_score:
+            type: number
+            description: Plausibility score 0-1
+        required:
+          - valid
+
+# =============================================================================
+# Realtime Configuration (Optional)
+# =============================================================================
+realtime:
+  default_mode: replay
+  snapshot_path: ./snapshots/fuel_data.json
+  connectors:
+    - name: fuel_prices
+      topic: market/fuel_prices
+      window: 1h
+      ttl: 24h
+      required: false
+
+# =============================================================================
+# Provenance Configuration
+# =============================================================================
+provenance:
+  pin_ef: true
+  gwp_set: AR6GWP100
+  record:
+    - inputs
+    - outputs
+    - factors
+    - ef_uri
+    - ef_cid
+    - calculation_steps
+    - unit_conversions
+    - timestamp
+    - seed
+    - code_sha
+    - user
+
+# =============================================================================
+# Security Configuration
+# =============================================================================
+security:
+  allowlist_hosts:
+    - api.ipcc.ch
+    - api.epa.gov
+    - api.eia.gov
+    - factors.greenlang.io
+  block_on_violation: true
+  audit_log: true
+
+# =============================================================================
+# Tests
+# =============================================================================
+tests:
+  # ---------------------------------------------------------------------------
+  # Golden Tests - Known Input/Output Pairs
+  # ---------------------------------------------------------------------------
+  golden:
+    - name: natural_gas_baseline
+      description: Calculate emissions from 1000 MJ of natural gas in US
+      input:
+        fuel_type: natural_gas
+        quantity: 1000.0
+        unit: MJ
+        region: US
+        year: 2023
+      expect:
+        emissions_tco2e:
+          value: 0.0561
+          tol: 0.001
+        ef_source:
+          value: IPCC
+
+    - name: diesel_vehicle
+      description: Calculate emissions from 100 liters of diesel
+      input:
+        fuel_type: diesel
+        quantity: 100.0
+        unit: L
+        region: EU
+        year: 2023
+      expect:
+        emissions_tco2e:
+          value: 0.267
+          tol: 0.01
+        ef_source:
+          value: IPCC
+
+    - name: gasoline_small
+      description: Small gasoline consumption calculation
+      input:
+        fuel_type: gasoline
+        quantity: 50.0
+        unit: L
+        region: US
+        year: 2023
+      expect:
+        emissions_tco2e:
+          value: 0.116
+          tol: 0.01
+
+    - name: lpg_industrial
+      description: Industrial LPG consumption
+      input:
+        fuel_type: lpg
+        quantity: 500.0
+        unit: kg
+        region: UK
+        year: 2022
+      expect:
+        emissions_tco2e:
+          value: 1.49
+          tol: 0.05
+
+    - name: zero_quantity
+      description: Zero fuel consumption should return zero emissions
+      input:
+        fuel_type: natural_gas
+        quantity: 0.0
+        unit: MJ
+        region: US
+        year: 2023
+      expect:
+        emissions_tco2e:
+          value: 0.0
+          tol: 0.0001
+
+  # ---------------------------------------------------------------------------
+  # Property Tests - Invariants That Must Always Hold
+  # ---------------------------------------------------------------------------
+  properties:
+    - name: non_negative_emissions
+      rule: output.emissions_tco2e >= 0
+      description: Emissions can never be negative
+
+    - name: monotone_quantity
+      rule: output.emissions_tco2e is nondecreasing in input.quantity
+      description: More fuel consumption means more emissions (ceteris paribus)
+
+    - name: zero_in_zero_out
+      rule: input.quantity == 0 implies output.emissions_tco2e == 0
+      description: Zero fuel input must produce zero emissions
+
+    - name: emissions_bounded
+      rule: output.emissions_tco2e <= input.quantity * 0.01
+      description: Emissions should be bounded by physical limits
+      tolerance: 0.001
+
+    - name: ef_uri_format
+      rule: output.ef_uri matches "^ef://"
+      description: Emission factor URI must follow standard format
+
+    - name: provenance_complete
+      rule: output.provenance_hash is not null
+      description: All outputs must have provenance tracking
+
+# =============================================================================
+# Input Schema (Extracted by Generator)
+# =============================================================================
+# Note: These are inferred from the golden tests and tool schemas
+inputs:
+  - name: fuel_type
+    type: string
+    description: Type of fuel (natural_gas, diesel, gasoline, lpg, fuel_oil)
+    required: true
+    enum:
+      - natural_gas
+      - diesel
+      - gasoline
+      - lpg
+      - fuel_oil
+
+  - name: quantity
+    type: number
+    description: Amount of fuel consumed
+    required: true
+    minimum: 0
+
+  - name: unit
+    type: string
+    description: Unit of fuel quantity
+    required: true
+    enum:
+      - MJ
+      - L
+      - kg
+      - m3
+      - kWh
+      - MMBTU
+
+  - name: region
+    type: string
+    description: ISO 3166-1 alpha-2 country code
+    required: true
+    pattern: "^[A-Z]{2}$"
+
+  - name: year
+    type: integer
+    description: Reference year for emission factors
+    required: false
+    default: 2023
+    minimum: 2000
+    maximum: 2030
+
+# =============================================================================
+# Output Schema (Extracted by Generator)
+# =============================================================================
+outputs:
+  - name: emissions_tco2e
+    type: number
+    description: Total emissions in tonnes CO2 equivalent
+    required: true
+    unit: tCO2e
+
+  - name: emissions_kgco2e
+    type: number
+    description: Total emissions in kg CO2 equivalent
+    required: true
+    unit: kgCO2e
+
+  - name: ef_uri
+    type: string
+    description: Emission factor URI for citation
+    required: true
+    pattern: "^ef://"
+
+  - name: ef_source
+    type: string
+    description: Emission factor data source
+    required: true
+
+  - name: calculation_formula
+    type: string
+    description: Formula used for calculation
+    required: false
+
+  - name: energy_mj
+    type: number
+    description: Energy content in MJ (if applicable)
+    required: false
+    unit: MJ

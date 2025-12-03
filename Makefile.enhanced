@@ -1,0 +1,307 @@
+.PHONY: help install dev test unit integ e2e cov test-all lint demo fetch-opa clean security-scan doctor
+.PHONY: docker-build docker-push docker-run docker-stop docker-clean docker-compose-up docker-compose-down
+.PHONY: k8s-apply k8s-delete k8s-status k8s-logs deploy-dev deploy-staging deploy-prod k8s-port-forward
+
+# Variables
+OPA_VERSION ?= 0.64.0
+PYTHON ?= python3
+DOCKER_REGISTRY ?= ghcr.io/greenlang
+IMAGE_NAME ?= greenlang
+VERSION ?= 0.3.0
+DOCKER_TAG ?= $(VERSION)
+NAMESPACE_DEV ?= greenlang-dev
+NAMESPACE_STAGING ?= greenlang-staging
+NAMESPACE_PROD ?= greenlang-prod
+
+# Colors for output
+BOLD := \033[1m
+GREEN := \033[32m
+YELLOW := \033[33m
+CYAN := \033[36m
+RESET := \033[0m
+
+help: ## Show this help message
+	@echo "$(BOLD)$(CYAN)GreenLang Development & DevOps Commands$(RESET)"
+	@echo ""
+	@echo "$(BOLD)Development:$(RESET)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(RESET) %s\n", $$1, $$2}' | grep -v "Docker\|Kubernetes\|Deploy"
+	@echo ""
+	@echo "$(BOLD)Docker:$(RESET)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(RESET) %s\n", $$1, $$2}' | grep "Docker"
+	@echo ""
+	@echo "$(BOLD)Kubernetes:$(RESET)"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(RESET) %s\n", $$1, $$2}' | grep "Kubernetes\|Deploy"
+
+# ============================================================================
+# Development Commands
+# ============================================================================
+
+install: ## Install GreenLang
+	$(PYTHON) -m pip install --upgrade pip
+	$(PYTHON) -m pip install .
+
+dev: ## Install in development mode with dev dependencies
+	$(PYTHON) -m pip install --upgrade pip
+	$(PYTHON) -m pip install -e ".[dev,test,server]"
+	pre-commit install
+
+test: ## Run tests with coverage
+	coverage run -m pytest
+	coverage report -m
+
+unit: ## Run unit tests only
+	pytest -q -m "not integration and not e2e"
+
+integ: ## Run integration tests
+	pytest -q -m integration
+
+e2e: ## Run end-to-end tests
+	pytest -q -m e2e
+
+cov: ## Run all tests with coverage report
+	coverage run -m pytest
+	coverage report -m
+	coverage xml
+	@echo "Coverage XML generated: coverage.xml"
+
+test-all: ## Run all tests (unit, integration, e2e)
+	pytest -v tests/
+
+lint: ## Run code linters and formatters
+	black greenlang/ core/ tests/
+	isort greenlang/ core/ tests/
+	ruff check greenlang/ core/ tests/
+	flake8 greenlang/ core/ tests/
+
+format: ## Format code with black and isort
+	black greenlang/ core/ tests/
+	isort greenlang/ core/ tests/
+
+type-check: ## Run type checking with mypy
+	mypy greenlang/ core/ --ignore-missing-imports
+
+security-scan: ## Run security scans for secrets and vulnerabilities
+	@echo "$(YELLOW)Running pip-audit for dependency vulnerabilities...$(RESET)"
+	-$(PYTHON) -m pip install pip-audit
+	$(PYTHON) -m pip_audit --strict --desc
+	@echo ""
+	@echo "$(YELLOW)Running Bandit for security issues...$(RESET)"
+	bandit -r greenlang/ core/ -ll
+	@echo ""
+	@echo "$(YELLOW)Running TruffleHog for secret scanning...$(RESET)"
+	trufflehog filesystem --no-update . || echo "Install TruffleHog: https://github.com/trufflesecurity/trufflehog"
+
+doctor: ## Check development environment and configuration
+	@echo "$(YELLOW)Checking Python version...$(RESET)"
+	$(PYTHON) --version
+	@echo ""
+	@echo "$(YELLOW)Checking installed packages...$(RESET)"
+	$(PYTHON) -m pip list | grep -E "(greenlang|pytest|coverage|pip-audit)" || true
+	@echo ""
+	@echo "$(YELLOW)Checking Docker...$(RESET)"
+	docker --version || echo "Docker not installed"
+	@echo ""
+	@echo "$(YELLOW)Checking kubectl...$(RESET)"
+	kubectl version --client || echo "kubectl not installed"
+	@echo ""
+	@echo "$(YELLOW)Running greenlang doctor...$(RESET)"
+	$(PYTHON) -m greenlang.cli doctor || echo "GreenLang doctor not available"
+
+demo: ## Run the demo pipeline
+	$(PYTHON) -m greenlang.cli demo run
+
+fetch-opa: ## Download OPA binary
+	$(PYTHON) scripts/fetch_opa.py $(OPA_VERSION)
+
+clean: ## Clean build artifacts and caches
+	rm -rf build/
+	rm -rf dist/
+	rm -rf *.egg-info
+	rm -rf .pytest_cache/
+	rm -rf .coverage
+	rm -rf htmlcov/
+	rm -rf .coverage_html/
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete
+
+# ============================================================================
+# Docker Commands
+# ============================================================================
+
+docker-build: ## Docker: Build Docker image
+	@echo "$(CYAN)Building Docker image: $(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG)$(RESET)"
+	docker build \
+		--build-arg GL_VERSION=$(VERSION) \
+		--build-arg BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ') \
+		--build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
+		-t $(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG) \
+		-t $(DOCKER_REGISTRY)/$(IMAGE_NAME):latest \
+		-f Dockerfile .
+
+docker-build-api: ## Docker: Build FastAPI Docker image
+	@echo "$(CYAN)Building API Docker image: $(DOCKER_REGISTRY)/$(IMAGE_NAME)-api:$(DOCKER_TAG)$(RESET)"
+	docker build \
+		--build-arg GL_VERSION=$(VERSION) \
+		--build-arg BUILD_DATE=$(shell date -u +'%Y-%m-%dT%H:%M:%SZ') \
+		--build-arg VCS_REF=$(shell git rev-parse --short HEAD) \
+		-t $(DOCKER_REGISTRY)/$(IMAGE_NAME)-api:$(DOCKER_TAG) \
+		-t $(DOCKER_REGISTRY)/$(IMAGE_NAME)-api:latest \
+		-f Dockerfile.api .
+
+docker-build-all: ## Docker: Build all Docker images
+	$(MAKE) docker-build
+	$(MAKE) docker-build-api
+	docker build -t $(DOCKER_REGISTRY)/$(IMAGE_NAME)-full:$(DOCKER_TAG) -f Dockerfile.full .
+	docker build -t $(DOCKER_REGISTRY)/$(IMAGE_NAME)-runner:$(DOCKER_TAG) -f Dockerfile.runner.optimized .
+
+docker-push: ## Docker: Push Docker image to registry
+	@echo "$(CYAN)Pushing Docker images to registry$(RESET)"
+	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG)
+	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME):latest
+
+docker-push-all: ## Docker: Push all Docker images to registry
+	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG)
+	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME):latest
+	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME)-api:$(DOCKER_TAG)
+	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME)-api:latest
+	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME)-full:$(DOCKER_TAG)
+	docker push $(DOCKER_REGISTRY)/$(IMAGE_NAME)-runner:$(DOCKER_TAG)
+
+docker-run: ## Docker: Run Docker container locally
+	docker run -it --rm \
+		-p 8000:8000 \
+		-e ENVIRONMENT=development \
+		$(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG)
+
+docker-run-api: ## Docker: Run API container with dependencies
+	docker run -d --rm \
+		--name greenlang-api \
+		-p 8000:8000 \
+		-e ENVIRONMENT=development \
+		-e LOG_LEVEL=debug \
+		$(DOCKER_REGISTRY)/$(IMAGE_NAME)-api:$(DOCKER_TAG)
+
+docker-stop: ## Docker: Stop running containers
+	docker stop greenlang-api || true
+
+docker-clean: ## Docker: Clean Docker images and containers
+	docker stop $$(docker ps -aq --filter "name=greenlang") 2>/dev/null || true
+	docker rm $$(docker ps -aq --filter "name=greenlang") 2>/dev/null || true
+	docker rmi $$(docker images -q "$(DOCKER_REGISTRY)/$(IMAGE_NAME)*") 2>/dev/null || true
+
+docker-compose-up: ## Docker: Start Docker Compose stack
+	@echo "$(CYAN)Starting Docker Compose stack$(RESET)"
+	docker compose up -d
+	@echo "$(GREEN)Stack started. Access API at http://localhost:8000$(RESET)"
+
+docker-compose-down: ## Docker: Stop Docker Compose stack
+	@echo "$(YELLOW)Stopping Docker Compose stack$(RESET)"
+	docker compose down -v
+
+docker-compose-logs: ## Docker: View Docker Compose logs
+	docker compose logs -f
+
+docker-test: ## Docker: Test Docker image
+	@echo "$(CYAN)Testing Docker image$(RESET)"
+	docker run --rm $(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG) --version
+	docker run --rm $(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG) --help
+
+# ============================================================================
+# Kubernetes Commands
+# ============================================================================
+
+k8s-apply: ## Kubernetes: Apply all dev manifests
+	@echo "$(CYAN)Applying Kubernetes manifests to dev environment$(RESET)"
+	kubectl apply -f kubernetes/dev/namespace.yaml
+	kubectl apply -f kubernetes/dev/configmap.yaml
+	kubectl create secret generic greenlang-secrets \
+		--from-literal=database-url='postgresql://postgres:password@postgres:5432/greenlang_dev' \
+		--from-literal=redis-url='redis://redis:6379/0' \
+		--from-literal=secret-key='dev-secret-key-change-in-production' \
+		--from-literal=jwt-secret='dev-jwt-secret-change-in-production' \
+		--namespace $(NAMESPACE_DEV) \
+		--dry-run=client -o yaml | kubectl apply -f -
+	kubectl apply -f kubernetes/dev/deployment.yaml
+	kubectl apply -f kubernetes/dev/service.yaml
+	kubectl apply -f kubernetes/dev/ingress.yaml
+	kubectl apply -f kubernetes/dev/hpa.yaml
+	@echo "$(GREEN)Kubernetes resources applied to $(NAMESPACE_DEV)$(RESET)"
+
+k8s-delete: ## Kubernetes: Delete all dev resources
+	@echo "$(YELLOW)Deleting Kubernetes resources from dev environment$(RESET)"
+	kubectl delete -f kubernetes/dev/ --ignore-not-found=true
+
+k8s-status: ## Kubernetes: Show cluster status
+	@echo "$(CYAN)Kubernetes Cluster Status - $(NAMESPACE_DEV)$(RESET)"
+	kubectl get all -n $(NAMESPACE_DEV)
+	@echo ""
+	kubectl get ingress -n $(NAMESPACE_DEV)
+
+k8s-logs: ## Kubernetes: Show pod logs
+	kubectl logs -f -l app=greenlang-api -n $(NAMESPACE_DEV) --tail=100
+
+k8s-describe: ## Kubernetes: Describe deployment
+	kubectl describe deployment greenlang-api -n $(NAMESPACE_DEV)
+
+k8s-port-forward: ## Kubernetes: Port forward to local
+	@echo "$(CYAN)Port forwarding API to localhost:8000$(RESET)"
+	kubectl port-forward -n $(NAMESPACE_DEV) svc/greenlang-api-service 8000:80
+
+k8s-exec: ## Kubernetes: Execute shell in pod
+	kubectl exec -it -n $(NAMESPACE_DEV) $$(kubectl get pod -n $(NAMESPACE_DEV) -l app=greenlang-api -o jsonpath='{.items[0].metadata.name}') -- /bin/bash
+
+k8s-restart: ## Kubernetes: Restart deployment
+	kubectl rollout restart deployment/greenlang-api -n $(NAMESPACE_DEV)
+	kubectl rollout status deployment/greenlang-api -n $(NAMESPACE_DEV)
+
+# ============================================================================
+# Deployment Commands
+# ============================================================================
+
+deploy-dev: docker-build-all docker-push k8s-apply ## Deploy: Build, push, and deploy to dev
+	@echo "$(GREEN)Deployment to dev complete!$(RESET)"
+	kubectl rollout status deployment/greenlang-api -n $(NAMESPACE_DEV)
+
+deploy-staging: ## Deploy: Deploy to staging environment
+	@echo "$(CYAN)Deploying to staging environment$(RESET)"
+	kubectl apply -f kubernetes/staging/
+	kubectl set image deployment/greenlang-api \
+		greenlang-api=$(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG) \
+		-n $(NAMESPACE_STAGING)
+	kubectl rollout status deployment/greenlang-api -n $(NAMESPACE_STAGING)
+
+deploy-prod: ## Deploy: Deploy to production (requires confirmation)
+	@echo "$(YELLOW)WARNING: Deploying to PRODUCTION$(RESET)"
+	@read -p "Are you sure you want to deploy to production? [yes/NO]: " confirm && [ "$$confirm" = "yes" ]
+	kubectl apply -f kubernetes/prod/
+	kubectl set image deployment/greenlang-api \
+		greenlang-api=$(DOCKER_REGISTRY)/$(IMAGE_NAME):$(DOCKER_TAG) \
+		-n $(NAMESPACE_PROD)
+	kubectl rollout status deployment/greenlang-api -n $(NAMESPACE_PROD)
+
+rollback-dev: ## Deploy: Rollback dev deployment
+	kubectl rollout undo deployment/greenlang-api -n $(NAMESPACE_DEV)
+	kubectl rollout status deployment/greenlang-api -n $(NAMESPACE_DEV)
+
+verify-deployment: ## Deploy: Verify deployment health
+	@echo "$(CYAN)Verifying deployment health$(RESET)"
+	curl -f http://localhost:8000/api/v1/health || echo "Health check failed"
+	curl -f http://localhost:8000/api/v1/ready || echo "Readiness check failed"
+
+# ============================================================================
+# CI/CD Commands
+# ============================================================================
+
+ci-test: ## CI/CD: Run CI test suite
+	$(MAKE) lint
+	$(MAKE) type-check
+	$(MAKE) test-all
+	$(MAKE) security-scan
+
+ci-build: ## CI/CD: Build for CI
+	$(MAKE) docker-build-all
+	$(MAKE) docker-test
+
+ci-deploy: ## CI/CD: Deploy from CI
+	$(MAKE) docker-push-all
+	$(MAKE) k8s-apply

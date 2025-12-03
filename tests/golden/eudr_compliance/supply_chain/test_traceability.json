@@ -1,0 +1,379 @@
+{
+  "suite": "EUDR Supply Chain Traceability",
+  "version": "1.0.0",
+  "description": "Golden tests for supply chain tracing and traceability scoring under EUDR",
+  "tests": [
+    {
+      "test_id": "TRACE-COMP-001",
+      "description": "Complete supply chain - cocoa from farm to importer",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-COCOA-001",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FARM-CI-001", "operator_name": "Cocoa Farm Abidjan", "country_code": "CI", "coordinates": [6.5, -5.0]},
+          {"node_type": "collector", "node_id": "COLL-CI-001", "operator_name": "Regional Cooperative", "country_code": "CI"},
+          {"node_type": "processor", "node_id": "PROC-CI-001", "operator_name": "Cocoa Processing Ltd", "country_code": "CI"},
+          {"node_type": "trader", "node_id": "TRADE-CH-001", "operator_name": "Swiss Trading AG", "country_code": "CH"},
+          {"node_type": "importer", "node_id": "IMP-DE-001", "operator_name": "German Chocolate GmbH", "country_code": "DE"}
+        ],
+        "commodity_type": "cocoa"
+      },
+      "expected_output": {
+        "traceability_score": 100.0,
+        "verified_nodes": 5,
+        "total_nodes": 5,
+        "origin_verified": true,
+        "chain_of_custody": "complete"
+      },
+      "tolerance": 0.05,
+      "tags": ["complete", "cocoa", "full_chain"]
+    },
+    {
+      "test_id": "TRACE-COMP-002",
+      "description": "Complete supply chain - palm oil from plantation to refinery",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-PALM-001",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "PLANT-ID-001", "operator_name": "Palm Plantation Sumatra", "country_code": "ID", "coordinates": [2.5, 99.0]},
+          {"node_type": "processor", "node_id": "MILL-ID-001", "operator_name": "Palm Oil Mill", "country_code": "ID"},
+          {"node_type": "trader", "node_id": "TRADE-SG-001", "operator_name": "Singapore Trading Pte", "country_code": "SG"},
+          {"node_type": "importer", "node_id": "IMP-NL-001", "operator_name": "Dutch Oils BV", "country_code": "NL"}
+        ],
+        "commodity_type": "palm_oil"
+      },
+      "expected_output": {
+        "traceability_score": 100.0,
+        "verified_nodes": 4,
+        "total_nodes": 4,
+        "origin_verified": true,
+        "chain_of_custody": "complete"
+      },
+      "tolerance": 0.05,
+      "tags": ["complete", "palm_oil", "full_chain"]
+    },
+    {
+      "test_id": "TRACE-COMP-003",
+      "description": "Complete supply chain - soya from farm to port",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-SOYA-001",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FARM-BR-001", "operator_name": "Fazenda Soja MT", "country_code": "BR", "coordinates": [-15.0, -55.0]},
+          {"node_type": "collector", "node_id": "SILO-BR-001", "operator_name": "Grain Silo Cuiaba", "country_code": "BR"},
+          {"node_type": "processor", "node_id": "CRUSH-BR-001", "operator_name": "Soja Crusher Brazil", "country_code": "BR"},
+          {"node_type": "trader", "node_id": "TRADE-BR-001", "operator_name": "Exportadora Brasil", "country_code": "BR"},
+          {"node_type": "importer", "node_id": "IMP-ES-001", "operator_name": "Spanish Feeds SA", "country_code": "ES"}
+        ],
+        "commodity_type": "soya"
+      },
+      "expected_output": {
+        "traceability_score": 100.0,
+        "verified_nodes": 5,
+        "total_nodes": 5,
+        "origin_verified": true,
+        "chain_of_custody": "complete"
+      },
+      "tolerance": 0.05,
+      "tags": ["complete", "soya", "full_chain"]
+    },
+    {
+      "test_id": "TRACE-PART-001",
+      "description": "Partial chain - missing producer coordinates",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-COCOA-002",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FARM-GH-001", "operator_name": "Ghana Cocoa Farm", "country_code": "GH"},
+          {"node_type": "collector", "node_id": "COLL-GH-001", "operator_name": "Ashanti Cooperative", "country_code": "GH"},
+          {"node_type": "processor", "node_id": "PROC-GH-001", "operator_name": "Cocobod Processing", "country_code": "GH"},
+          {"node_type": "importer", "node_id": "IMP-BE-001", "operator_name": "Belgian Chocolates NV", "country_code": "BE"}
+        ],
+        "commodity_type": "cocoa"
+      },
+      "expected_output": {
+        "traceability_score": 60.0,
+        "total_nodes": 4,
+        "origin_verified": false,
+        "chain_of_custody": "partial"
+      },
+      "tolerance": 0.10,
+      "tags": ["partial", "cocoa", "missing_coordinates"]
+    },
+    {
+      "test_id": "TRACE-PART-002",
+      "description": "Partial chain - incomplete operator details",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-RUBBER-001",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FARM-TH-001", "operator_name": "Thai Rubber Farm", "country_code": "TH", "coordinates": [8.0, 99.5]},
+          {"node_type": "collector", "node_id": "COLL-TH-001"},
+          {"node_type": "processor", "node_id": "PROC-TH-001", "operator_name": "Thai Rubber Processing"},
+          {"node_type": "importer", "node_id": "IMP-IT-001", "operator_name": "Italian Tyres SpA", "country_code": "IT"}
+        ],
+        "commodity_type": "rubber"
+      },
+      "expected_output": {
+        "origin_verified": true,
+        "chain_of_custody": "partial"
+      },
+      "tolerance": 0.10,
+      "tags": ["partial", "rubber", "incomplete_details"]
+    },
+    {
+      "test_id": "TRACE-BROKE-001",
+      "description": "Broken chain - no producer node",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-COFFEE-001",
+        "supply_chain_nodes": [
+          {"node_type": "collector", "node_id": "COLL-ET-001", "operator_name": "Sidama Cooperative", "country_code": "ET"},
+          {"node_type": "processor", "node_id": "PROC-ET-001", "operator_name": "Ethiopia Coffee Mills", "country_code": "ET"},
+          {"node_type": "trader", "node_id": "TRADE-UK-001", "operator_name": "London Coffee Traders", "country_code": "GB"},
+          {"node_type": "importer", "node_id": "IMP-FR-001", "operator_name": "French Roasters SARL", "country_code": "FR"}
+        ],
+        "commodity_type": "coffee"
+      },
+      "expected_output": {
+        "origin_verified": false,
+        "chain_of_custody": "broken"
+      },
+      "tolerance": 0.10,
+      "tags": ["broken", "coffee", "no_producer"]
+    },
+    {
+      "test_id": "TRACE-BROKE-002",
+      "description": "Broken chain - empty nodes list",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-WOOD-001",
+        "supply_chain_nodes": [],
+        "commodity_type": "wood"
+      },
+      "expected_output": {
+        "traceability_score": 0.0,
+        "verified_nodes": 0,
+        "total_nodes": 0,
+        "origin_verified": false,
+        "chain_of_custody": "broken"
+      },
+      "tolerance": 0.01,
+      "tags": ["broken", "wood", "empty"]
+    },
+    {
+      "test_id": "TRACE-MULTI-001",
+      "description": "Multi-tier supply chain - 6 nodes",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-CATTLE-001",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "RANCH-BR-001", "operator_name": "Fazenda Pecuaria", "country_code": "BR", "coordinates": [-18.5, -54.0]},
+          {"node_type": "collector", "node_id": "FEED-BR-001", "operator_name": "Feedlot Mato Grosso", "country_code": "BR"},
+          {"node_type": "processor", "node_id": "SLAUGHT-BR-001", "operator_name": "JBS Slaughterhouse", "country_code": "BR"},
+          {"node_type": "processor", "node_id": "PACK-BR-001", "operator_name": "Meat Packing BR", "country_code": "BR"},
+          {"node_type": "trader", "node_id": "TRADE-BR-001", "operator_name": "Beef Export Brasil", "country_code": "BR"},
+          {"node_type": "importer", "node_id": "IMP-UK-001", "operator_name": "British Beef Ltd", "country_code": "GB"}
+        ],
+        "commodity_type": "cattle"
+      },
+      "expected_output": {
+        "traceability_score": 100.0,
+        "verified_nodes": 6,
+        "total_nodes": 6,
+        "origin_verified": true,
+        "chain_of_custody": "complete"
+      },
+      "tolerance": 0.05,
+      "tags": ["complete", "cattle", "multi_tier"]
+    },
+    {
+      "test_id": "TRACE-MULTI-002",
+      "description": "Multi-tier with gaps - 5 nodes, 2 incomplete",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-WOOD-002",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FOREST-CM-001", "operator_name": "Cameroon Forest Concession", "country_code": "CM", "coordinates": [4.5, 11.0]},
+          {"node_type": "processor", "node_id": "SAWMILL-CM-001"},
+          {"node_type": "processor", "node_id": "VENEER-CM-001", "operator_name": "Veneer Factory Douala"},
+          {"node_type": "trader", "node_id": "TRADE-FR-001", "operator_name": "French Wood Imports", "country_code": "FR"},
+          {"node_type": "importer", "node_id": "IMP-DE-002", "operator_name": "German Furniture GmbH", "country_code": "DE"}
+        ],
+        "commodity_type": "wood"
+      },
+      "expected_output": {
+        "origin_verified": true,
+        "chain_of_custody": "partial"
+      },
+      "tolerance": 0.10,
+      "tags": ["partial", "wood", "multi_tier", "gaps"]
+    },
+    {
+      "test_id": "TRACE-SCORE-001",
+      "description": "Score calculation - 3 of 4 verified",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-PALM-002",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "PLANT-MY-001", "operator_name": "Sabah Palm Estate", "country_code": "MY", "coordinates": [5.5, 117.0]},
+          {"node_type": "processor", "node_id": "MILL-MY-001", "operator_name": "Palm Mill Sabah", "country_code": "MY"},
+          {"node_type": "trader", "node_id": "TRADE-MY-001"},
+          {"node_type": "importer", "node_id": "IMP-IN-001", "operator_name": "Indian Oils Ltd", "country_code": "IN"}
+        ],
+        "commodity_type": "palm_oil"
+      },
+      "expected_output": {
+        "verified_nodes": 3,
+        "total_nodes": 4,
+        "origin_verified": true
+      },
+      "tolerance": 0.05,
+      "tags": ["partial", "palm_oil", "score_test"]
+    },
+    {
+      "test_id": "TRACE-SCORE-002",
+      "description": "Score calculation - 2 of 5 verified (low score)",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-COFFEE-002",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FARM-CO-001"},
+          {"node_type": "collector", "node_id": "COLL-CO-001"},
+          {"node_type": "processor", "node_id": "PROC-CO-001", "operator_name": "Colombian Coffee Mills", "country_code": "CO"},
+          {"node_type": "trader", "node_id": "TRADE-US-001"},
+          {"node_type": "importer", "node_id": "IMP-JP-001", "operator_name": "Japan Coffee Co", "country_code": "JP"}
+        ],
+        "commodity_type": "coffee"
+      },
+      "expected_output": {
+        "origin_verified": false,
+        "chain_of_custody": "broken"
+      },
+      "tolerance": 0.10,
+      "tags": ["broken", "coffee", "low_score"]
+    },
+    {
+      "test_id": "TRACE-MIN-001",
+      "description": "Minimum valid chain - producer and importer only",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-COCOA-003",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FARM-EC-001", "operator_name": "Ecuador Fine Cocoa", "country_code": "EC", "coordinates": [-1.5, -79.0]},
+          {"node_type": "importer", "node_id": "IMP-CH-001", "operator_name": "Swiss Fine Chocolate", "country_code": "CH"}
+        ],
+        "commodity_type": "cocoa"
+      },
+      "expected_output": {
+        "verified_nodes": 2,
+        "total_nodes": 2,
+        "origin_verified": true,
+        "chain_of_custody": "complete"
+      },
+      "tolerance": 0.05,
+      "tags": ["complete", "cocoa", "minimal"]
+    },
+    {
+      "test_id": "TRACE-GAPS-001",
+      "description": "Gap detection - missing required fields",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-SOYA-002",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "coordinates": [-12.0, -56.0]},
+          {"node_id": "COLL-BR-002", "operator_name": "Grain Collector"},
+          {"node_type": "processor", "node_id": "PROC-BR-002", "operator_name": "Soya Processor", "country_code": "BR"},
+          {"node_type": "importer", "node_id": "IMP-NL-002", "operator_name": "Dutch Feed BV", "country_code": "NL"}
+        ],
+        "commodity_type": "soya"
+      },
+      "expected_output": {
+        "chain_of_custody": "partial"
+      },
+      "tolerance": 0.10,
+      "tags": ["partial", "soya", "gaps", "missing_fields"]
+    },
+    {
+      "test_id": "TRACE-ALL-COMM-001",
+      "description": "All 7 commodities - cattle chain",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-CATTLE-002",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "RANCH-PY-001", "operator_name": "Paraguay Ranch", "country_code": "PY", "coordinates": [-23.0, -57.0]},
+          {"node_type": "processor", "node_id": "SLAUGHT-PY-001", "operator_name": "Asuncion Meat Packers", "country_code": "PY"},
+          {"node_type": "importer", "node_id": "IMP-RU-001", "operator_name": "Russian Meat Import", "country_code": "RU"}
+        ],
+        "commodity_type": "cattle"
+      },
+      "expected_output": {
+        "origin_verified": true,
+        "chain_of_custody": "complete"
+      },
+      "tolerance": 0.05,
+      "tags": ["complete", "cattle"]
+    },
+    {
+      "test_id": "TRACE-ALL-COMM-002",
+      "description": "All 7 commodities - rubber chain",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-RUBBER-002",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "PLANT-VN-001", "operator_name": "Vietnam Rubber Plantation", "country_code": "VN", "coordinates": [11.5, 107.0]},
+          {"node_type": "processor", "node_id": "PROC-VN-001", "operator_name": "Rubber Processing VN", "country_code": "VN"},
+          {"node_type": "trader", "node_id": "TRADE-SG-002", "operator_name": "Singapore Rubber Trade", "country_code": "SG"},
+          {"node_type": "importer", "node_id": "IMP-CZ-001", "operator_name": "Czech Tyre Makers", "country_code": "CZ"}
+        ],
+        "commodity_type": "rubber"
+      },
+      "expected_output": {
+        "origin_verified": true,
+        "chain_of_custody": "complete"
+      },
+      "tolerance": 0.05,
+      "tags": ["complete", "rubber"]
+    },
+    {
+      "test_id": "TRACE-ALL-COMM-003",
+      "description": "All 7 commodities - wood chain",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-WOOD-003",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FOREST-SE-001", "operator_name": "Swedish Forest AB", "country_code": "SE", "coordinates": [62.0, 17.0]},
+          {"node_type": "processor", "node_id": "SAWMILL-SE-001", "operator_name": "Nordic Sawmill", "country_code": "SE"},
+          {"node_type": "processor", "node_id": "PULP-SE-001", "operator_name": "Swedish Pulp Mills", "country_code": "SE"},
+          {"node_type": "importer", "node_id": "IMP-DE-003", "operator_name": "German Paper GmbH", "country_code": "DE"}
+        ],
+        "commodity_type": "wood"
+      },
+      "expected_output": {
+        "origin_verified": true,
+        "chain_of_custody": "complete"
+      },
+      "tolerance": 0.05,
+      "tags": ["complete", "wood", "low_risk_origin"]
+    },
+    {
+      "test_id": "TRACE-SINGLE-001",
+      "description": "Single node - producer only",
+      "tool_name": "trace_supply_chain",
+      "input": {
+        "shipment_id": "SHIP-SINGLE-001",
+        "supply_chain_nodes": [
+          {"node_type": "producer", "node_id": "FARM-HN-001", "operator_name": "Honduras Palm Farm", "country_code": "HN", "coordinates": [15.0, -87.0]}
+        ],
+        "commodity_type": "palm_oil"
+      },
+      "expected_output": {
+        "verified_nodes": 1,
+        "total_nodes": 1,
+        "origin_verified": true
+      },
+      "tolerance": 0.05,
+      "tags": ["partial", "palm_oil", "single_node"]
+    }
+  ]
+}

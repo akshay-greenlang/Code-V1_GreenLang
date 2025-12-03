@@ -1,0 +1,293 @@
+name: CI - Comprehensive Test Suite
+
+on:
+  pull_request:
+    branches: [master, main, develop]
+  push:
+    branches: [master, main]
+
+env:
+  PYTHON_VERSION: "3.11"
+  CACHE_VERSION: v1
+
+jobs:
+  lint-and-typecheck:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev,test]"
+
+      - name: Run Black (code formatting)
+        run: black --check greenlang/ core/ tests/
+
+      - name: Run isort (import sorting)
+        run: isort --check-only greenlang/ core/ tests/
+
+      - name: Run Ruff (linting)
+        run: ruff check greenlang/ core/ tests/
+
+      - name: Run Flake8 (additional linting)
+        run: flake8 greenlang/ core/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+
+      - name: Run mypy (type checking)
+        run: mypy greenlang/ core/ --ignore-missing-imports --no-strict-optional
+
+      - name: Run Bandit (security linting)
+        run: bandit -r greenlang/ core/ -ll -f json -o bandit-report.json || true
+
+      - name: Upload Bandit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+
+  unit-tests:
+    name: Unit Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test,dev]"
+
+      - name: Run unit tests with coverage
+        run: |
+          pytest tests/ \
+            -v \
+            --cov=greenlang \
+            --cov=core.greenlang \
+            --cov-report=xml:coverage-${{ matrix.python-version }}.xml \
+            --cov-report=html:.coverage_html_${{ matrix.python-version }} \
+            --cov-report=term-missing \
+            --cov-fail-under=85 \
+            --junit-xml=junit-${{ matrix.python-version }}.xml \
+            -m "not integration and not e2e"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage-${{ matrix.python-version }}.xml
+          flags: unittests-python-${{ matrix.python-version }}
+          name: coverage-python-${{ matrix.python-version }}
+          fail_ci_if_error: false
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-python-${{ matrix.python-version }}
+          path: |
+            junit-${{ matrix.python-version }}.xml
+            .coverage_html_${{ matrix.python-version }}/
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: greenlang_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test,dev,server,data]"
+
+      - name: Wait for services
+        run: |
+          sleep 5
+          pg_isready -h localhost -p 5432 || true
+          redis-cli -h localhost -p 6379 ping || true
+
+      - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/greenlang_test
+          REDIS_URL: redis://localhost:6379/0
+        run: |
+          pytest tests/ \
+            -v \
+            --cov=greenlang \
+            --cov=core.greenlang \
+            --cov-report=xml:coverage-integration.xml \
+            --cov-report=term-missing \
+            --junit-xml=junit-integration.xml \
+            -m integration
+
+      - name: Upload integration coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage-integration.xml
+          flags: integration
+          name: integration-tests
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit safety bandit
+
+      - name: Run pip-audit (dependency vulnerabilities)
+        run: |
+          pip-audit --desc --format json --output pip-audit-report.json || true
+          pip-audit --desc || true
+
+      - name: Run Safety (dependency security)
+        run: |
+          safety check --json --output safety-report.json || true
+          safety check || true
+
+      - name: Run Trivy (container scanning)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            pip-audit-report.json
+            safety-report.json
+            trivy-results.sarif
+
+  build-validation:
+    name: Build & Package Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package with twine
+        run: twine check dist/*
+
+      - name: Test package installation
+        run: |
+          pip install dist/*.whl
+          gl --version
+          gl --help
+
+      - name: Upload built package
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package
+          path: dist/
+
+  ci-gate:
+    name: CI Gate - All Tests Passed
+    needs: [lint-and-typecheck, unit-tests, integration-tests, security-scan, build-validation]
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.lint-and-typecheck.result }}" != "success" ] || \
+             [ "${{ needs.unit-tests.result }}" != "success" ] || \
+             [ "${{ needs.integration-tests.result }}" != "success" ] || \
+             [ "${{ needs.build-validation.result }}" != "success" ]; then
+            echo "CI Gate Failed: One or more required jobs failed"
+            exit 1
+          fi
+          echo "CI Gate Passed: All required jobs succeeded"
+
+      - name: Post CI results
+        if: always()
+        run: |
+          echo "=== CI Results ==="
+          echo "Lint & Type Check: ${{ needs.lint-and-typecheck.result }}"
+          echo "Unit Tests: ${{ needs.unit-tests.result }}"
+          echo "Integration Tests: ${{ needs.integration-tests.result }}"
+          echo "Security Scan: ${{ needs.security-scan.result }}"
+          echo "Build Validation: ${{ needs.build-validation.result }}"

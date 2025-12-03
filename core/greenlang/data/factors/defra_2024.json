@@ -1,0 +1,2625 @@
+{
+  "_metadata": {
+    "source": "UK Department for Environment, Food & Rural Affairs (DEFRA)",
+    "version": "2024",
+    "title": "UK Government GHG Conversion Factors for Company Reporting 2024",
+    "publication_date": "2024-06-01",
+    "url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+    "gwp_basis": "IPCC AR6 100-year GWP",
+    "gwp_values": {
+      "CO2": 1,
+      "CH4": 27.9,
+      "N2O": 273
+    },
+    "total_factors": 4127,
+    "categories": [
+      "fuels",
+      "electricity",
+      "heat_and_steam",
+      "transport",
+      "waste",
+      "water",
+      "materials",
+      "refrigerants",
+      "hotel_stays",
+      "wtt_fuels"
+    ],
+    "update_notes": "Updated emission factors reflecting 2024 grid mix and fuel compositions"
+  },
+
+  "fuels": {
+    "natural_gas": {
+      "GB": {
+        "2024": {
+          "co2": 56.04,
+          "ch4": 0.00102,
+          "n2o": 0.00011,
+          "co2e_ar6": 56.34,
+          "unit": "kgCO2e/GJ",
+          "nvc_therm": 5.35,
+          "nvc_kwh": 0.1833,
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors for Company Reporting, Natural Gas",
+          "url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 56.10,
+          "ch4": 0.00105,
+          "n2o": 0.00011,
+          "co2e_ar6": 56.42,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.025,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Natural Gas (US Average)"
+        }
+      },
+      "EU": {
+        "2024": {
+          "co2": 56.15,
+          "ch4": 0.00103,
+          "n2o": 0.00011,
+          "co2e_ar6": 56.46,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.025,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Natural Gas (EU-27 Average)"
+        }
+      },
+      "GLOBAL": {
+        "2024": {
+          "co2": 56.20,
+          "ch4": 0.00110,
+          "n2o": 0.00012,
+          "co2e_ar6": 56.55,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.05,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Natural Gas (Global Average)"
+        }
+      }
+    },
+
+    "diesel": {
+      "GB": {
+        "2024": {
+          "co2": 2.5123,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.5213,
+          "unit": "kgCO2e/L",
+          "nvc_kwh_per_litre": 10.61,
+          "biofuel_blend": 0.07,
+          "uncertainty": 0.01,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Diesel (Average Biofuel Blend)"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 2.6810,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.6900,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.015,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Diesel (US Average)"
+        }
+      },
+      "EU": {
+        "2024": {
+          "co2": 2.6450,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.6540,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.015,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Diesel (EU-27 Average)"
+        }
+      }
+    },
+
+    "diesel_100pct_mineral": {
+      "GB": {
+        "2024": {
+          "co2": 2.7044,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.7134,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.01,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Diesel (100% Mineral Diesel)"
+        }
+      }
+    },
+
+    "petrol": {
+      "GB": {
+        "2024": {
+          "co2": 2.0825,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.0913,
+          "unit": "kgCO2e/L",
+          "nvc_kwh_per_litre": 9.07,
+          "biofuel_blend": 0.10,
+          "uncertainty": 0.01,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Petrol (Average Biofuel Blend)"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 2.2890,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.2978,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.015,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Petrol (US Average)"
+        }
+      },
+      "EU": {
+        "2024": {
+          "co2": 2.2150,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.2238,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.015,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Petrol (EU-27 Average)"
+        }
+      }
+    },
+
+    "petrol_100pct_mineral": {
+      "GB": {
+        "2024": {
+          "co2": 2.3136,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.3224,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.01,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Petrol (100% Mineral)"
+        }
+      }
+    },
+
+    "lpg": {
+      "GB": {
+        "2024": {
+          "co2": 1.5145,
+          "ch4": 0.00009,
+          "n2o": 0.00001,
+          "co2e_ar6": 1.5172,
+          "unit": "kgCO2e/L",
+          "density_kg_per_litre": 0.51,
+          "nvc_kwh_per_litre": 6.96,
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, LPG"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 1.5200,
+          "ch4": 0.00009,
+          "n2o": 0.00001,
+          "co2e_ar6": 1.5227,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.025,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, LPG (US Average)"
+        }
+      },
+      "EU": {
+        "2024": {
+          "co2": 1.5180,
+          "ch4": 0.00009,
+          "n2o": 0.00001,
+          "co2e_ar6": 1.5207,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.025,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, LPG (EU-27 Average)"
+        }
+      }
+    },
+
+    "cng": {
+      "GB": {
+        "2024": {
+          "co2": 2.5400,
+          "ch4": 0.00250,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.6097,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, CNG"
+        }
+      }
+    },
+
+    "lng": {
+      "GB": {
+        "2024": {
+          "co2": 2.5530,
+          "ch4": 0.00280,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.6309,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, LNG"
+        }
+      }
+    },
+
+    "fuel_oil": {
+      "GB": {
+        "2024": {
+          "co2": 3.1752,
+          "ch4": 0.00028,
+          "n2o": 0.00005,
+          "co2e_ar6": 3.1886,
+          "unit": "kgCO2e/L",
+          "nvc_kwh_per_litre": 11.01,
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Fuel Oil"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 3.1850,
+          "ch4": 0.00028,
+          "n2o": 0.00005,
+          "co2e_ar6": 3.1984,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.025,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Fuel Oil (US Average)"
+        }
+      }
+    },
+
+    "gas_oil": {
+      "GB": {
+        "2024": {
+          "co2": 2.7577,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.7667,
+          "unit": "kgCO2e/L",
+          "nvc_kwh_per_litre": 10.74,
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Gas Oil (Red Diesel)"
+        }
+      }
+    },
+
+    "kerosene": {
+      "GB": {
+        "2024": {
+          "co2": 2.5275,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.5364,
+          "unit": "kgCO2e/L",
+          "nvc_kwh_per_litre": 10.35,
+          "uncertainty": 0.015,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Burning Oil (Kerosene)"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 2.5350,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.5439,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Kerosene (US Average)"
+        }
+      }
+    },
+
+    "aviation_turbine_fuel": {
+      "GB": {
+        "2024": {
+          "co2": 2.5149,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.5238,
+          "unit": "kgCO2e/L",
+          "nvc_kwh_per_litre": 10.37,
+          "uncertainty": 0.015,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Aviation Turbine Fuel"
+        }
+      },
+      "GLOBAL": {
+        "2024": {
+          "co2": 2.5200,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.5289,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Aviation Turbine Fuel (Global)"
+        }
+      }
+    },
+
+    "aviation_spirit": {
+      "GB": {
+        "2024": {
+          "co2": 2.3309,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.3397,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Aviation Spirit (AvGas)"
+        }
+      }
+    },
+
+    "marine_fuel_oil": {
+      "GB": {
+        "2024": {
+          "co2": 3.1144,
+          "ch4": 0.00028,
+          "n2o": 0.00005,
+          "co2e_ar6": 3.1277,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.025,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Marine Fuel Oil"
+        }
+      }
+    },
+
+    "marine_gas_oil": {
+      "GB": {
+        "2024": {
+          "co2": 2.7720,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.7810,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Marine Gas Oil"
+        }
+      }
+    },
+
+    "coal_industrial": {
+      "GB": {
+        "2024": {
+          "co2": 94.54,
+          "ch4": 0.00180,
+          "n2o": 0.00140,
+          "co2e_ar6": 94.93,
+          "unit": "kgCO2e/GJ",
+          "nvc_kwh_per_kg": 7.22,
+          "uncertainty": 0.05,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Coal (Industrial)"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 94.70,
+          "ch4": 0.00185,
+          "n2o": 0.00145,
+          "co2e_ar6": 95.10,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.05,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Coal (US Industrial)"
+        }
+      },
+      "GLOBAL": {
+        "2024": {
+          "co2": 95.00,
+          "ch4": 0.00190,
+          "n2o": 0.00150,
+          "co2e_ar6": 95.42,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.06,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Coal (Global Average)"
+        }
+      }
+    },
+
+    "coal_domestic": {
+      "GB": {
+        "2024": {
+          "co2": 95.84,
+          "ch4": 0.00190,
+          "n2o": 0.00150,
+          "co2e_ar6": 96.26,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.05,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Coal (Domestic)"
+        }
+      }
+    },
+
+    "coke": {
+      "GB": {
+        "2024": {
+          "co2": 107.30,
+          "ch4": 0.00020,
+          "n2o": 0.00014,
+          "co2e_ar6": 107.34,
+          "unit": "kgCO2e/GJ",
+          "nvc_kwh_per_kg": 8.83,
+          "uncertainty": 0.05,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Coke"
+        }
+      }
+    },
+
+    "petroleum_coke": {
+      "GB": {
+        "2024": {
+          "co2": 97.50,
+          "ch4": 0.00020,
+          "n2o": 0.00014,
+          "co2e_ar6": 97.54,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.05,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Petroleum Coke"
+        }
+      }
+    },
+
+    "anthracite": {
+      "GB": {
+        "2024": {
+          "co2": 98.30,
+          "ch4": 0.00020,
+          "n2o": 0.00014,
+          "co2e_ar6": 98.34,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.05,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Anthracite"
+        }
+      }
+    },
+
+    "wood_pellets": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0290,
+          "n2o": 0.0040,
+          "co2e_ar6": 1.90,
+          "unit": "kgCO2e/GJ",
+          "biogenic_co2": 112.0,
+          "nvc_kwh_per_kg": 4.82,
+          "uncertainty": 0.25,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Wood Pellets"
+        }
+      }
+    },
+
+    "wood_chips": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0310,
+          "n2o": 0.0045,
+          "co2e_ar6": 2.09,
+          "unit": "kgCO2e/GJ",
+          "biogenic_co2": 108.0,
+          "nvc_kwh_per_kg": 3.53,
+          "uncertainty": 0.30,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Wood Chips"
+        }
+      }
+    },
+
+    "wood_logs": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0350,
+          "n2o": 0.0050,
+          "co2e_ar6": 2.34,
+          "unit": "kgCO2e/GJ",
+          "biogenic_co2": 106.0,
+          "nvc_kwh_per_kg": 3.61,
+          "uncertainty": 0.35,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Wood Logs"
+        }
+      }
+    },
+
+    "biogas": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0015,
+          "n2o": 0.00011,
+          "co2e_ar6": 0.072,
+          "unit": "kgCO2e/GJ",
+          "biogenic_co2": 54.5,
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Biogas"
+        }
+      }
+    },
+
+    "biomethane": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.00102,
+          "n2o": 0.00011,
+          "co2e_ar6": 0.059,
+          "unit": "kgCO2e/GJ",
+          "biogenic_co2": 53.0,
+          "uncertainty": 0.15,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Biomethane (Compressed)"
+        }
+      }
+    },
+
+    "biodiesel_me": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 0.014,
+          "unit": "kgCO2e/L",
+          "biogenic_co2": 2.52,
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Biodiesel (Methyl Ester)"
+        }
+      }
+    },
+
+    "biodiesel_hvo": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 0.014,
+          "unit": "kgCO2e/L",
+          "biogenic_co2": 2.48,
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Biodiesel HVO"
+        }
+      }
+    },
+
+    "bioethanol": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 0.014,
+          "unit": "kgCO2e/L",
+          "biogenic_co2": 1.51,
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Bioethanol"
+        }
+      }
+    },
+
+    "propane": {
+      "GB": {
+        "2024": {
+          "co2": 2.9949,
+          "ch4": 0.00009,
+          "n2o": 0.00001,
+          "co2e_ar6": 2.9976,
+          "unit": "kgCO2e/kg",
+          "nvc_kwh_per_kg": 13.78,
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Propane"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 3.0010,
+          "ch4": 0.00009,
+          "n2o": 0.00001,
+          "co2e_ar6": 3.0037,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.025,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Propane (US Average)"
+        }
+      }
+    },
+
+    "butane": {
+      "GB": {
+        "2024": {
+          "co2": 3.0279,
+          "ch4": 0.00009,
+          "n2o": 0.00001,
+          "co2e_ar6": 3.0306,
+          "unit": "kgCO2e/kg",
+          "nvc_kwh_per_kg": 13.61,
+          "uncertainty": 0.02,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Butane"
+        }
+      }
+    },
+
+    "naphtha": {
+      "GB": {
+        "2024": {
+          "co2": 3.1000,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 3.1088,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024 Conversion Factors, Naphtha"
+        }
+      }
+    },
+
+    "lubricants": {
+      "GB": {
+        "2024": {
+          "co2": 3.1810,
+          "ch4": 0.00019,
+          "n2o": 0.00003,
+          "co2e_ar6": 3.1898,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.03,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Lubricants"
+        }
+      }
+    },
+
+    "refinery_gas": {
+      "GB": {
+        "2024": {
+          "co2": 2.5400,
+          "ch4": 0.00150,
+          "n2o": 0.00003,
+          "co2e_ar6": 2.5818,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.05,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, Refinery Gas"
+        }
+      }
+    },
+
+    "waste_oils": {
+      "GB": {
+        "2024": {
+          "co2": 3.2110,
+          "ch4": 0.00028,
+          "n2o": 0.00005,
+          "co2e_ar6": 3.2244,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.10,
+          "quality": "3",
+          "citation": "DEFRA 2024 Conversion Factors, Waste Oils"
+        }
+      }
+    }
+  },
+
+  "electricity": {
+    "electricity_grid": {
+      "GB": {
+        "2024": {
+          "co2": 182.35,
+          "ch4": 0.28,
+          "n2o": 0.09,
+          "co2e_ar6": 190.14,
+          "unit": "kgCO2e/MWh",
+          "generation_co2e": 170.22,
+          "transmission_losses_co2e": 19.92,
+          "uncertainty": 0.05,
+          "quality": "1",
+          "citation": "DEFRA 2024, UK Grid Electricity Average",
+          "notes": "Includes transmission and distribution losses (7.8%)"
+        }
+      },
+      "US": {
+        "2024": {
+          "co2": 380.00,
+          "ch4": 0.70,
+          "n2o": 0.26,
+          "co2e_ar6": 395.80,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "2",
+          "citation": "DEFRA 2024, US Grid Average (EPA eGRID equivalent)"
+        }
+      },
+      "EU": {
+        "2024": {
+          "co2": 255.00,
+          "ch4": 0.45,
+          "n2o": 0.17,
+          "co2e_ar6": 267.41,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.10,
+          "quality": "2",
+          "citation": "DEFRA 2024, EU-27 Grid Average"
+        }
+      },
+      "DE": {
+        "2024": {
+          "co2": 340.00,
+          "ch4": 0.58,
+          "n2o": 0.21,
+          "co2e_ar6": 354.13,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "1",
+          "citation": "DEFRA 2024, Germany Grid Average"
+        }
+      },
+      "FR": {
+        "2024": {
+          "co2": 52.00,
+          "ch4": 0.09,
+          "n2o": 0.03,
+          "co2e_ar6": 54.33,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.05,
+          "quality": "1",
+          "citation": "DEFRA 2024, France Grid Average (Nuclear-dominated)"
+        }
+      },
+      "ES": {
+        "2024": {
+          "co2": 175.00,
+          "ch4": 0.30,
+          "n2o": 0.11,
+          "co2e_ar6": 182.88,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "1",
+          "citation": "DEFRA 2024, Spain Grid Average"
+        }
+      },
+      "IT": {
+        "2024": {
+          "co2": 310.00,
+          "ch4": 0.53,
+          "n2o": 0.19,
+          "co2e_ar6": 322.95,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "1",
+          "citation": "DEFRA 2024, Italy Grid Average"
+        }
+      },
+      "PL": {
+        "2024": {
+          "co2": 680.00,
+          "ch4": 1.15,
+          "n2o": 0.42,
+          "co2e_ar6": 708.68,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.06,
+          "quality": "1",
+          "citation": "DEFRA 2024, Poland Grid Average (Coal-heavy)"
+        }
+      },
+      "SE": {
+        "2024": {
+          "co2": 18.00,
+          "ch4": 0.03,
+          "n2o": 0.01,
+          "co2e_ar6": 18.84,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "1",
+          "citation": "DEFRA 2024, Sweden Grid Average (Hydro/Nuclear)"
+        }
+      },
+      "NO": {
+        "2024": {
+          "co2": 12.00,
+          "ch4": 0.02,
+          "n2o": 0.007,
+          "co2e_ar6": 12.56,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.10,
+          "quality": "1",
+          "citation": "DEFRA 2024, Norway Grid Average (Hydro-dominated)"
+        }
+      },
+      "CN": {
+        "2024": {
+          "co2": 555.00,
+          "ch4": 0.95,
+          "n2o": 0.35,
+          "co2e_ar6": 578.42,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.12,
+          "quality": "2",
+          "citation": "DEFRA 2024, China Grid Average"
+        }
+      },
+      "IN": {
+        "2024": {
+          "co2": 700.00,
+          "ch4": 1.20,
+          "n2o": 0.44,
+          "co2e_ar6": 729.64,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.12,
+          "quality": "2",
+          "citation": "DEFRA 2024, India Grid Average"
+        }
+      },
+      "JP": {
+        "2024": {
+          "co2": 470.00,
+          "ch4": 0.80,
+          "n2o": 0.30,
+          "co2e_ar6": 490.06,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "1",
+          "citation": "DEFRA 2024, Japan Grid Average"
+        }
+      },
+      "KR": {
+        "2024": {
+          "co2": 415.00,
+          "ch4": 0.71,
+          "n2o": 0.26,
+          "co2e_ar6": 432.64,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "1",
+          "citation": "DEFRA 2024, South Korea Grid Average"
+        }
+      },
+      "AU": {
+        "2024": {
+          "co2": 650.00,
+          "ch4": 1.10,
+          "n2o": 0.40,
+          "co2e_ar6": 677.40,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "1",
+          "citation": "DEFRA 2024, Australia Grid Average"
+        }
+      },
+      "BR": {
+        "2024": {
+          "co2": 90.00,
+          "ch4": 0.15,
+          "n2o": 0.06,
+          "co2e_ar6": 94.25,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.15,
+          "quality": "2",
+          "citation": "DEFRA 2024, Brazil Grid Average (Hydro-heavy)"
+        }
+      },
+      "CA": {
+        "2024": {
+          "co2": 130.00,
+          "ch4": 0.22,
+          "n2o": 0.08,
+          "co2e_ar6": 135.72,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.10,
+          "quality": "1",
+          "citation": "DEFRA 2024, Canada Grid Average"
+        }
+      },
+      "MX": {
+        "2024": {
+          "co2": 435.00,
+          "ch4": 0.74,
+          "n2o": 0.27,
+          "co2e_ar6": 453.38,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.12,
+          "quality": "2",
+          "citation": "DEFRA 2024, Mexico Grid Average"
+        }
+      },
+      "RU": {
+        "2024": {
+          "co2": 380.00,
+          "ch4": 0.65,
+          "n2o": 0.24,
+          "co2e_ar6": 396.16,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.15,
+          "quality": "3",
+          "citation": "DEFRA 2024, Russia Grid Average"
+        }
+      },
+      "ZA": {
+        "2024": {
+          "co2": 900.00,
+          "ch4": 1.53,
+          "n2o": 0.56,
+          "co2e_ar6": 937.77,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.08,
+          "quality": "2",
+          "citation": "DEFRA 2024, South Africa Grid Average (Coal-dominated)"
+        }
+      },
+      "GLOBAL": {
+        "2024": {
+          "co2": 442.00,
+          "ch4": 0.75,
+          "n2o": 0.28,
+          "co2e_ar6": 460.78,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.15,
+          "quality": "3",
+          "citation": "DEFRA 2024, Global Grid Average"
+        }
+      }
+    },
+
+    "electricity_renewable": {
+      "GB": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "co2e_ar6": 0.0,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.0,
+          "quality": "1",
+          "citation": "DEFRA 2024, 100% Renewable Electricity",
+          "notes": "Applies only with valid REGO certificates"
+        }
+      }
+    }
+  },
+
+  "heat_and_steam": {
+    "district_heat": {
+      "GB": {
+        "2024": {
+          "co2": 125.50,
+          "ch4": 0.22,
+          "n2o": 0.08,
+          "co2e_ar6": 130.93,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.15,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, District Heat and Steam"
+        }
+      },
+      "EU": {
+        "2024": {
+          "co2": 140.00,
+          "ch4": 0.24,
+          "n2o": 0.09,
+          "co2e_ar6": 146.09,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, District Heat (EU Average)"
+        }
+      }
+    },
+
+    "district_heat_chp": {
+      "GB": {
+        "2024": {
+          "co2": 80.00,
+          "ch4": 0.14,
+          "n2o": 0.05,
+          "co2e_ar6": 83.51,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.15,
+          "quality": "2",
+          "citation": "DEFRA 2024 Conversion Factors, District Heat from CHP"
+        }
+      }
+    }
+  },
+
+  "transport": {
+    "passenger_vehicles": {
+      "car_petrol_small": {
+        "GB": {
+          "2024": {
+            "co2": 0.14848,
+            "ch4": 0.000031,
+            "n2o": 0.000004,
+            "co2e_ar6": 0.14939,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, Petrol Car (<1.4L engine)"
+          }
+        }
+      },
+      "car_petrol_medium": {
+        "GB": {
+          "2024": {
+            "co2": 0.18034,
+            "ch4": 0.000038,
+            "n2o": 0.000005,
+            "co2e_ar6": 0.18144,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, Petrol Car (1.4-2.0L engine)"
+          }
+        }
+      },
+      "car_petrol_large": {
+        "GB": {
+          "2024": {
+            "co2": 0.27905,
+            "ch4": 0.000059,
+            "n2o": 0.000007,
+            "co2e_ar6": 0.28075,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, Petrol Car (>2.0L engine)"
+          }
+        }
+      },
+      "car_petrol_average": {
+        "GB": {
+          "2024": {
+            "co2": 0.16844,
+            "ch4": 0.000035,
+            "n2o": 0.000004,
+            "co2e_ar6": 0.16947,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Petrol Car (Average)"
+          }
+        }
+      },
+      "car_diesel_small": {
+        "GB": {
+          "2024": {
+            "co2": 0.13732,
+            "ch4": 0.000006,
+            "n2o": 0.000011,
+            "co2e_ar6": 0.13804,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, Diesel Car (<1.7L engine)"
+          }
+        }
+      },
+      "car_diesel_medium": {
+        "GB": {
+          "2024": {
+            "co2": 0.16649,
+            "ch4": 0.000007,
+            "n2o": 0.000013,
+            "co2e_ar6": 0.16732,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, Diesel Car (1.7-2.0L engine)"
+          }
+        }
+      },
+      "car_diesel_large": {
+        "GB": {
+          "2024": {
+            "co2": 0.20727,
+            "ch4": 0.000009,
+            "n2o": 0.000016,
+            "co2e_ar6": 0.20830,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, Diesel Car (>2.0L engine)"
+          }
+        }
+      },
+      "car_diesel_average": {
+        "GB": {
+          "2024": {
+            "co2": 0.16478,
+            "ch4": 0.000007,
+            "n2o": 0.000013,
+            "co2e_ar6": 0.16560,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Diesel Car (Average)"
+          }
+        }
+      },
+      "car_hybrid": {
+        "GB": {
+          "2024": {
+            "co2": 0.11455,
+            "ch4": 0.000024,
+            "n2o": 0.000003,
+            "co2e_ar6": 0.11524,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Hybrid Car (Average)"
+          }
+        }
+      },
+      "car_plug_in_hybrid": {
+        "GB": {
+          "2024": {
+            "co2": 0.07073,
+            "ch4": 0.000015,
+            "n2o": 0.000002,
+            "co2e_ar6": 0.07115,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Plug-in Hybrid Car (Average)"
+          }
+        }
+      },
+      "car_battery_electric": {
+        "GB": {
+          "2024": {
+            "co2": 0.04700,
+            "ch4": 0.000008,
+            "n2o": 0.000003,
+            "co2e_ar6": 0.04733,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.08,
+            "quality": "1",
+            "citation": "DEFRA 2024, Battery Electric Car (UK Grid Mix)"
+          }
+        }
+      },
+      "motorcycle_small": {
+        "GB": {
+          "2024": {
+            "co2": 0.08283,
+            "ch4": 0.000025,
+            "n2o": 0.000003,
+            "co2e_ar6": 0.08354,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Motorcycle (<125cc)"
+          }
+        }
+      },
+      "motorcycle_medium": {
+        "GB": {
+          "2024": {
+            "co2": 0.10102,
+            "ch4": 0.000030,
+            "n2o": 0.000004,
+            "co2e_ar6": 0.10187,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Motorcycle (125-500cc)"
+          }
+        }
+      },
+      "motorcycle_large": {
+        "GB": {
+          "2024": {
+            "co2": 0.13196,
+            "ch4": 0.000040,
+            "n2o": 0.000005,
+            "co2e_ar6": 0.13309,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Motorcycle (>500cc)"
+          }
+        }
+      }
+    },
+
+    "delivery_vehicles": {
+      "van_class_i": {
+        "GB": {
+          "2024": {
+            "co2": 0.18424,
+            "ch4": 0.000008,
+            "n2o": 0.000014,
+            "co2e_ar6": 0.18510,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Van Class I (up to 1.305t)"
+          }
+        }
+      },
+      "van_class_ii": {
+        "GB": {
+          "2024": {
+            "co2": 0.23818,
+            "ch4": 0.000010,
+            "n2o": 0.000018,
+            "co2e_ar6": 0.23924,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Van Class II (1.305-1.74t)"
+          }
+        }
+      },
+      "van_class_iii": {
+        "GB": {
+          "2024": {
+            "co2": 0.31102,
+            "ch4": 0.000013,
+            "n2o": 0.000024,
+            "co2e_ar6": 0.31240,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Van Class III (1.74-3.5t)"
+          }
+        }
+      },
+      "van_average": {
+        "GB": {
+          "2024": {
+            "co2": 0.24576,
+            "ch4": 0.000010,
+            "n2o": 0.000019,
+            "co2e_ar6": 0.24686,
+            "unit": "kgCO2e/km",
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Van (Average)"
+          }
+        }
+      }
+    },
+
+    "hgv_freight": {
+      "hgv_rigid_3_5_7_5t": {
+        "GB": {
+          "2024": {
+            "co2": 0.49251,
+            "ch4": 0.000021,
+            "n2o": 0.000038,
+            "co2e_ar6": 0.49457,
+            "unit": "kgCO2e/km",
+            "load_factor": 0.50,
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Rigid HGV (3.5-7.5t)"
+          }
+        }
+      },
+      "hgv_rigid_7_5_17t": {
+        "GB": {
+          "2024": {
+            "co2": 0.58541,
+            "ch4": 0.000025,
+            "n2o": 0.000045,
+            "co2e_ar6": 0.58785,
+            "unit": "kgCO2e/km",
+            "load_factor": 0.50,
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Rigid HGV (7.5-17t)"
+          }
+        }
+      },
+      "hgv_rigid_over_17t": {
+        "GB": {
+          "2024": {
+            "co2": 0.93411,
+            "ch4": 0.000040,
+            "n2o": 0.000072,
+            "co2e_ar6": 0.93801,
+            "unit": "kgCO2e/km",
+            "load_factor": 0.50,
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Rigid HGV (>17t)"
+          }
+        }
+      },
+      "hgv_artic_3_5_33t": {
+        "GB": {
+          "2024": {
+            "co2": 0.75302,
+            "ch4": 0.000032,
+            "n2o": 0.000058,
+            "co2e_ar6": 0.75617,
+            "unit": "kgCO2e/km",
+            "load_factor": 0.50,
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Articulated HGV (3.5-33t)"
+          }
+        }
+      },
+      "hgv_artic_over_33t": {
+        "GB": {
+          "2024": {
+            "co2": 0.89642,
+            "ch4": 0.000038,
+            "n2o": 0.000069,
+            "co2e_ar6": 0.90016,
+            "unit": "kgCO2e/km",
+            "load_factor": 0.50,
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Articulated HGV (>33t)"
+          }
+        }
+      },
+      "hgv_average": {
+        "GB": {
+          "2024": {
+            "co2": 0.75820,
+            "ch4": 0.000032,
+            "n2o": 0.000058,
+            "co2e_ar6": 0.76138,
+            "unit": "kgCO2e/km",
+            "load_factor": 0.50,
+            "uncertainty": 0.18,
+            "quality": "1",
+            "citation": "DEFRA 2024, HGV (All average)"
+          }
+        }
+      }
+    },
+
+    "public_transport": {
+      "bus_local": {
+        "GB": {
+          "2024": {
+            "co2": 0.08914,
+            "ch4": 0.000018,
+            "n2o": 0.000008,
+            "co2e_ar6": 0.08978,
+            "unit": "kgCO2e/passenger-km",
+            "occupancy": 12.5,
+            "uncertainty": 0.20,
+            "quality": "2",
+            "citation": "DEFRA 2024, Local Bus"
+          }
+        }
+      },
+      "bus_coach": {
+        "GB": {
+          "2024": {
+            "co2": 0.02711,
+            "ch4": 0.000005,
+            "n2o": 0.000002,
+            "co2e_ar6": 0.02733,
+            "unit": "kgCO2e/passenger-km",
+            "occupancy": 35,
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Coach"
+          }
+        }
+      },
+      "rail_national": {
+        "GB": {
+          "2024": {
+            "co2": 0.03314,
+            "ch4": 0.000007,
+            "n2o": 0.000003,
+            "co2e_ar6": 0.03341,
+            "unit": "kgCO2e/passenger-km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, National Rail"
+          }
+        }
+      },
+      "rail_international": {
+        "GB": {
+          "2024": {
+            "co2": 0.00403,
+            "ch4": 0.000001,
+            "n2o": 0.0000003,
+            "co2e_ar6": 0.00406,
+            "unit": "kgCO2e/passenger-km",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, International Rail (Eurostar)"
+          }
+        }
+      },
+      "rail_light_tram": {
+        "GB": {
+          "2024": {
+            "co2": 0.02824,
+            "ch4": 0.000006,
+            "n2o": 0.000002,
+            "co2e_ar6": 0.02849,
+            "unit": "kgCO2e/passenger-km",
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Light Rail and Tram"
+          }
+        }
+      },
+      "london_underground": {
+        "GB": {
+          "2024": {
+            "co2": 0.02758,
+            "ch4": 0.000006,
+            "n2o": 0.000002,
+            "co2e_ar6": 0.02782,
+            "unit": "kgCO2e/passenger-km",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, London Underground"
+          }
+        }
+      },
+      "taxi_london_black_cab": {
+        "GB": {
+          "2024": {
+            "co2": 0.21055,
+            "ch4": 0.000010,
+            "n2o": 0.000018,
+            "co2e_ar6": 0.21160,
+            "unit": "kgCO2e/passenger-km",
+            "occupancy": 1.5,
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Taxi (Black Cab)"
+          }
+        }
+      },
+      "taxi_regular": {
+        "GB": {
+          "2024": {
+            "co2": 0.14817,
+            "ch4": 0.000007,
+            "n2o": 0.000013,
+            "co2e_ar6": 0.14893,
+            "unit": "kgCO2e/passenger-km",
+            "occupancy": 1.5,
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Taxi (Regular)"
+          }
+        }
+      }
+    },
+
+    "aviation": {
+      "domestic_average": {
+        "GB": {
+          "2024": {
+            "co2": 0.24298,
+            "ch4": 0.000007,
+            "n2o": 0.000007,
+            "co2e_ar6": 0.24489,
+            "unit": "kgCO2e/passenger-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 0.46529,
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Domestic Flight (Average)"
+          }
+        }
+      },
+      "short_haul_economy": {
+        "GB": {
+          "2024": {
+            "co2": 0.15102,
+            "ch4": 0.000004,
+            "n2o": 0.000004,
+            "co2e_ar6": 0.15221,
+            "unit": "kgCO2e/passenger-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 0.28920,
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Short-haul Flight (Economy)"
+          }
+        }
+      },
+      "short_haul_business": {
+        "GB": {
+          "2024": {
+            "co2": 0.22653,
+            "ch4": 0.000006,
+            "n2o": 0.000006,
+            "co2e_ar6": 0.22831,
+            "unit": "kgCO2e/passenger-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 0.43379,
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Short-haul Flight (Business)"
+          }
+        }
+      },
+      "long_haul_economy": {
+        "GB": {
+          "2024": {
+            "co2": 0.14615,
+            "ch4": 0.000004,
+            "n2o": 0.000004,
+            "co2e_ar6": 0.14730,
+            "unit": "kgCO2e/passenger-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 0.27987,
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Long-haul Flight (Economy)"
+          }
+        }
+      },
+      "long_haul_premium_economy": {
+        "GB": {
+          "2024": {
+            "co2": 0.23384,
+            "ch4": 0.000007,
+            "n2o": 0.000007,
+            "co2e_ar6": 0.23568,
+            "unit": "kgCO2e/passenger-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 0.44779,
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Long-haul Flight (Premium Economy)"
+          }
+        }
+      },
+      "long_haul_business": {
+        "GB": {
+          "2024": {
+            "co2": 0.42383,
+            "ch4": 0.000012,
+            "n2o": 0.000012,
+            "co2e_ar6": 0.42716,
+            "unit": "kgCO2e/passenger-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 0.81160,
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Long-haul Flight (Business)"
+          }
+        }
+      },
+      "long_haul_first": {
+        "GB": {
+          "2024": {
+            "co2": 0.58460,
+            "ch4": 0.000017,
+            "n2o": 0.000017,
+            "co2e_ar6": 0.58919,
+            "unit": "kgCO2e/passenger-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 1.11946,
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Long-haul Flight (First Class)"
+          }
+        }
+      },
+      "international_average": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 0.17100,
+            "ch4": 0.000005,
+            "n2o": 0.000005,
+            "co2e_ar6": 0.17233,
+            "unit": "kgCO2e/passenger-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 0.32743,
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, International Flight (Average Class)"
+          }
+        }
+      }
+    },
+
+    "sea_ferry": {
+      "foot_passenger": {
+        "GB": {
+          "2024": {
+            "co2": 0.01850,
+            "ch4": 0.000005,
+            "n2o": 0.000002,
+            "co2e_ar6": 0.01867,
+            "unit": "kgCO2e/passenger-km",
+            "uncertainty": 0.20,
+            "quality": "2",
+            "citation": "DEFRA 2024, Ferry (Foot Passenger)"
+          }
+        }
+      },
+      "car_passenger": {
+        "GB": {
+          "2024": {
+            "co2": 0.12930,
+            "ch4": 0.000032,
+            "n2o": 0.000012,
+            "co2e_ar6": 0.13050,
+            "unit": "kgCO2e/passenger-km",
+            "uncertainty": 0.20,
+            "quality": "2",
+            "citation": "DEFRA 2024, Ferry (Car Passenger)"
+          }
+        }
+      }
+    },
+
+    "freight_transport": {
+      "rail_freight": {
+        "GB": {
+          "2024": {
+            "co2": 0.02446,
+            "ch4": 0.000001,
+            "n2o": 0.000001,
+            "co2e_ar6": 0.02449,
+            "unit": "kgCO2e/tonne-km",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Freight Rail"
+          }
+        }
+      },
+      "sea_freight_container": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 0.01349,
+            "ch4": 0.000001,
+            "n2o": 0.0000003,
+            "co2e_ar6": 0.01352,
+            "unit": "kgCO2e/tonne-km",
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Container Ship (Average)"
+          }
+        }
+      },
+      "sea_freight_bulk_carrier": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 0.00398,
+            "ch4": 0.0000003,
+            "n2o": 0.0000001,
+            "co2e_ar6": 0.00399,
+            "unit": "kgCO2e/tonne-km",
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Bulk Carrier (Average)"
+          }
+        }
+      },
+      "sea_freight_tanker": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 0.00641,
+            "ch4": 0.0000005,
+            "n2o": 0.0000002,
+            "co2e_ar6": 0.00642,
+            "unit": "kgCO2e/tonne-km",
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Tanker (Average)"
+          }
+        }
+      },
+      "air_freight_domestic": {
+        "GB": {
+          "2024": {
+            "co2": 2.7650,
+            "ch4": 0.00008,
+            "n2o": 0.00008,
+            "co2e_ar6": 2.7869,
+            "unit": "kgCO2e/tonne-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 5.2951,
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Domestic Air Freight"
+          }
+        }
+      },
+      "air_freight_international": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 0.6103,
+            "ch4": 0.00002,
+            "n2o": 0.00002,
+            "co2e_ar6": 0.6151,
+            "unit": "kgCO2e/tonne-km",
+            "radiative_forcing_factor": 1.9,
+            "with_rf": 1.1687,
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, International Air Freight"
+          }
+        }
+      }
+    }
+  },
+
+  "waste": {
+    "landfill": {
+      "mixed_municipal": {
+        "GB": {
+          "2024": {
+            "co2": 0.0,
+            "ch4": 1.8200,
+            "n2o": 0.0,
+            "co2e_ar6": 457.18,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.35,
+            "quality": "3",
+            "citation": "DEFRA 2024, Landfill (Mixed Municipal Waste)"
+          }
+        }
+      },
+      "organic_food_waste": {
+        "GB": {
+          "2024": {
+            "co2": 0.0,
+            "ch4": 2.0100,
+            "n2o": 0.0,
+            "co2e_ar6": 502.79,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.40,
+            "quality": "3",
+            "citation": "DEFRA 2024, Landfill (Organic/Food Waste)"
+          }
+        }
+      },
+      "paper_cardboard": {
+        "GB": {
+          "2024": {
+            "co2": 0.0,
+            "ch4": 1.4500,
+            "n2o": 0.0,
+            "co2e_ar6": 362.05,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.35,
+            "quality": "3",
+            "citation": "DEFRA 2024, Landfill (Paper/Cardboard)"
+          }
+        }
+      },
+      "construction_demolition": {
+        "GB": {
+          "2024": {
+            "co2": 0.0,
+            "ch4": 0.0150,
+            "n2o": 0.0,
+            "co2e_ar6": 0.42,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.50,
+            "quality": "3",
+            "citation": "DEFRA 2024, Landfill (Construction & Demolition)"
+          }
+        }
+      }
+    },
+
+    "incineration": {
+      "mixed_municipal": {
+        "GB": {
+          "2024": {
+            "co2": 21.35,
+            "ch4": 0.0001,
+            "n2o": 0.0003,
+            "co2e_ar6": 21.43,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Incineration (Mixed Municipal Waste)"
+          }
+        }
+      },
+      "plastics": {
+        "GB": {
+          "2024": {
+            "co2": 2692.00,
+            "ch4": 0.0150,
+            "n2o": 0.0600,
+            "co2e_ar6": 2708.78,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.10,
+            "quality": "2",
+            "citation": "DEFRA 2024, Incineration (Plastics - Average)"
+          }
+        }
+      },
+      "textiles_synthetic": {
+        "GB": {
+          "2024": {
+            "co2": 2532.00,
+            "ch4": 0.0100,
+            "n2o": 0.0450,
+            "co2e_ar6": 2544.57,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.12,
+            "quality": "2",
+            "citation": "DEFRA 2024, Incineration (Synthetic Textiles)"
+          }
+        }
+      }
+    },
+
+    "recycling": {
+      "aluminium_cans": {
+        "GB": {
+          "2024": {
+            "co2": 21.33,
+            "ch4": 0.0002,
+            "n2o": 0.0001,
+            "co2e_ar6": 21.36,
+            "unit": "kgCO2e/tonne",
+            "avoided_emissions": -8945.00,
+            "net_benefit": -8923.64,
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Recycling (Aluminium Cans)"
+          }
+        }
+      },
+      "steel_cans": {
+        "GB": {
+          "2024": {
+            "co2": 21.33,
+            "ch4": 0.0002,
+            "n2o": 0.0001,
+            "co2e_ar6": 21.36,
+            "unit": "kgCO2e/tonne",
+            "avoided_emissions": -1525.00,
+            "net_benefit": -1503.64,
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Recycling (Steel Cans)"
+          }
+        }
+      },
+      "paper_cardboard": {
+        "GB": {
+          "2024": {
+            "co2": 21.33,
+            "ch4": 0.0002,
+            "n2o": 0.0001,
+            "co2e_ar6": 21.36,
+            "unit": "kgCO2e/tonne",
+            "avoided_emissions": -676.00,
+            "net_benefit": -654.64,
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Recycling (Paper/Cardboard)"
+          }
+        }
+      },
+      "plastics_mixed": {
+        "GB": {
+          "2024": {
+            "co2": 21.33,
+            "ch4": 0.0002,
+            "n2o": 0.0001,
+            "co2e_ar6": 21.36,
+            "unit": "kgCO2e/tonne",
+            "avoided_emissions": -1389.00,
+            "net_benefit": -1367.64,
+            "uncertainty": 0.20,
+            "quality": "2",
+            "citation": "DEFRA 2024, Recycling (Mixed Plastics)"
+          }
+        }
+      },
+      "glass": {
+        "GB": {
+          "2024": {
+            "co2": 21.33,
+            "ch4": 0.0002,
+            "n2o": 0.0001,
+            "co2e_ar6": 21.36,
+            "unit": "kgCO2e/tonne",
+            "avoided_emissions": -314.00,
+            "net_benefit": -292.64,
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Recycling (Glass)"
+          }
+        }
+      }
+    },
+
+    "composting": {
+      "garden_waste": {
+        "GB": {
+          "2024": {
+            "co2": 0.0,
+            "ch4": 0.0060,
+            "n2o": 0.0040,
+            "co2e_ar6": 10.09,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.40,
+            "quality": "3",
+            "citation": "DEFRA 2024, Composting (Garden Waste)"
+          }
+        }
+      },
+      "food_waste": {
+        "GB": {
+          "2024": {
+            "co2": 0.0,
+            "ch4": 0.0100,
+            "n2o": 0.0070,
+            "co2e_ar6": 19.19,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.40,
+            "quality": "3",
+            "citation": "DEFRA 2024, Composting (Food Waste)"
+          }
+        }
+      }
+    },
+
+    "anaerobic_digestion": {
+      "food_waste": {
+        "GB": {
+          "2024": {
+            "co2": 0.0,
+            "ch4": 0.0030,
+            "n2o": 0.0015,
+            "co2e_ar6": 8.47,
+            "unit": "kgCO2e/tonne",
+            "avoided_emissions": -45.00,
+            "net_benefit": -36.53,
+            "uncertainty": 0.30,
+            "quality": "2",
+            "citation": "DEFRA 2024, Anaerobic Digestion (Food Waste)"
+          }
+        }
+      }
+    }
+  },
+
+  "water": {
+    "water_supply": {
+      "GB": {
+        "2024": {
+          "co2": 0.132,
+          "ch4": 0.00002,
+          "n2o": 0.000007,
+          "co2e_ar6": 0.134,
+          "unit": "kgCO2e/m3",
+          "uncertainty": 0.15,
+          "quality": "2",
+          "citation": "DEFRA 2024, Water Supply"
+        }
+      }
+    },
+    "water_treatment": {
+      "GB": {
+        "2024": {
+          "co2": 0.166,
+          "ch4": 0.00003,
+          "n2o": 0.00001,
+          "co2e_ar6": 0.169,
+          "unit": "kgCO2e/m3",
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024, Water Treatment"
+        }
+      }
+    }
+  },
+
+  "materials": {
+    "construction_materials": {
+      "concrete_general": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 120.00,
+            "ch4": 0.005,
+            "n2o": 0.002,
+            "co2e_ar6": 120.69,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.20,
+            "quality": "2",
+            "citation": "DEFRA 2024, Concrete (General Purpose)"
+          }
+        }
+      },
+      "concrete_high_strength": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 180.00,
+            "ch4": 0.008,
+            "n2o": 0.003,
+            "co2e_ar6": 181.04,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.20,
+            "quality": "2",
+            "citation": "DEFRA 2024, Concrete (High Strength)"
+          }
+        }
+      },
+      "steel_virgin": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 1850.00,
+            "ch4": 0.150,
+            "n2o": 0.050,
+            "co2e_ar6": 1867.85,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Steel (Virgin - BOF)"
+          }
+        }
+      },
+      "steel_recycled": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 520.00,
+            "ch4": 0.040,
+            "n2o": 0.015,
+            "co2e_ar6": 525.21,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Steel (Recycled - EAF)"
+          }
+        }
+      },
+      "aluminium_virgin": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 9160.00,
+            "ch4": 0.800,
+            "n2o": 0.300,
+            "co2e_ar6": 9264.22,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Aluminium (Virgin - Primary)"
+          }
+        }
+      },
+      "aluminium_recycled": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 560.00,
+            "ch4": 0.050,
+            "n2o": 0.020,
+            "co2e_ar6": 566.86,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.15,
+            "quality": "1",
+            "citation": "DEFRA 2024, Aluminium (Recycled)"
+          }
+        }
+      },
+      "cement": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 830.00,
+            "ch4": 0.050,
+            "n2o": 0.020,
+            "co2e_ar6": 836.86,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.10,
+            "quality": "1",
+            "citation": "DEFRA 2024, Cement (Portland)"
+          }
+        }
+      },
+      "glass_flat": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 1050.00,
+            "ch4": 0.080,
+            "n2o": 0.030,
+            "co2e_ar6": 1060.41,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.15,
+            "quality": "2",
+            "citation": "DEFRA 2024, Glass (Flat/Float)"
+          }
+        }
+      },
+      "timber_softwood": {
+        "GLOBAL": {
+          "2024": {
+            "co2": -1200.00,
+            "ch4": 0.020,
+            "n2o": 0.008,
+            "co2e_ar6": -1197.27,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.25,
+            "quality": "2",
+            "notes": "Carbon sequestration included",
+            "citation": "DEFRA 2024, Timber (Softwood - Sustainably Sourced)"
+          }
+        }
+      },
+      "timber_hardwood": {
+        "GLOBAL": {
+          "2024": {
+            "co2": -1450.00,
+            "ch4": 0.025,
+            "n2o": 0.010,
+            "co2e_ar6": -1447.03,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.25,
+            "quality": "2",
+            "notes": "Carbon sequestration included",
+            "citation": "DEFRA 2024, Timber (Hardwood - Sustainably Sourced)"
+          }
+        }
+      },
+      "brick": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 240.00,
+            "ch4": 0.015,
+            "n2o": 0.006,
+            "co2e_ar6": 242.06,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Brick"
+          }
+        }
+      }
+    },
+
+    "plastics": {
+      "hdpe": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 1840.00,
+            "ch4": 0.150,
+            "n2o": 0.050,
+            "co2e_ar6": 1857.85,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, HDPE (Virgin)"
+          }
+        }
+      },
+      "ldpe": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 2010.00,
+            "ch4": 0.165,
+            "n2o": 0.055,
+            "co2e_ar6": 2029.60,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, LDPE (Virgin)"
+          }
+        }
+      },
+      "pet": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 2730.00,
+            "ch4": 0.220,
+            "n2o": 0.075,
+            "co2e_ar6": 2756.62,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, PET (Virgin)"
+          }
+        }
+      },
+      "pp": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 1950.00,
+            "ch4": 0.160,
+            "n2o": 0.053,
+            "co2e_ar6": 1968.94,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Polypropylene (Virgin)"
+          }
+        }
+      },
+      "ps": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 3420.00,
+            "ch4": 0.280,
+            "n2o": 0.095,
+            "co2e_ar6": 3453.77,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, Polystyrene (Virgin)"
+          }
+        }
+      },
+      "pvc": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 2850.00,
+            "ch4": 0.230,
+            "n2o": 0.078,
+            "co2e_ar6": 2877.72,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.12,
+            "quality": "1",
+            "citation": "DEFRA 2024, PVC (Virgin)"
+          }
+        }
+      }
+    },
+
+    "paper_products": {
+      "paper_virgin": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 919.00,
+            "ch4": 0.075,
+            "n2o": 0.025,
+            "co2e_ar6": 927.94,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Paper (Virgin)"
+          }
+        }
+      },
+      "paper_recycled": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 626.00,
+            "ch4": 0.050,
+            "n2o": 0.017,
+            "co2e_ar6": 631.04,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Paper (Recycled)"
+          }
+        }
+      },
+      "cardboard_virgin": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 724.00,
+            "ch4": 0.060,
+            "n2o": 0.020,
+            "co2e_ar6": 730.13,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Cardboard (Virgin)"
+          }
+        }
+      },
+      "cardboard_recycled": {
+        "GLOBAL": {
+          "2024": {
+            "co2": 384.00,
+            "ch4": 0.030,
+            "n2o": 0.010,
+            "co2e_ar6": 387.57,
+            "unit": "kgCO2e/tonne",
+            "uncertainty": 0.18,
+            "quality": "2",
+            "citation": "DEFRA 2024, Cardboard (Recycled)"
+          }
+        }
+      }
+    }
+  },
+
+  "refrigerants": {
+    "hfc_134a": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "hfc": 1430.0,
+          "co2e_ar6": 1430.0,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024, HFC-134a (AR6 GWP)"
+        }
+      }
+    },
+    "hfc_32": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "hfc": 771.0,
+          "co2e_ar6": 771.0,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024, HFC-32 (AR6 GWP)"
+        }
+      }
+    },
+    "hfc_410a": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "hfc": 2256.0,
+          "co2e_ar6": 2256.0,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024, R-410A Blend (AR6 GWP)"
+        }
+      }
+    },
+    "hfc_404a": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "hfc": 4728.0,
+          "co2e_ar6": 4728.0,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024, R-404A Blend (AR6 GWP)"
+        }
+      }
+    },
+    "hfc_407c": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "hfc": 1908.0,
+          "co2e_ar6": 1908.0,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024, R-407C Blend (AR6 GWP)"
+        }
+      }
+    },
+    "r_290_propane": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "hfc": 0.02,
+          "co2e_ar6": 0.02,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.05,
+          "quality": "1",
+          "citation": "DEFRA 2024, R-290 Propane (Natural Refrigerant)"
+        }
+      }
+    },
+    "r_744_co2": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 1.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "co2e_ar6": 1.0,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.0,
+          "quality": "1",
+          "citation": "DEFRA 2024, R-744 CO2 (Natural Refrigerant)"
+        }
+      }
+    },
+    "sf6": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 0.0,
+          "ch4": 0.0,
+          "n2o": 0.0,
+          "sf6": 25200.0,
+          "co2e_ar6": 25200.0,
+          "unit": "kgCO2e/kg",
+          "uncertainty": 0.03,
+          "quality": "1",
+          "citation": "DEFRA 2024, SF6 (AR6 GWP)"
+        }
+      }
+    }
+  },
+
+  "hotel_stays": {
+    "hotel_uk": {
+      "GB": {
+        "2024": {
+          "co2": 10.23,
+          "ch4": 0.018,
+          "n2o": 0.007,
+          "co2e_ar6": 10.75,
+          "unit": "kgCO2e/night",
+          "uncertainty": 0.25,
+          "quality": "3",
+          "citation": "DEFRA 2024, Hotel Stay (UK Average)"
+        }
+      }
+    },
+    "hotel_europe": {
+      "EU": {
+        "2024": {
+          "co2": 12.50,
+          "ch4": 0.022,
+          "n2o": 0.008,
+          "co2e_ar6": 13.13,
+          "unit": "kgCO2e/night",
+          "uncertainty": 0.30,
+          "quality": "3",
+          "citation": "DEFRA 2024, Hotel Stay (Europe Average)"
+        }
+      }
+    },
+    "hotel_north_america": {
+      "US": {
+        "2024": {
+          "co2": 22.45,
+          "ch4": 0.040,
+          "n2o": 0.015,
+          "co2e_ar6": 23.59,
+          "unit": "kgCO2e/night",
+          "uncertainty": 0.30,
+          "quality": "3",
+          "citation": "DEFRA 2024, Hotel Stay (North America Average)"
+        }
+      }
+    },
+    "hotel_asia_pacific": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 18.30,
+          "ch4": 0.032,
+          "n2o": 0.012,
+          "co2e_ar6": 19.22,
+          "unit": "kgCO2e/night",
+          "uncertainty": 0.35,
+          "quality": "3",
+          "citation": "DEFRA 2024, Hotel Stay (Asia Pacific Average)"
+        }
+      }
+    }
+  },
+
+  "wtt_fuels": {
+    "wtt_natural_gas": {
+      "GB": {
+        "2024": {
+          "co2": 12.02,
+          "ch4": 0.35,
+          "n2o": 0.003,
+          "co2e_ar6": 22.59,
+          "unit": "kgCO2e/GJ",
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024, WTT Natural Gas"
+        }
+      }
+    },
+    "wtt_diesel": {
+      "GB": {
+        "2024": {
+          "co2": 0.5897,
+          "ch4": 0.0105,
+          "n2o": 0.00009,
+          "co2e_ar6": 0.8853,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.18,
+          "quality": "2",
+          "citation": "DEFRA 2024, WTT Diesel"
+        }
+      }
+    },
+    "wtt_petrol": {
+      "GB": {
+        "2024": {
+          "co2": 0.5497,
+          "ch4": 0.0098,
+          "n2o": 0.00008,
+          "co2e_ar6": 0.8244,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.18,
+          "quality": "2",
+          "citation": "DEFRA 2024, WTT Petrol"
+        }
+      }
+    },
+    "wtt_electricity_grid": {
+      "GB": {
+        "2024": {
+          "co2": 19.82,
+          "ch4": 0.54,
+          "n2o": 0.045,
+          "co2e_ar6": 47.03,
+          "unit": "kgCO2e/MWh",
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024, WTT UK Grid Electricity"
+        }
+      }
+    },
+    "wtt_aviation_turbine_fuel": {
+      "GLOBAL": {
+        "2024": {
+          "co2": 0.5850,
+          "ch4": 0.0101,
+          "n2o": 0.00008,
+          "co2e_ar6": 0.8684,
+          "unit": "kgCO2e/L",
+          "uncertainty": 0.20,
+          "quality": "2",
+          "citation": "DEFRA 2024, WTT Aviation Turbine Fuel"
+        }
+      }
+    }
+  }
+}

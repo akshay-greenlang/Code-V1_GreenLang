@@ -1,0 +1,885 @@
+# ==============================================================================
+# GL-019 HEATSCHEDULER Process Heating Scheduler Agent
+# Production GreenLang Specification (gl.yaml)
+# ==============================================================================
+# This file defines the production deployment configuration for GL-019
+# Optimized for process heating schedule optimization and energy cost reduction
+# ==============================================================================
+
+apiVersion: greenlang.io/v1
+kind: Agent
+
+# ==============================================================================
+# AGENT IDENTIFICATION
+# ==============================================================================
+metadata:
+  id: GL-019
+  codename: HEATSCHEDULER
+  name: ProcessHeatingScheduler
+  version: "1.0.0"
+  category: planning
+  domain: energy_optimization
+
+  labels:
+    environment: production
+    tier: critical
+    team: energy-optimization
+    compliance: ISO50001-FERC-OpenADR
+
+  annotations:
+    description: "Process heating schedule optimization with zero-hallucination guarantees"
+    owner: greenlang-team
+    contact: support@greenlang.io
+    documentation: https://greenlang.io/agents/GL-019
+    jira: https://jira.greenlang.io/browse/GL-019
+    slack: "#gl-019-heatscheduler"
+
+# ==============================================================================
+# RUNTIME CONFIGURATION
+# ==============================================================================
+spec:
+  # ----------------------------------------------------------------------------
+  # Agent Runtime
+  # ----------------------------------------------------------------------------
+  runtime:
+    language: python
+    version: "3.11"
+    framework: fastapi
+    entry_point: "main:app"
+    working_directory: /app
+
+    # Deterministic Configuration
+    deterministic:
+      enabled: true
+      temperature: 0.0
+      seed: 42
+      provenance_tracking: true
+      hash_algorithm: SHA-256
+
+    # Execution Parameters
+    execution:
+      timeout_seconds: 120  # MILP optimization may take longer
+      max_retries: 3
+      retry_delay_seconds: 5
+      retry_backoff: exponential
+      max_parallel_tasks: 10
+
+    # Caching (longer TTL for schedule data)
+    cache:
+      enabled: true
+      ttl_seconds: 300  # 5 minutes
+      max_entries: 1000
+      strategy: lru
+      redis_enabled: true
+
+    # Batch Processing
+    batch:
+      enabled: true
+      max_batch_size: 100
+      parallel_workers: 4
+      chunk_size: 25
+
+  # ----------------------------------------------------------------------------
+  # AI Configuration
+  # ----------------------------------------------------------------------------
+  ai:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    temperature: 0.0
+    seed: 42
+    max_tokens: 4096
+    top_p: 1.0
+
+    # Operation Boundaries
+    allowed_operations:
+      - text_classification
+      - entity_extraction
+      - narrative_generation
+      - recommendation_explanation
+      - schedule_summary_generation
+      - best_practice_guidance
+      - report_generation
+      - alert_summarization
+      - optimization_explanation
+
+    prohibited_operations:
+      - numeric_calculation
+      - energy_cost_calculation
+      - demand_charge_calculation
+      - schedule_optimization
+      - milp_solving
+      - savings_calculation
+      - roi_calculation
+      - thermal_calculation
+      - load_forecasting
+
+    # Safety Guardrails
+    safety:
+      content_filtering: true
+      output_validation: true
+      hallucination_detection: true
+      confidence_threshold: 0.95
+
+  # ----------------------------------------------------------------------------
+  # Data Sources
+  # ----------------------------------------------------------------------------
+  data_sources:
+    # ERP/MES Integration
+    - id: erp_production_schedule
+      name: "ERP Production Schedule"
+      type: rest_api
+      connection:
+        endpoint: "${ERP_ENDPOINT}"
+        auth_type: oauth2
+        client_id: "${ERP_CLIENT_ID}"
+        client_secret_ref: "${ERP_CLIENT_SECRET}"
+      polling:
+        interval_seconds: 300  # Every 5 minutes
+        batch_size: 50
+      health_check:
+        enabled: true
+        interval_seconds: 60
+      tags:
+        - production_batches
+        - work_orders
+        - maintenance_windows
+
+    # Energy Tariff Provider
+    - id: energy_tariff_provider
+      name: "Energy Tariff Provider"
+      type: rest_api
+      connection:
+        endpoint: "${TARIFF_PROVIDER_ENDPOINT}"
+        auth_type: api_key
+        api_key_ref: "${TARIFF_API_KEY}"
+      polling:
+        interval_seconds: 3600  # Every hour
+        batch_size: 10
+      health_check:
+        enabled: true
+        interval_seconds: 300
+      tags:
+        - time_of_use_rates
+        - demand_charges
+        - real_time_prices
+
+    # Real-Time Pricing Feed
+    - id: real_time_pricing
+      name: "Real-Time Pricing Feed"
+      type: rest_api
+      connection:
+        endpoint: "${RTP_ENDPOINT}"
+        auth_type: api_key
+      polling:
+        interval_seconds: 300  # Every 5 minutes
+        batch_size: 24
+      health_check:
+        enabled: true
+        interval_seconds: 60
+      tags:
+        - lmp_prices
+        - wholesale_prices
+
+    # SCADA/DCS Integration
+    - id: scada_equipment
+      name: "SCADA Equipment Status"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_ENDPOINT}"
+        security_mode: SignAndEncrypt
+        security_policy: Basic256Sha256
+      polling:
+        interval_seconds: 30
+        batch_size: 50
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - furnace_status
+        - boiler_status
+        - heater_status
+        - equipment_capacity
+        - equipment_availability
+
+    # Demand Response System
+    - id: demand_response
+      name: "Demand Response Signal"
+      type: openADR
+      connection:
+        vtn_url: "${DR_VTN_URL}"
+        ven_id: "${DR_VEN_ID}"
+        registration_id: "${DR_REGISTRATION_ID}"
+      polling:
+        interval_seconds: 60
+        batch_size: 10
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - dr_events
+        - curtailment_signals
+        - price_signals
+
+    # Energy Meter Data
+    - id: energy_meters
+      name: "Energy Meter Data"
+      type: modbus_tcp
+      connection:
+        host: "${METER_HOST}"
+        port: 502
+        unit_id: 1
+      polling:
+        interval_seconds: 60
+        batch_size: 20
+      health_check:
+        enabled: true
+        interval_seconds: 30
+      tags:
+        - power_kw
+        - energy_kwh
+        - demand_kw
+        - power_factor
+
+  # ----------------------------------------------------------------------------
+  # Data Sinks
+  # ----------------------------------------------------------------------------
+  data_sinks:
+    # Schedule Execution
+    - id: scada_schedule_output
+      name: "SCADA Schedule Output"
+      type: opc_ua
+      connection:
+        endpoint: "${SCADA_ENDPOINT}"
+        security_mode: SignAndEncrypt
+      write_mode: confirmed
+      retry_count: 3
+      tags:
+        - equipment_setpoints
+        - schedule_commands
+        - start_stop_signals
+
+    # Energy Management System
+    - id: ems_output
+      name: "Energy Management System"
+      type: rest_api
+      connection:
+        endpoint: "${EMS_ENDPOINT}"
+        auth_type: oauth2
+      write_mode: async
+      batch_size: 10
+      tags:
+        - optimized_schedules
+        - demand_forecasts
+        - savings_reports
+
+    # Notification System
+    - id: notifications
+      name: "Notification System"
+      type: webhook
+      connection:
+        endpoints:
+          - "${SLACK_WEBHOOK_URL}"
+          - "${EMAIL_WEBHOOK_URL}"
+          - "${PAGER_WEBHOOK_URL}"
+      write_mode: async
+      retry_count: 3
+      tags:
+        - alerts
+        - dr_events
+        - deadline_warnings
+        - optimization_failures
+
+    # Data Lake
+    - id: data_lake
+      name: "Enterprise Data Lake"
+      type: rest_api
+      connection:
+        endpoint: "${DATA_LAKE_ENDPOINT}"
+        auth_type: api_key
+      write_mode: batch
+      batch_size: 100
+      batch_interval_seconds: 60
+      tags:
+        - historical_schedules
+        - cost_data
+        - savings_data
+        - audit_logs
+
+  # ----------------------------------------------------------------------------
+  # Agent Pipeline
+  # ----------------------------------------------------------------------------
+  pipeline:
+    stages:
+      - name: schedule_intake
+        description: "Ingest production schedules from ERP/MES"
+        timeout_seconds: 30
+        retry_count: 3
+        inputs:
+          - erp_production_schedule
+        outputs:
+          - production_batches
+          - heating_requirements
+        validation:
+          - deadline_format_check
+          - equipment_reference_check
+          - quantity_range_check
+
+      - name: tariff_analysis
+        description: "Analyze current and forecast energy tariffs"
+        timeout_seconds: 20
+        retry_count: 2
+        inputs:
+          - energy_tariff_provider
+          - real_time_pricing
+        outputs:
+          - active_tariff_structure
+          - price_forecast
+          - peak_periods
+        validation:
+          - rate_range_check
+          - period_overlap_check
+
+      - name: equipment_check
+        description: "Check heating equipment availability"
+        timeout_seconds: 15
+        retry_count: 3
+        inputs:
+          - scada_equipment
+        outputs:
+          - available_equipment
+          - capacity_constraints
+          - maintenance_windows
+        validation:
+          - status_enum_check
+          - capacity_positive_check
+
+      - name: dr_event_check
+        description: "Check for active demand response events"
+        timeout_seconds: 10
+        retry_count: 2
+        inputs:
+          - demand_response
+        outputs:
+          - active_dr_events
+          - curtailment_requirements
+        validation:
+          - event_time_check
+
+      - name: schedule_optimization
+        description: "Optimize heating schedule using MILP"
+        timeout_seconds: 90
+        retry_count: 1  # Optimization is expensive
+        inputs:
+          - production_batches
+          - active_tariff_structure
+          - available_equipment
+          - active_dr_events
+        outputs:
+          - optimized_schedule
+          - task_assignments
+          - total_cost
+        validation:
+          - feasibility_check
+          - deadline_compliance_check
+          - capacity_constraint_check
+        zero_hallucination: true
+        deterministic: true
+
+      - name: savings_calculation
+        description: "Calculate cost savings vs baseline"
+        timeout_seconds: 15
+        retry_count: 2
+        inputs:
+          - optimized_schedule
+          - active_tariff_structure
+        outputs:
+          - baseline_cost
+          - optimized_cost
+          - savings_breakdown
+          - annual_projection
+        validation:
+          - positive_savings_check
+          - calculation_verification
+        zero_hallucination: true
+        deterministic: true
+
+      - name: schedule_execution
+        description: "Send optimized schedule to control systems"
+        timeout_seconds: 30
+        retry_count: 3
+        inputs:
+          - optimized_schedule
+        outputs:
+          - execution_confirmations
+          - equipment_setpoints
+        validation:
+          - write_confirmation
+
+      - name: reporting
+        description: "Generate reports and notifications"
+        timeout_seconds: 20
+        retry_count: 2
+        inputs:
+          - optimized_schedule
+          - savings_breakdown
+        outputs:
+          - schedule_report
+          - savings_report
+          - notifications
+        ai_enabled: true  # Narrative generation only
+
+  # ----------------------------------------------------------------------------
+  # Calculation Engine
+  # ----------------------------------------------------------------------------
+  calculations:
+    engine: deterministic
+    zero_hallucination: true
+    provenance_tracking: true
+
+    formulas:
+      energy_cost:
+        formula: "E_cost = SUM(P_i * t_i * r_i) for all intervals i"
+        description: "Energy cost calculation"
+        variables:
+          P_i: "Power consumption in interval i (kW)"
+          t_i: "Duration of interval i (hours)"
+          r_i: "Energy rate in interval i ($/kWh)"
+        validation: true
+        precision: 2
+
+      demand_charge:
+        formula: "D_cost = MAX(P_peak) * r_demand"
+        description: "Demand charge calculation"
+        variables:
+          P_peak: "Peak demand in billing period (kW)"
+          r_demand: "Demand charge rate ($/kW)"
+        validation: true
+        precision: 2
+
+      total_cost:
+        formula: "C_total = E_cost + D_cost + taxes + fees"
+        description: "Total energy cost"
+        validation: true
+        precision: 2
+
+      savings:
+        formula: "S = C_baseline - C_optimized"
+        description: "Cost savings calculation"
+        validation: true
+        precision: 2
+
+      roi:
+        formula: "ROI = (S_annual / C_implementation) * 100"
+        description: "Return on investment"
+        variables:
+          S_annual: "Annual savings (USD)"
+          C_implementation: "Implementation cost (USD)"
+        validation: true
+        precision: 1
+
+    optimization:
+      solver: scipy_linprog
+      method: highs
+      options:
+        presolve: true
+        time_limit: 60
+        mip_gap: 0.01
+
+  # ----------------------------------------------------------------------------
+  # Performance Thresholds
+  # ----------------------------------------------------------------------------
+  thresholds:
+    # Schedule Optimization
+    optimization_time_warning_ms: 30000
+    optimization_time_critical_ms: 90000
+    optimization_feasibility_required: true
+
+    # Cost Calculation
+    cost_calculation_time_warning_ms: 500
+    cost_calculation_time_critical_ms: 2000
+
+    # Data Freshness
+    tariff_data_max_age_seconds: 3600
+    equipment_data_max_age_seconds: 60
+    schedule_data_max_age_seconds: 300
+
+    # Business Metrics
+    minimum_savings_percent: 5
+    maximum_deadline_risk_percent: 5
+    maximum_demand_charge_ratio: 0.3
+
+  # ----------------------------------------------------------------------------
+  # Alerting
+  # ----------------------------------------------------------------------------
+  alerts:
+    - name: optimization_failed
+      condition: "optimization_status == 'INFEASIBLE'"
+      severity: critical
+      notification:
+        channels: [slack, pager, email]
+        message: "Schedule optimization failed - no feasible solution found"
+        escalation_minutes: 15
+
+    - name: deadline_at_risk
+      condition: "deadline_margin_hours < 2"
+      severity: high
+      notification:
+        channels: [slack, email]
+        message: "Production deadline at risk: {{batch_id}} due {{deadline}}"
+        escalation_minutes: 30
+
+    - name: demand_spike_imminent
+      condition: "predicted_peak_kw > demand_limit_kw * 0.9"
+      severity: high
+      notification:
+        channels: [slack, email]
+        message: "Predicted demand spike: {{predicted_peak_kw}} kW (limit: {{demand_limit_kw}} kW)"
+
+    - name: dr_event_started
+      condition: "dr_event_active == true"
+      severity: high
+      notification:
+        channels: [slack, pager]
+        message: "Demand response event active: {{event_id}} - curtail {{reduction_kw}} kW"
+
+    - name: equipment_unavailable
+      condition: "equipment_status == 'FAULT'"
+      severity: high
+      notification:
+        channels: [slack, email]
+        message: "Equipment unavailable: {{equipment_id}} - status: {{status}}"
+
+    - name: tariff_change_detected
+      condition: "tariff_changed == true"
+      severity: medium
+      notification:
+        channels: [slack]
+        message: "Energy tariff rates changed - schedule re-optimization triggered"
+
+    - name: savings_below_target
+      condition: "savings_percent < minimum_savings_percent"
+      severity: medium
+      notification:
+        channels: [email]
+        message: "Cost savings below target: {{savings_percent}}% (target: {{minimum_savings_percent}}%)"
+
+    - name: integration_failure
+      condition: "integration_status == 'FAILED'"
+      severity: high
+      notification:
+        channels: [slack, pager]
+        message: "Integration failure: {{integration_name}} - {{error_message}}"
+
+  # ----------------------------------------------------------------------------
+  # Monitoring
+  # ----------------------------------------------------------------------------
+  monitoring:
+    prometheus:
+      enabled: true
+      port: 9090
+      path: /metrics
+      scrape_interval: 15s
+
+    metrics:
+      # Schedule Metrics
+      - name: gl019_schedules_optimized_total
+        type: counter
+        description: "Total schedules optimized"
+        labels: [status, optimization_result]
+
+      - name: gl019_optimization_duration_seconds
+        type: histogram
+        description: "Schedule optimization duration"
+        buckets: [0.1, 0.5, 1, 5, 10, 30, 60, 120]
+
+      - name: gl019_tasks_scheduled_total
+        type: counter
+        description: "Total heating tasks scheduled"
+        labels: [equipment_type]
+
+      # Cost Metrics
+      - name: gl019_energy_cost_usd
+        type: gauge
+        description: "Current schedule energy cost"
+        labels: [schedule_id]
+
+      - name: gl019_savings_usd
+        type: gauge
+        description: "Cost savings achieved"
+        labels: [savings_category]
+
+      - name: gl019_demand_charge_usd
+        type: gauge
+        description: "Demand charge cost"
+
+      # Equipment Metrics
+      - name: gl019_equipment_utilization_percent
+        type: gauge
+        description: "Equipment utilization"
+        labels: [equipment_id, equipment_type]
+
+      - name: gl019_peak_demand_kw
+        type: gauge
+        description: "Peak demand in schedule"
+
+      # Demand Response Metrics
+      - name: gl019_dr_events_handled_total
+        type: counter
+        description: "Demand response events handled"
+        labels: [event_type, response_status]
+
+      - name: gl019_dr_curtailment_kw
+        type: gauge
+        description: "Current DR curtailment"
+
+      # Integration Metrics
+      - name: gl019_erp_sync_duration_seconds
+        type: histogram
+        description: "ERP sync duration"
+        buckets: [0.1, 0.5, 1, 2, 5, 10]
+
+      - name: gl019_scada_write_duration_seconds
+        type: histogram
+        description: "SCADA write duration"
+        buckets: [0.01, 0.05, 0.1, 0.5, 1]
+
+    tracing:
+      enabled: true
+      exporter: otlp
+      endpoint: "${OTEL_EXPORTER_ENDPOINT}"
+      sampling_rate: 0.1
+
+    logging:
+      level: INFO
+      format: json
+      structured: true
+      include_context: true
+      exclude_patterns:
+        - "health_check"
+        - "metrics"
+
+  # ----------------------------------------------------------------------------
+  # Security
+  # ----------------------------------------------------------------------------
+  security:
+    authentication:
+      type: oauth2
+      provider: "${AUTH_PROVIDER}"
+      token_endpoint: "${AUTH_TOKEN_ENDPOINT}"
+      required_scopes:
+        - read:schedules
+        - write:schedules
+        - read:equipment
+        - write:equipment
+        - read:analytics
+        - admin:config
+
+    authorization:
+      type: rbac
+      roles:
+        admin:
+          permissions: ["*"]
+        production_planner:
+          permissions:
+            - read:schedules
+            - write:schedules
+            - read:equipment
+            - read:analytics
+        energy_manager:
+          permissions:
+            - read:schedules
+            - read:equipment
+            - read:analytics
+            - write:tariffs
+            - write:dr_response
+        operator:
+          permissions:
+            - read:schedules
+            - read:equipment
+            - write:equipment_status
+        viewer:
+          permissions:
+            - read:schedules
+            - read:equipment
+            - read:analytics
+
+    encryption:
+      in_transit: tls_1_3
+      at_rest: aes_256_gcm
+      key_management: kubernetes_secrets
+
+    audit:
+      enabled: true
+      log_all_requests: true
+      log_calculations: true
+      retention_days: 2555
+      immutable: true
+
+  # ----------------------------------------------------------------------------
+  # Resource Limits
+  # ----------------------------------------------------------------------------
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"  # MILP solver needs memory
+    storage:
+      size: "20Gi"
+      class: ssd
+
+  # ----------------------------------------------------------------------------
+  # Deployment
+  # ----------------------------------------------------------------------------
+  deployment:
+    replicas: 3
+    strategy:
+      type: RollingUpdate
+      maxSurge: 1
+      maxUnavailable: 0
+
+    affinity:
+      podAntiAffinity:
+        preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              topologyKey: kubernetes.io/hostname
+
+    tolerations:
+      - key: "workload"
+        operator: "Equal"
+        value: "optimization"
+        effect: "NoSchedule"
+
+    nodeSelector:
+      workload: optimization
+
+    probes:
+      liveness:
+        httpGet:
+          path: /health/liveness
+          port: 8080
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+
+      readiness:
+        httpGet:
+          path: /health/readiness
+          port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        timeoutSeconds: 3
+        failureThreshold: 3
+
+      startup:
+        httpGet:
+          path: /health/startup
+          port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        timeoutSeconds: 3
+        failureThreshold: 30
+
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 10
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+        - type: Resource
+          resource:
+            name: memory
+            targetAverageUtilization: 80
+        - type: Pods
+          pods:
+            metricName: gl019_optimization_queue_size
+            targetAverageValue: 10
+
+# ==============================================================================
+# VALIDATION RULES
+# ==============================================================================
+validation:
+  inputs:
+    production_schedule:
+      required: true
+      schema_validation: true
+      deadline_future_check: true
+      equipment_reference_check: true
+
+    energy_tariffs:
+      required: true
+      schema_validation: true
+      rate_positive_check: true
+      period_coverage_check: true
+
+    equipment_availability:
+      required: true
+      schema_validation: true
+      status_enum_check: true
+      capacity_positive_check: true
+
+  outputs:
+    optimized_schedule:
+      deadline_compliance_check: true
+      capacity_constraint_check: true
+      cost_positive_check: true
+      provenance_required: true
+
+    cost_savings:
+      positive_check: true
+      percentage_range_check: [0, 100]
+      provenance_required: true
+
+# ==============================================================================
+# COMPLIANCE
+# ==============================================================================
+compliance:
+  standards:
+    - id: ISO_50001_2018
+      name: "ISO 50001:2018 Energy Management Systems"
+      requirements:
+        - energy_baseline_tracking
+        - energy_performance_indicators
+        - continuous_improvement
+      evidence:
+        - savings_reports
+        - optimization_logs
+        - baseline_comparisons
+
+    - id: ISO_50006_2014
+      name: "ISO 50006:2014 Energy Baseline and EnPI"
+      requirements:
+        - baseline_establishment
+        - normalization_factors
+        - performance_monitoring
+
+    - id: FERC_ORDER_2222
+      name: "FERC Order 2222 DER Aggregation"
+      requirements:
+        - demand_response_capability
+        - grid_services_support
+        - market_participation
+
+    - id: OpenADR_2_0b
+      name: "OpenADR 2.0b Automated Demand Response"
+      requirements:
+        - oadr_ven_implementation
+        - event_handling
+        - opt_out_capability
+
+  audit_trail:
+    enabled: true
+    hash_algorithm: SHA-256
+    retention_years: 7
+    immutable: true
+    encryption: true
+
+# ==============================================================================
+# END OF GL-019 SPECIFICATION
+# ==============================================================================

@@ -1,0 +1,81 @@
+# GreenLang Agent Registry API - Docker Image
+# Multi-stage build for optimized image size and security
+
+# ============================================================================
+# Stage 1: Builder - Install dependencies and build
+# ============================================================================
+FROM python:3.11-slim as builder
+
+# Set build arguments
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy requirements
+COPY requirements.txt /tmp/requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r /tmp/requirements.txt && \
+    pip install --no-cache-dir \
+    fastapi==0.109.0 \
+    uvicorn[standard]==0.27.0 \
+    asyncpg==0.29.0 \
+    httpx==0.26.0 \
+    pydantic==2.5.0 \
+    python-multipart==0.0.6
+
+# ============================================================================
+# Stage 2: Runtime - Minimal production image
+# ============================================================================
+FROM python:3.11-slim
+
+# Set runtime arguments
+ARG DEBIAN_FRONTEND=noninteractive
+
+# Install runtime dependencies only
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+
+# Set environment path
+ENV PATH="/opt/venv/bin:$PATH"
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Create non-root user for security
+RUN useradd -m -u 1000 greenlang && \
+    mkdir -p /app /app/packs && \
+    chown -R greenlang:greenlang /app
+
+# Set working directory
+WORKDIR /app
+
+# Copy application code
+COPY --chown=greenlang:greenlang core/greenlang /app/greenlang
+
+# Switch to non-root user
+USER greenlang
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Run application
+CMD ["uvicorn", "greenlang.registry.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

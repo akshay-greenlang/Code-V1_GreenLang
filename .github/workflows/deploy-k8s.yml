@@ -1,0 +1,229 @@
+name: Deploy to Kubernetes
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/master') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'dev')
+    environment:
+      name: development
+      url: https://dev.greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_DEV }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Set image tag
+        id: image
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "tag=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to dev namespace
+        run: |
+          # Apply Kubernetes manifests
+          kubectl apply -f kubernetes/dev/namespace.yaml
+          kubectl apply -f kubernetes/dev/configmap.yaml
+          kubectl apply -f kubernetes/dev/secrets.yaml || echo "Secrets already exist"
+
+          # Update image in deployment
+          kubectl set image deployment/greenlang-api \
+            greenlang-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.image.outputs.tag }} \
+            -n greenlang-dev
+
+          # Apply remaining resources
+          kubectl apply -f kubernetes/dev/deployment.yaml
+          kubectl apply -f kubernetes/dev/service.yaml
+          kubectl apply -f kubernetes/dev/ingress.yaml
+          kubectl apply -f kubernetes/dev/hpa.yaml
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/greenlang-api -n greenlang-dev --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n greenlang-dev -l app=greenlang-api
+          kubectl get svc -n greenlang-dev
+          kubectl get ingress -n greenlang-dev
+
+      - name: Run smoke tests
+        run: |
+          # Get the service endpoint
+          ENDPOINT=$(kubectl get ingress greenlang-ingress -n greenlang-dev -o jsonpath='{.spec.rules[0].host}')
+
+          # Wait for service to be ready
+          sleep 30
+
+          # Run basic health checks
+          curl -f https://${ENDPOINT}/api/v1/health || echo "Health check endpoint not ready"
+          curl -f https://${ENDPOINT}/api/v1/ready || echo "Readiness check endpoint not ready"
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging')
+    needs: []
+    environment:
+      name: staging
+      url: https://staging.greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_STAGING }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Deploy to staging namespace
+        run: |
+          # Apply Kubernetes manifests
+          kubectl apply -f kubernetes/staging/
+
+          # Update image with latest tag
+          kubectl set image deployment/greenlang-api \
+            greenlang-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            -n greenlang-staging
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/greenlang-api -n greenlang-staging --timeout=10m
+
+      - name: Run integration tests
+        run: |
+          ENDPOINT=$(kubectl get ingress greenlang-ingress -n greenlang-staging -o jsonpath='{.spec.rules[0].host}')
+
+          # Run comprehensive tests
+          curl -f https://${ENDPOINT}/api/v1/health
+          curl -f https://${ENDPOINT}/api/v1/metrics
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
+    needs: []
+    environment:
+      name: production
+      url: https://greenlang.io
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.28.0'
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_PROD }}" | base64 -d > $HOME/.kube/config
+          chmod 600 $HOME/.kube/config
+
+      - name: Blue-Green deployment preparation
+        run: |
+          # Check current deployment
+          kubectl get deployment greenlang-api-blue -n greenlang-prod || \
+            kubectl create deployment greenlang-api-blue --image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest -n greenlang-prod
+
+      - name: Deploy green version
+        run: |
+          # Deploy new version as green
+          kubectl apply -f kubernetes/prod/deployment-green.yaml
+
+          # Update image
+          kubectl set image deployment/greenlang-api-green \
+            greenlang-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            -n greenlang-prod
+
+      - name: Wait for green deployment
+        run: |
+          kubectl rollout status deployment/greenlang-api-green -n greenlang-prod --timeout=10m
+
+      - name: Run production smoke tests
+        run: |
+          # Test green deployment internally
+          GREEN_POD=$(kubectl get pod -n greenlang-prod -l app=greenlang-api,version=green -o jsonpath='{.items[0].metadata.name}')
+          kubectl exec -n greenlang-prod $GREEN_POD -- gl --version
+
+      - name: Switch traffic to green (manual approval required)
+        run: |
+          echo "Manual approval required for production traffic switch"
+          echo "Run: kubectl patch svc greenlang-api -n greenlang-prod -p '{\"spec\":{\"selector\":{\"version\":\"green\"}}}'"
+
+      - name: Monitor deployment
+        run: |
+          kubectl get pods -n greenlang-prod -w --timeout=2m
+
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    if: failure()
+    needs: [deploy-dev, deploy-staging]
+    environment:
+      name: rollback
+
+    steps:
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p $HOME/.kube
+          echo "${{ secrets.KUBE_CONFIG_DEV }}" | base64 -d > $HOME/.kube/config
+
+      - name: Rollback deployment
+        run: |
+          NAMESPACE="${{ github.event.inputs.environment || 'dev' }}"
+          kubectl rollout undo deployment/greenlang-api -n greenlang-${NAMESPACE}
+          kubectl rollout status deployment/greenlang-api -n greenlang-${NAMESPACE}
+
+      - name: Notify rollback
+        run: |
+          echo "Deployment rolled back to previous version"
+          kubectl get deployment greenlang-api -n greenlang-${NAMESPACE} -o wide

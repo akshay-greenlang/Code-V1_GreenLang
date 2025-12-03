@@ -1,0 +1,99 @@
+# =============================================================================
+# GreenLang Agents - Kubernetes Namespace
+# =============================================================================
+# Namespace: greenlang-dev
+# Purpose: Development environment for GreenLang agents
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: agents
+    app.kubernetes.io/part-of: greenlang-platform
+    environment: development
+    # Pod Security Standards - Restrict privileges
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: v1.28
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+  annotations:
+    # Resource management
+    scheduler.alpha.kubernetes.io/defaultTolerations: '[{"key": "greenlang.io/agents", "operator": "Equal", "value": "true", "effect": "NoSchedule"}]'
+    # Team ownership
+    team: platform-engineering
+    owner: greenlang
+    # Documentation
+    description: "GreenLang Agent development environment"
+    documentation: "https://docs.greenlang.ai/k8s/namespaces"
+
+---
+# =============================================================================
+# Resource Quota - Limit namespace resources
+# =============================================================================
+
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-dev-quota
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  hard:
+    # CPU limits
+    requests.cpu: "10"
+    limits.cpu: "20"
+    # Memory limits
+    requests.memory: "10Gi"
+    limits.memory: "20Gi"
+    # Pod count
+    pods: "50"
+    # Service count
+    services: "20"
+    # ConfigMap count
+    configmaps: "30"
+    # Secret count
+    secrets: "30"
+    # PVC count
+    persistentvolumeclaims: "10"
+
+---
+# =============================================================================
+# Limit Range - Default container limits
+# =============================================================================
+
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-dev-limits
+  namespace: greenlang-dev
+  labels:
+    app.kubernetes.io/name: greenlang
+    app.kubernetes.io/component: resource-management
+spec:
+  limits:
+    - type: Container
+      # Default limits if not specified
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      # Default requests if not specified
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      # Maximum allowed
+      max:
+        cpu: "2"
+        memory: "4Gi"
+      # Minimum allowed
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+    - type: Pod
+      max:
+        cpu: "4"
+        memory: "8Gi"

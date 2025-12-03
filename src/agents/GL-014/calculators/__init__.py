@@ -310,6 +310,74 @@ from .predictive_fouling_engine import (
     CalculationStep as FoulingCalculationStep,
 )
 
+# TEMA Design Calculator - Shell-and-Tube Design per TEMA Standards
+from .tema_design_calculator import (
+    # TEMA Design Calculator
+    TEMADesignCalculator,
+    create_tema_calculator,
+
+    # TEMA Enumerations
+    TEMAFrontEnd,
+    TEMAShellType,
+    TEMARearEnd,
+    TEMAClass,
+    TubeLayout as TEMATubeLayout,
+    BaffleType as TEMABaffleType,
+    FlowRegime as TEMAFlowRegime,
+
+    # TEMA Input Data Classes
+    FluidProperties as TEMAFluidProperties,
+    TubeSpecification,
+    ShellSpecification,
+    BaffleSpecification,
+    TEMADesignInput,
+
+    # TEMA Result Data Classes
+    CalculationStep as TEMACalculationStep,
+    TubeCountResult,
+    BaffleDesignResult,
+    ShellSidePressureDropResult,
+    TubeSidePressureDropResult,
+    TEMAClearanceResult,
+    TEMADesignResult,
+
+    # TEMA Constants
+    TEMAClearances,
+    TEMATubeDimensions,
+    STANDARD_TUBES,
+    TUBE_COUNT_CONSTANTS,
+    TUBE_COUNT_PASS_FACTORS,
+)
+
+# NTU-Effectiveness Calculator - Epsilon-NTU Method
+from .ntu_effectiveness_calculator import (
+    # NTU Calculator
+    NTUEffectivenessCalculator,
+    create_ntu_calculator,
+
+    # NTU Enumerations
+    FlowConfiguration,
+    CalculationMode,
+    FluidSide,
+
+    # NTU Input Data Classes
+    FluidStream,
+    HeatExchangerGeometry,
+    NTUEffectivenessInput,
+
+    # NTU Result Data Classes
+    CalculationStep as NTUCalculationStep,
+    EffectivenessResult,
+    NTUFromEffectivenessResult,
+    ConfigurationComparisonResult,
+    CapacityRatioSensitivityResult,
+
+    # NTU Constants
+    DECIMAL_PRECISION as NTU_DECIMAL_PRECISION,
+    MAX_ITERATIONS as NTU_MAX_ITERATIONS,
+    CONVERGENCE_TOLERANCE as NTU_CONVERGENCE_TOLERANCE,
+)
+
 __all__ = [
     # Main Economic Calculator
     "EconomicCalculator",
@@ -565,4 +633,74 @@ __all__ = [
     "ModelValidationResult",
     "PredictionReportResult",
     "FoulingCalculationStep",
+
+    # =========================================================================
+    # TEMA Design Calculator
+    # =========================================================================
+
+    # TEMA Calculator
+    "TEMADesignCalculator",
+    "create_tema_calculator",
+
+    # TEMA Enumerations
+    "TEMAFrontEnd",
+    "TEMAShellType",
+    "TEMARearEnd",
+    "TEMAClass",
+    "TEMATubeLayout",
+    "TEMABaffleType",
+    "TEMAFlowRegime",
+
+    # TEMA Input Data Classes
+    "TEMAFluidProperties",
+    "TubeSpecification",
+    "ShellSpecification",
+    "BaffleSpecification",
+    "TEMADesignInput",
+
+    # TEMA Result Data Classes
+    "TEMACalculationStep",
+    "TubeCountResult",
+    "BaffleDesignResult",
+    "ShellSidePressureDropResult",
+    "TubeSidePressureDropResult",
+    "TEMAClearanceResult",
+    "TEMADesignResult",
+
+    # TEMA Constants
+    "TEMAClearances",
+    "TEMATubeDimensions",
+    "STANDARD_TUBES",
+    "TUBE_COUNT_CONSTANTS",
+    "TUBE_COUNT_PASS_FACTORS",
+
+    # =========================================================================
+    # NTU-Effectiveness Calculator
+    # =========================================================================
+
+    # NTU Calculator
+    "NTUEffectivenessCalculator",
+    "create_ntu_calculator",
+
+    # NTU Enumerations
+    "FlowConfiguration",
+    "CalculationMode",
+    "FluidSide",
+
+    # NTU Input Data Classes
+    "FluidStream",
+    "HeatExchangerGeometry",
+    "NTUEffectivenessInput",
+
+    # NTU Result Data Classes
+    "NTUCalculationStep",
+    "EffectivenessResult",
+    "NTUFromEffectivenessResult",
+    "ConfigurationComparisonResult",
+    "CapacityRatioSensitivityResult",
+
+    # NTU Constants
+    "NTU_DECIMAL_PRECISION",
+    "NTU_MAX_ITERATIONS",
+    "NTU_CONVERGENCE_TOLERANCE",
 ]
