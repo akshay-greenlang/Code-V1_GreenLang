@@ -62,7 +62,7 @@ dependencies = [
   "networkx==3.2.1",
   "tenacity==8.2.3",
   "pybreaker==1.0.1",
-  "psutil==5.9.8",
+  "psutil==7.1.3",
 ]
 
 [project.urls]
@@ -168,7 +168,7 @@ test = [
   "pytest-benchmark==4.0.0",
   "pytest-regressions==2.5.0",
   "hypothesis==6.98.0",
-  "psutil==5.9.8",
+  "psutil==7.1.3",
   "coverage[toml]==7.4.1",
   "faker==22.6.0",
   "responses==0.24.1",
