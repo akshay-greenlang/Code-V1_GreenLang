@@ -1,0 +1,384 @@
+# =============================================================================
+# GreenLang Process Heat Agents - Istio PeerAuthentication Configuration
+# =============================================================================
+# TASK-151: Configure Istio mTLS (STRICT mode) for all Process Heat Agents
+#
+# This configuration enforces STRICT mTLS for all service-to-service
+# communication within the GreenLang mesh. All traffic MUST be encrypted
+# with mutual TLS - plaintext connections are rejected.
+#
+# Target Namespaces:
+#   - greenlang-agents: Core agent workloads
+#   - greenlang-data: Data processing and storage services
+#   - greenlang-ml: Machine learning inference services
+#   - greenlang-production: Production API and frontend
+#
+# Security Model: Zero-Trust
+#   - All connections require valid mTLS certificates
+#   - Certificates are automatically rotated by Istio
+#   - Service identity is cryptographically verified
+# =============================================================================
+
+---
+# =============================================================================
+# MESH-WIDE DEFAULT: STRICT mTLS
+# =============================================================================
+# This policy applies to the entire mesh when placed in istio-system namespace.
+# It serves as the baseline security policy - all namespaces inherit STRICT mode
+# unless explicitly overridden (which should be avoided in production).
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default-strict-mtls
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: istio-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: mesh-wide
+    security.greenlang.io/mode: strict
+  annotations:
+    description: "Mesh-wide STRICT mTLS enforcement for all GreenLang services"
+    security.greenlang.io/compliance: "SOC2-CC6.1,PCI-DSS-4.1"
+    security.greenlang.io/reviewed-by: "security-team"
+    security.greenlang.io/last-review: "2024-01-15"
+spec:
+  # STRICT mode: Only accept mTLS traffic, reject all plaintext connections
+  # This is the most secure setting and should be used in production
+  mtls:
+    mode: STRICT
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-agents
+# =============================================================================
+# Core Process Heat agent namespace containing:
+#   - GL-010 through GL-095 agent pods
+#   - Agent orchestration services
+#   - Inter-agent communication buses
+#
+# All agents MUST communicate exclusively via mTLS. No plaintext allowed.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: greenlang-agents-strict-mtls
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: greenlang-agents-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: namespace
+    security.greenlang.io/mode: strict
+    greenlang.io/namespace-type: agents
+  annotations:
+    description: "STRICT mTLS for all Process Heat agents in greenlang-agents namespace"
+    security.greenlang.io/compliance: "SOC2-CC6.1,PCI-DSS-4.1,ISO27001-A.13"
+spec:
+  # Namespace-wide STRICT mTLS - applies to all pods in this namespace
+  mtls:
+    mode: STRICT
+
+  # Port-level overrides for specific use cases
+  # Note: We keep STRICT for all ports, but document the port purposes
+  portLevelMtls:
+    # Agent gRPC communication port
+    8080:
+      mode: STRICT
+    # Agent REST API port
+    8000:
+      mode: STRICT
+    # Prometheus metrics port - still requires mTLS
+    9090:
+      mode: STRICT
+    # Health check port
+    8081:
+      mode: STRICT
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-data
+# =============================================================================
+# Data engineering namespace containing:
+#   - Data ingestion services
+#   - ETL pipeline workers
+#   - Data validation services
+#   - Time-series data processors
+#
+# Handles sensitive emissions data - STRICT mTLS is mandatory.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: greenlang-data-strict-mtls
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: greenlang-data-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: namespace
+    security.greenlang.io/mode: strict
+    greenlang.io/namespace-type: data
+  annotations:
+    description: "STRICT mTLS for data processing services"
+    security.greenlang.io/data-classification: "confidential"
+    security.greenlang.io/compliance: "SOC2-CC6.1,GDPR-Art32"
+spec:
+  mtls:
+    mode: STRICT
+
+  portLevelMtls:
+    # Data API port
+    8000:
+      mode: STRICT
+    # Data streaming port (internal Kafka proxy)
+    9092:
+      mode: STRICT
+    # TimescaleDB proxy port
+    5432:
+      mode: STRICT
+    # Redis cache port
+    6379:
+      mode: STRICT
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-ml
+# =============================================================================
+# Machine Learning namespace containing:
+#   - ML model inference services
+#   - Satellite imagery analysis services
+#   - Anomaly detection services
+#   - Model serving infrastructure (TensorFlow Serving, Triton)
+#
+# ML models process sensitive environmental data - STRICT mTLS required.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: greenlang-ml-strict-mtls
+  namespace: greenlang-ml
+  labels:
+    app.kubernetes.io/name: greenlang-ml-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: namespace
+    security.greenlang.io/mode: strict
+    greenlang.io/namespace-type: ml
+  annotations:
+    description: "STRICT mTLS for ML inference services"
+    security.greenlang.io/data-classification: "confidential"
+    security.greenlang.io/compliance: "SOC2-CC6.1,ISO27001-A.13"
+spec:
+  mtls:
+    mode: STRICT
+
+  portLevelMtls:
+    # TensorFlow Serving gRPC
+    8500:
+      mode: STRICT
+    # TensorFlow Serving REST
+    8501:
+      mode: STRICT
+    # Triton Inference Server gRPC
+    8001:
+      mode: STRICT
+    # Triton Inference Server HTTP
+    8000:
+      mode: STRICT
+    # Custom ML API
+    8082:
+      mode: STRICT
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-production
+# =============================================================================
+# Production namespace containing:
+#   - Public-facing API services
+#   - Frontend serving
+#   - API Gateway
+#   - Authentication services
+#
+# Production workloads handling customer data - maximum security.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: greenlang-production-strict-mtls
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: greenlang-production-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: namespace
+    security.greenlang.io/mode: strict
+    greenlang.io/namespace-type: production
+  annotations:
+    description: "STRICT mTLS for production services"
+    security.greenlang.io/data-classification: "highly-confidential"
+    security.greenlang.io/compliance: "SOC2-CC6.1,PCI-DSS-4.1,GDPR-Art32"
+spec:
+  mtls:
+    mode: STRICT
+
+  portLevelMtls:
+    # API service port
+    8000:
+      mode: STRICT
+    # Frontend service port
+    3000:
+      mode: STRICT
+    # Worker service port
+    8080:
+      mode: STRICT
+
+---
+# =============================================================================
+# WORKLOAD-SPECIFIC: Process Heat Agent Controllers
+# =============================================================================
+# Specific configuration for Process Heat agent controller pods
+# These pods orchestrate agent execution and require elevated security.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: process-heat-controller-mtls
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: process-heat-controller-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: workload
+    security.greenlang.io/mode: strict
+  annotations:
+    description: "STRICT mTLS for Process Heat agent controller pods"
+spec:
+  # Target specific workloads using selector
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: process-heat-controller
+      greenlang.io/agent-type: controller
+
+  mtls:
+    mode: STRICT
+
+---
+# =============================================================================
+# WORKLOAD-SPECIFIC: OPC-UA Bridge Service
+# =============================================================================
+# The OPC-UA bridge requires special handling as it communicates with
+# industrial control systems. Internal mesh traffic is STRICT mTLS,
+# but the bridge handles external OPC-UA protocol translation.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: opcua-bridge-mtls
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: opcua-bridge-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: workload
+    security.greenlang.io/mode: strict
+    security.greenlang.io/external-protocol: opcua
+  annotations:
+    description: "mTLS configuration for OPC-UA bridge service"
+    security.greenlang.io/external-ports: "4840"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-opcua-bridge
+      greenlang.io/protocol: opcua
+
+  mtls:
+    mode: STRICT
+
+  # Port-level configuration for OPC-UA bridge
+  portLevelMtls:
+    # Internal mesh communication - STRICT
+    8080:
+      mode: STRICT
+    # OPC-UA external port - handled by ServiceEntry, not mesh
+    # Note: External OPC-UA uses its own certificate-based security
+    # The bridge terminates OPC-UA security and re-encrypts for mesh
+
+---
+# =============================================================================
+# WORKLOAD-SPECIFIC: MQTT Bridge Service
+# =============================================================================
+# MQTT bridge for IoT sensor data ingestion from industrial equipment.
+# Uses MQTT over TLS (port 8883) for external connections.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: mqtt-bridge-mtls
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: mqtt-bridge-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: workload
+    security.greenlang.io/mode: strict
+    security.greenlang.io/external-protocol: mqtt
+  annotations:
+    description: "mTLS configuration for MQTT bridge service"
+    security.greenlang.io/external-ports: "8883"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-mqtt-bridge
+      greenlang.io/protocol: mqtt
+
+  mtls:
+    mode: STRICT
+
+  portLevelMtls:
+    # Internal mesh communication
+    8080:
+      mode: STRICT
+    # Prometheus metrics
+    9090:
+      mode: STRICT
+
+---
+# =============================================================================
+# WORKLOAD-SPECIFIC: Kafka Connect Service
+# =============================================================================
+# Kafka Connect workers for streaming data pipelines.
+# Uses Kafka with TLS (port 9093) for external broker connections.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: kafka-connect-mtls
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: kafka-connect-peer-auth
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: workload
+    security.greenlang.io/mode: strict
+    security.greenlang.io/external-protocol: kafka
+  annotations:
+    description: "mTLS configuration for Kafka Connect workers"
+    security.greenlang.io/external-ports: "9093"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-kafka-connect
+      greenlang.io/protocol: kafka
+
+  mtls:
+    mode: STRICT
+
+  portLevelMtls:
+    # Kafka Connect REST API
+    8083:
+      mode: STRICT
+    # Internal mesh communication
+    8080:
+      mode: STRICT

@@ -1,0 +1,328 @@
+# GreenLang Agent Factory - Production Values
+# Override values for production environment
+
+global:
+  environment: production
+  imageRegistry: ghcr.io
+
+namespace:
+  name: greenlang-agents
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/greenlang-agents-prod-role
+
+# Production resource limits (full)
+common:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  # Strict pod security
+  podSecurityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    capabilities:
+      drop:
+        - ALL
+
+# Production Ingress with full TLS
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1s"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/hsts: "true"
+    nginx.ingress.kubernetes.io/hsts-max-age: "31536000"
+  hosts:
+    - host: api.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: greenlang-prod-tls
+      hosts:
+        - api.greenlang.io
+
+# Production config
+config:
+  LOG_LEVEL: warn
+  LOG_FORMAT: json
+  ENVIRONMENT: production
+  CACHE_TTL: "3600"
+  MAX_CONCURRENT_REQUESTS: "100"
+
+# External secrets with shorter refresh for production
+externalSecrets:
+  enabled: true
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets-manager-prod
+    kind: ClusterSecretStore
+
+# Strict network policies in production
+networkPolicy:
+  enabled: true
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - port: 8000
+          protocol: TCP
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - port: 9090
+          protocol: TCP
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-data
+      ports:
+        - port: 5432
+          protocol: TCP
+        - port: 6379
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+
+# Strong PDB for production
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+# Full monitoring in production
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    scrapeTimeout: 10s
+    labels:
+      release: prometheus
+      environment: production
+
+  prometheusRule:
+    enabled: true
+    labels:
+      release: prometheus
+      environment: production
+    rules:
+      - alert: AgentHighErrorRate
+        expr: |
+          sum(rate(agent_requests_total{status="error"}[5m])) by (agent)
+          /
+          sum(rate(agent_requests_total[5m])) by (agent) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+          environment: production
+        annotations:
+          summary: "High error rate for {{ $labels.agent }}"
+          description: "Error rate is {{ $value | humanizePercentage }} for agent {{ $labels.agent }}"
+          runbook_url: "https://docs.greenlang.io/runbooks/high-error-rate"
+
+      - alert: AgentHighLatency
+        expr: |
+          histogram_quantile(0.95, sum(rate(agent_request_duration_seconds_bucket[5m])) by (agent, le)) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          environment: production
+        annotations:
+          summary: "High latency for {{ $labels.agent }}"
+          description: "P95 latency is {{ $value | humanizeDuration }} for agent {{ $labels.agent }}"
+
+      - alert: AgentPodDown
+        expr: |
+          kube_deployment_status_replicas_available{namespace="greenlang-agents"} <
+          kube_deployment_status_replicas_desired{namespace="greenlang-agents"}
+        for: 2m
+        labels:
+          severity: critical
+          environment: production
+        annotations:
+          summary: "Agent pods unavailable"
+          description: "Deployment {{ $labels.deployment }} has {{ $value }} unavailable replicas"
+
+# Fuel Analyzer - Production
+fuel-analyzer:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: greenlang/fuel-analyzer
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  nodeSelector:
+    node-type: agent-runtime
+  tolerations:
+    - key: dedicated
+      value: agent
+      effect: NoSchedule
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - fuel-analyzer
+            topologyKey: topology.kubernetes.io/zone
+
+# Carbon Intensity - Production
+carbon-intensity:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: greenlang/carbon-intensity
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+  nodeSelector:
+    node-type: agent-runtime
+  tolerations:
+    - key: dedicated
+      value: agent
+      effect: NoSchedule
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - carbon-intensity
+            topologyKey: topology.kubernetes.io/zone
+
+# Energy Performance - Production
+energy-performance:
+  enabled: true
+  replicaCount: 3
+  image:
+    repository: greenlang/energy-performance
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 15
+    targetCPUUtilizationPercentage: 70
+  nodeSelector:
+    node-type: agent-runtime
+  tolerations:
+    - key: dedicated
+      value: agent
+      effect: NoSchedule
+
+# EUDR Compliance - Production (Critical Agent)
+eudr-compliance:
+  enabled: true
+  replicaCount: 5
+  image:
+    repository: greenlang/eudr-compliance
+    tag: "1.0.0"
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+  autoscaling:
+    enabled: true
+    minReplicas: 5
+    maxReplicas: 25
+    targetCPUUtilizationPercentage: 60
+    targetMemoryUtilizationPercentage: 70
+  podDisruptionBudget:
+    minAvailable: 3
+  nodeSelector:
+    node-type: agent-runtime
+  tolerations:
+    - key: dedicated
+      value: agent
+      effect: NoSchedule
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - eudr-compliance
+          topologyKey: topology.kubernetes.io/zone
+  # Priority class for EUDR
+  priorityClassName: high-priority
+  # Stricter SLOs for EUDR
+  slo:
+    availability: 99.95
+    latencyP95: 250ms
+    errorRate: 0.005

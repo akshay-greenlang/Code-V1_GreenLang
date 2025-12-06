@@ -1,0 +1,455 @@
+# GreenLang Production Network Policies
+# Zero-trust network security model
+---
+# Default deny all ingress and egress traffic
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: greenlang-production
+  labels:
+    environment: production
+    security-tier: baseline
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+---
+# Allow DNS resolution for all pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns
+  namespace: greenlang-production
+  labels:
+    environment: production
+    security-tier: baseline
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+        - podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# API Service - Ingress from ingress controller and internal services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-ingress-policy
+  namespace: greenlang-production
+  labels:
+    environment: production
+    app: greenlang-api
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-api
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow traffic from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow internal traffic from other greenlang services
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-production
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8000
+
+    # Allow health checks from monitoring
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# API Service - Egress to database, cache, and external services
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: api-egress-policy
+  namespace: greenlang-production
+  labels:
+    environment: production
+    app: greenlang-api
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-api
+  policyTypes:
+    - Egress
+  egress:
+    # Allow connection to PostgreSQL (AWS RDS)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/16  # VPC CIDR
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Allow connection to Redis (ElastiCache)
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/16  # VPC CIDR
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # Allow connection to internal services
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-production
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8080
+
+    # Allow HTTPS to external APIs (AWS, third-party)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# Worker Service - Limited network access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: worker-ingress-policy
+  namespace: greenlang-production
+  labels:
+    environment: production
+    app: greenlang-worker
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-worker
+  policyTypes:
+    - Ingress
+  ingress:
+    # Only allow health check traffic from monitoring
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8080
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: worker-egress-policy
+  namespace: greenlang-production
+  labels:
+    environment: production
+    app: greenlang-worker
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-worker
+  policyTypes:
+    - Egress
+  egress:
+    # Database access
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/16
+      ports:
+        - protocol: TCP
+          port: 5432
+
+    # Redis access
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/16
+      ports:
+        - protocol: TCP
+          port: 6379
+
+    # S3 access (AWS endpoints)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+---
+# Frontend - Ingress from load balancer only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-ingress-policy
+  namespace: greenlang-production
+  labels:
+    environment: production
+    app: greenlang-frontend
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-frontend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 3000
+
+---
+# Frontend - Egress to API only
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: frontend-egress-policy
+  namespace: greenlang-production
+  labels:
+    environment: production
+    app: greenlang-frontend
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-frontend
+  policyTypes:
+    - Egress
+  egress:
+    # Allow connection to API service
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-production
+          podSelector:
+            matchLabels:
+              app: greenlang-api
+      ports:
+        - protocol: TCP
+          port: 8000
+
+---
+# ML Inference - Restricted access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ml-inference-ingress-policy
+  namespace: greenlang-production
+  labels:
+    environment: production
+    app: greenlang-ml-inference
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-ml-inference
+  policyTypes:
+    - Ingress
+  ingress:
+    # Only API can call ML inference
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: greenlang-production
+          podSelector:
+            matchLabels:
+              app: greenlang-api
+      ports:
+        - protocol: TCP
+          port: 8082
+
+    # Prometheus metrics
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8082
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ml-inference-egress-policy
+  namespace: greenlang-production
+  labels:
+    environment: production
+    app: greenlang-ml-inference
+spec:
+  podSelector:
+    matchLabels:
+      app: greenlang-ml-inference
+  policyTypes:
+    - Egress
+  egress:
+    # S3 for model storage
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - protocol: TCP
+          port: 443
+
+    # Redis for caching
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/16
+      ports:
+        - protocol: TCP
+          port: 6379
+
+---
+# Allow Prometheus scraping
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-prometheus-scraping
+  namespace: greenlang-production
+  labels:
+    environment: production
+    security-tier: monitoring
+spec:
+  podSelector:
+    matchLabels:
+      prometheus.io/scrape: "true"
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app: prometheus
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 9090
+
+---
+# Allow Istio sidecar communication (if using service mesh)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-istio-sidecar
+  namespace: greenlang-production
+  labels:
+    environment: production
+    security-tier: mesh
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+      ports:
+        - protocol: TCP
+          port: 15090
+        - protocol: TCP
+          port: 15021
+  egress:
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: istio-system
+      ports:
+        - protocol: TCP
+          port: 15012
+        - protocol: TCP
+          port: 15017
+
+---
+# Cilium Network Policy for advanced L7 filtering (if using Cilium CNI)
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: api-l7-policy
+  namespace: greenlang-production
+spec:
+  endpointSelector:
+    matchLabels:
+      app: greenlang-api
+  ingress:
+    - fromEndpoints:
+        - matchLabels:
+            app.kubernetes.io/name: ingress-nginx
+      toPorts:
+        - ports:
+            - port: "8000"
+              protocol: TCP
+          rules:
+            http:
+              - method: "GET"
+                path: "/api/v1/health"
+              - method: "GET"
+                path: "/api/v1/ready"
+              - method: "GET"
+                path: "/metrics"
+              - method: "^(GET|POST|PUT|DELETE)$"
+                path: "/api/.*"
+                headers:
+                  - "Authorization: Bearer .*"

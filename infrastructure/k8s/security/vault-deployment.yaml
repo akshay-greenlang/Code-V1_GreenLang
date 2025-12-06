@@ -1,0 +1,731 @@
+# HashiCorp Vault Deployment for GreenLang Process Heat Platform
+# TASK-154/155: Secrets Management Infrastructure
+# HA Mode with 3 replicas, Raft integrated storage, AWS KMS auto-unseal
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/part-of: greenlang-security
+    istio-injection: enabled
+
+---
+# Vault Server Configuration ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-config
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: server
+data:
+  vault.hcl: |
+    # Vault Server Configuration - HA Mode
+    cluster_name = "greenlang-vault"
+
+    # UI Configuration
+    ui = true
+
+    # Listener Configuration with TLS
+    listener "tcp" {
+      address         = "0.0.0.0:8200"
+      cluster_address = "0.0.0.0:8201"
+      tls_cert_file   = "/vault/tls/tls.crt"
+      tls_key_file    = "/vault/tls/tls.key"
+      tls_client_ca_file = "/vault/tls/ca.crt"
+      tls_min_version = "tls12"
+      tls_prefer_server_cipher_suites = true
+
+      # Telemetry for Prometheus
+      telemetry {
+        unauthenticated_metrics_access = true
+      }
+    }
+
+    # Integrated Raft Storage for HA
+    storage "raft" {
+      path = "/vault/data"
+      node_id = "HOSTNAME"
+
+      # HA Retry Configuration
+      retry_join {
+        leader_api_addr = "https://vault-0.vault-internal:8200"
+        leader_ca_cert_file = "/vault/tls/ca.crt"
+        leader_client_cert_file = "/vault/tls/tls.crt"
+        leader_client_key_file = "/vault/tls/tls.key"
+      }
+      retry_join {
+        leader_api_addr = "https://vault-1.vault-internal:8200"
+        leader_ca_cert_file = "/vault/tls/ca.crt"
+        leader_client_cert_file = "/vault/tls/tls.crt"
+        leader_client_key_file = "/vault/tls/tls.key"
+      }
+      retry_join {
+        leader_api_addr = "https://vault-2.vault-internal:8200"
+        leader_ca_cert_file = "/vault/tls/ca.crt"
+        leader_client_cert_file = "/vault/tls/tls.crt"
+        leader_client_key_file = "/vault/tls/tls.key"
+      }
+
+      # Performance tuning
+      performance_multiplier = 1
+    }
+
+    # AWS KMS Auto-Unseal Configuration
+    seal "awskms" {
+      region     = "us-west-2"
+      kms_key_id = "alias/greenlang-vault-unseal"
+      endpoint   = ""
+    }
+
+    # Audit Logging
+    audit {
+      type = "file"
+      path = "/vault/audit/audit.log"
+      options = {
+        file_path = "/vault/audit/audit.log"
+        mode      = "0600"
+        format    = "json"
+        log_raw   = false
+        hmac_accessor = true
+      }
+    }
+
+    # API Configuration
+    api_addr = "https://HOSTNAME.vault-internal:8200"
+    cluster_addr = "https://HOSTNAME.vault-internal:8201"
+
+    # Disable Memory Lock in Kubernetes
+    disable_mlock = true
+
+    # Telemetry Configuration
+    telemetry {
+      prometheus_retention_time = "30s"
+      disable_hostname = true
+      statsite_address = ""
+      statsd_address = ""
+    }
+
+    # Service Registration with Kubernetes
+    service_registration "kubernetes" {}
+
+    # Log level
+    log_level = "info"
+    log_format = "json"
+
+    # Maximum lease TTL
+    max_lease_ttl = "768h"
+    default_lease_ttl = "168h"
+
+---
+# Service Account for Vault Server
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+
+---
+# ClusterRole for Vault Server
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: vault-server
+  labels:
+    app.kubernetes.io/name: vault
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["serviceaccounts/token"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["authentication.k8s.io"]
+    resources: ["tokenreviews"]
+    verbs: ["create"]
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["subjectaccessreviews"]
+    verbs: ["create"]
+
+---
+# ClusterRoleBinding for Vault Server
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-server-binding
+  labels:
+    app.kubernetes.io/name: vault
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: vault-server
+subjects:
+  - kind: ServiceAccount
+    name: vault
+    namespace: vault
+
+---
+# Headless Service for Raft cluster communication
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-internal
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: internal
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    - name: https
+      port: 8200
+      targetPort: 8200
+    - name: https-internal
+      port: 8201
+      targetPort: 8201
+  selector:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: server
+
+---
+# Active Vault Service (for client connections)
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: server
+spec:
+  type: ClusterIP
+  ports:
+    - name: https
+      port: 8200
+      targetPort: 8200
+      protocol: TCP
+    - name: https-internal
+      port: 8201
+      targetPort: 8201
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: server
+    vault-active: "true"
+
+---
+# Vault UI Service (for administrator access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault-ui
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: ui
+spec:
+  type: ClusterIP
+  ports:
+    - name: https
+      port: 443
+      targetPort: 8200
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: server
+
+---
+# Vault StatefulSet - HA Mode with 3 Replicas
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: server
+    app.kubernetes.io/part-of: greenlang-security
+spec:
+  serviceName: vault-internal
+  replicas: 3
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vault
+        app.kubernetes.io/component: server
+        app.kubernetes.io/part-of: greenlang-security
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8200"
+        prometheus.io/path: "/v1/sys/metrics"
+    spec:
+      serviceAccountName: vault
+      terminationGracePeriodSeconds: 30
+
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchLabels:
+                  app.kubernetes.io/name: vault
+                  app.kubernetes.io/component: server
+              topologyKey: kubernetes.io/hostname
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: vault
+                topologyKey: topology.kubernetes.io/zone
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+
+      initContainers:
+        # Init container to set up configuration
+        - name: config-init
+          image: hashicorp/vault:1.15.4
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              # Replace HOSTNAME placeholder with actual pod name
+              cp /vault/config-template/vault.hcl /vault/config/vault.hcl
+              sed -i "s/HOSTNAME/${HOSTNAME}/g" /vault/config/vault.hcl
+
+              # Set proper permissions
+              chmod 640 /vault/config/vault.hcl
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          volumeMounts:
+            - name: vault-config-template
+              mountPath: /vault/config-template
+              readOnly: true
+            - name: vault-config
+              mountPath: /vault/config
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: vault
+          image: hashicorp/vault:1.15.4
+          imagePullPolicy: IfNotPresent
+          command:
+            - vault
+            - server
+            - -config=/vault/config/vault.hcl
+
+          ports:
+            - name: https
+              containerPort: 8200
+              protocol: TCP
+            - name: https-internal
+              containerPort: 8201
+              protocol: TCP
+            - name: http-rep
+              containerPort: 8202
+              protocol: TCP
+
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: VAULT_ADDR
+              value: "https://127.0.0.1:8200"
+            - name: VAULT_API_ADDR
+              value: "https://$(HOSTNAME).vault-internal:8200"
+            - name: VAULT_CLUSTER_ADDR
+              value: "https://$(HOSTNAME).vault-internal:8201"
+            - name: VAULT_K8S_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: VAULT_K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: VAULT_SKIP_VERIFY
+              value: "false"
+            - name: VAULT_CACERT
+              value: "/vault/tls/ca.crt"
+            # AWS credentials for KMS auto-unseal (from secret)
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: vault-aws-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vault-aws-credentials
+                  key: secret-access-key
+            - name: AWS_REGION
+              value: "us-west-2"
+
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              add:
+                - IPC_LOCK
+              drop:
+                - ALL
+
+          volumeMounts:
+            - name: vault-data
+              mountPath: /vault/data
+            - name: vault-config
+              mountPath: /vault/config
+              readOnly: true
+            - name: vault-tls
+              mountPath: /vault/tls
+              readOnly: true
+            - name: vault-audit
+              mountPath: /vault/audit
+
+          livenessProbe:
+            httpGet:
+              path: /v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204
+              port: 8200
+              scheme: HTTPS
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204
+              port: 8200
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    # Graceful shutdown - step down if leader
+                    vault operator step-down 2>/dev/null || true
+                    sleep 5
+
+      volumes:
+        - name: vault-config-template
+          configMap:
+            name: vault-config
+        - name: vault-config
+          emptyDir: {}
+        - name: vault-tls
+          secret:
+            secretName: vault-tls
+            defaultMode: 0400
+        - name: vault-audit
+          emptyDir: {}
+
+  volumeClaimTemplates:
+    - metadata:
+        name: vault-data
+        labels:
+          app.kubernetes.io/name: vault
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: gp3-encrypted
+        resources:
+          requests:
+            storage: 20Gi
+
+---
+# PodDisruptionBudget for HA
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: vault-pdb
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+      app.kubernetes.io/component: server
+
+---
+# NetworkPolicy for Vault
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: vault-network-policy
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow Vault cluster communication
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+      ports:
+        - protocol: TCP
+          port: 8200
+        - protocol: TCP
+          port: 8201
+    # Allow from GreenLang namespaces
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: greenlang
+      ports:
+        - protocol: TCP
+          port: 8200
+    # Allow from Vault Agent Injector
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault-agent-injector
+      ports:
+        - protocol: TCP
+          port: 8200
+    # Allow Prometheus scraping
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+      ports:
+        - protocol: TCP
+          port: 8200
+  egress:
+    # Allow Vault cluster communication
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+      ports:
+        - protocol: TCP
+          port: 8200
+        - protocol: TCP
+          port: 8201
+    # Allow AWS KMS access
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+    # Allow Kubernetes API access
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443
+
+---
+# Ingress for Vault UI (administrators only)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: vault-ui-ingress
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: ui
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # IP whitelist for admin access only
+    nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+spec:
+  tls:
+    - hosts:
+        - vault.greenlang.internal
+      secretName: vault-ui-tls
+  rules:
+    - host: vault.greenlang.internal
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: vault-ui
+                port:
+                  number: 443
+
+---
+# Secret for AWS KMS credentials (placeholder - should be managed externally)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-aws-credentials
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+type: Opaque
+stringData:
+  access-key-id: "REPLACE_WITH_AWS_ACCESS_KEY"
+  secret-access-key: "REPLACE_WITH_AWS_SECRET_KEY"
+
+---
+# Certificate for Vault TLS (using cert-manager)
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: vault-tls
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+spec:
+  secretName: vault-tls
+  duration: 8760h  # 1 year
+  renewBefore: 720h  # 30 days
+  issuerRef:
+    name: greenlang-ca-issuer
+    kind: ClusterIssuer
+  commonName: vault.vault.svc.cluster.local
+  dnsNames:
+    - vault
+    - vault.vault
+    - vault.vault.svc
+    - vault.vault.svc.cluster.local
+    - vault-0.vault-internal
+    - vault-0.vault-internal.vault.svc.cluster.local
+    - vault-1.vault-internal
+    - vault-1.vault-internal.vault.svc.cluster.local
+    - vault-2.vault-internal
+    - vault-2.vault-internal.vault.svc.cluster.local
+    - "*.vault-internal"
+    - "*.vault-internal.vault.svc.cluster.local"
+    - vault.greenlang.internal
+  ipAddresses:
+    - 127.0.0.1
+  usages:
+    - server auth
+    - client auth
+    - digital signature
+    - key encipherment
+
+---
+# ServiceMonitor for Prometheus
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+      app.kubernetes.io/component: server
+  namespaceSelector:
+    matchNames:
+      - vault
+  endpoints:
+    - port: https
+      interval: 30s
+      scrapeTimeout: 10s
+      path: /v1/sys/metrics
+      scheme: https
+      tlsConfig:
+        insecureSkipVerify: true
+      params:
+        format:
+          - prometheus
+      bearerTokenSecret:
+        name: vault-prometheus-token
+        key: token
+
+---
+# Secret for Prometheus access token (placeholder)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault-prometheus-token
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+type: Opaque
+stringData:
+  token: "REPLACE_WITH_VAULT_PROMETHEUS_TOKEN"

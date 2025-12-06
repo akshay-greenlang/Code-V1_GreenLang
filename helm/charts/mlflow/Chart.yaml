@@ -1,0 +1,41 @@
+# GreenLang MLflow Helm Chart
+apiVersion: v2
+name: mlflow
+description: |
+  Production-ready MLflow deployment for GreenLang Process Heat Agents.
+  Includes PostgreSQL backend, S3/MinIO artifact storage, and HA configuration
+  with zero-hallucination principles and SHA-256 provenance tracking.
+
+type: application
+
+version: 1.0.0
+appVersion: "2.10.0"
+
+keywords:
+  - mlflow
+  - mlops
+  - machine-learning
+  - experiment-tracking
+  - model-registry
+  - greenlang
+  - process-heat
+
+home: https://github.com/greenlang/greenlang
+
+maintainers:
+  - name: GreenLang MLOps Team
+    email: mlops@greenlang.io
+
+dependencies:
+  - name: postgresql
+    version: "~12.12.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: minio
+    version: "~12.10.0"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: minio.enabled
+
+annotations:
+  artifacthub.io/category: machine-learning
+  artifacthub.io/license: Apache-2.0

@@ -1,0 +1,1659 @@
+openapi: 3.0.3
+info:
+  title: GreenLang Process Heat API
+  description: |
+    The GreenLang Process Heat API provides programmatic access to industrial
+    process heat optimization, emissions monitoring, and regulatory compliance
+    capabilities.
+
+    ## Features
+    - Process heat workflow orchestration
+    - Real-time emissions calculations (Scope 1, 2, 3)
+    - Regulatory compliance reporting (CSRD, CBAM, EUDR)
+    - Complete audit trail with SHA-256 provenance
+
+    ## Authentication
+    All endpoints require OAuth 2.0 Bearer token authentication.
+
+    ## Rate Limiting
+    - Standard: 100 requests/minute
+    - Professional: 300 requests/minute
+    - Enterprise: 1000 requests/minute
+  version: 1.0.0
+  contact:
+    name: GreenLang API Support
+    email: support@greenlang.io
+    url: https://docs.greenlang.io/process-heat
+  license:
+    name: Proprietary
+    url: https://greenlang.io/terms
+  x-logo:
+    url: https://greenlang.io/logo.png
+    altText: GreenLang Logo
+
+servers:
+  - url: https://api.greenlang.io/v1
+    description: Production server
+  - url: https://staging-api.greenlang.io/v1
+    description: Staging server
+  - url: https://dev-api.greenlang.io/v1
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: Authentication and authorization
+  - name: Orchestrator
+    description: GL-001 ThermalCommand Orchestrator operations
+  - name: Emissions
+    description: Emissions calculation and monitoring
+  - name: Compliance
+    description: Regulatory compliance reporting
+  - name: Agents
+    description: Agent management operations
+  - name: Safety
+    description: Safety system management
+
+security:
+  - bearerAuth: []
+  - apiKeyAuth: []
+
+paths:
+  # ============================================================================
+  # Authentication
+  # ============================================================================
+  /auth/token:
+    post:
+      tags:
+        - Authentication
+      summary: Obtain access token
+      description: Exchange client credentials for an access token
+      operationId: getAccessToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+                - client_id
+                - client_secret
+              properties:
+                grant_type:
+                  type: string
+                  enum: [client_credentials]
+                  description: Must be 'client_credentials'
+                client_id:
+                  type: string
+                  description: Your application's client ID
+                client_secret:
+                  type: string
+                  description: Your application's client secret
+                scope:
+                  type: string
+                  description: Space-separated list of scopes
+                  default: read write
+      responses:
+        '200':
+          description: Access token granted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================================================
+  # Process Heat Orchestrator
+  # ============================================================================
+  /process-heat/calculate:
+    post:
+      tags:
+        - Orchestrator
+      summary: Submit calculation workflow
+      description: Submit a new calculation workflow for execution
+      operationId: submitCalculation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowRequest'
+            examples:
+              boilerOptimization:
+                summary: Boiler optimization workflow
+                value:
+                  workflow_type: optimization
+                  name: Boiler Efficiency Optimization
+                  priority: high
+                  timeout_s: 300
+                  parameters:
+                    boiler_id: BLR-001
+                    target_efficiency_pct: 92.5
+                    optimization_mode: efficiency
+      responses:
+        '202':
+          description: Workflow accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowAcceptedResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/RateLimitExceeded'
+
+  /process-heat/status/{job_id}:
+    get:
+      tags:
+        - Orchestrator
+      summary: Get job status
+      description: Retrieve the current status of a workflow job
+      operationId: getJobStatus
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+        - name: include_tasks
+          in: query
+          description: Include task-level status
+          schema:
+            type: boolean
+            default: false
+        - name: include_metrics
+          in: query
+          description: Include performance metrics
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Job status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatusResponse'
+        '404':
+          description: Job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /process-heat/results/{job_id}:
+    get:
+      tags:
+        - Orchestrator
+      summary: Get job results
+      description: Retrieve the results of a completed workflow job
+      operationId: getJobResults
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+        - name: format
+          in: query
+          description: Response format
+          schema:
+            type: string
+            enum: [json, csv, pdf]
+            default: json
+        - name: include_provenance
+          in: query
+          description: Include provenance chain
+          schema:
+            type: boolean
+            default: false
+        - name: include_uncertainty
+          in: query
+          description: Include uncertainty analysis
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Job results retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResultsResponse'
+        '404':
+          description: Job not found
+
+  /process-heat/jobs/{job_id}:
+    delete:
+      tags:
+        - Orchestrator
+      summary: Cancel job
+      description: Cancel a running or pending workflow job
+      operationId: cancelJob
+      parameters:
+        - $ref: '#/components/parameters/JobId'
+        - name: force
+          in: query
+          description: Force cancellation even if tasks are running
+          schema:
+            type: boolean
+            default: false
+        - name: reason
+          in: query
+          description: Cancellation reason for audit trail
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Job cancelled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobCancelledResponse'
+        '409':
+          description: Cannot cancel - job already completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================================================
+  # Emissions APIs
+  # ============================================================================
+  /emissions/carbon:
+    post:
+      tags:
+        - Emissions
+      summary: Calculate carbon emissions
+      description: Calculate direct (Scope 1) carbon emissions from fuel combustion
+      operationId: calculateCarbonEmissions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CarbonEmissionsRequest'
+            examples:
+              naturalGas:
+                summary: Natural gas combustion
+                value:
+                  source_id: BLR-001
+                  calculation_method: EPA_PART_98
+                  fuel_data:
+                    fuel_type: natural_gas
+                    fuel_consumption: 150.0
+                    fuel_unit: MMBTU/hr
+                  include_uncertainty: true
+      responses:
+        '200':
+          description: Emissions calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CarbonEmissionsResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /emissions/scope3:
+    post:
+      tags:
+        - Emissions
+      summary: Calculate Scope 3 emissions
+      description: Calculate indirect (Scope 3) emissions across the value chain
+      operationId: calculateScope3Emissions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scope3EmissionsRequest'
+      responses:
+        '200':
+          description: Scope 3 emissions calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scope3EmissionsResponse'
+
+  /emissions/batch:
+    post:
+      tags:
+        - Emissions
+      summary: Batch emissions calculation
+      description: Calculate emissions for multiple sources in a single request
+      operationId: calculateBatchEmissions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchEmissionsRequest'
+      responses:
+        '200':
+          description: Batch emissions calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchEmissionsResponse'
+
+  /emissions/factors:
+    get:
+      tags:
+        - Emissions
+      summary: Get emission factors
+      description: Retrieve emission factors for various fuel types and methodologies
+      operationId: getEmissionFactors
+      parameters:
+        - name: fuel_type
+          in: query
+          description: Filter by fuel type
+          schema:
+            $ref: '#/components/schemas/FuelType'
+        - name: methodology
+          in: query
+          description: Filter by methodology
+          schema:
+            type: string
+            enum: [EPA_PART_98, GHG_PROTOCOL, EU_ETS, IPCC]
+        - name: region
+          in: query
+          description: Filter by region
+          schema:
+            type: string
+            enum: [US, EU, GLOBAL]
+        - name: year
+          in: query
+          description: Emission factor year
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Emission factors retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmissionFactorsResponse'
+
+  /emissions/sources/{source_id}:
+    get:
+      tags:
+        - Emissions
+      summary: Get source emissions
+      description: Retrieve historical emissions data for a specific source
+      operationId: getSourceEmissions
+      parameters:
+        - name: source_id
+          in: path
+          required: true
+          description: Emission source identifier
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          description: Start date (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: End date (ISO 8601)
+          schema:
+            type: string
+            format: date
+        - name: interval
+          in: query
+          description: Aggregation interval
+          schema:
+            type: string
+            enum: [hourly, daily, monthly, annual]
+            default: daily
+      responses:
+        '200':
+          description: Source emissions retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceEmissionsResponse'
+
+  /emissions/monitor:
+    post:
+      tags:
+        - Emissions
+      summary: Real-time emissions monitoring
+      description: Submit real-time emissions data for compliance monitoring
+      operationId: monitorEmissions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmissionsMonitorRequest'
+      responses:
+        '200':
+          description: Emissions monitored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmissionsMonitorResponse'
+
+  # ============================================================================
+  # Compliance APIs
+  # ============================================================================
+  /compliance/csrd:
+    post:
+      tags:
+        - Compliance
+      summary: Generate CSRD report
+      description: Generate Corporate Sustainability Reporting Directive compliant report
+      operationId: generateCsrdReport
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CsrdReportRequest'
+      responses:
+        '202':
+          description: Report generation started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportAcceptedResponse'
+
+  /compliance/cbam:
+    post:
+      tags:
+        - Compliance
+      summary: Calculate CBAM obligations
+      description: Calculate Carbon Border Adjustment Mechanism obligations
+      operationId: calculateCbamObligations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CbamRequest'
+      responses:
+        '200':
+          description: CBAM obligations calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CbamResponse'
+
+  /compliance/eudr:
+    post:
+      tags:
+        - Compliance
+      summary: EUDR compliance check
+      description: Check EU Deforestation Regulation compliance
+      operationId: checkEudrCompliance
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EudrRequest'
+      responses:
+        '200':
+          description: EUDR compliance checked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EudrResponse'
+
+  /compliance/reports/{report_id}:
+    get:
+      tags:
+        - Compliance
+      summary: Get compliance report
+      description: Retrieve compliance report status and results
+      operationId: getComplianceReport
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          description: Report identifier
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Report retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ComplianceReportResponse'
+
+  /compliance/reports/{report_id}/download:
+    get:
+      tags:
+        - Compliance
+      summary: Download compliance report
+      description: Download compliance report in specified format
+      operationId: downloadComplianceReport
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          description: Download format
+          schema:
+            type: string
+            enum: [pdf, xbrl, json, csv]
+            default: pdf
+      responses:
+        '200':
+          description: Report file
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: object
+
+  /compliance/deadlines:
+    get:
+      tags:
+        - Compliance
+      summary: Get regulatory deadlines
+      description: Retrieve upcoming regulatory deadlines
+      operationId: getDeadlines
+      parameters:
+        - name: regulation
+          in: query
+          description: Filter by regulation
+          schema:
+            type: string
+            enum: [csrd, cbam, eudr, eu_ets, sb253]
+        - name: organization_id
+          in: query
+          schema:
+            type: string
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Deadlines retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeadlinesResponse'
+
+  # ============================================================================
+  # Agent Management
+  # ============================================================================
+  /agents:
+    get:
+      tags:
+        - Agents
+      summary: List registered agents
+      description: Retrieve list of all registered agents
+      operationId: listAgents
+      responses:
+        '200':
+          description: Agents listed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentsListResponse'
+    post:
+      tags:
+        - Agents
+      summary: Register agent
+      description: Register a new agent with the orchestrator
+      operationId: registerAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistrationRequest'
+      responses:
+        '201':
+          description: Agent registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRegistrationResponse'
+
+  /agents/{agent_id}:
+    get:
+      tags:
+        - Agents
+      summary: Get agent status
+      description: Retrieve status of a specific agent
+      operationId: getAgentStatus
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStatusResponse'
+    delete:
+      tags:
+        - Agents
+      summary: Deregister agent
+      description: Remove an agent from the orchestrator
+      operationId: deregisterAgent
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent deregistered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  # ============================================================================
+  # Safety APIs
+  # ============================================================================
+  /safety/status:
+    get:
+      tags:
+        - Safety
+      summary: Get safety status
+      description: Retrieve current safety system status
+      operationId: getSafetyStatus
+      responses:
+        '200':
+          description: Safety status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SafetyStatusResponse'
+
+  /safety/esd:
+    post:
+      tags:
+        - Safety
+      summary: Trigger emergency shutdown
+      description: Trigger emergency shutdown (ESD) for the system
+      operationId: triggerEsd
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reason
+              properties:
+                reason:
+                  type: string
+                  description: Reason for ESD
+      responses:
+        '200':
+          description: ESD triggered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EsdResponse'
+    delete:
+      tags:
+        - Safety
+      summary: Reset emergency shutdown
+      description: Reset emergency shutdown after resolution
+      operationId: resetEsd
+      parameters:
+        - name: authorized_by
+          in: query
+          required: true
+          description: User authorizing the reset
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ESD reset
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+
+  /safety/permits:
+    get:
+      tags:
+        - Safety
+      summary: List safety permits
+      description: Retrieve list of active safety permits
+      operationId: listPermits
+      responses:
+        '200':
+          description: Permits listed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermitsListResponse'
+    post:
+      tags:
+        - Safety
+      summary: Request safety permit
+      description: Request a new safety work permit
+      operationId: requestPermit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermitRequest'
+      responses:
+        '201':
+          description: Permit requested
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermitResponse'
+
+components:
+  # ============================================================================
+  # Security Schemes
+  # ============================================================================
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: OAuth 2.0 Bearer token
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for server-to-server integrations
+
+  # ============================================================================
+  # Parameters
+  # ============================================================================
+  parameters:
+    JobId:
+      name: job_id
+      in: path
+      required: true
+      description: Workflow job identifier
+      schema:
+        type: string
+        pattern: ^wf_[a-zA-Z0-9]+$
+
+  # ============================================================================
+  # Responses
+  # ============================================================================
+  responses:
+    Unauthorized:
+      description: Unauthorized - Invalid or missing authentication
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================================================
+  # Schemas
+  # ============================================================================
+  schemas:
+    # --------------------------------------------------------------------------
+    # Common Schemas
+    # --------------------------------------------------------------------------
+    SuccessResponse:
+      type: object
+      required:
+        - success
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required:
+        - success
+        - error
+        - timestamp
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+        metadata:
+          $ref: '#/components/schemas/ResponseMetadata'
+        timestamp:
+          type: string
+          format: date-time
+
+    ErrorObject:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          example: VALIDATION_ERROR
+        message:
+          type: string
+          example: Invalid boiler_id format
+        details:
+          type: object
+        documentation_url:
+          type: string
+          format: uri
+
+    ResponseMetadata:
+      type: object
+      properties:
+        request_id:
+          type: string
+        processing_time_ms:
+          type: number
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        per_page:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total_items:
+          type: integer
+        total_pages:
+          type: integer
+        has_next:
+          type: boolean
+        has_prev:
+          type: boolean
+
+    # --------------------------------------------------------------------------
+    # Authentication Schemas
+    # --------------------------------------------------------------------------
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          example: 3600
+        scope:
+          type: string
+        issued_at:
+          type: string
+          format: date-time
+
+    # --------------------------------------------------------------------------
+    # Fuel and Energy Schemas
+    # --------------------------------------------------------------------------
+    FuelType:
+      type: string
+      enum:
+        - natural_gas
+        - fuel_oil_no2
+        - fuel_oil_no6
+        - diesel
+        - propane
+        - butane
+        - coal_bituminous
+        - coal_subbituminous
+        - coal_anthracite
+        - coal_lignite
+        - biomass_wood
+        - biomass_agricultural
+        - biogas
+        - landfill_gas
+
+    FuelUnit:
+      type: string
+      enum:
+        - MMBTU/hr
+        - MMBTU
+        - therms
+        - MCF
+        - SCF
+        - gallons
+        - gallons/hr
+        - kg
+        - kg/hr
+        - tonnes
+        - tonnes/hr
+        - MWh
+        - kWh
+
+    FuelData:
+      type: object
+      required:
+        - fuel_type
+        - fuel_consumption
+        - fuel_unit
+      properties:
+        fuel_type:
+          $ref: '#/components/schemas/FuelType'
+        fuel_consumption:
+          type: number
+          exclusiveMinimum: 0
+        fuel_unit:
+          $ref: '#/components/schemas/FuelUnit'
+        fuel_hhv:
+          type: number
+          exclusiveMinimum: 0
+        fuel_carbon_content_pct:
+          type: number
+          minimum: 0
+          maximum: 100
+
+    # --------------------------------------------------------------------------
+    # Workflow Schemas
+    # --------------------------------------------------------------------------
+    WorkflowRequest:
+      type: object
+      required:
+        - workflow_type
+        - name
+      properties:
+        workflow_type:
+          type: string
+          enum:
+            - optimization
+            - monitoring
+            - compliance
+            - maintenance
+            - emergency
+            - calibration
+            - reporting
+        name:
+          type: string
+          maxLength: 256
+        priority:
+          type: string
+          enum: [low, normal, high, critical, emergency]
+          default: normal
+        timeout_s:
+          type: number
+          minimum: 1
+          maximum: 86400
+          default: 300
+        parameters:
+          type: object
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskSpec'
+        rollback_enabled:
+          type: boolean
+          default: true
+        checkpoint_enabled:
+          type: boolean
+          default: true
+        metadata:
+          type: object
+
+    TaskSpec:
+      type: object
+      required:
+        - task_type
+        - name
+        - target_agent_type
+      properties:
+        task_id:
+          type: string
+        task_type:
+          type: string
+        name:
+          type: string
+        target_agent_type:
+          type: string
+        target_agent_id:
+          type: string
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+        timeout_s:
+          type: number
+          minimum: 1
+          maximum: 3600
+          default: 60
+        inputs:
+          type: object
+        retry_count:
+          type: integer
+          minimum: 0
+          maximum: 5
+          default: 2
+
+    WorkflowAcceptedResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                workflow_id:
+                  type: string
+                status:
+                  type: string
+                  enum: [pending]
+                name:
+                  type: string
+                priority:
+                  type: string
+                tasks_total:
+                  type: integer
+                created_at:
+                  type: string
+                  format: date-time
+                estimated_completion_s:
+                  type: number
+
+    JobStatusResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                workflow_id:
+                  type: string
+                status:
+                  type: string
+                  enum: [pending, running, paused, completed, failed, cancelled, timeout]
+                name:
+                  type: string
+                start_time:
+                  type: string
+                  format: date-time
+                duration_ms:
+                  type: number
+                tasks_completed:
+                  type: integer
+                tasks_failed:
+                  type: integer
+                tasks_total:
+                  type: integer
+
+    JobResultsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                workflow_id:
+                  type: string
+                status:
+                  type: string
+                final_output:
+                  type: object
+                task_results:
+                  type: object
+                provenance_hash:
+                  type: string
+
+    JobCancelledResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                workflow_id:
+                  type: string
+                status:
+                  type: string
+                  enum: [cancelled]
+                cancelled_at:
+                  type: string
+                  format: date-time
+
+    # --------------------------------------------------------------------------
+    # Emissions Schemas
+    # --------------------------------------------------------------------------
+    CarbonEmissionsRequest:
+      type: object
+      required:
+        - source_id
+        - fuel_data
+      properties:
+        source_id:
+          type: string
+        calculation_method:
+          type: string
+          enum: [EPA_PART_98, GHG_PROTOCOL, EU_ETS, ISO_14064]
+          default: EPA_PART_98
+        fuel_data:
+          $ref: '#/components/schemas/FuelData'
+        operating_conditions:
+          type: object
+          properties:
+            load_pct:
+              type: number
+              minimum: 0
+              maximum: 120
+            operating_hours:
+              type: number
+            stack_o2_pct:
+              type: number
+            stack_temperature_f:
+              type: number
+        reporting_period:
+          type: object
+          properties:
+            start_date:
+              type: string
+              format: date
+            end_date:
+              type: string
+              format: date
+        include_uncertainty:
+          type: boolean
+          default: true
+
+    CarbonEmissionsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                source_id:
+                  type: string
+                calculation_id:
+                  type: string
+                emissions:
+                  type: object
+                  properties:
+                    co2:
+                      $ref: '#/components/schemas/EmissionValue'
+                    ch4:
+                      $ref: '#/components/schemas/EmissionValue'
+                    n2o:
+                      $ref: '#/components/schemas/EmissionValue'
+                    total_co2e:
+                      $ref: '#/components/schemas/EmissionValue'
+                emission_factors_used:
+                  type: object
+                uncertainty:
+                  $ref: '#/components/schemas/UncertaintyResult'
+                provenance_hash:
+                  type: string
+
+    EmissionValue:
+      type: object
+      properties:
+        value:
+          type: number
+        unit:
+          type: string
+        annual_value:
+          type: number
+        annual_unit:
+          type: string
+        annual_tonnes:
+          type: number
+
+    UncertaintyResult:
+      type: object
+      properties:
+        lower_bound:
+          type: number
+        upper_bound:
+          type: number
+        confidence_level:
+          type: number
+          minimum: 0
+          maximum: 1
+        primary_sources:
+          type: array
+          items:
+            type: string
+
+    Scope3EmissionsRequest:
+      type: object
+      required:
+        - organization_id
+        - reporting_year
+      properties:
+        organization_id:
+          type: string
+        reporting_year:
+          type: integer
+        categories:
+          type: object
+
+    Scope3EmissionsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+
+    BatchEmissionsRequest:
+      type: object
+      required:
+        - sources
+      properties:
+        batch_id:
+          type: string
+        calculation_method:
+          type: string
+        sources:
+          type: array
+          items:
+            type: object
+            required:
+              - source_id
+              - fuel_data
+            properties:
+              source_id:
+                type: string
+              fuel_data:
+                $ref: '#/components/schemas/FuelData'
+
+    BatchEmissionsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+
+    EmissionFactorsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                emission_factors:
+                  type: array
+                  items:
+                    type: object
+                supported_fuel_types:
+                  type: array
+                  items:
+                    type: string
+
+    SourceEmissionsResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+
+    EmissionsMonitorRequest:
+      type: object
+      required:
+        - source_id
+        - fuel_data
+      properties:
+        source_id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        fuel_data:
+          $ref: '#/components/schemas/FuelData'
+        stack_measurements:
+          type: object
+        operating_conditions:
+          type: object
+        permit_limits:
+          type: object
+
+    EmissionsMonitorResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+
+    # --------------------------------------------------------------------------
+    # Compliance Schemas
+    # --------------------------------------------------------------------------
+    CsrdReportRequest:
+      type: object
+      required:
+        - organization_id
+        - reporting_year
+        - reporting_standards
+      properties:
+        organization_id:
+          type: string
+        reporting_year:
+          type: integer
+        reporting_standards:
+          type: array
+          items:
+            type: string
+            enum:
+              - ESRS_E1
+              - ESRS_E2
+              - ESRS_E3
+              - ESRS_E4
+              - ESRS_E5
+              - ESRS_S1
+              - ESRS_S2
+              - ESRS_S3
+              - ESRS_S4
+              - ESRS_G1
+        report_type:
+          type: string
+          enum: [annual, interim, amendment]
+          default: annual
+        assurance_level:
+          type: string
+          enum: [none, limited, reasonable]
+          default: limited
+        output_format:
+          type: string
+          enum: [XBRL, PDF, JSON, HTML]
+          default: XBRL
+
+    CbamRequest:
+      type: object
+      required:
+        - declaration_id
+        - reporting_period
+        - declarant
+        - imports
+      properties:
+        declaration_id:
+          type: string
+        reporting_period:
+          type: object
+          properties:
+            quarter:
+              type: string
+              enum: [Q1, Q2, Q3, Q4]
+            year:
+              type: integer
+        declarant:
+          type: object
+          properties:
+            organization_id:
+              type: string
+            eori_number:
+              type: string
+        imports:
+          type: array
+          items:
+            type: object
+
+    CbamResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+
+    EudrRequest:
+      type: object
+      required:
+        - statement_id
+        - operator
+        - commodities
+      properties:
+        statement_id:
+          type: string
+        operator:
+          type: object
+        commodities:
+          type: array
+          items:
+            type: object
+
+    EudrResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+
+    ReportAcceptedResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                report_id:
+                  type: string
+                status:
+                  type: string
+                  enum: [processing]
+                estimated_completion_s:
+                  type: number
+
+    ComplianceReportResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+
+    DeadlinesResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                deadlines:
+                  type: array
+                  items:
+                    type: object
+                summary:
+                  type: object
+
+    # --------------------------------------------------------------------------
+    # Agent Schemas
+    # --------------------------------------------------------------------------
+    AgentsListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                agents:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/AgentStatus'
+
+    AgentRegistrationRequest:
+      type: object
+      required:
+        - agent_id
+        - agent_type
+        - name
+      properties:
+        agent_id:
+          type: string
+        agent_type:
+          type: string
+        name:
+          type: string
+        capabilities:
+          type: array
+          items:
+            type: string
+        endpoint:
+          type: string
+          format: uri
+
+    AgentRegistrationResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                agent_id:
+                  type: string
+                registered:
+                  type: boolean
+                registered_at:
+                  type: string
+                  format: date-time
+
+    AgentStatus:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        agent_type:
+          type: string
+        name:
+          type: string
+        health:
+          type: string
+          enum: [healthy, degraded, unhealthy, offline, maintenance]
+        version:
+          type: string
+        last_heartbeat:
+          type: string
+          format: date-time
+        active_tasks:
+          type: integer
+        capabilities:
+          type: array
+          items:
+            type: string
+
+    AgentStatusResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/AgentStatus'
+
+    # --------------------------------------------------------------------------
+    # Safety Schemas
+    # --------------------------------------------------------------------------
+    SafetyStatusResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                state:
+                  type: string
+                esd_triggered:
+                  type: boolean
+                active_alarms:
+                  type: integer
+                alarms:
+                  type: array
+                  items:
+                    type: object
+
+    EsdResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                esd_triggered:
+                  type: boolean
+                triggered_at:
+                  type: string
+                  format: date-time
+
+    PermitsListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                permits:
+                  type: array
+                  items:
+                    type: object
+
+    PermitRequest:
+      type: object
+      required:
+        - permit_type
+        - equipment_id
+        - requested_by
+      properties:
+        permit_type:
+          type: string
+        equipment_id:
+          type: string
+        requested_by:
+          type: string
+        duration_hours:
+          type: number
+          default: 8
+
+    PermitResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                permit_id:
+                  type: string
+                approved:
+                  type: boolean

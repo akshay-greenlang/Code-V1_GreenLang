@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: fuel-analyzer
+  namespace: greenlang-agents
+  labels:
+    app: fuel-analyzer
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: fuel-analyzer
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: carbon-intensity
+  namespace: greenlang-agents
+  labels:
+    app: carbon-intensity
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: carbon-intensity
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: energy-performance
+  namespace: greenlang-agents
+  labels:
+    app: energy-performance
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: energy-performance
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: eudr-compliance
+  namespace: greenlang-agents
+  labels:
+    app: eudr-compliance
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: eudr-compliance

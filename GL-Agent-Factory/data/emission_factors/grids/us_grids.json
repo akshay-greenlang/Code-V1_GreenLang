@@ -1,0 +1,229 @@
+{
+  "metadata": {
+    "source": "EPA eGRID, EIA, State Energy Offices",
+    "source_url": "https://www.epa.gov/egrid",
+    "version": "2024",
+    "last_updated": "2024-01-30",
+    "units_note": "All factors in kgCO2e per kWh unless otherwise specified",
+    "scope": "Scope 2 - Indirect Emissions from Purchased Electricity",
+    "methodology": "Location-based emission factors from EPA eGRID 2022",
+    "gwp_basis": "AR5 100-year GWP values"
+  },
+  "national_average": {
+    "factor_id": "US_GRID_2024_NATIONAL",
+    "name": "United States National Average",
+    "unit": "kWh",
+    "kgCO2e_per_unit": 0.386,
+    "kgCO2_per_unit": 0.382,
+    "kgCH4_per_unit": 0.000016,
+    "kgN2O_per_unit": 0.000006,
+    "lbCO2e_per_MWh": 850.2,
+    "category": "National Grid",
+    "scope": "Scope 2",
+    "year": 2022,
+    "generation_mix": {
+      "natural_gas_pct": 39.8,
+      "coal_pct": 19.5,
+      "nuclear_pct": 18.9,
+      "wind_pct": 10.2,
+      "hydro_pct": 6.0,
+      "solar_pct": 3.9,
+      "other_pct": 1.7
+    }
+  },
+  "nerc_regions": {
+    "wecc": {
+      "factor_id": "US_GRID_2024_WECC",
+      "name": "WECC (Western Interconnection)",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.315,
+      "lbCO2e_per_MWh": 694.5,
+      "category": "NERC Region",
+      "states_covered": ["WA", "OR", "CA", "NV", "AZ", "UT", "CO", "WY", "MT", "ID", "NM"],
+      "notes": "Higher renewable penetration"
+    },
+    "ercot": {
+      "factor_id": "US_GRID_2024_ERCOT",
+      "name": "ERCOT (Texas Interconnection)",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.372,
+      "lbCO2e_per_MWh": 820.8,
+      "category": "NERC Region",
+      "states_covered": ["TX"],
+      "notes": "High wind and natural gas"
+    },
+    "serc": {
+      "factor_id": "US_GRID_2024_SERC",
+      "name": "SERC (Southeast)",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.412,
+      "lbCO2e_per_MWh": 908.5,
+      "category": "NERC Region",
+      "states_covered": ["VA", "NC", "SC", "GA", "FL", "AL", "MS", "TN", "KY", "LA", "AR", "MO"]
+    },
+    "rfc": {
+      "factor_id": "US_GRID_2024_RFC",
+      "name": "RFC (ReliabilityFirst)",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.398,
+      "lbCO2e_per_MWh": 877.8,
+      "category": "NERC Region",
+      "states_covered": ["PA", "NJ", "DE", "MD", "DC", "OH", "WV", "IN", "MI", "WI", "IL"]
+    },
+    "npcc": {
+      "factor_id": "US_GRID_2024_NPCC",
+      "name": "NPCC (Northeast)",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.218,
+      "lbCO2e_per_MWh": 480.6,
+      "category": "NERC Region",
+      "states_covered": ["NY", "CT", "MA", "ME", "NH", "RI", "VT"],
+      "notes": "High nuclear and hydro"
+    },
+    "mro": {
+      "factor_id": "US_GRID_2024_MRO",
+      "name": "MRO (Midwest Reliability Organization)",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.478,
+      "lbCO2e_per_MWh": 1054.0,
+      "category": "NERC Region",
+      "states_covered": ["MN", "IA", "ND", "SD", "NE", "MT"]
+    },
+    "spp": {
+      "factor_id": "US_GRID_2024_SPP",
+      "name": "SPP (Southwest Power Pool)",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.435,
+      "lbCO2e_per_MWh": 959.0,
+      "category": "NERC Region",
+      "states_covered": ["KS", "OK", "NE", "TX (partial)", "NM (partial)"]
+    }
+  },
+  "states": {
+    "AL": {"factor_id": "US_GRID_2024_AL", "name": "Alabama", "kgCO2e_per_unit": 0.385, "category": "State Grid"},
+    "AK": {"factor_id": "US_GRID_2024_AK", "name": "Alaska", "kgCO2e_per_unit": 0.436, "category": "State Grid"},
+    "AZ": {"factor_id": "US_GRID_2024_AZ", "name": "Arizona", "kgCO2e_per_unit": 0.389, "category": "State Grid"},
+    "AR": {"factor_id": "US_GRID_2024_AR", "name": "Arkansas", "kgCO2e_per_unit": 0.456, "category": "State Grid"},
+    "CA": {"factor_id": "US_GRID_2024_CA", "name": "California", "kgCO2e_per_unit": 0.223, "category": "State Grid", "notes": "High solar and imports"},
+    "CO": {"factor_id": "US_GRID_2024_CO", "name": "Colorado", "kgCO2e_per_unit": 0.524, "category": "State Grid"},
+    "CT": {"factor_id": "US_GRID_2024_CT", "name": "Connecticut", "kgCO2e_per_unit": 0.218, "category": "State Grid"},
+    "DE": {"factor_id": "US_GRID_2024_DE", "name": "Delaware", "kgCO2e_per_unit": 0.378, "category": "State Grid"},
+    "FL": {"factor_id": "US_GRID_2024_FL", "name": "Florida", "kgCO2e_per_unit": 0.389, "category": "State Grid"},
+    "GA": {"factor_id": "US_GRID_2024_GA", "name": "Georgia", "kgCO2e_per_unit": 0.378, "category": "State Grid"},
+    "HI": {"factor_id": "US_GRID_2024_HI", "name": "Hawaii", "kgCO2e_per_unit": 0.612, "category": "State Grid", "notes": "Oil-dependent isolated grid"},
+    "ID": {"factor_id": "US_GRID_2024_ID", "name": "Idaho", "kgCO2e_per_unit": 0.148, "category": "State Grid", "notes": "High hydro"},
+    "IL": {"factor_id": "US_GRID_2024_IL", "name": "Illinois", "kgCO2e_per_unit": 0.298, "category": "State Grid", "notes": "High nuclear"},
+    "IN": {"factor_id": "US_GRID_2024_IN", "name": "Indiana", "kgCO2e_per_unit": 0.698, "category": "State Grid", "notes": "High coal"},
+    "IA": {"factor_id": "US_GRID_2024_IA", "name": "Iowa", "kgCO2e_per_unit": 0.378, "category": "State Grid", "notes": "High wind"},
+    "KS": {"factor_id": "US_GRID_2024_KS", "name": "Kansas", "kgCO2e_per_unit": 0.412, "category": "State Grid"},
+    "KY": {"factor_id": "US_GRID_2024_KY", "name": "Kentucky", "kgCO2e_per_unit": 0.756, "category": "State Grid", "notes": "High coal"},
+    "LA": {"factor_id": "US_GRID_2024_LA", "name": "Louisiana", "kgCO2e_per_unit": 0.412, "category": "State Grid"},
+    "ME": {"factor_id": "US_GRID_2024_ME", "name": "Maine", "kgCO2e_per_unit": 0.187, "category": "State Grid"},
+    "MD": {"factor_id": "US_GRID_2024_MD", "name": "Maryland", "kgCO2e_per_unit": 0.312, "category": "State Grid"},
+    "MA": {"factor_id": "US_GRID_2024_MA", "name": "Massachusetts", "kgCO2e_per_unit": 0.298, "category": "State Grid"},
+    "MI": {"factor_id": "US_GRID_2024_MI", "name": "Michigan", "kgCO2e_per_unit": 0.468, "category": "State Grid"},
+    "MN": {"factor_id": "US_GRID_2024_MN", "name": "Minnesota", "kgCO2e_per_unit": 0.389, "category": "State Grid"},
+    "MS": {"factor_id": "US_GRID_2024_MS", "name": "Mississippi", "kgCO2e_per_unit": 0.412, "category": "State Grid"},
+    "MO": {"factor_id": "US_GRID_2024_MO", "name": "Missouri", "kgCO2e_per_unit": 0.689, "category": "State Grid"},
+    "MT": {"factor_id": "US_GRID_2024_MT", "name": "Montana", "kgCO2e_per_unit": 0.523, "category": "State Grid"},
+    "NE": {"factor_id": "US_GRID_2024_NE", "name": "Nebraska", "kgCO2e_per_unit": 0.556, "category": "State Grid"},
+    "NV": {"factor_id": "US_GRID_2024_NV", "name": "Nevada", "kgCO2e_per_unit": 0.356, "category": "State Grid"},
+    "NH": {"factor_id": "US_GRID_2024_NH", "name": "New Hampshire", "kgCO2e_per_unit": 0.178, "category": "State Grid"},
+    "NJ": {"factor_id": "US_GRID_2024_NJ", "name": "New Jersey", "kgCO2e_per_unit": 0.234, "category": "State Grid"},
+    "NM": {"factor_id": "US_GRID_2024_NM", "name": "New Mexico", "kgCO2e_per_unit": 0.489, "category": "State Grid"},
+    "NY": {"factor_id": "US_GRID_2024_NY", "name": "New York", "kgCO2e_per_unit": 0.198, "category": "State Grid", "notes": "High hydro and nuclear"},
+    "NC": {"factor_id": "US_GRID_2024_NC", "name": "North Carolina", "kgCO2e_per_unit": 0.345, "category": "State Grid"},
+    "ND": {"factor_id": "US_GRID_2024_ND", "name": "North Dakota", "kgCO2e_per_unit": 0.678, "category": "State Grid"},
+    "OH": {"factor_id": "US_GRID_2024_OH", "name": "Ohio", "kgCO2e_per_unit": 0.512, "category": "State Grid"},
+    "OK": {"factor_id": "US_GRID_2024_OK", "name": "Oklahoma", "kgCO2e_per_unit": 0.389, "category": "State Grid"},
+    "OR": {"factor_id": "US_GRID_2024_OR", "name": "Oregon", "kgCO2e_per_unit": 0.178, "category": "State Grid", "notes": "High hydro"},
+    "PA": {"factor_id": "US_GRID_2024_PA", "name": "Pennsylvania", "kgCO2e_per_unit": 0.312, "category": "State Grid"},
+    "RI": {"factor_id": "US_GRID_2024_RI", "name": "Rhode Island", "kgCO2e_per_unit": 0.378, "category": "State Grid"},
+    "SC": {"factor_id": "US_GRID_2024_SC", "name": "South Carolina", "kgCO2e_per_unit": 0.278, "category": "State Grid", "notes": "High nuclear"},
+    "SD": {"factor_id": "US_GRID_2024_SD", "name": "South Dakota", "kgCO2e_per_unit": 0.289, "category": "State Grid"},
+    "TN": {"factor_id": "US_GRID_2024_TN", "name": "Tennessee", "kgCO2e_per_unit": 0.356, "category": "State Grid"},
+    "TX": {"factor_id": "US_GRID_2024_TX", "name": "Texas", "kgCO2e_per_unit": 0.372, "category": "State Grid"},
+    "UT": {"factor_id": "US_GRID_2024_UT", "name": "Utah", "kgCO2e_per_unit": 0.612, "category": "State Grid"},
+    "VT": {"factor_id": "US_GRID_2024_VT", "name": "Vermont", "kgCO2e_per_unit": 0.012, "category": "State Grid", "notes": "Near-zero due to hydro and nuclear"},
+    "VA": {"factor_id": "US_GRID_2024_VA", "name": "Virginia", "kgCO2e_per_unit": 0.323, "category": "State Grid"},
+    "WA": {"factor_id": "US_GRID_2024_WA", "name": "Washington", "kgCO2e_per_unit": 0.089, "category": "State Grid", "notes": "Highest hydro share in US"},
+    "WV": {"factor_id": "US_GRID_2024_WV", "name": "West Virginia", "kgCO2e_per_unit": 0.812, "category": "State Grid", "notes": "Highest coal dependency"},
+    "WI": {"factor_id": "US_GRID_2024_WI", "name": "Wisconsin", "kgCO2e_per_unit": 0.523, "category": "State Grid"},
+    "WY": {"factor_id": "US_GRID_2024_WY", "name": "Wyoming", "kgCO2e_per_unit": 0.789, "category": "State Grid"}
+  },
+  "major_utilities": {
+    "pge": {
+      "factor_id": "US_GRID_2024_PGE",
+      "name": "Pacific Gas & Electric (PG&E)",
+      "state": "CA",
+      "kgCO2e_per_unit": 0.187,
+      "category": "Utility",
+      "notes": "Includes renewable energy credits"
+    },
+    "sce": {
+      "factor_id": "US_GRID_2024_SCE",
+      "name": "Southern California Edison",
+      "state": "CA",
+      "kgCO2e_per_unit": 0.198,
+      "category": "Utility"
+    },
+    "coned": {
+      "factor_id": "US_GRID_2024_CONED",
+      "name": "Consolidated Edison",
+      "state": "NY",
+      "kgCO2e_per_unit": 0.246,
+      "category": "Utility"
+    },
+    "duke_carolinas": {
+      "factor_id": "US_GRID_2024_DUKE",
+      "name": "Duke Energy Carolinas",
+      "state": "NC/SC",
+      "kgCO2e_per_unit": 0.312,
+      "category": "Utility"
+    },
+    "xcel_colorado": {
+      "factor_id": "US_GRID_2024_XCEL",
+      "name": "Xcel Energy Colorado",
+      "state": "CO",
+      "kgCO2e_per_unit": 0.489,
+      "category": "Utility"
+    }
+  },
+  "transmission_distribution_losses": {
+    "national_average": {
+      "factor_id": "US_GRID_2024_TDL",
+      "name": "US Average T&D Losses",
+      "loss_rate_pct": 5.02,
+      "notes": "Add T&D losses to metered consumption for Scope 3 reporting"
+    }
+  },
+  "market_based_options": {
+    "green_e_certified_rec": {
+      "factor_id": "US_GRID_2024_REC",
+      "name": "Green-e Certified REC",
+      "kgCO2e_per_unit": 0.0,
+      "category": "Market-Based",
+      "notes": "Certified renewable energy certificate"
+    },
+    "residual_mix_pjm": {
+      "factor_id": "US_GRID_2024_RESID_PJM",
+      "name": "PJM Residual Mix",
+      "kgCO2e_per_unit": 0.512,
+      "category": "Market-Based",
+      "notes": "For Scope 2 market-based accounting"
+    },
+    "residual_mix_nepool": {
+      "factor_id": "US_GRID_2024_RESID_NE",
+      "name": "NEPOOL Residual Mix",
+      "kgCO2e_per_unit": 0.398,
+      "category": "Market-Based"
+    }
+  },
+  "projections": {
+    "2025": {"national_average_kgCO2e": 0.365, "notes": "Expected reduction from coal retirements"},
+    "2030": {"national_average_kgCO2e": 0.298, "notes": "IRA clean energy provisions"},
+    "2035": {"national_average_kgCO2e": 0.198, "notes": "80% clean electricity target"},
+    "2050": {"national_average_kgCO2e": 0.050, "notes": "Net-zero grid target"}
+  },
+  "total_factor_count": 65
+}

@@ -1,0 +1,247 @@
+{{/*
+Worker Deployment - Background task processing
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-worker
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  {{- if not .Values.worker.autoscaling.enabled }}
+  replicas: {{ .Values.worker.replicaCount | default 5 }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang-agents.labels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-app.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "greenlang-agents.serviceAccountName" . }}
+      {{- with .Values.common.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+
+      {{- if .Values.worker.priorityClassName }}
+      priorityClassName: {{ .Values.worker.priorityClassName }}
+      {{- end }}
+
+      # Long grace period for task completion
+      terminationGracePeriodSeconds: 300
+
+      initContainers:
+        - name: wait-for-redis
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z {{ .Release.Name }}-redis 6379; do echo waiting for redis; sleep 2; done']
+          securityContext:
+            {{- toYaml .Values.common.containerSecurityContext | nindent 12 }}
+        - name: wait-for-scheduler
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z {{ include "greenlang-agents.fullname" . }}-scheduler 8000; do echo waiting for scheduler; sleep 2; done']
+          securityContext:
+            {{- toYaml .Values.common.containerSecurityContext | nindent 12 }}
+
+      containers:
+        - name: worker
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.worker.image.repository | default "greenlang/worker" }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.common.image.pullPolicy | default "IfNotPresent" }}
+
+          {{- with .Values.common.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.config.LOG_LEVEL | default "info" | quote }}
+            - name: WORKER_CONCURRENCY
+              value: {{ .Values.worker.concurrency | default "10" | quote }}
+            - name: WORKER_PREFETCH_COUNT
+              value: {{ .Values.worker.prefetchCount | default "4" | quote }}
+            - name: TASK_TIMEOUT
+              value: {{ .Values.worker.taskTimeout | default "3600" | quote }}
+            - name: HEARTBEAT_INTERVAL
+              value: {{ .Values.worker.heartbeatInterval | default "30" | quote }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: REDIS_URL
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: DATABASE_URL
+                  optional: true
+            - name: SCHEDULER_URL
+              value: "http://{{ include "greenlang-agents.fullname" . }}-scheduler:8000"
+
+          envFrom:
+            - configMapRef:
+                name: {{ include "greenlang-agents.fullname" . }}-config
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
+
+          resources:
+            {{- toYaml (.Values.worker.resources | default .Values.common.resources) | nindent 12 }}
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: worker-data
+              mountPath: /app/data
+            - name: task-results
+              mountPath: /app/results
+
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Worker shutting down - completing current tasks"
+                    # Signal no new tasks
+                    touch /tmp/shutdown
+                    # Wait for current tasks to complete (max 5 minutes)
+                    for i in $(seq 1 60); do
+                      if [ -f /tmp/tasks_complete ]; then
+                        echo "All tasks completed"
+                        break
+                      fi
+                      sleep 5
+                    done
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "greenlang-agents.fullname" . }}-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 200Mi
+        - name: worker-data
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: task-results
+          emptyDir:
+            sizeLimit: 1Gi
+
+      {{- with .Values.worker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.worker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "greenlang-agents.selectorLabels" . | nindent 20 }}
+                    app.kubernetes.io/component: worker
+                topologyKey: topology.kubernetes.io/zone
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - worker
+                      - compute
+      {{- end }}
+
+      {{- with .Values.worker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      topologySpreadConstraints:
+        - maxSkew: 2
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              {{- include "greenlang-agents.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: worker

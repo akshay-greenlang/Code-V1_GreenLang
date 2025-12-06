@@ -1,0 +1,53 @@
+# Production Environment Overlay
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenlang-agents
+
+commonLabels:
+  environment: production
+
+commonAnnotations:
+  owner: greenlang-devops
+  cost-center: platform
+
+resources:
+  - ../../base
+  - resourcequota.yaml
+  - limitrange.yaml
+  - priorityclass.yaml
+
+patchesStrategicMerge:
+  - patches/deployment-patch.yaml
+  - patches/hpa-patch.yaml
+  - patches/pdb-patch.yaml
+
+configMapGenerator:
+  - name: greenlang-config
+    behavior: replace
+    literals:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=warn
+      - LOG_FORMAT=json
+      - CACHE_TTL=3600
+      - MAX_CONCURRENT_REQUESTS=100
+
+replicas:
+  - name: fuel-analyzer
+    count: 3
+  - name: carbon-intensity
+    count: 3
+  - name: energy-performance
+    count: 3
+  - name: eudr-compliance
+    count: 5
+
+images:
+  - name: greenlang/fuel-analyzer
+    newTag: "1.0.0"
+  - name: greenlang/carbon-intensity
+    newTag: "1.0.0"
+  - name: greenlang/energy-performance
+    newTag: "1.0.0"
+  - name: greenlang/eudr-compliance
+    newTag: "1.0.0"

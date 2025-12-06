@@ -1,0 +1,566 @@
+{
+  "metadata": {
+    "source": "IEA, ICCA, Ecoinvent, IPCC, Industry Reports",
+    "source_url": "https://www.iea.org/reports/chemicals",
+    "version": "2024",
+    "last_updated": "2024-03-15",
+    "units_note": "All factors in kgCO2e per tonne of product unless otherwise specified",
+    "scope": "Scope 1, 2, and 3 emissions for chemical production",
+    "methodology": "Based on IEA Chemicals report and IPCC guidelines",
+    "gwp_basis": "AR5 100-year GWP values"
+  },
+  "petrochemicals": {
+    "ethylene_steam_cracking": {
+      "factor_id": "CHEM_2024_ETHYLENE_001",
+      "name": "Ethylene (Steam Cracking - Naphtha)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1650,
+      "scope_1_kgCO2e": 1250,
+      "scope_2_kgCO2e": 150,
+      "scope_3_kgCO2e": 250,
+      "breakdown": {
+        "cracking_furnace": 950,
+        "compression_separation": 200,
+        "electricity": 150,
+        "feedstock_production": 250,
+        "steam_generation": 100
+      },
+      "category": "Petrochemicals - Primary",
+      "feedstock": "Naphtha",
+      "uncertainty_pct": 10,
+      "regional_variations": {
+        "north_america_ethane": 800,
+        "europe_naphtha": 1650,
+        "middle_east_ethane": 650,
+        "asia_naphtha": 1800
+      }
+    },
+    "ethylene_ethane_cracking": {
+      "factor_id": "CHEM_2024_ETHYLENE_002",
+      "name": "Ethylene (Steam Cracking - Ethane)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 800,
+      "scope_1_kgCO2e": 600,
+      "scope_2_kgCO2e": 100,
+      "scope_3_kgCO2e": 100,
+      "category": "Petrochemicals - Primary",
+      "feedstock": "Ethane",
+      "notes": "Lower emissions due to higher ethylene yield"
+    },
+    "propylene_steam_cracking": {
+      "factor_id": "CHEM_2024_PROPYLENE_001",
+      "name": "Propylene (Steam Cracking Co-product)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1400,
+      "category": "Petrochemicals - Primary",
+      "notes": "Co-product of ethylene production; allocation-based"
+    },
+    "propylene_fcc": {
+      "factor_id": "CHEM_2024_PROPYLENE_002",
+      "name": "Propylene (FCC - Refinery)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 850,
+      "category": "Petrochemicals - Primary",
+      "source": "Fluid catalytic cracking"
+    },
+    "propylene_pdh": {
+      "factor_id": "CHEM_2024_PROPYLENE_003",
+      "name": "Propylene (Propane Dehydrogenation)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2200,
+      "category": "Petrochemicals - Primary",
+      "process": "On-purpose PDH"
+    },
+    "butadiene": {
+      "factor_id": "CHEM_2024_BUTADIENE_001",
+      "name": "Butadiene (Extraction from C4)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1800,
+      "category": "Petrochemicals - Primary"
+    },
+    "benzene_reformate": {
+      "factor_id": "CHEM_2024_BENZENE_001",
+      "name": "Benzene (Catalytic Reformate)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 900,
+      "category": "Petrochemicals - Aromatics"
+    },
+    "benzene_pygas": {
+      "factor_id": "CHEM_2024_BENZENE_002",
+      "name": "Benzene (Pyrolysis Gasoline)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 750,
+      "category": "Petrochemicals - Aromatics"
+    },
+    "toluene": {
+      "factor_id": "CHEM_2024_TOLUENE_001",
+      "name": "Toluene (Catalytic Reformate)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 850,
+      "category": "Petrochemicals - Aromatics"
+    },
+    "xylenes": {
+      "factor_id": "CHEM_2024_XYLENES_001",
+      "name": "Mixed Xylenes",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 920,
+      "category": "Petrochemicals - Aromatics"
+    },
+    "paraxylene": {
+      "factor_id": "CHEM_2024_PX_001",
+      "name": "Para-Xylene",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1150,
+      "category": "Petrochemicals - Aromatics"
+    }
+  },
+  "polymers": {
+    "polyethylene_hdpe": {
+      "factor_id": "CHEM_2024_HDPE_001",
+      "name": "High-Density Polyethylene (HDPE)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1900,
+      "breakdown": {
+        "ethylene_feedstock": 1650,
+        "polymerization": 200,
+        "utilities": 50
+      },
+      "category": "Polymers",
+      "polymer_type": "HDPE"
+    },
+    "polyethylene_ldpe": {
+      "factor_id": "CHEM_2024_LDPE_001",
+      "name": "Low-Density Polyethylene (LDPE)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2100,
+      "category": "Polymers",
+      "polymer_type": "LDPE",
+      "notes": "Higher energy for high-pressure polymerization"
+    },
+    "polyethylene_lldpe": {
+      "factor_id": "CHEM_2024_LLDPE_001",
+      "name": "Linear Low-Density Polyethylene (LLDPE)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1950,
+      "category": "Polymers",
+      "polymer_type": "LLDPE"
+    },
+    "polypropylene": {
+      "factor_id": "CHEM_2024_PP_001",
+      "name": "Polypropylene (PP)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1700,
+      "category": "Polymers",
+      "polymer_type": "PP"
+    },
+    "polystyrene_gpps": {
+      "factor_id": "CHEM_2024_PS_001",
+      "name": "Polystyrene (GPPS)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2800,
+      "category": "Polymers",
+      "polymer_type": "General Purpose PS"
+    },
+    "polystyrene_hips": {
+      "factor_id": "CHEM_2024_HIPS_001",
+      "name": "High Impact Polystyrene (HIPS)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 3100,
+      "category": "Polymers"
+    },
+    "pvc": {
+      "factor_id": "CHEM_2024_PVC_001",
+      "name": "Polyvinyl Chloride (PVC)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2400,
+      "category": "Polymers",
+      "polymer_type": "PVC"
+    },
+    "pet": {
+      "factor_id": "CHEM_2024_PET_001",
+      "name": "Polyethylene Terephthalate (PET)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 3300,
+      "category": "Polymers",
+      "polymer_type": "PET"
+    },
+    "abs": {
+      "factor_id": "CHEM_2024_ABS_001",
+      "name": "Acrylonitrile Butadiene Styrene (ABS)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 3800,
+      "category": "Polymers"
+    },
+    "polyurethane_flexible": {
+      "factor_id": "CHEM_2024_PU_FLEX_001",
+      "name": "Polyurethane Foam (Flexible)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 4200,
+      "category": "Polymers"
+    },
+    "polyurethane_rigid": {
+      "factor_id": "CHEM_2024_PU_RIGID_001",
+      "name": "Polyurethane Foam (Rigid)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 4800,
+      "category": "Polymers"
+    },
+    "nylon_6": {
+      "factor_id": "CHEM_2024_PA6_001",
+      "name": "Nylon 6 (Polyamide 6)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 7200,
+      "category": "Polymers - Engineering"
+    },
+    "nylon_66": {
+      "factor_id": "CHEM_2024_PA66_001",
+      "name": "Nylon 6,6 (Polyamide 6,6)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 8900,
+      "category": "Polymers - Engineering"
+    },
+    "polycarbonate": {
+      "factor_id": "CHEM_2024_PC_001",
+      "name": "Polycarbonate (PC)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 5500,
+      "category": "Polymers - Engineering"
+    }
+  },
+  "basic_chemicals": {
+    "ammonia": {
+      "factor_id": "CHEM_2024_AMMONIA_001",
+      "name": "Ammonia (Steam Methane Reforming)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2100,
+      "scope_1_kgCO2e": 1800,
+      "scope_2_kgCO2e": 100,
+      "scope_3_kgCO2e": 200,
+      "breakdown": {
+        "smr_process": 1500,
+        "compression": 200,
+        "natural_gas_feedstock": 300,
+        "electricity": 100
+      },
+      "category": "Basic Chemicals",
+      "process": "SMR (Steam Methane Reforming)",
+      "natural_gas_consumption_gj_per_tonne": 35,
+      "regional_variations": {
+        "best_practice_smr": 1800,
+        "global_average": 2100,
+        "china_coal": 4200,
+        "electrolysis_green": 500
+      }
+    },
+    "ammonia_coal": {
+      "factor_id": "CHEM_2024_AMMONIA_002",
+      "name": "Ammonia (Coal Gasification)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 4200,
+      "category": "Basic Chemicals",
+      "process": "Coal gasification",
+      "notes": "Primarily China"
+    },
+    "ammonia_green": {
+      "factor_id": "CHEM_2024_AMMONIA_003",
+      "name": "Ammonia (Green Hydrogen)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 500,
+      "category": "Basic Chemicals - Low Carbon",
+      "process": "Electrolysis + Haber-Bosch",
+      "notes": "Assumes renewable electricity"
+    },
+    "methanol_natural_gas": {
+      "factor_id": "CHEM_2024_METHANOL_001",
+      "name": "Methanol (Natural Gas)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 880,
+      "category": "Basic Chemicals",
+      "process": "SMR + synthesis"
+    },
+    "methanol_coal": {
+      "factor_id": "CHEM_2024_METHANOL_002",
+      "name": "Methanol (Coal)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 3100,
+      "category": "Basic Chemicals",
+      "notes": "Primarily China"
+    },
+    "methanol_e_methanol": {
+      "factor_id": "CHEM_2024_METHANOL_003",
+      "name": "E-Methanol (Green H2 + CO2)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 350,
+      "category": "Basic Chemicals - Low Carbon",
+      "notes": "Using captured CO2 and renewable hydrogen"
+    },
+    "urea": {
+      "factor_id": "CHEM_2024_UREA_001",
+      "name": "Urea",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1600,
+      "category": "Basic Chemicals - Fertilizers",
+      "notes": "Ammonia derivative; CO2 from ammonia production captured"
+    },
+    "ammonium_nitrate": {
+      "factor_id": "CHEM_2024_AN_001",
+      "name": "Ammonium Nitrate",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2800,
+      "n2o_emissions_kg_per_tonne": 4.5,
+      "category": "Basic Chemicals - Fertilizers",
+      "notes": "Includes N2O from nitric acid production"
+    },
+    "nitric_acid": {
+      "factor_id": "CHEM_2024_HNO3_001",
+      "name": "Nitric Acid",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1500,
+      "n2o_emissions_kg_per_tonne": 5.0,
+      "category": "Basic Chemicals",
+      "notes": "N2O emissions with secondary catalyst"
+    },
+    "sulfuric_acid": {
+      "factor_id": "CHEM_2024_H2SO4_001",
+      "name": "Sulfuric Acid",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 50,
+      "category": "Basic Chemicals",
+      "notes": "Exothermic process; often net energy exporter"
+    },
+    "phosphoric_acid": {
+      "factor_id": "CHEM_2024_H3PO4_001",
+      "name": "Phosphoric Acid",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1200,
+      "category": "Basic Chemicals"
+    },
+    "chlorine_membrane": {
+      "factor_id": "CHEM_2024_CL2_001",
+      "name": "Chlorine (Membrane Process)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1100,
+      "electricity_kwh_per_tonne": 2500,
+      "category": "Basic Chemicals",
+      "process": "Chlor-alkali electrolysis",
+      "notes": "Co-produces NaOH and H2"
+    },
+    "sodium_hydroxide": {
+      "factor_id": "CHEM_2024_NAOH_001",
+      "name": "Sodium Hydroxide (Caustic Soda)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 950,
+      "category": "Basic Chemicals",
+      "notes": "Co-product of chlor-alkali"
+    },
+    "hydrogen_smr": {
+      "factor_id": "CHEM_2024_H2_SMR_001",
+      "name": "Hydrogen (Steam Methane Reforming)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 10500,
+      "category": "Basic Chemicals",
+      "process": "SMR (grey hydrogen)"
+    },
+    "hydrogen_smr_ccs": {
+      "factor_id": "CHEM_2024_H2_BLUE_001",
+      "name": "Hydrogen (SMR with CCS)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 3000,
+      "capture_rate_pct": 90,
+      "category": "Basic Chemicals - Low Carbon",
+      "process": "Blue hydrogen"
+    },
+    "hydrogen_electrolysis": {
+      "factor_id": "CHEM_2024_H2_GREEN_001",
+      "name": "Hydrogen (Electrolysis - Renewable)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 500,
+      "electricity_kwh_per_tonne": 55000,
+      "category": "Basic Chemicals - Low Carbon",
+      "process": "Green hydrogen",
+      "notes": "Assumes 100% renewable electricity"
+    },
+    "carbon_black": {
+      "factor_id": "CHEM_2024_CB_001",
+      "name": "Carbon Black",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 4200,
+      "category": "Basic Chemicals"
+    },
+    "soda_ash_solvay": {
+      "factor_id": "CHEM_2024_NA2CO3_001",
+      "name": "Soda Ash (Solvay Process)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1000,
+      "category": "Basic Chemicals"
+    },
+    "titanium_dioxide": {
+      "factor_id": "CHEM_2024_TIO2_001",
+      "name": "Titanium Dioxide",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 5800,
+      "category": "Basic Chemicals"
+    }
+  },
+  "intermediates": {
+    "styrene": {
+      "factor_id": "CHEM_2024_STY_001",
+      "name": "Styrene Monomer",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2500,
+      "category": "Intermediates"
+    },
+    "vinyl_chloride": {
+      "factor_id": "CHEM_2024_VCM_001",
+      "name": "Vinyl Chloride Monomer (VCM)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1800,
+      "category": "Intermediates"
+    },
+    "ethylene_oxide": {
+      "factor_id": "CHEM_2024_EO_001",
+      "name": "Ethylene Oxide",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2200,
+      "category": "Intermediates"
+    },
+    "ethylene_glycol": {
+      "factor_id": "CHEM_2024_MEG_001",
+      "name": "Mono Ethylene Glycol (MEG)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2600,
+      "category": "Intermediates"
+    },
+    "terephthalic_acid": {
+      "factor_id": "CHEM_2024_PTA_001",
+      "name": "Purified Terephthalic Acid (PTA)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1600,
+      "category": "Intermediates"
+    },
+    "acrylonitrile": {
+      "factor_id": "CHEM_2024_ACN_001",
+      "name": "Acrylonitrile",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 4500,
+      "category": "Intermediates"
+    },
+    "adipic_acid": {
+      "factor_id": "CHEM_2024_AA_001",
+      "name": "Adipic Acid (with N2O abatement)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2800,
+      "n2o_emissions_kg_per_tonne": 9,
+      "category": "Intermediates",
+      "notes": "With catalytic N2O destruction"
+    },
+    "caprolactam": {
+      "factor_id": "CHEM_2024_CPL_001",
+      "name": "Caprolactam",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 6500,
+      "category": "Intermediates"
+    },
+    "mdi": {
+      "factor_id": "CHEM_2024_MDI_001",
+      "name": "MDI (Methylene Diphenyl Diisocyanate)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 5200,
+      "category": "Intermediates - Isocyanates"
+    },
+    "tdi": {
+      "factor_id": "CHEM_2024_TDI_001",
+      "name": "TDI (Toluene Diisocyanate)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 4800,
+      "category": "Intermediates - Isocyanates"
+    },
+    "bisphenol_a": {
+      "factor_id": "CHEM_2024_BPA_001",
+      "name": "Bisphenol A",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 3200,
+      "category": "Intermediates"
+    }
+  },
+  "specialty_chemicals": {
+    "surfactants_average": {
+      "factor_id": "CHEM_2024_SURF_001",
+      "name": "Surfactants (Average)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2500,
+      "category": "Specialty Chemicals"
+    },
+    "silicones": {
+      "factor_id": "CHEM_2024_SI_001",
+      "name": "Silicones (Average)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 6500,
+      "category": "Specialty Chemicals"
+    },
+    "solvents_average": {
+      "factor_id": "CHEM_2024_SOLV_001",
+      "name": "Organic Solvents (Average)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 1800,
+      "category": "Specialty Chemicals"
+    },
+    "paints_coatings": {
+      "factor_id": "CHEM_2024_PAINT_001",
+      "name": "Paints and Coatings (Average)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 3500,
+      "category": "Specialty Chemicals"
+    },
+    "adhesives_average": {
+      "factor_id": "CHEM_2024_ADH_001",
+      "name": "Adhesives (Average)",
+      "unit": "tonne",
+      "total_kgCO2e_per_unit": 2800,
+      "category": "Specialty Chemicals"
+    }
+  },
+  "decarbonization_levers": {
+    "electrification_crackers": {
+      "factor_id": "CHEM_2024_DECARB_ECRACK",
+      "name": "Electric Steam Crackers",
+      "reduction_potential_pct": 90,
+      "technology_readiness_level": 6,
+      "timeline": "2025-2030"
+    },
+    "green_hydrogen": {
+      "factor_id": "CHEM_2024_DECARB_GH2",
+      "name": "Green Hydrogen for Ammonia/Methanol",
+      "reduction_potential_pct": 80,
+      "technology_readiness_level": 8,
+      "timeline": "Available now (scaling)"
+    },
+    "bio_based_feedstocks": {
+      "factor_id": "CHEM_2024_DECARB_BIO",
+      "name": "Bio-based Feedstocks",
+      "reduction_potential_pct": 70,
+      "technology_readiness_level": 7,
+      "notes": "Bio-ethanol, bio-naphtha"
+    },
+    "mechanical_recycling": {
+      "factor_id": "CHEM_2024_DECARB_MREC",
+      "name": "Mechanical Recycling of Plastics",
+      "reduction_potential_pct": 85,
+      "technology_readiness_level": 9,
+      "notes": "Versus virgin production"
+    },
+    "chemical_recycling": {
+      "factor_id": "CHEM_2024_DECARB_CREC",
+      "name": "Chemical Recycling (Pyrolysis)",
+      "reduction_potential_pct": 50,
+      "technology_readiness_level": 7
+    },
+    "ccus_ammonia": {
+      "factor_id": "CHEM_2024_DECARB_CCUS",
+      "name": "CCUS on Ammonia Production",
+      "reduction_potential_pct": 90,
+      "technology_readiness_level": 8
+    }
+  },
+  "total_factor_count": 72
+}

@@ -1,0 +1,392 @@
+# GreenLang Recording Rules
+# Pre-computed metrics for dashboards and alerting efficiency
+
+groups:
+  # ============================================================================
+  # API Gateway Recording Rules
+  # ============================================================================
+  - name: api_gateway_recording_rules
+    interval: 30s
+    rules:
+      # Request rate by endpoint
+      - record: greenlang:api:request_rate:5m
+        expr: sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m])) by (method, path, status)
+
+      # Total request rate
+      - record: greenlang:api:total_request_rate:5m
+        expr: sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m]))
+
+      # Error rate percentage
+      - record: greenlang:api:error_rate:5m
+        expr: |
+          sum(rate(http_requests_total{job="greenlang-api-gateway",status=~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m])) * 100
+
+      # Success rate percentage
+      - record: greenlang:api:success_rate:5m
+        expr: |
+          sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[5m])) /
+          sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m])) * 100
+
+      # P50 latency
+      - record: greenlang:api:latency_p50:5m
+        expr: histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le))
+
+      # P95 latency
+      - record: greenlang:api:latency_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le))
+
+      # P99 latency
+      - record: greenlang:api:latency_p99:5m
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le))
+
+      # Latency by endpoint
+      - record: greenlang:api:latency_p95_by_endpoint:5m
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le, path))
+
+      # Request rate by tenant
+      - record: greenlang:api:request_rate_by_tenant:5m
+        expr: sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m])) by (tenant_id)
+
+      # Concurrent connections
+      - record: greenlang:api:concurrent_connections
+        expr: sum(http_server_active_connections{job="greenlang-api-gateway"})
+
+  # ============================================================================
+  # EUDR Agent Recording Rules
+  # ============================================================================
+  - name: eudr_agent_recording_rules
+    interval: 30s
+    rules:
+      # Request rate
+      - record: greenlang:eudr:request_rate:5m
+        expr: sum(rate(eudr_requests_total[5m]))
+
+      # Error rate
+      - record: greenlang:eudr:error_rate:5m
+        expr: |
+          sum(rate(eudr_requests_total{status=~"5.."}[5m])) /
+          sum(rate(eudr_requests_total[5m])) * 100
+
+      # P95 latency
+      - record: greenlang:eudr:latency_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(eudr_request_duration_seconds_bucket[5m])) by (le))
+
+      # Compliance check success rate
+      - record: greenlang:eudr:compliance_success_rate:5m
+        expr: |
+          sum(rate(eudr_compliance_checks_total{result="pass"}[5m])) /
+          sum(rate(eudr_compliance_checks_total[5m])) * 100
+
+      # Deforestation alerts per hour
+      - record: greenlang:eudr:deforestation_alerts_per_hour
+        expr: sum(increase(eudr_deforestation_alerts_total[1h]))
+
+      # Geolocation validations per minute
+      - record: greenlang:eudr:geolocation_validations_per_minute
+        expr: sum(rate(eudr_geolocation_validations_total[5m])) * 60
+
+      # DDS generation rate
+      - record: greenlang:eudr:dds_generation_rate:5m
+        expr: sum(rate(eudr_dds_generated_total[5m])) * 60
+
+      # Satellite image processing rate
+      - record: greenlang:eudr:satellite_processing_rate:5m
+        expr: sum(rate(eudr_satellite_images_processed_total[5m])) * 60
+
+      # Availability (last 24h)
+      - record: greenlang:eudr:availability:24h
+        expr: |
+          sum(rate(eudr_requests_total{status!~"5.."}[24h])) /
+          sum(rate(eudr_requests_total[24h]))
+
+  # ============================================================================
+  # CBAM Agent Recording Rules
+  # ============================================================================
+  - name: cbam_agent_recording_rules
+    interval: 30s
+    rules:
+      # Request rate
+      - record: greenlang:cbam:request_rate:5m
+        expr: sum(rate(cbam_requests_total[5m]))
+
+      # Calculation rate
+      - record: greenlang:cbam:calculations_per_minute:5m
+        expr: sum(rate(cbam_calculations_total[5m])) * 60
+
+      # Error rate
+      - record: greenlang:cbam:error_rate:5m
+        expr: |
+          sum(rate(cbam_requests_total{status=~"5.."}[5m])) /
+          sum(rate(cbam_requests_total[5m])) * 100
+
+      # Report generation time P95
+      - record: greenlang:cbam:report_gen_time_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(cbam_report_generation_duration_seconds_bucket[5m])) by (le))
+
+      # Total embedded emissions calculated
+      - record: greenlang:cbam:embedded_emissions_total:1h
+        expr: sum(increase(cbam_embedded_emissions_calculated_kg_co2e[1h]))
+
+      # Reports by product category
+      - record: greenlang:cbam:reports_by_category:1h
+        expr: sum(increase(cbam_reports_generated_total[1h])) by (product_category)
+
+      # Certificate generation rate
+      - record: greenlang:cbam:certificate_rate:5m
+        expr: sum(rate(cbam_certificates_generated_total[5m])) * 60
+
+  # ============================================================================
+  # SB253 Agent Recording Rules
+  # ============================================================================
+  - name: sb253_agent_recording_rules
+    interval: 30s
+    rules:
+      # Scope 1 calculations per hour
+      - record: greenlang:sb253:scope1_calculations:1h
+        expr: sum(increase(sb253_scope1_calculations_total[1h]))
+
+      # Scope 2 calculations per hour
+      - record: greenlang:sb253:scope2_calculations:1h
+        expr: sum(increase(sb253_scope2_calculations_total[1h]))
+
+      # Scope 3 calculations per hour
+      - record: greenlang:sb253:scope3_calculations:1h
+        expr: sum(increase(sb253_scope3_calculations_total[1h]))
+
+      # Total emissions reported
+      - record: greenlang:sb253:total_emissions_kg_co2e:1h
+        expr: sum(increase(sb253_emissions_reported_kg_co2e[1h]))
+
+      # Report generation rate
+      - record: greenlang:sb253:report_rate:5m
+        expr: sum(rate(sb253_reports_generated_total[5m])) * 60
+
+  # ============================================================================
+  # Emission Calculator Recording Rules
+  # ============================================================================
+  - name: emission_calculator_recording_rules
+    interval: 30s
+    rules:
+      # Calculations per minute
+      - record: greenlang:calculator:calculations_per_minute:5m
+        expr: sum(rate(emission_calculations_total[5m])) * 60
+
+      # Calculations by type
+      - record: greenlang:calculator:calculations_by_type:5m
+        expr: sum(rate(emission_calculations_total[5m])) by (calculation_type) * 60
+
+      # P95 calculation time
+      - record: greenlang:calculator:calc_time_p95:5m
+        expr: histogram_quantile(0.95, sum(rate(emission_calculation_duration_seconds_bucket[5m])) by (le))
+
+      # Total CO2e calculated per hour
+      - record: greenlang:calculator:total_co2e_per_hour
+        expr: sum(increase(emission_calculated_kg_co2e[1h]))
+
+      # Calculation accuracy rate
+      - record: greenlang:calculator:accuracy_rate:5m
+        expr: |
+          sum(rate(emission_calculations_validated_total[5m])) /
+          sum(rate(emission_calculations_total[5m])) * 100
+
+  # ============================================================================
+  # Database Recording Rules
+  # ============================================================================
+  - name: database_recording_rules
+    interval: 30s
+    rules:
+      # Connection pool utilization
+      - record: greenlang:postgres:connection_utilization
+        expr: pg_stat_activity_count / pg_settings_max_connections * 100
+
+      # Query rate per second
+      - record: greenlang:postgres:queries_per_second
+        expr: rate(pg_stat_statements_calls_total[5m])
+
+      # Average query time
+      - record: greenlang:postgres:avg_query_time_ms:5m
+        expr: |
+          rate(pg_stat_statements_seconds_total[5m]) /
+          rate(pg_stat_statements_calls_total[5m]) * 1000
+
+      # Database size
+      - record: greenlang:postgres:database_size_gb
+        expr: pg_database_size_bytes / 1024 / 1024 / 1024
+
+      # Rows read per second
+      - record: greenlang:postgres:rows_read_per_second
+        expr: rate(pg_stat_statements_rows_total[5m])
+
+      # Transaction rate
+      - record: greenlang:postgres:transaction_rate:5m
+        expr: rate(pg_stat_database_xact_commit[5m]) + rate(pg_stat_database_xact_rollback[5m])
+
+      # Cache hit ratio
+      - record: greenlang:postgres:cache_hit_ratio
+        expr: |
+          pg_stat_database_blks_hit /
+          (pg_stat_database_blks_hit + pg_stat_database_blks_read) * 100
+
+  # ============================================================================
+  # Redis Recording Rules
+  # ============================================================================
+  - name: redis_recording_rules
+    interval: 30s
+    rules:
+      # Memory utilization
+      - record: greenlang:redis:memory_utilization
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100
+
+      # Cache hit ratio
+      - record: greenlang:redis:cache_hit_ratio
+        expr: |
+          rate(redis_keyspace_hits_total[5m]) /
+          (rate(redis_keyspace_hits_total[5m]) + rate(redis_keyspace_misses_total[5m])) * 100
+
+      # Operations per second
+      - record: greenlang:redis:ops_per_second
+        expr: rate(redis_commands_processed_total[5m])
+
+      # Connected clients
+      - record: greenlang:redis:connected_clients
+        expr: redis_connected_clients
+
+      # Evicted keys per minute
+      - record: greenlang:redis:evictions_per_minute
+        expr: rate(redis_evicted_keys_total[5m]) * 60
+
+  # ============================================================================
+  # Kubernetes Recording Rules
+  # ============================================================================
+  - name: kubernetes_recording_rules
+    interval: 30s
+    rules:
+      # CPU utilization by namespace
+      - record: greenlang:k8s:cpu_utilization_by_namespace
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{namespace="greenlang"}[5m])) by (namespace) /
+          sum(kube_pod_container_resource_limits{namespace="greenlang",resource="cpu"}) by (namespace) * 100
+
+      # Memory utilization by namespace
+      - record: greenlang:k8s:memory_utilization_by_namespace
+        expr: |
+          sum(container_memory_working_set_bytes{namespace="greenlang"}) by (namespace) /
+          sum(kube_pod_container_resource_limits{namespace="greenlang",resource="memory"}) by (namespace) * 100
+
+      # Pod restarts per hour
+      - record: greenlang:k8s:pod_restarts_per_hour
+        expr: sum(increase(kube_pod_container_status_restarts_total{namespace="greenlang"}[1h])) by (pod)
+
+      # Available pods by deployment
+      - record: greenlang:k8s:available_pods_by_deployment
+        expr: kube_deployment_status_available_replicas{namespace="greenlang"}
+
+      # Pending pods
+      - record: greenlang:k8s:pending_pods
+        expr: sum(kube_pod_status_phase{namespace="greenlang",phase="Pending"})
+
+      # Network received bytes per second
+      - record: greenlang:k8s:network_rx_bytes_per_second
+        expr: sum(rate(container_network_receive_bytes_total{namespace="greenlang"}[5m])) by (pod)
+
+      # Network transmitted bytes per second
+      - record: greenlang:k8s:network_tx_bytes_per_second
+        expr: sum(rate(container_network_transmit_bytes_total{namespace="greenlang"}[5m])) by (pod)
+
+  # ============================================================================
+  # Business Metrics Recording Rules
+  # ============================================================================
+  - name: business_recording_rules
+    interval: 60s
+    rules:
+      # Total calculations today
+      - record: greenlang:business:calculations_today
+        expr: sum(increase(emission_calculations_total[24h]))
+
+      # Active tenants (last hour)
+      - record: greenlang:business:active_tenants_1h
+        expr: count(count by (tenant_id) (rate(http_requests_total{job="greenlang-api-gateway"}[1h]) > 0))
+
+      # API requests per tenant per hour
+      - record: greenlang:business:requests_per_tenant_1h
+        expr: sum(increase(http_requests_total{job="greenlang-api-gateway"}[1h])) by (tenant_id)
+
+      # Total CO2e calculated today
+      - record: greenlang:business:total_co2e_today_tonnes
+        expr: sum(increase(emission_calculated_kg_co2e[24h])) / 1000
+
+      # Compliance reports generated today
+      - record: greenlang:business:compliance_reports_today
+        expr: |
+          sum(increase(eudr_dds_generated_total[24h])) +
+          sum(increase(cbam_reports_generated_total[24h])) +
+          sum(increase(sb253_reports_generated_total[24h]))
+
+      # Revenue calculations (estimated based on API calls)
+      - record: greenlang:business:estimated_billable_calculations
+        expr: sum(increase(emission_calculations_total{tier!="free"}[24h]))
+
+  # ============================================================================
+  # SLO Recording Rules
+  # ============================================================================
+  - name: slo_recording_rules
+    interval: 30s
+    rules:
+      # API availability (30 day rolling)
+      - record: greenlang:slo:api_availability_30d
+        expr: |
+          sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[30d])) /
+          sum(rate(http_requests_total{job="greenlang-api-gateway"}[30d]))
+
+      # API latency SLO (% requests under 100ms, 30 day)
+      - record: greenlang:slo:api_latency_100ms_30d
+        expr: |
+          sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway",le="0.1"}[30d])) /
+          sum(rate(http_request_duration_seconds_count{job="greenlang-api-gateway"}[30d]))
+
+      # EUDR availability (30 day rolling)
+      - record: greenlang:slo:eudr_availability_30d
+        expr: |
+          sum(rate(eudr_requests_total{status!~"5.."}[30d])) /
+          sum(rate(eudr_requests_total[30d]))
+
+      # EUDR latency SLO (% under 500ms)
+      - record: greenlang:slo:eudr_latency_500ms_30d
+        expr: |
+          sum(rate(eudr_request_duration_seconds_bucket{le="0.5"}[30d])) /
+          sum(rate(eudr_request_duration_seconds_count[30d]))
+
+      # Error budget remaining (API)
+      - record: greenlang:slo:api_error_budget_remaining
+        expr: |
+          1 - (
+            (1 - greenlang:slo:api_availability_30d) / (1 - 0.9995)
+          )
+
+      # Error budget remaining (EUDR)
+      - record: greenlang:slo:eudr_error_budget_remaining
+        expr: |
+          1 - (
+            (1 - greenlang:slo:eudr_availability_30d) / (1 - 0.999)
+          )
+
+      # Burn rate (API, 1 hour window)
+      - record: greenlang:slo:api_burn_rate_1h
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[1h])) /
+              sum(rate(http_requests_total{job="greenlang-api-gateway"}[1h]))
+            )
+          ) / (1 - 0.9995)
+
+      # Burn rate (API, 6 hour window)
+      - record: greenlang:slo:api_burn_rate_6h
+        expr: |
+          (
+            1 - (
+              sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[6h])) /
+              sum(rate(http_requests_total{job="greenlang-api-gateway"}[6h]))
+            )
+          ) / (1 - 0.9995)

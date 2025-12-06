@@ -1,0 +1,90 @@
+# GreenLang Agent Factory - Development Values
+# Override values for development environment
+
+global:
+  environment: development
+
+namespace:
+  name: greenlang-agents-dev
+
+# Development resource limits (reduced)
+common:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+
+# Ingress for development
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # No TLS in dev
+  hosts:
+    - host: api.dev.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []  # No TLS in dev
+
+# Development config
+config:
+  LOG_LEVEL: debug
+  LOG_FORMAT: text
+  ENVIRONMENT: development
+  CACHE_TTL: "60"
+  MAX_CONCURRENT_REQUESTS: "10"
+
+# Disable external secrets in dev (use ConfigMap secrets)
+externalSecrets:
+  enabled: false
+
+# Disable network policies in dev
+networkPolicy:
+  enabled: false
+
+# Reduced PDB for dev
+podDisruptionBudget:
+  enabled: false
+
+# Reduced monitoring in dev
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 60s
+  prometheusRule:
+    enabled: false
+
+# Fuel Analyzer - Development
+fuel-analyzer:
+  enabled: true
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+
+# Carbon Intensity - Development
+carbon-intensity:
+  enabled: true
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+
+# Energy Performance - Development
+energy-performance:
+  enabled: true
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+
+# EUDR Compliance - Development
+eudr-compliance:
+  enabled: true
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  podDisruptionBudget:
+    enabled: false

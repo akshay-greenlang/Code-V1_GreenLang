@@ -1,0 +1,954 @@
+{
+  "metadata": {
+    "source": "UK Government GHG Conversion Factors for Company Reporting",
+    "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+    "version": "2024",
+    "last_updated": "2024-06-01",
+    "units_note": "All factors in kgCO2e per unit unless otherwise specified",
+    "scope": "Scope 1 - Direct Emissions"
+  },
+  "fuels": {
+    "gaseous_fuels": {
+      "natural_gas": {
+        "factor_id": "DEFRA_2024_NG_001",
+        "name": "Natural Gas",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.18254,
+        "kgCO2_per_unit": 0.18198,
+        "kgCH4_per_unit": 0.00035,
+        "kgN2O_per_unit": 0.00021,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "natural_gas_cubic_metres": {
+        "factor_id": "DEFRA_2024_NG_002",
+        "name": "Natural Gas (cubic metres)",
+        "unit": "cubic metre",
+        "kgCO2e_per_unit": 2.02174,
+        "kgCO2_per_unit": 2.01562,
+        "kgCH4_per_unit": 0.00387,
+        "kgN2O_per_unit": 0.00225,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "natural_gas_therms": {
+        "factor_id": "DEFRA_2024_NG_003",
+        "name": "Natural Gas (therms)",
+        "unit": "therm",
+        "kgCO2e_per_unit": 5.34877,
+        "kgCO2_per_unit": 5.33253,
+        "kgCH4_per_unit": 0.01024,
+        "kgN2O_per_unit": 0.00600,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "lpg": {
+        "factor_id": "DEFRA_2024_LPG_001",
+        "name": "LPG",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.21448,
+        "kgCO2_per_unit": 0.21404,
+        "kgCH4_per_unit": 0.00031,
+        "kgN2O_per_unit": 0.00013,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "lpg_litres": {
+        "factor_id": "DEFRA_2024_LPG_002",
+        "name": "LPG (litres)",
+        "unit": "litre",
+        "kgCO2e_per_unit": 1.55672,
+        "kgCO2_per_unit": 1.55345,
+        "kgCH4_per_unit": 0.00231,
+        "kgN2O_per_unit": 0.00096,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "lpg_tonnes": {
+        "factor_id": "DEFRA_2024_LPG_003",
+        "name": "LPG (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2939.71,
+        "kgCO2_per_unit": 2933.59,
+        "kgCH4_per_unit": 4.33,
+        "kgN2O_per_unit": 1.79,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "propane": {
+        "factor_id": "DEFRA_2024_PROP_001",
+        "name": "Propane",
+        "unit": "litre",
+        "kgCO2e_per_unit": 1.54371,
+        "kgCO2_per_unit": 1.54050,
+        "kgCH4_per_unit": 0.00227,
+        "kgN2O_per_unit": 0.00094,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "propane_tonnes": {
+        "factor_id": "DEFRA_2024_PROP_002",
+        "name": "Propane (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2998.59,
+        "kgCO2_per_unit": 2992.35,
+        "kgCH4_per_unit": 4.41,
+        "kgN2O_per_unit": 1.83,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "butane": {
+        "factor_id": "DEFRA_2024_BUT_001",
+        "name": "Butane",
+        "unit": "litre",
+        "kgCO2e_per_unit": 1.74884,
+        "kgCO2_per_unit": 1.74534,
+        "kgCH4_per_unit": 0.00247,
+        "kgN2O_per_unit": 0.00103,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "butane_tonnes": {
+        "factor_id": "DEFRA_2024_BUT_001",
+        "name": "Butane (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2871.30,
+        "kgCO2_per_unit": 2865.63,
+        "kgCH4_per_unit": 4.01,
+        "kgN2O_per_unit": 1.66,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "biogas": {
+        "factor_id": "DEFRA_2024_BIO_001",
+        "name": "Biogas",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.00022,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.00021,
+        "kgN2O_per_unit": 0.00001,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 0.20532"
+      },
+      "biomethane": {
+        "factor_id": "DEFRA_2024_BIO_002",
+        "name": "Biomethane",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.00034,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.00033,
+        "kgN2O_per_unit": 0.00001,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 0.18207"
+      },
+      "cng": {
+        "factor_id": "DEFRA_2024_CNG_001",
+        "name": "Compressed Natural Gas (CNG)",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.18254,
+        "kgCO2_per_unit": 0.18198,
+        "kgCH4_per_unit": 0.00035,
+        "kgN2O_per_unit": 0.00021,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "lng": {
+        "factor_id": "DEFRA_2024_LNG_001",
+        "name": "Liquefied Natural Gas (LNG)",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.18254,
+        "kgCO2_per_unit": 0.18198,
+        "kgCH4_per_unit": 0.00035,
+        "kgN2O_per_unit": 0.00021,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      },
+      "lng_tonnes": {
+        "factor_id": "DEFRA_2024_LNG_002",
+        "name": "Liquefied Natural Gas (LNG) (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2555.81,
+        "kgCO2_per_unit": 2547.97,
+        "kgCH4_per_unit": 4.94,
+        "kgN2O_per_unit": 2.90,
+        "category": "Gaseous Fuels",
+        "scope": "Scope 1"
+      }
+    },
+    "liquid_fuels": {
+      "petrol_gasoline": {
+        "factor_id": "DEFRA_2024_PET_001",
+        "name": "Petrol (Gasoline)",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.10760,
+        "kgCO2_per_unit": 2.09737,
+        "kgCH4_per_unit": 0.00476,
+        "kgN2O_per_unit": 0.00547,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "petrol_gasoline_tonnes": {
+        "factor_id": "DEFRA_2024_PET_002",
+        "name": "Petrol (Gasoline) (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2878.01,
+        "kgCO2_per_unit": 2864.06,
+        "kgCH4_per_unit": 6.50,
+        "kgN2O_per_unit": 7.45,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "petrol_gasoline_kwh": {
+        "factor_id": "DEFRA_2024_PET_003",
+        "name": "Petrol (Gasoline) (kWh)",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.23391,
+        "kgCO2_per_unit": 0.23278,
+        "kgCH4_per_unit": 0.00053,
+        "kgN2O_per_unit": 0.00060,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "diesel": {
+        "factor_id": "DEFRA_2024_DIE_001",
+        "name": "Diesel",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.51227,
+        "kgCO2_per_unit": 2.50015,
+        "kgCH4_per_unit": 0.00107,
+        "kgN2O_per_unit": 0.01105,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "diesel_tonnes": {
+        "factor_id": "DEFRA_2024_DIE_002",
+        "name": "Diesel (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3004.37,
+        "kgCO2_per_unit": 2989.87,
+        "kgCH4_per_unit": 1.28,
+        "kgN2O_per_unit": 13.22,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "diesel_kwh": {
+        "factor_id": "DEFRA_2024_DIE_003",
+        "name": "Diesel (kWh)",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.24083,
+        "kgCO2_per_unit": 0.23966,
+        "kgCH4_per_unit": 0.00010,
+        "kgN2O_per_unit": 0.00107,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "gas_oil": {
+        "factor_id": "DEFRA_2024_GO_001",
+        "name": "Gas Oil (Red Diesel)",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.76137,
+        "kgCO2_per_unit": 2.74806,
+        "kgCH4_per_unit": 0.00118,
+        "kgN2O_per_unit": 0.01213,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "gas_oil_tonnes": {
+        "factor_id": "DEFRA_2024_GO_002",
+        "name": "Gas Oil (Red Diesel) (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3227.57,
+        "kgCO2_per_unit": 3212.02,
+        "kgCH4_per_unit": 1.38,
+        "kgN2O_per_unit": 14.17,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "burning_oil": {
+        "factor_id": "DEFRA_2024_BO_001",
+        "name": "Burning Oil (Kerosene)",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.54174,
+        "kgCO2_per_unit": 2.52875,
+        "kgCH4_per_unit": 0.00115,
+        "kgN2O_per_unit": 0.01184,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "burning_oil_tonnes": {
+        "factor_id": "DEFRA_2024_BO_002",
+        "name": "Burning Oil (Kerosene) (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3165.26,
+        "kgCO2_per_unit": 3149.09,
+        "kgCH4_per_unit": 1.43,
+        "kgN2O_per_unit": 14.74,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "fuel_oil": {
+        "factor_id": "DEFRA_2024_FO_001",
+        "name": "Fuel Oil",
+        "unit": "litre",
+        "kgCO2e_per_unit": 3.17921,
+        "kgCO2_per_unit": 3.16421,
+        "kgCH4_per_unit": 0.00133,
+        "kgN2O_per_unit": 0.01367,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "fuel_oil_tonnes": {
+        "factor_id": "DEFRA_2024_FO_002",
+        "name": "Fuel Oil (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3228.51,
+        "kgCO2_per_unit": 3213.28,
+        "kgCH4_per_unit": 1.35,
+        "kgN2O_per_unit": 13.88,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "marine_gas_oil": {
+        "factor_id": "DEFRA_2024_MGO_001",
+        "name": "Marine Gas Oil",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.78164,
+        "kgCO2_per_unit": 2.76818,
+        "kgCH4_per_unit": 0.00119,
+        "kgN2O_per_unit": 0.01227,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "marine_fuel_oil": {
+        "factor_id": "DEFRA_2024_MFO_001",
+        "name": "Marine Fuel Oil",
+        "unit": "litre",
+        "kgCO2e_per_unit": 3.11044,
+        "kgCO2_per_unit": 3.09577,
+        "kgCH4_per_unit": 0.00130,
+        "kgN2O_per_unit": 0.01337,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "aviation_turbine_fuel": {
+        "factor_id": "DEFRA_2024_ATF_001",
+        "name": "Aviation Turbine Fuel (Jet A1)",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.54785,
+        "kgCO2_per_unit": 2.53484,
+        "kgCH4_per_unit": 0.00012,
+        "kgN2O_per_unit": 0.01289,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "aviation_turbine_fuel_tonnes": {
+        "factor_id": "DEFRA_2024_ATF_002",
+        "name": "Aviation Turbine Fuel (Jet A1) (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3181.02,
+        "kgCO2_per_unit": 3164.79,
+        "kgCH4_per_unit": 0.15,
+        "kgN2O_per_unit": 16.08,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "aviation_spirit": {
+        "factor_id": "DEFRA_2024_AS_001",
+        "name": "Aviation Spirit (AvGas)",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.18418,
+        "kgCO2_per_unit": 2.17323,
+        "kgCH4_per_unit": 0.00493,
+        "kgN2O_per_unit": 0.00602,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "naphtha": {
+        "factor_id": "DEFRA_2024_NAP_001",
+        "name": "Naphtha",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.11655,
+        "kgCO2_per_unit": 2.10588,
+        "kgCH4_per_unit": 0.00095,
+        "kgN2O_per_unit": 0.00972,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "lubricants": {
+        "factor_id": "DEFRA_2024_LUB_001",
+        "name": "Lubricants",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.74999,
+        "kgCO2_per_unit": 2.73623,
+        "kgCH4_per_unit": 0.00122,
+        "kgN2O_per_unit": 0.01254,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "lubricants_tonnes": {
+        "factor_id": "DEFRA_2024_LUB_002",
+        "name": "Lubricants (tonnes)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3180.91,
+        "kgCO2_per_unit": 3164.97,
+        "kgCH4_per_unit": 1.41,
+        "kgN2O_per_unit": 14.53,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "petroleum_coke": {
+        "factor_id": "DEFRA_2024_PC_001",
+        "name": "Petroleum Coke",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3386.93,
+        "kgCO2_per_unit": 3370.41,
+        "kgCH4_per_unit": 1.47,
+        "kgN2O_per_unit": 15.05,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "refinery_miscellaneous": {
+        "factor_id": "DEFRA_2024_RM_001",
+        "name": "Refinery Miscellaneous",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3013.69,
+        "kgCO2_per_unit": 2999.05,
+        "kgCH4_per_unit": 1.30,
+        "kgN2O_per_unit": 13.34,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      },
+      "white_spirit": {
+        "factor_id": "DEFRA_2024_WS_001",
+        "name": "White Spirit",
+        "unit": "litre",
+        "kgCO2e_per_unit": 2.38259,
+        "kgCO2_per_unit": 2.37018,
+        "kgCH4_per_unit": 0.00110,
+        "kgN2O_per_unit": 0.01131,
+        "category": "Liquid Fuels",
+        "scope": "Scope 1"
+      }
+    },
+    "solid_fuels": {
+      "coal_industrial": {
+        "factor_id": "DEFRA_2024_COAL_001",
+        "name": "Coal (Industrial)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2403.84,
+        "kgCO2_per_unit": 2391.65,
+        "kgCH4_per_unit": 2.41,
+        "kgN2O_per_unit": 9.78,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      },
+      "coal_industrial_kwh": {
+        "factor_id": "DEFRA_2024_COAL_002",
+        "name": "Coal (Industrial) (kWh)",
+        "unit": "kWh",
+        "kgCO2e_per_unit": 0.32459,
+        "kgCO2_per_unit": 0.32294,
+        "kgCH4_per_unit": 0.00033,
+        "kgN2O_per_unit": 0.00132,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      },
+      "coal_domestic": {
+        "factor_id": "DEFRA_2024_COAL_003",
+        "name": "Coal (Domestic)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2883.32,
+        "kgCO2_per_unit": 2869.05,
+        "kgCH4_per_unit": 2.82,
+        "kgN2O_per_unit": 11.45,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      },
+      "coal_electricity_generation": {
+        "factor_id": "DEFRA_2024_COAL_004",
+        "name": "Coal (Electricity Generation)",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2251.61,
+        "kgCO2_per_unit": 2240.20,
+        "kgCH4_per_unit": 2.26,
+        "kgN2O_per_unit": 9.15,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      },
+      "coking_coal": {
+        "factor_id": "DEFRA_2024_CCOKE_001",
+        "name": "Coking Coal",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3165.21,
+        "kgCO2_per_unit": 3148.94,
+        "kgCH4_per_unit": 3.22,
+        "kgN2O_per_unit": 13.05,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      },
+      "coke": {
+        "factor_id": "DEFRA_2024_COKE_001",
+        "name": "Coke",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 3063.98,
+        "kgCO2_per_unit": 3048.62,
+        "kgCH4_per_unit": 0.31,
+        "kgN2O_per_unit": 15.05,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      },
+      "anthracite": {
+        "factor_id": "DEFRA_2024_ANTH_001",
+        "name": "Anthracite",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2871.54,
+        "kgCO2_per_unit": 2856.45,
+        "kgCH4_per_unit": 2.99,
+        "kgN2O_per_unit": 12.10,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      },
+      "peat": {
+        "factor_id": "DEFRA_2024_PEAT_001",
+        "name": "Peat",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 1328.31,
+        "kgCO2_per_unit": 1321.05,
+        "kgCH4_per_unit": 1.44,
+        "kgN2O_per_unit": 5.82,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      },
+      "smokeless_fuel": {
+        "factor_id": "DEFRA_2024_SF_001",
+        "name": "Smokeless Solid Fuel",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 2956.17,
+        "kgCO2_per_unit": 2939.51,
+        "kgCH4_per_unit": 0.30,
+        "kgN2O_per_unit": 16.36,
+        "category": "Solid Fuels",
+        "scope": "Scope 1"
+      }
+    },
+    "bioenergy": {
+      "wood_logs": {
+        "factor_id": "DEFRA_2024_WOOD_001",
+        "name": "Wood Logs",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 61.89,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 2.16,
+        "kgN2O_per_unit": 1.72,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 1848.27"
+      },
+      "wood_chips": {
+        "factor_id": "DEFRA_2024_WOOD_002",
+        "name": "Wood Chips",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 15.86,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.35,
+        "kgN2O_per_unit": 0.43,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 1237.34"
+      },
+      "wood_pellets": {
+        "factor_id": "DEFRA_2024_WOOD_003",
+        "name": "Wood Pellets",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 27.47,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.21,
+        "kgN2O_per_unit": 0.85,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 1878.11"
+      },
+      "grass_straw": {
+        "factor_id": "DEFRA_2024_GRASS_001",
+        "name": "Grass / Straw",
+        "unit": "tonne",
+        "kgCO2e_per_unit": 54.35,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 1.50,
+        "kgN2O_per_unit": 1.59,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 1501.34"
+      },
+      "biodiesel_me": {
+        "factor_id": "DEFRA_2024_BDME_001",
+        "name": "Biodiesel ME",
+        "unit": "litre",
+        "kgCO2e_per_unit": 0.01662,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.00058,
+        "kgN2O_per_unit": 0.00051,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 2.45"
+      },
+      "biodiesel_hvo": {
+        "factor_id": "DEFRA_2024_BDHVO_001",
+        "name": "Biodiesel HVO",
+        "unit": "litre",
+        "kgCO2e_per_unit": 0.03543,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.00094,
+        "kgN2O_per_unit": 0.00109,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 2.21"
+      },
+      "bioethanol": {
+        "factor_id": "DEFRA_2024_BETH_001",
+        "name": "Bioethanol",
+        "unit": "litre",
+        "kgCO2e_per_unit": 0.01176,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.00036,
+        "kgN2O_per_unit": 0.00037,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 1.52"
+      },
+      "biopropane": {
+        "factor_id": "DEFRA_2024_BPROP_001",
+        "name": "Biopropane",
+        "unit": "litre",
+        "kgCO2e_per_unit": 0.00448,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.00016,
+        "kgN2O_per_unit": 0.00013,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 1.53"
+      },
+      "bio_lpg": {
+        "factor_id": "DEFRA_2024_BLPG_001",
+        "name": "Bio-LPG",
+        "unit": "litre",
+        "kgCO2e_per_unit": 0.00335,
+        "kgCO2_per_unit": 0.0,
+        "kgCH4_per_unit": 0.00012,
+        "kgN2O_per_unit": 0.00010,
+        "category": "Bioenergy",
+        "scope": "Scope 1",
+        "notes": "Outside of scopes CO2 biogenic: 1.57"
+      }
+    }
+  },
+  "uk_electricity": {
+    "grid_electricity": {
+      "factor_id": "DEFRA_2024_ELEC_001",
+      "name": "UK Grid Electricity",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.20705,
+      "kgCO2_per_unit": 0.20493,
+      "kgCH4_per_unit": 0.00041,
+      "kgN2O_per_unit": 0.00171,
+      "category": "Electricity",
+      "scope": "Scope 2 (Location-based)",
+      "year": 2024,
+      "notes": "UK national average"
+    },
+    "transmission_distribution_losses": {
+      "factor_id": "DEFRA_2024_ELEC_002",
+      "name": "UK Electricity T&D Losses",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.01824,
+      "kgCO2_per_unit": 0.01805,
+      "kgCH4_per_unit": 0.00004,
+      "kgN2O_per_unit": 0.00015,
+      "category": "Electricity",
+      "scope": "Scope 3",
+      "notes": "Well-to-tank plus transmission and distribution losses"
+    },
+    "generation_only": {
+      "factor_id": "DEFRA_2024_ELEC_003",
+      "name": "UK Electricity Generation",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.18881,
+      "kgCO2_per_unit": 0.18688,
+      "kgCH4_per_unit": 0.00037,
+      "kgN2O_per_unit": 0.00156,
+      "category": "Electricity",
+      "scope": "Scope 2",
+      "notes": "Generation only, excluding T&D losses"
+    }
+  },
+  "heat_and_steam": {
+    "district_heating": {
+      "factor_id": "DEFRA_2024_HEAT_001",
+      "name": "District Heating",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.16571,
+      "kgCO2_per_unit": 0.16504,
+      "kgCH4_per_unit": 0.00045,
+      "kgN2O_per_unit": 0.00022,
+      "category": "Heat and Steam",
+      "scope": "Scope 2"
+    },
+    "district_cooling": {
+      "factor_id": "DEFRA_2024_COOL_001",
+      "name": "District Cooling",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.04887,
+      "kgCO2_per_unit": 0.04836,
+      "kgCH4_per_unit": 0.00010,
+      "kgN2O_per_unit": 0.00041,
+      "category": "Heat and Steam",
+      "scope": "Scope 2"
+    },
+    "steam": {
+      "factor_id": "DEFRA_2024_STEAM_001",
+      "name": "Steam",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.18254,
+      "kgCO2_per_unit": 0.18198,
+      "kgCH4_per_unit": 0.00035,
+      "kgN2O_per_unit": 0.00021,
+      "category": "Heat and Steam",
+      "scope": "Scope 2"
+    }
+  },
+  "refrigerants": {
+    "hfc_23": {
+      "factor_id": "DEFRA_2024_REF_001",
+      "name": "HFC-23 (R-23)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 14800,
+      "gwp_100yr": 14800,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_32": {
+      "factor_id": "DEFRA_2024_REF_002",
+      "name": "HFC-32 (R-32)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 675,
+      "gwp_100yr": 675,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_125": {
+      "factor_id": "DEFRA_2024_REF_003",
+      "name": "HFC-125 (R-125)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 3500,
+      "gwp_100yr": 3500,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_134a": {
+      "factor_id": "DEFRA_2024_REF_004",
+      "name": "HFC-134a (R-134a)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1430,
+      "gwp_100yr": 1430,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_143a": {
+      "factor_id": "DEFRA_2024_REF_005",
+      "name": "HFC-143a (R-143a)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 4470,
+      "gwp_100yr": 4470,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_152a": {
+      "factor_id": "DEFRA_2024_REF_006",
+      "name": "HFC-152a (R-152a)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 124,
+      "gwp_100yr": 124,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_227ea": {
+      "factor_id": "DEFRA_2024_REF_007",
+      "name": "HFC-227ea (R-227ea)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 3220,
+      "gwp_100yr": 3220,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_236fa": {
+      "factor_id": "DEFRA_2024_REF_008",
+      "name": "HFC-236fa (R-236fa)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 9810,
+      "gwp_100yr": 9810,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_245fa": {
+      "factor_id": "DEFRA_2024_REF_009",
+      "name": "HFC-245fa (R-245fa)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1030,
+      "gwp_100yr": 1030,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_365mfc": {
+      "factor_id": "DEFRA_2024_REF_010",
+      "name": "HFC-365mfc (R-365mfc)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 794,
+      "gwp_100yr": 794,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "hfc_43_10mee": {
+      "factor_id": "DEFRA_2024_REF_011",
+      "name": "HFC-43-10mee",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1640,
+      "gwp_100yr": 1640,
+      "category": "Refrigerants",
+      "scope": "Scope 1"
+    },
+    "r_404a": {
+      "factor_id": "DEFRA_2024_REF_012",
+      "name": "R-404A Blend",
+      "unit": "kg",
+      "kgCO2e_per_unit": 3922,
+      "gwp_100yr": 3922,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1"
+    },
+    "r_407c": {
+      "factor_id": "DEFRA_2024_REF_013",
+      "name": "R-407C Blend",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1774,
+      "gwp_100yr": 1774,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1"
+    },
+    "r_410a": {
+      "factor_id": "DEFRA_2024_REF_014",
+      "name": "R-410A Blend",
+      "unit": "kg",
+      "kgCO2e_per_unit": 2088,
+      "gwp_100yr": 2088,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1"
+    },
+    "r_507a": {
+      "factor_id": "DEFRA_2024_REF_015",
+      "name": "R-507A Blend",
+      "unit": "kg",
+      "kgCO2e_per_unit": 3985,
+      "gwp_100yr": 3985,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1"
+    },
+    "r_508b": {
+      "factor_id": "DEFRA_2024_REF_016",
+      "name": "R-508B Blend",
+      "unit": "kg",
+      "kgCO2e_per_unit": 13396,
+      "gwp_100yr": 13396,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1"
+    },
+    "pfc_14": {
+      "factor_id": "DEFRA_2024_REF_017",
+      "name": "PFC-14 (CF4)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 7390,
+      "gwp_100yr": 7390,
+      "category": "PFCs",
+      "scope": "Scope 1"
+    },
+    "pfc_116": {
+      "factor_id": "DEFRA_2024_REF_018",
+      "name": "PFC-116 (C2F6)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 12200,
+      "gwp_100yr": 12200,
+      "category": "PFCs",
+      "scope": "Scope 1"
+    },
+    "sf6": {
+      "factor_id": "DEFRA_2024_REF_019",
+      "name": "SF6 (Sulphur Hexafluoride)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 25200,
+      "gwp_100yr": 25200,
+      "category": "Other GHGs",
+      "scope": "Scope 1"
+    },
+    "nf3": {
+      "factor_id": "DEFRA_2024_REF_020",
+      "name": "NF3 (Nitrogen Trifluoride)",
+      "unit": "kg",
+      "kgCO2e_per_unit": 17200,
+      "gwp_100yr": 17200,
+      "category": "Other GHGs",
+      "scope": "Scope 1"
+    }
+  },
+  "well_to_tank_fuels": {
+    "natural_gas_wtt": {
+      "factor_id": "DEFRA_2024_WTT_NG_001",
+      "name": "Natural Gas WTT",
+      "unit": "kWh",
+      "kgCO2e_per_unit": 0.02523,
+      "category": "WTT Fuels",
+      "scope": "Scope 3"
+    },
+    "petrol_wtt": {
+      "factor_id": "DEFRA_2024_WTT_PET_001",
+      "name": "Petrol WTT",
+      "unit": "litre",
+      "kgCO2e_per_unit": 0.61328,
+      "category": "WTT Fuels",
+      "scope": "Scope 3"
+    },
+    "diesel_wtt": {
+      "factor_id": "DEFRA_2024_WTT_DIE_001",
+      "name": "Diesel WTT",
+      "unit": "litre",
+      "kgCO2e_per_unit": 0.62874,
+      "category": "WTT Fuels",
+      "scope": "Scope 3"
+    },
+    "lpg_wtt": {
+      "factor_id": "DEFRA_2024_WTT_LPG_001",
+      "name": "LPG WTT",
+      "unit": "litre",
+      "kgCO2e_per_unit": 0.18497,
+      "category": "WTT Fuels",
+      "scope": "Scope 3"
+    },
+    "coal_wtt": {
+      "factor_id": "DEFRA_2024_WTT_COAL_001",
+      "name": "Coal WTT",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 398.27,
+      "category": "WTT Fuels",
+      "scope": "Scope 3"
+    },
+    "aviation_fuel_wtt": {
+      "factor_id": "DEFRA_2024_WTT_ATF_001",
+      "name": "Aviation Turbine Fuel WTT",
+      "unit": "litre",
+      "kgCO2e_per_unit": 0.53148,
+      "category": "WTT Fuels",
+      "scope": "Scope 3"
+    }
+  },
+  "total_factor_count": 215
+}

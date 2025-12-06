@@ -1,0 +1,236 @@
+# GreenLang API Gateway ArgoCD Application
+# Manages the API Gateway and ingress configuration
+# Author: GL-DevOpsEngineer
+# Version: 1.0.0
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: greenlang-api
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: greenlang-api
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: api-gateway
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: greenlang-deployments
+    notifications.argoproj.io/subscribe.on-sync-failed.pagerduty: greenlang-oncall
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: greenlang
+
+  source:
+    repoURL: https://github.com/greenlang/greenlang-platform.git
+    targetRevision: HEAD
+    path: helm/greenlang-api
+    helm:
+      releaseName: greenlang-api
+      valueFiles:
+        - values.yaml
+        - values-production.yaml
+      values: |
+        # Production API Gateway Configuration
+        replicaCount: 3
+
+        image:
+          repository: gcr.io/greenlang-production/greenlang-api
+          tag: latest
+          pullPolicy: Always
+
+        service:
+          type: ClusterIP
+          port: 8000
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "8000"
+            prometheus.io/path: "/metrics"
+
+        ingress:
+          enabled: true
+          className: nginx
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-prod
+            nginx.ingress.kubernetes.io/rate-limit: "100"
+            nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+            nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+            nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+            nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+            nginx.ingress.kubernetes.io/enable-cors: "true"
+            nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+            nginx.ingress.kubernetes.io/cors-allow-origin: "https://app.greenlang.io"
+            nginx.ingress.kubernetes.io/configuration-snippet: |
+              more_set_headers "X-Frame-Options: DENY";
+              more_set_headers "X-Content-Type-Options: nosniff";
+              more_set_headers "X-XSS-Protection: 1; mode=block";
+              more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+          hosts:
+            - host: api.greenlang.io
+              paths:
+                - path: /
+                  pathType: Prefix
+          tls:
+            - secretName: greenlang-api-tls
+              hosts:
+                - api.greenlang.io
+
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+
+        autoscaling:
+          enabled: true
+          minReplicas: 3
+          maxReplicas: 20
+          targetCPUUtilizationPercentage: 60
+          targetMemoryUtilizationPercentage: 70
+          behavior:
+            scaleDown:
+              stabilizationWindowSeconds: 300
+              policies:
+                - type: Pods
+                  value: 1
+                  periodSeconds: 60
+            scaleUp:
+              stabilizationWindowSeconds: 0
+              policies:
+                - type: Pods
+                  value: 4
+                  periodSeconds: 15
+                - type: Percent
+                  value: 100
+                  periodSeconds: 15
+              selectPolicy: Max
+
+        podDisruptionBudget:
+          enabled: true
+          minAvailable: 2
+
+        livenessProbe:
+          httpGet:
+            path: /api/v1/health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /api/v1/ready
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+
+        env:
+          - name: ENVIRONMENT
+            value: production
+          - name: LOG_LEVEL
+            value: INFO
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: "http://otel-collector.monitoring:4317"
+          - name: OTEL_SERVICE_NAME
+            value: "greenlang-api"
+
+        envFrom:
+          - secretRef:
+              name: greenlang-api-secrets
+          - configMapRef:
+              name: greenlang-api-config
+
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          fsGroup: 1000
+          seccompProfile:
+            type: RuntimeDefault
+
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+
+        nodeSelector:
+          workload-type: api
+
+        tolerations:
+          - key: "dedicated"
+            operator: "Equal"
+            value: "api"
+            effect: "NoSchedule"
+
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              - labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - greenlang-api
+                topologyKey: kubernetes.io/hostname
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                    - key: topology.kubernetes.io/zone
+                      operator: In
+                      values:
+                        - us-east-1a
+                        - us-east-1b
+                        - us-east-1c
+
+        topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: greenlang-api
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: greenlang-api
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+      - ApplyOutOfSyncOnly=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  revisionHistoryLimit: 10
+
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+      jsonPointers:
+        - /spec/minReplicas
+        - /spec/maxReplicas

@@ -1,0 +1,344 @@
+{
+  "metadata": {
+    "source": "World Steel Association, IEA, IPCC, Industry Reports",
+    "source_url": "https://worldsteel.org/steel-topics/sustainability/",
+    "version": "2024",
+    "last_updated": "2024-03-15",
+    "units_note": "All factors in kgCO2e per tonne of product unless otherwise specified",
+    "scope": "Scope 1, 2, and 3 emissions for steel production",
+    "methodology": "Based on World Steel Association LCI data and IPCC guidelines",
+    "gwp_basis": "AR5 100-year GWP values"
+  },
+  "production_routes": {
+    "bf_bof": {
+      "factor_id": "STEEL_2024_BF_BOF_001",
+      "name": "Blast Furnace - Basic Oxygen Furnace (BF-BOF)",
+      "description": "Integrated steelmaking from iron ore using coke and coal",
+      "unit": "tonne crude steel",
+      "total_kgCO2e_per_unit": 2100,
+      "scope_1_kgCO2e": 1650,
+      "scope_2_kgCO2e": 150,
+      "scope_3_kgCO2e": 300,
+      "breakdown": {
+        "coke_production": 350,
+        "sinter_plant": 180,
+        "blast_furnace": 920,
+        "basic_oxygen_furnace": 120,
+        "casting_rolling": 80,
+        "electricity_use": 150,
+        "raw_material_upstream": 300
+      },
+      "category": "Primary Steel Production",
+      "technology": "Integrated BF-BOF",
+      "typical_scrap_input_pct": 15,
+      "uncertainty_pct": 10,
+      "regional_variations": {
+        "global_average": 2100,
+        "china": 2200,
+        "europe_eu": 1950,
+        "north_america": 1850,
+        "india": 2350,
+        "japan_korea": 1900
+      }
+    },
+    "eaf_scrap": {
+      "factor_id": "STEEL_2024_EAF_SCRAP_001",
+      "name": "Electric Arc Furnace - 100% Scrap",
+      "description": "Steelmaking from recycled steel scrap using electric arc furnace",
+      "unit": "tonne crude steel",
+      "total_kgCO2e_per_unit": 580,
+      "scope_1_kgCO2e": 50,
+      "scope_2_kgCO2e": 400,
+      "scope_3_kgCO2e": 130,
+      "breakdown": {
+        "eaf_process_direct": 50,
+        "electricity_use": 400,
+        "scrap_processing": 80,
+        "alloys_fluxes": 50
+      },
+      "category": "Secondary Steel Production",
+      "technology": "EAF - Scrap Based",
+      "typical_scrap_input_pct": 100,
+      "electricity_consumption_kwh_per_tonne": 500,
+      "uncertainty_pct": 15,
+      "notes": "Scope 2 varies significantly based on grid electricity carbon intensity",
+      "regional_variations": {
+        "global_average": 580,
+        "europe_eu": 350,
+        "north_america": 480,
+        "china": 750,
+        "india": 800
+      }
+    },
+    "dri_eaf": {
+      "factor_id": "STEEL_2024_DRI_EAF_001",
+      "name": "Direct Reduced Iron - Electric Arc Furnace (DRI-EAF)",
+      "description": "Steelmaking using DRI from natural gas reduction",
+      "unit": "tonne crude steel",
+      "total_kgCO2e_per_unit": 1150,
+      "scope_1_kgCO2e": 650,
+      "scope_2_kgCO2e": 350,
+      "scope_3_kgCO2e": 150,
+      "breakdown": {
+        "dri_production_natural_gas": 580,
+        "eaf_process": 70,
+        "electricity_use": 350,
+        "iron_ore_upstream": 100,
+        "natural_gas_upstream": 50
+      },
+      "category": "Primary Steel Production",
+      "technology": "DRI-EAF (Gas-Based)",
+      "typical_scrap_input_pct": 30,
+      "natural_gas_consumption_gj_per_tonne": 10.5,
+      "electricity_consumption_kwh_per_tonne": 450,
+      "uncertainty_pct": 12
+    },
+    "dri_eaf_hydrogen": {
+      "factor_id": "STEEL_2024_DRI_H2_001",
+      "name": "Hydrogen Direct Reduced Iron - EAF (H2-DRI-EAF)",
+      "description": "Near-zero emission steelmaking using green hydrogen",
+      "unit": "tonne crude steel",
+      "total_kgCO2e_per_unit": 150,
+      "scope_1_kgCO2e": 20,
+      "scope_2_kgCO2e": 100,
+      "scope_3_kgCO2e": 30,
+      "breakdown": {
+        "dri_production_hydrogen": 10,
+        "eaf_process": 10,
+        "electricity_use": 100,
+        "iron_ore_upstream": 25,
+        "other_materials": 5
+      },
+      "category": "Primary Steel Production - Low Carbon",
+      "technology": "H2-DRI-EAF (Green Hydrogen)",
+      "hydrogen_consumption_kg_per_tonne": 55,
+      "electricity_consumption_kwh_per_tonne": 600,
+      "uncertainty_pct": 25,
+      "notes": "Assumes 100% renewable electricity and green hydrogen; commercial scale expected 2025-2030"
+    },
+    "open_hearth": {
+      "factor_id": "STEEL_2024_OH_001",
+      "name": "Open Hearth Furnace (Legacy)",
+      "description": "Obsolete steelmaking technology still used in some regions",
+      "unit": "tonne crude steel",
+      "total_kgCO2e_per_unit": 2850,
+      "scope_1_kgCO2e": 2200,
+      "scope_2_kgCO2e": 350,
+      "scope_3_kgCO2e": 300,
+      "category": "Primary Steel Production - Legacy",
+      "technology": "Open Hearth Furnace",
+      "uncertainty_pct": 20,
+      "notes": "Largely phased out globally; less than 1% of production"
+    }
+  },
+  "intermediate_products": {
+    "hot_metal": {
+      "factor_id": "STEEL_2024_INT_HM_001",
+      "name": "Hot Metal (Liquid Iron)",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 1650,
+      "category": "Intermediate Products",
+      "notes": "Output from blast furnace"
+    },
+    "pig_iron": {
+      "factor_id": "STEEL_2024_INT_PIG_001",
+      "name": "Pig Iron",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 1700,
+      "category": "Intermediate Products",
+      "notes": "Solidified hot metal"
+    },
+    "dri_pellets": {
+      "factor_id": "STEEL_2024_INT_DRI_001",
+      "name": "Direct Reduced Iron (Sponge Iron)",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 700,
+      "category": "Intermediate Products",
+      "production_route": "Natural gas based",
+      "notes": "HBI (Hot Briquetted Iron) similar value"
+    },
+    "slab": {
+      "factor_id": "STEEL_2024_INT_SLAB_001",
+      "name": "Steel Slab",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 2150,
+      "category": "Intermediate Products",
+      "notes": "BF-BOF route; add 50 kg for continuous casting"
+    },
+    "billet": {
+      "factor_id": "STEEL_2024_INT_BILLET_001",
+      "name": "Steel Billet",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 2180,
+      "category": "Intermediate Products",
+      "notes": "BF-BOF route"
+    }
+  },
+  "finished_products": {
+    "hot_rolled_coil": {
+      "factor_id": "STEEL_2024_FIN_HRC_001",
+      "name": "Hot Rolled Coil (HRC)",
+      "unit": "tonne",
+      "kgCO2e_per_unit_bf_bof": 2250,
+      "kgCO2e_per_unit_eaf": 650,
+      "category": "Finished Products - Flat",
+      "rolling_energy_kwh": 150
+    },
+    "cold_rolled_coil": {
+      "factor_id": "STEEL_2024_FIN_CRC_001",
+      "name": "Cold Rolled Coil (CRC)",
+      "unit": "tonne",
+      "kgCO2e_per_unit_bf_bof": 2450,
+      "kgCO2e_per_unit_eaf": 850,
+      "category": "Finished Products - Flat",
+      "additional_processing_kg": 200
+    },
+    "galvanized_steel": {
+      "factor_id": "STEEL_2024_FIN_GALV_001",
+      "name": "Hot-Dip Galvanized Steel",
+      "unit": "tonne",
+      "kgCO2e_per_unit_bf_bof": 2650,
+      "kgCO2e_per_unit_eaf": 1050,
+      "category": "Finished Products - Coated",
+      "zinc_coating_kg_co2e": 200
+    },
+    "rebar": {
+      "factor_id": "STEEL_2024_FIN_REBAR_001",
+      "name": "Reinforcing Bar (Rebar)",
+      "unit": "tonne",
+      "kgCO2e_per_unit_bf_bof": 2180,
+      "kgCO2e_per_unit_eaf": 620,
+      "category": "Finished Products - Long"
+    },
+    "structural_sections": {
+      "factor_id": "STEEL_2024_FIN_STRUCT_001",
+      "name": "Structural Steel Sections",
+      "unit": "tonne",
+      "kgCO2e_per_unit_bf_bof": 2300,
+      "kgCO2e_per_unit_eaf": 700,
+      "category": "Finished Products - Long"
+    },
+    "wire_rod": {
+      "factor_id": "STEEL_2024_FIN_WIRE_001",
+      "name": "Wire Rod",
+      "unit": "tonne",
+      "kgCO2e_per_unit_bf_bof": 2200,
+      "kgCO2e_per_unit_eaf": 640,
+      "category": "Finished Products - Long"
+    },
+    "stainless_steel": {
+      "factor_id": "STEEL_2024_FIN_SS_001",
+      "name": "Stainless Steel (304 Grade)",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 6800,
+      "category": "Finished Products - Specialty",
+      "notes": "High emissions due to nickel and chromium content"
+    }
+  },
+  "scrap_credits": {
+    "steel_scrap": {
+      "factor_id": "STEEL_2024_SCRAP_001",
+      "name": "Steel Scrap Credit",
+      "unit": "tonne",
+      "kgCO2e_avoided": -1700,
+      "category": "Material Credits",
+      "notes": "Credit for displacing primary steel production",
+      "methodology": "Avoided burden approach"
+    },
+    "scrap_processing": {
+      "factor_id": "STEEL_2024_SCRAP_PROC_001",
+      "name": "Steel Scrap Processing",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 45,
+      "category": "Material Processing",
+      "notes": "Collection, sorting, shredding"
+    }
+  },
+  "auxiliary_materials": {
+    "coke": {
+      "factor_id": "STEEL_2024_AUX_COKE_001",
+      "name": "Metallurgical Coke",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 3200,
+      "category": "Auxiliary Materials",
+      "typical_consumption_kg_per_tonne_steel": 350
+    },
+    "iron_ore_pellets": {
+      "factor_id": "STEEL_2024_AUX_PELLET_001",
+      "name": "Iron Ore Pellets",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 85,
+      "category": "Auxiliary Materials",
+      "typical_consumption_kg_per_tonne_steel": 1600
+    },
+    "iron_ore_sinter": {
+      "factor_id": "STEEL_2024_AUX_SINTER_001",
+      "name": "Iron Ore Sinter",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 180,
+      "category": "Auxiliary Materials"
+    },
+    "limestone_flux": {
+      "factor_id": "STEEL_2024_AUX_LIME_001",
+      "name": "Limestone/Dite Flux",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 120,
+      "category": "Auxiliary Materials",
+      "typical_consumption_kg_per_tonne_steel": 150
+    },
+    "ferroalloys_average": {
+      "factor_id": "STEEL_2024_AUX_FERRO_001",
+      "name": "Ferroalloys (Average)",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 4500,
+      "category": "Auxiliary Materials",
+      "typical_consumption_kg_per_tonne_steel": 30
+    },
+    "refractory_materials": {
+      "factor_id": "STEEL_2024_AUX_REFR_001",
+      "name": "Refractory Materials",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 850,
+      "category": "Auxiliary Materials",
+      "typical_consumption_kg_per_tonne_steel": 15
+    }
+  },
+  "decarbonization_technologies": {
+    "ccus_bf_bof": {
+      "factor_id": "STEEL_2024_DECARB_CCUS_001",
+      "name": "BF-BOF with Carbon Capture (90%)",
+      "unit": "tonne crude steel",
+      "kgCO2e_per_unit": 500,
+      "reduction_vs_baseline_pct": 76,
+      "technology_readiness_level": 6,
+      "notes": "Pilot projects operational; commercial scale 2028+"
+    },
+    "electrolyzer_steel": {
+      "factor_id": "STEEL_2024_DECARB_ELEC_001",
+      "name": "Molten Oxide Electrolysis (Future)",
+      "unit": "tonne crude steel",
+      "kgCO2e_per_unit": 100,
+      "reduction_vs_baseline_pct": 95,
+      "technology_readiness_level": 4,
+      "notes": "Experimental; commercial viability 2035+"
+    },
+    "biomass_bf": {
+      "factor_id": "STEEL_2024_DECARB_BIO_001",
+      "name": "BF with Biomass Injection",
+      "unit": "tonne crude steel",
+      "kgCO2e_per_unit": 1600,
+      "reduction_vs_baseline_pct": 24,
+      "technology_readiness_level": 7,
+      "notes": "Limited by sustainable biomass availability"
+    }
+  },
+  "emission_intensity_benchmarks": {
+    "world_average_2023": 1910,
+    "best_available_technology_bf_bof": 1700,
+    "best_available_technology_eaf": 300,
+    "sbti_2030_target": 1200,
+    "sbti_2050_target": 140,
+    "net_zero_compatible_2050": 50
+  },
+  "total_factor_count": 42
+}

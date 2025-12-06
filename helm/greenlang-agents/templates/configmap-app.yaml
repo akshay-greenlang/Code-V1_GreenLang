@@ -1,0 +1,117 @@
+{{/*
+Application ConfigMap - Core application configuration
+*/}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-config
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+data:
+  # Environment
+  ENVIRONMENT: {{ .Values.global.environment | quote }}
+  NAMESPACE: {{ include "greenlang-agents.namespace" . | quote }}
+
+  # Logging
+  LOG_LEVEL: {{ .Values.config.LOG_LEVEL | default "info" | quote }}
+  LOG_FORMAT: {{ .Values.config.LOG_FORMAT | default "json" | quote }}
+  LOG_OUTPUT: "stdout"
+
+  # Application settings
+  APP_NAME: "greenlang-agents"
+  APP_VERSION: {{ .Chart.AppVersion | quote }}
+
+  # Cache settings
+  CACHE_TTL: {{ .Values.config.CACHE_TTL | default "3600" | quote }}
+  CACHE_BACKEND: "redis"
+
+  # API settings
+  MAX_CONCURRENT_REQUESTS: {{ .Values.config.MAX_CONCURRENT_REQUESTS | default "100" | quote }}
+  REQUEST_TIMEOUT: {{ .Values.config.REQUEST_TIMEOUT | default "30" | quote }}
+
+  # Agent configuration
+  AGENT_DEFAULT_TIMEOUT: {{ .Values.config.AGENT_DEFAULT_TIMEOUT | default "300" | quote }}
+  AGENT_MAX_RETRIES: {{ .Values.config.AGENT_MAX_RETRIES | default "3" | quote }}
+  AGENT_RETRY_DELAY: {{ .Values.config.AGENT_RETRY_DELAY | default "5" | quote }}
+
+  # Metrics
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+  METRICS_PATH: "/metrics"
+
+  # Tracing (OpenTelemetry)
+  OTEL_ENABLED: {{ .Values.config.OTEL_ENABLED | default "true" | quote }}
+  OTEL_SERVICE_NAME: "greenlang-agents"
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ .Values.config.OTEL_ENDPOINT | default "http://otel-collector:4317" | quote }}
+  OTEL_TRACES_SAMPLER: {{ .Values.config.OTEL_SAMPLER | default "parentbased_traceidratio" | quote }}
+  OTEL_TRACES_SAMPLER_ARG: {{ .Values.config.OTEL_SAMPLER_ARG | default "0.1" | quote }}
+
+  # Service discovery
+  API_GATEWAY_URL: "http://{{ include "greenlang-agents.fullname" . }}-api-gateway:8000"
+  SCHEDULER_URL: "http://{{ include "greenlang-agents.fullname" . }}-scheduler:8000"
+  WORKER_URL: "http://{{ include "greenlang-agents.fullname" . }}-worker:8000"
+  AGENT_RUNNER_URL: "http://{{ include "greenlang-agents.fullname" . }}-agent-runner:8000"
+
+  # Health check settings
+  HEALTH_CHECK_INTERVAL: "10"
+  HEALTH_CHECK_TIMEOUT: "5"
+
+  # Feature flags
+  FEATURE_ASYNC_EXECUTION: {{ .Values.config.FEATURE_ASYNC_EXECUTION | default "true" | quote }}
+  FEATURE_BATCH_PROCESSING: {{ .Values.config.FEATURE_BATCH_PROCESSING | default "true" | quote }}
+  FEATURE_CACHING: {{ .Values.config.FEATURE_CACHING | default "true" | quote }}
+
+  # Application config file
+  config.yaml: |
+    app:
+      name: greenlang-agents
+      version: {{ .Chart.AppVersion }}
+      environment: {{ .Values.global.environment }}
+
+    server:
+      host: 0.0.0.0
+      port: 8000
+      workers: 4
+      timeout: 30
+
+    logging:
+      level: {{ .Values.config.LOG_LEVEL | default "info" }}
+      format: {{ .Values.config.LOG_FORMAT | default "json" }}
+      include_trace_id: true
+
+    agents:
+      default_timeout: {{ .Values.config.AGENT_DEFAULT_TIMEOUT | default 300 }}
+      max_retries: {{ .Values.config.AGENT_MAX_RETRIES | default 3 }}
+      retry_delay: {{ .Values.config.AGENT_RETRY_DELAY | default 5 }}
+      concurrency: {{ .Values.config.AGENT_CONCURRENCY | default 10 }}
+
+    cache:
+      backend: redis
+      ttl: {{ .Values.config.CACHE_TTL | default 3600 }}
+      prefix: "gl:"
+
+    metrics:
+      enabled: true
+      port: 9090
+      path: /metrics
+
+    tracing:
+      enabled: {{ .Values.config.OTEL_ENABLED | default true }}
+      service_name: greenlang-agents
+      sample_rate: {{ .Values.config.OTEL_SAMPLER_ARG | default 0.1 }}
+
+    security:
+      cors:
+        enabled: true
+        allow_origins:
+          - "*"
+        allow_methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+      rate_limit:
+        enabled: true
+        requests_per_second: {{ .Values.config.MAX_CONCURRENT_REQUESTS | default 100 }}

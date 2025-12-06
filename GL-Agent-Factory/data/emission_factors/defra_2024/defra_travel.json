@@ -1,0 +1,864 @@
+{
+  "metadata": {
+    "source": "UK Government GHG Conversion Factors for Company Reporting",
+    "source_url": "https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2024",
+    "version": "2024",
+    "last_updated": "2024-06-01",
+    "units_note": "All factors in kgCO2e per unit unless otherwise specified",
+    "scope": "Scope 1 and Scope 3 - Business Travel"
+  },
+  "business_travel_air": {
+    "domestic": {
+      "factor_id": "DEFRA_2024_AIR_001",
+      "name": "Domestic Flight",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.24587,
+      "kgCO2_per_unit": 0.24416,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00170,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Average",
+      "radiative_forcing_included": true
+    },
+    "domestic_without_rf": {
+      "factor_id": "DEFRA_2024_AIR_002",
+      "name": "Domestic Flight (without RF)",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.13699,
+      "kgCO2_per_unit": 0.13604,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00094,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Average",
+      "radiative_forcing_included": false
+    },
+    "short_haul_economy": {
+      "factor_id": "DEFRA_2024_AIR_003",
+      "name": "Short-haul Economy Class",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.15102,
+      "kgCO2_per_unit": 0.14999,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00102,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Economy",
+      "haul": "Short-haul (<3700km)",
+      "radiative_forcing_included": true
+    },
+    "short_haul_business": {
+      "factor_id": "DEFRA_2024_AIR_004",
+      "name": "Short-haul Business Class",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.22653,
+      "kgCO2_per_unit": 0.22499,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00153,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Business",
+      "haul": "Short-haul (<3700km)",
+      "radiative_forcing_included": true
+    },
+    "short_haul_average": {
+      "factor_id": "DEFRA_2024_AIR_005",
+      "name": "Short-haul Average",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.15353,
+      "kgCO2_per_unit": 0.15248,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00104,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Average",
+      "haul": "Short-haul (<3700km)",
+      "radiative_forcing_included": true
+    },
+    "medium_haul_economy": {
+      "factor_id": "DEFRA_2024_AIR_006",
+      "name": "Medium-haul Economy Class",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.13679,
+      "kgCO2_per_unit": 0.13588,
+      "kgCH4_per_unit": 0.00000,
+      "kgN2O_per_unit": 0.00091,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Economy",
+      "haul": "Medium-haul (3700-5000km)",
+      "radiative_forcing_included": true
+    },
+    "medium_haul_premium_economy": {
+      "factor_id": "DEFRA_2024_AIR_007",
+      "name": "Medium-haul Premium Economy",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.21886,
+      "kgCO2_per_unit": 0.21741,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00144,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Premium Economy",
+      "haul": "Medium-haul (3700-5000km)",
+      "radiative_forcing_included": true
+    },
+    "medium_haul_business": {
+      "factor_id": "DEFRA_2024_AIR_008",
+      "name": "Medium-haul Business Class",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.39669,
+      "kgCO2_per_unit": 0.39404,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00264,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Business",
+      "haul": "Medium-haul (3700-5000km)",
+      "radiative_forcing_included": true
+    },
+    "medium_haul_first": {
+      "factor_id": "DEFRA_2024_AIR_009",
+      "name": "Medium-haul First Class",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.54716,
+      "kgCO2_per_unit": 0.54352,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00363,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "First",
+      "haul": "Medium-haul (3700-5000km)",
+      "radiative_forcing_included": true
+    },
+    "medium_haul_average": {
+      "factor_id": "DEFRA_2024_AIR_010",
+      "name": "Medium-haul Average",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.15932,
+      "kgCO2_per_unit": 0.15825,
+      "kgCH4_per_unit": 0.00000,
+      "kgN2O_per_unit": 0.00107,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Average",
+      "haul": "Medium-haul (3700-5000km)",
+      "radiative_forcing_included": true
+    },
+    "long_haul_economy": {
+      "factor_id": "DEFRA_2024_AIR_011",
+      "name": "Long-haul Economy Class",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.14787,
+      "kgCO2_per_unit": 0.14689,
+      "kgCH4_per_unit": 0.00000,
+      "kgN2O_per_unit": 0.00098,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Economy",
+      "haul": "Long-haul (>5000km)",
+      "radiative_forcing_included": true
+    },
+    "long_haul_premium_economy": {
+      "factor_id": "DEFRA_2024_AIR_012",
+      "name": "Long-haul Premium Economy",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.23659,
+      "kgCO2_per_unit": 0.23502,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00156,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Premium Economy",
+      "haul": "Long-haul (>5000km)",
+      "radiative_forcing_included": true
+    },
+    "long_haul_business": {
+      "factor_id": "DEFRA_2024_AIR_013",
+      "name": "Long-haul Business Class",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.42883,
+      "kgCO2_per_unit": 0.42598,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00284,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Business",
+      "haul": "Long-haul (>5000km)",
+      "radiative_forcing_included": true
+    },
+    "long_haul_first": {
+      "factor_id": "DEFRA_2024_AIR_014",
+      "name": "Long-haul First Class",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.59148,
+      "kgCO2_per_unit": 0.58755,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00392,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "First",
+      "haul": "Long-haul (>5000km)",
+      "radiative_forcing_included": true
+    },
+    "long_haul_average": {
+      "factor_id": "DEFRA_2024_AIR_015",
+      "name": "Long-haul Average",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.19309,
+      "kgCO2_per_unit": 0.19181,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00127,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Average",
+      "haul": "Long-haul (>5000km)",
+      "radiative_forcing_included": true
+    },
+    "international_average": {
+      "factor_id": "DEFRA_2024_AIR_016",
+      "name": "International Average",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.17143,
+      "kgCO2_per_unit": 0.17028,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00114,
+      "category": "Air Travel",
+      "scope": "Scope 3",
+      "class": "Average",
+      "haul": "International",
+      "radiative_forcing_included": true
+    }
+  },
+  "business_travel_rail": {
+    "national_rail": {
+      "factor_id": "DEFRA_2024_RAIL_001",
+      "name": "National Rail",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.03549,
+      "kgCO2_per_unit": 0.03512,
+      "kgCH4_per_unit": 0.00002,
+      "kgN2O_per_unit": 0.00035,
+      "category": "Rail Travel",
+      "scope": "Scope 3",
+      "notes": "UK national rail average"
+    },
+    "international_rail": {
+      "factor_id": "DEFRA_2024_RAIL_002",
+      "name": "International Rail",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.00446,
+      "kgCO2_per_unit": 0.00440,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00005,
+      "category": "Rail Travel",
+      "scope": "Scope 3",
+      "notes": "Eurostar and international high-speed rail"
+    },
+    "light_rail_tram": {
+      "factor_id": "DEFRA_2024_RAIL_003",
+      "name": "Light Rail and Tram",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.02936,
+      "kgCO2_per_unit": 0.02905,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00030,
+      "category": "Rail Travel",
+      "scope": "Scope 3"
+    },
+    "london_underground": {
+      "factor_id": "DEFRA_2024_RAIL_004",
+      "name": "London Underground",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.02781,
+      "kgCO2_per_unit": 0.02752,
+      "kgCH4_per_unit": 0.00001,
+      "kgN2O_per_unit": 0.00028,
+      "category": "Rail Travel",
+      "scope": "Scope 3"
+    }
+  },
+  "business_travel_road": {
+    "cars": {
+      "small_petrol_car": {
+        "factor_id": "DEFRA_2024_CAR_001",
+        "name": "Small Petrol Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.14196,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Small",
+        "fuel": "Petrol"
+      },
+      "medium_petrol_car": {
+        "factor_id": "DEFRA_2024_CAR_002",
+        "name": "Medium Petrol Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.17538,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Medium",
+        "fuel": "Petrol"
+      },
+      "large_petrol_car": {
+        "factor_id": "DEFRA_2024_CAR_003",
+        "name": "Large Petrol Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.22292,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Large",
+        "fuel": "Petrol"
+      },
+      "average_petrol_car": {
+        "factor_id": "DEFRA_2024_CAR_004",
+        "name": "Average Petrol Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.17049,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Average",
+        "fuel": "Petrol"
+      },
+      "small_diesel_car": {
+        "factor_id": "DEFRA_2024_CAR_005",
+        "name": "Small Diesel Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.13929,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Small",
+        "fuel": "Diesel"
+      },
+      "medium_diesel_car": {
+        "factor_id": "DEFRA_2024_CAR_006",
+        "name": "Medium Diesel Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.16556,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Medium",
+        "fuel": "Diesel"
+      },
+      "large_diesel_car": {
+        "factor_id": "DEFRA_2024_CAR_007",
+        "name": "Large Diesel Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.20850,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Large",
+        "fuel": "Diesel"
+      },
+      "average_diesel_car": {
+        "factor_id": "DEFRA_2024_CAR_008",
+        "name": "Average Diesel Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.16844,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Average",
+        "fuel": "Diesel"
+      },
+      "small_hybrid_car": {
+        "factor_id": "DEFRA_2024_CAR_009",
+        "name": "Small Hybrid Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.10405,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Small",
+        "fuel": "Hybrid"
+      },
+      "medium_hybrid_car": {
+        "factor_id": "DEFRA_2024_CAR_010",
+        "name": "Medium Hybrid Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.11001,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Medium",
+        "fuel": "Hybrid"
+      },
+      "large_hybrid_car": {
+        "factor_id": "DEFRA_2024_CAR_011",
+        "name": "Large Hybrid Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.15215,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Large",
+        "fuel": "Hybrid"
+      },
+      "average_hybrid_car": {
+        "factor_id": "DEFRA_2024_CAR_012",
+        "name": "Average Hybrid Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.11853,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Average",
+        "fuel": "Hybrid"
+      },
+      "small_phev_car": {
+        "factor_id": "DEFRA_2024_CAR_013",
+        "name": "Small Plug-in Hybrid Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.02252,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Small",
+        "fuel": "Plug-in Hybrid"
+      },
+      "medium_phev_car": {
+        "factor_id": "DEFRA_2024_CAR_014",
+        "name": "Medium Plug-in Hybrid Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.06893,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Medium",
+        "fuel": "Plug-in Hybrid"
+      },
+      "large_phev_car": {
+        "factor_id": "DEFRA_2024_CAR_015",
+        "name": "Large Plug-in Hybrid Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.07531,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Large",
+        "fuel": "Plug-in Hybrid"
+      },
+      "average_phev_car": {
+        "factor_id": "DEFRA_2024_CAR_016",
+        "name": "Average Plug-in Hybrid Car",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.07086,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Average",
+        "fuel": "Plug-in Hybrid"
+      },
+      "battery_ev_car": {
+        "factor_id": "DEFRA_2024_CAR_017",
+        "name": "Battery Electric Vehicle",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.04727,
+        "category": "Company Cars",
+        "scope": "Scope 2",
+        "size": "Average",
+        "fuel": "Electric",
+        "notes": "Scope 2 emissions from electricity use"
+      },
+      "average_car_unknown": {
+        "factor_id": "DEFRA_2024_CAR_018",
+        "name": "Average Car (Unknown Fuel)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.16844,
+        "category": "Company Cars",
+        "scope": "Scope 1",
+        "size": "Average",
+        "fuel": "Unknown"
+      }
+    },
+    "vans": {
+      "small_van_petrol": {
+        "factor_id": "DEFRA_2024_VAN_001",
+        "name": "Small Van (Petrol)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.20139,
+        "category": "Vans",
+        "scope": "Scope 1",
+        "size": "Small (<1.305 tonnes)",
+        "fuel": "Petrol"
+      },
+      "small_van_diesel": {
+        "factor_id": "DEFRA_2024_VAN_002",
+        "name": "Small Van (Diesel)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.14033,
+        "category": "Vans",
+        "scope": "Scope 1",
+        "size": "Small (<1.305 tonnes)",
+        "fuel": "Diesel"
+      },
+      "medium_van_diesel": {
+        "factor_id": "DEFRA_2024_VAN_003",
+        "name": "Medium Van (Diesel)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.18287,
+        "category": "Vans",
+        "scope": "Scope 1",
+        "size": "Medium (1.305-1.74 tonnes)",
+        "fuel": "Diesel"
+      },
+      "large_van_diesel": {
+        "factor_id": "DEFRA_2024_VAN_004",
+        "name": "Large Van (Diesel)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.26936,
+        "category": "Vans",
+        "scope": "Scope 1",
+        "size": "Large (1.74-3.5 tonnes)",
+        "fuel": "Diesel"
+      },
+      "average_van": {
+        "factor_id": "DEFRA_2024_VAN_005",
+        "name": "Average Van",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.23976,
+        "category": "Vans",
+        "scope": "Scope 1",
+        "size": "Average",
+        "fuel": "Average"
+      },
+      "electric_van": {
+        "factor_id": "DEFRA_2024_VAN_006",
+        "name": "Electric Van",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.05813,
+        "category": "Vans",
+        "scope": "Scope 2",
+        "size": "Average",
+        "fuel": "Electric"
+      }
+    },
+    "motorcycles": {
+      "small_motorcycle": {
+        "factor_id": "DEFRA_2024_MC_001",
+        "name": "Small Motorcycle (<125cc)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.08318,
+        "category": "Motorcycles",
+        "scope": "Scope 1"
+      },
+      "medium_motorcycle": {
+        "factor_id": "DEFRA_2024_MC_002",
+        "name": "Medium Motorcycle (125-500cc)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.10145,
+        "category": "Motorcycles",
+        "scope": "Scope 1"
+      },
+      "large_motorcycle": {
+        "factor_id": "DEFRA_2024_MC_003",
+        "name": "Large Motorcycle (>500cc)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.13295,
+        "category": "Motorcycles",
+        "scope": "Scope 1"
+      },
+      "average_motorcycle": {
+        "factor_id": "DEFRA_2024_MC_004",
+        "name": "Average Motorcycle",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.11337,
+        "category": "Motorcycles",
+        "scope": "Scope 1"
+      }
+    },
+    "hgv_trucks": {
+      "rigid_lt7_5t": {
+        "factor_id": "DEFRA_2024_HGV_001",
+        "name": "Rigid HGV (<7.5 tonnes)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.48928,
+        "category": "HGV",
+        "scope": "Scope 1",
+        "size": "<7.5 tonnes"
+      },
+      "rigid_7_5t_17t": {
+        "factor_id": "DEFRA_2024_HGV_002",
+        "name": "Rigid HGV (7.5-17 tonnes)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.58656,
+        "category": "HGV",
+        "scope": "Scope 1",
+        "size": "7.5-17 tonnes"
+      },
+      "rigid_gt17t": {
+        "factor_id": "DEFRA_2024_HGV_003",
+        "name": "Rigid HGV (>17 tonnes)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.95089,
+        "category": "HGV",
+        "scope": "Scope 1",
+        "size": ">17 tonnes"
+      },
+      "all_rigid": {
+        "factor_id": "DEFRA_2024_HGV_004",
+        "name": "All Rigid HGVs",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.79851,
+        "category": "HGV",
+        "scope": "Scope 1",
+        "size": "Average Rigid"
+      },
+      "artic_lt33t": {
+        "factor_id": "DEFRA_2024_HGV_005",
+        "name": "Articulated HGV (<33 tonnes)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.77505,
+        "category": "HGV",
+        "scope": "Scope 1",
+        "size": "<33 tonnes"
+      },
+      "artic_gt33t": {
+        "factor_id": "DEFRA_2024_HGV_006",
+        "name": "Articulated HGV (>33 tonnes)",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.93216,
+        "category": "HGV",
+        "scope": "Scope 1",
+        "size": ">33 tonnes"
+      },
+      "all_artic": {
+        "factor_id": "DEFRA_2024_HGV_007",
+        "name": "All Articulated HGVs",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.90389,
+        "category": "HGV",
+        "scope": "Scope 1",
+        "size": "Average Articulated"
+      },
+      "all_hgv": {
+        "factor_id": "DEFRA_2024_HGV_008",
+        "name": "All HGVs",
+        "unit": "km",
+        "kgCO2e_per_unit": 0.85546,
+        "category": "HGV",
+        "scope": "Scope 1",
+        "size": "Average All"
+      }
+    },
+    "buses": {
+      "local_bus": {
+        "factor_id": "DEFRA_2024_BUS_001",
+        "name": "Local Bus",
+        "unit": "passenger-km",
+        "kgCO2e_per_unit": 0.10312,
+        "category": "Bus Travel",
+        "scope": "Scope 3"
+      },
+      "local_bus_london": {
+        "factor_id": "DEFRA_2024_BUS_002",
+        "name": "Local Bus (London)",
+        "unit": "passenger-km",
+        "kgCO2e_per_unit": 0.07867,
+        "category": "Bus Travel",
+        "scope": "Scope 3"
+      },
+      "average_local_bus": {
+        "factor_id": "DEFRA_2024_BUS_003",
+        "name": "Average Local Bus",
+        "unit": "passenger-km",
+        "kgCO2e_per_unit": 0.09742,
+        "category": "Bus Travel",
+        "scope": "Scope 3"
+      },
+      "coach": {
+        "factor_id": "DEFRA_2024_BUS_004",
+        "name": "Coach",
+        "unit": "passenger-km",
+        "kgCO2e_per_unit": 0.02732,
+        "category": "Bus Travel",
+        "scope": "Scope 3"
+      }
+    },
+    "taxis": {
+      "regular_taxi": {
+        "factor_id": "DEFRA_2024_TAXI_001",
+        "name": "Regular Taxi",
+        "unit": "passenger-km",
+        "kgCO2e_per_unit": 0.20869,
+        "category": "Taxi",
+        "scope": "Scope 3"
+      },
+      "black_cab": {
+        "factor_id": "DEFRA_2024_TAXI_002",
+        "name": "Black Cab (London)",
+        "unit": "passenger-km",
+        "kgCO2e_per_unit": 0.21154,
+        "category": "Taxi",
+        "scope": "Scope 3"
+      }
+    }
+  },
+  "business_travel_sea": {
+    "ferry_foot_passenger": {
+      "factor_id": "DEFRA_2024_SEA_001",
+      "name": "Ferry (Foot Passenger)",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.01874,
+      "category": "Sea Travel",
+      "scope": "Scope 3"
+    },
+    "ferry_car_passenger": {
+      "factor_id": "DEFRA_2024_SEA_002",
+      "name": "Ferry (Car Passenger)",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.12952,
+      "category": "Sea Travel",
+      "scope": "Scope 3"
+    },
+    "ferry_average": {
+      "factor_id": "DEFRA_2024_SEA_003",
+      "name": "Ferry (Average)",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.11286,
+      "category": "Sea Travel",
+      "scope": "Scope 3"
+    }
+  },
+  "hotel_stays": {
+    "uk_hotel": {
+      "factor_id": "DEFRA_2024_HOTEL_001",
+      "name": "UK Hotel Stay",
+      "unit": "room-night",
+      "kgCO2e_per_unit": 10.93,
+      "category": "Hotel Stays",
+      "scope": "Scope 3"
+    },
+    "europe_hotel": {
+      "factor_id": "DEFRA_2024_HOTEL_002",
+      "name": "Europe Hotel Stay",
+      "unit": "room-night",
+      "kgCO2e_per_unit": 13.45,
+      "category": "Hotel Stays",
+      "scope": "Scope 3"
+    },
+    "north_america_hotel": {
+      "factor_id": "DEFRA_2024_HOTEL_003",
+      "name": "North America Hotel Stay",
+      "unit": "room-night",
+      "kgCO2e_per_unit": 26.86,
+      "category": "Hotel Stays",
+      "scope": "Scope 3"
+    },
+    "asia_pacific_hotel": {
+      "factor_id": "DEFRA_2024_HOTEL_004",
+      "name": "Asia Pacific Hotel Stay",
+      "unit": "room-night",
+      "kgCO2e_per_unit": 27.43,
+      "category": "Hotel Stays",
+      "scope": "Scope 3"
+    },
+    "latin_america_hotel": {
+      "factor_id": "DEFRA_2024_HOTEL_005",
+      "name": "Latin America Hotel Stay",
+      "unit": "room-night",
+      "kgCO2e_per_unit": 18.73,
+      "category": "Hotel Stays",
+      "scope": "Scope 3"
+    },
+    "middle_east_africa_hotel": {
+      "factor_id": "DEFRA_2024_HOTEL_006",
+      "name": "Middle East/Africa Hotel Stay",
+      "unit": "room-night",
+      "kgCO2e_per_unit": 21.78,
+      "category": "Hotel Stays",
+      "scope": "Scope 3"
+    },
+    "average_hotel": {
+      "factor_id": "DEFRA_2024_HOTEL_007",
+      "name": "Average Hotel Stay",
+      "unit": "room-night",
+      "kgCO2e_per_unit": 17.56,
+      "category": "Hotel Stays",
+      "scope": "Scope 3"
+    }
+  },
+  "wtt_travel": {
+    "wtt_car_petrol": {
+      "factor_id": "DEFRA_2024_WTT_CAR_001",
+      "name": "WTT Average Petrol Car",
+      "unit": "km",
+      "kgCO2e_per_unit": 0.04960,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_car_diesel": {
+      "factor_id": "DEFRA_2024_WTT_CAR_002",
+      "name": "WTT Average Diesel Car",
+      "unit": "km",
+      "kgCO2e_per_unit": 0.04213,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_car_hybrid": {
+      "factor_id": "DEFRA_2024_WTT_CAR_003",
+      "name": "WTT Average Hybrid Car",
+      "unit": "km",
+      "kgCO2e_per_unit": 0.03449,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_car_ev": {
+      "factor_id": "DEFRA_2024_WTT_CAR_004",
+      "name": "WTT Battery Electric Vehicle",
+      "unit": "km",
+      "kgCO2e_per_unit": 0.02167,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_van_diesel": {
+      "factor_id": "DEFRA_2024_WTT_VAN_001",
+      "name": "WTT Average Diesel Van",
+      "unit": "km",
+      "kgCO2e_per_unit": 0.05995,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_hgv_all": {
+      "factor_id": "DEFRA_2024_WTT_HGV_001",
+      "name": "WTT All HGVs",
+      "unit": "km",
+      "kgCO2e_per_unit": 0.21402,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_flight_domestic": {
+      "factor_id": "DEFRA_2024_WTT_AIR_001",
+      "name": "WTT Domestic Flight",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.02741,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_flight_short_haul": {
+      "factor_id": "DEFRA_2024_WTT_AIR_002",
+      "name": "WTT Short-haul Flight",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.01691,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_flight_long_haul": {
+      "factor_id": "DEFRA_2024_WTT_AIR_003",
+      "name": "WTT Long-haul Flight",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.01984,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_rail_national": {
+      "factor_id": "DEFRA_2024_WTT_RAIL_001",
+      "name": "WTT National Rail",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.00799,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    },
+    "wtt_bus_average": {
+      "factor_id": "DEFRA_2024_WTT_BUS_001",
+      "name": "WTT Average Local Bus",
+      "unit": "passenger-km",
+      "kgCO2e_per_unit": 0.01873,
+      "category": "WTT Travel",
+      "scope": "Scope 3"
+    }
+  },
+  "total_factor_count": 156
+}

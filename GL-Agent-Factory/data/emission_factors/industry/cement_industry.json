@@ -1,0 +1,395 @@
+{
+  "metadata": {
+    "source": "Global Cement and Concrete Association (GCCA), IEA, IPCC",
+    "source_url": "https://gccassociation.org/sustainability-innovation/gnr-gcca-in-numbers/",
+    "version": "2024",
+    "last_updated": "2024-03-15",
+    "units_note": "All factors in kgCO2e per tonne of product unless otherwise specified",
+    "scope": "Scope 1 and 2 emissions for cement and concrete production",
+    "methodology": "Based on GCCA Getting the Numbers Right (GNR) database",
+    "gwp_basis": "AR5 100-year GWP values"
+  },
+  "clinker_production": {
+    "clinker_global_average": {
+      "factor_id": "CEMENT_2024_CLINKER_001",
+      "name": "Portland Cement Clinker - Global Average",
+      "unit": "tonne clinker",
+      "total_kgCO2e_per_unit": 842,
+      "scope_1_kgCO2e": 825,
+      "scope_2_kgCO2e": 17,
+      "breakdown": {
+        "calcination_process": 525,
+        "fuel_combustion": 300,
+        "electricity": 17
+      },
+      "category": "Clinker Production",
+      "uncertainty_pct": 5,
+      "notes": "Process emissions from limestone calcination are ~62% of total"
+    },
+    "clinker_best_practice": {
+      "factor_id": "CEMENT_2024_CLINKER_002",
+      "name": "Portland Cement Clinker - Best Available Technology",
+      "unit": "tonne clinker",
+      "total_kgCO2e_per_unit": 750,
+      "scope_1_kgCO2e": 735,
+      "scope_2_kgCO2e": 15,
+      "breakdown": {
+        "calcination_process": 520,
+        "fuel_combustion": 215,
+        "electricity": 15
+      },
+      "category": "Clinker Production",
+      "technology": "Dry process with preheater/precalciner",
+      "thermal_efficiency_gj_per_tonne": 2.9,
+      "uncertainty_pct": 5
+    },
+    "clinker_wet_process": {
+      "factor_id": "CEMENT_2024_CLINKER_003",
+      "name": "Portland Cement Clinker - Wet Process (Legacy)",
+      "unit": "tonne clinker",
+      "total_kgCO2e_per_unit": 1050,
+      "scope_1_kgCO2e": 1025,
+      "scope_2_kgCO2e": 25,
+      "breakdown": {
+        "calcination_process": 525,
+        "fuel_combustion": 500,
+        "electricity": 25
+      },
+      "category": "Clinker Production",
+      "technology": "Wet process (obsolete)",
+      "thermal_efficiency_gj_per_tonne": 5.5,
+      "notes": "Being phased out globally due to high energy use"
+    }
+  },
+  "cement_types": {
+    "cem_i_portland": {
+      "factor_id": "CEMENT_2024_TYPE_CEMI",
+      "name": "CEM I - Portland Cement (95%+ clinker)",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 866,
+      "clinker_ratio": 0.95,
+      "category": "Cement Types",
+      "standard": "EN 197-1",
+      "typical_applications": ["High early strength", "Precast concrete"]
+    },
+    "cem_ii_a": {
+      "factor_id": "CEMENT_2024_TYPE_CEMIIA",
+      "name": "CEM II/A - Portland-Composite (80-94% clinker)",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 750,
+      "clinker_ratio": 0.85,
+      "category": "Cement Types",
+      "standard": "EN 197-1",
+      "additives": ["Limestone", "Fly ash", "Slag"],
+      "typical_applications": ["General purpose"]
+    },
+    "cem_ii_b": {
+      "factor_id": "CEMENT_2024_TYPE_CEMIIB",
+      "name": "CEM II/B - Portland-Composite (65-79% clinker)",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 620,
+      "clinker_ratio": 0.72,
+      "category": "Cement Types",
+      "standard": "EN 197-1",
+      "typical_applications": ["General purpose", "Mass concrete"]
+    },
+    "cem_iii_a": {
+      "factor_id": "CEMENT_2024_TYPE_CEMIIIA",
+      "name": "CEM III/A - Blast Furnace Cement (35-64% clinker)",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 450,
+      "clinker_ratio": 0.50,
+      "slag_content": 0.50,
+      "category": "Cement Types",
+      "standard": "EN 197-1",
+      "typical_applications": ["Marine structures", "Mass concrete"]
+    },
+    "cem_iii_b": {
+      "factor_id": "CEMENT_2024_TYPE_CEMIIIB",
+      "name": "CEM III/B - Blast Furnace Cement (20-34% clinker)",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 280,
+      "clinker_ratio": 0.27,
+      "slag_content": 0.73,
+      "category": "Cement Types",
+      "standard": "EN 197-1",
+      "typical_applications": ["Marine structures", "Sulfate resistance"]
+    },
+    "cem_iv_pozzolanic": {
+      "factor_id": "CEMENT_2024_TYPE_CEMIV",
+      "name": "CEM IV - Pozzolanic Cement",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 520,
+      "clinker_ratio": 0.55,
+      "category": "Cement Types",
+      "standard": "EN 197-1",
+      "additives": ["Natural pozzolans", "Fly ash", "Silica fume"]
+    },
+    "cem_v_composite": {
+      "factor_id": "CEMENT_2024_TYPE_CEMV",
+      "name": "CEM V - Composite Cement",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 400,
+      "clinker_ratio": 0.45,
+      "category": "Cement Types",
+      "standard": "EN 197-1",
+      "additives": ["Slag + Fly ash/Pozzolan combination"]
+    },
+    "lc3_cement": {
+      "factor_id": "CEMENT_2024_TYPE_LC3",
+      "name": "LC3 - Limestone Calcined Clay Cement",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 380,
+      "clinker_ratio": 0.50,
+      "calcined_clay_content": 0.30,
+      "limestone_content": 0.15,
+      "category": "Cement Types - Innovative",
+      "notes": "Emerging low-carbon cement technology"
+    }
+  },
+  "concrete_mixes": {
+    "c20_25_standard": {
+      "factor_id": "CEMENT_2024_CONC_C2025",
+      "name": "C20/25 Concrete - Standard Mix",
+      "unit": "m3",
+      "kgCO2e_per_unit": 240,
+      "cement_content_kg": 280,
+      "cement_type": "CEM I",
+      "category": "Ready-Mix Concrete",
+      "strength_class": "C20/25 (20 MPa cube)",
+      "typical_applications": ["Foundations", "Ground slabs"]
+    },
+    "c25_30_standard": {
+      "factor_id": "CEMENT_2024_CONC_C2530",
+      "name": "C25/30 Concrete - Standard Mix",
+      "unit": "m3",
+      "kgCO2e_per_unit": 270,
+      "cement_content_kg": 310,
+      "cement_type": "CEM I",
+      "category": "Ready-Mix Concrete",
+      "strength_class": "C25/30 (25 MPa cube)",
+      "typical_applications": ["Structural elements", "Floors"]
+    },
+    "c30_37_standard": {
+      "factor_id": "CEMENT_2024_CONC_C3037",
+      "name": "C30/37 Concrete - Standard Mix",
+      "unit": "m3",
+      "kgCO2e_per_unit": 300,
+      "cement_content_kg": 350,
+      "cement_type": "CEM I",
+      "category": "Ready-Mix Concrete",
+      "strength_class": "C30/37 (30 MPa cube)",
+      "typical_applications": ["Columns", "Beams", "Walls"]
+    },
+    "c40_50_high_strength": {
+      "factor_id": "CEMENT_2024_CONC_C4050",
+      "name": "C40/50 Concrete - High Strength",
+      "unit": "m3",
+      "kgCO2e_per_unit": 360,
+      "cement_content_kg": 420,
+      "cement_type": "CEM I",
+      "category": "Ready-Mix Concrete",
+      "strength_class": "C40/50 (40 MPa cube)",
+      "typical_applications": ["High-rise buildings", "Bridges"]
+    },
+    "c50_60_high_performance": {
+      "factor_id": "CEMENT_2024_CONC_C5060",
+      "name": "C50/60 Concrete - High Performance",
+      "unit": "m3",
+      "kgCO2e_per_unit": 420,
+      "cement_content_kg": 480,
+      "cement_type": "CEM I + Silica Fume",
+      "category": "Ready-Mix Concrete",
+      "strength_class": "C50/60 (50 MPa cube)",
+      "typical_applications": ["Precast", "Prestressed elements"]
+    },
+    "c30_37_low_carbon": {
+      "factor_id": "CEMENT_2024_CONC_C3037_LC",
+      "name": "C30/37 Concrete - Low Carbon Mix",
+      "unit": "m3",
+      "kgCO2e_per_unit": 180,
+      "cement_content_kg": 280,
+      "cement_type": "CEM III/A",
+      "category": "Ready-Mix Concrete - Low Carbon",
+      "strength_class": "C30/37 (30 MPa cube)",
+      "reduction_vs_standard_pct": 40,
+      "notes": "Uses blast furnace slag cement"
+    },
+    "c30_37_ultra_low_carbon": {
+      "factor_id": "CEMENT_2024_CONC_C3037_ULC",
+      "name": "C30/37 Concrete - Ultra Low Carbon",
+      "unit": "m3",
+      "kgCO2e_per_unit": 120,
+      "cement_content_kg": 250,
+      "cement_type": "CEM III/B + SCMs",
+      "category": "Ready-Mix Concrete - Low Carbon",
+      "strength_class": "C30/37 (30 MPa cube)",
+      "reduction_vs_standard_pct": 60,
+      "notes": "Maximum SCM substitution"
+    }
+  },
+  "supplementary_cementitious_materials": {
+    "ground_granulated_blast_slag": {
+      "factor_id": "CEMENT_2024_SCM_GGBS_001",
+      "name": "Ground Granulated Blast Furnace Slag (GGBS)",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 67,
+      "category": "Supplementary Cementitious Materials",
+      "source": "Steel industry byproduct",
+      "typical_replacement_rate_pct": "25-70",
+      "notes": "Economic allocation from steel production"
+    },
+    "fly_ash": {
+      "factor_id": "CEMENT_2024_SCM_FA_001",
+      "name": "Fly Ash (Coal Combustion)",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 27,
+      "category": "Supplementary Cementitious Materials",
+      "source": "Coal power plant byproduct",
+      "typical_replacement_rate_pct": "15-30",
+      "notes": "Economic allocation; availability declining with coal phase-out"
+    },
+    "silica_fume": {
+      "factor_id": "CEMENT_2024_SCM_SF_001",
+      "name": "Silica Fume",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 35,
+      "category": "Supplementary Cementitious Materials",
+      "source": "Silicon/ferrosilicon industry byproduct",
+      "typical_replacement_rate_pct": "5-10"
+    },
+    "limestone_filler": {
+      "factor_id": "CEMENT_2024_SCM_LS_001",
+      "name": "Limestone Filler",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 32,
+      "category": "Supplementary Cementitious Materials",
+      "source": "Ground limestone",
+      "typical_replacement_rate_pct": "5-15"
+    },
+    "calcined_clay": {
+      "factor_id": "CEMENT_2024_SCM_CC_001",
+      "name": "Calcined Clay (Metakaolin)",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 250,
+      "category": "Supplementary Cementitious Materials",
+      "source": "Calcined kaolinitic clay",
+      "typical_replacement_rate_pct": "25-50",
+      "notes": "Key component in LC3 cement"
+    },
+    "natural_pozzolans": {
+      "factor_id": "CEMENT_2024_SCM_NP_001",
+      "name": "Natural Pozzolans",
+      "unit": "tonne",
+      "kgCO2e_per_unit": 45,
+      "category": "Supplementary Cementitious Materials",
+      "source": "Volcanic ash, diatomaceous earth",
+      "typical_replacement_rate_pct": "15-35"
+    }
+  },
+  "alternative_fuels": {
+    "biomass_wood": {
+      "factor_id": "CEMENT_2024_FUEL_BIO_001",
+      "name": "Biomass (Wood/Agricultural Waste)",
+      "unit": "TJ",
+      "kgCO2e_per_TJ": 0,
+      "category": "Alternative Fuels",
+      "notes": "Biogenic CO2; processing emissions only"
+    },
+    "waste_derived_fuel": {
+      "factor_id": "CEMENT_2024_FUEL_RDF_001",
+      "name": "Refuse Derived Fuel (RDF/SRF)",
+      "unit": "TJ",
+      "kgCO2e_per_TJ": 32000,
+      "biogenic_fraction": 0.50,
+      "category": "Alternative Fuels",
+      "notes": "Partial biogenic credit for biomass fraction"
+    },
+    "used_tires": {
+      "factor_id": "CEMENT_2024_FUEL_TIRE_001",
+      "name": "Used Tires",
+      "unit": "TJ",
+      "kgCO2e_per_TJ": 85000,
+      "category": "Alternative Fuels"
+    },
+    "waste_oil": {
+      "factor_id": "CEMENT_2024_FUEL_OIL_001",
+      "name": "Waste Oil",
+      "unit": "TJ",
+      "kgCO2e_per_TJ": 73300,
+      "category": "Alternative Fuels"
+    }
+  },
+  "decarbonization_technologies": {
+    "ccus_post_combustion": {
+      "factor_id": "CEMENT_2024_DECARB_CCUS_001",
+      "name": "Post-Combustion Carbon Capture (90%)",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 100,
+      "capture_rate_pct": 90,
+      "energy_penalty_pct": 30,
+      "category": "Decarbonization Technologies",
+      "technology_readiness_level": 7,
+      "notes": "Pilot projects operational; commercial 2028+"
+    },
+    "ccus_oxyfuel": {
+      "factor_id": "CEMENT_2024_DECARB_OXY_001",
+      "name": "Oxyfuel Combustion with Capture",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 80,
+      "capture_rate_pct": 95,
+      "category": "Decarbonization Technologies",
+      "technology_readiness_level": 6
+    },
+    "electric_kiln": {
+      "factor_id": "CEMENT_2024_DECARB_ELEC_001",
+      "name": "Electric Kiln (Renewable Power)",
+      "unit": "tonne cement",
+      "kgCO2e_per_unit": 520,
+      "category": "Decarbonization Technologies",
+      "technology_readiness_level": 5,
+      "notes": "Only addresses fuel emissions; process CO2 remains"
+    }
+  },
+  "regional_averages": {
+    "global": {
+      "cement_intensity_kgCO2_per_tonne": 610,
+      "clinker_ratio": 0.72,
+      "thermal_energy_gj_per_tonne_clinker": 3.5,
+      "alt_fuel_rate_pct": 18
+    },
+    "europe_eu": {
+      "cement_intensity_kgCO2_per_tonne": 580,
+      "clinker_ratio": 0.73,
+      "thermal_energy_gj_per_tonne_clinker": 3.4,
+      "alt_fuel_rate_pct": 52
+    },
+    "china": {
+      "cement_intensity_kgCO2_per_tonne": 590,
+      "clinker_ratio": 0.58,
+      "thermal_energy_gj_per_tonne_clinker": 3.3,
+      "alt_fuel_rate_pct": 3
+    },
+    "india": {
+      "cement_intensity_kgCO2_per_tonne": 565,
+      "clinker_ratio": 0.70,
+      "thermal_energy_gj_per_tonne_clinker": 3.0,
+      "alt_fuel_rate_pct": 8
+    },
+    "north_america": {
+      "cement_intensity_kgCO2_per_tonne": 680,
+      "clinker_ratio": 0.90,
+      "thermal_energy_gj_per_tonne_clinker": 4.2,
+      "alt_fuel_rate_pct": 16
+    }
+  },
+  "emission_intensity_benchmarks": {
+    "global_average_2023": 610,
+    "best_available_technology": 520,
+    "sbti_2030_target": 469,
+    "net_zero_2050_target": 138,
+    "gcca_roadmap_2030": 520,
+    "gcca_roadmap_2050": 80
+  },
+  "total_factor_count": 48
+}

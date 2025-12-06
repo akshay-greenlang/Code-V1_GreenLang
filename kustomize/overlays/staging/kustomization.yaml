@@ -1,0 +1,46 @@
+# Staging Environment Overlay
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: greenlang-agents-staging
+
+namePrefix: staging-
+
+commonLabels:
+  environment: staging
+
+resources:
+  - ../../base
+
+patchesStrategicMerge:
+  - patches/deployment-patch.yaml
+
+configMapGenerator:
+  - name: greenlang-config
+    behavior: replace
+    literals:
+      - ENVIRONMENT=staging
+      - LOG_LEVEL=info
+      - LOG_FORMAT=json
+      - CACHE_TTL=1800
+      - MAX_CONCURRENT_REQUESTS=50
+
+replicas:
+  - name: fuel-analyzer
+    count: 2
+  - name: carbon-intensity
+    count: 2
+  - name: energy-performance
+    count: 2
+  - name: eudr-compliance
+    count: 3
+
+images:
+  - name: greenlang/fuel-analyzer
+    newTag: staging
+  - name: greenlang/carbon-intensity
+    newTag: staging
+  - name: greenlang/energy-performance
+    newTag: staging
+  - name: greenlang/eudr-compliance
+    newTag: staging

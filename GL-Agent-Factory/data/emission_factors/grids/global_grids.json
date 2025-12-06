@@ -1,0 +1,203 @@
+{
+  "metadata": {
+    "source": "IEA, UNFCCC, National Inventories, Ecoinvent",
+    "source_url": "https://www.iea.org/data-and-statistics/data-product/emissions-factors-2023",
+    "version": "2024",
+    "last_updated": "2024-03-01",
+    "units_note": "All factors in kgCO2e per kWh unless otherwise specified",
+    "scope": "Scope 2 - Indirect Emissions from Purchased Electricity",
+    "methodology": "Production-based average emission factors by country",
+    "gwp_basis": "AR5 100-year GWP values"
+  },
+  "global_average": {
+    "factor_id": "GLOBAL_GRID_2024_WORLD",
+    "name": "World Average",
+    "unit": "kWh",
+    "kgCO2e_per_unit": 0.436,
+    "gCO2e_per_kWh": 436,
+    "category": "Global Average",
+    "scope": "Scope 2",
+    "year": 2023,
+    "generation_mix": {
+      "coal_pct": 35.4,
+      "natural_gas_pct": 22.7,
+      "hydro_pct": 14.9,
+      "nuclear_pct": 9.2,
+      "wind_pct": 7.8,
+      "solar_pct": 4.5,
+      "oil_pct": 2.8,
+      "other_pct": 2.7
+    }
+  },
+  "regional_averages": {
+    "north_america": {
+      "factor_id": "GLOBAL_GRID_2024_NA",
+      "name": "North America",
+      "kgCO2e_per_unit": 0.362,
+      "category": "Regional Average"
+    },
+    "latin_america_caribbean": {
+      "factor_id": "GLOBAL_GRID_2024_LAC",
+      "name": "Latin America & Caribbean",
+      "kgCO2e_per_unit": 0.198,
+      "category": "Regional Average",
+      "notes": "High hydro share (Brazil, Paraguay)"
+    },
+    "europe": {
+      "factor_id": "GLOBAL_GRID_2024_EUR",
+      "name": "Europe (incl. non-EU)",
+      "kgCO2e_per_unit": 0.276,
+      "category": "Regional Average"
+    },
+    "africa": {
+      "factor_id": "GLOBAL_GRID_2024_AFR",
+      "name": "Africa",
+      "kgCO2e_per_unit": 0.489,
+      "category": "Regional Average"
+    },
+    "middle_east": {
+      "factor_id": "GLOBAL_GRID_2024_ME",
+      "name": "Middle East",
+      "kgCO2e_per_unit": 0.512,
+      "category": "Regional Average",
+      "notes": "Gas and oil dominated"
+    },
+    "asia_pacific": {
+      "factor_id": "GLOBAL_GRID_2024_APAC",
+      "name": "Asia Pacific",
+      "kgCO2e_per_unit": 0.523,
+      "category": "Regional Average",
+      "notes": "High coal (China, India, Indonesia)"
+    },
+    "oecd": {
+      "factor_id": "GLOBAL_GRID_2024_OECD",
+      "name": "OECD Countries",
+      "kgCO2e_per_unit": 0.342,
+      "category": "Regional Average"
+    },
+    "non_oecd": {
+      "factor_id": "GLOBAL_GRID_2024_NON_OECD",
+      "name": "Non-OECD Countries",
+      "kgCO2e_per_unit": 0.512,
+      "category": "Regional Average"
+    }
+  },
+  "countries": {
+    "AF": {"factor_id": "GLOBAL_GRID_2024_AF", "name": "Afghanistan", "kgCO2e_per_unit": 0.234, "gCO2e_per_kWh": 234, "notes": "Hydro and imports"},
+    "DZ": {"factor_id": "GLOBAL_GRID_2024_DZ", "name": "Algeria", "kgCO2e_per_unit": 0.498, "gCO2e_per_kWh": 498, "notes": "Gas dominated"},
+    "AO": {"factor_id": "GLOBAL_GRID_2024_AO", "name": "Angola", "kgCO2e_per_unit": 0.234, "gCO2e_per_kWh": 234, "notes": "Hydro"},
+    "AR": {"factor_id": "GLOBAL_GRID_2024_AR", "name": "Argentina", "kgCO2e_per_unit": 0.367, "gCO2e_per_kWh": 367},
+    "AM": {"factor_id": "GLOBAL_GRID_2024_AM", "name": "Armenia", "kgCO2e_per_unit": 0.167, "gCO2e_per_kWh": 167, "notes": "Nuclear and hydro"},
+    "AU": {"factor_id": "GLOBAL_GRID_2024_AU", "name": "Australia", "kgCO2e_per_unit": 0.656, "gCO2e_per_kWh": 656, "notes": "Coal dominated"},
+    "AZ": {"factor_id": "GLOBAL_GRID_2024_AZ", "name": "Azerbaijan", "kgCO2e_per_unit": 0.489, "gCO2e_per_kWh": 489, "notes": "Gas"},
+    "BD": {"factor_id": "GLOBAL_GRID_2024_BD", "name": "Bangladesh", "kgCO2e_per_unit": 0.523, "gCO2e_per_kWh": 523, "notes": "Gas and coal"},
+    "BY": {"factor_id": "GLOBAL_GRID_2024_BY", "name": "Belarus", "kgCO2e_per_unit": 0.378, "gCO2e_per_kWh": 378},
+    "BR": {"factor_id": "GLOBAL_GRID_2024_BR", "name": "Brazil", "kgCO2e_per_unit": 0.089, "gCO2e_per_kWh": 89, "notes": "80%+ hydro - among lowest globally"},
+    "CA": {"factor_id": "GLOBAL_GRID_2024_CA", "name": "Canada", "kgCO2e_per_unit": 0.134, "gCO2e_per_kWh": 134, "notes": "Hydro and nuclear"},
+    "CL": {"factor_id": "GLOBAL_GRID_2024_CL", "name": "Chile", "kgCO2e_per_unit": 0.389, "gCO2e_per_kWh": 389, "notes": "Growing solar"},
+    "CN": {"factor_id": "GLOBAL_GRID_2024_CN", "name": "China", "kgCO2e_per_unit": 0.555, "gCO2e_per_kWh": 555, "notes": "World's largest emitter; 60% coal"},
+    "CO": {"factor_id": "GLOBAL_GRID_2024_CO", "name": "Colombia", "kgCO2e_per_unit": 0.167, "gCO2e_per_kWh": 167, "notes": "High hydro"},
+    "CR": {"factor_id": "GLOBAL_GRID_2024_CR", "name": "Costa Rica", "kgCO2e_per_unit": 0.023, "gCO2e_per_kWh": 23, "notes": "98%+ renewable - hydro, geothermal, wind"},
+    "EG": {"factor_id": "GLOBAL_GRID_2024_EG", "name": "Egypt", "kgCO2e_per_unit": 0.456, "gCO2e_per_kWh": 456, "notes": "Gas dominated"},
+    "ET": {"factor_id": "GLOBAL_GRID_2024_ET", "name": "Ethiopia", "kgCO2e_per_unit": 0.023, "gCO2e_per_kWh": 23, "notes": "Nearly 100% hydro"},
+    "GH": {"factor_id": "GLOBAL_GRID_2024_GH", "name": "Ghana", "kgCO2e_per_unit": 0.312, "gCO2e_per_kWh": 312},
+    "HK": {"factor_id": "GLOBAL_GRID_2024_HK", "name": "Hong Kong", "kgCO2e_per_unit": 0.712, "gCO2e_per_kWh": 712, "notes": "Coal and gas"},
+    "IN": {"factor_id": "GLOBAL_GRID_2024_IN", "name": "India", "kgCO2e_per_unit": 0.708, "gCO2e_per_kWh": 708, "notes": "70% coal; world's 3rd largest emitter"},
+    "ID": {"factor_id": "GLOBAL_GRID_2024_ID", "name": "Indonesia", "kgCO2e_per_unit": 0.756, "gCO2e_per_kWh": 756, "notes": "High coal dependency"},
+    "IR": {"factor_id": "GLOBAL_GRID_2024_IR", "name": "Iran", "kgCO2e_per_unit": 0.512, "gCO2e_per_kWh": 512, "notes": "Gas dominated"},
+    "IQ": {"factor_id": "GLOBAL_GRID_2024_IQ", "name": "Iraq", "kgCO2e_per_unit": 0.678, "gCO2e_per_kWh": 678, "notes": "Oil and gas"},
+    "IL": {"factor_id": "GLOBAL_GRID_2024_IL", "name": "Israel", "kgCO2e_per_unit": 0.456, "gCO2e_per_kWh": 456, "notes": "Gas and coal"},
+    "JP": {"factor_id": "GLOBAL_GRID_2024_JP", "name": "Japan", "kgCO2e_per_unit": 0.478, "gCO2e_per_kWh": 478, "notes": "Post-Fukushima fossil increase"},
+    "JO": {"factor_id": "GLOBAL_GRID_2024_JO", "name": "Jordan", "kgCO2e_per_unit": 0.489, "gCO2e_per_kWh": 489},
+    "KZ": {"factor_id": "GLOBAL_GRID_2024_KZ", "name": "Kazakhstan", "kgCO2e_per_unit": 0.678, "gCO2e_per_kWh": 678, "notes": "Coal dominated"},
+    "KE": {"factor_id": "GLOBAL_GRID_2024_KE", "name": "Kenya", "kgCO2e_per_unit": 0.134, "gCO2e_per_kWh": 134, "notes": "Geothermal and hydro"},
+    "KR": {"factor_id": "GLOBAL_GRID_2024_KR", "name": "South Korea", "kgCO2e_per_unit": 0.456, "gCO2e_per_kWh": 456, "notes": "Coal, gas, nuclear"},
+    "KW": {"factor_id": "GLOBAL_GRID_2024_KW", "name": "Kuwait", "kgCO2e_per_unit": 0.623, "gCO2e_per_kWh": 623, "notes": "Oil and gas"},
+    "MY": {"factor_id": "GLOBAL_GRID_2024_MY", "name": "Malaysia", "kgCO2e_per_unit": 0.589, "gCO2e_per_kWh": 589, "notes": "Coal and gas"},
+    "MX": {"factor_id": "GLOBAL_GRID_2024_MX", "name": "Mexico", "kgCO2e_per_unit": 0.423, "gCO2e_per_kWh": 423},
+    "MA": {"factor_id": "GLOBAL_GRID_2024_MA", "name": "Morocco", "kgCO2e_per_unit": 0.589, "gCO2e_per_kWh": 589, "notes": "Coal imports; growing renewables"},
+    "MZ": {"factor_id": "GLOBAL_GRID_2024_MZ", "name": "Mozambique", "kgCO2e_per_unit": 0.056, "gCO2e_per_kWh": 56, "notes": "Large hydro (Cahora Bassa)"},
+    "MM": {"factor_id": "GLOBAL_GRID_2024_MM", "name": "Myanmar", "kgCO2e_per_unit": 0.378, "gCO2e_per_kWh": 378},
+    "NP": {"factor_id": "GLOBAL_GRID_2024_NP", "name": "Nepal", "kgCO2e_per_unit": 0.012, "gCO2e_per_kWh": 12, "notes": "Nearly 100% hydro"},
+    "NZ": {"factor_id": "GLOBAL_GRID_2024_NZ", "name": "New Zealand", "kgCO2e_per_unit": 0.098, "gCO2e_per_kWh": 98, "notes": "Hydro, geothermal, wind"},
+    "NG": {"factor_id": "GLOBAL_GRID_2024_NG", "name": "Nigeria", "kgCO2e_per_unit": 0.412, "gCO2e_per_kWh": 412, "notes": "Gas"},
+    "PK": {"factor_id": "GLOBAL_GRID_2024_PK", "name": "Pakistan", "kgCO2e_per_unit": 0.423, "gCO2e_per_kWh": 423},
+    "PA": {"factor_id": "GLOBAL_GRID_2024_PA", "name": "Panama", "kgCO2e_per_unit": 0.234, "gCO2e_per_kWh": 234},
+    "PY": {"factor_id": "GLOBAL_GRID_2024_PY", "name": "Paraguay", "kgCO2e_per_unit": 0.000, "gCO2e_per_kWh": 0, "notes": "100% hydro - zero grid emissions"},
+    "PE": {"factor_id": "GLOBAL_GRID_2024_PE", "name": "Peru", "kgCO2e_per_unit": 0.234, "gCO2e_per_kWh": 234, "notes": "Hydro and gas"},
+    "PH": {"factor_id": "GLOBAL_GRID_2024_PH", "name": "Philippines", "kgCO2e_per_unit": 0.578, "gCO2e_per_kWh": 578},
+    "QA": {"factor_id": "GLOBAL_GRID_2024_QA", "name": "Qatar", "kgCO2e_per_unit": 0.489, "gCO2e_per_kWh": 489, "notes": "100% gas"},
+    "RU": {"factor_id": "GLOBAL_GRID_2024_RU", "name": "Russia", "kgCO2e_per_unit": 0.378, "gCO2e_per_kWh": 378, "notes": "Gas, nuclear, hydro"},
+    "SA": {"factor_id": "GLOBAL_GRID_2024_SA", "name": "Saudi Arabia", "kgCO2e_per_unit": 0.623, "gCO2e_per_kWh": 623, "notes": "Oil and gas"},
+    "SN": {"factor_id": "GLOBAL_GRID_2024_SN", "name": "Senegal", "kgCO2e_per_unit": 0.623, "gCO2e_per_kWh": 623},
+    "SG": {"factor_id": "GLOBAL_GRID_2024_SG", "name": "Singapore", "kgCO2e_per_unit": 0.412, "gCO2e_per_kWh": 412, "notes": "95%+ gas"},
+    "ZA": {"factor_id": "GLOBAL_GRID_2024_ZA", "name": "South Africa", "kgCO2e_per_unit": 0.889, "gCO2e_per_kWh": 889, "notes": "90%+ coal - among highest globally"},
+    "LK": {"factor_id": "GLOBAL_GRID_2024_LK", "name": "Sri Lanka", "kgCO2e_per_unit": 0.456, "gCO2e_per_kWh": 456},
+    "TW": {"factor_id": "GLOBAL_GRID_2024_TW", "name": "Taiwan", "kgCO2e_per_unit": 0.502, "gCO2e_per_kWh": 502, "notes": "Coal and gas"},
+    "TZ": {"factor_id": "GLOBAL_GRID_2024_TZ", "name": "Tanzania", "kgCO2e_per_unit": 0.312, "gCO2e_per_kWh": 312},
+    "TH": {"factor_id": "GLOBAL_GRID_2024_TH", "name": "Thailand", "kgCO2e_per_unit": 0.489, "gCO2e_per_kWh": 489},
+    "TN": {"factor_id": "GLOBAL_GRID_2024_TN", "name": "Tunisia", "kgCO2e_per_unit": 0.456, "gCO2e_per_kWh": 456},
+    "AE": {"factor_id": "GLOBAL_GRID_2024_AE", "name": "United Arab Emirates", "kgCO2e_per_unit": 0.456, "gCO2e_per_kWh": 456, "notes": "Gas; Barakah nuclear coming online"},
+    "US": {"factor_id": "GLOBAL_GRID_2024_US", "name": "United States", "kgCO2e_per_unit": 0.386, "gCO2e_per_kWh": 386, "notes": "See us_grids.json for state detail"},
+    "UY": {"factor_id": "GLOBAL_GRID_2024_UY", "name": "Uruguay", "kgCO2e_per_unit": 0.034, "gCO2e_per_kWh": 34, "notes": "95%+ renewable (hydro, wind)"},
+    "UZ": {"factor_id": "GLOBAL_GRID_2024_UZ", "name": "Uzbekistan", "kgCO2e_per_unit": 0.489, "gCO2e_per_kWh": 489, "notes": "Gas"},
+    "VE": {"factor_id": "GLOBAL_GRID_2024_VE", "name": "Venezuela", "kgCO2e_per_unit": 0.178, "gCO2e_per_kWh": 178, "notes": "Guri Dam hydro"},
+    "VN": {"factor_id": "GLOBAL_GRID_2024_VN", "name": "Vietnam", "kgCO2e_per_unit": 0.523, "gCO2e_per_kWh": 523, "notes": "Coal growth"},
+    "ZM": {"factor_id": "GLOBAL_GRID_2024_ZM", "name": "Zambia", "kgCO2e_per_unit": 0.012, "gCO2e_per_kWh": 12, "notes": "Kariba Dam hydro"},
+    "ZW": {"factor_id": "GLOBAL_GRID_2024_ZW", "name": "Zimbabwe", "kgCO2e_per_unit": 0.534, "gCO2e_per_kWh": 534}
+  },
+  "cleanest_grids": {
+    "description": "Countries with lowest grid emission intensities",
+    "ranking": [
+      {"rank": 1, "country": "Paraguay", "kgCO2e_per_unit": 0.000, "notes": "100% hydro"},
+      {"rank": 2, "country": "Norway", "kgCO2e_per_unit": 0.008, "notes": "98% hydro"},
+      {"rank": 3, "country": "Iceland", "kgCO2e_per_unit": 0.012, "notes": "Hydro + geothermal"},
+      {"rank": 4, "country": "Nepal", "kgCO2e_per_unit": 0.012, "notes": "Hydro"},
+      {"rank": 5, "country": "Zambia", "kgCO2e_per_unit": 0.012, "notes": "Hydro"},
+      {"rank": 6, "country": "Sweden", "kgCO2e_per_unit": 0.023, "notes": "Nuclear + hydro"},
+      {"rank": 7, "country": "Costa Rica", "kgCO2e_per_unit": 0.023, "notes": "Renewable mix"},
+      {"rank": 8, "country": "Ethiopia", "kgCO2e_per_unit": 0.023, "notes": "Hydro"},
+      {"rank": 9, "country": "Switzerland", "kgCO2e_per_unit": 0.024, "notes": "Hydro + nuclear"},
+      {"rank": 10, "country": "Uruguay", "kgCO2e_per_unit": 0.034, "notes": "Wind + hydro"}
+    ]
+  },
+  "highest_emission_grids": {
+    "description": "Countries with highest grid emission intensities",
+    "ranking": [
+      {"rank": 1, "country": "South Africa", "kgCO2e_per_unit": 0.889, "notes": "Coal (Eskom)"},
+      {"rank": 2, "country": "Kosovo", "kgCO2e_per_unit": 0.812, "notes": "Lignite"},
+      {"rank": 3, "country": "Indonesia", "kgCO2e_per_unit": 0.756, "notes": "Coal"},
+      {"rank": 4, "country": "Bosnia", "kgCO2e_per_unit": 0.723, "notes": "Coal"},
+      {"rank": 5, "country": "Hong Kong", "kgCO2e_per_unit": 0.712, "notes": "Coal + gas"},
+      {"rank": 6, "country": "India", "kgCO2e_per_unit": 0.708, "notes": "Coal"},
+      {"rank": 7, "country": "Poland", "kgCO2e_per_unit": 0.689, "notes": "Coal"},
+      {"rank": 8, "country": "Serbia", "kgCO2e_per_unit": 0.689, "notes": "Lignite"},
+      {"rank": 9, "country": "Kazakhstan", "kgCO2e_per_unit": 0.678, "notes": "Coal"},
+      {"rank": 10, "country": "Australia", "kgCO2e_per_unit": 0.656, "notes": "Coal"}
+    ]
+  },
+  "china_regional_grids": {
+    "north": {"kgCO2e_per_unit": 0.689, "notes": "Coal dominated"},
+    "northeast": {"kgCO2e_per_unit": 0.712, "notes": "Coal and wind"},
+    "east": {"kgCO2e_per_unit": 0.534, "notes": "Mixed; includes nuclear"},
+    "central": {"kgCO2e_per_unit": 0.623, "notes": "Coal and hydro"},
+    "northwest": {"kgCO2e_per_unit": 0.678, "notes": "Coal; growing solar"},
+    "south": {"kgCO2e_per_unit": 0.512, "notes": "Hydro and nuclear"},
+    "national_average": {"kgCO2e_per_unit": 0.555}
+  },
+  "india_regional_grids": {
+    "northern": {"kgCO2e_per_unit": 0.756, "notes": "Coal dominated"},
+    "western": {"kgCO2e_per_unit": 0.689, "notes": "Coal and gas"},
+    "southern": {"kgCO2e_per_unit": 0.623, "notes": "More renewable"},
+    "eastern": {"kgCO2e_per_unit": 0.812, "notes": "Highest coal"},
+    "northeastern": {"kgCO2e_per_unit": 0.423, "notes": "More hydro"},
+    "national_average": {"kgCO2e_per_unit": 0.708}
+  },
+  "projections_global": {
+    "2025": {"world_average_kgCO2e": 0.412},
+    "2030": {"world_average_kgCO2e": 0.356, "notes": "NDC implementation"},
+    "2040": {"world_average_kgCO2e": 0.234, "notes": "1.5C pathway"},
+    "2050": {"world_average_kgCO2e": 0.089, "notes": "Net-zero pathway"}
+  },
+  "total_factor_count": 78
+}

@@ -1,0 +1,119 @@
+{{- if .Values.alertRules.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "greenlang-monitoring.fullname" . }}-alerts
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-monitoring.labels" . | nindent 4 }}
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+    {{- range .Values.alertRules.rules }}
+    - name: {{ .name }}
+      rules:
+        {{- range .rules }}
+        - alert: {{ .alert }}
+          expr: {{ .expr }}
+          for: {{ .for }}
+          labels:
+            {{- toYaml .labels | nindent 12 }}
+          annotations:
+            {{- toYaml .annotations | nindent 12 }}
+        {{- end }}
+    {{- end }}
+---
+# Recording Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "greenlang-monitoring.fullname" . }}-recording
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-monitoring.labels" . | nindent 4 }}
+    prometheus: kube-prometheus
+    role: recording-rules
+spec:
+  groups:
+    - name: greenlang.api.recording
+      interval: 30s
+      rules:
+        - record: greenlang:api:request_rate:5m
+          expr: sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m])) by (method, path, status)
+
+        - record: greenlang:api:total_request_rate:5m
+          expr: sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m]))
+
+        - record: greenlang:api:error_rate:5m
+          expr: |
+            sum(rate(http_requests_total{job="greenlang-api-gateway",status=~"5.."}[5m])) /
+            sum(rate(http_requests_total{job="greenlang-api-gateway"}[5m])) * 100
+
+        - record: greenlang:api:latency_p95:5m
+          expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le))
+
+        - record: greenlang:api:latency_p99:5m
+          expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="greenlang-api-gateway"}[5m])) by (le))
+
+    - name: greenlang.eudr.recording
+      interval: 30s
+      rules:
+        - record: greenlang:eudr:request_rate:5m
+          expr: sum(rate(eudr_requests_total[5m]))
+
+        - record: greenlang:eudr:error_rate:5m
+          expr: |
+            sum(rate(eudr_requests_total{status=~"5.."}[5m])) /
+            sum(rate(eudr_requests_total[5m])) * 100
+
+        - record: greenlang:eudr:latency_p95:5m
+          expr: histogram_quantile(0.95, sum(rate(eudr_request_duration_seconds_bucket[5m])) by (le))
+
+        - record: greenlang:eudr:compliance_success_rate:5m
+          expr: |
+            sum(rate(eudr_compliance_checks_total{result="pass"}[5m])) /
+            sum(rate(eudr_compliance_checks_total[5m])) * 100
+
+    - name: greenlang.cbam.recording
+      interval: 30s
+      rules:
+        - record: greenlang:cbam:request_rate:5m
+          expr: sum(rate(cbam_requests_total[5m]))
+
+        - record: greenlang:cbam:calculations_per_minute:5m
+          expr: sum(rate(cbam_calculations_total[5m])) * 60
+
+        - record: greenlang:cbam:error_rate:5m
+          expr: |
+            sum(rate(cbam_requests_total{status=~"5.."}[5m])) /
+            sum(rate(cbam_requests_total[5m])) * 100
+
+    - name: greenlang.slo.recording
+      interval: 30s
+      rules:
+        - record: greenlang:slo:api_availability_30d
+          expr: |
+            sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[30d])) /
+            sum(rate(http_requests_total{job="greenlang-api-gateway"}[30d]))
+
+        - record: greenlang:slo:eudr_availability_30d
+          expr: |
+            sum(rate(eudr_requests_total{status!~"5.."}[30d])) /
+            sum(rate(eudr_requests_total[30d]))
+
+        - record: greenlang:slo:api_error_budget_remaining
+          expr: |
+            1 - (
+              (1 - greenlang:slo:api_availability_30d) / (1 - 0.9995)
+            )
+
+        - record: greenlang:slo:api_burn_rate_1h
+          expr: |
+            (
+              1 - (
+                sum(rate(http_requests_total{job="greenlang-api-gateway",status!~"5.."}[1h])) /
+                sum(rate(http_requests_total{job="greenlang-api-gateway"}[1h]))
+              )
+            ) / (1 - 0.9995)
+{{- end }}

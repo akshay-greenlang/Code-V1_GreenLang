@@ -1,0 +1,94 @@
+{{- if .Values.ingress.enabled -}}
+{{/*
+cert-manager Certificate for TLS
+*/}}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-tls
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+spec:
+  secretName: {{ .Values.ingress.tlsSecretName | default (printf "%s-tls" (include "greenlang-agents.fullname" .)) }}
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days before expiry
+  isCA: false
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+    rotationPolicy: Always
+  usages:
+    - server auth
+    - client auth
+  dnsNames:
+    {{- range .Values.ingress.hosts }}
+    - {{ .host | quote }}
+    {{- end }}
+    # Additional SANs for internal services
+    - {{ include "greenlang-agents.fullname" . }}-api-gateway.{{ include "greenlang-agents.namespace" . }}.svc.cluster.local
+    - {{ include "greenlang-agents.fullname" . }}-api-gateway.{{ include "greenlang-agents.namespace" . }}.svc
+  issuerRef:
+    name: {{ .Values.ingress.clusterIssuer | default "letsencrypt-prod" }}
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+{{/*
+ClusterIssuer for Let's Encrypt (if not exists)
+*/}}
+{{- if .Values.certManager.createIssuer }}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.ingress.clusterIssuer | default "letsencrypt-prod" }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+spec:
+  acme:
+    # Production Let's Encrypt server
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: {{ .Values.certManager.email | default "devops@greenlang.io" }}
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      # HTTP01 challenge solver using ingress
+      - http01:
+          ingress:
+            class: {{ .Values.ingress.className | default "nginx" }}
+            podTemplate:
+              spec:
+                nodeSelector:
+                  "kubernetes.io/os": linux
+      # DNS01 challenge solver for wildcard certificates (optional)
+      {{- if .Values.certManager.dns01 }}
+      - dns01:
+          route53:
+            region: {{ .Values.certManager.dns01.route53Region | default "us-east-1" }}
+            hostedZoneID: {{ .Values.certManager.dns01.hostedZoneID }}
+        selector:
+          dnsZones:
+            - {{ .Values.certManager.dns01.dnsZone | default "greenlang.io" }}
+      {{- end }}
+---
+{{/*
+Staging issuer for testing
+*/}}
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: {{ .Values.certManager.email | default "devops@greenlang.io" }}
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: {{ .Values.ingress.className | default "nginx" }}
+{{- end }}
+{{- end }}

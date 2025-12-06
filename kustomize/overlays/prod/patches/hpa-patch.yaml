@@ -1,0 +1,46 @@
+# Production HPA with higher limits
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: fuel-analyzer
+spec:
+  minReplicas: 3
+  maxReplicas: 15
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: carbon-intensity
+spec:
+  minReplicas: 3
+  maxReplicas: 15
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: energy-performance
+spec:
+  minReplicas: 3
+  maxReplicas: 15
+---
+# EUDR Compliance - Aggressive scaling
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: eudr-compliance
+spec:
+  minReplicas: 5
+  maxReplicas: 25
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 60
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70

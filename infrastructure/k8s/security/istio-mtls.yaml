@@ -1,0 +1,162 @@
+# GreenLang Istio mTLS Configuration
+# TASK-151: Configure Istio mTLS (STRICT mode)
+# Ensures all service-to-service communication is encrypted
+---
+# Namespace-wide STRICT mTLS for greenlang-agents
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: greenlang-mtls-strict
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/component: mtls
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Global STRICT mTLS for istio-system (mesh-wide)
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default-mtls-strict
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/component: mtls
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# Destination Rule for mTLS to all greenlang services
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: greenlang-mtls-destination
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/component: mtls
+spec:
+  host: "*.greenlang-agents.svc.cluster.local"
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 10s
+      http:
+        h2UpgradePolicy: UPGRADE
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 1000
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+
+---
+# Authorization Policy - Deny all by default
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all-default
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/component: authz
+spec:
+  {}  # Empty spec = deny all
+
+---
+# Authorization Policy - Allow internal greenlang communication
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-greenlang-internal
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/component: authz
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["greenlang-agents"]
+            principals: ["cluster.local/ns/greenlang-agents/sa/*"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+---
+# Authorization Policy - Allow ingress traffic
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-ingress
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/component: authz
+spec:
+  action: ALLOW
+  selector:
+    matchLabels:
+      app: greenlang-api
+  rules:
+    - from:
+        - source:
+            namespaces: ["istio-system"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+            paths: ["/api/*", "/health", "/ready", "/metrics"]
+
+---
+# Authorization Policy - Allow Prometheus scraping
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-prometheus
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/component: authz
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/metrics", "/health", "/ready"]
+
+---
+# Request Authentication for JWT validation
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: greenlang-jwt-auth
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/part-of: greenlang
+    security.greenlang.io/component: authn
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+  jwtRules:
+    - issuer: "https://auth.greenlang.io/realms/greenlang"
+      jwksUri: "https://auth.greenlang.io/realms/greenlang/protocol/openid-connect/certs"
+      audiences:
+        - "greenlang-api"
+      forwardOriginalToken: true
+      fromHeaders:
+        - name: Authorization
+          prefix: "Bearer "

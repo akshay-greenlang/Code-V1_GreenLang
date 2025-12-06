@@ -1,0 +1,231 @@
+# GreenLang Alertmanager Deployment
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alertmanager-secrets
+  namespace: monitoring
+  labels:
+    app: alertmanager
+type: Opaque
+stringData:
+  slack-webhook-url: "{{ SLACK_WEBHOOK_URL }}"
+  pagerduty-service-key-critical: "{{ PAGERDUTY_SERVICE_KEY_CRITICAL }}"
+  pagerduty-service-key-slo: "{{ PAGERDUTY_SERVICE_KEY_SLO }}"
+  pagerduty-service-key-security: "{{ PAGERDUTY_SERVICE_KEY_SECURITY }}"
+  smtp-password: "{{ SMTP_PASSWORD }}"
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: monitoring
+  labels:
+    app: alertmanager
+data:
+  alertmanager.yml: |
+    global:
+      smtp_smarthost: 'smtp.sendgrid.net:587'
+      smtp_from: 'alerts@greenlang.io'
+      smtp_require_tls: true
+      resolve_timeout: 5m
+
+    templates:
+      - '/etc/alertmanager/templates/*.tmpl'
+
+    inhibit_rules:
+      - source_matchers:
+          - severity = critical
+        target_matchers:
+          - severity = warning
+        equal: ['service', 'alertname']
+
+    route:
+      receiver: 'slack-warnings'
+      group_by: ['alertname', 'service', 'namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+      routes:
+        - matchers:
+            - severity = critical
+          receiver: 'pagerduty-critical'
+          group_wait: 10s
+          continue: true
+        - matchers:
+            - severity = critical
+          receiver: 'slack-critical'
+        - matchers:
+            - severity = warning
+          receiver: 'slack-warnings'
+
+    receivers:
+      - name: 'slack-warnings'
+        slack_configs:
+          - channel: '#greenlang-alerts-warnings'
+            send_resolved: true
+      - name: 'slack-critical'
+        slack_configs:
+          - channel: '#greenlang-alerts-critical'
+            send_resolved: true
+      - name: 'pagerduty-critical'
+        pagerduty_configs:
+          - severity: critical
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-templates
+  namespace: monitoring
+  labels:
+    app: alertmanager
+data:
+  slack.tmpl: |
+    {{ define "slack.greenlang.title" }}
+    [{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}
+    {{ end }}
+
+    {{ define "slack.greenlang.text" }}
+    {{ range .Alerts }}
+    *Alert:* {{ .Annotations.summary }}
+    *Description:* {{ .Annotations.description }}
+    *Severity:* {{ .Labels.severity }}
+    {{ end }}
+    {{ end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: monitoring
+  labels:
+    app: alertmanager
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/component: alerting
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+        app.kubernetes.io/name: alertmanager
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9093"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        fsGroup: 65534
+
+      containers:
+        - name: alertmanager
+          image: prom/alertmanager:v0.26.0
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - "--config.file=/etc/alertmanager/alertmanager.yml"
+            - "--storage.path=/alertmanager"
+            - "--web.external-url=https://alertmanager.greenlang.io"
+            - "--cluster.listen-address="
+
+          env:
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: alertmanager-secrets
+                  key: slack-webhook-url
+            - name: PAGERDUTY_SERVICE_KEY_CRITICAL
+              valueFrom:
+                secretKeyRef:
+                  name: alertmanager-secrets
+                  key: pagerduty-service-key-critical
+
+          ports:
+            - name: http
+              containerPort: 9093
+              protocol: TCP
+            - name: cluster
+              containerPort: 9094
+              protocol: TCP
+
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
+
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9093
+            initialDelaySeconds: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9093
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          volumeMounts:
+            - name: alertmanager-config
+              mountPath: /etc/alertmanager/alertmanager.yml
+              subPath: alertmanager.yml
+            - name: alertmanager-templates
+              mountPath: /etc/alertmanager/templates
+            - name: alertmanager-data
+              mountPath: /alertmanager
+
+      volumes:
+        - name: alertmanager-config
+          configMap:
+            name: alertmanager-config
+        - name: alertmanager-templates
+          configMap:
+            name: alertmanager-templates
+        - name: alertmanager-data
+          persistentVolumeClaim:
+            claimName: alertmanager-data
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: alertmanager-data
+  namespace: monitoring
+  labels:
+    app: alertmanager
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: alertmanager
+  namespace: monitoring
+  labels:
+    app: alertmanager
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 9093
+      targetPort: 9093
+      protocol: TCP
+  selector:
+    app: alertmanager

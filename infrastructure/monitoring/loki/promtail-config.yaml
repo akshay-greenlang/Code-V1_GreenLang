@@ -1,0 +1,316 @@
+# GreenLang Promtail Configuration
+# Log collection agent for Kubernetes
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+  log_level: info
+
+# Positions file to track log reading progress
+positions:
+  filename: /tmp/positions.yaml
+
+# Loki client configuration
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    tenant_id: greenlang
+    batchwait: 1s
+    batchsize: 1048576  # 1MB
+    timeout: 10s
+    backoff_config:
+      min_period: 500ms
+      max_period: 5m
+      max_retries: 10
+    external_labels:
+      cluster: greenlang-production
+      environment: production
+
+# Scrape configurations
+scrape_configs:
+  # Kubernetes pod logs
+  - job_name: kubernetes-pods
+    kubernetes_sd_configs:
+      - role: pod
+    pipeline_stages:
+      # Parse JSON logs
+      - cri: {}
+      - json:
+          expressions:
+            level: level
+            message: msg
+            timestamp: time
+            trace_id: trace_id
+            span_id: span_id
+            service: service
+            tenant_id: tenant_id
+            request_id: request_id
+      # Add extracted labels
+      - labels:
+          level:
+          service:
+          trace_id:
+          span_id:
+          tenant_id:
+          request_id:
+      # Set timestamp from log
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+      # Output parsed message
+      - output:
+          source: message
+      # Add metrics for log levels
+      - metrics:
+          log_lines_total:
+            type: Counter
+            description: "Total number of log lines"
+            source: level
+            config:
+              match_all: true
+              action: inc
+          log_errors_total:
+            type: Counter
+            description: "Total number of error logs"
+            source: level
+            config:
+              value: error
+              action: inc
+
+    relabel_configs:
+      # Only scrape pods in greenlang namespace
+      - source_labels: [__meta_kubernetes_namespace]
+        action: keep
+        regex: greenlang
+
+      # Get pod name
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+
+      # Get namespace
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+
+      # Get container name
+      - source_labels: [__meta_kubernetes_pod_container_name]
+        target_label: container
+
+      # Get node name
+      - source_labels: [__meta_kubernetes_pod_node_name]
+        target_label: node
+
+      # Get app label
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        target_label: app
+
+      # Get service label
+      - source_labels: [__meta_kubernetes_pod_label_service]
+        target_label: service
+
+      # Get version label
+      - source_labels: [__meta_kubernetes_pod_label_version]
+        target_label: version
+
+      # Set the log path
+      - replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_uid
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+
+  # EUDR Agent specific configuration
+  - job_name: eudr-agent
+    kubernetes_sd_configs:
+      - role: pod
+    pipeline_stages:
+      - cri: {}
+      - json:
+          expressions:
+            level: level
+            message: msg
+            compliance_check_id: compliance_check_id
+            geolocation: geolocation
+            deforestation_risk: deforestation_risk
+            dds_id: dds_id
+      - labels:
+          level:
+          compliance_check_id:
+          deforestation_risk:
+      - output:
+          source: message
+
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace]
+        action: keep
+        regex: greenlang
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: eudr-agent
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_uid
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+
+  # CBAM Agent specific configuration
+  - job_name: cbam-agent
+    kubernetes_sd_configs:
+      - role: pod
+    pipeline_stages:
+      - cri: {}
+      - json:
+          expressions:
+            level: level
+            message: msg
+            calculation_id: calculation_id
+            product_category: product_category
+            embedded_emissions: embedded_emissions
+            report_id: report_id
+      - labels:
+          level:
+          calculation_id:
+          product_category:
+      - output:
+          source: message
+
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace]
+        action: keep
+        regex: greenlang
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: cbam-agent
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_uid
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+
+  # API Gateway access logs
+  - job_name: api-gateway
+    kubernetes_sd_configs:
+      - role: pod
+    pipeline_stages:
+      - cri: {}
+      - json:
+          expressions:
+            level: level
+            message: msg
+            method: method
+            path: path
+            status: status
+            duration_ms: duration_ms
+            tenant_id: tenant_id
+            request_id: request_id
+            user_agent: user_agent
+            client_ip: client_ip
+      - labels:
+          level:
+          method:
+          status:
+          tenant_id:
+      - output:
+          source: message
+      # Create metrics from access logs
+      - metrics:
+          api_requests_logged_total:
+            type: Counter
+            description: "Total API requests logged"
+            config:
+              match_all: true
+              action: inc
+          api_request_duration_ms:
+            type: Histogram
+            description: "API request duration in milliseconds"
+            source: duration_ms
+            config:
+              buckets: [10, 50, 100, 250, 500, 1000, 2500, 5000]
+
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace]
+        action: keep
+        regex: greenlang
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: api-gateway
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_uid
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+
+  # Audit logs (special handling for compliance)
+  - job_name: audit-logs
+    kubernetes_sd_configs:
+      - role: pod
+    pipeline_stages:
+      - cri: {}
+      - json:
+          expressions:
+            level: level
+            message: msg
+            audit_action: audit_action
+            audit_resource: audit_resource
+            audit_user: audit_user
+            audit_tenant: audit_tenant
+            audit_result: audit_result
+      - labels:
+          audit_action:
+          audit_resource:
+          audit_user:
+          audit_tenant:
+          audit_result:
+      # Mark as audit log for extended retention
+      - static_labels:
+          audit: "true"
+      - output:
+          source: message
+
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace]
+        action: keep
+        regex: greenlang
+      - source_labels: [__meta_kubernetes_pod_annotation_greenlang_io_audit_logs]
+        action: keep
+        regex: "true"
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: pod
+      - source_labels: [__meta_kubernetes_namespace]
+        target_label: namespace
+      - replacement: /var/log/pods/*$1/*.log
+        separator: /
+        source_labels:
+          - __meta_kubernetes_pod_uid
+          - __meta_kubernetes_pod_container_name
+        target_label: __path__
+
+  # System logs
+  - job_name: systemd-journal
+    journal:
+      max_age: 12h
+      labels:
+        job: systemd-journal
+    relabel_configs:
+      - source_labels: ['__journal__systemd_unit']
+        target_label: 'unit'
+      - source_labels: ['__journal__hostname']
+        target_label: 'hostname'
+
+# Target configuration for service discovery
+target_config:
+  sync_period: 10s

@@ -1,0 +1,52 @@
+apiVersion: v2
+name: greenlang-monitoring
+description: Complete monitoring and observability stack for GreenLang carbon accounting platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+keywords:
+  - monitoring
+  - observability
+  - prometheus
+  - grafana
+  - loki
+  - jaeger
+  - alertmanager
+
+home: https://github.com/greenlang/greenlang-monitoring
+sources:
+  - https://github.com/greenlang/greenlang-monitoring
+
+maintainers:
+  - name: GreenLang DevOps Team
+    email: devops@greenlang.io
+
+dependencies:
+  - name: prometheus
+    version: "25.0.0"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: prometheus.enabled
+
+  - name: grafana
+    version: "7.0.0"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: grafana.enabled
+
+  - name: loki-stack
+    version: "2.9.0"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: loki.enabled
+    alias: loki
+
+  - name: jaeger
+    version: "0.71.0"
+    repository: "https://jaegertracing.github.io/helm-charts"
+    condition: jaeger.enabled
+
+annotations:
+  artifacthub.io/changes: |
+    - kind: added
+      description: Initial release with full monitoring stack
+  artifacthub.io/containsSecurityUpdates: "false"
+  artifacthub.io/license: Apache-2.0

@@ -1,0 +1,790 @@
+# GreenLang MLflow Production Deployment
+# High-Availability MLflow with PostgreSQL backend and S3/MinIO artifact storage
+# Implements zero-hallucination principles with SHA-256 provenance tracking
+---
+# Namespace for MLOps
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-mlops
+  labels:
+    app.kubernetes.io/name: mlflow
+    app.kubernetes.io/part-of: greenlang-mlops
+    app.kubernetes.io/managed-by: kubernetes
+    environment: production
+
+---
+# ConfigMap for MLflow configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mlflow-config
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: config
+data:
+  MLFLOW_TRACKING_URI: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@mlflow-postgresql:5432/$(POSTGRES_DB)"
+  DEFAULT_ARTIFACT_ROOT: "s3://greenlang-mlflow-artifacts/"
+  GUNICORN_CMD_ARGS: "--timeout 300 --workers 4 --threads 2"
+  # GreenLang specific configurations
+  GREENLANG_PROVENANCE_ENABLED: "true"
+  GREENLANG_SHA256_TRACKING: "true"
+  GREENLANG_EXPERIMENT_PREFIX: "greenlang-process-heat"
+
+---
+# PersistentVolumeClaim for MLflow backend storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-backend-pvc
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: backend-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 50Gi
+
+---
+# PersistentVolumeClaim for PostgreSQL data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-postgresql-pvc
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: postgresql
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3-encrypted
+  resources:
+    requests:
+      storage: 100Gi
+
+---
+# PersistentVolumeClaim for MinIO (local S3-compatible storage)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mlflow-minio-pvc
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: minio
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3-encrypted
+  resources:
+    requests:
+      storage: 500Gi
+
+---
+# PostgreSQL StatefulSet for MLflow backend
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mlflow-postgresql
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: postgresql
+spec:
+  serviceName: mlflow-postgresql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+      component: postgresql
+  template:
+    metadata:
+      labels:
+        app: mlflow
+        component: postgresql
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
+
+      containers:
+        - name: postgresql
+          image: postgres:15.4-alpine
+          imagePullPolicy: IfNotPresent
+
+          ports:
+            - name: postgres
+              containerPort: 5432
+              protocol: TCP
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-postgresql-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-postgresql-secret
+                  key: password
+            - name: POSTGRES_DB
+              value: "mlflow"
+            - name: PGDATA
+              value: "/var/lib/postgresql/data/pgdata"
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          volumeMounts:
+            - name: postgresql-data
+              mountPath: /var/lib/postgresql/data
+
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+                - -d
+                - mlflow
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+                - -d
+                - mlflow
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: postgresql-data
+          persistentVolumeClaim:
+            claimName: mlflow-postgresql-pvc
+
+---
+# MinIO StatefulSet for S3-compatible artifact storage
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mlflow-minio
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: minio
+spec:
+  serviceName: mlflow-minio
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mlflow
+      component: minio
+  template:
+    metadata:
+      labels:
+        app: mlflow
+        component: minio
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      containers:
+        - name: minio
+          image: minio/minio:RELEASE.2024-01-16T16-07-38Z
+          imagePullPolicy: IfNotPresent
+
+          args:
+            - server
+            - /data
+            - --console-address
+            - ":9001"
+
+          ports:
+            - name: api
+              containerPort: 9000
+              protocol: TCP
+            - name: console
+              containerPort: 9001
+              protocol: TCP
+
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-minio-secret
+                  key: access-key
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-minio-secret
+                  key: secret-key
+            - name: MINIO_PROMETHEUS_AUTH_TYPE
+              value: "public"
+
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+
+          volumeMounts:
+            - name: minio-data
+              mountPath: /data
+
+          livenessProbe:
+            httpGet:
+              path: /minio/health/live
+              port: 9000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /minio/health/ready
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: minio-data
+          persistentVolumeClaim:
+            claimName: mlflow-minio-pvc
+
+---
+# MLflow Tracking Server Deployment (High Availability - 3 replicas)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mlflow-tracking
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: tracking-server
+    version: v2.10.0
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: mlflow
+      component: tracking-server
+  template:
+    metadata:
+      labels:
+        app: mlflow
+        component: tracking-server
+        version: v2.10.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: mlflow-sa
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: mlflow
+                    component: tracking-server
+                topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - mlops
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: mlflow
+              component: tracking-server
+
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z mlflow-postgresql 5432; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: wait-for-minio
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z mlflow-minio 9000; do
+                echo "Waiting for MinIO..."
+                sleep 2
+              done
+              echo "MinIO is ready"
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+        - name: create-bucket
+          image: minio/mc:RELEASE.2024-01-16T16-06-34Z
+          command:
+            - sh
+            - -c
+            - |
+              mc alias set minio http://mlflow-minio:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+              mc mb --ignore-existing minio/greenlang-mlflow-artifacts
+              mc policy set download minio/greenlang-mlflow-artifacts
+              echo "Bucket created successfully"
+
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-minio-secret
+                  key: access-key
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-minio-secret
+                  key: secret-key
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+
+      containers:
+        - name: mlflow
+          image: ghcr.io/mlflow/mlflow:v2.10.0
+          imagePullPolicy: IfNotPresent
+
+          command:
+            - mlflow
+            - server
+            - --backend-store-uri
+            - $(BACKEND_STORE_URI)
+            - --default-artifact-root
+            - $(ARTIFACT_ROOT)
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "5000"
+            - --serve-artifacts
+            - --gunicorn-opts
+            - "--timeout 300 --workers 4 --threads 2 --log-level info"
+
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-postgresql-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-postgresql-secret
+                  key: password
+            - name: BACKEND_STORE_URI
+              value: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@mlflow-postgresql:5432/mlflow"
+            - name: ARTIFACT_ROOT
+              value: "s3://greenlang-mlflow-artifacts/"
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: "http://mlflow-minio:9000"
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-minio-secret
+                  key: access-key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlflow-minio-secret
+                  key: secret-key
+            # GreenLang environment variables
+            - name: GREENLANG_ENVIRONMENT
+              value: "production"
+            - name: GREENLANG_PROVENANCE_ENABLED
+              value: "true"
+
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+            - name: mlflow-cache
+              mountPath: /home/mlflow/.cache
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 5
+
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: mlflow-cache
+          emptyDir: {}
+
+      terminationGracePeriodSeconds: 60
+
+---
+# ServiceAccount for MLflow
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mlflow-sa
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+  annotations:
+    # AWS IRSA annotation (configure for your AWS account)
+    # eks.amazonaws.com/role-arn: arn:aws:iam::ACCOUNT_ID:role/mlflow-s3-role
+
+---
+# PodDisruptionBudget for MLflow HA
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: mlflow-tracking-pdb
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: tracking-server
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: mlflow
+      component: tracking-server
+
+---
+# Secrets (placeholder - should be managed via External Secrets or Vault)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mlflow-postgresql-secret
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: postgresql
+type: Opaque
+stringData:
+  username: mlflow
+  password: CHANGE_ME_USE_EXTERNAL_SECRETS
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mlflow-minio-secret
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: minio
+type: Opaque
+stringData:
+  access-key: greenlang-mlflow
+  secret-key: CHANGE_ME_USE_EXTERNAL_SECRETS
+
+---
+# External Secrets (for production - integrates with AWS Secrets Manager)
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: mlflow-postgresql-external
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  target:
+    name: mlflow-postgresql-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: username
+      remoteRef:
+        key: greenlang/mlflow/postgresql
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: greenlang/mlflow/postgresql
+        property: password
+
+---
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: mlflow-minio-external
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  target:
+    name: mlflow-minio-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: access-key
+      remoteRef:
+        key: greenlang/mlflow/minio
+        property: access-key
+    - secretKey: secret-key
+      remoteRef:
+        key: greenlang/mlflow/minio
+        property: secret-key
+
+---
+# HorizontalPodAutoscaler for MLflow Tracking Server
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: mlflow-tracking-hpa
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+    component: tracking-server
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: mlflow-tracking
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+    - type: Pods
+      pods:
+        metric:
+          name: mlflow_http_requests_per_second
+        target:
+          type: AverageValue
+          averageValue: "100"
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Percent
+          value: 50
+          periodSeconds: 30
+        - type: Pods
+          value: 2
+          periodSeconds: 30
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 10
+          periodSeconds: 60
+      selectPolicy: Min
+
+---
+# NetworkPolicy for MLflow
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: mlflow-network-policy
+  namespace: greenlang-mlops
+  labels:
+    app: mlflow
+spec:
+  podSelector:
+    matchLabels:
+      app: mlflow
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    # Allow ingress from ingress controller
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - port: 5000
+          protocol: TCP
+    # Allow ingress from greenlang-agents namespace
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: greenlang-agents
+      ports:
+        - port: 5000
+          protocol: TCP
+    # Allow internal communication
+    - from:
+        - podSelector:
+            matchLabels:
+              app: mlflow
+      ports:
+        - port: 5432
+          protocol: TCP
+        - port: 9000
+          protocol: TCP
+        - port: 5000
+          protocol: TCP
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - port: 53
+          protocol: UDP
+    # Allow internal communication
+    - to:
+        - podSelector:
+            matchLabels:
+              app: mlflow
+      ports:
+        - port: 5432
+          protocol: TCP
+        - port: 9000
+          protocol: TCP
+    # Allow external S3 (if using AWS S3)
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+      ports:
+        - port: 443
+          protocol: TCP

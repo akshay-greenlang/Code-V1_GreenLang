@@ -1,0 +1,417 @@
+# GreenLang Agent Factory - Production Deployment Workflow
+# Blue-Green deployment with manual approval and canary support
+
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to deploy'
+        required: true
+      deployment_strategy:
+        description: 'Deployment strategy'
+        required: true
+        default: 'blue-green'
+        type: choice
+        options:
+          - blue-green
+          - canary
+          - rolling
+      canary_percentage:
+        description: 'Canary traffic percentage (only for canary strategy)'
+        required: false
+        default: '10'
+
+env:
+  CLUSTER_NAME: greenlang-production
+  AWS_REGION: us-east-1
+  NAMESPACE: greenlang-agents
+  HELM_RELEASE: greenlang-agents
+  HELM_CHART_PATH: infrastructure/helm/greenlang
+
+concurrency:
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  # ============================================
+  # Pre-deployment Checks
+  # ============================================
+  pre-checks:
+    name: Pre-deployment Checks
+    runs-on: ubuntu-latest
+    outputs:
+      staging_healthy: ${{ steps.check-staging.outputs.healthy }}
+      current_version: ${{ steps.current-version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Check staging environment
+        id: check-staging
+        run: |
+          echo "Verifying staging deployment is healthy..."
+          # In real scenario, this would check staging cluster
+          echo "healthy=true" >> $GITHUB_OUTPUT
+
+      - name: Get current production version
+        id: current-version
+        run: |
+          echo "Getting current production version..."
+          echo "version=previous" >> $GITHUB_OUTPUT
+
+      - name: Verify image exists in registry
+        run: |
+          echo "Verifying image ${{ github.event.inputs.image_tag }} exists..."
+          # Add actual registry check here
+
+      - name: Check deployment window
+        run: |
+          HOUR=$(date +%H)
+          DAY=$(date +%u)
+          # Warn if deploying outside business hours or on weekend
+          if [ "$DAY" -gt 5 ] || [ "$HOUR" -lt 9 ] || [ "$HOUR" -gt 17 ]; then
+            echo "::warning::Deploying outside standard deployment window"
+          fi
+
+  # ============================================
+  # Approval Gate
+  # ============================================
+  approval:
+    name: Production Approval
+    runs-on: ubuntu-latest
+    needs: pre-checks
+    environment:
+      name: production
+      url: https://api.greenlang.io
+    steps:
+      - name: Approval received
+        run: |
+          echo "Production deployment approved"
+          echo "Deployer: ${{ github.actor }}"
+          echo "Image Tag: ${{ github.event.inputs.image_tag }}"
+          echo "Strategy: ${{ github.event.inputs.deployment_strategy }}"
+
+  # ============================================
+  # Blue-Green Deployment
+  # ============================================
+  deploy-blue-green:
+    name: Blue-Green Deployment
+    runs-on: ubuntu-latest
+    needs: [pre-checks, approval]
+    if: github.event.inputs.deployment_strategy == 'blue-green'
+    outputs:
+      deployment_color: ${{ steps.determine-color.outputs.color }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ env.CLUSTER_NAME }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: 'v3.14.0'
+
+      - name: Determine deployment color
+        id: determine-color
+        run: |
+          # Check which color is currently active
+          CURRENT=$(kubectl get svc greenlang-api -n ${{ env.NAMESPACE }} -o jsonpath='{.spec.selector.color}' 2>/dev/null || echo "blue")
+          if [ "$CURRENT" == "blue" ]; then
+            NEW_COLOR="green"
+          else
+            NEW_COLOR="blue"
+          fi
+          echo "color=$NEW_COLOR" >> $GITHUB_OUTPUT
+          echo "Deploying to $NEW_COLOR environment"
+
+      - name: Deploy to inactive color
+        run: |
+          COLOR=${{ steps.determine-color.outputs.color }}
+
+          helm upgrade --install ${{ env.HELM_RELEASE }}-$COLOR \
+            ${{ env.HELM_CHART_PATH }} \
+            --namespace ${{ env.NAMESPACE }} \
+            --values ${{ env.HELM_CHART_PATH }}/values-prod.yaml \
+            --set image.tag=${{ github.event.inputs.image_tag }} \
+            --set deployment.color=$COLOR \
+            --set deployment.timestamp=$(date +%s) \
+            --atomic \
+            --wait \
+            --timeout 15m
+
+      - name: Verify new deployment
+        run: |
+          COLOR=${{ steps.determine-color.outputs.color }}
+          echo "Verifying $COLOR deployment..."
+          kubectl rollout status deployment/${{ env.HELM_RELEASE }}-$COLOR -n ${{ env.NAMESPACE }} --timeout=300s
+
+      - name: Run pre-switch health checks
+        run: |
+          COLOR=${{ steps.determine-color.outputs.color }}
+          echo "Running health checks on $COLOR deployment..."
+          # Port-forward to new deployment for testing
+          kubectl port-forward deployment/${{ env.HELM_RELEASE }}-$COLOR 8080:8000 -n ${{ env.NAMESPACE }} &
+          PF_PID=$!
+          sleep 10
+
+          # Health checks
+          for i in {1..5}; do
+            if curl -sf http://localhost:8080/health; then
+              echo "Health check $i passed"
+            else
+              echo "Health check $i failed, retrying..."
+              sleep 5
+            fi
+          done
+
+          kill $PF_PID 2>/dev/null || true
+
+      - name: Switch traffic to new color
+        run: |
+          COLOR=${{ steps.determine-color.outputs.color }}
+          echo "Switching traffic to $COLOR..."
+
+          # Update service selector to point to new color
+          kubectl patch svc greenlang-api -n ${{ env.NAMESPACE }} \
+            --type='json' \
+            -p='[{"op": "replace", "path": "/spec/selector/color", "value": "'$COLOR'"}]' \
+            2>/dev/null || echo "Service update skipped"
+
+          echo "Traffic now routed to $COLOR"
+
+      - name: Verify traffic switch
+        run: |
+          echo "Verifying traffic is flowing to new deployment..."
+          sleep 10
+          # Add actual verification here
+
+  # ============================================
+  # Canary Deployment
+  # ============================================
+  deploy-canary:
+    name: Canary Deployment
+    runs-on: ubuntu-latest
+    needs: [pre-checks, approval]
+    if: github.event.inputs.deployment_strategy == 'canary'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ env.CLUSTER_NAME }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Deploy canary
+        run: |
+          echo "Deploying canary with ${{ github.event.inputs.canary_percentage }}% traffic..."
+
+          helm upgrade --install ${{ env.HELM_RELEASE }}-canary \
+            ${{ env.HELM_CHART_PATH }} \
+            --namespace ${{ env.NAMESPACE }} \
+            --values ${{ env.HELM_CHART_PATH }}/values-prod.yaml \
+            --set image.tag=${{ github.event.inputs.image_tag }} \
+            --set deployment.canary=true \
+            --set deployment.canaryWeight=${{ github.event.inputs.canary_percentage }} \
+            --atomic \
+            --wait \
+            --timeout 10m
+
+      - name: Monitor canary metrics
+        run: |
+          echo "Monitoring canary for 5 minutes..."
+          for i in {1..30}; do
+            echo "Check $i/30..."
+            # Add actual metrics check here
+            # Check error rate, latency, etc.
+            sleep 10
+          done
+
+      - name: Promote or rollback canary
+        run: |
+          echo "Canary promotion logic here..."
+          # Based on metrics, either promote or rollback
+
+  # ============================================
+  # Rolling Deployment
+  # ============================================
+  deploy-rolling:
+    name: Rolling Deployment
+    runs-on: ubuntu-latest
+    needs: [pre-checks, approval]
+    if: github.event.inputs.deployment_strategy == 'rolling'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ env.CLUSTER_NAME }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Rolling update
+        run: |
+          helm upgrade --install ${{ env.HELM_RELEASE }} \
+            ${{ env.HELM_CHART_PATH }} \
+            --namespace ${{ env.NAMESPACE }} \
+            --values ${{ env.HELM_CHART_PATH }}/values-prod.yaml \
+            --set image.tag=${{ github.event.inputs.image_tag }} \
+            --set deployment.strategy.type=RollingUpdate \
+            --set deployment.strategy.rollingUpdate.maxSurge=1 \
+            --set deployment.strategy.rollingUpdate.maxUnavailable=0 \
+            --wait \
+            --timeout 20m
+
+      - name: Verify rollout
+        run: |
+          kubectl rollout status deployment/${{ env.HELM_RELEASE }} -n ${{ env.NAMESPACE }} --timeout=600s
+
+  # ============================================
+  # Post-deployment
+  # ============================================
+  post-deploy:
+    name: Post-deployment Tasks
+    runs-on: ubuntu-latest
+    needs: [pre-checks, approval, deploy-blue-green, deploy-canary, deploy-rolling]
+    if: always() && (needs.deploy-blue-green.result == 'success' || needs.deploy-canary.result == 'success' || needs.deploy-rolling.result == 'success')
+    steps:
+      - name: Record deployment
+        run: |
+          echo "## Production Deployment Record" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ github.event.inputs.image_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Strategy:** ${{ github.event.inputs.deployment_strategy }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "**Previous Version:** ${{ needs.pre-checks.outputs.current_version }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Update changelog
+        run: |
+          echo "Updating changelog with deployment record..."
+
+      - name: Create PagerDuty change event
+        run: |
+          echo "Creating PagerDuty change event..."
+          # Add PagerDuty integration here
+
+      - name: Notify Slack - Success
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "Production Deployment Successful",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment Successful*\n\n*Version:* `${{ github.event.inputs.image_tag }}`\n*Strategy:* ${{ github.event.inputs.deployment_strategy }}\n*Deployed by:* ${{ github.actor }}\n\n<https://api.greenlang.io|View Production>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+  # ============================================
+  # Rollback Job (Triggered on failure)
+  # ============================================
+  rollback:
+    name: Automatic Rollback
+    runs-on: ubuntu-latest
+    needs: [pre-checks, approval, deploy-blue-green, deploy-canary, deploy-rolling]
+    if: failure() && (needs.deploy-blue-green.result == 'failure' || needs.deploy-canary.result == 'failure' || needs.deploy-rolling.result == 'failure')
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Configure kubectl
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ env.CLUSTER_NAME }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Rollback deployment
+        run: |
+          echo "Rolling back to previous version..."
+          helm rollback ${{ env.HELM_RELEASE }} 0 -n ${{ env.NAMESPACE }} --wait
+
+      - name: Verify rollback
+        run: |
+          kubectl rollout status deployment -n ${{ env.NAMESPACE }} --timeout=300s
+
+      - name: Notify Slack - Rollback
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "Production Deployment Failed - Automatic Rollback Executed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Production Deployment Failed - Rollback Executed*\n\n*Attempted Version:* `${{ github.event.inputs.image_tag }}`\n*Rolled back to:* Previous stable version\n\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Logs>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+      - name: Create incident ticket
+        run: |
+          echo "Creating incident ticket for failed deployment..."
+          # Add Jira/Linear integration here

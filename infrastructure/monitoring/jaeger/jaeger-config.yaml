@@ -1,0 +1,240 @@
+# GreenLang Jaeger Configuration
+# Distributed tracing for carbon accounting platform
+
+# =============================================================================
+# Collector Configuration
+# =============================================================================
+collector:
+  # Queue configuration
+  queue-size: 2000
+  num-workers: 50
+
+  # OTLP receiver settings (OpenTelemetry)
+  otlp:
+    enabled: true
+    grpc:
+      host-port: ":4317"
+      max-message-size: 4194304
+    http:
+      host-port: ":4318"
+
+  # Zipkin receiver (for legacy compatibility)
+  zipkin:
+    host-port: ":9411"
+
+  # gRPC server settings
+  grpc:
+    host-port: ":14250"
+    max-message-size: 4194304
+
+  # HTTP server settings
+  http:
+    host-port: ":14268"
+
+# =============================================================================
+# Query Configuration
+# =============================================================================
+query:
+  # Base path for UI
+  base-path: /
+
+  # Static files path
+  static-files: /go/bin/jaeger-ui-build/
+
+  # gRPC server
+  grpc:
+    host-port: ":16685"
+
+  # HTTP server
+  http:
+    host-port: ":16686"
+
+  # Max clock skew adjustment
+  max-clock-skew-adjustment: 0s
+
+# =============================================================================
+# Agent Configuration
+# =============================================================================
+agent:
+  # Processor settings
+  processor:
+    jaeger-binary:
+      server-host-port: ":6832"
+      server-max-packet-size: 65000
+    jaeger-compact:
+      server-host-port: ":6831"
+      server-max-packet-size: 65000
+    zipkin-compact:
+      server-host-port: ":5775"
+      server-max-packet-size: 65000
+
+  # HTTP server for sampling strategies
+  http-server:
+    host-port: ":5778"
+
+# =============================================================================
+# Sampling Configuration
+# =============================================================================
+sampling:
+  # Sampling strategy file
+  strategies-file: /etc/jaeger/sampling-strategies.json
+
+# =============================================================================
+# Storage Configuration (Elasticsearch)
+# =============================================================================
+storage:
+  type: elasticsearch
+  elasticsearch:
+    server-urls: http://elasticsearch:9200
+    index-prefix: jaeger
+    create-index-templates: true
+
+    # Index settings
+    num-shards: 5
+    num-replicas: 1
+
+    # Bulk processing
+    bulk:
+      size: 5000000
+      workers: 1
+      flush-interval: 200ms
+
+    # Timeouts
+    timeout: 0s
+
+    # TLS (disabled for internal communication)
+    tls:
+      enabled: false
+
+    # Span storage settings
+    max-doc-count: 10000
+    max-span-age: 168h  # 7 days
+
+    # Index date layout
+    index-date-separator: "-"
+
+# =============================================================================
+# Span Storage Configuration
+# =============================================================================
+span-storage:
+  type: elasticsearch
+
+# =============================================================================
+# Dependencies Storage
+# =============================================================================
+dependencies:
+  # Enable dependency calculation
+  enabled: true
+
+# =============================================================================
+# Metrics Configuration
+# =============================================================================
+metrics:
+  backend: prometheus
+  http-route: /metrics
+
+# =============================================================================
+# Admin Configuration
+# =============================================================================
+admin:
+  http:
+    host-port: ":14269"
+
+# =============================================================================
+# Log Level Configuration
+# =============================================================================
+log-level: info
+
+---
+# =============================================================================
+# Sampling Strategies Configuration
+# =============================================================================
+# File: /etc/jaeger/sampling-strategies.json
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jaeger-sampling-strategies
+  namespace: greenlang
+data:
+  sampling-strategies.json: |
+    {
+      "service_strategies": [
+        {
+          "service": "greenlang-api-gateway",
+          "type": "probabilistic",
+          "param": 0.5
+        },
+        {
+          "service": "eudr-agent",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "service": "cbam-agent",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "service": "sb253-agent",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "service": "emission-calculator",
+          "type": "probabilistic",
+          "param": 0.5
+        },
+        {
+          "service": "satellite-analysis",
+          "type": "probabilistic",
+          "param": 0.3
+        },
+        {
+          "service": "supply-chain-tracker",
+          "type": "probabilistic",
+          "param": 0.5
+        }
+      ],
+      "default_strategy": {
+        "type": "probabilistic",
+        "param": 0.1
+      },
+      "operation_strategies": [
+        {
+          "service": "greenlang-api-gateway",
+          "operation": "/api/v1/health",
+          "type": "probabilistic",
+          "param": 0.001
+        },
+        {
+          "service": "greenlang-api-gateway",
+          "operation": "/api/v1/ready",
+          "type": "probabilistic",
+          "param": 0.001
+        },
+        {
+          "service": "eudr-agent",
+          "operation": "compliance_check",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "service": "eudr-agent",
+          "operation": "deforestation_alert",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "service": "cbam-agent",
+          "operation": "calculate_embedded_emissions",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "service": "cbam-agent",
+          "operation": "generate_report",
+          "type": "probabilistic",
+          "param": 1.0
+        }
+      ]
+    }

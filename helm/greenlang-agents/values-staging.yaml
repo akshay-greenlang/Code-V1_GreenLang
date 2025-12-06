@@ -1,0 +1,105 @@
+# GreenLang Agent Factory - Staging Values
+# Override values for staging environment
+
+global:
+  environment: staging
+
+namespace:
+  name: greenlang-agents-staging
+
+# Staging resource limits (moderate)
+common:
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+# Ingress for staging
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "50"
+  hosts:
+    - host: api.staging.greenlang.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: greenlang-staging-tls
+      hosts:
+        - api.staging.greenlang.io
+
+# Staging config
+config:
+  LOG_LEVEL: info
+  LOG_FORMAT: json
+  ENVIRONMENT: staging
+  CACHE_TTL: "1800"
+  MAX_CONCURRENT_REQUESTS: "50"
+
+# External secrets enabled in staging
+externalSecrets:
+  enabled: true
+  refreshInterval: 30m
+
+# Network policies enabled in staging
+networkPolicy:
+  enabled: true
+
+# PDB for staging
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Full monitoring in staging
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+  prometheusRule:
+    enabled: true
+
+# Fuel Analyzer - Staging
+fuel-analyzer:
+  enabled: true
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+
+# Carbon Intensity - Staging
+carbon-intensity:
+  enabled: true
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+
+# Energy Performance - Staging
+energy-performance:
+  enabled: true
+  replicaCount: 2
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+
+# EUDR Compliance - Staging
+eudr-compliance:
+  enabled: true
+  replicaCount: 3
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 8
+  podDisruptionBudget:
+    minAvailable: 2

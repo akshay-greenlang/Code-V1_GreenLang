@@ -1,0 +1,123 @@
+{{- if .Values.serviceMonitors.eudrAgent.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-monitoring.fullname" . }}-eudr-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-monitoring.labels" . | nindent 4 }}
+    app: eudr-agent
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.serviceMonitors.eudrAgent.namespace | default "greenlang" }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.serviceMonitors.eudrAgent.labels | nindent 6 }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitors.eudrAgent.interval | default "15s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+---
+{{- end }}
+
+{{- if .Values.serviceMonitors.cbamAgent.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-monitoring.fullname" . }}-cbam-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-monitoring.labels" . | nindent 4 }}
+    app: cbam-agent
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.serviceMonitors.cbamAgent.namespace | default "greenlang" }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.serviceMonitors.cbamAgent.labels | nindent 6 }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitors.cbamAgent.interval | default "15s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+---
+{{- end }}
+
+{{- if .Values.serviceMonitors.sb253Agent.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-monitoring.fullname" . }}-sb253-agent
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-monitoring.labels" . | nindent 4 }}
+    app: sb253-agent
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.serviceMonitors.sb253Agent.namespace | default "greenlang" }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.serviceMonitors.sb253Agent.labels | nindent 6 }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitors.sb253Agent.interval | default "15s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+---
+{{- end }}
+
+{{- if .Values.serviceMonitors.apiGateway.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-monitoring.fullname" . }}-api-gateway
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-monitoring.labels" . | nindent 4 }}
+    app: api-gateway
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.serviceMonitors.apiGateway.namespace | default "greenlang" }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.serviceMonitors.apiGateway.labels | nindent 6 }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitors.apiGateway.interval | default "10s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+---
+{{- end }}
+
+{{- if .Values.serviceMonitors.emissionCalculator.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "greenlang-monitoring.fullname" . }}-emission-calculator
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "greenlang-monitoring.labels" . | nindent 4 }}
+    app: emission-calculator
+spec:
+  namespaceSelector:
+    matchNames:
+      - {{ .Values.serviceMonitors.emissionCalculator.namespace | default "greenlang" }}
+  selector:
+    matchLabels:
+      {{- toYaml .Values.serviceMonitors.emissionCalculator.labels | nindent 6 }}
+  endpoints:
+    - port: metrics
+      interval: {{ .Values.serviceMonitors.emissionCalculator.interval | default "15s" }}
+      path: /metrics
+      scheme: http
+      honorLabels: true
+{{- end }}

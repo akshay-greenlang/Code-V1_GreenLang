@@ -1,0 +1,29 @@
+# Production PDB with stricter requirements
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fuel-analyzer-pdb
+spec:
+  minAvailable: 2
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: carbon-intensity-pdb
+spec:
+  minAvailable: 2
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: energy-performance-pdb
+spec:
+  minAvailable: 2
+---
+# EUDR Compliance - Higher availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: eudr-compliance-pdb
+spec:
+  minAvailable: 3

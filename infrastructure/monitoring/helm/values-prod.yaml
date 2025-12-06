@@ -1,0 +1,482 @@
+# GreenLang Monitoring Helm Chart - Production Values
+# Production environment overrides
+
+global:
+  namespace: monitoring
+  clusterName: greenlang-production
+  environment: production
+  domain: greenlang.io
+
+# =============================================================================
+# Prometheus - Production Settings
+# =============================================================================
+prometheus:
+  enabled: true
+
+  server:
+    replicaCount: 2  # HA for production
+    retention: "30d"
+    retentionSize: "100GB"
+
+    resources:
+      requests:
+        cpu: "1"
+        memory: "4Gi"
+      limits:
+        cpu: "4"
+        memory: "8Gi"
+
+    persistentVolume:
+      enabled: true
+      size: 200Gi
+      storageClass: "gp3"
+
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - prometheus
+            topologyKey: kubernetes.io/hostname
+
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+        nginx.ingress.kubernetes.io/ssl-redirect: "true"
+        nginx.ingress.kubernetes.io/auth-type: basic
+        nginx.ingress.kubernetes.io/auth-secret: prometheus-basic-auth
+      hosts:
+        - prometheus.greenlang.io
+      tls:
+        - secretName: prometheus-tls
+          hosts:
+            - prometheus.greenlang.io
+
+  alertmanager:
+    enabled: true
+    replicaCount: 2  # HA for production
+
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+
+    persistentVolume:
+      enabled: true
+      size: 10Gi
+      storageClass: "gp3"
+
+    config:
+      global:
+        resolve_timeout: 5m
+        smtp_smarthost: 'smtp.sendgrid.net:587'
+        smtp_from: 'alerts@greenlang.io'
+        smtp_require_tls: true
+        pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+      inhibit_rules:
+        - source_matchers:
+            - severity = critical
+          target_matchers:
+            - severity = warning
+          equal: ['service', 'alertname']
+
+      route:
+        receiver: 'slack-warnings'
+        group_by: ['alertname', 'service', 'namespace']
+        group_wait: 30s
+        group_interval: 5m
+        repeat_interval: 4h
+        routes:
+          - matchers:
+              - severity = critical
+            receiver: 'pagerduty-critical'
+            continue: true
+          - matchers:
+              - severity = critical
+            receiver: 'slack-critical'
+          - matchers:
+              - severity = warning
+            receiver: 'slack-warnings'
+          - matchers:
+              - team = compliance
+            receiver: 'slack-compliance'
+            continue: true
+
+      receivers:
+        - name: 'slack-warnings'
+          slack_configs:
+            - api_url_file: /etc/alertmanager/secrets/slack-webhook-url
+              channel: '#greenlang-alerts-warnings'
+              send_resolved: true
+              title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+              text: '{{ range .Alerts }}*{{ .Annotations.summary }}*\n{{ .Annotations.description }}\n{{ end }}'
+
+        - name: 'slack-critical'
+          slack_configs:
+            - api_url_file: /etc/alertmanager/secrets/slack-webhook-url
+              channel: '#greenlang-alerts-critical'
+              send_resolved: true
+              color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+        - name: 'slack-compliance'
+          slack_configs:
+            - api_url_file: /etc/alertmanager/secrets/slack-webhook-url
+              channel: '#greenlang-compliance-alerts'
+              send_resolved: true
+
+        - name: 'pagerduty-critical'
+          pagerduty_configs:
+            - service_key_file: /etc/alertmanager/secrets/pagerduty-service-key
+              severity: critical
+              description: '{{ .CommonLabels.alertname }} - {{ .CommonAnnotations.summary }}'
+
+        - name: 'email-daily'
+          email_configs:
+            - to: 'ops-team@greenlang.io'
+              send_resolved: false
+              headers:
+                Subject: 'GreenLang Daily Alert Summary'
+
+# =============================================================================
+# Grafana - Production Settings
+# =============================================================================
+grafana:
+  enabled: true
+
+  replicas: 2  # HA for production
+
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      cpu: "1"
+      memory: "2Gi"
+
+  persistence:
+    enabled: true
+    size: 20Gi
+    storageClassName: "gp3"
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/name
+                  operator: In
+                  values:
+                    - grafana
+            topologyKey: kubernetes.io/hostname
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - grafana.greenlang.io
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.greenlang.io
+
+  grafana.ini:
+    server:
+      root_url: "https://grafana.greenlang.io"
+    auth:
+      disable_login_form: false
+    auth.anonymous:
+      enabled: false
+    auth.generic_oauth:
+      enabled: true
+      name: "GreenLang SSO"
+      allow_sign_up: true
+      client_id: "${OAUTH_CLIENT_ID}"
+      client_secret: "${OAUTH_CLIENT_SECRET}"
+      scopes: "openid profile email"
+      auth_url: "https://auth.greenlang.io/oauth/authorize"
+      token_url: "https://auth.greenlang.io/oauth/token"
+      api_url: "https://auth.greenlang.io/oauth/userinfo"
+    security:
+      admin_user: admin
+      secret_key: "${GRAFANA_SECRET_KEY}"
+    users:
+      allow_sign_up: false
+      auto_assign_org: true
+      auto_assign_org_role: Viewer
+    alerting:
+      enabled: true
+    unified_alerting:
+      enabled: true
+    database:
+      type: postgres
+      host: "${DB_HOST}:5432"
+      name: grafana
+      user: grafana
+      password: "${DB_PASSWORD}"
+      ssl_mode: require
+
+# =============================================================================
+# Loki - Production Settings
+# =============================================================================
+loki:
+  enabled: true
+
+  loki:
+    auth_enabled: false
+
+    storage:
+      type: s3
+      s3:
+        endpoint: s3.amazonaws.com
+        bucketnames: greenlang-loki-production
+        region: us-east-1
+        access_key_id: "${AWS_ACCESS_KEY_ID}"
+        secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
+        s3ForcePathStyle: false
+        insecure: false
+
+    commonConfig:
+      replication_factor: 3
+
+    limits_config:
+      retention_period: 2160h  # 90 days for production
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+      ingestion_rate_mb: 20
+      ingestion_burst_size_mb: 30
+      per_stream_rate_limit: 10MB
+      per_stream_rate_limit_burst: 30MB
+      max_entries_limit_per_query: 10000
+
+  singleBinary:
+    replicas: 3  # HA for production
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+
+    persistence:
+      enabled: true
+      size: 100Gi
+      storageClass: "gp3"
+
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                    - loki
+            topologyKey: kubernetes.io/hostname
+
+  promtail:
+    enabled: true
+
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+
+# =============================================================================
+# Jaeger - Production Settings
+# =============================================================================
+jaeger:
+  enabled: true
+
+  allInOne:
+    enabled: false  # Use distributed mode in production
+
+  collector:
+    enabled: true
+    replicaCount: 2
+
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "512Mi"
+      limits:
+        cpu: "1"
+        memory: "1Gi"
+
+    autoscaling:
+      enabled: true
+      minReplicas: 2
+      maxReplicas: 5
+      targetCPUUtilizationPercentage: 80
+
+  query:
+    enabled: true
+    replicaCount: 2
+
+    resources:
+      requests:
+        cpu: "200m"
+        memory: "256Mi"
+      limits:
+        cpu: "500m"
+        memory: "512Mi"
+
+  agent:
+    enabled: true
+
+  storage:
+    type: elasticsearch
+    elasticsearch:
+      host: elasticsearch
+      port: 9200
+      indexPrefix: jaeger
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    hosts:
+      - jaeger.greenlang.io
+    tls:
+      - secretName: jaeger-tls
+        hosts:
+          - jaeger.greenlang.io
+
+# =============================================================================
+# Production Alert Rules
+# =============================================================================
+alertRules:
+  enabled: true
+
+  rules:
+    - name: greenlang-production-alerts
+      rules:
+        # Critical service alerts
+        - alert: EUDRAgentDown
+          expr: up{job="eudr-agent"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: eudr-agent
+            team: compliance
+          annotations:
+            summary: "EUDR Agent is down"
+            description: "EUDR Agent has been down for more than 1 minute."
+            runbook_url: "https://runbooks.greenlang.io/eudr-agent-down"
+
+        - alert: CBAMAgentDown
+          expr: up{job="cbam-agent"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: cbam-agent
+            team: compliance
+          annotations:
+            summary: "CBAM Agent is down"
+            runbook_url: "https://runbooks.greenlang.io/cbam-agent-down"
+
+        - alert: SB253AgentDown
+          expr: up{job="sb253-agent"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            service: sb253-agent
+            team: compliance
+          annotations:
+            summary: "SB253 Agent is down"
+            runbook_url: "https://runbooks.greenlang.io/sb253-agent-down"
+
+        - alert: APIGatewayDown
+          expr: up{job="greenlang-api-gateway"} == 0
+          for: 30s
+          labels:
+            severity: critical
+            service: api-gateway
+            team: platform
+          annotations:
+            summary: "API Gateway is down"
+            runbook_url: "https://runbooks.greenlang.io/api-gateway-down"
+
+        # SLO alerts
+        - alert: APIAvailabilitySLOBreach
+          expr: greenlang:slo:api_availability_30d < 0.9995
+          for: 5m
+          labels:
+            severity: critical
+            slo: api-availability
+          annotations:
+            summary: "API Availability SLO breach"
+            description: "API availability is {{ $value | humanizePercentage }} (SLO: 99.95%)"
+
+        - alert: EUDRAvailabilitySLOBreach
+          expr: greenlang:slo:eudr_availability_30d < 0.999
+          for: 5m
+          labels:
+            severity: critical
+            slo: eudr-availability
+          annotations:
+            summary: "EUDR Availability SLO breach"
+            description: "EUDR availability is {{ $value | humanizePercentage }} (SLO: 99.9%)"
+
+        # Error budget alerts
+        - alert: ErrorBudgetBurnRateHigh
+          expr: greenlang:slo:api_burn_rate_1h > 2
+          for: 5m
+          labels:
+            severity: warning
+            slo: api-availability
+          annotations:
+            summary: "Error budget burn rate is high"
+            description: "API error budget burn rate is {{ $value }}x sustainable rate"
+
+# =============================================================================
+# Production SLO Configuration
+# =============================================================================
+slos:
+  enabled: true
+
+  definitions:
+    apiAvailability:
+      target: 99.95
+      window: 30d
+
+    eudrAvailability:
+      target: 99.9
+      window: 30d
+
+    cbamAvailability:
+      target: 99.9
+      window: 30d
+
+    apiLatency:
+      target: 99.0
+      window: 30d
+      threshold: 0.1
+
+    eudrLatency:
+      target: 99.0
+      window: 30d
+      threshold: 0.5
+
+    calculationAccuracy:
+      target: 100.0
+      window: 30d

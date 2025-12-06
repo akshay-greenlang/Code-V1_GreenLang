@@ -1,0 +1,574 @@
+# One-Click Rollback Workflow
+# Quick rollback to previous versions with optional database restore
+name: Production Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_version:
+        description: 'Version to rollback to (e.g., v1.2.2)'
+        required: true
+        type: string
+      rollback_database:
+        description: 'Rollback database to matching snapshot'
+        required: false
+        type: boolean
+        default: false
+      database_snapshot_id:
+        description: 'Specific database snapshot ID (leave empty for auto-detect)'
+        required: false
+        type: string
+      reason:
+        description: 'Reason for rollback'
+        required: true
+        type: string
+      skip_verification:
+        description: 'Skip post-rollback verification tests'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: greenlang/greenlang-platform
+  NAMESPACE: greenlang-production
+  ARGOCD_SERVER: argocd.greenlang.io
+  SLACK_CHANNEL: greenlang-alerts
+  AWS_REGION: us-east-1
+
+concurrency:
+  group: production-rollback
+  cancel-in-progress: false
+
+jobs:
+  # Pre-rollback validation
+  validate:
+    name: Validate Rollback
+    runs-on: ubuntu-latest
+    outputs:
+      target_version: ${{ steps.validate.outputs.target_version }}
+      current_version: ${{ steps.current.outputs.version }}
+      db_snapshot_id: ${{ steps.db_snapshot.outputs.snapshot_id }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate target version
+        id: validate
+        run: |
+          TARGET="${{ github.event.inputs.target_version }}"
+
+          # Verify version format
+          if [[ ! "${TARGET}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
+            echo "ERROR: Invalid version format. Expected: v1.2.3 or v1.2.3-rc1"
+            exit 1
+          fi
+
+          # Verify image exists
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TARGET}"
+          docker manifest inspect ${IMAGE} || {
+            echo "ERROR: Image not found: ${IMAGE}"
+            exit 1
+          }
+
+          echo "target_version=${TARGET}" >> $GITHUB_OUTPUT
+          echo "Target version validated: ${TARGET}"
+        env:
+          DOCKER_CONFIG: ${{ secrets.DOCKER_CONFIG }}
+
+      - name: Get current version
+        id: current
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+          CURRENT=$(kubectl get deployment greenlang-api-blue \
+            -n ${{ env.NAMESPACE }} \
+            -o jsonpath='{.spec.template.spec.containers[0].image}' 2>/dev/null | cut -d: -f2 || echo "unknown")
+
+          echo "version=${CURRENT}" >> $GITHUB_OUTPUT
+          echo "Current production version: ${CURRENT}"
+
+      - name: Find database snapshot
+        id: db_snapshot
+        if: ${{ github.event.inputs.rollback_database == 'true' }}
+        run: |
+          TARGET="${{ github.event.inputs.target_version }}"
+          SPECIFIED_SNAPSHOT="${{ github.event.inputs.database_snapshot_id }}"
+
+          if [ -n "${SPECIFIED_SNAPSHOT}" ]; then
+            SNAPSHOT_ID="${SPECIFIED_SNAPSHOT}"
+          else
+            # Find snapshot matching the target version
+            SNAPSHOT_ID=$(aws rds describe-db-snapshots \
+              --db-instance-identifier greenlang-production \
+              --query "DBSnapshots[?contains(DBSnapshotIdentifier, '${TARGET}')].DBSnapshotIdentifier | [0]" \
+              --output text)
+
+            if [ "${SNAPSHOT_ID}" == "None" ] || [ -z "${SNAPSHOT_ID}" ]; then
+              # Find most recent pre-deployment snapshot before target version
+              SNAPSHOT_ID=$(aws rds describe-db-snapshots \
+                --db-instance-identifier greenlang-production \
+                --query "DBSnapshots | sort_by(@, &SnapshotCreateTime) | reverse(@) | [0].DBSnapshotIdentifier" \
+                --output text)
+            fi
+          fi
+
+          if [ "${SNAPSHOT_ID}" == "None" ] || [ -z "${SNAPSHOT_ID}" ]; then
+            echo "ERROR: No suitable database snapshot found"
+            exit 1
+          fi
+
+          echo "snapshot_id=${SNAPSHOT_ID}" >> $GITHUB_OUTPUT
+          echo "Database snapshot found: ${SNAPSHOT_ID}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+
+      - name: Notify rollback initiated
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ env.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "ALERT: Production Rollback Initiated"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Target Version:*\n${{ github.event.inputs.target_version }}"},
+                    {"type": "mrkdwn", "text": "*Current Version:*\n${{ steps.current.outputs.version }}"},
+                    {"type": "mrkdwn", "text": "*Initiated by:*\n${{ github.actor }}"},
+                    {"type": "mrkdwn", "text": "*Database Rollback:*\n${{ github.event.inputs.rollback_database }}"}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Reason:*\n${{ github.event.inputs.reason }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+  # Emergency approval (fast-track for production issues)
+  approval:
+    name: Emergency Approval
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: production-rollback
+      url: https://api.greenlang.io
+    steps:
+      - name: Approval granted
+        run: |
+          echo "Rollback approved by: ${{ github.actor }}"
+          echo "Target version: ${{ needs.validate.outputs.target_version }}"
+          echo "Reason: ${{ github.event.inputs.reason }}"
+
+  # Database rollback (if requested)
+  database_rollback:
+    name: Database Rollback
+    needs: [validate, approval]
+    if: ${{ github.event.inputs.rollback_database == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create pre-rollback backup
+        id: backup
+        run: |
+          BACKUP_ID="pre-rollback-$(date +%Y%m%d-%H%M%S)"
+          echo "Creating backup before rollback: ${BACKUP_ID}"
+
+          aws rds create-db-snapshot \
+            --db-instance-identifier greenlang-production \
+            --db-snapshot-identifier ${BACKUP_ID}
+
+          aws rds wait db-snapshot-available \
+            --db-snapshot-identifier ${BACKUP_ID}
+
+          echo "backup_id=${BACKUP_ID}" >> $GITHUB_OUTPUT
+          echo "Backup created: ${BACKUP_ID}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+
+      - name: Stop application traffic
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+
+          echo "Scaling down application to stop database writes..."
+          kubectl scale deployment greenlang-api-blue \
+            -n ${{ env.NAMESPACE }} \
+            --replicas=0
+
+          kubectl scale deployment greenlang-worker \
+            -n ${{ env.NAMESPACE }} \
+            --replicas=0
+
+          # Wait for pods to terminate
+          kubectl wait --for=delete pod \
+            -l app=greenlang-api \
+            -n ${{ env.NAMESPACE }} \
+            --timeout=120s || true
+
+          echo "Application stopped"
+
+      - name: Restore database from snapshot
+        run: |
+          SNAPSHOT_ID="${{ needs.validate.outputs.db_snapshot_id }}"
+          RESTORE_INSTANCE="greenlang-production-restored-$(date +%Y%m%d%H%M%S)"
+
+          echo "Restoring database from snapshot: ${SNAPSHOT_ID}"
+
+          # Restore to new instance
+          aws rds restore-db-instance-from-db-snapshot \
+            --db-instance-identifier ${RESTORE_INSTANCE} \
+            --db-snapshot-identifier ${SNAPSHOT_ID} \
+            --db-instance-class db.r6g.large \
+            --vpc-security-group-ids ${{ secrets.RDS_SECURITY_GROUP_ID }} \
+            --db-subnet-group-name greenlang-production
+
+          # Wait for restore
+          aws rds wait db-instance-available \
+            --db-instance-identifier ${RESTORE_INSTANCE}
+
+          echo "Database restored to: ${RESTORE_INSTANCE}"
+
+          # Get new endpoint
+          NEW_ENDPOINT=$(aws rds describe-db-instances \
+            --db-instance-identifier ${RESTORE_INSTANCE} \
+            --query 'DBInstances[0].Endpoint.Address' \
+            --output text)
+
+          echo "New database endpoint: ${NEW_ENDPOINT}"
+          echo "restore_instance=${RESTORE_INSTANCE}" >> $GITHUB_OUTPUT
+          echo "new_endpoint=${NEW_ENDPOINT}" >> $GITHUB_OUTPUT
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ env.AWS_REGION }}
+
+      - name: Update database connection
+        run: |
+          NEW_ENDPOINT="${{ steps.restore.outputs.new_endpoint }}"
+
+          # Update Kubernetes secret with new database URL
+          kubectl create secret generic greenlang-db-connection \
+            -n ${{ env.NAMESPACE }} \
+            --from-literal=host=${NEW_ENDPOINT} \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          echo "Database connection updated"
+
+    outputs:
+      backup_id: ${{ steps.backup.outputs.backup_id }}
+
+  # Application rollback
+  application_rollback:
+    name: Application Rollback
+    needs: [validate, approval, database_rollback]
+    if: always() && needs.approval.result == 'success' && (needs.database_rollback.result == 'success' || needs.database_rollback.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" | base64 -d > ~/.kube/config
+          kubectl config use-context greenlang-production
+
+      - name: Install ArgoCD CLI
+        run: |
+          curl -sSL -o argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          chmod +x argocd
+          sudo mv argocd /usr/local/bin/
+
+      - name: Rollback via ArgoCD
+        run: |
+          TARGET="${{ needs.validate.outputs.target_version }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TARGET}"
+
+          echo "Rolling back to version: ${TARGET}"
+
+          # Login to ArgoCD
+          argocd login ${{ env.ARGOCD_SERVER }} \
+            --username admin \
+            --password ${{ secrets.ARGOCD_PASSWORD }} \
+            --grpc-web
+
+          # Update application image
+          argocd app set greenlang-platform \
+            --kustomize-image greenlang/api=${IMAGE}
+
+          # Force sync
+          argocd app sync greenlang-platform \
+            --force \
+            --prune \
+            --timeout 300
+
+          # Wait for rollout
+          argocd app wait greenlang-platform \
+            --timeout 300 \
+            --health
+
+          echo "ArgoCD rollback completed"
+
+      - name: Direct kubectl rollback (fallback)
+        if: failure()
+        run: |
+          TARGET="${{ needs.validate.outputs.target_version }}"
+          IMAGE="${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${TARGET}"
+
+          echo "Performing direct kubectl rollback..."
+
+          # Update deployment image
+          kubectl set image deployment/greenlang-api-blue \
+            api=${IMAGE} \
+            -n ${{ env.NAMESPACE }}
+
+          kubectl set image deployment/greenlang-worker \
+            worker=${IMAGE} \
+            -n ${{ env.NAMESPACE }}
+
+          # Wait for rollout
+          kubectl rollout status deployment/greenlang-api-blue \
+            -n ${{ env.NAMESPACE }} \
+            --timeout=300s
+
+          kubectl rollout status deployment/greenlang-worker \
+            -n ${{ env.NAMESPACE }} \
+            --timeout=300s
+
+          echo "Direct rollback completed"
+
+      - name: Scale up application
+        run: |
+          echo "Scaling up application..."
+
+          kubectl scale deployment greenlang-api-blue \
+            -n ${{ env.NAMESPACE }} \
+            --replicas=3
+
+          kubectl scale deployment greenlang-worker \
+            -n ${{ env.NAMESPACE }} \
+            --replicas=2
+
+          # Wait for pods to be ready
+          kubectl wait --for=condition=ready pod \
+            -l app=greenlang-api \
+            -n ${{ env.NAMESPACE }} \
+            --timeout=300s
+
+          echo "Application scaled up"
+
+  # Verification tests
+  verify:
+    name: Verify Rollback
+    needs: [validate, application_rollback]
+    if: ${{ github.event.inputs.skip_verification != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest requests httpx
+
+      - name: Wait for stabilization
+        run: |
+          echo "Waiting for services to stabilize..."
+          sleep 30
+
+      - name: Verify application version
+        run: |
+          TARGET="${{ needs.validate.outputs.target_version }}"
+
+          DEPLOYED=$(curl -s https://api.greenlang.io/api/v1/version | jq -r '.version')
+
+          if [ "${DEPLOYED}" != "${TARGET}" ]; then
+            echo "ERROR: Version mismatch!"
+            echo "Expected: ${TARGET}"
+            echo "Got: ${DEPLOYED}"
+            exit 1
+          fi
+
+          echo "Version verified: ${DEPLOYED}"
+
+      - name: Health checks
+        run: |
+          echo "Running health checks..."
+
+          # API health
+          curl -f https://api.greenlang.io/api/v1/health || exit 1
+          echo "API health: OK"
+
+          # Readiness
+          curl -f https://api.greenlang.io/api/v1/ready || exit 1
+          echo "Readiness: OK"
+
+          # Database connectivity
+          curl -f https://api.greenlang.io/api/v1/health/db || exit 1
+          echo "Database: OK"
+
+          # Cache connectivity
+          curl -f https://api.greenlang.io/api/v1/health/cache || exit 1
+          echo "Cache: OK"
+
+      - name: Functional tests
+        run: |
+          echo "Running functional verification tests..."
+
+          # Test critical endpoints
+          pytest tests/smoke/ \
+            --base-url=https://api.greenlang.io \
+            -v \
+            --tb=short \
+            -x || {
+              echo "Functional tests failed!"
+              exit 1
+            }
+
+          echo "Functional tests passed"
+        env:
+          API_TOKEN: ${{ secrets.SMOKE_TEST_TOKEN }}
+
+      - name: Performance baseline check
+        run: |
+          echo "Checking response times..."
+
+          for i in {1..10}; do
+            TIME=$(curl -o /dev/null -s -w '%{time_total}' https://api.greenlang.io/api/v1/health)
+            echo "Request $i: ${TIME}s"
+
+            # Alert if response time > 2 seconds
+            if (( $(echo "$TIME > 2.0" | bc -l) )); then
+              echo "WARNING: Slow response detected"
+            fi
+          done
+
+  # Notify completion
+  notify:
+    name: Rollback Notification
+    needs: [validate, application_rollback, verify]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify success
+        if: needs.application_rollback.result == 'success'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ env.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Production Rollback Completed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Rolled back to:*\n${{ needs.validate.outputs.target_version }}"},
+                    {"type": "mrkdwn", "text": "*Previous version:*\n${{ needs.validate.outputs.current_version }}"},
+                    {"type": "mrkdwn", "text": "*Status:*\nSuccess"},
+                    {"type": "mrkdwn", "text": "*Verification:*\n${{ needs.verify.result }}"}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Reason:*\n${{ github.event.inputs.reason }}"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {"type": "mrkdwn", "text": "Completed by ${{ github.actor }} | <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"}
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Notify failure
+        if: needs.application_rollback.result == 'failure'
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          channel-id: ${{ env.SLACK_CHANNEL }}
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "CRITICAL: Production Rollback Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Rollback to *${{ needs.validate.outputs.target_version }}* has FAILED. Immediate attention required!"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {"type": "plain_text", "text": "View Logs"},
+                      "style": "danger",
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Create incident record
+        run: |
+          curl -X POST https://api.pagerduty.com/incidents \
+            -H "Authorization: Token token=${{ secrets.PAGERDUTY_API_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "incident": {
+                "type": "incident",
+                "title": "Production Rollback: ${{ needs.validate.outputs.target_version }}",
+                "service": {
+                  "id": "${{ secrets.PAGERDUTY_SERVICE_ID }}",
+                  "type": "service_reference"
+                },
+                "urgency": "high",
+                "body": {
+                  "type": "incident_body",
+                  "details": "Rollback from ${{ needs.validate.outputs.current_version }} to ${{ needs.validate.outputs.target_version }}. Reason: ${{ github.event.inputs.reason }}"
+                }
+              }
+            }' || true

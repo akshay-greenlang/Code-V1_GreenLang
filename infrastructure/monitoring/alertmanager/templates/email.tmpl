@@ -1,0 +1,166 @@
+{{ define "email.greenlang.daily_summary" }}
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2E7D32; }
+    h2 { color: #1976D2; margin-top: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f5f5f5; }
+    .critical { background-color: #FFCDD2; }
+    .warning { background-color: #FFF9C4; }
+    .info { background-color: #E3F2FD; }
+    .resolved { background-color: #C8E6C9; }
+    .footer { margin-top: 20px; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <h1>GreenLang Daily Alert Summary</h1>
+  <p>Cluster: {{ .CommonLabels.cluster }}</p>
+  <p>Report generated: {{ now.Format "2006-01-02 15:04:05 MST" }}</p>
+
+  <h2>Alert Summary</h2>
+  <p>Total Alerts: {{ .Alerts | len }} (Firing: {{ .Alerts.Firing | len }}, Resolved: {{ .Alerts.Resolved | len }})</p>
+
+  {{ if .Alerts.Firing }}
+  <h2>Currently Firing Alerts</h2>
+  <table>
+    <tr>
+      <th>Alert</th>
+      <th>Severity</th>
+      <th>Service</th>
+      <th>Started</th>
+      <th>Summary</th>
+    </tr>
+    {{ range .Alerts.Firing }}
+    <tr class="{{ .Labels.severity }}">
+      <td>{{ .Labels.alertname }}</td>
+      <td>{{ .Labels.severity }}</td>
+      <td>{{ .Labels.service }}</td>
+      <td>{{ .StartsAt.Format "2006-01-02 15:04:05" }}</td>
+      <td>{{ .Annotations.summary }}</td>
+    </tr>
+    {{ end }}
+  </table>
+  {{ end }}
+
+  {{ if .Alerts.Resolved }}
+  <h2>Resolved Alerts (Last 24 Hours)</h2>
+  <table>
+    <tr>
+      <th>Alert</th>
+      <th>Severity</th>
+      <th>Service</th>
+      <th>Duration</th>
+    </tr>
+    {{ range .Alerts.Resolved }}
+    <tr class="resolved">
+      <td>{{ .Labels.alertname }}</td>
+      <td>{{ .Labels.severity }}</td>
+      <td>{{ .Labels.service }}</td>
+      <td>{{ .StartsAt.Format "15:04" }} - {{ .EndsAt.Format "15:04" }}</td>
+    </tr>
+    {{ end }}
+  </table>
+  {{ end }}
+
+  <div class="footer">
+    <p>This is an automated message from GreenLang Alertmanager.</p>
+    <p>View full dashboard: <a href="https://grafana.greenlang.io">Grafana</a></p>
+  </div>
+</body>
+</html>
+{{ end }}
+
+{{ define "email.greenlang.weekly_report" }}
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2E7D32; }
+    h2 { color: #1976D2; margin-top: 20px; }
+    .metric { display: inline-block; margin: 10px; padding: 20px; background: #f5f5f5; border-radius: 8px; }
+    .metric-value { font-size: 32px; font-weight: bold; color: #2E7D32; }
+    .metric-label { font-size: 14px; color: #666; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+    th { background-color: #f5f5f5; }
+    .good { color: #2E7D32; }
+    .warning { color: #F57C00; }
+    .bad { color: #D32F2F; }
+  </style>
+</head>
+<body>
+  <h1>GreenLang Weekly SLO Report</h1>
+  <p>Week ending: {{ now.Format "2006-01-02" }}</p>
+
+  <h2>Service Level Objectives</h2>
+
+  <div class="metric">
+    <div class="metric-value">99.95%</div>
+    <div class="metric-label">API Availability (Target: 99.95%)</div>
+  </div>
+
+  <div class="metric">
+    <div class="metric-value">99.92%</div>
+    <div class="metric-label">EUDR Availability (Target: 99.9%)</div>
+  </div>
+
+  <div class="metric">
+    <div class="metric-value">45ms</div>
+    <div class="metric-label">API P95 Latency (Target: <100ms)</div>
+  </div>
+
+  <div class="metric">
+    <div class="metric-value">280ms</div>
+    <div class="metric-label">EUDR P95 Latency (Target: <500ms)</div>
+  </div>
+
+  <h2>Error Budget Status</h2>
+  <table>
+    <tr>
+      <th>Service</th>
+      <th>SLO Target</th>
+      <th>Current</th>
+      <th>Budget Remaining</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td>API Gateway</td>
+      <td>99.95%</td>
+      <td>99.97%</td>
+      <td>85%</td>
+      <td class="good">Healthy</td>
+    </tr>
+    <tr>
+      <td>EUDR Agent</td>
+      <td>99.9%</td>
+      <td>99.92%</td>
+      <td>78%</td>
+      <td class="good">Healthy</td>
+    </tr>
+    <tr>
+      <td>CBAM Agent</td>
+      <td>99.9%</td>
+      <td>99.88%</td>
+      <td>42%</td>
+      <td class="warning">Caution</td>
+    </tr>
+  </table>
+
+  <h2>Incident Summary</h2>
+  <p>Total incidents this week: 3</p>
+  <p>P1 (Critical): 0 | P2 (High): 1 | P3 (Medium): 2</p>
+  <p>Mean Time to Detect (MTTD): 2m 30s</p>
+  <p>Mean Time to Resolve (MTTR): 15m 45s</p>
+
+  <div class="footer">
+    <p>This is an automated weekly report from GreenLang Monitoring.</p>
+    <p>Full SLO dashboard: <a href="https://grafana.greenlang.io/d/greenlang-slo">View Dashboard</a></p>
+  </div>
+</body>
+</html>
+{{ end }}

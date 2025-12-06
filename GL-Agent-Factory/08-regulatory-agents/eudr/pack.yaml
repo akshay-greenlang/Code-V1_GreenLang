@@ -1,0 +1,726 @@
+# EUDR Compliance Agent Pack Specification
+# EU Deforestation Regulation 2023/1115
+# Version: 1.0.0
+# Deadline: December 30, 2025
+
+pack:
+  id: gl-eudr-compliance-v1
+  name: EUDR Deforestation Compliance Agent
+  description: |
+    Validates commodities and supply chains against EU Deforestation Regulation (EUDR) 2023/1115.
+    Ensures products placed on the EU market are deforestation-free and legally produced.
+    Supports all 7 regulated commodities: cattle, cocoa, coffee, palm oil, rubber, soy, wood.
+  version: "1.0.0"
+  author: GreenLang
+  license: Proprietary
+  category: regulatory-compliance
+  priority: P0-CRITICAL
+  deadline: "2025-12-30"
+
+metadata:
+  regulation:
+    name: EU Deforestation Regulation
+    reference: "(EU) 2023/1115"
+    official_journal: "OJ L 150, 9.6.2023, p. 206-247"
+    enforcement_date: "2025-12-30"
+    sme_enforcement_date: "2026-06-30"
+    cutoff_date: "2020-12-31"
+
+  commodities:
+    - code: cattle
+      cn_codes: ["0102", "0201", "0202", "4101", "4104", "4107"]
+      description: "Live cattle, beef, and leather products"
+    - code: cocoa
+      cn_codes: ["1801", "1802", "1803", "1804", "1805", "1806"]
+      description: "Cocoa beans, paste, butter, powder, chocolate"
+    - code: coffee
+      cn_codes: ["0901", "2101"]
+      description: "Coffee beans, roasted, extracts"
+    - code: palm_oil
+      cn_codes: ["1511", "1513", "3823"]
+      description: "Palm oil, palm kernel oil, fatty acids"
+    - code: rubber
+      cn_codes: ["4001", "4005", "4006", "4007", "4008"]
+      description: "Natural rubber, latex, rubber products"
+    - code: soy
+      cn_codes: ["1201", "1208", "1507", "2304"]
+      description: "Soybeans, flour, oil, oilcake"
+    - code: wood
+      cn_codes: ["44", "47", "48", "94"]
+      description: "Wood products, pulp, paper, furniture (partial)"
+
+  penalties:
+    max_fine_percentage: 4
+    fine_basis: "annual EU turnover"
+    additional_penalties:
+      - "Confiscation of products"
+      - "Confiscation of revenue"
+      - "Temporary exclusion from public procurement"
+      - "Temporary prohibition from placing products on market"
+
+agents:
+  # Main validation agent
+  - id: eudr-validator
+    name: EUDR Compliance Validator
+    type: due-diligence-validator
+    description: "Core validation engine for EUDR compliance checks"
+
+    inputs:
+      - name: commodity_data
+        type: CommodityInput
+        required: true
+        description: "Commodity type, quantity, and CN code"
+
+      - name: geolocation_data
+        type: GeolocationInput
+        required: true
+        description: "GPS coordinates or polygon of production plot"
+
+      - name: production_data
+        type: ProductionInput
+        required: true
+        description: "Production date and harvest information"
+
+      - name: operator_data
+        type: OperatorInput
+        required: true
+        description: "Operator identification and registration"
+
+      - name: supply_chain_data
+        type: SupplyChainInput
+        required: true
+        description: "Chain of custody documentation"
+
+    outputs:
+      - name: compliance_result
+        type: ComplianceResult
+        description: "Overall compliance determination"
+
+      - name: risk_assessment
+        type: RiskAssessment
+        description: "Detailed risk scoring and factors"
+
+      - name: validation_report
+        type: ValidationReport
+        description: "Complete validation audit trail"
+
+    tools:
+      - geolocation_validator
+      - deforestation_detector
+      - supply_chain_tracer
+      - risk_assessment_engine
+      - dds_generator
+
+  # Geolocation validation agent
+  - id: eudr-geolocation
+    name: EUDR Geolocation Validator
+    type: deterministic-calculator
+    description: "Validates GPS coordinates and polygons for EUDR compliance"
+
+    inputs:
+      - name: geometry
+        type: GeoJSONGeometry
+        required: true
+        description: "Point, Polygon, or MultiPolygon geometry"
+
+      - name: commodity_type
+        type: CommodityType
+        required: true
+        description: "Commodity for size threshold validation"
+
+    outputs:
+      - name: validation_result
+        type: GeolocationValidationResult
+        description: "Validation status and errors"
+
+      - name: country_info
+        type: CountryInfo
+        description: "Country and region identification"
+
+      - name: risk_zone
+        type: RiskZone
+        description: "EC risk benchmarking zone"
+
+    tools:
+      - geojson_parser
+      - crs_transformer
+      - boundary_intersector
+      - country_lookup
+      - risk_zone_lookup
+
+  # Satellite verification agent
+  - id: eudr-satellite
+    name: EUDR Satellite Verification Agent
+    type: ml-classifier
+    description: "Verifies deforestation-free status using satellite imagery"
+
+    inputs:
+      - name: polygon
+        type: GeoJSONPolygon
+        required: true
+        description: "Production plot polygon"
+
+      - name: baseline_date
+        type: date
+        required: false
+        default: "2020-12-31"
+        description: "EUDR cutoff date for baseline"
+
+      - name: verification_date
+        type: date
+        required: false
+        default: "today"
+        description: "Current verification date"
+
+    outputs:
+      - name: deforestation_result
+        type: DeforestationResult
+        description: "Deforestation detection result"
+
+      - name: forest_cover_change
+        type: ForestCoverChange
+        description: "Detailed change analysis"
+
+      - name: confidence_score
+        type: float
+        description: "Detection confidence (0-1)"
+
+    tools:
+      - sentinel2_client
+      - landsat_client
+      - gfw_client
+      - forest_change_detector
+      - ndvi_calculator
+
+  # DDS generation agent
+  - id: eudr-dds-generator
+    name: EUDR Due Diligence Statement Generator
+    type: report-generator
+    description: "Generates EU-compliant Due Diligence Statements"
+
+    inputs:
+      - name: compliance_data
+        type: ComplianceData
+        required: true
+        description: "All validated compliance data"
+
+      - name: operator_info
+        type: OperatorInfo
+        required: true
+        description: "Operator registration details"
+
+      - name: submission_type
+        type: SubmissionType
+        required: true
+        description: "New, amendment, or withdrawal"
+
+    outputs:
+      - name: dds_document
+        type: DDSDocument
+        description: "Complete DDS for EU registry submission"
+
+      - name: reference_number
+        type: string
+        description: "Unique DDS reference number"
+
+    tools:
+      - dds_schema_validator
+      - reference_generator
+      - eu_registry_client
+
+tools:
+  # Geolocation tools
+  - id: geojson_parser
+    name: GeoJSON Parser
+    description: "Parses and validates GeoJSON geometries"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        geojson:
+          type: object
+          description: "GeoJSON geometry object"
+      required: ["geojson"]
+    output_schema:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        geometry_type:
+          type: string
+          enum: ["Point", "Polygon", "MultiPolygon"]
+        coordinates:
+          type: array
+        errors:
+          type: array
+
+  - id: crs_transformer
+    name: CRS Transformer
+    description: "Transforms coordinates to WGS84"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        geometry:
+          type: object
+        source_crs:
+          type: string
+          default: "EPSG:4326"
+      required: ["geometry"]
+    output_schema:
+      type: object
+      properties:
+        geometry:
+          type: object
+        target_crs:
+          type: string
+          const: "EPSG:4326"
+
+  - id: boundary_intersector
+    name: Boundary Intersection Detector
+    description: "Detects intersections with protected areas and territories"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        polygon:
+          type: object
+        check_protected:
+          type: boolean
+          default: true
+        check_indigenous:
+          type: boolean
+          default: true
+      required: ["polygon"]
+    output_schema:
+      type: object
+      properties:
+        intersects_protected:
+          type: boolean
+        intersects_indigenous:
+          type: boolean
+        intersection_details:
+          type: array
+
+  - id: country_lookup
+    name: Country Lookup
+    description: "Identifies country and region from coordinates"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        point:
+          type: object
+          properties:
+            lat:
+              type: number
+            lon:
+              type: number
+      required: ["point"]
+    output_schema:
+      type: object
+      properties:
+        country_code:
+          type: string
+          pattern: "^[A-Z]{2}$"
+        country_name:
+          type: string
+        region_code:
+          type: string
+        region_name:
+          type: string
+
+  - id: risk_zone_lookup
+    name: Risk Zone Lookup
+    description: "Determines deforestation risk level from EC benchmarking"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        country_code:
+          type: string
+        region_code:
+          type: string
+      required: ["country_code"]
+    output_schema:
+      type: object
+      properties:
+        risk_level:
+          type: string
+          enum: ["low", "standard", "high"]
+        due_diligence_type:
+          type: string
+          enum: ["standard", "enhanced", "reinforced"]
+        source:
+          type: string
+
+  # Satellite tools
+  - id: sentinel2_client
+    name: Sentinel-2 Client
+    description: "Retrieves Sentinel-2 satellite imagery"
+    type: external_api
+    config:
+      base_url: "https://dataspace.copernicus.eu/api"
+      auth_type: "oauth2"
+      rate_limit: 100
+      timeout: 30
+    input_schema:
+      type: object
+      properties:
+        polygon:
+          type: object
+        date_range:
+          type: object
+          properties:
+            start:
+              type: string
+              format: date
+            end:
+              type: string
+              format: date
+        cloud_cover_max:
+          type: number
+          default: 20
+      required: ["polygon", "date_range"]
+    output_schema:
+      type: object
+      properties:
+        scenes:
+          type: array
+        total_coverage:
+          type: number
+
+  - id: landsat_client
+    name: Landsat Client
+    description: "Retrieves Landsat 8/9 satellite imagery"
+    type: external_api
+    config:
+      base_url: "https://earthexplorer.usgs.gov/api"
+      auth_type: "api_key"
+      rate_limit: 50
+      timeout: 60
+    input_schema:
+      type: object
+      properties:
+        polygon:
+          type: object
+        date_range:
+          type: object
+        collection:
+          type: string
+          enum: ["landsat_8_c2_l2", "landsat_9_c2_l2"]
+      required: ["polygon", "date_range"]
+
+  - id: gfw_client
+    name: Global Forest Watch Client
+    description: "Queries Global Forest Watch forest loss data"
+    type: external_api
+    config:
+      base_url: "https://data-api.globalforestwatch.org"
+      auth_type: "api_key"
+      rate_limit: 200
+      timeout: 30
+    input_schema:
+      type: object
+      properties:
+        polygon:
+          type: object
+        years:
+          type: array
+          items:
+            type: integer
+      required: ["polygon"]
+    output_schema:
+      type: object
+      properties:
+        tree_cover_loss:
+          type: object
+        glad_alerts:
+          type: array
+        tree_cover_extent:
+          type: number
+
+  - id: forest_change_detector
+    name: Forest Change Detector
+    description: "ML model for detecting forest cover change"
+    type: ml_model
+    config:
+      model_type: "unet"
+      input_resolution: 10
+      output_classes: ["forest", "non_forest", "change"]
+      confidence_threshold: 0.8
+    input_schema:
+      type: object
+      properties:
+        baseline_imagery:
+          type: object
+        current_imagery:
+          type: object
+        polygon:
+          type: object
+      required: ["baseline_imagery", "current_imagery", "polygon"]
+    output_schema:
+      type: object
+      properties:
+        change_detected:
+          type: boolean
+        change_area_ha:
+          type: number
+        change_percentage:
+          type: number
+        confidence:
+          type: number
+        change_map:
+          type: object
+
+  - id: ndvi_calculator
+    name: NDVI Calculator
+    description: "Calculates Normalized Difference Vegetation Index"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        red_band:
+          type: array
+        nir_band:
+          type: array
+      required: ["red_band", "nir_band"]
+    output_schema:
+      type: object
+      properties:
+        ndvi:
+          type: array
+        mean_ndvi:
+          type: number
+        forest_threshold:
+          type: number
+          const: 0.4
+
+  # Supply chain tools
+  - id: supply_chain_tracer
+    name: Supply Chain Tracer
+    description: "Traces commodity supply chain to production plot"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        shipment_id:
+          type: string
+        documents:
+          type: array
+      required: ["shipment_id"]
+    output_schema:
+      type: object
+      properties:
+        traceability_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        chain_complete:
+          type: boolean
+        nodes:
+          type: array
+        gaps:
+          type: array
+
+  - id: risk_assessment_engine
+    name: Risk Assessment Engine
+    description: "Calculates comprehensive EUDR risk score"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        country_risk:
+          type: string
+        certification_status:
+          type: object
+        supplier_history:
+          type: object
+        satellite_result:
+          type: object
+        documentation_quality:
+          type: number
+      required: ["country_risk"]
+    output_schema:
+      type: object
+      properties:
+        risk_score:
+          type: number
+          minimum: 0
+          maximum: 100
+        risk_level:
+          type: string
+          enum: ["low", "medium", "high"]
+        risk_factors:
+          type: array
+        mitigating_factors:
+          type: array
+        recommendations:
+          type: array
+
+  # DDS tools
+  - id: dds_schema_validator
+    name: DDS Schema Validator
+    description: "Validates DDS against EU schema"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        dds_data:
+          type: object
+        schema_version:
+          type: string
+          default: "1.0"
+      required: ["dds_data"]
+    output_schema:
+      type: object
+      properties:
+        valid:
+          type: boolean
+        errors:
+          type: array
+        warnings:
+          type: array
+
+  - id: reference_generator
+    name: Reference Number Generator
+    description: "Generates unique DDS reference numbers"
+    type: deterministic
+    input_schema:
+      type: object
+      properties:
+        operator_id:
+          type: string
+        submission_date:
+          type: string
+          format: date
+      required: ["operator_id", "submission_date"]
+    output_schema:
+      type: object
+      properties:
+        reference_number:
+          type: string
+          pattern: "^DDS-[A-Z0-9]{8}-[0-9]{6}$"
+
+  - id: eu_registry_client
+    name: EU Registry Client
+    description: "Submits DDS to EU Information System"
+    type: external_api
+    config:
+      base_url: "https://eudr-registry.europa.eu/api"
+      auth_type: "oauth2_mtls"
+      rate_limit: 10
+      timeout: 60
+    input_schema:
+      type: object
+      properties:
+        dds_document:
+          type: object
+        submission_type:
+          type: string
+          enum: ["new", "amendment", "withdrawal"]
+      required: ["dds_document", "submission_type"]
+    output_schema:
+      type: object
+      properties:
+        submission_id:
+          type: string
+        status:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+validation:
+  # Validation rules for all inputs
+  rules:
+    - id: geolocation_required
+      description: "GPS coordinates or polygon required for all commodities"
+      condition: "input.geolocation_data != null"
+      severity: error
+
+    - id: production_date_after_cutoff
+      description: "Production must be after December 31, 2020 for deforestation-free"
+      condition: "input.production_data.date >= '2020-12-31'"
+      severity: error
+
+    - id: coordinate_precision
+      description: "Coordinates must have at least 6 decimal places"
+      condition: "coordinate_precision >= 6"
+      severity: warning
+
+    - id: polygon_closure
+      description: "Polygons must be closed (first = last coordinate)"
+      condition: "polygon.coordinates[0] == polygon.coordinates[-1]"
+      severity: error
+
+    - id: cn_code_valid
+      description: "CN code must be in EUDR commodity list"
+      condition: "cn_code in EUDR_CN_CODES"
+      severity: error
+
+golden_tests:
+  count: 200
+  categories:
+    - name: commodity_validation
+      tests: 35
+      description: "Tests for all 7 commodities (5 each)"
+    - name: geolocation_validation
+      tests: 10
+      description: "Valid and invalid geometry tests"
+    - name: dds_generation
+      tests: 15
+      description: "DDS schema and compliance tests"
+    - name: supply_chain
+      tests: 20
+      description: "Chain of custody and traceability tests"
+    - name: satellite_verification
+      tests: 15
+      description: "Deforestation detection tests"
+    - name: risk_assessment
+      tests: 10
+      description: "Risk scoring tests"
+    - name: edge_cases
+      tests: 15
+      description: "Boundary conditions and error handling"
+    - name: integration
+      tests: 80
+      description: "End-to-end workflow tests"
+
+deployment:
+  kubernetes:
+    namespace: eudr-production
+    replicas:
+      min: 3
+      max: 10
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1Gi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+    autoscaling:
+      target_cpu: 70
+      target_memory: 80
+
+  monitoring:
+    prometheus:
+      enabled: true
+      path: /metrics
+      port: 9090
+    grafana:
+      dashboard: eudr-compliance
+    alerts:
+      - name: high_error_rate
+        condition: "error_rate > 0.05"
+        severity: critical
+      - name: high_latency
+        condition: "p99_latency > 10s"
+        severity: warning
+
+documentation:
+  api_docs: /docs/api/eudr
+  user_guide: /docs/guides/eudr-compliance
+  integration_guide: /docs/integration/eudr
+  changelog: /docs/changelog/eudr

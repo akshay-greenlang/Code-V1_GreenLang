@@ -1,0 +1,272 @@
+# GreenLang Alertmanager Configuration
+# Production alerting with Slack, PagerDuty, and Email integrations
+
+global:
+  # SMTP configuration for email alerts
+  smtp_smarthost: 'smtp.sendgrid.net:587'
+  smtp_from: 'alerts@greenlang.io'
+  smtp_auth_username: 'apikey'
+  smtp_auth_password: '{{ SMTP_PASSWORD }}'
+  smtp_require_tls: true
+
+  # PagerDuty configuration
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+  # Slack configuration
+  slack_api_url: '{{ SLACK_WEBHOOK_URL }}'
+
+  # Default resolve timeout
+  resolve_timeout: 5m
+
+# Templates for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Inhibition rules - prevent notification storms
+inhibit_rules:
+  # If a critical alert is firing, inhibit warning alerts for the same service
+  - source_matchers:
+      - severity = critical
+    target_matchers:
+      - severity = warning
+    equal: ['service', 'alertname']
+
+  # If cluster is down, inhibit all other alerts
+  - source_matchers:
+      - alertname = KubernetesClusterDown
+    target_matchers:
+      - severity =~ "warning|critical"
+    equal: ['cluster']
+
+  # If database is down, inhibit dependent service alerts
+  - source_matchers:
+      - alertname = PostgreSQLDown
+    target_matchers:
+      - severity =~ "warning|critical"
+    equal: ['namespace']
+
+# Routing tree
+route:
+  # Default receiver
+  receiver: 'slack-warnings'
+
+  # Group alerts by these labels
+  group_by: ['alertname', 'service', 'namespace']
+
+  # Wait before sending first notification
+  group_wait: 30s
+
+  # Wait before sending updates for new alerts in same group
+  group_interval: 5m
+
+  # Wait before resending same alert
+  repeat_interval: 4h
+
+  # Child routes for specific alert types
+  routes:
+    # Critical alerts - immediate PagerDuty notification
+    - matchers:
+        - severity = critical
+      receiver: 'pagerduty-critical'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
+      continue: true  # Also send to Slack
+
+    # Critical alerts - also to Slack critical channel
+    - matchers:
+        - severity = critical
+      receiver: 'slack-critical'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
+
+    # Warning alerts - Slack only
+    - matchers:
+        - severity = warning
+      receiver: 'slack-warnings'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
+
+    # EUDR compliance alerts - dedicated channel
+    - matchers:
+        - service = eudr-agent
+      receiver: 'slack-eudr'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 2h
+      continue: true  # Also go through normal severity routing
+
+    # CBAM compliance alerts - dedicated channel
+    - matchers:
+        - service = cbam-agent
+      receiver: 'slack-cbam'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 2h
+      continue: true
+
+    # SLO alerts - high priority
+    - matchers:
+        - slo =~ ".+"
+      receiver: 'pagerduty-slo'
+      group_wait: 10s
+      group_interval: 2m
+      repeat_interval: 30m
+      continue: true
+
+    # Security alerts - immediate escalation
+    - matchers:
+        - team = security
+      receiver: 'pagerduty-security'
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 15m
+      continue: true
+
+    # Business alerts - business channel
+    - matchers:
+        - team = business
+      receiver: 'slack-business'
+      group_wait: 1m
+      group_interval: 10m
+      repeat_interval: 6h
+
+    # Database alerts
+    - matchers:
+        - service =~ "postgresql|redis"
+      receiver: 'slack-infrastructure'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 2h
+
+    # Daily summary (watchdog alerts)
+    - matchers:
+        - alertname = Watchdog
+      receiver: 'email-daily'
+      group_wait: 24h
+      group_interval: 24h
+      repeat_interval: 24h
+
+# Receivers configuration
+receivers:
+  # Default Slack receiver for warnings
+  - name: 'slack-warnings'
+    slack_configs:
+      - channel: '#greenlang-alerts-warnings'
+        username: 'GreenLang AlertBot'
+        icon_emoji: ':warning:'
+        send_resolved: true
+        title: '{{ template "slack.greenlang.title" . }}'
+        text: '{{ template "slack.greenlang.text" . }}'
+        actions:
+          - type: button
+            text: 'View in Grafana'
+            url: '{{ template "slack.greenlang.grafana_url" . }}'
+          - type: button
+            text: 'Runbook'
+            url: '{{ (index .Alerts 0).Annotations.runbook_url }}'
+
+  # Critical Slack channel
+  - name: 'slack-critical'
+    slack_configs:
+      - channel: '#greenlang-alerts-critical'
+        username: 'GreenLang AlertBot'
+        icon_emoji: ':fire:'
+        send_resolved: true
+        title: '{{ template "slack.greenlang.title" . }}'
+        text: '{{ template "slack.greenlang.text" . }}'
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  # EUDR-specific channel
+  - name: 'slack-eudr'
+    slack_configs:
+      - channel: '#greenlang-eudr-compliance'
+        username: 'EUDR AlertBot'
+        icon_emoji: ':deciduous_tree:'
+        send_resolved: true
+        title: 'EUDR Alert: {{ .CommonLabels.alertname }}'
+        text: '{{ template "slack.greenlang.text" . }}'
+
+  # CBAM-specific channel
+  - name: 'slack-cbam'
+    slack_configs:
+      - channel: '#greenlang-cbam-compliance'
+        username: 'CBAM AlertBot'
+        icon_emoji: ':factory:'
+        send_resolved: true
+        title: 'CBAM Alert: {{ .CommonLabels.alertname }}'
+        text: '{{ template "slack.greenlang.text" . }}'
+
+  # Infrastructure channel
+  - name: 'slack-infrastructure'
+    slack_configs:
+      - channel: '#greenlang-infrastructure'
+        username: 'Infrastructure AlertBot'
+        icon_emoji: ':gear:'
+        send_resolved: true
+        title: 'Infrastructure Alert: {{ .CommonLabels.alertname }}'
+        text: '{{ template "slack.greenlang.text" . }}'
+
+  # Business metrics channel
+  - name: 'slack-business'
+    slack_configs:
+      - channel: '#greenlang-business-alerts'
+        username: 'Business AlertBot'
+        icon_emoji: ':chart_with_upwards_trend:'
+        send_resolved: true
+        title: 'Business Alert: {{ .CommonLabels.alertname }}'
+        text: '{{ template "slack.greenlang.text" . }}'
+
+  # PagerDuty for critical alerts
+  - name: 'pagerduty-critical'
+    pagerduty_configs:
+      - service_key: '{{ PAGERDUTY_SERVICE_KEY_CRITICAL }}'
+        severity: critical
+        description: '{{ template "pagerduty.greenlang.description" . }}'
+        details:
+          firing: '{{ template "pagerduty.greenlang.firing" . }}'
+          resolved: '{{ template "pagerduty.greenlang.resolved" . }}'
+          num_firing: '{{ .Alerts.Firing | len }}'
+          num_resolved: '{{ .Alerts.Resolved | len }}'
+
+  # PagerDuty for SLO breaches
+  - name: 'pagerduty-slo'
+    pagerduty_configs:
+      - service_key: '{{ PAGERDUTY_SERVICE_KEY_SLO }}'
+        severity: critical
+        description: 'SLO Breach: {{ .CommonLabels.alertname }}'
+        details:
+          firing: '{{ template "pagerduty.greenlang.firing" . }}'
+          slo: '{{ .CommonLabels.slo }}'
+
+  # PagerDuty for security alerts
+  - name: 'pagerduty-security'
+    pagerduty_configs:
+      - service_key: '{{ PAGERDUTY_SERVICE_KEY_SECURITY }}'
+        severity: critical
+        description: 'Security Alert: {{ .CommonLabels.alertname }}'
+        details:
+          firing: '{{ template "pagerduty.greenlang.firing" . }}'
+
+  # Email for daily summaries
+  - name: 'email-daily'
+    email_configs:
+      - to: 'ops-team@greenlang.io'
+        send_resolved: false
+        headers:
+          Subject: 'GreenLang Daily Alert Summary - {{ .CommonLabels.cluster }}'
+        html: '{{ template "email.greenlang.daily_summary" . }}'
+
+  # Email for weekly reports
+  - name: 'email-weekly'
+    email_configs:
+      - to: 'ops-team@greenlang.io, engineering-leads@greenlang.io'
+        send_resolved: false
+        headers:
+          Subject: 'GreenLang Weekly SLO Report'
+        html: '{{ template "email.greenlang.weekly_report" . }}'
+
+  # Null receiver for silenced alerts
+  - name: 'null'

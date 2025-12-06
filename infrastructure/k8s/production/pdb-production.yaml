@@ -1,0 +1,290 @@
+# GreenLang Production Pod Disruption Budgets
+# Ensures high availability during node maintenance and updates
+---
+# API Service PDB - Critical service, maintain high availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-api-pdb
+  namespace: greenlang-production
+  labels:
+    app: greenlang-api
+    environment: production
+    tier: critical
+spec:
+  # At least 80% of pods must be available during disruption
+  minAvailable: "80%"
+  selector:
+    matchLabels:
+      app: greenlang-api
+  # Allow eviction during maintenance windows
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Alternative API PDB using maxUnavailable
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-api-pdb-max-unavailable
+  namespace: greenlang-production
+  labels:
+    app: greenlang-api
+    environment: production
+spec:
+  # Maximum 1 pod can be unavailable at a time
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: greenlang-api
+      deployment-type: blue
+
+---
+# Worker Service PDB - Allow more flexibility for batch processing
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-worker-pdb
+  namespace: greenlang-production
+  labels:
+    app: greenlang-worker
+    environment: production
+    tier: standard
+spec:
+  # Keep at least 60% workers available
+  minAvailable: "60%"
+  selector:
+    matchLabels:
+      app: greenlang-worker
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ML Inference PDB - High availability for ML services
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-ml-inference-pdb
+  namespace: greenlang-production
+  labels:
+    app: greenlang-ml-inference
+    environment: production
+    tier: critical
+spec:
+  # GPU pods are expensive, maintain minimum availability
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: greenlang-ml-inference
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Frontend PDB - Standard availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-frontend-pdb
+  namespace: greenlang-production
+  labels:
+    app: greenlang-frontend
+    environment: production
+    tier: standard
+spec:
+  minAvailable: "70%"
+  selector:
+    matchLabels:
+      app: greenlang-frontend
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Scheduler PDB - Leader-based service, minimum replicas
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-scheduler-pdb
+  namespace: greenlang-production
+  labels:
+    app: greenlang-scheduler
+    environment: production
+    tier: critical
+spec:
+  # At least 1 scheduler must always be running
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: greenlang-scheduler
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Redis Cache PDB (if running in-cluster)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-redis-pdb
+  namespace: greenlang-production
+  labels:
+    app: greenlang-redis
+    environment: production
+    tier: critical
+spec:
+  # For Redis Sentinel: keep quorum
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: greenlang-redis
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# PostgreSQL PDB (if running in-cluster with HA)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: greenlang-postgres-pdb
+  namespace: greenlang-production
+  labels:
+    app: greenlang-postgres
+    environment: production
+    tier: critical
+spec:
+  # For PostgreSQL HA: keep quorum
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: greenlang-postgres
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Ingress Controller PDB - Always maintain at least 2
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ingress-nginx-pdb
+  namespace: ingress-nginx
+  labels:
+    app: ingress-nginx
+    environment: production
+    tier: critical
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+      app.kubernetes.io/component: controller
+  unhealthyPodEvictionPolicy: AlwaysAllow
+
+---
+# Prometheus PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: prometheus-pdb
+  namespace: monitoring
+  labels:
+    app: prometheus
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Grafana PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: grafana-pdb
+  namespace: monitoring
+  labels:
+    app: grafana
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grafana
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ArgoCD Server PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: argocd-server-pdb
+  namespace: argocd
+  labels:
+    app: argocd-server
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-server
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# ArgoCD Application Controller PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: argocd-application-controller-pdb
+  namespace: argocd
+  labels:
+    app: argocd-application-controller
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: argocd-application-controller
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Cert-Manager PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: cert-manager-pdb
+  namespace: cert-manager
+  labels:
+    app: cert-manager
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: cert-manager
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# External Secrets Operator PDB
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: external-secrets-pdb
+  namespace: external-secrets
+  labels:
+    app: external-secrets
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: external-secrets
+  unhealthyPodEvictionPolicy: IfHealthyBudget
+
+---
+# Karpenter PDB (if using for node provisioning)
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: karpenter-pdb
+  namespace: karpenter
+  labels:
+    app: karpenter
+    environment: production
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: karpenter
+  unhealthyPodEvictionPolicy: IfHealthyBudget

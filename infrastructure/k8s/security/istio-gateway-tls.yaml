@@ -1,0 +1,904 @@
+# =============================================================================
+# GreenLang Process Heat Agents - Istio Gateway TLS Configuration
+# =============================================================================
+# TASK-151: Configure Gateway TLS for External Protocol Integration
+#
+# This configuration provides:
+#   1. HTTPS Gateway for public API traffic
+#   2. ServiceEntry and Gateway for OPC-UA (port 4840) with TLS
+#   3. ServiceEntry and Gateway for MQTT (port 8883) with TLS
+#   4. ServiceEntry and Gateway for Kafka (port 9093) with TLS
+#
+# All external traffic is encrypted using TLS 1.2+ with modern cipher suites.
+# =============================================================================
+
+---
+# =============================================================================
+# GATEWAY: Public HTTPS API Gateway
+# =============================================================================
+# Main ingress gateway for public API traffic.
+# Terminates TLS and routes to internal services over mTLS.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: greenlang-api-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: api-gateway
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: ingress
+    security.greenlang.io/tier: edge
+  annotations:
+    description: "Public HTTPS gateway for GreenLang API"
+    security.greenlang.io/tls-version: "1.2+"
+    security.greenlang.io/certificates: "cert-manager/letsencrypt-prod"
+spec:
+  selector:
+    istio: ingressgateway
+
+  servers:
+    # HTTPS server for API traffic
+    - port:
+        number: 443
+        name: https-api
+        protocol: HTTPS
+      hosts:
+        - "api.greenlang.io"
+        - "api-staging.greenlang.io"
+      tls:
+        mode: SIMPLE
+        # Certificate from cert-manager (Let's Encrypt)
+        credentialName: greenlang-api-tls
+        # Minimum TLS version
+        minProtocolVersion: TLSV1_2
+        # Cipher suites - modern, secure options only
+        cipherSuites:
+          - ECDHE-ECDSA-AES256-GCM-SHA384
+          - ECDHE-RSA-AES256-GCM-SHA384
+          - ECDHE-ECDSA-CHACHA20-POLY1305
+          - ECDHE-RSA-CHACHA20-POLY1305
+          - ECDHE-ECDSA-AES128-GCM-SHA256
+          - ECDHE-RSA-AES128-GCM-SHA256
+
+    # HTTP redirect to HTTPS
+    - port:
+        number: 80
+        name: http-redirect
+        protocol: HTTP
+      hosts:
+        - "api.greenlang.io"
+        - "api-staging.greenlang.io"
+      tls:
+        httpsRedirect: true
+
+---
+# =============================================================================
+# VIRTUALSERVICE: API Routing
+# =============================================================================
+# Routes traffic from the gateway to the production API service.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: greenlang-api-vs
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: api-virtualservice
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: routing
+  annotations:
+    description: "VirtualService routing for GreenLang API"
+spec:
+  hosts:
+    - "api.greenlang.io"
+  gateways:
+    - istio-system/greenlang-api-gateway
+
+  http:
+    # Health check route (no auth required)
+    - match:
+        - uri:
+            prefix: /health
+        - uri:
+            prefix: /ready
+      route:
+        - destination:
+            host: greenlang-api.greenlang-production.svc.cluster.local
+            port:
+              number: 8000
+
+    # API v2 routes (canary deployment support)
+    - match:
+        - uri:
+            prefix: /api/v2
+          headers:
+            x-canary:
+              exact: "true"
+      route:
+        - destination:
+            host: greenlang-api.greenlang-production.svc.cluster.local
+            subset: canary
+            port:
+              number: 8000
+          weight: 100
+
+    # Main API routes
+    - match:
+        - uri:
+            prefix: /api
+      route:
+        - destination:
+            host: greenlang-api.greenlang-production.svc.cluster.local
+            subset: stable
+            port:
+              number: 8000
+          weight: 95
+        - destination:
+            host: greenlang-api.greenlang-production.svc.cluster.local
+            subset: canary
+            port:
+              number: 8000
+          weight: 5
+
+      # Retry policy for resilience
+      retries:
+        attempts: 3
+        perTryTimeout: 10s
+        retryOn: connect-failure,refused-stream,unavailable,cancelled,retriable-4xx,reset
+
+      # Timeout
+      timeout: 30s
+
+      # CORS policy
+      corsPolicy:
+        allowOrigins:
+          - regex: "https://.*\\.greenlang\\.io"
+          - exact: "https://app.greenlang.io"
+        allowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+        allowHeaders:
+          - authorization
+          - content-type
+          - x-requested-with
+          - x-correlation-id
+        exposeHeaders:
+          - x-request-id
+          - x-correlation-id
+        maxAge: "24h"
+        allowCredentials: true
+
+---
+# =============================================================================
+# SERVICEENTRY: External OPC-UA Servers
+# =============================================================================
+# Define external OPC-UA servers that agents can connect to.
+# These are industrial control systems (PLCs, SCADA) that provide process data.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-opcua-servers
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: opcua-serviceentry
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: external-services
+    security.greenlang.io/protocol: opcua
+  annotations:
+    description: "ServiceEntry for external OPC-UA industrial servers"
+    security.greenlang.io/external-systems: "industrial-control"
+spec:
+  # External hosts - defined by hostname pattern
+  hosts:
+    - "*.opcua.external.greenlang.io"
+    # Specific industrial systems
+    - "plc-001.factory.greenlang.io"
+    - "plc-002.factory.greenlang.io"
+    - "scada.factory.greenlang.io"
+
+  # Addresses for direct IP access (if DNS unavailable)
+  addresses:
+    - "10.100.0.0/24"  # Industrial network subnet
+
+  ports:
+    # OPC-UA Binary protocol over TLS
+    - number: 4840
+      name: opcua-tls
+      protocol: TLS
+
+    # OPC-UA HTTPS transport (alternative)
+    - number: 443
+      name: opcua-https
+      protocol: HTTPS
+
+  # MESH_EXTERNAL: Traffic exits the mesh to external systems
+  location: MESH_EXTERNAL
+
+  # DNS resolution type
+  resolution: DNS
+
+  # Endpoints (if static IPs are known)
+  endpoints:
+    - address: plc-001.factory.internal
+      ports:
+        opcua-tls: 4840
+      labels:
+        device-type: plc
+        location: factory-floor-1
+    - address: plc-002.factory.internal
+      ports:
+        opcua-tls: 4840
+      labels:
+        device-type: plc
+        location: factory-floor-2
+    - address: scada.factory.internal
+      ports:
+        opcua-tls: 4840
+      labels:
+        device-type: scada
+        location: control-room
+
+---
+# =============================================================================
+# GATEWAY: OPC-UA Egress Gateway
+# =============================================================================
+# Egress gateway for OPC-UA traffic to external industrial systems.
+# Provides controlled egress point with TLS origination.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: opcua-egress-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: opcua-egress-gateway
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: egress
+    security.greenlang.io/protocol: opcua
+  annotations:
+    description: "Egress gateway for OPC-UA industrial protocol"
+spec:
+  selector:
+    istio: egressgateway
+
+  servers:
+    - port:
+        number: 4840
+        name: tls-opcua
+        protocol: TLS
+      hosts:
+        - "*.opcua.external.greenlang.io"
+        - "*.factory.greenlang.io"
+      tls:
+        mode: PASSTHROUGH  # Pass TLS directly (OPC-UA handles its own cert)
+
+---
+# =============================================================================
+# VIRTUALSERVICE: OPC-UA Egress Routing
+# =============================================================================
+# Routes OPC-UA traffic through the egress gateway.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: opcua-egress-vs
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: opcua-egress-virtualservice
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: routing
+    security.greenlang.io/protocol: opcua
+spec:
+  hosts:
+    - "*.opcua.external.greenlang.io"
+    - "*.factory.greenlang.io"
+
+  gateways:
+    - istio-system/opcua-egress-gateway
+    - mesh
+
+  tls:
+    - match:
+        - port: 4840
+          sniHosts:
+            - "*.opcua.external.greenlang.io"
+            - "*.factory.greenlang.io"
+          gateways:
+            - mesh
+      route:
+        - destination:
+            host: istio-egressgateway.istio-system.svc.cluster.local
+            port:
+              number: 4840
+
+    - match:
+        - port: 4840
+          sniHosts:
+            - "*.opcua.external.greenlang.io"
+            - "*.factory.greenlang.io"
+          gateways:
+            - istio-system/opcua-egress-gateway
+      route:
+        - destination:
+            # ServiceEntry host
+            host: "*.opcua.external.greenlang.io"
+            port:
+              number: 4840
+
+---
+# =============================================================================
+# SERVICEENTRY: External MQTT Brokers
+# =============================================================================
+# Define external MQTT brokers for IoT sensor data ingestion.
+# Uses MQTT over TLS (MQTTS) on port 8883.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-mqtt-brokers
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: mqtt-serviceentry
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: external-services
+    security.greenlang.io/protocol: mqtt
+  annotations:
+    description: "ServiceEntry for external MQTT brokers"
+    security.greenlang.io/external-systems: "iot-messaging"
+spec:
+  hosts:
+    - "*.mqtt.external.greenlang.io"
+    # Cloud MQTT providers
+    - "mqtt.amazonaws.com"
+    - "mqtt.azure-devices.net"
+    # On-premises broker
+    - "mqtt.factory.greenlang.io"
+
+  ports:
+    # MQTT over TLS
+    - number: 8883
+      name: mqtts
+      protocol: TLS
+
+    # MQTT over WebSocket TLS (for web clients)
+    - number: 443
+      name: mqtt-wss
+      protocol: HTTPS
+
+  location: MESH_EXTERNAL
+  resolution: DNS
+
+---
+# =============================================================================
+# GATEWAY: MQTT Egress Gateway
+# =============================================================================
+# Egress gateway for MQTT traffic to external brokers.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: mqtt-egress-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: mqtt-egress-gateway
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: egress
+    security.greenlang.io/protocol: mqtt
+  annotations:
+    description: "Egress gateway for MQTT IoT protocol"
+spec:
+  selector:
+    istio: egressgateway
+
+  servers:
+    - port:
+        number: 8883
+        name: tls-mqtt
+        protocol: TLS
+      hosts:
+        - "*.mqtt.external.greenlang.io"
+        - "mqtt.amazonaws.com"
+        - "mqtt.azure-devices.net"
+        - "mqtt.factory.greenlang.io"
+      tls:
+        mode: PASSTHROUGH
+
+---
+# =============================================================================
+# VIRTUALSERVICE: MQTT Egress Routing
+# =============================================================================
+# Routes MQTT traffic through the egress gateway.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: mqtt-egress-vs
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: mqtt-egress-virtualservice
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: routing
+    security.greenlang.io/protocol: mqtt
+spec:
+  hosts:
+    - "*.mqtt.external.greenlang.io"
+    - "mqtt.amazonaws.com"
+    - "mqtt.azure-devices.net"
+    - "mqtt.factory.greenlang.io"
+
+  gateways:
+    - istio-system/mqtt-egress-gateway
+    - mesh
+
+  tls:
+    - match:
+        - port: 8883
+          gateways:
+            - mesh
+      route:
+        - destination:
+            host: istio-egressgateway.istio-system.svc.cluster.local
+            port:
+              number: 8883
+
+    - match:
+        - port: 8883
+          gateways:
+            - istio-system/mqtt-egress-gateway
+      route:
+        - destination:
+            host: "mqtt.factory.greenlang.io"
+            port:
+              number: 8883
+
+---
+# =============================================================================
+# SERVICEENTRY: External Kafka Brokers
+# =============================================================================
+# Define external Kafka brokers for streaming data pipelines.
+# Uses Kafka with TLS on port 9093.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: ServiceEntry
+metadata:
+  name: external-kafka-brokers
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: kafka-serviceentry
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: external-services
+    security.greenlang.io/protocol: kafka
+  annotations:
+    description: "ServiceEntry for external Kafka brokers"
+    security.greenlang.io/external-systems: "streaming-platform"
+spec:
+  hosts:
+    - "*.kafka.external.greenlang.io"
+    # Confluent Cloud
+    - "*.confluent.cloud"
+    # Amazon MSK
+    - "*.kafka.us-east-1.amazonaws.com"
+    # On-premises Kafka
+    - "kafka-1.greenlang.io"
+    - "kafka-2.greenlang.io"
+    - "kafka-3.greenlang.io"
+
+  ports:
+    # Kafka TLS
+    - number: 9093
+      name: kafka-tls
+      protocol: TLS
+
+    # Kafka SASL_SSL
+    - number: 9094
+      name: kafka-sasl-ssl
+      protocol: TLS
+
+  location: MESH_EXTERNAL
+  resolution: DNS
+
+  # Specific broker endpoints
+  endpoints:
+    - address: kafka-1.greenlang.io
+      ports:
+        kafka-tls: 9093
+      labels:
+        broker-id: "1"
+        rack: us-east-1a
+    - address: kafka-2.greenlang.io
+      ports:
+        kafka-tls: 9093
+      labels:
+        broker-id: "2"
+        rack: us-east-1b
+    - address: kafka-3.greenlang.io
+      ports:
+        kafka-tls: 9093
+      labels:
+        broker-id: "3"
+        rack: us-east-1c
+
+---
+# =============================================================================
+# GATEWAY: Kafka Egress Gateway
+# =============================================================================
+# Egress gateway for Kafka traffic to external brokers.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: kafka-egress-gateway
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: kafka-egress-gateway
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: egress
+    security.greenlang.io/protocol: kafka
+  annotations:
+    description: "Egress gateway for Kafka streaming protocol"
+spec:
+  selector:
+    istio: egressgateway
+
+  servers:
+    - port:
+        number: 9093
+        name: tls-kafka
+        protocol: TLS
+      hosts:
+        - "*.kafka.external.greenlang.io"
+        - "*.confluent.cloud"
+        - "*.kafka.us-east-1.amazonaws.com"
+        - "kafka-1.greenlang.io"
+        - "kafka-2.greenlang.io"
+        - "kafka-3.greenlang.io"
+      tls:
+        mode: PASSTHROUGH
+
+    - port:
+        number: 9094
+        name: tls-kafka-sasl
+        protocol: TLS
+      hosts:
+        - "*.confluent.cloud"
+      tls:
+        mode: PASSTHROUGH
+
+---
+# =============================================================================
+# VIRTUALSERVICE: Kafka Egress Routing
+# =============================================================================
+# Routes Kafka traffic through the egress gateway.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: kafka-egress-vs
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: kafka-egress-virtualservice
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: routing
+    security.greenlang.io/protocol: kafka
+spec:
+  hosts:
+    - "*.kafka.external.greenlang.io"
+    - "kafka-1.greenlang.io"
+    - "kafka-2.greenlang.io"
+    - "kafka-3.greenlang.io"
+
+  gateways:
+    - istio-system/kafka-egress-gateway
+    - mesh
+
+  tls:
+    - match:
+        - port: 9093
+          gateways:
+            - mesh
+      route:
+        - destination:
+            host: istio-egressgateway.istio-system.svc.cluster.local
+            port:
+              number: 9093
+
+    - match:
+        - port: 9093
+          gateways:
+            - istio-system/kafka-egress-gateway
+      route:
+        - destination:
+            host: "kafka-1.greenlang.io"
+            port:
+              number: 9093
+
+---
+# =============================================================================
+# SIDECAR: Restrict Egress to Known Hosts Only
+# =============================================================================
+# Restrict what external hosts each namespace can reach.
+# This prevents data exfiltration to unauthorized destinations.
+# =============================================================================
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: restrict-egress-agents
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: sidecar-egress-restriction
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: egress-control
+  annotations:
+    description: "Restrict egress from agents namespace"
+spec:
+  egress:
+    # Allow communication within the mesh
+    - hosts:
+        - "./*"  # Same namespace
+        - "istio-system/*"
+        - "greenlang-data/*"
+        - "greenlang-ml/*"
+        - "greenlang-production/*"
+
+    # Allow specific external hosts only
+    - hosts:
+        - "greenlang-agents/*.opcua.external.greenlang.io"
+        - "greenlang-agents/*.factory.greenlang.io"
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: restrict-egress-data
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: sidecar-egress-restriction
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: egress-control
+  annotations:
+    description: "Restrict egress from data namespace"
+spec:
+  egress:
+    - hosts:
+        - "./*"
+        - "istio-system/*"
+        - "greenlang-agents/*"
+        - "greenlang-ml/*"
+        - "greenlang-production/*"
+
+    # Allow external MQTT and Kafka
+    - hosts:
+        - "greenlang-data/*.mqtt.external.greenlang.io"
+        - "greenlang-data/*.kafka.external.greenlang.io"
+        - "greenlang-data/kafka-1.greenlang.io"
+        - "greenlang-data/kafka-2.greenlang.io"
+        - "greenlang-data/kafka-3.greenlang.io"
+        - "greenlang-data/mqtt.factory.greenlang.io"
+
+---
+# =============================================================================
+# ENVOYFILTER: Custom TLS Settings
+# =============================================================================
+# Apply custom TLS settings for enhanced security.
+# =============================================================================
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: tls-security-settings
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: tls-envoy-filter
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+  annotations:
+    description: "Enhanced TLS security settings for all gateways"
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+
+  configPatches:
+    # Patch TLS settings for enhanced security
+    - applyTo: LISTENER
+      match:
+        context: GATEWAY
+        listener:
+          portNumber: 443
+      patch:
+        operation: MERGE
+        value:
+          per_connection_buffer_limit_bytes: 32768
+
+---
+# =============================================================================
+# CERTIFICATE: Gateway TLS Certificate (cert-manager)
+# =============================================================================
+# Certificate resource for automatic TLS certificate management.
+# Uses cert-manager with Let's Encrypt.
+# =============================================================================
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: greenlang-api-tls
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: api-certificate
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+  annotations:
+    description: "TLS certificate for GreenLang API gateway"
+spec:
+  secretName: greenlang-api-tls
+
+  # Certificate validity
+  duration: 2160h  # 90 days
+  renewBefore: 360h  # Renew 15 days before expiry
+
+  # Subject
+  subject:
+    organizations:
+      - GreenLang Inc.
+
+  # DNS names for the certificate
+  dnsNames:
+    - api.greenlang.io
+    - api-staging.greenlang.io
+    - "*.api.greenlang.io"
+
+  # Private key settings
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+    rotationPolicy: Always
+
+  # Issuer reference (Let's Encrypt production)
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+    group: cert-manager.io
+
+---
+# =============================================================================
+# CLUSTERISSUER: Let's Encrypt Production
+# =============================================================================
+# ClusterIssuer for automatic certificate issuance via Let's Encrypt.
+# =============================================================================
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  labels:
+    app.kubernetes.io/name: letsencrypt-issuer
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+  annotations:
+    description: "Let's Encrypt production certificate issuer"
+spec:
+  acme:
+    # Production ACME server
+    server: https://acme-v02.api.letsencrypt.org/directory
+
+    # Email for certificate notifications
+    email: security@greenlang.io
+
+    # Secret to store the ACME account key
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+
+    # Challenge solvers
+    solvers:
+      # HTTP-01 challenge (for standard domains)
+      - http01:
+          ingress:
+            class: istio
+
+      # DNS-01 challenge (for wildcards)
+      - dns01:
+          route53:
+            region: us-east-1
+            hostedZoneID: Z1234567890ABC
+        selector:
+          dnsNames:
+            - "*.api.greenlang.io"
+            - "*.greenlang.io"
+
+---
+# =============================================================================
+# SECRET: External Protocol Certificates
+# =============================================================================
+# Secrets containing certificates for external protocol connections.
+# These should be populated by your secrets management system (Vault, etc.)
+# =============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: opcua-client-certs
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: opcua-certs
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/protocol: opcua
+  annotations:
+    description: "OPC-UA client certificates for industrial system access"
+    # Managed by external-secrets-operator or vault-secrets-operator
+    external-secrets.io/managed: "true"
+type: kubernetes.io/tls
+data:
+  # Placeholder - should be populated by secrets operator
+  tls.crt: ""  # Base64 encoded client certificate
+  tls.key: ""  # Base64 encoded private key
+  ca.crt: ""   # Base64 encoded CA certificate
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mqtt-client-certs
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: mqtt-certs
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/protocol: mqtt
+  annotations:
+    description: "MQTT client certificates for broker authentication"
+    external-secrets.io/managed: "true"
+type: kubernetes.io/tls
+data:
+  tls.crt: ""
+  tls.key: ""
+  ca.crt: ""
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka-client-certs
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: kafka-certs
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/protocol: kafka
+  annotations:
+    description: "Kafka client certificates for broker authentication"
+    external-secrets.io/managed: "true"
+type: kubernetes.io/tls
+data:
+  tls.crt: ""
+  tls.key: ""
+  ca.crt: ""
+
+---
+# =============================================================================
+# TELEMETRY: Enable Access Logging for Security Audit
+# =============================================================================
+# Enable detailed access logging for security auditing and compliance.
+# =============================================================================
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: security-access-logging
+  namespace: istio-system
+  labels:
+    app.kubernetes.io/name: security-telemetry
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: observability
+  annotations:
+    description: "Access logging for security audit and compliance"
+spec:
+  accessLogging:
+    - providers:
+        - name: envoy
+      # Log all requests (can be filtered for production)
+      filter:
+        expression: "true"

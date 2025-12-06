@@ -1,0 +1,118 @@
+{{/*
+Internal ClusterIP Services for component communication
+*/}}
+---
+# Agent Runner Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-agent-runner
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-runner
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "greenlang-agents.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-runner
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+    - name: grpc
+      port: 50051
+      targetPort: grpc
+      protocol: TCP
+  sessionAffinity: None
+---
+# Scheduler Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-scheduler
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "greenlang-agents.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+    - name: grpc
+      port: 50052
+      targetPort: grpc
+      protocol: TCP
+  sessionAffinity: None
+---
+# Worker Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-worker
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "greenlang-agents.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP
+  sessionAffinity: None
+---
+# Metrics Aggregator Service (for Prometheus)
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-metrics
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: metrics
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  selector:
+    {{- include "greenlang-agents.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: metrics
+      port: 9090
+      targetPort: metrics
+      protocol: TCP

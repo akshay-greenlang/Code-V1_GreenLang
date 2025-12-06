@@ -1,0 +1,537 @@
+{
+  "metadata": {
+    "source": "EPA Emission Factors Hub - Fugitive Emissions",
+    "source_url": "https://www.epa.gov/climateleadership/ghg-emission-factors-hub",
+    "version": "2024",
+    "last_updated": "2024-04-01",
+    "units_note": "All factors in kg per unit unless otherwise specified",
+    "scope": "Scope 1 - Direct Fugitive Emissions",
+    "methodology": "Based on EPA mandatory reporting rule (40 CFR Part 98)",
+    "gwp_basis": "AR5 100-year GWP values (CO2=1, CH4=28, N2O=265)"
+  },
+  "refrigerants_hfc": {
+    "hfc_23": {
+      "factor_id": "EPA_2024_FUG_HFC_001",
+      "name": "HFC-23 (CHF3)",
+      "chemical_formula": "CHF3",
+      "unit": "kg",
+      "kgCO2e_per_unit": 14800,
+      "gwp_100yr_ar5": 14800,
+      "gwp_100yr_ar6": 14600,
+      "atmospheric_lifetime_years": 228,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Semiconductor manufacturing", "Fire suppression"]
+    },
+    "hfc_32": {
+      "factor_id": "EPA_2024_FUG_HFC_002",
+      "name": "HFC-32 (CH2F2)",
+      "chemical_formula": "CH2F2",
+      "unit": "kg",
+      "kgCO2e_per_unit": 675,
+      "gwp_100yr_ar5": 675,
+      "gwp_100yr_ar6": 771,
+      "atmospheric_lifetime_years": 5.4,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Residential air conditioning", "Heat pumps"]
+    },
+    "hfc_125": {
+      "factor_id": "EPA_2024_FUG_HFC_003",
+      "name": "HFC-125 (CHF2CF3)",
+      "chemical_formula": "C2HF5",
+      "unit": "kg",
+      "kgCO2e_per_unit": 3500,
+      "gwp_100yr_ar5": 3500,
+      "gwp_100yr_ar6": 3740,
+      "atmospheric_lifetime_years": 30,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Commercial refrigeration", "Fire suppression"]
+    },
+    "hfc_134a": {
+      "factor_id": "EPA_2024_FUG_HFC_004",
+      "name": "HFC-134a (CH2FCF3)",
+      "chemical_formula": "C2H2F4",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1430,
+      "gwp_100yr_ar5": 1430,
+      "gwp_100yr_ar6": 1530,
+      "atmospheric_lifetime_years": 14,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Automotive AC", "Chillers", "Aerosol propellants"]
+    },
+    "hfc_143a": {
+      "factor_id": "EPA_2024_FUG_HFC_005",
+      "name": "HFC-143a (CH3CF3)",
+      "chemical_formula": "C2H3F3",
+      "unit": "kg",
+      "kgCO2e_per_unit": 4470,
+      "gwp_100yr_ar5": 4470,
+      "gwp_100yr_ar6": 5810,
+      "atmospheric_lifetime_years": 52,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Commercial refrigeration blends"]
+    },
+    "hfc_152a": {
+      "factor_id": "EPA_2024_FUG_HFC_006",
+      "name": "HFC-152a (CH3CHF2)",
+      "chemical_formula": "C2H4F2",
+      "unit": "kg",
+      "kgCO2e_per_unit": 124,
+      "gwp_100yr_ar5": 124,
+      "gwp_100yr_ar6": 164,
+      "atmospheric_lifetime_years": 1.6,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Aerosol propellants", "Foam blowing"]
+    },
+    "hfc_227ea": {
+      "factor_id": "EPA_2024_FUG_HFC_007",
+      "name": "HFC-227ea (CF3CHFCF3)",
+      "chemical_formula": "C3HF7",
+      "unit": "kg",
+      "kgCO2e_per_unit": 3220,
+      "gwp_100yr_ar5": 3220,
+      "gwp_100yr_ar6": 3350,
+      "atmospheric_lifetime_years": 36,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Fire suppression", "Pharmaceutical propellants"]
+    },
+    "hfc_236fa": {
+      "factor_id": "EPA_2024_FUG_HFC_008",
+      "name": "HFC-236fa (CF3CH2CF3)",
+      "chemical_formula": "C3H2F6",
+      "unit": "kg",
+      "kgCO2e_per_unit": 9810,
+      "gwp_100yr_ar5": 9810,
+      "gwp_100yr_ar6": 8690,
+      "atmospheric_lifetime_years": 213,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Fire suppression", "Chillers"]
+    },
+    "hfc_245fa": {
+      "factor_id": "EPA_2024_FUG_HFC_009",
+      "name": "HFC-245fa (CHF2CH2CF3)",
+      "chemical_formula": "C3H3F5",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1030,
+      "gwp_100yr_ar5": 1030,
+      "gwp_100yr_ar6": 962,
+      "atmospheric_lifetime_years": 7.9,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Foam blowing", "Organic Rankine cycles"]
+    },
+    "hfc_365mfc": {
+      "factor_id": "EPA_2024_FUG_HFC_010",
+      "name": "HFC-365mfc (CF3CH2CF2CH3)",
+      "chemical_formula": "C4H5F5",
+      "unit": "kg",
+      "kgCO2e_per_unit": 794,
+      "gwp_100yr_ar5": 794,
+      "gwp_100yr_ar6": 914,
+      "atmospheric_lifetime_years": 8.7,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Foam blowing", "Solvents"]
+    },
+    "hfc_43_10mee": {
+      "factor_id": "EPA_2024_FUG_HFC_011",
+      "name": "HFC-43-10mee (CF3CHFCHFCF2CF3)",
+      "chemical_formula": "C5H2F10",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1640,
+      "gwp_100yr_ar5": 1640,
+      "gwp_100yr_ar6": 1600,
+      "atmospheric_lifetime_years": 17,
+      "category": "Refrigerants - HFC",
+      "scope": "Scope 1",
+      "common_applications": ["Solvents", "Heat transfer fluids"]
+    }
+  },
+  "refrigerant_blends": {
+    "r_404a": {
+      "factor_id": "EPA_2024_FUG_BLEND_001",
+      "name": "R-404A",
+      "composition": "44% HFC-125, 52% HFC-143a, 4% HFC-134a",
+      "unit": "kg",
+      "kgCO2e_per_unit": 3922,
+      "gwp_100yr_ar5": 3922,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Commercial refrigeration", "Transport refrigeration"]
+    },
+    "r_407a": {
+      "factor_id": "EPA_2024_FUG_BLEND_002",
+      "name": "R-407A",
+      "composition": "20% HFC-32, 40% HFC-125, 40% HFC-134a",
+      "unit": "kg",
+      "kgCO2e_per_unit": 2107,
+      "gwp_100yr_ar5": 2107,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Commercial AC", "Heat pumps"]
+    },
+    "r_407c": {
+      "factor_id": "EPA_2024_FUG_BLEND_003",
+      "name": "R-407C",
+      "composition": "23% HFC-32, 25% HFC-125, 52% HFC-134a",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1774,
+      "gwp_100yr_ar5": 1774,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Residential and commercial AC"]
+    },
+    "r_410a": {
+      "factor_id": "EPA_2024_FUG_BLEND_004",
+      "name": "R-410A",
+      "composition": "50% HFC-32, 50% HFC-125",
+      "unit": "kg",
+      "kgCO2e_per_unit": 2088,
+      "gwp_100yr_ar5": 2088,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Residential AC", "Heat pumps"]
+    },
+    "r_507a": {
+      "factor_id": "EPA_2024_FUG_BLEND_005",
+      "name": "R-507A",
+      "composition": "50% HFC-125, 50% HFC-143a",
+      "unit": "kg",
+      "kgCO2e_per_unit": 3985,
+      "gwp_100yr_ar5": 3985,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Low temperature refrigeration"]
+    },
+    "r_508b": {
+      "factor_id": "EPA_2024_FUG_BLEND_006",
+      "name": "R-508B",
+      "composition": "46% HFC-23, 54% PFC-116",
+      "unit": "kg",
+      "kgCO2e_per_unit": 13396,
+      "gwp_100yr_ar5": 13396,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Ultra-low temperature applications"]
+    },
+    "r_448a": {
+      "factor_id": "EPA_2024_FUG_BLEND_007",
+      "name": "R-448A (Solstice N40)",
+      "composition": "26% HFC-32, 26% HFC-125, 21% HFC-134a, 7% HFC-1234ze, 20% HFC-1234yf",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1387,
+      "gwp_100yr_ar5": 1387,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Commercial refrigeration", "R-404A replacement"]
+    },
+    "r_449a": {
+      "factor_id": "EPA_2024_FUG_BLEND_008",
+      "name": "R-449A (Opteon XP40)",
+      "composition": "24.3% HFC-32, 24.7% HFC-125, 25.3% HFC-134a, 25.7% HFO-1234yf",
+      "unit": "kg",
+      "kgCO2e_per_unit": 1397,
+      "gwp_100yr_ar5": 1397,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Commercial refrigeration", "R-404A/R-507A replacement"]
+    },
+    "r_454b": {
+      "factor_id": "EPA_2024_FUG_BLEND_009",
+      "name": "R-454B (Opteon XL41)",
+      "composition": "68.9% HFO-1234yf, 31.1% HFC-32",
+      "unit": "kg",
+      "kgCO2e_per_unit": 466,
+      "gwp_100yr_ar5": 466,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Residential AC", "R-410A replacement"]
+    },
+    "r_32": {
+      "factor_id": "EPA_2024_FUG_BLEND_010",
+      "name": "R-32 (Pure)",
+      "composition": "100% HFC-32",
+      "unit": "kg",
+      "kgCO2e_per_unit": 675,
+      "gwp_100yr_ar5": 675,
+      "category": "Refrigerant Blends",
+      "scope": "Scope 1",
+      "common_applications": ["Residential AC", "R-410A replacement"]
+    }
+  },
+  "perfluorocarbons_pfc": {
+    "pfc_14": {
+      "factor_id": "EPA_2024_FUG_PFC_001",
+      "name": "PFC-14 (CF4, Tetrafluoromethane)",
+      "chemical_formula": "CF4",
+      "unit": "kg",
+      "kgCO2e_per_unit": 7390,
+      "gwp_100yr_ar5": 7390,
+      "gwp_100yr_ar6": 7380,
+      "atmospheric_lifetime_years": 50000,
+      "category": "PFCs",
+      "scope": "Scope 1",
+      "common_applications": ["Aluminum smelting", "Semiconductor manufacturing"]
+    },
+    "pfc_116": {
+      "factor_id": "EPA_2024_FUG_PFC_002",
+      "name": "PFC-116 (C2F6, Hexafluoroethane)",
+      "chemical_formula": "C2F6",
+      "unit": "kg",
+      "kgCO2e_per_unit": 12200,
+      "gwp_100yr_ar5": 12200,
+      "gwp_100yr_ar6": 12400,
+      "atmospheric_lifetime_years": 10000,
+      "category": "PFCs",
+      "scope": "Scope 1",
+      "common_applications": ["Aluminum smelting", "Semiconductor manufacturing"]
+    },
+    "pfc_218": {
+      "factor_id": "EPA_2024_FUG_PFC_003",
+      "name": "PFC-218 (C3F8, Perfluoropropane)",
+      "chemical_formula": "C3F8",
+      "unit": "kg",
+      "kgCO2e_per_unit": 8830,
+      "gwp_100yr_ar5": 8830,
+      "gwp_100yr_ar6": 9290,
+      "atmospheric_lifetime_years": 2600,
+      "category": "PFCs",
+      "scope": "Scope 1",
+      "common_applications": ["Semiconductor manufacturing", "Refrigeration"]
+    },
+    "pfc_318": {
+      "factor_id": "EPA_2024_FUG_PFC_004",
+      "name": "PFC-318 (c-C4F8, Perfluorocyclobutane)",
+      "chemical_formula": "c-C4F8",
+      "unit": "kg",
+      "kgCO2e_per_unit": 10300,
+      "gwp_100yr_ar5": 10300,
+      "gwp_100yr_ar6": 10200,
+      "atmospheric_lifetime_years": 3200,
+      "category": "PFCs",
+      "scope": "Scope 1",
+      "common_applications": ["Semiconductor manufacturing"]
+    },
+    "pfc_3_1_10": {
+      "factor_id": "EPA_2024_FUG_PFC_005",
+      "name": "PFC-3-1-10 (C4F10, Perfluorobutane)",
+      "chemical_formula": "C4F10",
+      "unit": "kg",
+      "kgCO2e_per_unit": 8860,
+      "gwp_100yr_ar5": 8860,
+      "gwp_100yr_ar6": 10000,
+      "atmospheric_lifetime_years": 2600,
+      "category": "PFCs",
+      "scope": "Scope 1",
+      "common_applications": ["Heat transfer", "Semiconductor manufacturing"]
+    },
+    "pfc_4_1_12": {
+      "factor_id": "EPA_2024_FUG_PFC_006",
+      "name": "PFC-4-1-12 (C5F12, Perfluoropentane)",
+      "chemical_formula": "C5F12",
+      "unit": "kg",
+      "kgCO2e_per_unit": 9160,
+      "gwp_100yr_ar5": 9160,
+      "gwp_100yr_ar6": 9220,
+      "atmospheric_lifetime_years": 4100,
+      "category": "PFCs",
+      "scope": "Scope 1",
+      "common_applications": ["Electronics testing", "Heat transfer"]
+    },
+    "pfc_5_1_14": {
+      "factor_id": "EPA_2024_FUG_PFC_007",
+      "name": "PFC-5-1-14 (C6F14, Perfluorohexane)",
+      "chemical_formula": "C6F14",
+      "unit": "kg",
+      "kgCO2e_per_unit": 9300,
+      "gwp_100yr_ar5": 9300,
+      "gwp_100yr_ar6": 8620,
+      "atmospheric_lifetime_years": 3200,
+      "category": "PFCs",
+      "scope": "Scope 1",
+      "common_applications": ["Electronics testing", "Heat transfer"]
+    }
+  },
+  "other_ghgs": {
+    "sf6": {
+      "factor_id": "EPA_2024_FUG_OTH_001",
+      "name": "SF6 (Sulfur Hexafluoride)",
+      "chemical_formula": "SF6",
+      "unit": "kg",
+      "kgCO2e_per_unit": 22800,
+      "gwp_100yr_ar5": 22800,
+      "gwp_100yr_ar6": 25200,
+      "atmospheric_lifetime_years": 3200,
+      "category": "Other Fluorinated GHGs",
+      "scope": "Scope 1",
+      "common_applications": ["Electrical switchgear", "Magnesium production", "Semiconductor manufacturing"]
+    },
+    "nf3": {
+      "factor_id": "EPA_2024_FUG_OTH_002",
+      "name": "NF3 (Nitrogen Trifluoride)",
+      "chemical_formula": "NF3",
+      "unit": "kg",
+      "kgCO2e_per_unit": 17200,
+      "gwp_100yr_ar5": 17200,
+      "gwp_100yr_ar6": 17400,
+      "atmospheric_lifetime_years": 500,
+      "category": "Other Fluorinated GHGs",
+      "scope": "Scope 1",
+      "common_applications": ["Semiconductor manufacturing", "Solar panel production"]
+    },
+    "so2f2": {
+      "factor_id": "EPA_2024_FUG_OTH_003",
+      "name": "SO2F2 (Sulfuryl Fluoride)",
+      "chemical_formula": "SO2F2",
+      "unit": "kg",
+      "kgCO2e_per_unit": 4090,
+      "gwp_100yr_ar5": 4090,
+      "gwp_100yr_ar6": 4630,
+      "atmospheric_lifetime_years": 36,
+      "category": "Other Fluorinated GHGs",
+      "scope": "Scope 1",
+      "common_applications": ["Fumigation", "Pest control"]
+    }
+  },
+  "natural_gas_fugitive": {
+    "ch4_leakage_transmission": {
+      "factor_id": "EPA_2024_FUG_NG_001",
+      "name": "CH4 Leakage - Natural Gas Transmission",
+      "unit": "Mcf transmitted",
+      "kgCO2e_per_unit": 0.098,
+      "kgCH4_per_unit": 0.0035,
+      "category": "Natural Gas Fugitive",
+      "scope": "Scope 3",
+      "uncertainty_pct": 25.0,
+      "notes": "Upstream leakage from transmission pipelines"
+    },
+    "ch4_leakage_distribution": {
+      "factor_id": "EPA_2024_FUG_NG_002",
+      "name": "CH4 Leakage - Natural Gas Distribution",
+      "unit": "Mcf distributed",
+      "kgCO2e_per_unit": 0.056,
+      "kgCH4_per_unit": 0.0020,
+      "category": "Natural Gas Fugitive",
+      "scope": "Scope 3",
+      "uncertainty_pct": 30.0,
+      "notes": "Leakage from local distribution networks"
+    },
+    "ch4_leakage_production": {
+      "factor_id": "EPA_2024_FUG_NG_003",
+      "name": "CH4 Leakage - Natural Gas Production",
+      "unit": "Mcf produced",
+      "kgCO2e_per_unit": 0.336,
+      "kgCH4_per_unit": 0.012,
+      "category": "Natural Gas Fugitive",
+      "scope": "Scope 3",
+      "uncertainty_pct": 35.0,
+      "notes": "Upstream leakage from production and processing"
+    }
+  },
+  "industrial_process_fugitive": {
+    "aluminum_smelting_cf4": {
+      "factor_id": "EPA_2024_FUG_IND_001",
+      "name": "Aluminum Smelting - CF4 Emissions",
+      "unit": "tonne Al produced",
+      "kgCO2e_per_unit": 36.9,
+      "kgCF4_per_unit": 0.005,
+      "category": "Industrial Process Fugitive",
+      "scope": "Scope 1",
+      "notes": "Modern point-feed prebake technology"
+    },
+    "aluminum_smelting_c2f6": {
+      "factor_id": "EPA_2024_FUG_IND_002",
+      "name": "Aluminum Smelting - C2F6 Emissions",
+      "unit": "tonne Al produced",
+      "kgCO2e_per_unit": 12.2,
+      "kgC2F6_per_unit": 0.001,
+      "category": "Industrial Process Fugitive",
+      "scope": "Scope 1",
+      "notes": "Modern point-feed prebake technology"
+    },
+    "magnesium_production_sf6": {
+      "factor_id": "EPA_2024_FUG_IND_003",
+      "name": "Magnesium Production - SF6 Cover Gas",
+      "unit": "tonne Mg produced",
+      "kgCO2e_per_unit": 1140,
+      "kgSF6_per_unit": 0.05,
+      "category": "Industrial Process Fugitive",
+      "scope": "Scope 1",
+      "notes": "Using SF6 as cover gas; industry transitioning to alternatives"
+    },
+    "semiconductor_manufacturing": {
+      "factor_id": "EPA_2024_FUG_IND_004",
+      "name": "Semiconductor Manufacturing - F-Gas Emissions",
+      "unit": "m2 wafer",
+      "kgCO2e_per_unit": 2.8,
+      "category": "Industrial Process Fugitive",
+      "scope": "Scope 1",
+      "notes": "Average across CF4, C2F6, CHF3, SF6, NF3; varies by process"
+    }
+  },
+  "leak_rate_defaults": {
+    "commercial_refrigeration": {
+      "factor_id": "EPA_2024_LEAK_001",
+      "equipment_type": "Commercial Refrigeration",
+      "annual_leak_rate_pct": 25.0,
+      "charge_kg_typical": 100,
+      "notes": "Supermarket systems"
+    },
+    "industrial_refrigeration": {
+      "factor_id": "EPA_2024_LEAK_002",
+      "equipment_type": "Industrial Refrigeration",
+      "annual_leak_rate_pct": 15.0,
+      "charge_kg_typical": 500,
+      "notes": "Cold storage, food processing"
+    },
+    "residential_ac": {
+      "factor_id": "EPA_2024_LEAK_003",
+      "equipment_type": "Residential Air Conditioning",
+      "annual_leak_rate_pct": 4.0,
+      "charge_kg_typical": 2.5,
+      "notes": "Split systems and window units"
+    },
+    "commercial_ac_small": {
+      "factor_id": "EPA_2024_LEAK_004",
+      "equipment_type": "Small Commercial AC",
+      "annual_leak_rate_pct": 6.0,
+      "charge_kg_typical": 5,
+      "notes": "Rooftop units, small chillers"
+    },
+    "commercial_ac_large": {
+      "factor_id": "EPA_2024_LEAK_005",
+      "equipment_type": "Large Commercial AC/Chillers",
+      "annual_leak_rate_pct": 2.0,
+      "charge_kg_typical": 200,
+      "notes": "Centrifugal chillers"
+    },
+    "vehicle_ac": {
+      "factor_id": "EPA_2024_LEAK_006",
+      "equipment_type": "Mobile Air Conditioning",
+      "annual_leak_rate_pct": 15.0,
+      "charge_kg_typical": 0.8,
+      "notes": "Passenger vehicles"
+    },
+    "transport_refrigeration": {
+      "factor_id": "EPA_2024_LEAK_007",
+      "equipment_type": "Transport Refrigeration",
+      "annual_leak_rate_pct": 25.0,
+      "charge_kg_typical": 8,
+      "notes": "Trucks and trailers"
+    },
+    "electrical_switchgear_sf6": {
+      "factor_id": "EPA_2024_LEAK_008",
+      "equipment_type": "Electrical Switchgear (SF6)",
+      "annual_leak_rate_pct": 1.0,
+      "notes": "High-voltage circuit breakers and GIS"
+    }
+  },
+  "total_factor_count": 56
+}

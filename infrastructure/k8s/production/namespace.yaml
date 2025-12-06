@@ -1,0 +1,223 @@
+# GreenLang Production Namespace Configuration
+# Includes resource quotas, limit ranges, and security policies
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: greenlang-production
+  labels:
+    name: greenlang-production
+    environment: production
+    app.kubernetes.io/part-of: greenlang
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/enforce-version: latest
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/warn-version: latest
+  annotations:
+    scheduler.alpha.kubernetes.io/defaultTolerations: '[{"key":"dedicated","operator":"Equal","value":"greenlang","effect":"NoSchedule"}]'
+    scheduler.alpha.kubernetes.io/node-selector: 'node-type=greenlang-production'
+    greenlang.io/owner: platform-team
+    greenlang.io/cost-center: production
+    greenlang.io/compliance: soc2-pci
+
+---
+# Resource Quota - Production limits
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-production-quota
+  namespace: greenlang-production
+  labels:
+    environment: production
+spec:
+  hard:
+    # CPU limits
+    requests.cpu: "50"
+    limits.cpu: "100"
+
+    # Memory limits
+    requests.memory: "100Gi"
+    limits.memory: "200Gi"
+
+    # Storage limits
+    requests.storage: "500Gi"
+    persistentvolumeclaims: "50"
+
+    # Object count limits
+    pods: "200"
+    services: "50"
+    secrets: "100"
+    configmaps: "100"
+    replicationcontrollers: "50"
+    services.loadbalancers: "5"
+    services.nodeports: "10"
+
+    # Ephemeral storage
+    requests.ephemeral-storage: "100Gi"
+    limits.ephemeral-storage: "200Gi"
+
+  scopeSelector:
+    matchExpressions:
+      - scopeName: PriorityClass
+        operator: In
+        values:
+          - high-priority
+          - medium-priority
+
+---
+# Resource Quota for Best-Effort pods (limited)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: greenlang-production-besteffort-quota
+  namespace: greenlang-production
+spec:
+  hard:
+    pods: "10"
+  scopes:
+    - BestEffort
+
+---
+# Limit Range - Default resource constraints
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: greenlang-production-limits
+  namespace: greenlang-production
+  labels:
+    environment: production
+spec:
+  limits:
+    # Container defaults and limits
+    - type: Container
+      default:
+        cpu: "500m"
+        memory: "512Mi"
+      defaultRequest:
+        cpu: "100m"
+        memory: "128Mi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+      max:
+        cpu: "4000m"
+        memory: "8Gi"
+      maxLimitRequestRatio:
+        cpu: "10"
+        memory: "4"
+
+    # Pod limits
+    - type: Pod
+      max:
+        cpu: "16000m"
+        memory: "32Gi"
+      min:
+        cpu: "50m"
+        memory: "64Mi"
+
+    # PVC limits
+    - type: PersistentVolumeClaim
+      min:
+        storage: "1Gi"
+      max:
+        storage: "100Gi"
+
+---
+# Service Account for GreenLang applications
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: greenlang-app-sa
+  namespace: greenlang-production
+  labels:
+    environment: production
+  annotations:
+    # AWS IAM role for service account (IRSA)
+    eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/greenlang-production-app-role
+automountServiceAccountToken: false
+
+---
+# RBAC Role for application
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: greenlang-app-role
+  namespace: greenlang-production
+rules:
+  # Allow reading ConfigMaps and Secrets
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+
+  # Allow managing own pods (for self-healing)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+
+  # Allow reading services
+  - apiGroups: [""]
+    resources: ["services", "endpoints"]
+    verbs: ["get", "list", "watch"]
+
+---
+# RBAC RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: greenlang-app-rolebinding
+  namespace: greenlang-production
+subjects:
+  - kind: ServiceAccount
+    name: greenlang-app-sa
+    namespace: greenlang-production
+roleRef:
+  kind: Role
+  name: greenlang-app-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+# Priority Class for production workloads
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-production-high
+  labels:
+    environment: production
+value: 1000000
+globalDefault: false
+description: "High priority class for GreenLang production critical workloads"
+preemptionPolicy: PreemptLowerPriority
+
+---
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: greenlang-production-medium
+  labels:
+    environment: production
+value: 500000
+globalDefault: false
+description: "Medium priority class for GreenLang production standard workloads"
+preemptionPolicy: PreemptLowerPriority
+
+---
+# Storage Class for production
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: greenlang-production-ssd
+  labels:
+    environment: production
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+  encrypted: "true"
+  kmsKeyId: arn:aws:kms:us-east-1:123456789012:key/greenlang-production-key
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+mountOptions:
+  - discard

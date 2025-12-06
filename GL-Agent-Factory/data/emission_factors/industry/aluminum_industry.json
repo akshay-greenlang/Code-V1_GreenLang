@@ -1,0 +1,363 @@
+{
+  "metadata": {
+    "source": "International Aluminium Institute (IAI), World Aluminium",
+    "source_url": "https://international-aluminium.org/statistics/greenhouse-gas-emissions-intensity/",
+    "version": "2024",
+    "last_updated": "2024-03-15",
+    "units_note": "All factors in kgCO2e per tonne of product unless otherwise specified",
+    "scope": "Scope 1, 2, and 3 emissions for aluminum production",
+    "methodology": "Based on IAI GHG emissions data and LCA studies",
+    "gwp_basis": "AR5 100-year GWP values"
+  },
+  "primary_aluminum_production": {
+    "global_average": {
+      "factor_id": "ALUM_2024_PRIM_GLOBAL",
+      "name": "Primary Aluminum - Global Average",
+      "unit": "tonne aluminum",
+      "total_kgCO2e_per_unit": 16500,
+      "scope_1_kgCO2e": 2200,
+      "scope_2_kgCO2e": 11500,
+      "scope_3_kgCO2e": 2800,
+      "breakdown": {
+        "bauxite_mining": 50,
+        "alumina_refining": 1800,
+        "anode_production": 400,
+        "electrolysis_process_emissions": 1600,
+        "electrolysis_electricity": 11500,
+        "casting": 150,
+        "pfc_emissions": 200,
+        "upstream_materials": 800
+      },
+      "category": "Primary Aluminum",
+      "electricity_consumption_kwh_per_tonne": 14500,
+      "grid_carbon_intensity_used": 0.79,
+      "uncertainty_pct": 10
+    },
+    "hydro_powered": {
+      "factor_id": "ALUM_2024_PRIM_HYDRO",
+      "name": "Primary Aluminum - Hydropower",
+      "unit": "tonne aluminum",
+      "total_kgCO2e_per_unit": 4200,
+      "scope_1_kgCO2e": 2200,
+      "scope_2_kgCO2e": 200,
+      "scope_3_kgCO2e": 1800,
+      "breakdown": {
+        "bauxite_mining": 50,
+        "alumina_refining": 1600,
+        "anode_production": 400,
+        "electrolysis_process_emissions": 1600,
+        "electrolysis_electricity": 200,
+        "casting": 150,
+        "pfc_emissions": 200
+      },
+      "category": "Primary Aluminum - Low Carbon",
+      "electricity_source": "Hydropower",
+      "grid_carbon_intensity_used": 0.015,
+      "regions": ["Norway", "Iceland", "Canada (Quebec)", "Brazil"]
+    },
+    "coal_powered": {
+      "factor_id": "ALUM_2024_PRIM_COAL",
+      "name": "Primary Aluminum - Coal Power",
+      "unit": "tonne aluminum",
+      "total_kgCO2e_per_unit": 20500,
+      "scope_1_kgCO2e": 2200,
+      "scope_2_kgCO2e": 15300,
+      "scope_3_kgCO2e": 3000,
+      "breakdown": {
+        "bauxite_mining": 50,
+        "alumina_refining": 2000,
+        "anode_production": 450,
+        "electrolysis_process_emissions": 1600,
+        "electrolysis_electricity": 15300,
+        "casting": 150,
+        "pfc_emissions": 250
+      },
+      "category": "Primary Aluminum - High Carbon",
+      "electricity_source": "Coal",
+      "grid_carbon_intensity_used": 1.05,
+      "regions": ["China (coal regions)", "India", "Australia"]
+    },
+    "renewable_mix": {
+      "factor_id": "ALUM_2024_PRIM_RENEW",
+      "name": "Primary Aluminum - Renewable Mix",
+      "unit": "tonne aluminum",
+      "total_kgCO2e_per_unit": 6500,
+      "scope_1_kgCO2e": 2200,
+      "scope_2_kgCO2e": 2500,
+      "scope_3_kgCO2e": 1800,
+      "category": "Primary Aluminum - Low Carbon",
+      "electricity_source": "Mixed renewables (>80%)",
+      "regions": ["Europe (Nordic)", "Middle East (solar+gas)"]
+    }
+  },
+  "alumina_production": {
+    "bayer_process_global": {
+      "factor_id": "ALUM_2024_ALUMINA_001",
+      "name": "Alumina (Bayer Process) - Global Average",
+      "unit": "tonne alumina",
+      "kgCO2e_per_unit": 920,
+      "breakdown": {
+        "digestion_energy": 580,
+        "calcination": 280,
+        "electricity": 60
+      },
+      "category": "Alumina Refining",
+      "alumina_to_aluminum_ratio": 1.93,
+      "energy_source": "Coal/Gas mix"
+    },
+    "bayer_process_gas": {
+      "factor_id": "ALUM_2024_ALUMINA_002",
+      "name": "Alumina (Bayer Process) - Natural Gas",
+      "unit": "tonne alumina",
+      "kgCO2e_per_unit": 680,
+      "category": "Alumina Refining",
+      "energy_source": "Natural gas"
+    },
+    "bayer_process_coal": {
+      "factor_id": "ALUM_2024_ALUMINA_003",
+      "name": "Alumina (Bayer Process) - Coal",
+      "unit": "tonne alumina",
+      "kgCO2e_per_unit": 1200,
+      "category": "Alumina Refining",
+      "energy_source": "Coal"
+    }
+  },
+  "electrolysis": {
+    "hall_heroult_prebake": {
+      "factor_id": "ALUM_2024_ELEC_PB",
+      "name": "Hall-Heroult Electrolysis - Prebake Anode",
+      "unit": "tonne aluminum",
+      "process_kgCO2e_per_unit": 1500,
+      "pfc_kgCO2e_per_unit": 150,
+      "category": "Electrolysis",
+      "technology": "Point-feed prebake (PFPB)",
+      "anode_effect_frequency": "Low",
+      "current_efficiency_pct": 94,
+      "notes": "Modern best practice technology"
+    },
+    "hall_heroult_soderberg": {
+      "factor_id": "ALUM_2024_ELEC_SOD",
+      "name": "Hall-Heroult Electrolysis - Soderberg Anode",
+      "unit": "tonne aluminum",
+      "process_kgCO2e_per_unit": 1800,
+      "pfc_kgCO2e_per_unit": 400,
+      "category": "Electrolysis",
+      "technology": "Vertical Stud Soderberg (VSS)",
+      "anode_effect_frequency": "Higher",
+      "current_efficiency_pct": 88,
+      "notes": "Older technology; being phased out"
+    },
+    "inert_anode_future": {
+      "factor_id": "ALUM_2024_ELEC_INERT",
+      "name": "Inert Anode Electrolysis (Future)",
+      "unit": "tonne aluminum",
+      "process_kgCO2e_per_unit": 0,
+      "pfc_kgCO2e_per_unit": 0,
+      "category": "Electrolysis - Advanced",
+      "technology": "Inert anode (oxygen evolution)",
+      "technology_readiness_level": 5,
+      "notes": "Produces O2 instead of CO2; commercial scale 2030+"
+    }
+  },
+  "secondary_aluminum": {
+    "recycled_aluminum_global": {
+      "factor_id": "ALUM_2024_SEC_GLOBAL",
+      "name": "Secondary (Recycled) Aluminum - Global Average",
+      "unit": "tonne aluminum",
+      "total_kgCO2e_per_unit": 700,
+      "scope_1_kgCO2e": 350,
+      "scope_2_kgCO2e": 200,
+      "scope_3_kgCO2e": 150,
+      "breakdown": {
+        "collection_sorting": 50,
+        "remelting": 450,
+        "electricity": 150,
+        "flux_additives": 50
+      },
+      "category": "Secondary Aluminum",
+      "energy_consumption_gj_per_tonne": 6,
+      "scrap_type": "Mixed"
+    },
+    "recycled_clean_scrap": {
+      "factor_id": "ALUM_2024_SEC_CLEAN",
+      "name": "Secondary Aluminum - Clean Process Scrap",
+      "unit": "tonne aluminum",
+      "total_kgCO2e_per_unit": 450,
+      "category": "Secondary Aluminum",
+      "scrap_type": "Clean process scrap",
+      "melt_loss_pct": 2
+    },
+    "recycled_used_beverage_cans": {
+      "factor_id": "ALUM_2024_SEC_UBC",
+      "name": "Secondary Aluminum - Used Beverage Cans",
+      "unit": "tonne aluminum",
+      "total_kgCO2e_per_unit": 600,
+      "category": "Secondary Aluminum",
+      "scrap_type": "Used beverage cans (UBC)",
+      "melt_loss_pct": 5
+    },
+    "recycled_mixed_scrap": {
+      "factor_id": "ALUM_2024_SEC_MIXED",
+      "name": "Secondary Aluminum - Mixed Old Scrap",
+      "unit": "tonne aluminum",
+      "total_kgCO2e_per_unit": 850,
+      "category": "Secondary Aluminum",
+      "scrap_type": "Mixed post-consumer scrap",
+      "melt_loss_pct": 10
+    }
+  },
+  "semi_finished_products": {
+    "rolled_products": {
+      "factor_id": "ALUM_2024_SEMI_ROLL",
+      "name": "Rolled Aluminum Products (Sheet/Foil)",
+      "unit": "tonne",
+      "additional_kgCO2e": 800,
+      "category": "Semi-Finished Products",
+      "typical_total_primary": 17300,
+      "typical_total_recycled": 1500
+    },
+    "extruded_products": {
+      "factor_id": "ALUM_2024_SEMI_EXT",
+      "name": "Extruded Aluminum Products",
+      "unit": "tonne",
+      "additional_kgCO2e": 600,
+      "category": "Semi-Finished Products",
+      "typical_total_primary": 17100,
+      "typical_total_recycled": 1300
+    },
+    "castings": {
+      "factor_id": "ALUM_2024_SEMI_CAST",
+      "name": "Aluminum Castings",
+      "unit": "tonne",
+      "additional_kgCO2e": 400,
+      "category": "Semi-Finished Products",
+      "typical_total_primary": 16900,
+      "typical_total_recycled": 1100
+    },
+    "wire_rod": {
+      "factor_id": "ALUM_2024_SEMI_WIRE",
+      "name": "Aluminum Wire Rod",
+      "unit": "tonne",
+      "additional_kgCO2e": 500,
+      "category": "Semi-Finished Products"
+    }
+  },
+  "pfc_emissions": {
+    "cf4_emission_factor": {
+      "factor_id": "ALUM_2024_PFC_CF4",
+      "name": "CF4 Emissions - Modern Prebake",
+      "unit": "tonne aluminum",
+      "kgCF4_per_unit": 0.02,
+      "kgCO2e_per_unit": 148,
+      "category": "PFC Emissions",
+      "technology": "PFPB - Best practice",
+      "notes": "Anode effect duration <1 min/cell-day"
+    },
+    "c2f6_emission_factor": {
+      "factor_id": "ALUM_2024_PFC_C2F6",
+      "name": "C2F6 Emissions - Modern Prebake",
+      "unit": "tonne aluminum",
+      "kgC2F6_per_unit": 0.002,
+      "kgCO2e_per_unit": 24,
+      "category": "PFC Emissions",
+      "technology": "PFPB - Best practice"
+    },
+    "total_pfc_old_technology": {
+      "factor_id": "ALUM_2024_PFC_OLD",
+      "name": "Total PFC - Older Technology",
+      "unit": "tonne aluminum",
+      "kgCO2e_per_unit": 600,
+      "category": "PFC Emissions",
+      "technology": "VSS/HSS Soderberg",
+      "notes": "Higher anode effect frequency"
+    }
+  },
+  "regional_averages": {
+    "global": {
+      "primary_kgCO2e_per_tonne": 16500,
+      "electricity_intensity_kwh": 14500,
+      "pfc_kgCO2e_per_tonne": 230
+    },
+    "china": {
+      "primary_kgCO2e_per_tonne": 18200,
+      "electricity_intensity_kwh": 13800,
+      "pfc_kgCO2e_per_tonne": 280,
+      "notes": "~60% coal-powered"
+    },
+    "europe": {
+      "primary_kgCO2e_per_tonne": 7800,
+      "electricity_intensity_kwh": 14200,
+      "pfc_kgCO2e_per_tonne": 120,
+      "notes": "High hydro share"
+    },
+    "north_america": {
+      "primary_kgCO2e_per_tonne": 9500,
+      "electricity_intensity_kwh": 14800,
+      "pfc_kgCO2e_per_tonne": 150,
+      "notes": "Mix of hydro and grid"
+    },
+    "middle_east_gcc": {
+      "primary_kgCO2e_per_tonne": 11500,
+      "electricity_intensity_kwh": 14000,
+      "pfc_kgCO2e_per_tonne": 160,
+      "notes": "Natural gas powered"
+    },
+    "australia": {
+      "primary_kgCO2e_per_tonne": 15800,
+      "electricity_intensity_kwh": 14600,
+      "pfc_kgCO2e_per_tonne": 200
+    },
+    "india": {
+      "primary_kgCO2e_per_tonne": 21000,
+      "electricity_intensity_kwh": 15000,
+      "pfc_kgCO2e_per_tonne": 350,
+      "notes": "Coal-dominated grid"
+    },
+    "russia": {
+      "primary_kgCO2e_per_tonne": 6500,
+      "electricity_intensity_kwh": 14500,
+      "pfc_kgCO2e_per_tonne": 180,
+      "notes": "Siberian hydro"
+    }
+  },
+  "scrap_credits": {
+    "aluminum_scrap_avoided": {
+      "factor_id": "ALUM_2024_CREDIT_001",
+      "name": "Aluminum Scrap Credit (Avoided Primary)",
+      "unit": "tonne",
+      "kgCO2e_avoided": -15800,
+      "category": "Material Credits",
+      "methodology": "Avoided burden - displacing global average primary"
+    }
+  },
+  "decarbonization_pathways": {
+    "renewable_power_switch": {
+      "factor_id": "ALUM_2024_DECARB_RE",
+      "name": "Switch to 100% Renewable Power",
+      "reduction_potential_pct": 70,
+      "technology_readiness_level": 9,
+      "notes": "Immediately deployable where renewable power available"
+    },
+    "inert_anode": {
+      "factor_id": "ALUM_2024_DECARB_INERT",
+      "name": "Inert Anode Technology",
+      "reduction_potential_pct": 15,
+      "technology_readiness_level": 5,
+      "commercial_timeline": "2030+"
+    },
+    "ccus_alumina": {
+      "factor_id": "ALUM_2024_DECARB_CCUS",
+      "name": "CCUS on Alumina Refining",
+      "reduction_potential_pct": 8,
+      "technology_readiness_level": 6
+    }
+  },
+  "emission_intensity_benchmarks": {
+    "global_average_2023": 16500,
+    "best_available_hydro": 4000,
+    "iai_2030_target": 11000,
+    "iai_2050_net_zero": 2500,
+    "recycled_benchmark": 700
+  },
+  "total_factor_count": 38
+}

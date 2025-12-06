@@ -1,0 +1,1035 @@
+# =============================================================================
+# GreenLang Process Heat Agents - Istio AuthorizationPolicy Configuration
+# =============================================================================
+# TASK-151: Configure Zero-Trust Authorization Policies
+#
+# This configuration implements a zero-trust security model where:
+#   - All traffic is DENIED by default
+#   - Each service-to-service communication path is explicitly allowed
+#   - Authorization is based on service identity (SPIFFE IDs)
+#   - Fine-grained access control at method and path level
+#
+# Security Model:
+#   1. Default deny all traffic in each namespace
+#   2. Explicit allow rules for each valid communication path
+#   3. Service accounts provide cryptographic identity
+#   4. All rules require valid mTLS certificates
+# =============================================================================
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-agents - DEFAULT DENY
+# =============================================================================
+# This policy denies all traffic by default. Subsequent policies will
+# explicitly allow only required communication paths.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all-default
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: deny-all-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: baseline
+    security.greenlang.io/policy-type: deny-all
+  annotations:
+    description: "Default deny policy for greenlang-agents namespace"
+    security.greenlang.io/compliance: "SOC2-CC6.1,NIST-AC-3"
+spec:
+  # Empty spec = DENY all traffic to all workloads in namespace
+  {}
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-data - DEFAULT DENY
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all-default
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: deny-all-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: baseline
+    security.greenlang.io/policy-type: deny-all
+  annotations:
+    description: "Default deny policy for greenlang-data namespace"
+spec:
+  {}
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-ml - DEFAULT DENY
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all-default
+  namespace: greenlang-ml
+  labels:
+    app.kubernetes.io/name: deny-all-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: baseline
+    security.greenlang.io/policy-type: deny-all
+  annotations:
+    description: "Default deny policy for greenlang-ml namespace"
+spec:
+  {}
+
+---
+# =============================================================================
+# NAMESPACE: greenlang-production - DEFAULT DENY
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-all-default
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: deny-all-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: baseline
+    security.greenlang.io/policy-type: deny-all
+  annotations:
+    description: "Default deny policy for greenlang-production namespace"
+spec:
+  {}
+
+---
+# =============================================================================
+# ALLOW: Ingress Gateway to Production API
+# =============================================================================
+# Allow the Istio ingress gateway to route traffic to the production API.
+# This is the entry point for all external traffic.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-ingress-to-api
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: ingress-to-api-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: ingress
+  annotations:
+    description: "Allow ingress gateway to reach production API"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            # Allow traffic from istio-system namespace (ingress gateway)
+            namespaces: ["istio-system"]
+            # Specifically from the ingress gateway service account
+            principals:
+              - "cluster.local/ns/istio-system/sa/istio-ingressgateway-service-account"
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+            # API paths
+            paths:
+              - "/api/*"
+              - "/api/v1/*"
+              - "/api/v2/*"
+              - "/health"
+              - "/ready"
+              - "/metrics"
+              - "/openapi.json"
+              - "/docs"
+              - "/docs/*"
+
+---
+# =============================================================================
+# ALLOW: Production API to Agents
+# =============================================================================
+# Allow the production API to call Process Heat agents.
+# This enables the API to delegate calculations to specialized agents.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-to-agents
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: api-to-agents-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: inter-service
+  annotations:
+    description: "Allow production API to call Process Heat agents"
+spec:
+  # Apply to all agent workloads
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang-agents
+
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            namespaces: ["greenlang-production"]
+            principals:
+              - "cluster.local/ns/greenlang-production/sa/greenlang-api-sa"
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            paths:
+              - "/calculate/*"
+              - "/analyze/*"
+              - "/validate/*"
+              - "/health"
+              - "/ready"
+
+---
+# =============================================================================
+# ALLOW: Inter-Agent Communication
+# =============================================================================
+# Allow Process Heat agents to communicate with each other.
+# Agents often delegate sub-calculations to specialized peer agents.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-inter-agent-communication
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: inter-agent-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: inter-service
+  annotations:
+    description: "Allow Process Heat agents to communicate with each other"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/part-of: greenlang-agents
+
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            # Allow from any service in greenlang-agents namespace
+            namespaces: ["greenlang-agents"]
+            # Must be an agent service account
+            principals:
+              - "cluster.local/ns/greenlang-agents/sa/gl-*"
+              - "cluster.local/ns/greenlang-agents/sa/process-heat-*"
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            paths:
+              - "/calculate/*"
+              - "/analyze/*"
+              - "/validate/*"
+              - "/internal/*"
+
+---
+# =============================================================================
+# ALLOW: GL-010 Emissions Guardian Specific Rules
+# =============================================================================
+# GL-010 is the primary emissions calculation agent and has broader
+# access to aggregate data from other agents.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-gl-010-emissions-guardian
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: gl-010-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    greenlang.io/agent-id: gl-010
+  annotations:
+    description: "Authorization policy for GL-010 Emissions Guardian Agent"
+spec:
+  selector:
+    matchLabels:
+      app: gl-010-emissions-guardian
+
+  action: ALLOW
+
+  rules:
+    # Allow API access
+    - from:
+        - source:
+            namespaces: ["greenlang-production"]
+            principals:
+              - "cluster.local/ns/greenlang-production/sa/greenlang-api-sa"
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            paths:
+              - "/emissions/*"
+              - "/scope1/*"
+              - "/scope2/*"
+              - "/scope3/*"
+              - "/aggregate/*"
+
+    # Allow other agents to request emissions data
+    - from:
+        - source:
+            namespaces: ["greenlang-agents"]
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            paths:
+              - "/emissions/calculate"
+              - "/emissions/factors"
+
+---
+# =============================================================================
+# ALLOW: Agents to Data Services
+# =============================================================================
+# Allow Process Heat agents to access data services for:
+#   - Reading emission factors
+#   - Storing calculation results
+#   - Accessing time-series data
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-agents-to-data
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: agents-to-data-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: inter-namespace
+  annotations:
+    description: "Allow agents to access data services"
+spec:
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            namespaces: ["greenlang-agents"]
+            # All agent service accounts
+            principals:
+              - "cluster.local/ns/greenlang-agents/sa/*"
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT"]
+            paths:
+              - "/data/*"
+              - "/factors/*"
+              - "/timeseries/*"
+              - "/store/*"
+              - "/query/*"
+
+---
+# =============================================================================
+# ALLOW: Data Ingestion from External Protocols
+# =============================================================================
+# Allow data ingestion services to receive data from external protocol bridges.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-external-data-ingestion
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: external-ingestion-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: external
+  annotations:
+    description: "Allow data ingestion from external protocol bridges"
+spec:
+  selector:
+    matchLabels:
+      app: data-ingestion
+
+  action: ALLOW
+
+  rules:
+    # Allow from OPC-UA bridge
+    - from:
+        - source:
+            namespaces: ["greenlang-agents"]
+            principals:
+              - "cluster.local/ns/greenlang-agents/sa/opcua-bridge-sa"
+      to:
+        - operation:
+            methods: ["POST"]
+            paths:
+              - "/ingest/opcua/*"
+
+    # Allow from MQTT bridge
+    - from:
+        - source:
+            namespaces: ["greenlang-data"]
+            principals:
+              - "cluster.local/ns/greenlang-data/sa/mqtt-bridge-sa"
+      to:
+        - operation:
+            methods: ["POST"]
+            paths:
+              - "/ingest/mqtt/*"
+
+    # Allow from Kafka Connect
+    - from:
+        - source:
+            namespaces: ["greenlang-data"]
+            principals:
+              - "cluster.local/ns/greenlang-data/sa/kafka-connect-sa"
+      to:
+        - operation:
+            methods: ["POST"]
+            paths:
+              - "/ingest/kafka/*"
+
+---
+# =============================================================================
+# ALLOW: Agents to ML Services
+# =============================================================================
+# Allow Process Heat agents to access ML inference services for:
+#   - Emissions prediction
+#   - Anomaly detection
+#   - Pattern recognition
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-agents-to-ml
+  namespace: greenlang-ml
+  labels:
+    app.kubernetes.io/name: agents-to-ml-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: inter-namespace
+  annotations:
+    description: "Allow agents to access ML inference services"
+spec:
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            namespaces: ["greenlang-agents"]
+            principals:
+              - "cluster.local/ns/greenlang-agents/sa/*"
+      to:
+        - operation:
+            methods: ["POST"]
+            paths:
+              - "/v1/models/*"
+              - "/predict/*"
+              - "/inference/*"
+              - "/anomaly/*"
+
+---
+# =============================================================================
+# ALLOW: API to ML Services
+# =============================================================================
+# Allow production API to directly call ML services for real-time inference.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-api-to-ml
+  namespace: greenlang-ml
+  labels:
+    app.kubernetes.io/name: api-to-ml-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: inter-namespace
+  annotations:
+    description: "Allow production API to access ML inference services"
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: ml-inference
+
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            namespaces: ["greenlang-production"]
+            principals:
+              - "cluster.local/ns/greenlang-production/sa/greenlang-api-sa"
+      to:
+        - operation:
+            methods: ["POST", "GET"]
+            paths:
+              - "/v1/models/*"
+              - "/predict/*"
+              - "/health"
+
+---
+# =============================================================================
+# ALLOW: Prometheus Metrics Scraping
+# =============================================================================
+# Allow Prometheus to scrape metrics from all GreenLang services.
+# This is required for observability.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-prometheus-scraping
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: prometheus-scraping-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: monitoring
+  annotations:
+    description: "Allow Prometheus to scrape metrics from agents"
+spec:
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+            principals:
+              - "cluster.local/ns/monitoring/sa/prometheus-sa"
+              - "cluster.local/ns/monitoring/sa/prometheus-server"
+      to:
+        - operation:
+            methods: ["GET"]
+            paths:
+              - "/metrics"
+              - "/health"
+              - "/ready"
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-prometheus-scraping
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: prometheus-scraping-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: monitoring
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+            principals:
+              - "cluster.local/ns/monitoring/sa/prometheus-sa"
+              - "cluster.local/ns/monitoring/sa/prometheus-server"
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/metrics", "/health", "/ready"]
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-prometheus-scraping
+  namespace: greenlang-ml
+  labels:
+    app.kubernetes.io/name: prometheus-scraping-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: monitoring
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+            principals:
+              - "cluster.local/ns/monitoring/sa/prometheus-sa"
+              - "cluster.local/ns/monitoring/sa/prometheus-server"
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/metrics", "/health", "/ready"]
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-prometheus-scraping
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: prometheus-scraping-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: monitoring
+spec:
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            namespaces: ["monitoring"]
+            principals:
+              - "cluster.local/ns/monitoring/sa/prometheus-sa"
+              - "cluster.local/ns/monitoring/sa/prometheus-server"
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/metrics", "/health", "/ready"]
+
+---
+# =============================================================================
+# ALLOW: Kubernetes Health Checks
+# =============================================================================
+# Allow kubelet health probes (liveness, readiness, startup).
+# These probes come from the node, not through the mesh.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-health-probes
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: health-probes-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: infrastructure
+  annotations:
+    description: "Allow Kubernetes health probes"
+spec:
+  action: ALLOW
+  rules:
+    # Allow unauthenticated health probes (from kubelet)
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths:
+              - "/health"
+              - "/healthz"
+              - "/ready"
+              - "/readyz"
+              - "/live"
+              - "/livez"
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-health-probes
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: health-probes-policy
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/health", "/healthz", "/ready", "/readyz", "/live", "/livez"]
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-health-probes
+  namespace: greenlang-ml
+  labels:
+    app.kubernetes.io/name: health-probes-policy
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/health", "/healthz", "/ready", "/readyz", "/live", "/livez"]
+
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-health-probes
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: health-probes-policy
+    app.kubernetes.io/part-of: greenlang-platform
+spec:
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/health", "/healthz", "/ready", "/readyz", "/live", "/livez"]
+
+---
+# =============================================================================
+# ALLOW: OPC-UA Bridge to External
+# =============================================================================
+# Allow OPC-UA bridge to communicate with external industrial systems.
+# The bridge handles protocol translation and TLS termination.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-opcua-bridge-external
+  namespace: greenlang-agents
+  labels:
+    app.kubernetes.io/name: opcua-bridge-external-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: external
+    security.greenlang.io/protocol: opcua
+  annotations:
+    description: "Allow OPC-UA bridge to access external industrial systems"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-opcua-bridge
+
+  action: ALLOW
+
+  rules:
+    # Allow incoming requests from agents
+    - from:
+        - source:
+            namespaces: ["greenlang-agents"]
+            principals:
+              - "cluster.local/ns/greenlang-agents/sa/*"
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            paths:
+              - "/opcua/*"
+              - "/read/*"
+              - "/write/*"
+              - "/subscribe/*"
+
+---
+# =============================================================================
+# ALLOW: MQTT Bridge Communication
+# =============================================================================
+# Allow MQTT bridge to receive messages from agents and send to external broker.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-mqtt-bridge
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: mqtt-bridge-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: external
+    security.greenlang.io/protocol: mqtt
+  annotations:
+    description: "Allow MQTT bridge communication"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-mqtt-bridge
+
+  action: ALLOW
+
+  rules:
+    # Allow agents to publish messages
+    - from:
+        - source:
+            namespaces: ["greenlang-agents", "greenlang-data"]
+      to:
+        - operation:
+            methods: ["POST"]
+            paths:
+              - "/mqtt/publish/*"
+              - "/mqtt/subscribe/*"
+
+---
+# =============================================================================
+# ALLOW: Kafka Connect Communication
+# =============================================================================
+# Allow Kafka Connect workers to handle streaming data.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-kafka-connect
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: kafka-connect-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: external
+    security.greenlang.io/protocol: kafka
+  annotations:
+    description: "Allow Kafka Connect worker communication"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-kafka-connect
+
+  action: ALLOW
+
+  rules:
+    # Allow API access to Kafka Connect REST API
+    - from:
+        - source:
+            namespaces: ["greenlang-production", "greenlang-data"]
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE"]
+            paths:
+              - "/connectors/*"
+              - "/connector-plugins/*"
+
+---
+# =============================================================================
+# ALLOW: Internal Service Communication (greenlang-production)
+# =============================================================================
+# Allow internal communication between production services.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-internal-production
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: internal-production-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: internal
+  annotations:
+    description: "Allow internal communication within production namespace"
+spec:
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            namespaces: ["greenlang-production"]
+            principals:
+              - "cluster.local/ns/greenlang-production/sa/*"
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+---
+# =============================================================================
+# ALLOW: Production to Data Services
+# =============================================================================
+# Allow production services to access data layer.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-production-to-data
+  namespace: greenlang-data
+  labels:
+    app.kubernetes.io/name: production-to-data-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: inter-namespace
+  annotations:
+    description: "Allow production services to access data services"
+spec:
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            namespaces: ["greenlang-production"]
+            principals:
+              - "cluster.local/ns/greenlang-production/sa/greenlang-api-sa"
+              - "cluster.local/ns/greenlang-production/sa/greenlang-worker-sa"
+      to:
+        - operation:
+            methods: ["GET", "POST", "PUT"]
+            paths:
+              - "/data/*"
+              - "/query/*"
+              - "/store/*"
+
+---
+# =============================================================================
+# REQUEST AUTHENTICATION: JWT Validation
+# =============================================================================
+# Validate JWT tokens for API requests from external clients.
+# This works in conjunction with AuthorizationPolicy.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt-authentication
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: jwt-authentication
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: authn
+  annotations:
+    description: "JWT validation for external API requests"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+
+  jwtRules:
+    # Primary identity provider (Keycloak/Auth0)
+    - issuer: "https://auth.greenlang.io/realms/greenlang"
+      jwksUri: "https://auth.greenlang.io/realms/greenlang/protocol/openid-connect/certs"
+      audiences:
+        - "greenlang-api"
+        - "greenlang-platform"
+      forwardOriginalToken: true
+      fromHeaders:
+        - name: Authorization
+          prefix: "Bearer "
+      # Output claims for use in authorization policies
+      outputClaimToHeaders:
+        - claim: "sub"
+          header: "x-jwt-sub"
+        - claim: "email"
+          header: "x-jwt-email"
+        - claim: "roles"
+          header: "x-jwt-roles"
+
+    # Service-to-service JWT (for external services)
+    - issuer: "https://api.greenlang.io"
+      jwksUri: "https://api.greenlang.io/.well-known/jwks.json"
+      audiences:
+        - "greenlang-internal"
+      forwardOriginalToken: true
+      fromHeaders:
+        - name: X-Service-Token
+          prefix: ""
+
+---
+# =============================================================================
+# AUTHORIZATION: JWT-Based API Access
+# =============================================================================
+# Require valid JWT for API access (after RequestAuthentication validates it).
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: require-jwt-for-api
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: require-jwt-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: authz
+  annotations:
+    description: "Require valid JWT for API access from external clients"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+
+  action: ALLOW
+
+  rules:
+    # Allow requests with valid JWT from authenticated users
+    - from:
+        - source:
+            # Require a valid JWT issuer
+            requestPrincipals:
+              - "https://auth.greenlang.io/realms/greenlang/*"
+              - "https://api.greenlang.io/*"
+      to:
+        - operation:
+            paths:
+              - "/api/*"
+
+    # Allow unauthenticated access to health and public endpoints
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths:
+              - "/health"
+              - "/ready"
+              - "/openapi.json"
+              - "/docs"
+              - "/docs/*"
+
+---
+# =============================================================================
+# DENY: Block Sensitive Admin Endpoints
+# =============================================================================
+# Explicitly deny access to admin endpoints from external traffic.
+# Only internal services with specific SAs can access admin functions.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: deny-admin-external
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: deny-admin-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: admin-protection
+  annotations:
+    description: "Deny external access to admin endpoints"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+
+  action: DENY
+
+  rules:
+    # Block admin paths from ingress gateway
+    - from:
+        - source:
+            namespaces: ["istio-system"]
+      to:
+        - operation:
+            paths:
+              - "/admin/*"
+              - "/internal/*"
+              - "/debug/*"
+              - "/actuator/*"
+
+---
+# =============================================================================
+# ALLOW: Admin Access from Authorized Services Only
+# =============================================================================
+# Allow admin access only from specific internal services.
+# =============================================================================
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: allow-admin-internal
+  namespace: greenlang-production
+  labels:
+    app.kubernetes.io/name: allow-admin-policy
+    app.kubernetes.io/part-of: greenlang-platform
+    app.kubernetes.io/component: security
+    security.greenlang.io/tier: admin
+  annotations:
+    description: "Allow admin access from authorized internal services"
+spec:
+  selector:
+    matchLabels:
+      app: greenlang-api
+
+  action: ALLOW
+
+  rules:
+    - from:
+        - source:
+            namespaces: ["greenlang-production"]
+            principals:
+              - "cluster.local/ns/greenlang-production/sa/greenlang-admin-sa"
+      to:
+        - operation:
+            paths:
+              - "/admin/*"
+              - "/internal/*"

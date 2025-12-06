@@ -1,0 +1,374 @@
+# ArgoCD ApplicationSet for Multi-Environment Deployment
+# Manages dev, staging, and production environments using GitOps
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: greenlang-multi-env
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: greenlang-applicationset
+    app.kubernetes.io/part-of: greenlang
+spec:
+  # Git Generator - Creates applications based on branches/directories
+  generators:
+    # Matrix generator combines Git and List generators
+    - matrix:
+        generators:
+          # Git generator for environment branches
+          - git:
+              repoURL: https://github.com/greenlang/greenlang-platform.git
+              revision: HEAD
+              directories:
+                - path: environments/*
+              requeueAfterSeconds: 300
+
+          # List generator for environment-specific parameters
+          - list:
+              elements:
+                # Development Environment
+                - env: dev
+                  branch: develop
+                  cluster: https://dev-cluster.greenlang.io:6443
+                  namespace: greenlang-dev
+                  replicas: "1"
+                  resources_cpu_limit: "500m"
+                  resources_memory_limit: "512Mi"
+                  autoscaling_enabled: "false"
+                  ingress_host: dev.greenlang.io
+                  log_level: debug
+                  sync_policy: automated
+                  auto_prune: "true"
+                  self_heal: "true"
+
+                # Staging Environment
+                - env: staging
+                  branch: staging
+                  cluster: https://staging-cluster.greenlang.io:6443
+                  namespace: greenlang-staging
+                  replicas: "2"
+                  resources_cpu_limit: "1000m"
+                  resources_memory_limit: "1Gi"
+                  autoscaling_enabled: "true"
+                  ingress_host: staging.greenlang.io
+                  log_level: info
+                  sync_policy: automated
+                  auto_prune: "true"
+                  self_heal: "true"
+
+                # Production Environment
+                - env: production
+                  branch: main
+                  cluster: https://prod-cluster.greenlang.io:6443
+                  namespace: greenlang-production
+                  replicas: "3"
+                  resources_cpu_limit: "2000m"
+                  resources_memory_limit: "2Gi"
+                  autoscaling_enabled: "true"
+                  ingress_host: api.greenlang.io
+                  log_level: warn
+                  sync_policy: manual
+                  auto_prune: "false"
+                  self_heal: "true"
+
+  # Application template
+  template:
+    metadata:
+      name: 'greenlang-{{env}}'
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: greenlang
+        app.kubernetes.io/instance: 'greenlang-{{env}}'
+        app.kubernetes.io/part-of: greenlang-platform
+        environment: '{{env}}'
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: 'greenlang-{{env}}-deployments'
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: greenlang-alerts
+        notifications.argoproj.io/subscribe.on-health-degraded.slack: greenlang-alerts
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: 'greenlang-{{env}}'
+
+      source:
+        repoURL: https://github.com/greenlang/greenlang-platform.git
+        targetRevision: '{{branch}}'
+        path: 'environments/{{env}}'
+
+        # Kustomize with environment-specific overlays
+        kustomize:
+          namePrefix: 'gl-{{env}}-'
+          commonLabels:
+            environment: '{{env}}'
+            managed-by: argocd
+          commonAnnotations:
+            greenlang.io/environment: '{{env}}'
+            greenlang.io/branch: '{{branch}}'
+
+        # Alternative: Helm configuration
+        # helm:
+        #   releaseName: 'greenlang-{{env}}'
+        #   valueFiles:
+        #     - 'values-{{env}}.yaml'
+        #   parameters:
+        #     - name: replicaCount
+        #       value: '{{replicas}}'
+        #     - name: resources.limits.cpu
+        #       value: '{{resources_cpu_limit}}'
+        #     - name: resources.limits.memory
+        #       value: '{{resources_memory_limit}}'
+        #     - name: autoscaling.enabled
+        #       value: '{{autoscaling_enabled}}'
+        #     - name: ingress.host
+        #       value: '{{ingress_host}}'
+        #     - name: config.logLevel
+        #       value: '{{log_level}}'
+
+      destination:
+        server: '{{cluster}}'
+        namespace: '{{namespace}}'
+
+      # Sync policy varies by environment
+      syncPolicy:
+        automated:
+          prune: true  # Will be overridden by strategy below
+          selfHeal: true
+
+        syncOptions:
+          - CreateNamespace=true
+          - Validate=true
+          - ServerSideApply=true
+          - PrunePropagationPolicy=foreground
+          - ApplyOutOfSyncOnly=true
+
+        retry:
+          limit: 5
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 3m
+
+      # Ignored differences
+      ignoreDifferences:
+        - group: apps
+          kind: Deployment
+          jsonPointers:
+            - /spec/replicas
+        - group: autoscaling
+          kind: HorizontalPodAutoscaler
+          jsonPointers:
+            - /status
+
+      revisionHistoryLimit: 10
+
+---
+# ApplicationSet for microservices per environment
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: greenlang-services
+  namespace: argocd
+  labels:
+    app.kubernetes.io/name: greenlang-services
+    app.kubernetes.io/part-of: greenlang
+spec:
+  generators:
+    # Matrix of environments and services
+    - matrix:
+        generators:
+          # Environment configuration
+          - list:
+              elements:
+                - env: dev
+                  cluster: https://dev-cluster.greenlang.io:6443
+                  values_file: values-dev.yaml
+                - env: staging
+                  cluster: https://staging-cluster.greenlang.io:6443
+                  values_file: values-staging.yaml
+                - env: production
+                  cluster: https://prod-cluster.greenlang.io:6443
+                  values_file: values-production.yaml
+
+          # Service configuration
+          - list:
+              elements:
+                - service: api
+                  chart_path: charts/api
+                  port: "8000"
+                  health_path: /health
+                - service: worker
+                  chart_path: charts/worker
+                  port: "8080"
+                  health_path: /health
+                - service: frontend
+                  chart_path: charts/frontend
+                  port: "3000"
+                  health_path: /
+                - service: scheduler
+                  chart_path: charts/scheduler
+                  port: "8081"
+                  health_path: /health
+                - service: ml-inference
+                  chart_path: charts/ml-inference
+                  port: "8082"
+                  health_path: /health
+
+  template:
+    metadata:
+      name: 'greenlang-{{service}}-{{env}}'
+      namespace: argocd
+      labels:
+        app.kubernetes.io/name: '{{service}}'
+        app.kubernetes.io/instance: '{{service}}-{{env}}'
+        app.kubernetes.io/part-of: greenlang-platform
+        environment: '{{env}}'
+        service: '{{service}}'
+      annotations:
+        notifications.argoproj.io/subscribe.on-sync-succeeded.slack: 'greenlang-{{env}}-deployments'
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: greenlang-alerts
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: 'greenlang-{{env}}'
+
+      source:
+        repoURL: https://github.com/greenlang/greenlang-platform.git
+        targetRevision: HEAD
+        path: '{{chart_path}}'
+        helm:
+          releaseName: 'gl-{{service}}-{{env}}'
+          valueFiles:
+            - '{{values_file}}'
+          parameters:
+            - name: global.environment
+              value: '{{env}}'
+            - name: service.port
+              value: '{{port}}'
+            - name: health.path
+              value: '{{health_path}}'
+
+      destination:
+        server: '{{cluster}}'
+        namespace: 'greenlang-{{env}}'
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
+        retry:
+          limit: 3
+          backoff:
+            duration: 5s
+            factor: 2
+            maxDuration: 1m
+
+---
+# AppProject for each environment
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: greenlang-dev
+  namespace: argocd
+spec:
+  description: GreenLang Development Environment
+  sourceRepos:
+    - https://github.com/greenlang/greenlang-platform.git
+    - https://github.com/greenlang/greenlang-infra.git
+  destinations:
+    - namespace: greenlang-dev
+      server: https://dev-cluster.greenlang.io:6443
+    - namespace: greenlang-dev-*
+      server: https://dev-cluster.greenlang.io:6443
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: developer
+      policies:
+        - p, proj:greenlang-dev:developer, applications, *, greenlang-dev/*, allow
+      groups:
+        - greenlang-developers
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: greenlang-staging
+  namespace: argocd
+spec:
+  description: GreenLang Staging Environment
+  sourceRepos:
+    - https://github.com/greenlang/greenlang-platform.git
+    - https://github.com/greenlang/greenlang-infra.git
+  destinations:
+    - namespace: greenlang-staging
+      server: https://staging-cluster.greenlang.io:6443
+    - namespace: greenlang-staging-*
+      server: https://staging-cluster.greenlang.io:6443
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: developer
+      policies:
+        - p, proj:greenlang-staging:developer, applications, get, greenlang-staging/*, allow
+        - p, proj:greenlang-staging:developer, applications, sync, greenlang-staging/*, allow
+      groups:
+        - greenlang-developers
+    - name: qa
+      policies:
+        - p, proj:greenlang-staging:qa, applications, *, greenlang-staging/*, allow
+      groups:
+        - greenlang-qa
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: greenlang-production
+  namespace: argocd
+spec:
+  description: GreenLang Production Environment
+  sourceRepos:
+    - https://github.com/greenlang/greenlang-platform.git
+  destinations:
+    - namespace: greenlang-production
+      server: https://prod-cluster.greenlang.io:6443
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+  namespaceResourceBlacklist:
+    - group: ''
+      kind: ResourceQuota
+    - group: ''
+      kind: LimitRange
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  roles:
+    - name: platform-admin
+      policies:
+        - p, proj:greenlang-production:platform-admin, applications, *, greenlang-production/*, allow
+      groups:
+        - greenlang-platform-admins
+    - name: sre
+      policies:
+        - p, proj:greenlang-production:sre, applications, get, greenlang-production/*, allow
+        - p, proj:greenlang-production:sre, applications, sync, greenlang-production/*, allow
+        - p, proj:greenlang-production:sre, applications, action/*, greenlang-production/*, allow
+      groups:
+        - greenlang-sre
+  orphanedResources:
+    warn: true

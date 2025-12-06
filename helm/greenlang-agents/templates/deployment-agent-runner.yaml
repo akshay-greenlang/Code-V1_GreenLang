@@ -1,0 +1,256 @@
+{{/*
+Agent Runner Deployment - Executes AI agent workloads
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "greenlang-agents.fullname" . }}-agent-runner
+  namespace: {{ include "greenlang-agents.namespace" . }}
+  labels:
+    {{- include "greenlang-agents.labels" . | nindent 4 }}
+    app.kubernetes.io/component: agent-runner
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9090"
+spec:
+  {{- if not .Values.agentRunner.autoscaling.enabled }}
+  replicas: {{ .Values.agentRunner.replicaCount | default 5 }}
+  {{- end }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      {{- include "greenlang-agents.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: agent-runner
+  template:
+    metadata:
+      labels:
+        {{- include "greenlang-agents.labels" . | nindent 8 }}
+        app.kubernetes.io/component: agent-runner
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9090"
+        checksum/config: {{ include (print $.Template.BasePath "/configmap-app.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "greenlang-agents.serviceAccountName" . }}
+      {{- with .Values.common.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- range .Values.global.imagePullSecrets }}
+        - name: {{ . }}
+        {{- end }}
+      {{- end }}
+
+      # Priority class for agent workloads
+      {{- if .Values.agentRunner.priorityClassName }}
+      priorityClassName: {{ .Values.agentRunner.priorityClassName }}
+      {{- end }}
+
+      # Termination grace period for graceful shutdown
+      terminationGracePeriodSeconds: 120
+
+      initContainers:
+        - name: init-model-cache
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.agentRunner.image.repository | default "greenlang/agent-runner" }}:{{ .Values.agentRunner.image.tag | default .Chart.AppVersion }}"
+          command: ['sh', '-c', 'python -c "from greenlang.models import preload_models; preload_models()" || true']
+          securityContext:
+            {{- toYaml .Values.common.containerSecurityContext | nindent 12 }}
+          volumeMounts:
+            - name: model-cache
+              mountPath: /app/.cache/models
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+
+      containers:
+        - name: agent-runner
+          image: "{{ .Values.global.imageRegistry }}/{{ .Values.agentRunner.image.repository | default "greenlang/agent-runner" }}:{{ .Values.agentRunner.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.common.image.pullPolicy | default "IfNotPresent" }}
+
+          {{- with .Values.common.containerSecurityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+            - name: metrics
+              containerPort: 9090
+              protocol: TCP
+            - name: grpc
+              containerPort: 50051
+              protocol: TCP
+
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: ENVIRONMENT
+              value: {{ .Values.global.environment | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.config.LOG_LEVEL | default "info" | quote }}
+            - name: AGENT_CONCURRENCY
+              value: {{ .Values.agentRunner.concurrency | default "10" | quote }}
+            - name: AGENT_TIMEOUT
+              value: {{ .Values.agentRunner.timeout | default "300" | quote }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: REDIS_URL
+                  optional: true
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: DATABASE_URL
+                  optional: true
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: ANTHROPIC_API_KEY
+                  optional: true
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "greenlang-agents.fullname" . }}-secrets
+                  key: OPENAI_API_KEY
+                  optional: true
+
+          envFrom:
+            - configMapRef:
+                name: {{ include "greenlang-agents.fullname" . }}-config
+
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            failureThreshold: 30
+
+          resources:
+            {{- toYaml (.Values.agentRunner.resources | default .Values.common.resources) | nindent 12 }}
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config
+              readOnly: true
+            - name: tmp
+              mountPath: /tmp
+            - name: model-cache
+              mountPath: /app/.cache/models
+            - name: agent-data
+              mountPath: /app/data
+
+          # Lifecycle hooks for graceful shutdown
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    echo "Graceful shutdown initiated"
+                    kill -SIGTERM 1
+                    sleep 30
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "greenlang-agents.fullname" . }}-config
+        - name: tmp
+          emptyDir:
+            sizeLimit: 200Mi
+        - name: model-cache
+          emptyDir:
+            sizeLimit: 2Gi
+        - name: agent-data
+          emptyDir:
+            sizeLimit: 1Gi
+
+      {{- with .Values.agentRunner.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      {{- with .Values.agentRunner.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- else }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    {{- include "greenlang-agents.selectorLabels" . | nindent 20 }}
+                    app.kubernetes.io/component: agent-runner
+                topologyKey: topology.kubernetes.io/zone
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                      - agent-runtime
+                      - compute
+      {{- end }}
+
+      {{- with .Values.agentRunner.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              {{- include "greenlang-agents.selectorLabels" . | nindent 14 }}
+              app.kubernetes.io/component: agent-runner

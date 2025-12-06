@@ -1,0 +1,230 @@
+{{/*
+GreenLang MLflow Helm Chart - Tracking Server Deployment
+*/}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mlflow.fullname" . }}-tracking
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "mlflow.labels" . | nindent 4 }}
+    app: mlflow
+    component: tracking-server
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5000"
+    prometheus.io/path: "/metrics"
+spec:
+  replicas: {{ .Values.mlflow.replicaCount }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "mlflow.selectorLabels" . | nindent 6 }}
+      component: tracking-server
+  template:
+    metadata:
+      labels:
+        {{- include "mlflow.selectorLabels" . | nindent 8 }}
+        component: tracking-server
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: {{ include "mlflow.serviceAccountName" . }}
+
+      securityContext:
+        {{- toYaml .Values.mlflow.podSecurityContext | nindent 8 }}
+
+      {{- if .Values.mlflow.affinity }}
+      affinity:
+        {{- toYaml .Values.mlflow.affinity | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.mlflow.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.mlflow.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.mlflow.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.mlflow.nodeSelector | nindent 8 }}
+      {{- end }}
+
+      {{- if .Values.mlflow.tolerations }}
+      tolerations:
+        {{- toYaml .Values.mlflow.tolerations | nindent 8 }}
+      {{- end }}
+
+      initContainers:
+        {{- if .Values.initContainers.waitForPostgres.enabled }}
+        - name: wait-for-postgres
+          image: {{ .Values.initContainers.waitForPostgres.image.repository }}:{{ .Values.initContainers.waitForPostgres.image.tag }}
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z {{ include "mlflow.postgresql.host" . }} {{ include "mlflow.postgresql.port" . }}; do
+                echo "Waiting for PostgreSQL..."
+                sleep 2
+              done
+              echo "PostgreSQL is ready"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+        {{- end }}
+
+        {{- if and .Values.minio.enabled .Values.initContainers.waitForMinio.enabled }}
+        - name: wait-for-minio
+          image: {{ .Values.initContainers.waitForMinio.image.repository }}:{{ .Values.initContainers.waitForMinio.image.tag }}
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z {{ include "mlflow.fullname" . }}-minio 9000; do
+                echo "Waiting for MinIO..."
+                sleep 2
+              done
+              echo "MinIO is ready"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+        {{- end }}
+
+        {{- if and .Values.minio.enabled .Values.initContainers.createBucket.enabled }}
+        - name: create-bucket
+          image: {{ .Values.initContainers.createBucket.image.repository }}:{{ .Values.initContainers.createBucket.image.tag }}
+          command:
+            - sh
+            - -c
+            - |
+              mc alias set minio http://{{ include "mlflow.fullname" . }}-minio:9000 $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+              mc mb --ignore-existing minio/{{ .Values.minio.defaultBuckets }}
+              echo "Bucket created successfully"
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.fullname" . }}-minio-secret
+                  key: access-key
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.fullname" . }}-minio-secret
+                  key: secret-key
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop:
+                - ALL
+        {{- end }}
+
+      containers:
+        - name: mlflow
+          image: {{ include "mlflow.image" . }}
+          imagePullPolicy: {{ .Values.mlflow.image.pullPolicy }}
+
+          command:
+            - mlflow
+            - server
+            - --backend-store-uri
+            - {{ include "mlflow.backendStoreUri" . | quote }}
+            - --default-artifact-root
+            - {{ include "mlflow.artifactRoot" . | quote }}
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "5000"
+            {{- if .Values.mlflow.config.serveArtifacts }}
+            - --serve-artifacts
+            {{- end }}
+            - --gunicorn-opts
+            - "--timeout {{ .Values.mlflow.gunicorn.timeout }} --workers {{ .Values.mlflow.gunicorn.workers }} --threads {{ .Values.mlflow.gunicorn.threads }} --log-level {{ .Values.mlflow.gunicorn.logLevel }}"
+
+          ports:
+            - name: http
+              containerPort: 5000
+              protocol: TCP
+
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.postgresql.secretName" . }}
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.postgresql.secretName" . }}
+                  key: password
+            {{- if .Values.minio.enabled }}
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: {{ include "mlflow.s3.endpoint" . | quote }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.fullname" . }}-minio-secret
+                  key: access-key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.fullname" . }}-minio-secret
+                  key: secret-key
+            {{- else if .Values.externalS3.enabled }}
+            {{- if .Values.externalS3.endpoint }}
+            - name: MLFLOW_S3_ENDPOINT_URL
+              value: {{ .Values.externalS3.endpoint | quote }}
+            {{- end }}
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.fullname" . }}-s3-secret
+                  key: access-key
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mlflow.fullname" . }}-s3-secret
+                  key: secret-key
+            {{- if .Values.externalS3.region }}
+            - name: AWS_DEFAULT_REGION
+              value: {{ .Values.externalS3.region | quote }}
+            {{- end }}
+            {{- end }}
+            {{- range .Values.mlflow.extraEnv }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+            {{- end }}
+
+          resources:
+            {{- toYaml .Values.mlflow.resources | nindent 12 }}
+
+          volumeMounts:
+            {{- toYaml .Values.mlflow.extraVolumeMounts | nindent 12 }}
+
+          livenessProbe:
+            {{- toYaml .Values.mlflow.livenessProbe | nindent 12 }}
+
+          readinessProbe:
+            {{- toYaml .Values.mlflow.readinessProbe | nindent 12 }}
+
+          startupProbe:
+            {{- toYaml .Values.mlflow.startupProbe | nindent 12 }}
+
+          securityContext:
+            {{- toYaml .Values.mlflow.containerSecurityContext | nindent 12 }}
+
+      volumes:
+        {{- toYaml .Values.mlflow.extraVolumes | nindent 8 }}
+
+      terminationGracePeriodSeconds: 60
